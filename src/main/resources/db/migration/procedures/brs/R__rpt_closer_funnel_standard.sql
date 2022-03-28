@@ -15,6 +15,7 @@ BEGIN
                       select rpt.id,
                              rpt.name,
                              rpt.display_order,
+                             rpt.funnel_type_id,
                              rpt.today_count,
                              rpt.checked_in_today_count,
                              rpt.week_to_date_count,
@@ -67,6 +68,7 @@ BEGIN
                         select f.id,
                                f.name,
                                f.display_order,
+                               f.funnel_type_id,
                                (select count(1)
                                 from project_data
                                 where
@@ -150,8 +152,7 @@ BEGIN
                                )         as custom_date_range_count,
                                null::int as checked_in_custom_date_range_count
                         from brs.funnel f
-                        where f.use_project_details is true
-                          and f.archived is false
+                        where f.archived is false
                           and f.funnel_type_id = 3
                         group by f.id, f.name, f.display_order
                         order by display_order

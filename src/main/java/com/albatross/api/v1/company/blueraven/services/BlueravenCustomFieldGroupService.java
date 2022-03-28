@@ -95,12 +95,10 @@ public class BlueravenCustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("objectTypeId", objectTypeId);
 
-    List<CustomFieldGroup> results =
-        sqlCache.query(
-            "blueravenCustomFieldGroup.assignment.getByObjectTypeId",
-            params,
-            new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
-    return results;
+    return sqlCache.query(
+        "blueravenCustomFieldGroup.assignment.getByObjectTypeId",
+        params,
+        new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
   }
 
   public CustomFieldGroup addCustomFieldGroup(
@@ -136,13 +134,12 @@ public class BlueravenCustomFieldGroupService {
 
     sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldGroup", params);
 
-    Optional<CustomFieldGroup> group =
-        sqlCache.get(
+    return sqlCache
+        .get(
             "blueravenCustomFieldGroup.assignment.getOne",
             params,
-            new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
-
-    return group.orElse(null);
+            new CustomFieldGroupMapper<>(CustomFieldGroup.class, om))
+        .orElse(null);
   }
 
   public void updateCustomFieldGroups(List<CustomFieldGroup> customFieldGroups) {
@@ -162,7 +159,6 @@ public class BlueravenCustomFieldGroupService {
   }
 
   public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId) {
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupId", groupId);
@@ -196,10 +192,9 @@ public class BlueravenCustomFieldGroupService {
   public CustomField getCustomField(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<CustomField> result =
-        sqlCache.get(
-            "blueravenCustomFieldGroup.assignment.getCustomField", params, CustomField.class);
-    return result.orElse(null);
+    return sqlCache
+        .get("blueravenCustomFieldGroup.assignment.getCustomField", params, CustomField.class)
+        .orElse(null);
   }
 
   public void deleteFieldGroup(Long cfgId) {

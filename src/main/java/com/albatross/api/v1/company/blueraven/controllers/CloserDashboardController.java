@@ -5,20 +5,17 @@ import com.albatross.api.v1.company.blueraven.services.CloserDashboardService;
 import com.albatross.api.v1.flow.model.Org;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import io.swagger.v3.oas.annotations.Hidden;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Created by Joseph Canto on 2020-04-30.
- */
-@RestController
 @Hidden
+@RestController
 @RequestMapping(value = "/api/v1/company/blueraven/closerDashboard")
+@RequiredArgsConstructor
 public class CloserDashboardController {
-  @Autowired
-  private CloserDashboardService closerDashboardService;
+  private final CloserDashboardService closerDashboardService;
 
   @GetMapping(value = "/getIncentiveFdcCounts")
   public IncentiveCounts getIncentiveFdcCounts() {
@@ -36,8 +33,8 @@ public class CloserDashboardController {
   }
 
   @GetMapping(value = "/getRoundRobinLeadAllocationRank")
-  public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(@RequestParam Integer postalCodeZoneId,
-                                                                      @RequestParam Integer timeInterval) {
+  public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(
+      @RequestParam Integer postalCodeZoneId, @RequestParam Integer timeInterval) {
     return closerDashboardService.getRoundRobinLeadAllocationRank(postalCodeZoneId, timeInterval);
   }
 
@@ -47,9 +44,10 @@ public class CloserDashboardController {
   }
 
   @GetMapping(value = "/getCloserTableScores")
-  public String getCloserTableScores(@RequestParam Integer timeInterval,
-                                     @RequestParam Boolean officeFdcRank,
-                                     @RequestParam(required = false) Long selectedOrgId) {
+  public String getCloserTableScores(
+      @RequestParam Integer timeInterval,
+      @RequestParam Boolean officeFdcRank,
+      @RequestParam(required = false) Long selectedOrgId) {
     return closerDashboardService.getCloserTableScores(timeInterval, officeFdcRank, selectedOrgId);
   }
 
@@ -68,7 +66,7 @@ public class CloserDashboardController {
     return closerDashboardService.apptsCreatedPipeline(funnelRequest);
   }
 
-    @PostMapping(value = "/funnelDrilldown/apptsCreatedPipeline")
+  @PostMapping(value = "/funnelDrilldown/apptsCreatedPipeline")
   public String apptsCreatedPipelineDrilldown(@RequestBody FunnelRequest funnelRequest) {
     return closerDashboardService.apptsCreatedPipelineDrilldown(funnelRequest);
   }
@@ -84,7 +82,7 @@ public class CloserDashboardController {
   }
 
   @PostMapping(value = "/getDistricts")
-  public String Districts(@RequestBody DashboardUserRequest request) {
+  public String getDistricts(@RequestBody DashboardUserRequest request) {
     return closerDashboardService.getDistricts(request);
   }
 

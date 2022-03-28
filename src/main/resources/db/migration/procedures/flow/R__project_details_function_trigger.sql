@@ -5,11 +5,13 @@ declare
   v_owner_user_position_id integer;
   v_owner_user_id          integer;
   v_project_ids            integer[];
+  v_setter_name            varchar;
 BEGIN
-  select owner_user_position_id, up.user_id
-  into v_owner_user_position_id,v_owner_user_id
+  select owner_user_position_id, up.user_id,concat(u.first_name,' ',u.last_name)
+  into v_owner_user_position_id,v_owner_user_id,v_setter_name
   from flow.contact c
          left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow.user u on u.id = up.user_id
   where c.id = new.id;
 
 
@@ -20,7 +22,8 @@ BEGIN
 
   update brs.project_details
   set setter_user_position_id = v_owner_user_position_id,
-      setter_user_id          = v_owner_user_id
+      setter_user_id          = v_owner_user_id,
+      setter_name = v_setter_name
   where project_id = any (v_project_ids);
 
   RETURN NULL;
@@ -33,7 +36,6 @@ CREATE TRIGGER project_project_details_for_contact_trg
   after update
   ON flow.contact
   FOR EACH ROW
-  when (new.temp_geo_attempted is false)
 EXECUTE PROCEDURE flow.project_details_from_contact();
 
 
@@ -61,6 +63,7 @@ declare
   v_on_hold_date               timestamp;
   v_off_hold_date              timestamp;
   v_company_project_status     character varying(100);
+v_setter_name varchar;
 BEGIN
   select company_id
   into v_company_id
@@ -91,10 +94,11 @@ BEGIN
     where pd.project_id = new.id;
   end if;
 
-  select email, phone, mobile, first_name || ' ' || last_name, owner_user_position_id, up.user_id
-  into v_contact_email,v_contact_phone,v_contact_mobile_phone,v_contact_name,v_owner_user_position_id,v_owner_user_id
+  select c.email, c.phone, c.mobile, concat(c.first_name, ' ' , c.last_name), c.owner_user_position_id, up.user_id,concat(u.first_name,' ',u.last_name)
+  into v_contact_email,v_contact_phone,v_contact_mobile_phone,v_contact_name,v_owner_user_position_id,v_owner_user_id,v_setter_name
   from flow.contact c
          left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow.user u on u.id = up.user_id
   where c.id = new.contact_id;
 
   select s.id, s.abbreviation
@@ -194,13 +198,13 @@ BEGIN
                                     contact_phone, contact_mobile_phone,
                                     project_street1, project_city, project_postal_code,
                                     project_time_zone, project_state_id, project_state_abbreviation, contact_name,
-                                    setter_user_position_id, setter_user_id, closer_user_id,
+                                    setter_user_position_id, setter_user_id,setter_name, closer_user_id,
                                     closer_user_position_id, closer_name,
                                     project_creator, contact_id, project_created_date,
                                     company_project_status_type_id, company_project_status_type)
     values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
             new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
-            v_owner_user_position_id, v_owner_user_id, v_user_id,
+            v_owner_user_position_id, v_owner_user_id,v_setter_name, v_user_id,
             coalesce(new.user_position_id, v_pd_closer_user_position_id), v_closer_name,
             v_project_creator, new.contact_id, new.date_created,
             new.company_project_status_type_id, v_company_project_status);
@@ -226,7 +230,8 @@ BEGIN
         project_created_date           = new.date_created,
         company_project_status_type_id = new.company_project_status_type_id,
         company_project_status_type    = v_company_project_status,
-        archived                       = new.archived
+        archived                       = new.archived,
+        setter_name                    = v_setter_name
     where project_id = new.id;
 
   elsif (TG_OP = 'DELETE') THEN

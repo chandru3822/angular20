@@ -8,8 +8,8 @@ import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -18,45 +18,46 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Joseph Canto on 2019-07-17.
- */
 @Service
+@RequiredArgsConstructor
 public class AhjInspectionService {
-  @Autowired
-  private SqlCache sqlCache;
-
-  @Autowired
-  private ObjectMapper om;
-
-  @Autowired
-  private SecurityService securityService;
-
-  @Autowired
-  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
+  private final SqlCache sqlCache;
+  private final ObjectMapper om;
+  private final SecurityService securityService;
+  private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public Optional<AhjInspectionDetail> getAhjInspectionDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
 
-    Optional<AhjInspectionDetail> inspection = sqlCache.get("ahj.inspection.detailByAhj", params, new AhjInspectionDetailMapper<>(AhjInspectionDetail.class, om));
+    Optional<AhjInspectionDetail> inspection =
+        sqlCache.get(
+            "ahj.inspection.detailByAhj",
+            params,
+            new AhjInspectionDetailMapper<>(AhjInspectionDetail.class, om));
     if (inspection.isPresent()) {
       return inspection;
-    } else {
-      User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.trueUserId());
-
-      // add a blank inspection and return that
-      Integer id = sqlCache.get("ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
-      if (id != null) {
-        Optional<AhjInspectionDetail> inspection2 = sqlCache.get("ahj.inspection.detailByAhj", params, new AhjInspectionDetailMapper<>(AhjInspectionDetail.class, om));
-        return inspection2;
-      }
     }
-    return null;
+
+    User currentUser = securityService.getCurrentUser();
+    params.put("currentUser", currentUser.trueUserId());
+
+    // add a blank inspection and return that
+    var created =
+        sqlCache.get(
+            "ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class));
+
+    if (created.isPresent()) {
+      return sqlCache.get(
+          "ahj.inspection.detailByAhj",
+          params,
+          new AhjInspectionDetailMapper<>(AhjInspectionDetail.class, om));
+    }
+    return Optional.empty();
   }
 
-  public Optional<AhjInspection> saveAhjInspection(Long ahjId, Long inspectionId, AhjInspection inspection, Boolean returnValue) {
+  public Optional<AhjInspection> saveAhjInspection(
+      Long ahjId, Long inspectionId, AhjInspection inspection, Boolean returnValue) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -94,22 +95,29 @@ public class AhjInspectionService {
     if (inspection.getUpdateAllInState() != null && inspection.getUpdateAllInState()) {
       params.put("ahjIds", inspection.getAhjIds());
       sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
-      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_INSPECTION.textValue(), inspection.getCustomFieldGroups(), inspection.getInspectionIds());
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
+          ObjectType.AHJ_INSPECTION.textValue(),
+          inspection.getCustomFieldGroups(),
+          inspection.getInspectionIds());
     } else {
       params.put("ahjId", ahjId);
 
       if (inspectionId == null) {
-        inspectionId = sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
+        inspectionId =
+            sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
       } else {
         params.put("id", inspectionId);
         sqlCache.update("ahj.inspection.update", params);
-        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_INSPECTION.textValue(), inspection.getCustomFieldGroups(), inspectionId);
+        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
+            ObjectType.AHJ_INSPECTION.textValue(), inspection.getCustomFieldGroups(), inspectionId);
       }
     }
 
     HashMap<String, Object> keyParam = new HashMap<>();
     keyParam.put("id", inspectionId);
-    return returnValue ? sqlCache.get("ahj.inspection.findById", keyParam, AhjInspection.class) : Optional.empty();
+    return returnValue
+        ? sqlCache.get("ahj.inspection.findById", keyParam, AhjInspection.class)
+        : Optional.empty();
   }
 
   public List<AhjInspection> searchAhjsByState(Long stateId) {
@@ -137,8 +145,8 @@ public class AhjInspectionService {
   }
 
   // LINKS
-  @SuppressWarnings("DuplicatedCode")
-  public Optional<AhjLink> saveInspectionLink(Long ahjId, Long inspectionId, Long linkId, AhjLink link) {
+  public Optional<AhjLink> saveInspectionLink(
+      Long ahjId, Long inspectionId, Long linkId, AhjLink link) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -175,14 +183,18 @@ public class AhjInspectionService {
   }
 
   // NOTE TEMPLATES
-  public Optional<AhjNoteTemplate> saveNoteTemplate(Long ahjId, Long inspectionId, Long noteTemplateId, AhjNoteTemplate noteTemplate) {
+  public Optional<AhjNoteTemplate> saveNoteTemplate(
+      Long ahjId, Long inspectionId, Long noteTemplateId, AhjNoteTemplate noteTemplate) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("inspectionId", inspectionId);
     params.put("title", noteTemplate.getTitle());
     params.put("note", noteTemplate.getNote());
 
     if (noteTemplateId == null) {
-      noteTemplateId = sqlCache.updateReturningId("ahj.inspection.note.template.create", params, "id").longValue();
+      noteTemplateId =
+          sqlCache
+              .updateReturningId("ahj.inspection.note.template.create", params, "id")
+              .longValue();
 
       params.put("inspectionId", inspectionId);
       params.put("noteTemplateId", noteTemplateId);
@@ -220,53 +232,71 @@ public class AhjInspectionService {
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(List.class, "schedulingLinks",
-        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "schedulingLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "fotLinks",
-        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "fotLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "resultsLinks",
-        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "resultsLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "failureChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "failureChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "schedulingChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "schedulingChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "obtainingResultsChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "obtainingResultsChecklist",
+          new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "reinspectionsChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "reinspectionsChecklist",
+          new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "schedulingWithAhjChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "schedulingWithAhjChecklist",
+          new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "schedulingWithBrsTechnicianChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "schedulingWithBrsTechnicianChecklist",
+          new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "installationRequirements",
-        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "installationRequirements",
+          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "noteTemplates",
-        new JsonCollectionDeserializer(noteTemplateTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "noteTemplates",
+          new JsonCollectionDeserializer(noteTemplateTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "utilityServiceDeptContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "utilityServiceDeptContacts",
+          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "schedulingContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "schedulingContacts",
+          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "obtainingResultsContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "obtainingResultsContacts",
+          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "feeContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "feeContacts", new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "servicingFots",
-        new JsonCollectionDeserializer(userRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "servicingFots", new JsonCollectionDeserializer(userRef, objectMapper));
     }
   }
 }

@@ -112,7 +112,6 @@ public class CommunicationService {
           email, subject, renderTemplate, null, sentByEmail, sentByName, sentByUserId);
     } catch (Exception e) {
       log.error("EMAIL: ERROR: Error sending email to address={}", email, e);
-      e.printStackTrace();
     }
   }
 

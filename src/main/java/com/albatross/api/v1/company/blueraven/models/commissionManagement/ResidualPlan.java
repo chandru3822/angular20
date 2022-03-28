@@ -18,7 +18,7 @@ public class ResidualPlan {
     private Long id, positionId, residualStatusId;
     private String name, description, notes, approved, statusType, position;
     private List<ResidualPlanAllocation> residualPlanAllocations;
-    private List users;
+    private List<Long> users;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date startDate, endDate;

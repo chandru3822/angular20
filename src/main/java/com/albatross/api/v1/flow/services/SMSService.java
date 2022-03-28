@@ -18,6 +18,7 @@ import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
 import com.twilio.type.PhoneNumber;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -70,10 +71,8 @@ public class SMSService {
     final Long count = sqlCache.queryForObject("sms.getSmsQueue.count", Map.of(), Long.class);
     List<SmsQueueRow> results =
         sqlCache.query("sms.getSmsQueue", params, new SMSQueuePageMapper<>(SmsQueueRow.class, om));
-    Page<SmsQueueRow> page =
-        new PageImpl<>(
-            results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
+    return new PageImpl<>(
+        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public List<Owner> getOwners() {
@@ -91,10 +90,8 @@ public class SMSService {
 
   public List<SMSQueueExportItem> exportSmsQueue() {
 
-    List<SMSQueueExportItem> results =
-        sqlCache.query(
-            "sms.queue.exportAll", Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
-    return results;
+    return sqlCache.query(
+        "sms.queue.exportAll", Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
   }
 
   public Optional<SMSQueueItem> getSmsById(Long id) {
@@ -106,10 +103,8 @@ public class SMSService {
 
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
     Map<String, Object> params = Map.of("projectId", projectId);
-    List<SMSQueueItem> results =
-        sqlCache.query(
-            "sms.queue.fetchByProjectId", params, new SMSQueueMapper<>(SMSQueueItem.class, om));
-    return results;
+    return sqlCache.query(
+        "sms.queue.fetchByProjectId", params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public SMSQueueItem queueMessage(
@@ -138,8 +133,7 @@ public class SMSService {
         Array varchar = connection.createArrayOf("varchar", mediaUrls);
         source.addValue("mediaUrls", varchar);
       } catch (SQLException e) {
-        log.error("TWILIO_WEBHOOK_ERROR: media url problems");
-        e.printStackTrace();
+        log.error("TWILIO_WEBHOOK_ERROR: media url problems", e);
       }
     }
 
@@ -169,8 +163,7 @@ public class SMSService {
                     try {
                       return new URI(s);
                     } catch (URISyntaxException e) {
-                      log.error("TWILIO_WEBHOOK_ERROR: media urls failed");
-                      e.printStackTrace();
+                      log.error("TWILIO_WEBHOOK_ERROR: media urls failed", e);
                     }
                     return null;
                   })
@@ -207,8 +200,9 @@ public class SMSService {
 
         jdbcTemplate.update(queueUpdate, params);
 
-        //turning off this log for now.  the cron logs get long because of this one
-//        log.info("TWILIO: SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
+        // turning off this log for now.  the cron logs get long because of this one
+        //        log.info("TWILIO: SUCCESS: Message SID={} successfully submitted to Twilio. ",
+        // message.getSid());
       } catch (ApiException e) {
 
         Map<String, Object> params = new HashMap<>();
@@ -221,8 +215,9 @@ public class SMSService {
 
         jdbcTemplate.update(queueUpdate, params);
         String errorMsg = e.toString();
-        if(!errorMsg.contains("violates a blacklist rule") && !errorMsg.contains("is not a valid phone number")) {
-          //cron logs are noisy. only log error if not one we are expecting
+        if (!errorMsg.contains("violates a blacklist rule")
+            && !errorMsg.contains("is not a valid phone number")) {
+          // cron logs are noisy. only log error if not one we are expecting
           log.error("TWILIO: ERROR: {}", e.toString());
         }
       }
@@ -323,8 +318,7 @@ public class SMSService {
         try (Jedis jedis = jedisPool.getResource()) {
           jedis.lpush(webhookPayloadErrorsKey, msg.toJSON());
         } catch (JsonProcessingException ex) {
-          log.error("TWILIO_WEBHOOK_ERROR: failed to serialize");
-          ex.printStackTrace();
+          log.error("TWILIO_WEBHOOK_ERROR: failed to serialize", ex);
         }
 
         return;
@@ -353,8 +347,10 @@ public class SMSService {
       log.debug("TWILIO_WEBHOOK: payload {}", json);
       jedis.lpush(webhookPayloadKey, json);
     } catch (JsonProcessingException ex) {
-      log.error("TWILIO_WEBHOOK_ERROR: failed to serialize payload: {}", msg);
-      ex.printStackTrace();
+      log.error(
+          "TWILIO_WEBHOOK_ERROR: failed to serialize payload: {}, message: {}",
+          msg,
+          ex.getMessage());
     }
   }
 
@@ -446,10 +442,8 @@ public class SMSService {
     return sqlCache.get("sms.reply.fetch", params, TwilioMessageRequest.class);
   }
 
-  public SMSTemplate getTemplate(Long id) {
-    Map<String, Object> params = Map.of("id", id);
-
-    return sqlCache.get("sms.template.fetch", params, SMSTemplate.class).get();
+  public Optional<SMSTemplate> getTemplate(@NonNull Long id) {
+    return sqlCache.get("sms.template.fetch", Map.of("id", id), SMSTemplate.class);
   }
 
   public static class SMSQueueMapper<T> extends BeanPropertyRowMapper<T> {
