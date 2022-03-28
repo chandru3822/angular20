@@ -2,22 +2,24 @@ CREATE OR REPLACE FUNCTION brs.update_appointment_data(p_project_process_step_ev
   RETURNS void AS
 $BODY$
 declare
-  v_missed_id                             integer;
-  v_missed                                timestamp;
-  v_pitched_id                            integer;
-  v_pitched                               timestamp;
-  v_not_either_id                         integer;
-  v_not_either                            timestamp;
-  v_pitched_ppse_id                       integer;
-  v_missed_ppse_id                        integer;
-  v_not_pitched_missed_ppse_id            integer;
-  v_first_appointment_id                  integer;
-  v_first_appointment_id_ppse_id          integer;
-  v_first_appointment_start_time          timestamp;
-  v_first_appointment_id_not_used         integer;
-  v_first_appointment_start_time_not_used timestamp;
-  v_first_appointment_ppse_id             integer;
-  v_count                                 integer;
+  v_missed_id                                   integer;
+  v_missed                                      timestamp;
+  v_pitched_id                                  integer;
+  v_pitched                                     timestamp;
+  v_not_either_id                               integer;
+  v_not_either                                  timestamp;
+  v_pitched_ppse_id                             integer;
+  v_missed_ppse_id                              integer;
+  v_not_pitched_missed_ppse_id                  integer;
+  v_first_appointment_id                        integer;
+  v_first_appointment_id_ppse_id                integer;
+  v_first_appointment_start_time                timestamp;
+  v_first_appointment_id_not_used               integer;
+  v_first_appointment_start_time_not_used       timestamp;
+  v_first_appointment_ppse_id                   integer;
+  v_count                                       integer;
+  v_prioritized_closer_appointment_outcome      integer;
+  v_prioritized_closer_appointment_outcome_date timestamp;
 
 BEGIN
   update brs.project_details
@@ -34,12 +36,14 @@ BEGIN
       first_appointment_id                            = null,
       first_appointment_id_ppse_id                    = null,
       first_appointment                               = null,
-      first_appointment_ppse_id                       = null
+      first_appointment_ppse_id                       = null,
+      prioritized_closer_appointment_outcome          = null,
+      prioritized_closer_appointment_outcome_date     = null
   where project_id = p_project_id;
 
   select int_value, start_time, id
   into v_first_appointment_id_not_used,v_first_appointment_start_time,v_first_appointment_ppse_id
-  from brs.get_earliest_outcome_record_by_type(p_project_process_step_event_id, null,false);
+  from brs.get_earliest_outcome_record_by_type(p_project_process_step_event_id, null, false);
 
   select count(1)
   into v_count
@@ -69,6 +73,8 @@ BEGIN
   end if;
 
 
+  v_prioritized_closer_appointment_outcome = coalesce(v_pitched_id, v_missed_id, v_not_either_id);
+  v_prioritized_closer_appointment_outcome_date = coalesce(v_pitched, v_missed, v_not_either);
 
 
   update brs.project_details
@@ -84,7 +90,9 @@ BEGIN
       first_appointment_id                            = v_first_appointment_id,
       first_appointment_id_ppse_id                    = v_first_appointment_id_ppse_id,
       first_appointment                               = v_first_appointment_start_time,
-      first_appointment_ppse_id                       = v_first_appointment_ppse_id
+      first_appointment_ppse_id                       = v_first_appointment_ppse_id,
+      prioritized_closer_appointment_outcome          = v_prioritized_closer_appointment_outcome,
+      prioritized_closer_appointment_outcome_date     = v_prioritized_closer_appointment_outcome_date
   where project_id = p_project_id;
 
   if v_missed_id is not null or v_pitched_id is not null then

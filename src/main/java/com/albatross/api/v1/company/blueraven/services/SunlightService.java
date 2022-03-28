@@ -110,7 +110,14 @@ public class SunlightService {
       applicantDetails.put("lastName", propLogDetail.getFullName().substring(idx + 1));
     }
 
-    applicantDetails.put("phone", propLogDetail.getPhone());
+    String phoneNumber = propLogDetail.getPhone();
+    if (phoneNumber != null) {
+      phoneNumber = phoneNumber.replaceAll("[^\\d]+", "");
+      if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
+        phoneNumber = phoneNumber.substring(1);
+      }
+    }
+    applicantDetails.put("phone", phoneNumber);
 
     if (propLogDetail.getEmail() != null && propLogDetail.getEmail().contains("@")) {
       applicantDetails.put("email", propLogDetail.getEmail());

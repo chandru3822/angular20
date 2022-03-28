@@ -1236,7 +1236,7 @@ public class SmartlistService {
             }
           }
         }
-      } else if (f.getSmartlistSystemListId() == 2) {
+      } else if (List.of(2L,4L).contains(f.getSmartlistSystemListId())) {
         String joinTable;
         try {
           joinTable = joinTables.stream()

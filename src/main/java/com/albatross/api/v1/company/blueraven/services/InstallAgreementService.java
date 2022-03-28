@@ -12,13 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -52,7 +50,13 @@ public class InstallAgreementService {
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", List.of("VIEW_ALL"));
+    Boolean viewAll =
+        securityService.userHasFeatureAccessLevel(
+            user.getId(),
+            user.getCompanyId(),
+            user.getHighestCompanyId(),
+            "INSTALLATION_AGREEMENT",
+            List.of("VIEW_ALL"));
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
@@ -63,19 +67,13 @@ public class InstallAgreementService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    List<InstallAgreementProject> results = sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
-    Integer count = sqlCache.queryForObject("installAgreement.getProjectsCount", params, Integer.class);
+    List<InstallAgreementProject> results =
+        sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
+    Integer count =
+        sqlCache.queryForObject("installAgreement.getProjectsCount", params, Integer.class);
 
-    Page<InstallAgreementProject> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
-  }
-
-  @Data
-  public static class PropLogDetail {
-    private String loanAmount, loanTerm, interestRate, salesRepresentativeFirstName, salesRepresentativeLastName,
-      salesRepresentativeEmail, firstName, lastName, email, address, city, state, zip, phone, fullName;
-
-    Long projectId;
+    return new PageImpl<>(
+        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
@@ -97,34 +95,42 @@ public class InstallAgreementService {
         if (sunlightService.getCreditStatus(projectId).equals("Credit Approved")) {
           sunlightService.sendLoanDocs(projectId);
         }
-      } catch (JSONException ex){
-        log.error("IARQ: Error sending finance docs via Sunlight", ex.getMessage());
+      } catch (JSONException ex) {
+        log.error("IARQ: Error sending finance docs via Sunlight", ex);
         resultMsg = "Error sending finance docs through Sunlight";
       }
-    }
-    else if (sendLoanDocs && isSunpowerProject(financier)) {
+    } else if (sendLoanDocs && isSunpowerProject(financier)) {
       // If credit is approved, send loan docs
       try {
         sunpowerService.sendLoanDocs(projectId);
-      } catch (Exception ex){
-        log.error("IARQ: Error sending finance docs via Sunpower", ex.getMessage());
+      } catch (Exception ex) {
+        log.error("IARQ: Error sending finance docs via Sunpower", ex);
         resultMsg = "Error sending finance docs through Sunpower: " + ex.getMessage();
       }
-    }
-    else if (sendLoanDocs && isLoanPalProject(financier)) {
+    } else if (sendLoanDocs && isLoanPalProject(financier)) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", request.getProposalNbr());
-      Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
+      Optional<InstallAgreementService.PropLogDetail> propLogDetail =
+          sqlCache.get(
+              "installAgreement.getProjectDetailsFromLog",
+              params,
+              InstallAgreementService.PropLogDetail.class);
 
-      JSONObject loanApplication = goodleapService.getApplicationByProjectId(request.getProjectId());
+      JSONObject loanApplication =
+          goodleapService.getApplicationByProjectId(request.getProjectId());
       if (loanApplication != null) {
         try {
           String loanPalId = loanApplication.getString("id");
 
           if (propLogDetail.isPresent()) {
-            final BigDecimal propLogAmount = new BigDecimal(propLogDetail.get().getLoanAmount()).setScale(0, RoundingMode.DOWN);
-            final BigDecimal currentAmount = loanApplication.getJSONObject("amount").getBigDecimal("value").setScale(0, RoundingMode.DOWN);
+            final BigDecimal propLogAmount =
+                new BigDecimal(propLogDetail.get().getLoanAmount()).setScale(0, RoundingMode.DOWN);
+            final BigDecimal currentAmount =
+                loanApplication
+                    .getJSONObject("amount")
+                    .getBigDecimal("value")
+                    .setScale(0, RoundingMode.DOWN);
 
             if (!propLogAmount.equals(currentAmount)) {
               goodleapService.updateLoanAmount(loanPalId, propLogDetail.get().getLoanAmount());
@@ -139,7 +145,7 @@ public class InstallAgreementService {
               // @TODO: Handle failed send
             }
           }
-        } catch (JSONException ex){
+        } catch (JSONException ex) {
           log.error("IARQ: JSON object not found", ex);
         }
       }
@@ -158,7 +164,9 @@ public class InstallAgreementService {
       }
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
-        log.warn(String.format("IARQ: Unable to locate goodleap application for project ID: %s", projectId));
+        log.warn(
+            String.format(
+                "IARQ: Unable to locate goodleap application for project ID: %s", projectId));
         throw new RuntimeException(e);
       } else {
         if (!resultMsg.isEmpty()) {
@@ -194,17 +202,19 @@ public class InstallAgreementService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
 
-    Optional<InstallAgreementRequest> req = sqlCache.get(
-      "installAgreement.getFinancierFromProposalLog",
-      params,
-      InstallAgreementRequest.class
-    );
+    Optional<InstallAgreementRequest> req =
+        sqlCache.get(
+            "installAgreement.getFinancierFromProposalLog", params, InstallAgreementRequest.class);
 
     if (req.isPresent()) {
       financier = req.get().getFinancier();
     }
 
-    log.debug("IARQ: financier from proposal log for project {} #{}: {}", projectId, proposalNbr, financier);
+    log.debug(
+        "IARQ: financier from proposal log for project {} #{}: {}",
+        projectId,
+        proposalNbr,
+        financier);
     return financier;
   }
 
@@ -215,17 +225,16 @@ public class InstallAgreementService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
 
-    Optional<InstallAgreementRequest> req = sqlCache.get(
-      "installAgreement.getUtilityFromProposalLog",
-      params,
-      InstallAgreementRequest.class
-    );
+    Optional<InstallAgreementRequest> req =
+        sqlCache.get(
+            "installAgreement.getUtilityFromProposalLog", params, InstallAgreementRequest.class);
 
     if (req.isPresent()) {
       utility = req.get().getUtility_company();
     }
 
-    log.debug("IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
+    log.debug(
+        "IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
     return utility;
   }
 
@@ -241,41 +250,51 @@ public class InstallAgreementService {
     params.put("userId", userId);
     params.put("sendInstallationAgreement", request.getSendInstallationAgreement());
     params.put("isSpanish", request.getIsSpanish() != null ? request.getIsSpanish() : false);
-    params.put("success", request.getRequest_successful() != null ? request.getRequest_successful() : false);
+    params.put(
+        "success",
+        request.getRequest_successful() != null ? request.getRequest_successful() : false);
 
-
-    log.debug("IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
-      projectId, proposalNbr, userId, request.getRequest_successful(), request.getIsSpanish());
-    sqlCache.update(
-      "installAgreement.setRequestStatus",
-      params
-    );
+    log.debug(
+        "IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
+        projectId,
+        proposalNbr,
+        userId,
+        request.getRequest_successful(),
+        request.getIsSpanish());
+    sqlCache.update("installAgreement.setRequestStatus", params);
   }
 
-  public String generateLoanApplication(Long projectId, Long proposalNbr, String sendVia) throws Exception {
+  public String generateLoanApplication(Long projectId, Long proposalNbr, String sendVia)
+      throws Exception {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
 
-    Optional<PandaDocProjectDetails> deets = sqlCache.get(
-      "pandaDoc.getProjectDetails",
-      params,
-      PandaDocProjectDetails.class
-    );
+    Optional<PandaDocProjectDetails> deets =
+        sqlCache.get("pandaDoc.getProjectDetails", params, PandaDocProjectDetails.class);
 
     if (deets.isPresent()) {
       PandaDocProjectDetails pd = deets.get();
       if (pd.getLoanType().contains("Sunlight")) {
-        Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail =
+            sqlCache.get(
+                "installAgreement.getProjectDetailsFromLog",
+                params,
+                InstallAgreementService.PropLogDetail.class);
         try {
           return sunlightService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
         } catch (Exception e) {
           return sunlightPortalUrl + "salesdashboard";
         }
       } else if (pd.getLoanType().toLowerCase().contains("sunpower")) {
-        Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail =
+            sqlCache.get(
+                "installAgreement.getProjectDetailsFromLog",
+                params,
+                InstallAgreementService.PropLogDetail.class);
         try {
-          return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
+          return sunpowerService.saveLoanFields(
+              propLogDetail.get(), projectId, proposalNbr, sendVia, false);
         } catch (Exception e) {
           throw new Exception(e.getMessage(), e);
         }
@@ -285,7 +304,8 @@ public class InstallAgreementService {
         if (creditLastCheckedBy.isPresent()) {
           String creditor = (String) creditLastCheckedBy.get();
           if (creditor.equals("Sunlight")) {
-            throw new Exception(String.format("Unable to generate LoanPal application due to existing Sunlight application."));
+            throw new Exception(
+                "Unable to generate LoanPal application due to existing Sunlight application.");
           }
         }
         String bothStreets = "";
@@ -323,8 +343,7 @@ public class InstallAgreementService {
           b.addParameter("refnum", s(pd.getProjectId()));
           return b.build().toString().replaceAll("\\+", "%20");
         } catch (URISyntaxException e) {
-          log.error("IARQ: uri error {}", e.getMessage());
-          e.printStackTrace();
+          log.error("IARQ: uri error", e);
         }
       }
     }
@@ -344,84 +363,64 @@ public class InstallAgreementService {
     final String TWENTY_YEAR_TERM = "20";
     final String TWENTY_FIVE_YEAR_TERM = "25";
     // Handle multiple formats of 7 year loan term
-    if (loanTerm.equals(SEVEN_YEAR_TERM_V1) || loanTerm.equals(SEVEN_YEAR_TERM_V2) || loanTerm.equals(SEVEN_YEAR_TERM_V3)) {
+    if (loanTerm.equals(SEVEN_YEAR_TERM_V1)
+        || loanTerm.equals(SEVEN_YEAR_TERM_V2)
+        || loanTerm.equals(SEVEN_YEAR_TERM_V3)) {
       if (interestRate.equals("0.0699")) {
         financeOption = "brs699";
       }
-    }
-    else if (loanTerm.equals(TEN_YEAR_TERM)) {
+    } else if (loanTerm.equals(TEN_YEAR_TERM)) {
       if (interestRate.equals("0.0299")) {
         financeOption = "blueraven";
-      }
-      else if (interestRate.equals("0.0499")) {
+      } else if (interestRate.equals("0.0499")) {
         financeOption = "br";
       }
-    }
-    else if (loanTerm.equals(TWELVE_YEAR_TERM)) {
+    } else if (loanTerm.equals(TWELVE_YEAR_TERM)) {
       if (interestRate.equals("0.0299")) {
         financeOption = "12299";
       }
-    }
-    else if (loanTerm.equals(FIFTEEN_YEAR_TERM)) {
+    } else if (loanTerm.equals(FIFTEEN_YEAR_TERM)) {
       if (interestRate.equals("0.0499")) {
         financeOption = "bres1";
       }
-    }
-    else if (loanTerm.equals(TWENTY_YEAR_TERM)) {
+    } else if (loanTerm.equals(TWENTY_YEAR_TERM)) {
       if (interestRate.equals("0.0148")) {
         financeOption = "flexpay148";
-      }
-      else if (interestRate.equals("0.0149")) {
+      } else if (interestRate.equals("0.0149")) {
         financeOption = "brs149";
-      }
-      else if (interestRate.equals("0.0198")) {
+      } else if (interestRate.equals("0.0198")) {
         financeOption = "flexpay198";
-      }
-      else if (interestRate.equals("0.0248")) {
+      } else if (interestRate.equals("0.0248")) {
         financeOption = "flexpay248";
-      }
-      else if (interestRate.equals("0.0298")) {
+      } else if (interestRate.equals("0.0298")) {
         financeOption = "flexpay298";
-      }
-      else if (interestRate.equals("0.0299")) {
+      } else if (interestRate.equals("0.0299")) {
         financeOption = "20yr299";
-      }
-      else if (interestRate.equals("0.0398")) {
+      } else if (interestRate.equals("0.0398")) {
         financeOption = "flexpay398";
-      }
-      else if (interestRate.equals("0.0399")) {
+      } else if (interestRate.equals("0.0399")) {
         financeOption = "bres2";
-      }
-      else if (interestRate.equals("0.0498")) {
+      } else if (interestRate.equals("0.0498")) {
         financeOption = "flexpay498";
-      }
-      else if (interestRate.equals("0.0598")) {
+      } else if (interestRate.equals("0.0598")) {
         financeOption = "flexpay598";
       }
-    }
-    else if (loanTerm.equals(TWENTY_FIVE_YEAR_TERM)) {
+    } else if (loanTerm.equals(TWENTY_FIVE_YEAR_TERM)) {
       if (interestRate.equals("0.0198")) {
         financeOption = "flexpay198";
-      }
-      else if (interestRate.equals("0.0199")) {
+      } else if (interestRate.equals("0.0199")) {
         financeOption = "brs199";
-      }
-      else if (interestRate.equals("0.0248")) {
+      } else if (interestRate.equals("0.0248")) {
         financeOption = "flexpay248";
-      }
-      else if (interestRate.equals("0.0298")) {
+      } else if (interestRate.equals("0.0298")) {
         financeOption = "flexpay298";
-      }
-      else if (interestRate.equals("0.0299")) {
+      } else if (interestRate.equals("0.0299")) {
         financeOption = "blueraven";
-      }
-      else if (interestRate.equals("0.0398")) {
+      } else if (interestRate.equals("0.0398")) {
         financeOption = "flexpay398";
-      }
-      else if (interestRate.equals("0.0498")) {
+      } else if (interestRate.equals("0.0498")) {
         financeOption = "flexpay498";
-      }
-      else if (interestRate.equals("0.0598")) {
+      } else if (interestRate.equals("0.0598")) {
         financeOption = "flexpay598";
       }
     }
@@ -441,8 +440,8 @@ public class InstallAgreementService {
   }
 
   /**
-   * Return the string form of the specified object, or an empty string if the specified
-   * object is null.
+   * Return the string form of the specified object, or an empty string if the specified object is
+   * null.
    *
    * @param in
    * @return
@@ -451,18 +450,36 @@ public class InstallAgreementService {
     return in != null ? in.toString() : "";
   }
 
+  public List<InstallAgreementService.ProposalInfo> getProposalNumbers(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    return sqlCache.query("installAgreement.getProposalNumbers", params, ProposalInfo.class);
+  }
+
+  @Data
+  public static class PropLogDetail {
+    Long projectId;
+    private String loanAmount,
+        loanTerm,
+        interestRate,
+        salesRepresentativeFirstName,
+        salesRepresentativeLastName,
+        salesRepresentativeEmail,
+        firstName,
+        lastName,
+        email,
+        address,
+        city,
+        state,
+        zip,
+        phone,
+        fullName;
+  }
+
   @Data
   public static class ProposalInfo {
     private Long proposalNbr;
     private String loanType;
   }
-
-  public List<InstallAgreementService.ProposalInfo> getProposalNumbers(Long projectId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-
-    List<InstallAgreementService.ProposalInfo> results = sqlCache.query("installAgreement.getProposalNumbers", params, InstallAgreementService.ProposalInfo.class);
-    return results;
-  }
-
 }

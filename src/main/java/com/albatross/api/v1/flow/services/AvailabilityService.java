@@ -36,13 +36,8 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
+/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -67,7 +62,10 @@ public class AvailabilityService {
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("availability.getAllForResource", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
+    return sqlCache.query(
+        "availability.getAllForResource",
+        params,
+        new ResourceScheduleMapper<>(ResourceSchedule.class, om));
   }
 
   public List<WorkDay> getWorkDays() {
@@ -86,7 +84,11 @@ public class AvailabilityService {
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
 
-    Optional<ResourceSchedule> result = sqlCache.get("availability.getOne", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
+    Optional<ResourceSchedule> result =
+        sqlCache.get(
+            "availability.getOne",
+            params,
+            new ResourceScheduleMapper<>(ResourceSchedule.class, om));
     return result.orElse(null);
   }
 
@@ -112,25 +114,42 @@ public class AvailabilityService {
       id = sqlCache.updateReturningId("availability.insertSchedule", params, "id").longValue();
     }
 
-    //this should account for a new infinite schedule, or a schedule added after an infinite one but that has an end date
+    // this should account for a new infinite schedule, or a schedule added after an infinite one
+    // but that has an end date
     params.put("id", id);
     sqlCache.update("availability.updateScheduleWithoutEndDate", params);
 
     // handle saving each day's working hours
     if (!ra.getResourceScheduleAvailability().isEmpty()) {
-      List<UserPosition> slotScheduleUserPositions = userPositionService.getUserPositions(ra.getUserId()).stream().filter(UserPosition::getUseSlotSchedule).collect(Collectors.toList());
-      if(!slotScheduleUserPositions.isEmpty()) {
-        //if user should be using slotSchedules, check if any rsa sends null in the slotScheduleId and not null start/end
-        //fail if they do (before saving any others)
-        List<ResourceScheduleAvailability> invalids = ra.getResourceScheduleAvailability().stream()
-          .filter(rsa -> (null == rsa.getResourceSlotScheduleId() && (null != rsa.getStartTime() || null != rsa.getEndTime()))).collect(Collectors.toList());
-        if(!invalids.isEmpty()) {
-          throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "ERROR: Mobile users please install latest app version.", new Exception());
+      List<UserPosition> slotScheduleUserPositions =
+          userPositionService.getUserPositions(ra.getUserId()).stream()
+              .filter(UserPosition::getUseSlotSchedule)
+              .toList();
+      if (!slotScheduleUserPositions.isEmpty()) {
+        // if user should be using slotSchedules, check if any rsa sends null in the slotScheduleId
+        // and not null start/end
+        // fail if they do (before saving any others)
+        List<ResourceScheduleAvailability> invalids =
+            ra.getResourceScheduleAvailability().stream()
+                .filter(
+                    rsa ->
+                        (null == rsa.getResourceSlotScheduleId()
+                            && (null != rsa.getStartTime() || null != rsa.getEndTime())))
+                .toList();
+        if (!invalids.isEmpty()) {
+          throw new ResponseStatusException(
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              "ERROR: Mobile users please install latest app version.",
+              new Exception());
         }
       }
       for (ResourceScheduleAvailability rsa : ra.getResourceScheduleAvailability()) {
-        //only try save if there is an id or it has one of the 3 scheduling fields. otherwise it is just a blank day
-        if(null != rsa.getId() || (rsa.getResourceSlotScheduleId() != null || rsa.getStartTime() != null || rsa.getEndTime() != null)) {
+        // only try save if there is an id or it has one of the 3 scheduling fields. otherwise it is
+        // just a blank day
+        if (null != rsa.getId()
+            || (rsa.getResourceSlotScheduleId() != null
+                || rsa.getStartTime() != null
+                || rsa.getEndTime() != null)) {
           saveAvailability(rsa, id);
         }
       }
@@ -150,14 +169,16 @@ public class AvailabilityService {
   }
 
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
-    if ((null == rsa.getStartTime() && null != rsa.getEndTime()) || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
+    if ((null == rsa.getStartTime() && null != rsa.getEndTime())
+        || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
       log.error(
           "AVAILABILITY: Daily schedule must have start and end time. ID={}, Day of Week={}, Start Time={}, End Time={}",
           rsa.getId(),
           rsa.getDayOfWeekId(),
           rsa.getStartTime(),
           rsa.getEndTime());
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Daily schedule must have start and end time.", new Exception());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Daily schedule must have start and end time.", new Exception());
     }
 
     User user = securityService.getCurrentUser();
@@ -165,8 +186,8 @@ public class AvailabilityService {
     boolean hasId = null != rsa.getId();
     HashMap<String, Object> params = new HashMap<>();
 
-    //JIC - if a slot id gets sent in, null out the start and end time
-    if(null != rsa.getResourceSlotScheduleId()) {
+    // JIC - if a slot id gets sent in, null out the start and end time
+    if (null != rsa.getResourceSlotScheduleId()) {
       rsa.setStartTime(null);
       rsa.setEndTime(null);
     }
@@ -178,11 +199,15 @@ public class AvailabilityService {
     params.put("resourceScheduleId", resourceScheduleId);
     params.put("resourceSlotScheduleId", rsa.getResourceSlotScheduleId());
     params.put("createdById", user.trueUserId());
-    params.put("daylightSavings", null != rsa.getDaylightSavings() ? rsa.getDaylightSavings() : false);
+    params.put(
+        "daylightSavings", null != rsa.getDaylightSavings() ? rsa.getDaylightSavings() : false);
 
     Long rsaId = null;
-    //if existing and archived, or existing and they send in null start and end time
-    if (hasId && (archived || (null == rsa.getResourceSlotScheduleId() && (null == rsa.getStartTime() && null == rsa.getEndTime())))) {
+    // if existing and archived, or existing and they send in null start and end time
+    if (hasId
+        && (archived
+            || (null == rsa.getResourceSlotScheduleId()
+                && (null == rsa.getStartTime() && null == rsa.getEndTime())))) {
       rsaId = rsa.getId();
       params.put("id", rsa.getId());
       params.put("modifiedById", user.trueUserId());
@@ -192,28 +217,37 @@ public class AvailabilityService {
       params.put("id", rsa.getId());
       params.put("modifiedById", user.trueUserId());
       sqlCache.update("availability.updateHours", params);
-    } else if ((null != rsa.getResourceSlotScheduleId()) || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
+    } else if ((null != rsa.getResourceSlotScheduleId())
+        || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
       rsaId = sqlCache.updateReturningId("availability.insertHours", params, "id").longValue();
     }
 
-    //handle the saving of excluded slot times
-    if(null != rsa.getResourceSlotScheduleId()) {
-      //if it is a slot schedule
+    // handle the saving of excluded slot times
+    if (null != rsa.getResourceSlotScheduleId()) {
+      // if it is a slot schedule
       HashMap<String, Object> excludedParams = new HashMap<>();
-      excludedParams.put("excludedResourceSlotTimeIds", null == rsa.getExcludedResourceSlotTimeIds() || rsa.getExcludedResourceSlotTimeIds().isEmpty() ? null : rsa.getExcludedResourceSlotTimeIds());
-      //adding this param cuz sql array null checks are too hard for me
-      excludedParams.put("excludedIsEmpty", null == rsa.getExcludedResourceSlotTimeIds() || rsa.getExcludedResourceSlotTimeIds().isEmpty());
+      excludedParams.put(
+          "excludedResourceSlotTimeIds",
+          null == rsa.getExcludedResourceSlotTimeIds()
+                  || rsa.getExcludedResourceSlotTimeIds().isEmpty()
+              ? null
+              : rsa.getExcludedResourceSlotTimeIds());
+      // adding this param cuz sql array null checks are too hard for me
+      excludedParams.put(
+          "excludedIsEmpty",
+          null == rsa.getExcludedResourceSlotTimeIds()
+              || rsa.getExcludedResourceSlotTimeIds().isEmpty());
       excludedParams.put("resourceScheduleAvailabilityId", rsaId);
       excludedParams.put("userId", user.trueUserId());
 
-      //delete any existing excluded slots that are no longer in the excluded array
+      // delete any existing excluded slots that are no longer in the excluded array
       sqlCache.update("availability.archiveUnusedExcludedSlots", excludedParams);
 
-      //add any excluded slots that do not already exist - if there are any sent in
-      if(null != rsa.getExcludedResourceSlotTimeIds() && !rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
+      // add any excluded slots that do not already exist - if there are any sent in
+      if (null != rsa.getExcludedResourceSlotTimeIds()
+          && !rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
         sqlCache.update("availability.addExcludedSlots", excludedParams);
       }
-
     }
   }
 
@@ -228,16 +262,15 @@ public class AvailabilityService {
 
     Optional<Long> result;
     if (orgId != null) {
-      result = sqlCache.queryForObjectOptional("availability.getOrgAppointmentLength", params, Long.class);
+      result =
+          sqlCache.queryForObjectOptional(
+              "availability.getOrgAppointmentLength", params, Long.class);
     } else {
-      result = sqlCache.queryForObjectOptional("availability.getUserAppointmentLength", params, Long.class);
+      result =
+          sqlCache.queryForObjectOptional(
+              "availability.getUserAppointmentLength", params, Long.class);
     }
     return result.orElse(null);
-  }
-
-  @Data
-  public static class AppointmentLength {
-    private Long userId, orgId, defaultAppointmentLength;
   }
 
   public void saveResourceAppointmentLength(AppointmentLength al) {
@@ -254,12 +287,6 @@ public class AvailabilityService {
     } else {
       sqlCache.update("availability.saveUserAppointmentLength", params);
     }
-
-  }
-
-  @Data
-  public static class OverrideAudit {
-    private Long userPositionId, projectId, projectProcessStepId;
   }
 
   public void saveOverrideInfoToAudit(OverrideAudit audit) {
@@ -272,11 +299,11 @@ public class AvailabilityService {
     params.put("userPositionId", audit.getUserPositionId());
 
     sqlCache.update("availability.saveOverrideInfoToAudit", params);
-
   }
 
   //  appointments
-  public Page<ResourceAppointment> getResourceAppointments(Long userId, Long orgId, Pageable pageable) {
+  public Page<ResourceAppointment> getResourceAppointments(
+      Long userId, Long orgId, Pageable pageable) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -286,10 +313,15 @@ public class AvailabilityService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
-    Integer count = sqlCache.queryForObject("availability.getAppointmentsForResourceCount", params, Integer.class);
+    List<ResourceAppointment> results =
+        sqlCache.query(
+            "availability.getAppointmentsForResource", params, ResourceAppointment.class);
+    Integer count =
+        sqlCache.queryForObject(
+            "availability.getAppointmentsForResourceCount", params, Integer.class);
 
-    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return new PageImpl<>(
+        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public ResourceAppointment saveAppointment(ResourceAppointment ra) throws Exception {
@@ -298,7 +330,8 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("startTime", ra.getStartTime());
     params.put("endTime", ra.getEndTime());
-    //title was added recently and the current mobile app doesn't send it in, it only sends description. will default to use that until the app supports Title
+    // title was added recently and the current mobile app doesn't send it in, it only sends
+    // description. will default to use that until the app supports Title
     params.put("title", null != ra.getTitle() ? ra.getTitle() : ra.getDescription());
     params.put("description", ra.getDescription());
     params.put("location", ra.getLocation());
@@ -312,7 +345,7 @@ public class AvailabilityService {
     params.put("recurringEndTime", ra.getRecurringEndTime());
 
     Long id = null;
-    //lat long will be null for new or invalid addresses
+    // lat long will be null for new or invalid addresses
     Double latitude = null == ra.getLocation() ? null : ra.getLatitude();
     Double longitude = null == ra.getLocation() ? null : ra.getLongitude();
 
@@ -321,16 +354,19 @@ public class AvailabilityService {
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
 
-      //reload lat/long if location changed
-      if(null != ra.getReloadCoordinates() && ra.getReloadCoordinates() && null != ra.getLocation()) {
+      // reload lat/long if location changed
+      if (null != ra.getReloadCoordinates()
+          && ra.getReloadCoordinates()
+          && null != ra.getLocation()) {
         List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
-        //if we found new coordinates then uses those values
-        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-          //1 = lat, 0 = long
+        // if we found new coordinates then uses those values
+        if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          // 1 = lat, 0 = long
           latitude = coordinates.get(1);
           longitude = coordinates.get(0);
         } else {
-          //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+          // if the address changed but we didn't find valid coordinates for the new address then
+          // set these values to null
           latitude = null;
           longitude = null;
         }
@@ -340,10 +376,10 @@ public class AvailabilityService {
 
       sqlCache.update("availability.updateAppointment", params);
     } else {
-      if(null != ra.getLocation()) {
+      if (null != ra.getLocation()) {
         List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
-        if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-          //1 = lat, 0 = long
+        if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
+          // 1 = lat, 0 = long
           latitude = coordinates.get(1);
           longitude = coordinates.get(0);
           ra.setLatitude(latitude);
@@ -360,10 +396,13 @@ public class AvailabilityService {
         params.put("originTimezoneOffset", null);
         id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
       } else {
-        if(null != ra.getOriginTimezoneOffset() && null != ra.getOriginTimezone()) {
+        if (null != ra.getOriginTimezoneOffset() && null != ra.getOriginTimezone()) {
           createRecurringEvents(ra);
         } else {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error Saving Recurring Event. Timezone data required.", new Exception());
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Error Saving Recurring Event. Timezone data required.",
+              new Exception());
         }
       }
     }
@@ -372,17 +411,22 @@ public class AvailabilityService {
   }
 
   public void processFutureRecurringEvents() {
-    //list of distinct recurring events for active users with all of the existing events beyond the starting date
+    // list of distinct recurring events for active users with all of the existing events beyond the
+    // starting date
     Calendar cal = Calendar.getInstance();
     cal.add(Calendar.MONTH, 11);
     Date startingDate = cal.getTime();
     HashMap<String, Object> params = new HashMap<>();
     params.put("startingDate", startingDate);
-    List<RecurringResourceAppointment> recurringAppointments = sqlCache.query("availability.getDistinctRecurringEvents", params, new RecurringAppointmentMapper<>(RecurringResourceAppointment.class, om));
+    List<RecurringResourceAppointment> recurringAppointments =
+        sqlCache.query(
+            "availability.getDistinctRecurringEvents",
+            params,
+            new RecurringAppointmentMapper<>(RecurringResourceAppointment.class, om));
 
     for (RecurringResourceAppointment rra : recurringAppointments) {
-      //create a rule and start saving a months worth of new appts.
-      //check if the new appt already exists
+      // create a rule and start saving a months worth of new appts.
+      // check if the new appt already exists
       try {
         SimpleDateFormat formatNowDay = new SimpleDateFormat("dd");
         SimpleDateFormat formatNowMonth = new SimpleDateFormat("MM");
@@ -396,8 +440,17 @@ public class AvailabilityService {
         String recurringStartHour = formatNowHour.format(rra.getRecurringStartTime());
         String recurringStartMinute = formatNowMinute.format(rra.getRecurringStartTime());
 
-        //convert the start date to a !isFloating() value otherwise it will fail when using a rule with an end date
-        DateTime recurringStartDate = new DateTime(TimeZone.getTimeZone("UTC"), Integer.parseInt(recurringStartYear), Integer.parseInt(recurringStartMonth) - 1, Integer.parseInt(recurringStartDay), Integer.parseInt(recurringStartHour), Integer.parseInt(recurringStartMinute), 00);
+        // convert the start date to a !isFloating() value otherwise it will fail when using a rule
+        // with an end date
+        DateTime recurringStartDate =
+            new DateTime(
+                TimeZone.getTimeZone("UTC"),
+                Integer.parseInt(recurringStartYear),
+                Integer.parseInt(recurringStartMonth) - 1,
+                Integer.parseInt(recurringStartDay),
+                Integer.parseInt(recurringStartHour),
+                Integer.parseInt(recurringStartMinute),
+                00);
 
         RecurrenceRule rule = new RecurrenceRule((rra.getRecurrence()));
         RecurrenceRuleIterator it = rule.iterator(recurringStartDate);
@@ -408,29 +461,44 @@ public class AvailabilityService {
 
         while (it.hasNext() && !limitReached) {
           boolean alreadyExists = false;
-          LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+          LocalDateTime currentEventStart =
+              LocalDateTime.ofInstant(
+                  Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
 
-          //this determines the offset of the new event and compares it to the offset used when it was saved, then adjusts accordingly
+          // this determines the offset of the new event and compares it to the offset used when it
+          // was saved, then adjusts accordingly
           ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of(timezone));
-          if(zonedStartTime.getOffset().getTotalSeconds() != rra.getOriginTimezoneOffset()) {
-            long offsetDifference = zonedStartTime.getOffset().getTotalSeconds() - rra.getOriginTimezoneOffset();
-            //depending on DST status offset could be negative or positive
+          if (zonedStartTime.getOffset().getTotalSeconds() != rra.getOriginTimezoneOffset()) {
+            long offsetDifference =
+                zonedStartTime.getOffset().getTotalSeconds() - rra.getOriginTimezoneOffset();
+            // depending on DST status offset could be negative or positive
             currentEventStart = currentEventStart.minusSeconds(offsetDifference);
           }
 
           LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
           log.debug("CRON: recurrence: {}", rra.getRecurrence());
-          //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
+          // if the recurring event start time is greater than 1 year from the cron start, stop
+          // adding appointments
           if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
             limitReached = true;
           } else {
-//            check if the appointment trying to be created already exists.
-            //i am sick of working on this!!  the startTimeString and endTimeString will both have :00 as the seconds, the currentEventStart and End fields do not
-            //i could reformat the dates, do a substring or do contains.  contains seems easier so i am doing that for now
+            //            check if the appointment trying to be created already exists.
+            // i am sick of working on this!!  the startTimeString and endTimeString will both have
+            // :00 as the seconds, the currentEventStart and End fields do not
+            // i could reformat the dates, do a substring or do contains.  contains seems easier so
+            // i am doing that for now
 
-            //this is dumb, the lamda needed a "final" or "effectively final" value Todo: ask kaleb about this. will it update on rnd 2?
+            // this is dumb, the lamda needed a "final" or "effectively final" value Todo: ask kaleb
+            // about this. will it update on rnd 2?
             LocalDateTime finalCurrentEventStart = currentEventStart;
-            ResourceAppointment appt = rra.getAppointments().stream().filter(a -> a.getStartTimeString().contains(finalCurrentEventStart.toString()) && a.getEndTimeString().contains(currentEventEnd.toString())).findFirst().orElse(null);
+            ResourceAppointment appt =
+                rra.getAppointments().stream()
+                    .filter(
+                        a ->
+                            a.getStartTimeString().contains(finalCurrentEventStart.toString())
+                                && a.getEndTimeString().contains(currentEventEnd.toString()))
+                    .findFirst()
+                    .orElse(null);
             if (null != appt) {
               alreadyExists = true;
             }
@@ -454,11 +522,9 @@ public class AvailabilityService {
             params2.put("recurringEndTime", rra.getRecurringEndTime());
             params2.put("recurringEventId", rra.getRecurringEventId());
 
-
             insertEvent(params2);
           }
         }
-
 
       } catch (InvalidRecurrenceRuleException e) {
         log.error("RECURRENCE: " + e.getMessage());
@@ -471,7 +537,7 @@ public class AvailabilityService {
       User user = securityService.getCurrentUser();
 
       final String newRecurringEventId = UUID.randomUUID().toString();
-      //the recurring start time is the same as the start time of the appt they are creating
+      // the recurring start time is the same as the start time of the appt they are creating
       ra.setRecurringStartTime(ra.getStartTime());
 
       SimpleDateFormat formatNowDay = new SimpleDateFormat("dd");
@@ -486,45 +552,69 @@ public class AvailabilityService {
       String recurringStartHour = formatNowHour.format(ra.getRecurringStartTime());
       String recurringStartMinute = formatNowMinute.format(ra.getRecurringStartTime());
 
-      //convert the start date to a !isFloating() value otherwise it will fail when using a rule with an end date
-      DateTime recurringStartDate = new DateTime(TimeZone.getTimeZone("UTC"), Integer.parseInt(recurringStartYear), Integer.parseInt(recurringStartMonth) - 1, Integer.parseInt(recurringStartDay), Integer.parseInt(recurringStartHour), Integer.parseInt(recurringStartMinute), 00);
+      // convert the start date to a !isFloating() value otherwise it will fail when using a rule
+      // with an end date
+      DateTime recurringStartDate =
+          new DateTime(
+              TimeZone.getTimeZone("UTC"),
+              Integer.parseInt(recurringStartYear),
+              Integer.parseInt(recurringStartMonth) - 1,
+              Integer.parseInt(recurringStartDay),
+              Integer.parseInt(recurringStartHour),
+              Integer.parseInt(recurringStartMinute),
+              00);
 
       RecurrenceRule rule = new RecurrenceRule((ra.getRecurrence()));
 
-      //doDayOffset = repeating by day of week AND frontend said local date and utc are different
-      boolean doDayOffset = null != rule.getByDayPart() && !rule.getByDayPart().isEmpty() && (ra.getStartTimeOffsetDay() != null && ra.getStartTimeOffsetDay());
+      // doDayOffset = repeating by day of week AND frontend said local date and utc are different
+      boolean doDayOffset =
+          null != rule.getByDayPart()
+              && !rule.getByDayPart().isEmpty()
+              && (ra.getStartTimeOffsetDay() != null && ra.getStartTimeOffsetDay());
 
-      //if doDayOffSet subtract 1 from the recurring start date in the rule so it will check the right day to start on (sign: subtract/add the duration)
-      RecurrenceRuleIterator it = rule.iterator(doDayOffset ? recurringStartDate.addDuration(new Duration(-1, 1, 0)) : recurringStartDate);
+      // if doDayOffSet subtract 1 from the recurring start date in the rule so it will check the
+      // right day to start on (sign: subtract/add the duration)
+      RecurrenceRuleIterator it =
+          rule.iterator(
+              doDayOffset
+                  ? recurringStartDate.addDuration(new Duration(-1, 1, 0))
+                  : recurringStartDate);
 
       // Arbitrary limit for recurring events that never end.
       boolean limitReached = false;
 
       String timezone = ra.getOriginTimezone();
-      final long duration = ChronoUnit.MINUTES.between(ra.getStartTime().toInstant(), ra.getEndTime().toInstant());
-      //todo: get list of events for the event id
+      final long duration =
+          ChronoUnit.MINUTES.between(ra.getStartTime().toInstant(), ra.getEndTime().toInstant());
+      // todo: get list of events for the event id
       while (it.hasNext() && !limitReached) {
-        LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+        LocalDateTime currentEventStart =
+            LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
 
-        if(doDayOffset) {
-          //if doDayOffset, add one to the start date of the event because the event knows to repeat on a specific day of week but the utc date is a different day of week
+        if (doDayOffset) {
+          // if doDayOffset, add one to the start date of the event because the event knows to
+          // repeat on a specific day of week but the utc date is a different day of week
           currentEventStart = currentEventStart.plusDays(1);
         }
 
-        //this determines the offset of the new event and compares it to the offset used when it was saved, then adjusts accordingly
+        // this determines the offset of the new event and compares it to the offset used when it
+        // was saved, then adjusts accordingly
         ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of(timezone));
-        if(zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
-          long offsetDifference = zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();
-          //depending on DST status offset could be negative or positive
+        if (zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
+          long offsetDifference =
+              zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();
+          // depending on DST status offset could be negative or positive
           currentEventStart = currentEventStart.minusSeconds(offsetDifference);
         }
 
         LocalDateTime currentEventEnd = currentEventStart.plusMinutes(duration);
-        //if the recurring event start time is greater than 1 year from now, stop adding appointments
+        // if the recurring event start time is greater than 1 year from now, stop adding
+        // appointments
         if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
           limitReached = true;
         } else {
-          //todo: check if event exists in the list from above
+          // todo: check if event exists in the list from above
           HashMap<String, Object> params = new HashMap<>();
           params.put("startTime", currentEventStart);
           params.put("endTime", currentEventEnd);
@@ -556,7 +646,7 @@ public class AvailabilityService {
   }
 
   public void insertEvent(HashMap<String, Object> params) {
-    //insert using the params we created before
+    // insert using the params we created before
     sqlCache.update("availability.insertAppointment", params);
   }
 
@@ -580,7 +670,8 @@ public class AvailabilityService {
     sqlCache.update("availability.deleteAppointmentsByRecurrence", params);
   }
 
-  public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
+  public List<TimeSlot> getTimeSlots(
+      Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
 
     try {
       HashMap<String, Object> params = new HashMap<>();
@@ -590,9 +681,14 @@ public class AvailabilityService {
       params.put("availableDate", availableDate);
       params.put("remote", null != remote ? remote : false);
 
-      List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
-      if(!results.isEmpty() && results.get(0) != null && !results.get(0).getSuccess()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Postal Code is not associated with a Round Robin. Contact Admin.", new Exception());
+      List<TimeSlot> results =
+          sqlCache.query(
+              "availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+      if (!results.isEmpty() && results.get(0) != null && !results.get(0).getSuccess()) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Project Postal Code is not associated with a Round Robin. Contact Admin.",
+            new Exception());
       }
       return results;
     } catch (Exception e) {
@@ -607,8 +703,12 @@ public class AvailabilityService {
     }
   }
 
-  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws Exception {
-    if (null != request.getProjectId() && null != request.getAppointmentTime() && null != request.getProjectProcessStepId() && null != request.getUsers()) {
+  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request)
+      throws Exception {
+    if (null != request.getProjectId()
+        && null != request.getAppointmentTime()
+        && null != request.getProjectProcessStepId()
+        && null != request.getUsers()) {
       User user = securityService.getCurrentUser();
 
       HashMap<String, Object> params = new HashMap<>();
@@ -620,34 +720,48 @@ public class AvailabilityService {
       params.put("users", sqlArrayService.createSqlArrayOfType("int", request.getUsers()));
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);
 
-      List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
+      List<CloserAppointmentResult> results =
+          sqlCache.query(
+              "availability.setCloserAppointment", params, CloserAppointmentResult.class);
 
       if (!results.isEmpty()) {
         if (null != results.get(0) && results.get(0).getSuccess()) {
 
-          //if successful then update custom field values before running the schedule action
-          if(null != request.getCustomFieldValues() && request.getCustomFieldValues().size() > 0) {
-            customFieldValueService.updateCustomFieldValues(request.getCustomFieldValues(), request.getProjectProcessStepEventId(), ObjectType.EVENT.textValue());
+          // if successful then update custom field values before running the schedule action
+          if (null != request.getCustomFieldValues() && request.getCustomFieldValues().size() > 0) {
+            customFieldValueService.updateCustomFieldValues(
+                request.getCustomFieldValues(),
+                request.getProjectProcessStepEventId(),
+                ObjectType.EVENT.textValue());
           }
 
-          //then run manually run the schedule event action which is process_step_action_id = 1
-          //this will also run auto triggers if needed
-          projectProcessStepEventService.performStepEventAction(request.getProjectProcessStepId(), request.getProjectProcessStepEventId(), 1L);
+          // then run manually run the schedule event action which is process_step_action_id = 1
+          // this will also run auto triggers if needed
+          projectProcessStepEventService.performStepEventAction(
+              request.getProjectProcessStepId(), request.getProjectProcessStepEventId(), 1L);
 
-          //after the auto triggers have run then get the event
-          Optional<ProjectProcessStepEvent> ppsEvent = projectProcessStepEventService.getPpsEvent(request.getProjectProcessStepEventId());
+          // after the auto triggers have run then get the event
+          Optional<ProjectProcessStepEvent> ppsEvent =
+              projectProcessStepEventService.getPpsEvent(request.getProjectProcessStepEventId());
 
-          ppsEvent.ifPresent(projectProcessStepEvent -> {
-            //set some properties that the front end will need in order to show accurate and updated info
-            results.get(0).setCompanyEventStatusTypeId(projectProcessStepEvent.getCompanyEventStatusTypeId());
-            results.get(0).setEventActions(projectProcessStepEvent.getEventActions());
-          });
+          ppsEvent.ifPresent(
+              projectProcessStepEvent -> {
+                // set some properties that the front end will need in order to show accurate and
+                // updated info
+                results
+                    .get(0)
+                    .setCompanyEventStatusTypeId(
+                        projectProcessStepEvent.getCompanyEventStatusTypeId());
+                results.get(0).setEventActions(projectProcessStepEvent.getEventActions());
+              });
 
-          //on success send email to the closer
+          // on success send email to the closer
           String closerEmail = results.get(0).getUserEmail();
           if (null != closerEmail) {
-            //send email to closer
-            InputStream inputStream = ScheduledConfig.class.getResourceAsStream("/communication/templates/closer-appointment.ftl.html");
+            // send email to closer
+            InputStream inputStream =
+                ScheduledConfig.class.getResourceAsStream(
+                    "/communication/templates/closer-appointment.ftl.html");
             String template = IOUtils.toString(inputStream);
             Optional<Project> project = projectService.getProject(request.getProjectId());
             String projectAddress = "";
@@ -656,7 +770,14 @@ public class AvailabilityService {
 
             // only send email if we know the timezone to adjust the start time for
             if (project.isPresent() && null != project.get().getTimeZone()) {
-              projectAddress = project.get().getStreet1() + ", " + project.get().getCity() + ", " + project.get().getState() + " " + project.get().getPostalCode();
+              projectAddress =
+                  project.get().getStreet1()
+                      + ", "
+                      + project.get().getCity()
+                      + ", "
+                      + project.get().getState()
+                      + " "
+                      + project.get().getPostalCode();
               timeZoneAbbreviation = project.get().getTimeZone();
 
               SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy h:mm a");
@@ -665,36 +786,46 @@ public class AvailabilityService {
               startTime = dateFormat.format(results.get(0).getAppointmentStartTime());
             }
 
-
-            HashMap context = new HashMap();
+            Map<String, Object> context = new HashMap<>();
             context.put("startTime", startTime);
             context.put("from", "Blue Raven Solar Sales HR");
             context.put("projectAddress", projectAddress);
 
-            communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation", user.trueUserId());
+            communicationService.sendEmail(
+                "New Customer Appointment Scheduled on " + startTime,
+                StringUtils.trimWhitespace(closerEmail),
+                template,
+                context,
+                "SalesOps@blueravensolar.com",
+                "Blue Raven Sales Operation",
+                user.trueUserId());
           }
 
           return ResponseEntity.ok(results.get(0));
         } else {
-          //todo: handle other types of errors from function
+          // todo: handle other types of errors from function
           // Appointment no longer available. Please select another time.
           // Appointment is already scheduled.
-          //          errorObj.put("message", "Appointment no longer available. Please select another time.");
+          //          errorObj.put("message", "Appointment no longer available. Please select
+          // another time.");
           //          return new ResponseEntity<>(errorObj, HttpStatus.CONFLICT);
-          throw new ResponseStatusException(HttpStatus.CONFLICT, "Appointment no longer available. Please select another time.", new Exception());
+          throw new ResponseStatusException(
+              HttpStatus.CONFLICT,
+              "Appointment no longer available. Please select another time.",
+              new Exception());
         }
       } else {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
       }
-      //todo: error handling
+      // todo: error handling
     } else {
-      throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Missing Parameters", new Exception());
+      throw new ResponseStatusException(
+          HttpStatus.UNPROCESSABLE_ENTITY, "Missing Parameters", new Exception());
     }
-
   }
 
   public void cacheAvailability() {
-
     sqlCache.query("availability.cacheAvailability", Collections.emptyMap(), String.class);
   }
 
@@ -714,7 +845,7 @@ public class AvailabilityService {
       id = sqlCache.updateReturningId("availability.insertSlotSchedule", params, "id").longValue();
     }
 
-    //handle the slot times
+    // handle the slot times
     if (null != slotSchedule.getSlotTimes()) {
       for (SlotTime st : slotSchedule.getSlotTimes()) {
         saveSlotTime(st, id);
@@ -736,7 +867,7 @@ public class AvailabilityService {
 
     if (null != slotTime.getId()) {
       params.put("id", slotTime.getId());
-      //this update will also archive if needed
+      // this update will also archive if needed
       params.put("archived", archived);
       sqlCache.update("availability.updateSlotTime", params);
     } else if (null == slotTime.getArchived() || !slotTime.getArchived()) {
@@ -747,7 +878,11 @@ public class AvailabilityService {
   public Optional<SlotSchedule> getSlotSchedule(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<SlotSchedule> result = sqlCache.get("availability.getSlotSchedule", params, new SlotScheduleMapper<>(SlotSchedule.class, om));
+    Optional<SlotSchedule> result =
+        sqlCache.get(
+            "availability.getSlotSchedule",
+            params,
+            new SlotScheduleMapper<>(SlotSchedule.class, om));
     return result;
   }
 
@@ -755,8 +890,10 @@ public class AvailabilityService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<SlotSchedule> results = sqlCache.query("availability.getAllSlotSchedules", params, new SlotScheduleMapper<>(SlotSchedule.class, om));
-    return results;
+    return sqlCache.query(
+        "availability.getAllSlotSchedules",
+        params,
+        new SlotScheduleMapper<>(SlotSchedule.class, om));
   }
 
   public void deleteSlotSchedule(Long id) {
@@ -768,13 +905,22 @@ public class AvailabilityService {
   }
 
   public ResourceAppointment getOneResourceAppointment(Long id) {
-    User user = securityService.getCurrentUser();
-
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<ResourceAppointment> result = sqlCache.get("availability.getAppointment", params, ResourceAppointment.class);
-    return result.orElse(null);
+    return sqlCache
+        .get("availability.getAppointment", params, ResourceAppointment.class)
+        .orElse(null);
+  }
+
+  @Data
+  public static class AppointmentLength {
+    private Long userId, orgId, defaultAppointmentLength;
+  }
+
+  @Data
+  public static class OverrideAudit {
+    private Long userPositionId, projectId, projectProcessStepId;
   }
 
   public static class SlotScheduleMapper<T> extends BeanPropertyRowMapper<T> {
@@ -787,10 +933,9 @@ public class AvailabilityService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<SlotTime>> slotTimesRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "slotTimes",
-        new JsonCollectionDeserializer(slotTimesRef, objectMapper));
+      TypeReference<List<SlotTime>> slotTimesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class, "slotTimes", new JsonCollectionDeserializer(slotTimesRef, objectMapper));
     }
   }
 
@@ -804,10 +949,12 @@ public class AvailabilityService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ResourceScheduleAvailability>> resourceScheduleAvailabilityRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "resourceScheduleAvailability",
-        new JsonCollectionDeserializer(resourceScheduleAvailabilityRef, objectMapper));
+      TypeReference<List<ResourceScheduleAvailability>> resourceScheduleAvailabilityRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "resourceScheduleAvailability",
+          new JsonCollectionDeserializer(resourceScheduleAvailabilityRef, objectMapper));
     }
   }
 
@@ -821,10 +968,9 @@ public class AvailabilityService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Integer>> usersRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "users",
-        new JsonCollectionDeserializer(usersRef, objectMapper));
+      TypeReference<List<Integer>> usersRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class, "users", new JsonCollectionDeserializer(usersRef, objectMapper));
     }
   }
 
@@ -838,11 +984,11 @@ public class AvailabilityService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ResourceAppointment>> appointmentsRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "appointments",
-        new JsonCollectionDeserializer(appointmentsRef, objectMapper));
+      TypeReference<List<ResourceAppointment>> appointmentsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "appointments",
+          new JsonCollectionDeserializer(appointmentsRef, objectMapper));
     }
   }
-
 }

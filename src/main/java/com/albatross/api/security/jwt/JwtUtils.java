@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 
 @Component
-@SuppressWarnings("serial")
 @Slf4j
 public class JwtUtils {
     public static final String HEADER = "Authorization";

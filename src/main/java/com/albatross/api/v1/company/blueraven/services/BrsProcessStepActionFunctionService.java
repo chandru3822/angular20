@@ -253,23 +253,24 @@ public class BrsProcessStepActionFunctionService {
   public void getDesignSummary(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
     try {
 
+      log.info(systemValues.toString());
 
       Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
       //This is hardcoded to the specific custom field group assignment ID of the used custom field. Not ideal
       Long designCfgaId = 22560L;
 
-      log.error("ZZZ debug 0");
+      log.info("ZZZ debug 0");
 
       String designId = auroraService.getDesignId(ppsId, designCfgaId);
       if (designId == null) {
         throw new RuntimeException("Unable to fetch design ID");
       }
 
-      log.error("ZZZ debug 1");
+      log.info("ZZZ debug 1");
 
       AuroraProxy.DesignSummary designResponse = auroraService.getDesignSummary(designId);
 
-      log.error("ZZZ debug 2");
+      log.info("ZZZ debug 2");
 
       var design = designResponse.getFields().get("design");
       int productionEstimate = (int) Double.parseDouble(design.get("energy_production").get("annual").toString());
@@ -279,7 +280,7 @@ public class BrsProcessStepActionFunctionService {
       String manufacturer = null;
       String inverter = null;
 
-      log.error("ZZZ debug 3");
+      log.info("ZZZ debug 3");
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
@@ -300,7 +301,7 @@ public class BrsProcessStepActionFunctionService {
       params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
       params.put("sourceId", ppsId);
 
-      log.error("ZZZ debug 4");
+      log.info("ZZZ debug 4");
 
       for(ActionParamDynamicValue dynamicValue : func.getActionParamDynamicValues()) {
         final String paramName = dynamicValue.getParameterName();
@@ -317,7 +318,7 @@ public class BrsProcessStepActionFunctionService {
         params.put("intArrayValue", null);
         params.put("jsonValue", null);
 
-        log.error("ZZZ debug CDGA ID: " + cfgaId);
+        log.info("ZZZ debug CDGA ID: " + cfgaId);
 
         //IDing by field name is about a generic as we can get as of now, but not ideal
         if (paramName.contains("System Size")) {

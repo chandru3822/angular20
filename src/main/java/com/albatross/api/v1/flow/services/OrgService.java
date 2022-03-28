@@ -9,7 +9,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -17,11 +16,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,14 +28,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
+/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class OrgService {
 
   private final SqlCache sqlCache;
@@ -55,40 +49,37 @@ public class OrgService {
 
   public List<Org> getOrgsForCompany() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Org> results = sqlCache.query("org.getAllForCompany", params, Org.class);
-    return results;
+    return sqlCache.query("org.getAllForCompany", params, Org.class);
   }
 
   public List<Org> getSchedulingOrgs(Long companyStateId, Boolean isSchedulingTool) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("companyStateId", companyStateId);
     params.put("isParent", isParent);
     params.put("isSchedulingTool", isSchedulingTool);
 
-    List<Org> results = sqlCache.query("org.getSchedulingOrgs", params, Org.class);
-    return results;
+    return sqlCache.query("org.getSchedulingOrgs", params, Org.class);
   }
 
   public List<Org> getOrgsByType(Long typeId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("typeId", typeId);
-    List<Org> results = sqlCache.query("org.getOrgsByType", params, Org.class);
-    return results;
+    return sqlCache.query("org.getOrgsByType", params, Org.class);
   }
 
   public ResponseEntity exportOrgs(String query) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
 
@@ -103,9 +94,8 @@ public class OrgService {
     // get org deets and write to CSV
     try (SequenceWriter outToBuffer = writer.writeValues(buffer)) {
       // first, get deets
-      Collection<OrgExportTemplate> details = Collections2.transform(
-          results,
-          OrgExportTemplate::from);
+      Collection<OrgExportTemplate> details =
+          Collections2.transform(results, OrgExportTemplate::from);
 
       // next, write them to a buffer so we can identify errors before writing across the network
       outToBuffer.writeAll(details);
@@ -115,14 +105,13 @@ public class OrgService {
       return ResponseEntity.ok(buffer.toString(StandardCharsets.UTF_8));
     } catch (IOException e) {
       log.error("ORG: Encountered error while writing org export to CSV", e);
-      return ResponseEntity.status(500)
-          .body("Encountered error while writing org export to CSV");
+      return ResponseEntity.status(500).body("Encountered error while writing org export to CSV");
     }
   }
 
   public Org getOrg(Long id) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
     Optional<Org> result = sqlCache.get("org.getOne", params, Org.class);
@@ -131,19 +120,21 @@ public class OrgService {
 
   public Org saveOrg(Org org) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("orgName", org.getOrgName());
     params.put("orgTypeId", org.getOrgTypeId());
     params.put("parentOrgId", org.getParentOrgId());
     params.put("companyId", user.getCompanyId());
     params.put("schedulable", null != org.getSchedulable() ? org.getSchedulable() : false);
-    params.put("availableToChildren", null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
+    params.put(
+        "availableToChildren",
+        null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
     params.put("companyStateId", org.getCompanyStateId());
     params.put("active", org.getActiveFlag());
     params.put("companyTimezoneId", org.getCompanyTimezoneId());
 
     Long id;
-    if(null != org.getId()) {
+    if (null != org.getId()) {
       id = org.getId();
       params.put("modifiedById", user.trueUserId());
       params.put("id", id);
@@ -154,7 +145,10 @@ public class OrgService {
     }
 
     if (null != org.getCustomFieldGroups() && !org.getCustomFieldGroups().isEmpty()) {
-      customFieldValueService.updateCustomFieldValues(org.getCustomFieldGroups().get(0).getCustomFieldValues(), id, ObjectType.ORGANIZATION.toString());
+      customFieldValueService.updateCustomFieldValues(
+          org.getCustomFieldGroups().get(0).getCustomFieldValues(),
+          id,
+          ObjectType.ORGANIZATION.toString());
     }
 
     return getOrg(id);
@@ -162,12 +156,13 @@ public class OrgService {
 
   public List<OrgFilter> getOrgFiltersForCompany() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<OrgFilter> results = sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
+    List<OrgFilter> results =
+        sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
 
-    for(OrgFilter f : results){
-      //build the list of options
+    for (OrgFilter f : results) {
+      // build the list of options
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("orgLevelId", f.getOrgLevelId());
       p2.put("companyId", user.getCompanyId());
@@ -179,23 +174,22 @@ public class OrgService {
   }
 
   public OrgFilter getOneOrgFilter(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<OrgFilter> results = sqlCache.get("org.getOneOrgFilter", params, OrgFilter.class);
-
-    return results.orElse(null);
+    return sqlCache.get("org.getOneOrgFilter", params, OrgFilter.class).orElse(null);
   }
 
   public void deleteOrgFilter(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     sqlCache.update("org.deleteOrgFilter", params);
-    //todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving. don't actually delete
+    // todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving.
+    // don't actually delete
   }
 
   public OrgFilter saveOrgFilter(OrgFilter filter) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("orgLevelId", filter.getOrgLevelId());
     params.put("rank", filter.getRank());
@@ -215,17 +209,21 @@ public class OrgService {
 
   public List<OrgFilter> getHierarchyFilteredOrgsForCompany(List<Integer> selectedOrgs) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<OrgFilter> results = sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
+    List<OrgFilter> results =
+        sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
 
-    HashMap<String, Object> p2 = new HashMap<>();
+    Map<String, Object> p2 = new HashMap<>();
     p2.put("selectedOrgs", selectedOrgs);
     List<Org> orgs = sqlCache.query("org.getOrgsByHierarchyFilter", p2, Org.class);
 
-    for(OrgFilter f : results){
-      //build the list of options
-      f.setOrgs(orgs.stream().filter(o -> ( o.getOrgLevelId().equals(f.getOrgLevelId())  )).collect(Collectors.toList()) );
+    for (OrgFilter f : results) {
+      // build the list of options
+      f.setOrgs(
+          orgs.stream()
+              .filter(o -> (o.getOrgLevelId().equals(f.getOrgLevelId())))
+              .collect(Collectors.toList()));
     }
 
     return results;
@@ -233,18 +231,17 @@ public class OrgService {
 
   public List<Org> getOrgCalendarsForUser(Long userId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", user.getCompanyId());
-    List<Org> results = sqlCache.query("org.getOrgCalendarsForUser", params, Org.class);
 
-    return results;
+    return sqlCache.query("org.getOrgCalendarsForUser", params, Org.class);
   }
 
   public UserOrgAccess saveOrgCalendarToUser(UserOrgAccess userOrgAccess) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", userOrgAccess.getUserId());
     params.put("orgId", userOrgAccess.getOrgId());
     params.put("createdById", user.trueUserId());
@@ -256,7 +253,7 @@ public class OrgService {
   public void deleteOrgCalendarFromUser(Long id) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
 
@@ -264,45 +261,48 @@ public class OrgService {
   }
 
   public UserOrgAccess getOneOrgCalendarAccess(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<UserOrgAccess> result = sqlCache.get("org.getOneOrgCalendarAccess", params, UserOrgAccess.class);
-
-    return result.orElse(null);
+    return sqlCache.get("org.getOneOrgCalendarAccess", params, UserOrgAccess.class).orElse(null);
   }
 
   public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("orgId", orgId);
-    List<Attachment> attachments = sqlCache.query("org.getOrgAttachments", params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+    List<Attachment> attachments =
+        sqlCache.query("org.getOrgAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(
+        attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId) throws IOException {
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped
+  // code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId)
+      throws IOException {
     User user = securityService.getCurrentUser();
 
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
 
-    //get keyPattern from attachmentType
+    // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+    String key =
+        String.format(
+            user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
     metadata.setCacheControl("public, max-age=31536000");
 
-    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+    PutObjectRequest objectRequest =
+        new PutObjectRequest(
+            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    PutObjectResult result = s3.putObject(objectRequest
-      .withCannedAcl(CannedAccessControlList.PublicRead));
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
-    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
-
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
     params.put("contentType", file.getContentType());
     params.put("key", key);
@@ -322,5 +322,4 @@ public class OrgService {
 
     return attachmentService.findById(attachmentId);
   }
-
 }

@@ -1,4 +1,5 @@
-﻿CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard_event_based(p_custom_start_date date, p_custom_end_date date,
+﻿drop function if exists brs.rpt_closer_funnel_standard_event_based(date, date, integer[], integer[]);
+CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard_event_based(p_custom_start_date date, p_custom_end_date date,
                                                                       p_user_position_ids integer[],
                                                                       p_org_ids integer[])
   RETURNS table
@@ -6,6 +7,7 @@
             id                                 integer,
             name                               character varying(100),
             display_order                      integer,
+            funnel_type_id                     integer,
             today_count                        bigint,
             checked_in_today_count             bigint,
             week_to_date_count                 bigint,
@@ -59,6 +61,7 @@ BEGIN
            select f.id,
                   f.name,
                   f.display_order,
+                  f.funnel_type_id,
 
                   count(1) filter (where
                       ((pd.start_time at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
@@ -114,23 +117,24 @@ BEGIN
                        ((pd.start_time at time zone 'UTC') at time zone 'US/Mountain') >
                        (now() AT TIME ZONE 'US/Mountain')
                    else true end
-           group by f.id, f.name, f.display_order
+           group by f.id, f.name, f.display_order, f.funnel_type_id
          )
-    select coalesce(fs.id, f.id)                                                                          as id,
-           coalesce(fs.name, f.name)                                                                      as name,
-           coalesce(fs.display_order, f.display_order)                                                    as display_order,
-           coalesce(fs.today_count, 0)                                                                    as today_count,
+    select coalesce(fs.id, f.id)                                           as id,
+           coalesce(fs.name, f.name)                                       as name,
+           coalesce(fs.display_order, f.display_order)                     as display_order,
+           coalesce(fs.funnel_type_id, f.funnel_type_id)                   as funnel_type_id,
+           coalesce(fs.today_count, 0)                                     as today_count,
            case
              when f.show_checked_in_column is true
-               then coalesce(fs.checked_in_today_count, 0) end                                            as checked_in_today_count,
-           coalesce(fs.week_to_date_count, 0)                                                             as week_to_date_count,
+               then coalesce(fs.checked_in_today_count, 0) end             as checked_in_today_count,
+           coalesce(fs.week_to_date_count, 0)                              as week_to_date_count,
            case
              when f.show_checked_in_column
-               then coalesce(fs.checked_in_week_to_date_count, 0) end                                     as checked_in_week_to_date_count,
-           coalesce(fs.custom_date_range_count, 0)                                                        as custom_date_range_count,
+               then coalesce(fs.checked_in_week_to_date_count, 0) end      as checked_in_week_to_date_count,
+           coalesce(fs.custom_date_range_count, 0)                         as custom_date_range_count,
            case
              when f.show_checked_in_column
-               then coalesce(fs.checked_in_custom_date_range_count, 0) end                                as checked_in_custom_date_range_count
+               then coalesce(fs.checked_in_custom_date_range_count, 0) end as checked_in_custom_date_range_count
     from funnel_stats fs
            right outer join brs.funnel f on f.id = fs.id
     where f.archived is false
