@@ -6,23 +6,18 @@ import com.albatross.api.v1.flow.model.ObjectTypeTab;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ObjectTypeTabService {
 
   private final SqlCache sqlCache;
@@ -31,47 +26,46 @@ public class ObjectTypeTabService {
   public List<ObjectTypeTab> getTabs(Long objectTypeId, Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
 
-
-    if(null != projectId) {
-      //had to change this so that a parent looking at a child project could still see project tabs
+    if (null != projectId) {
+      // had to change this so that a parent looking at a child project could still see project tabs
       params.put("projectId", projectId);
-      Optional<Long> overrideCompanyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
-      if(overrideCompanyId.isPresent()) {
+      Optional<Long> overrideCompanyId =
+          sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+      if (overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {
         log.error("OTT: No Company ID found for project. {}", projectId);
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
+        throw new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
       }
     }
 
     params.put("objectTypeId", objectTypeId);
     params.put("companyId", companyId);
 
-    List<ObjectTypeTab> results = sqlCache.query("objectTypeTab.getProjectTabs", params, ObjectTypeTab.class);
-    return results;
+    return sqlCache.query("objectTypeTab.getProjectTabs", params, ObjectTypeTab.class);
   }
 
   public ObjectTypeTab getTab(Long tabId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", tabId);
 
-    Optional<ObjectTypeTab> result = sqlCache.get("objectTypeTab.getTab", params, ObjectTypeTab.class);
-    return result.orElse(null);
+    return sqlCache.get("objectTypeTab.getTab", params, ObjectTypeTab.class).orElse(null);
   }
 
   public ObjectTypeTab saveTab(ObjectTypeTab tab, Long objectTypeId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("tabName", tab.getTabName());
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("objectTypeId", objectTypeId);
 
     Long id;
-    if(null != tab.getId()) {
+    if (null != tab.getId()) {
       id = tab.getId();
       params.put("id", id);
       sqlCache.update("objectTypeTab.updateTab", params);
@@ -85,12 +79,12 @@ public class ObjectTypeTabService {
   public void updateTabOrder(List<ObjectTypeTab> tabs) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
-    for(ObjectTypeTab tab : tabs) {
+    Map<String, Object> params = new HashMap<>();
+    for (ObjectTypeTab tab : tabs) {
       params.put("displayOrder", tab.getDisplayOrder());
       params.put("userId", currentUser.trueUserId());
       params.put("id", tab.getId());
-      //save each display_order
+      // save each display_order
       sqlCache.update("objectTypeTab.updateTabDisplayOrder", params);
     }
   }
@@ -98,11 +92,9 @@ public class ObjectTypeTabService {
   public void deleteTab(Long tabId) {
     User currentUser = securityService.getCurrentUser();
 
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("userId", currentUser.trueUserId());
-      params.put("id", tabId);
-      sqlCache.update("objectTypeTab.deleteTab", params);
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.trueUserId());
+    params.put("id", tabId);
+    sqlCache.update("objectTypeTab.deleteTab", params);
   }
-
-
 }

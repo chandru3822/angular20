@@ -4,41 +4,32 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyCountry;
 import com.albatross.api.v1.flow.model.User;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
+/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CountryService {
-
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
 
   public List<CompanyCountry> getAllCountries() {
-    List<CompanyCountry> results = sqlCache.query("country.getAll", Collections.emptyMap(), CompanyCountry.class);
-    return results;
+    return sqlCache.query("country.getAll", Collections.emptyMap(), CompanyCountry.class);
   }
 
   public List<CompanyCountry> getAllCountriesForCompany(Long companyId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", null != companyId ? companyId : currentUser.getCompanyId());
-    List<CompanyCountry> results = sqlCache.query("country.getAllForCompany", params, CompanyCountry.class);
-    return results;
+    return sqlCache.query("country.getAllForCompany", params, CompanyCountry.class);
   }
-
 }

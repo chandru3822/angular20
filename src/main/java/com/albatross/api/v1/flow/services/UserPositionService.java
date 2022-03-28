@@ -8,33 +8,23 @@ import com.albatross.api.v1.flow.model.UserOrgHierarchy;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserPositionService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final ObjectMapper om;
 
   public List<UserPosition> getUserPositions(Long userId) {
     User user = securityService.getCurrentUser();
@@ -42,37 +32,38 @@ public class UserPositionService {
     params.put("companyId", user.getCompanyId());
     params.put("userId", userId);
 
-    List<UserPosition> results = sqlCache.query("userPosition.getAll", params, new UserPositionMapper<>(UserPosition.class, om));
-
-    return results;
+    return sqlCache.query(
+        "userPosition.getAll", params, new UserPositionMapper<>(UserPosition.class, om));
   }
 
   public List<UserPosition> getAllActiveUserPositions(Long userId) {
-    //this returns a list of all active positions for a user regardless of company id
+    // this returns a list of all active positions for a user regardless of company id
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
 
-    List<UserPosition> results = sqlCache.query("userPosition.getAllActive", params, new UserPositionMapper<>(UserPosition.class, om));
-
-    return results;
+    return sqlCache.query(
+        "userPosition.getAllActive", params, new UserPositionMapper<>(UserPosition.class, om));
   }
 
   public UserPosition getOne(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<UserPosition> result = sqlCache.get("userPosition.getOne", params, new UserPositionMapper<>(UserPosition.class, om));
-
-    return result.orElse(null);
+    return sqlCache
+        .get("userPosition.getOne", params, new UserPositionMapper<>(UserPosition.class, om))
+        .orElse(null);
   }
 
   public UserPosition getUserPrimaryPosition(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
 
-    Optional<UserPosition> result = sqlCache.get("userPosition.getUserPrimaryPosition", params, new UserPositionMapper<>(UserPosition.class, om));
-
-    return result.orElse(null);
+    return sqlCache
+        .get(
+            "userPosition.getUserPrimaryPosition",
+            params,
+            new UserPositionMapper<>(UserPosition.class, om))
+        .orElse(null);
   }
 
   public void deleteUserPosition(Long userPositionId) {
@@ -83,12 +74,12 @@ public class UserPositionService {
     params.put("userPositionId", userPositionId);
 
     sqlCache.update("userPosition.delete", params);
-
   }
 
   public UserPosition saveUserPosition(UserPosition userPosition) {
     User user = securityService.getCurrentUser();
-    Boolean primaryFlag = null != userPosition.getPrimaryFlag() ? userPosition.getPrimaryFlag() : false;
+    Boolean primaryFlag =
+        null != userPosition.getPrimaryFlag() ? userPosition.getPrimaryFlag() : false;
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userId", userPosition.getUserId());
@@ -99,7 +90,7 @@ public class UserPositionService {
     params.put("primaryFlag", primaryFlag);
 
     Long id;
-    if(null != userPosition.getId()) {
+    if (null != userPosition.getId()) {
       id = userPosition.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
@@ -110,8 +101,8 @@ public class UserPositionService {
       params.put("id", id);
     }
 
-    if(primaryFlag) {
-      //if setting a position to primary, need to remove all other primary positions
+    if (primaryFlag) {
+      // if setting a position to primary, need to remove all other primary positions
       sqlCache.update("userPosition.resetPrimaryFlags", params);
     }
 
@@ -129,9 +120,10 @@ public class UserPositionService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "hierarchy",
+      bw.registerCustomEditor(
+          List.class,
+          "hierarchy",
           new JsonCollectionDeserializer(userOrgHierarchyRef, objectMapper));
     }
   }
-
 }

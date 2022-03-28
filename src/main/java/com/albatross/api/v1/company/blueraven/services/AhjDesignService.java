@@ -11,8 +11,8 @@ import com.albatross.api.v1.company.blueraven.models.ahj.AhjRequirement;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -21,46 +21,44 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Joseph Canto on 2019-07-20.
- */
 @Service
+@RequiredArgsConstructor
 public class AhjDesignService {
-  @Autowired
-  private SqlCache sqlCache;
-
-  @Autowired
-  private ObjectMapper om;
-
-  @Autowired
-  private SecurityService securityService;
-
-  @Autowired
-  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
+  private final SqlCache sqlCache;
+  private final ObjectMapper om;
+  private final SecurityService securityService;
+  private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public Optional<AhjDesignDetail> getAhjDesignDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
 
-    Optional<AhjDesignDetail> design = sqlCache.get("ahj.design.detailByAhj", params, new AhjDesignDetailMapper<>(AhjDesignDetail.class, om));
+    Optional<AhjDesignDetail> design =
+        sqlCache.get(
+            "ahj.design.detailByAhj",
+            params,
+            new AhjDesignDetailMapper<>(AhjDesignDetail.class, om));
+
     if (design.isPresent()) {
       return design;
-    } else {
-      User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.trueUserId());
-
-      // add a blank design and return that
-      Integer id = sqlCache.get("ahj.design.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
-      if (id != null) {
-        Optional<AhjDesignDetail> design2 = sqlCache.get("ahj.design.detailByAhj", params, new AhjDesignDetailMapper<>(AhjDesignDetail.class, om));
-        return design2;
-      }
     }
-    return null;
+
+    User currentUser = securityService.getCurrentUser();
+    params.put("currentUser", currentUser.trueUserId());
+
+    // add a blank design and return that
+    var created =
+        sqlCache.get("ahj.design.createBlank", params, new SingleColumnRowMapper<>(Integer.class));
+
+    if (created.isPresent()) {
+      return sqlCache.get(
+          "ahj.design.detailByAhj", params, new AhjDesignDetailMapper<>(AhjDesignDetail.class, om));
+    }
+    return Optional.empty();
   }
 
-  @SuppressWarnings("Duplicates")
-  public Optional<AhjDesignDetail> saveAhjDesign(Long ahjId, Long designId, AhjDesign design, Boolean returnValue) {
+  public Optional<AhjDesignDetail> saveAhjDesign(
+      Long ahjId, Long designId, AhjDesign design, Boolean returnValue) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -76,7 +74,8 @@ public class AhjDesignService {
     if (design.getUpdateAllInState() != null && design.getUpdateAllInState()) {
       params.put("ahjIds", design.getAhjIds());
       sqlCache.update("ahj.design.updateAllAhjDesignsInState", params);
-      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_DESIGN.textValue(), design.getCustomFieldGroups(), design.getDesignIds());
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
+          ObjectType.AHJ_DESIGN.textValue(), design.getCustomFieldGroups(), design.getDesignIds());
     } else {
       params.put("ahjId", ahjId);
 
@@ -85,7 +84,8 @@ public class AhjDesignService {
       } else {
         params.put("id", designId);
         sqlCache.update("ahj.design.update", params);
-        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_DESIGN.textValue(), design.getCustomFieldGroups(), designId);
+        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
+            ObjectType.AHJ_DESIGN.textValue(), design.getCustomFieldGroups(), designId);
       }
     }
 
@@ -119,20 +119,28 @@ public class AhjDesignService {
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(List.class, "contacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "contacts", new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "designRequirements",
-        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "designRequirements",
+          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "electricalRequirements",
-        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "electricalRequirements",
+          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "structuralRequirements",
-        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "structuralRequirements",
+          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "utilityRequirements",
-        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "utilityRequirements",
+          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
     }
   }
 }

@@ -3,18 +3,15 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
-import com.albatross.api.v1.company.blueraven.services.PandaDocService;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -26,9 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ElectronicDocumentService {
   private final SqlCache sqlCache;
-
   private final PandaDocService pandaDocService;
-
   private final SecurityService securityService;
 
   private final int PERMITTING_DOC_TYPE = 0;
@@ -36,7 +31,13 @@ public class ElectronicDocumentService {
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", List.of("VIEW_ALL"));
+    Boolean viewAll =
+        securityService.userHasFeatureAccessLevel(
+            user.getId(),
+            user.getCompanyId(),
+            user.getHighestCompanyId(),
+            "INSTALLATION_AGREEMENT",
+            List.of("VIEW_ALL"));
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
@@ -47,46 +48,52 @@ public class ElectronicDocumentService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    List<InstallAgreementProject> results = sqlCache.query("electronicDocument.getProjects", params, InstallAgreementProject.class);
-    Integer count = sqlCache.queryForObject("electronicDocument.getProjectsCount", params, Integer.class);
+    List<InstallAgreementProject> results =
+        sqlCache.query("electronicDocument.getProjects", params, InstallAgreementProject.class);
+    Integer count =
+        sqlCache.queryForObject("electronicDocument.getProjectsCount", params, Integer.class);
 
-    Page<InstallAgreementProject> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
+    return new PageImpl<>(
+        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public String getDocuments(Long projectId, int docType) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      Optional<String> queryStr;
-      JSONArray pandaDocs = new JSONArray();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    Optional<String> queryStr;
+    JSONArray pandaDocs = new JSONArray();
 
-      if (docType == PERMITTING_DOC_TYPE) {
-          // Get the permitting document templates
-          queryStr = sqlCache.get("electronicDocument.getAhjQueryStr", params, new SingleColumnRowMapper<>(String.class));
-      }
-      else if (docType == UTILITY_DOC_TYPE) {
-          // Get the utility document templates
-          queryStr = sqlCache.get("electronicDocument.getUtilityQueryStr", params, new SingleColumnRowMapper<>(String.class));
-      }
-      else {
-          // Get the change order document templates
-          queryStr = Optional.of("Change Order");
-      }
+    if (docType == PERMITTING_DOC_TYPE) {
+      // Get the permitting document templates
+      queryStr =
+          sqlCache.get(
+              "electronicDocument.getAhjQueryStr",
+              params,
+              new SingleColumnRowMapper<>(String.class));
+    } else if (docType == UTILITY_DOC_TYPE) {
+      // Get the utility document templates
+      queryStr =
+          sqlCache.get(
+              "electronicDocument.getUtilityQueryStr",
+              params,
+              new SingleColumnRowMapper<>(String.class));
+    } else {
+      // Get the change order document templates
+      queryStr = Optional.of("Change Order");
+    }
 
-      if (queryStr.isPresent()) {
-          try {
-              pandaDocs = pandaDocService.findTemplatesByName(queryStr.get());
-          } catch (Exception e) {
-              log.error("ELECTRONIC: find templates error {}", e.getMessage());
-              e.printStackTrace();
-          }
+    if (queryStr.isPresent()) {
+      try {
+        pandaDocs = pandaDocService.findTemplatesByName(queryStr.get());
+      } catch (Exception e) {
+        log.error("ELECTRONIC: find templates error", e);
       }
+    }
 
-      return pandaDocs.toString();
+    return pandaDocs.toString();
   }
 
   public String generateDoc(Long projectId, String templateId) throws Exception {
-      return pandaDocService.generateElectronicDocument(projectId, templateId);
+    return pandaDocService.generateElectronicDocument(projectId, templateId);
   }
-
 }

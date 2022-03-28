@@ -8,56 +8,55 @@ import lombok.Data;
 import java.io.IOException;
 import java.util.Date;
 
-
 @Data
 public class TwilioSMSResponse {
-    @JsonProperty(value = "MessagingServiceSid")
-    private String messagingServiceSid;
+  private static final ObjectMapper om = new ObjectMapper();
 
-    @JsonProperty(value = "From")
-    private String from;
+  @JsonProperty(value = "MessagingServiceSid")
+  private String messagingServiceSid;
 
-    @JsonProperty(value = "MessageSid")
-    private String messageSid;
+  @JsonProperty(value = "From")
+  private String from;
 
-    @JsonProperty(value = "SmsStatus")
-    private String smsStatus;
+  @JsonProperty(value = "MessageSid")
+  private String messageSid;
 
-    @JsonProperty(value = "ApiVersion")
-    private String apiVersion;
+  @JsonProperty(value = "SmsStatus")
+  private String smsStatus;
 
-    @JsonProperty(value = "AccountSid")
-    private String accountSid;
+  @JsonProperty(value = "ApiVersion")
+  private String apiVersion;
 
-    @JsonProperty(value = "MessageStatus")
-    private String messageStatus;
+  @JsonProperty(value = "AccountSid")
+  private String accountSid;
 
-    @JsonProperty(value = "To")
-    private String to;
+  @JsonProperty(value = "MessageStatus")
+  private String messageStatus;
 
-    private int attempts;
-    private Date dateReceived;
+  @JsonProperty(value = "To")
+  private String to;
 
-    private static final ObjectMapper om = new ObjectMapper();
+  private int attempts;
+  private Date dateReceived;
 
-    public void addAttempt() {
-        attempts++;
+  public static TwilioSMSResponse fromJSON(String json) throws IOException {
+    return om.readValue(json, TwilioSMSResponse.class);
+  }
+
+  public void addAttempt() {
+    attempts++;
+  }
+
+  public Date getDateReceived() {
+    if (dateReceived == null) {
+      dateReceived = new Date();
     }
 
-    public Date getDateReceived() {
-        if (dateReceived == null) {
-            dateReceived = new Date();
-        }
+    return dateReceived;
+  }
 
-        return dateReceived;
-    }
-
-    public static TwilioSMSResponse fromJSON(String json) throws IOException {
-        return om.readValue(json, TwilioSMSResponse.class);
-    }
-
-    public String toJSON() throws JsonProcessingException {
-        // it seems that we have to use json.toString() to avoid an "end of stream" error...?
-        return om.writeValueAsString(this).toString();
-    }
+  public String toJSON() throws JsonProcessingException {
+    // it seems that we have to use json.toString() to avoid an "end of stream" error...?
+    return om.writeValueAsString(this).toString();
+  }
 }

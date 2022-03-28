@@ -1,3 +1,4 @@
+drop function if exists brs.populate_proposal_due_date(integer, integer);
 CREATE OR REPLACE FUNCTION brs.populate_proposal_due_date(p_project_id integer, p_project_process_step_id integer)
     RETURNS void
     LANGUAGE plpgsql

@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -21,9 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Service
+@RequiredArgsConstructor
 public class SunpowerService {
 
   private final SqlCache sqlCache;
@@ -34,7 +33,13 @@ public class SunpowerService {
   @Value(value = "${sunpower.api.host}")
   private String apiUrl;
 
-  public String saveLoanFields(InstallAgreementService.PropLogDetail propLogDetail, Long projectId, Long proposalNbr, String sendVia, boolean isUpdate) throws Exception {
+  public String saveLoanFields(
+      InstallAgreementService.PropLogDetail propLogDetail,
+      Long projectId,
+      Long proposalNbr,
+      String sendVia,
+      boolean isUpdate)
+      throws Exception {
     JSONObject jsonContact = new JSONObject();
     JSONArray projectsArray = new JSONArray();
     JSONArray applicantsArray = new JSONArray();
@@ -54,7 +59,9 @@ public class SunpowerService {
 
     projectDetails.put("externalId", propLogDetail.getProjectId().toString());
     DecimalFormat df2 = new DecimalFormat("#.##");
-    projectDetails.put("apr",  Double.valueOf(df2.format(Double.parseDouble(propLogDetail.getInterestRate()) * 100)));
+    projectDetails.put(
+        "apr",
+        Double.valueOf(df2.format(Double.parseDouble(propLogDetail.getInterestRate()) * 100)));
     projectDetails.put("isACH", true);
 
     if (sendVia == null) {
@@ -67,23 +74,26 @@ public class SunpowerService {
       String message = "No Loan Amount found for this proposal";
       log.error("SUNPWR: Error opening or updating Loan Application for Sunpower: {}", message);
       throw new Exception(message);
-    }
-    else {
+    } else {
       try {
         quoteDetails.put("loanAmount", Integer.parseInt(propLogDetail.getLoanAmount()));
       } catch (NumberFormatException nfe) {
-        quoteDetails.put("loanAmount", Math.floor(Double.parseDouble(propLogDetail.getLoanAmount())));
+        quoteDetails.put(
+            "loanAmount", Math.floor(Double.parseDouble(propLogDetail.getLoanAmount())));
       }
     }
 
     quotesArray.put(quoteDetails);
 
-    if (propLogDetail.getSalesRepresentativeEmail() != null && propLogDetail.getSalesRepresentativeEmail().contains("@")) {
+    if (propLogDetail.getSalesRepresentativeEmail() != null
+        && propLogDetail.getSalesRepresentativeEmail().contains("@")) {
       projectDetails.put("salesRepresentativeEmail", propLogDetail.getSalesRepresentativeEmail());
     }
-    projectDetails.put("salesRepresentativeFirstName", propLogDetail.getSalesRepresentativeFirstName());
-    projectDetails.put("salesRepresentativeLastName", propLogDetail.getSalesRepresentativeLastName());
-    projectDetails.put("term", Integer.parseInt(propLogDetail.getLoanTerm())*12);
+    projectDetails.put(
+        "salesRepresentativeFirstName", propLogDetail.getSalesRepresentativeFirstName());
+    projectDetails.put(
+        "salesRepresentativeLastName", propLogDetail.getSalesRepresentativeLastName());
+    projectDetails.put("term", Integer.parseInt(propLogDetail.getLoanTerm()) * 12);
     projectDetails.put("productType", "Solar");
     projectDetails.put("installStreet", propLogDetail.getAddress());
     projectDetails.put("installCity", propLogDetail.getCity());
@@ -131,8 +141,10 @@ public class SunpowerService {
     projectsArray.put(projectDetails);
     jsonContact.put("projects", projectsArray);
 
-
-    HttpResponse res = POST("active-bpel/rt/Customer", IOUtils.toInputStream(jsonContact.toString(), (Charset) null));
+    HttpResponse res =
+        POST(
+            "active-bpel/rt/Customer",
+            IOUtils.toInputStream(jsonContact.toString(), (Charset) null));
     JSONObject respJson = res.getJSON();
     JSONObject customerResponse = respJson.getJSONObject("customerResponse");
     JSONObject status = customerResponse.getJSONObject("status");
@@ -144,8 +156,7 @@ public class SunpowerService {
       if (message.equals("OK")) {
         result = customerResponse.getString("activationURL");
         setSunpowerUrl(projectId, proposalNbr, result);
-      }
-      else if (message.equals("Quote Updated")) {
+      } else if (message.equals("Quote Updated")) {
         Optional<Object> sunpowerUrl = getSunpowerUrl(projectId);
         if (sunpowerUrl.isPresent()) {
           setSunpowerUrl(projectId, proposalNbr, sunpowerUrl.get().toString());
@@ -154,8 +165,7 @@ public class SunpowerService {
 
         result = "Quote Updated";
       }
-    }
-    else {
+    } else {
       String message = status.getString("message");
       log.error("SUNPWR: Error opening or updating Loan Application for SunPower: {}", message);
       throw new Exception("Error opening or updating Loan Application for SunPower: " + message);
@@ -173,14 +183,12 @@ public class SunpowerService {
     Optional<Object> sunpowerUrl = getSunpowerUrl(projectId, proposalNbr);
     if (sunpowerUrl.isPresent()) {
       returnApplication.put("applicationUrl", sunpowerUrl.get().toString());
-    }
-    else {
+    } else {
       // Check if their is a SunPower URL stored for this Project (any Proposal Number)
       Optional<Object> sunpowerUrlPerProject = getSunpowerUrl(projectId);
       if (sunpowerUrlPerProject.isPresent()) {
-        returnApplication.put("applicationUrl", sunpowerUrl.get().toString());
-      }
-      else {
+        returnApplication.put("applicationUrl", sunpowerUrlPerProject.get().toString());
+      } else {
         returnApplication.put("applicationUrl", "");
       }
     }
@@ -191,7 +199,10 @@ public class SunpowerService {
   public String sendLoanDocs(Long projectId) throws Exception {
     JSONObject creditJson = new JSONObject();
     creditJson.put("externalId", projectId.toString());
-    HttpResponse creditResp = GET("active-bpel/rt/Contract/"+projectId, IOUtils.toInputStream(creditJson.toString(), (Charset) null));
+    HttpResponse creditResp =
+        GET(
+            "active-bpel/rt/Contract/" + projectId,
+            IOUtils.toInputStream(creditJson.toString(), (Charset) null));
     JSONObject respJson = creditResp.getJSON();
     JSONObject contractResponse = respJson.getJSONObject("contractResponse");
     JSONObject status = contractResponse.getJSONObject("status");
@@ -199,8 +210,7 @@ public class SunpowerService {
 
     if (success) {
       return "Loan agreement created successfully";
-    }
-    else {
+    } else {
       String message = status.getString("message");
       log.error("SUNPWR: Error creating Loan agreement for Sunpower: {}", message);
       throw new Exception(message);
@@ -211,13 +221,17 @@ public class SunpowerService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
-    return sqlCache.get("installAgreement.getSunpowerUrl", params, new SingleColumnRowMapper<>(Object.class));
+    return sqlCache.get(
+        "installAgreement.getSunpowerUrl", params, new SingleColumnRowMapper<>(Object.class));
   }
 
   private Optional<Object> getSunpowerUrl(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    return sqlCache.get("installAgreement.getSunpowerUrlPerProject", params, new SingleColumnRowMapper<>(Object.class));
+    return sqlCache.get(
+        "installAgreement.getSunpowerUrlPerProject",
+        params,
+        new SingleColumnRowMapper<>(Object.class));
   }
 
   private void setSunpowerUrl(Long projectId, Long proposalNbr, String url) {
@@ -251,5 +265,4 @@ public class SunpowerService {
   public HttpResponse POST(String url, InputStream content) throws Exception {
     return request("POST", url, content);
   }
-
 }

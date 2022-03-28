@@ -7,21 +7,16 @@ import com.albatross.api.v1.flow.model.DataType;
 import com.albatross.api.v1.flow.model.DataTypeRequirement;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
-
+/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class DataTypeService {
 
   private final SqlCache sqlCache;
@@ -29,23 +24,19 @@ public class DataTypeService {
   private final SecurityService securityService;
 
   public List<DataType> getSystemDataTypes() {
-    List<DataType> result = sqlCache.query("dataType.getSystemDataTypes", Collections.emptyMap(), DataType.class);
-    return result;
+    return sqlCache.query("dataType.getSystemDataTypes", Collections.emptyMap(), DataType.class);
   }
 
   public List<CompanyDataType> getCompanyDataTypes() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<CompanyDataType> result = sqlCache.query("dataType.getCompanyDataTypes", params, CompanyDataType.class);
-    return result;
+    return sqlCache.query("dataType.getCompanyDataTypes", params, CompanyDataType.class);
   }
 
   public List<DataTypeRequirement> getDataTypeRequirements(Long dataTypeId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("dataTypeId", dataTypeId);
-    List<DataTypeRequirement> result = sqlCache.query("dataType.getDataTypeRequirements", params, DataTypeRequirement.class);
-    return result;
+    return sqlCache.query("dataType.getDataTypeRequirements", params, DataTypeRequirement.class);
   }
-
 }

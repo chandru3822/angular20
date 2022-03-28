@@ -5,25 +5,19 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Data
 @Builder
-@JsonPropertyOrder({"First Name", "Last Name", "Email", "Address", "City", "State", "Postal Code",
-    "Owner"})
+@JsonPropertyOrder({
+  "First Name",
+  "Last Name",
+  "Email",
+  "Address",
+  "City",
+  "State",
+  "Postal Code",
+  "Owner"
+})
 public class ContactExportTemplate {
-  public static ContactExportTemplate from(Contact other) {
-    return ContactExportTemplate.builder()
-        .firstName(other.getFirstName())
-        .lastName(other.getLastName())
-        .email(other.getEmail())
-        .street1(other.getStreet1())
-        .city(other.getCity())
-        .state(other.getState())
-        .postalCode(other.getPostalCode())
-        .ownerFullName(other.getOwner() != null ? other.getOwner().getFullName() : null)
-        .build();
-  }
-
   /////////////////////////////////////////////////////////////////////////////
   // directly-sourced data — the data supplied by
   // Contact — starts here
@@ -52,15 +46,16 @@ public class ContactExportTemplate {
   @JsonProperty("Owner")
   private String ownerFullName;
 
-  /////////////////////////////////////////////////////////////////////////////
-  // derived values start here
-  /////////////////////////////////////////////////////////////////////////////
-//    @JsonProperty("Par")
-//    public BigDecimal getPar() {
-//      if (getActualLeadGenFDSPercent() == null || getWeightedPercentToPar() == null)
-//        return null;
-//      return getActualLeadGenFDSPercent()
-//          .add(getWeightedPercentToPar().negate());
-//    }
-
+  public static ContactExportTemplate from(Contact other) {
+    return ContactExportTemplate.builder()
+        .firstName(other.getFirstName())
+        .lastName(other.getLastName())
+        .email(other.getEmail())
+        .street1(other.getStreet1())
+        .city(other.getCity())
+        .state(other.getState())
+        .postalCode(other.getPostalCode())
+        .ownerFullName(other.getOwner() != null ? other.getOwner().getFullName() : null)
+        .build();
+  }
 }

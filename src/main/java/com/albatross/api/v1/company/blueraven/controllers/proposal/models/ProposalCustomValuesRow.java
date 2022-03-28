@@ -1,8 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal.models;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.LinkedHashMap;
@@ -16,7 +14,7 @@ public class ProposalCustomValuesRow {
   private Map<String, Object> row = new LinkedHashMap<>();
 
   @JsonAnySetter
-  public void setRow(String key, Object value){
+  public void setRow(String key, Object value) {
     this.row.put(key, value);
   }
 }

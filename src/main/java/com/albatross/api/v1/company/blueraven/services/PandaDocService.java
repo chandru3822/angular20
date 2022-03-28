@@ -36,50 +36,37 @@ import java.util.stream.Stream;
 @Slf4j
 @Service
 public class PandaDocService {
-  @Autowired
-  private PandaDocConfiguration pandaDoc;
+  @Autowired private PandaDocConfiguration pandaDoc;
 
-  @Autowired
-  private SqlCache sqlCache;
+  @Autowired private SqlCache sqlCache;
 
-  @Autowired
-  private NamedParameterJdbcTemplate jdbc;
+  @Autowired private NamedParameterJdbcTemplate jdbc;
 
-  @Autowired
-  private SecurityService securityService;
+  @Autowired private SecurityService securityService;
 
-  @Autowired
-  private TemplatingEngineService templateService;
+  @Autowired private TemplatingEngineService templateService;
 
-  @Autowired
-  @Lazy
-  private InstallAgreementService installAgreementRepository;
+  @Autowired @Lazy private InstallAgreementService installAgreementRepository;
 
   /**
-   * Get the necessary information about a project to determine which PandaDoc
-   * template to use when generating the document.
+   * Get the necessary information about a project to determine which PandaDoc template to use when
+   * generating the document.
    *
    * @param projectId
    * @param proposalNbr
    * @return
    */
-  private PandaDocProjectDetails getProjectDetails(Long projectId, Long proposalNbr) {
+  private Optional<PandaDocProjectDetails> getProjectDetails(Long projectId, Long proposalNbr) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
 
-    Optional<PandaDocProjectDetails> obj = sqlCache.get(
-      "pandaDoc.getProjectDetails",
-      params,
-      PandaDocProjectDetails.class
-    );
-
-    return obj.get();
+    return sqlCache.get("pandaDoc.getProjectDetails", params, PandaDocProjectDetails.class);
   }
 
   /**
-   * Determine the ID of the PandaDoc template that will be used when
-   * generating the document. Supports falling back to a generic template.
+   * Determine the ID of the PandaDoc template that will be used when generating the document.
+   * Supports falling back to a generic template.
    *
    * @param deets
    * @param isSpanish
@@ -90,7 +77,8 @@ public class PandaDocService {
     String name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
     String tplId = findTemplateIdByName(name);
 
-    log.debug("PANDADOC: Template Name we are looking for: name={}, found templateId=", name, tplId);
+    log.debug(
+        "PANDADOC: Template Name we are looking for: name={}, found templateId={}", name, tplId);
     // attempt to find a generic template for the state and financier
     if (tplId == null) {
       log.warn("PANDADOC: falling back to generic utility company");
@@ -109,8 +97,8 @@ public class PandaDocService {
   }
 
   /**
-   * Determine the ID of the PandaDoc template that will be used when
-   * generating the document, based on the name of the template.
+   * Determine the ID of the PandaDoc template that will be used when generating the document, based
+   * on the name of the template.
    *
    * @param name
    * @return
@@ -170,18 +158,29 @@ public class PandaDocService {
    * @return
    * @throws Exception
    */
-  public String createDocument(Long projectId, Long proposalNbr, Boolean isSpanish) throws Exception {
-    PandaDocProjectDetails deets = getProjectDetails(projectId, proposalNbr);
-    deets.setFinancier(installAgreementRepository.getFinancierFromProposalLog(projectId, proposalNbr));
-    deets.setUtilityCompany(installAgreementRepository.getUtilityFromProposalLog(projectId, proposalNbr));
+  public String createDocument(Long projectId, Long proposalNbr, Boolean isSpanish)
+      throws Exception {
 
-    String templateId = findTemplateId(deets, isSpanish);
     if (!pandaDoc.getEnabled()) {
       log.warn("PANDADOC: not creating document: pandadoc service is disabled");
       return "";
     }
 
-    log.debug("PANDADOC: creating document for project {} using template {}", projectId, templateId);
+    Optional<PandaDocProjectDetails> projectDetails = getProjectDetails(projectId, proposalNbr);
+    if (projectDetails.isEmpty()) {
+      return "";
+    }
+
+    final PandaDocProjectDetails deets = projectDetails.get();
+    deets.setFinancier(
+        installAgreementRepository.getFinancierFromProposalLog(projectId, proposalNbr));
+    deets.setUtilityCompany(
+        installAgreementRepository.getUtilityFromProposalLog(projectId, proposalNbr));
+
+    String templateId = findTemplateId(deets, isSpanish);
+
+    log.debug(
+        "PANDADOC: creating document for project {} using template {}", projectId, templateId);
     JSONObject template = getTemplateDetails(templateId);
     log.debug("PANDADOC: template: {}", template);
 
@@ -206,17 +205,20 @@ public class PandaDocService {
 
     // le sigh... takes a bit on PandaDoc's end for the doc to be available for sending
     String documentId = respBody.getString("id");
-    log.debug("PANDADOC: created document id={} projectId={} templateId={}",
-      documentId, projectId, templateId);
+    log.debug(
+        "PANDADOC: created document id={} projectId={} templateId={}",
+        documentId,
+        projectId,
+        templateId);
     delayedSendDocument(projectId, documentId, tokens);
 
     // Set as request sent
-
     return respBody.toString();
   }
 
-  public String generateElectronicDocument (Long projectId, String templateId) throws Exception {
-    log.debug("PANDADOC: creating document for project {} using template {}", projectId, templateId);
+  public String generateElectronicDocument(Long projectId, String templateId) throws Exception {
+    log.debug(
+        "PANDADOC: creating document for project {} using template {}", projectId, templateId);
     JSONObject template = getTemplateDetails(templateId);
     log.debug("PANDADOC: template: {}", template);
 
@@ -227,7 +229,8 @@ public class PandaDocService {
     setRecipientInfoElecDocs(template, tokens, body);
     HttpResponse resp = POST("/documents", body.toString());
     JSONObject respBody = resp.getJSON();
-    return String.format("https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets", respBody.get("id"));
+    return String.format(
+        "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets", respBody.get("id"));
   }
 
   /**
@@ -243,11 +246,10 @@ public class PandaDocService {
       validateCashProject(projectId, tokens);
     } else if (installAgreementRepository.isLoanPalProject(financier)) {
       validateLoanPalProject(projectId, tokens);
-    } else if (!installAgreementRepository.isSunlightProject(financier) && !installAgreementRepository.isSunpowerProject(financier)) {
-      throw new Exception(String.format(
-        "unexpected financier for project %d: %s",
-          projectId, financier
-      ));
+    } else if (!installAgreementRepository.isSunlightProject(financier)
+        && !installAgreementRepository.isSunpowerProject(financier)) {
+      throw new Exception(
+          String.format("unexpected financier for project %d: %s", projectId, financier));
     }
   }
 
@@ -260,10 +262,11 @@ public class PandaDocService {
    */
   public void validateCashProject(Long projectId, JSONObject tokens) throws Exception {
     log.debug("PANDADOC: validating cash project {}", projectId);
-    validateFields(tokens,
-      "Deal.Total Cash Down Payment",
-      "Deal.System Size",
-      "Deal.First Cash Payment Amount");
+    validateFields(
+        tokens,
+        "Deal.Total Cash Down Payment",
+        "Deal.System Size",
+        "Deal.First Cash Payment Amount");
   }
 
   /**
@@ -293,8 +296,7 @@ public class PandaDocService {
     }
 
     if (!errors.isEmpty()) {
-      String errs = errors.stream()
-        .collect(Collectors.joining("; "));
+      String errs = errors.stream().collect(Collectors.joining("; "));
       throw new Exception("Project validation failed: " + errs);
     }
   }
@@ -314,12 +316,12 @@ public class PandaDocService {
       log.debug("PANDADOC: field {}: {}", key, value);
       if (value == null) {
         errors.add(String.format("%s is undefined", key));
-      } else if (value.doubleValue() <= 0) {
+      } else if (value <= 0) {
         errors.add(String.format("%s must be greater than 0", key));
       }
     } catch (JSONException ex) {
       Object obj = tokens.opt(key);
-      errors.add(String.format("%s is an invalid field ({})", key, obj));
+      errors.add(String.format("%s is an invalid field (%s)", key, obj));
     }
 
     return errors;
@@ -333,15 +335,16 @@ public class PandaDocService {
    * @return
    * @throws JSONException
    */
-  public JSONObject setRecipientInfo(JSONObject body, PandaDocProjectDetails deets) throws JSONException {
+  public JSONObject setRecipientInfo(JSONObject body, PandaDocProjectDetails deets)
+      throws JSONException {
     User user = securityService.getCurrentUser();
     JSONObject customer = deets.getCustomerInfo(pandaDoc.getCustomerRole());
     JSONObject brs = deets.getBlueRavenInfo(pandaDoc.getSupportRole());
 
     if (isBlank(deets.getCloserEmail())) {
-        deets.setCloserEmail(user.getEmail());
-        deets.setCloserFirstName(user.getFirstName());
-        deets.setCloserLastName(user.getLastName());
+      deets.setCloserEmail(user.getEmail());
+      deets.setCloserFirstName(user.getFirstName());
+      deets.setCloserLastName(user.getLastName());
     }
 
     JSONObject closer = deets.getCloserInfo(pandaDoc.getCloserRole());
@@ -351,7 +354,7 @@ public class PandaDocService {
     if (!isBlank(email)) {
       customer.put("email", deets.getCustomerEmail());
       brs.put("email", "support@blueravensolar.com");
-      closer.put("email",deets.getCloserEmail());
+      closer.put("email", deets.getCloserEmail());
     }
 
     body.append("recipients", customer);
@@ -367,43 +370,33 @@ public class PandaDocService {
     boolean hasBRSRole = false;
 
     if (!roles.isEmpty()) {
-        for (int i = 0; i < roles.length(); i++) {
-            JSONObject role = roles.getJSONObject(i);
-            if (role.get("name").equals("Customer")) {
-                hasCustomerRole = true;
-            }
-            else if (role.get("name").equals("Blue Raven Solar")) {
-                hasBRSRole = true;
-            }
+      for (int i = 0; i < roles.length(); i++) {
+        JSONObject role = roles.getJSONObject(i);
+        if (role.get("name").equals("Customer")) {
+          hasCustomerRole = true;
+        } else if (role.get("name").equals("Blue Raven Solar")) {
+          hasBRSRole = true;
         }
+      }
     }
-
-    /*
-    **  Support role is no longer used, leaving here in case needed in the future **
-    JSONObject brs = new JSONObject();
-    User user = securityService.getCurrentUser();
-    brs.put("first_name", user.getFirstName());
-    brs.put("last_name", user.getLastName());
-    brs.put("email", user.getEmail());
-    if (hasBRSRole) {
-        brs.put("role", pandaDoc.getSupportRole());
-    }
-    body.append("recipients", brs);
-    * */
 
     JSONObject customer = new JSONObject();
     customer.put("first_name", tokens.get("Deal.Contact.FirstName"));
     customer.put("last_name", tokens.get("Deal.Contact.LastName"));
-    customer.put("email", tokens.isNull("Deal.Contact.Email") ? "jberns03@gmail.com" : tokens.get("Deal.Contact.Email"));
+    customer.put(
+        "email",
+        tokens.isNull("Deal.Contact.Email")
+            ? "jberns03@gmail.com"
+            : tokens.get("Deal.Contact.Email"));
     if (hasCustomerRole) {
-        customer.put("role", pandaDoc.getCustomerRole());
+      customer.put("role", pandaDoc.getCustomerRole());
     }
     body.append("recipients", customer);
   }
 
   /**
-   * Pull together all of the different bits of information required to
-   * create a new PandaDoc document.
+   * Pull together all of the different bits of information required to create a new PandaDoc
+   * document.
    *
    * @param templateId
    * @param templateFields
@@ -411,17 +404,19 @@ public class PandaDocService {
    * @return
    * @throws JSONException
    */
-  public JSONObject getDocumentBody(String templateId, List<String> templateFields, JSONObject tokens) throws JSONException {
+  public JSONObject getDocumentBody(
+      String templateId, List<String> templateFields, JSONObject tokens) throws JSONException {
     JSONObject body = new JSONObject();
     JSONObject fields = new JSONObject();
 
-    body.put("name", joinIfPresent(
-      " ",
-      pandaDoc.getDocumentPrefix(),
-      tokens.getString("Deal.Contact.Name"),
-      tokens.optString("Deal.Proposal Number"),
-      "Installation Agreement"
-    ));
+    body.put(
+        "name",
+        joinIfPresent(
+            " ",
+            pandaDoc.getDocumentPrefix(),
+            tokens.getString("Deal.Contact.Name"),
+            tokens.optString("Deal.Proposal Number"),
+            "Installation Agreement"));
     body.put("template_uuid", templateId);
 
     // organize tokens and fields the way PandaDoc requires
@@ -451,10 +446,8 @@ public class PandaDocService {
     return body;
   }
 
-
   /**
-   * Render and return the notification that will be sent to the customer
-   * through PandaDoc.
+   * Render and return the notification that will be sent to the customer through PandaDoc.
    *
    * @param tokens
    * @return
@@ -470,23 +463,23 @@ public class PandaDocService {
   }
 
   /**
-   * Retrieve the template for the document notification that PandaDoc will
-   * send.
+   * Retrieve the template for the document notification that PandaDoc will send.
    *
    * @return
    * @throws IOException
    */
   private String loadEmailTemplate() throws IOException {
-    try (InputStream in = PandaDocService.class.getResourceAsStream("/communication/templates/pandadoc-email.ftl.txt")) {
+    try (InputStream in =
+        PandaDocService.class.getResourceAsStream(
+            "/communication/templates/pandadoc-email.ftl.txt")) {
       return new Scanner(in, "UTF-8").useDelimiter("\\A").next();
     }
   }
 
   /**
-   * Queue up a task to send the customer the specified PandaDoc after a
-   * configurable amount of time. PandaDoc documents are not available
-   * for sending immediately after sending the request to create them,
-   * so we need a bit of a delay.
+   * Queue up a task to send the customer the specified PandaDoc after a configurable amount of
+   * time. PandaDoc documents are not available for sending immediately after sending the request to
+   * create them, so we need a bit of a delay.
    *
    * @param projectId
    * @param documentId
@@ -498,20 +491,19 @@ public class PandaDocService {
       return;
     }
 
-    new Timer().schedule(
-      new TimerTask() {
-        @Override
-        public void run() {
-          try {
-            sendDocument(projectId, documentId, tokens);
-          } catch (Exception ex) {
-            log.error("PANDADOC: failed to send document: {}", ex.getMessage());
-            ex.printStackTrace();
-          }
-        }
-      },
-      pandaDoc.getNotificationDelay()
-    );
+    new Timer()
+        .schedule(
+            new TimerTask() {
+              @Override
+              public void run() {
+                try {
+                  sendDocument(projectId, documentId, tokens);
+                } catch (Exception ex) {
+                  log.error("PANDADOC: failed to send document", ex);
+                }
+              }
+            },
+            pandaDoc.getNotificationDelay());
   }
 
   /**
@@ -523,7 +515,8 @@ public class PandaDocService {
    * @return
    * @throws Exception
    */
-  public String sendDocument(Long projectId, String documentId, JSONObject tokens) throws Exception {
+  public String sendDocument(Long projectId, String documentId, JSONObject tokens)
+      throws Exception {
     log.debug("PANDADOC: sending projectId {} document {}", projectId, documentId);
     JSONObject body = new JSONObject();
     body.put("message", getNotification(tokens));
@@ -536,8 +529,8 @@ public class PandaDocService {
   }
 
   /**
-   * Inspect the PandaDoc template details to determine which fields are
-   * permitted in the call to create a document from said template.
+   * Inspect the PandaDoc template details to determine which fields are permitted in the call to
+   * create a document from said template.
    *
    * @param template
    * @return
@@ -556,8 +549,7 @@ public class PandaDocService {
   }
 
   /**
-   * Collect data about a project that will be useful in populating a PandaDoc
-   * document.
+   * Collect data about a project that will be useful in populating a PandaDoc document.
    *
    * @param deets
    * @return
@@ -567,55 +559,90 @@ public class PandaDocService {
     JSONObject tokens = new JSONObject();
 
     try {
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("projectId", deets.getProjectId().intValue());
-        parameters.addValue("proposalNumber", deets.getProposalNbr().intValue());
-        String sql = "SELECT to_json(get_data_from_proposal) FROM brs.get_data_from_proposal(:projectId, :proposalNumber)";
-        Map<String, Object> result = jdbc.queryForObject(sql, parameters, new ColumnMapRowMapper());
-        result = new Gson().fromJson(result.get("to_json").toString(), new TypeToken<Map<String, Object>>() {
-        }.getType());
+      MapSqlParameterSource parameters = new MapSqlParameterSource();
+      parameters.addValue("projectId", deets.getProjectId().intValue());
+      parameters.addValue("proposalNumber", deets.getProposalNbr().intValue());
+      String sql =
+          "SELECT to_json(get_data_from_proposal) FROM brs.get_data_from_proposal(:projectId, :proposalNumber)";
+      Map<String, Object> result = jdbc.queryForObject(sql, parameters, new ColumnMapRowMapper());
+      if (result == null) {
+        throw new RuntimeException("Invalid object returned");
+      }
 
-        tokens.put("Deal.1st Year Production Estimate (kWh)", result.get("custom_fields.1st Year Production Estimate (kWh)"));
-        tokens.put("Deal.Estimated ITC", result.get("custom_fields.Estimated ITC"));
-        tokens.put("Deal.Estimated State Tax Credit", result.get("custom_fields.Estimated State Tax Credit"));
-        tokens.put("Deal.Referral Promotion Amount", result.get("custom_fields.Referral Promotion Amount"));
-        tokens.put("Deal.Panel Brand", result.get("custom_fields.Panel Brand"));
-        tokens.put("Deal.Inverter Brand", result.get("custom_fields.Inverter Brand"));
-        tokens.put("Deal.Notice of Cancellation Deadline", result.get("custom_fields.Notice of Cancellation Deadline"));
-        tokens.put("Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
-        tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
-        tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
-        tokens.put("Deal.Annual Utility Usage (kWh)", result.get("custom_fields.Annual Utility Usage (kWh)"));
-        tokens.put("Deal.Pre-Solar Cost per kWh ($)", result.get("custom_fields.Pre-Solar Cost per kWh ($)"));
-        tokens.put("Deal.Interest Rate", result.get("custom_fields.Interest Rate"));
-        tokens.put("Deal.Loan Term", result.get("custom_fields.Loan Term"));
-        tokens.put("Deal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
+      result =
+          new Gson()
+              .fromJson(
+                  result.get("to_json").toString(),
+                  new TypeToken<Map<String, Object>>() {}.getType());
 
-        Double totalCost = Double.parseDouble(result.get("custom_fields.Total Cost") == null ? "0" : result.get("custom_fields.Total Cost").toString());
-        Double referralPromotionAmount = Double.parseDouble(result.get("custom_fields.Referral Promotion Amount") == null ? "0" : result.get("custom_fields.Referral Promotion Amount").toString());
-        tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
+      tokens.put(
+          "Deal.1st Year Production Estimate (kWh)",
+          result.get("custom_fields.1st Year Production Estimate (kWh)"));
+      tokens.put("Deal.Estimated ITC", result.get("custom_fields.Estimated ITC"));
+      tokens.put(
+          "Deal.Estimated State Tax Credit",
+          result.get("custom_fields.Estimated State Tax Credit"));
+      tokens.put(
+          "Deal.Referral Promotion Amount", result.get("custom_fields.Referral Promotion Amount"));
+      tokens.put("Deal.Panel Brand", result.get("custom_fields.Panel Brand"));
+      tokens.put("Deal.Inverter Brand", result.get("custom_fields.Inverter Brand"));
+      tokens.put(
+          "Deal.Notice of Cancellation Deadline",
+          result.get("custom_fields.Notice of Cancellation Deadline"));
+      tokens.put(
+          "Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
+      tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
+      tokens.put(
+          "Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
+      tokens.put(
+          "Deal.Annual Utility Usage (kWh)",
+          result.get("custom_fields.Annual Utility Usage (kWh)"));
+      tokens.put(
+          "Deal.Pre-Solar Cost per kWh ($)",
+          result.get("custom_fields.Pre-Solar Cost per kWh ($)"));
+      tokens.put("Deal.Interest Rate", result.get("custom_fields.Interest Rate"));
+      tokens.put("Deal.Loan Term", result.get("custom_fields.Loan Term"));
+      tokens.put("Deal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
 
-        Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
-        if (deets.getFinancier().equals("Cash")) {
-          tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
-          Double progressPayment = ((totalCost - referralPromotionAmount) / 2);
-          tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
-        }
-        else {
-          cashDownPayment = Double.min(cashDownPayment, Double.parseDouble(result.get("custom_fields.Total Cash Down Payment").toString()));
-          tokens.put("Deal.NV Cash Down Payment",  Math.round(cashDownPayment));
-          Double progressPayment = Double.parseDouble(result.get("custom_fields.Total Cash Down Payment") == null ? "0" : result.get("custom_fields.Total Cash Down Payment").toString());
-          tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
-        }
+      Double totalCost =
+          Double.parseDouble(
+              result.get("custom_fields.Total Cost") == null
+                  ? "0"
+                  : result.get("custom_fields.Total Cost").toString());
+      Double referralPromotionAmount =
+          Double.parseDouble(
+              result.get("custom_fields.Referral Promotion Amount") == null
+                  ? "0"
+                  : result.get("custom_fields.Referral Promotion Amount").toString());
+      tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
+
+      Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
+      if (deets.getFinancier().equals("Cash")) {
+        tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+        Double progressPayment = ((totalCost - referralPromotionAmount) / 2);
+        tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+      } else {
+        cashDownPayment =
+            Double.min(
+                cashDownPayment,
+                Double.parseDouble(result.get("custom_fields.Total Cash Down Payment").toString()));
+        tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+        Double progressPayment =
+            Double.parseDouble(
+                result.get("custom_fields.Total Cash Down Payment") == null
+                    ? "0"
+                    : result.get("custom_fields.Total Cash Down Payment").toString());
+        tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+      }
     } catch (EmptyResultDataAccessException e) {
-        log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
-        e.printStackTrace();
+      log.warn("PANDADOC Error getting proposal log values", e);
     }
 
     tokens.put("Deal.Id", deets.getProjectId());
     tokens.put("Deal.Name", deets.getProjectName());
     tokens.put("Deal.Contact.Address", getContactAddress(deets));
-    tokens.put("Deal.Contact.Name", deets.getCustomerFirstName() + " " + deets.getCustomerLastName());
+    tokens.put(
+        "Deal.Contact.Name", deets.getCustomerFirstName() + " " + deets.getCustomerLastName());
     tokens.put("Deal.Contact.Email", deets.getCustomerEmail());
 
     // use the customer's mobile phone if their landline is not present
@@ -623,9 +650,7 @@ public class PandaDocService {
 
     // make bits of the customer's address usable individually
     tokens.put("Deal.Address.State", deets.getState());
-    String street = joinIfPresent(" ",
-        deets.getMailingStreet1(),
-        deets.getMailingStreet2());
+    String street = joinIfPresent(" ", deets.getMailingStreet1(), deets.getMailingStreet2());
     tokens.put("Deal.Address.Street", street);
     tokens.put("Deal.Address.City", deets.getCity());
     tokens.put("Deal.Address.StateAbbr", deets.getMailingState());
@@ -636,16 +661,17 @@ public class PandaDocService {
     }
 
     // include the current date for use in the template
-    String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))
-      .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+    String today =
+        ZonedDateTime.now(ZoneId.of("US/Mountain"))
+            .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
     tokens.put("Date", today);
 
     return tokens;
   }
 
   /**
-   * Collect data about a project that will be useful in populating a PandaDoc for Electronic Documents
-   * document.
+   * Collect data about a project that will be useful in populating a PandaDoc for Electronic
+   * Documents document.
    *
    * @param projectId
    * @return
@@ -655,62 +681,88 @@ public class PandaDocService {
     JSONObject tokens = new JSONObject();
 
     try {
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("projectId", projectId);
-        Map<String, Object> result = jdbc.queryForObject(sqlCache.getByKey("electronicDocument.getProjectsDetails"), parameters, new ColumnMapRowMapper());
+      MapSqlParameterSource parameters = new MapSqlParameterSource();
+      parameters.addValue("projectId", projectId);
+      Map<String, Object> result =
+          jdbc.queryForObject(
+              sqlCache.getByKey("electronicDocument.getProjectsDetails"),
+              parameters,
+              new ColumnMapRowMapper());
 
-        tokens.put("Deal.Id", result.get("id"));
-        tokens.put("Deal.Name", result.get("project_name"));
-        tokens.put("Deal.Contact.Address", joinIfPresent(", ",
-            result.get("street1"),
-            result.get("street2"),
-            result.get("city"),
-            result.get("state"),
-            result.get("postal_code")));
-        tokens.put("Deal.Contact.FirstName", result.get("first_name"));
-        tokens.put("Deal.Contact.LastName", result.get("last_name"));
-        tokens.put("Deal.Contact.Name", result.get("first_name") + " " + result.get("last_name"));
-        tokens.put("Deal.Contact.Email", result.get("email"));
+      if (result == null) {
+        throw new RuntimeException("Invalid object returned");
+      }
 
-        // use the customer's mobile phone if their landline is not present
-        tokens.put("Deal.Contact.MobilePhone", result.get("phone"));
-        tokens.put("Deal.Contact.Phone", result.get("phone"));
+      tokens.put("Deal.Id", result.get("id"));
+      tokens.put("Deal.Name", result.get("project_name"));
+      tokens.put(
+          "Deal.Contact.Address",
+          joinIfPresent(
+              ", ",
+              result.get("street1"),
+              result.get("street2"),
+              result.get("city"),
+              result.get("state"),
+              result.get("postal_code")));
+      tokens.put("Deal.Contact.FirstName", result.get("first_name"));
+      tokens.put("Deal.Contact.LastName", result.get("last_name"));
+      tokens.put("Deal.Contact.Name", result.get("first_name") + " " + result.get("last_name"));
+      tokens.put("Deal.Contact.Email", result.get("email"));
 
-        // make bits of the customer's address usable individually
-        tokens.put("Deal.Address.State", result.get("state"));
-        String street = joinIfPresent(" ",
-            result.get("street1"),
-            result.get("street2"));
-        tokens.put("Deal.Address.Street", street);
-        tokens.put("Deal.Address.City", result.get("city"));
-        tokens.put("Deal.Address.StateAbbr", result.get("abbreviation"));
-        tokens.put("Deal.Address.PostalCode", result.get("postal_code"));
-        tokens.put("Deal.1st Year Production Estimate (kWh)", result.get("year_1_kwh_output"));
-        tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
-        tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
-        tokens.put("Deal.System Size", result.get("system_size"));
-        tokens.put("Deal.Estimated ITC", result.get("estimated_itc"));
+      // use the customer's mobile phone if their landline is not present
+      tokens.put("Deal.Contact.MobilePhone", result.get("phone"));
+      tokens.put("Deal.Contact.Phone", result.get("phone"));
 
-        Double totalSystemPrice = Double.parseDouble(result.get("total_system_price") == null ? "0" : result.get("total_system_price").toString());
-        Double referralPromotionAmount = Double.parseDouble(result.get("referral_promotion_amount") == null ? "0" : result.get("referral_promotion_amount").toString());
-        tokens.put("Deal.Total System Price", totalSystemPrice - referralPromotionAmount);
-        tokens.put("Deal.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
+      // make bits of the customer's address usable individually
+      tokens.put("Deal.Address.State", result.get("state"));
+      String street = joinIfPresent(" ", result.get("street1"), result.get("street2"));
+      tokens.put("Deal.Address.Street", street);
+      tokens.put("Deal.Address.City", result.get("city"));
+      tokens.put("Deal.Address.StateAbbr", result.get("abbreviation"));
+      tokens.put("Deal.Address.PostalCode", result.get("postal_code"));
+      tokens.put("Deal.1st Year Production Estimate (kWh)", result.get("year_1_kwh_output"));
+      tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
+      tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
+      tokens.put("Deal.System Size", result.get("system_size"));
+      tokens.put("Deal.Estimated ITC", result.get("estimated_itc"));
 
-        Double cashDownPayment = Double.parseDouble(result.get("cash_down_payment") == null ? "0" : result.get("cash_down_payment").toString());
-        tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+      Double totalSystemPrice =
+          Double.parseDouble(
+              result.get("total_system_price") == null
+                  ? "0"
+                  : result.get("total_system_price").toString());
+      Double referralPromotionAmount =
+          Double.parseDouble(
+              result.get("referral_promotion_amount") == null
+                  ? "0"
+                  : result.get("referral_promotion_amount").toString());
+      tokens.put("Deal.Total System Price", totalSystemPrice - referralPromotionAmount);
+      tokens.put(
+          "Deal.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
 
-        Double progressPayment = Double.parseDouble(result.get("progress_payment") == null ? "0" : result.get("progress_payment").toString());
-        progressPayment -= cashDownPayment;
-        tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+      Double cashDownPayment =
+          Double.parseDouble(
+              result.get("cash_down_payment") == null
+                  ? "0"
+                  : result.get("cash_down_payment").toString());
+      tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
 
-        // include the current date for use in the template
-        String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))
-            .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-        tokens.put("Date", today);
+      Double progressPayment =
+          Double.parseDouble(
+              result.get("progress_payment") == null
+                  ? "0"
+                  : result.get("progress_payment").toString());
+      progressPayment -= cashDownPayment;
+      tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+
+      // include the current date for use in the template
+      String today =
+          ZonedDateTime.now(ZoneId.of("US/Mountain"))
+              .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+      tokens.put("Date", today);
 
     } catch (EmptyResultDataAccessException e) {
-        log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
-        e.printStackTrace();
+      log.warn("PANDADOC Error getting proposal log values}", e);
     }
 
     return tokens;
@@ -723,17 +775,18 @@ public class PandaDocService {
    * @return
    */
   private String getContactAddress(PandaDocProjectDetails deets) {
-    return joinIfPresent(", ",
-      deets.getMailingStreet1(),
-      deets.getMailingStreet2(),
-      deets.getCity(),
-      deets.getState(),
-      deets.getPostalCode());
+    return joinIfPresent(
+        ", ",
+        deets.getMailingStreet1(),
+        deets.getMailingStreet2(),
+        deets.getCity(),
+        deets.getState(),
+        deets.getPostalCode());
   }
 
   /**
-   * Join the stringified objects together using the specified separator,
-   * but only for stringified objects that are not "blank"
+   * Join the stringified objects together using the specified separator, but only for stringified
+   * objects that are not "blank"
    *
    * @param sep
    * @param args
@@ -741,15 +794,15 @@ public class PandaDocService {
    */
   private String joinIfPresent(String sep, Object... args) {
     return Stream.of(args)
-      .filter(s -> !isBlank(s))
-      .map(s -> s.toString())
-      .collect(Collectors.joining(sep))
-      .trim();
+        .filter(s -> !isBlank(s))
+        .map(Object::toString)
+        .collect(Collectors.joining(sep))
+        .trim();
   }
 
   /**
-   * Determine whether the specified object appears to have a "blank" string
-   * value. Blank meaning null, empty, or the string "null".
+   * Determine whether the specified object appears to have a "blank" string value. Blank meaning
+   * null, empty, or the string "null".
    *
    * @param value
    * @return
@@ -787,7 +840,7 @@ public class PandaDocService {
       log.warn("PANDADOC: unexpected response code: {}", resp.getResponseCode());
 
       String error = "Unknown 500 Error";
-      if(resp.getResponseCode() != 500) {
+      if (resp.getResponseCode() != 500) {
         JSONObject respBody = resp.getJSON();
         error = respBody.toString();
       }
