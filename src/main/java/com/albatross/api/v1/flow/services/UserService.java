@@ -367,7 +367,7 @@ public class UserService {
         : changeContextNonAdmin(companyId);
   }
 
-  public ResponseEntity changeContextAdmin(Long companyId) {
+  private ResponseEntity changeContextAdmin(Long companyId) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -379,7 +379,7 @@ public class UserService {
     return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
   }
 
-  public ResponseEntity changeContextNonAdmin(Long companyId) {
+  private ResponseEntity changeContextNonAdmin(Long companyId) {
     User user = securityService.getCurrentUser();
     boolean match = false;
     // get list of companies the user has access to

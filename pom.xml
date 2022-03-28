@@ -18,7 +18,8 @@
   <properties>
     <java.version>16</java.version>
     <spring-cloud.version>2020.0.3</spring-cloud.version>
-    <aws-springcloud.version>2.3.3</aws-springcloud.version>
+    <aws-springcloud.version>2.4.0</aws-springcloud.version>
+    <aws-sdk.version>1.12.185</aws-sdk.version>
     <hibernate-validator.version>7.0.1.Final</hibernate-validator.version>
     <spring-cloud-starter.version>3.1.1</spring-cloud-starter.version>
   </properties>
@@ -49,12 +50,12 @@
     <dependency>
       <groupId>io.awspring.cloud</groupId>
       <artifactId>spring-cloud-starter-aws-secrets-manager-config</artifactId>
+      <version>${aws-springcloud.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk</artifactId>
-      <version>1.12.184</version>
+      <artifactId>aws-java-sdk-s3</artifactId>
     </dependency>
 
     <dependency>
@@ -264,9 +265,9 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.awspring.cloud</groupId>
-        <artifactId>spring-cloud-aws-dependencies</artifactId>
-        <version>${aws-springcloud.version}</version>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-bom</artifactId>
+        <version>${aws-sdk.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

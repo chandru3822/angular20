@@ -36,12 +36,6 @@ public class SecurityService implements UserDetailsService {
 
   @Autowired private PasswordEncoder passwordEncoder;
 
-  public static Authentication getRequiredAuthentication() {
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    Assert.notNull(auth, "Authentication not found");
-    return auth;
-  }
-
   /** Look up a user by username */
   @Override
   public UserAccountDetails loadUserByUsername(String username) throws UsernameNotFoundException {

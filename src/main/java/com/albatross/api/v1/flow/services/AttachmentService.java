@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-/** Created by Joseph Canto on 2019-08-01. */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,7 +26,6 @@ public class AttachmentService {
   private final AmazonS3 s3;
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private String s3Url = "https://%s.s3.amazonaws.com/%s";
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -42,6 +40,7 @@ public class AttachmentService {
    * @param a
    */
   private void setAttachmentUrl(String bucket, Attachment a) {
+    String s3Url = "https://%s.s3.amazonaws.com/%s";
     a.setUrl(String.format(s3Url, bucket, a.getS3Key()));
   }
 
