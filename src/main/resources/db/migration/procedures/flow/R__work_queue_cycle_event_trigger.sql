@@ -32,7 +32,7 @@ BEGIN
   /*This query looks at the new status type and determines if the new status is part of a work queue.
     If it is part of a work queue we keep processing, otherwise we set the exit date if there is currently
     a row in the work_queue_cycle table and we do this in the update section*/
-  IF (TG_OP = 'INSERT') THEN
+  IF (TG_OP = 'UPDATE') and old.start_time is null and new.start_time is not null THEN
     insert into flow.work_queue_cycle(project_process_step_event_id, company_event_status_type_id,
                                       process_step_event_work_queue_type_event_status_type_id,
                                       date_entered_queue,
@@ -48,7 +48,7 @@ BEGIN
            v_project_status_type_id = event.project_status_type_id)));
 
     /*We only update if the statuses change*/
-  elsif (TG_OP = 'UPDATE') and (old.company_event_status_type_id != new.company_event_status_type_id) THEN
+  elsif (TG_OP = 'UPDATE') and (old.company_event_status_type_id is not null and old.company_event_status_type_id != new.company_event_status_type_id) THEN
     /*looping through all work_queue_cycle records where the old status matches and the project_process_step_id matches.
       Inside the loop we are querying to see if any of the old record work_queue_type_id's match what we would be
       inserting based on what the new status work_queue_type_id.  */
@@ -127,7 +127,12 @@ BEGIN
           (v_company_process_step_status_type_id = event.company_process_status_type_id or
            v_process_step_status_type_id = event.process_step_status_type_id) and
           (v_company_project_status_type_id = event.company_project_status_type_id or
-           v_project_status_type_id = event.project_status_type_id)));
+           v_project_status_type_id = event.project_status_type_id)))
+    on conflict (project_process_step_event_id, company_event_status_type_id,
+      process_step_event_work_queue_type_event_status_type_id)
+    where ((date_exited_queue IS NULL) AND (project_process_step_event_id IS NOT NULL) AND
+           (company_event_status_type_id IS NOT NULL) AND
+           (process_step_event_work_queue_type_event_status_type_id IS NOT NULL)) do nothing;
   end if;
   RETURN NULL;
 END

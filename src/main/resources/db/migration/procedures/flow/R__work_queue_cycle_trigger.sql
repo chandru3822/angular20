@@ -5,7 +5,6 @@ declare
   v_new_work_queue_type_id          integer;
   v_pswqtpsst_id                    integer;
   v_process_step_status_type_id     integer;
-  v_old_process_step_status_type_id integer;
   v_old                             record;
   v_work_type_ids                   integer[];
   v_company_project_status_type_id  integer;
@@ -24,10 +23,6 @@ BEGIN
   from flow.company_process_step_status_type
   where id = new.company_process_step_status_type_id;
 
-  select process_step_status_type_id
-  into v_old_process_step_status_type_id
-  from flow.company_process_step_status_type
-  where id = old.company_process_step_status_type_id;
 
   if (select count(1) > 0
       from flow.process_step_event pse
@@ -55,12 +50,8 @@ BEGIN
         perform flow.process_work_queue_cycle_events(x.id,
                                                      x.company_event_status_type_id,
                                                      x.event_status_type_id,
-                                                     old.company_process_step_status_type_id,
-                                                     v_old_process_step_status_type_id,
                                                      new.company_process_step_status_type_id,
                                                      v_process_step_status_type_id,
-                                                     v_company_project_status_type_id,
-                                                     v_project_status_type_id,
                                                      v_company_project_status_type_id,
                                                      v_project_status_type_id,
                                                      x.process_step_event_id,
@@ -186,19 +177,12 @@ $$
 declare
   x                            record;
   v_new_project_status_type_id integer;
-  v_old_project_status_type_id integer;
 BEGIN
 
   select project_status_type_id
   into v_new_project_status_type_id
   from flow.company_project_status_type
   where id = new.company_project_status_type_id;
-
-  select project_status_type_id
-  into v_old_project_status_type_id
-  from flow.company_project_status_type
-  where id = old.company_project_status_type_id;
-
 
   for x in select ppse.process_step_event_id,
                   ppse.id,
@@ -229,10 +213,6 @@ BEGIN
                                                    x.event_status_type_id,
                                                    x.company_process_status_type_id,
                                                    x.process_status_type_id,
-                                                   x.company_process_status_type_id,
-                                                   x.process_status_type_id,
-                                                   old.company_project_status_type_id,
-                                                   v_old_project_status_type_id,
                                                    new.company_project_status_type_id,
                                                    v_new_project_status_type_id,
                                                    x.process_step_event_id,
@@ -264,13 +244,13 @@ BEGIN
           modified_by_id    = new.modified_by_id
       where project_process_step_id = x.id
         and company_process_step_status_type_id = x.company_process_status_type_id
-        and process_step_work_queue_type_process_step_status_type_id in
+        and not exists
             (select process.process_step_work_queue_type_process_step_status_type_id
              from flow.get_process_step_work_queue_type_configs(x.process_step_id) process
              where ((x.company_process_status_type_id = process.company_process_status_type_id or
                      x.process_status_type_id = process.process_step_status_type_id) and
-                    (old.company_project_status_type_id = process.company_project_status_type_id or
-                     v_old_project_status_type_id = process.project_status_type_id)))
+                    (new.company_project_status_type_id = process.company_project_status_type_id or
+                     v_new_project_status_type_id = process.project_status_type_id)))
         and date_exited_queue is null;
 
       insert into flow.work_queue_cycle(project_process_step_id,

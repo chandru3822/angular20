@@ -8,7 +8,7 @@ BEGIN
   with my_data as (
     select wqc.id
     from flow.work_queue_cycle wqc
-           inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst
+           inner join flow.process_step_event_work_queue_type_event_status_type psewqtpsst
                       on wqc.process_step_event_work_queue_type_event_status_type_id = psewqtpsst.id
     where psewqtpsst.process_step_event_work_queue_type_id = p_process_step_event_work_queue_type_id
       and wqc.date_exited_queue is null
@@ -61,7 +61,12 @@ BEGIN
        and (pc.company_event_status_type_id = cest.id or pc.event_status_type_id = cest.event_status_type_id) and
            (pc.company_process_status_type_id = cpsst2.id or
             pc.process_step_status_type_id = cpsst2.process_step_status_type_id)
-       and (pc.company_project_status_type_id = cpst2.id or pc.project_status_type_id = cpst2.id));
+       and (pc.company_project_status_type_id = cpst2.id or pc.project_status_type_id = cpst2.id))
+  on conflict (project_process_step_event_id, company_event_status_type_id,
+    process_step_event_work_queue_type_event_status_type_id)
+  where ((date_exited_queue IS NULL) AND (project_process_step_event_id IS NOT NULL) AND
+         (company_event_status_type_id IS NOT NULL) AND
+         (process_step_event_work_queue_type_event_status_type_id IS NOT NULL)) do nothing;
 
 
 END

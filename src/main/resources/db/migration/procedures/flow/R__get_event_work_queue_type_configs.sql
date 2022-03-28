@@ -28,7 +28,7 @@ BEGIN
              coalesce(pst.id,0) as project_status_type_id
       from flow.process_step_event_work_queue_type_event_status_type psewqtest
              inner join flow.process_step_event_work_queue_type psewqt  on psewqtest.process_step_event_work_queue_type_id = psewqt.id and psewqt.archived is false
-             inner join flow.process_step_event pse on psewqt.process_step_event_id = pse.id
+             inner join flow.process_step_event pse on psewqt.process_step_event_id = pse.id and psewqt.archived is false
              left join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst on psewqtpsst.process_step_event_work_queue_type_id = psewqt.id and psewqtpsst.archived is false
              left join flow.process_step_event_work_queue_type_project_status_type psewqtpst on psewqtpst.process_step_event_work_queue_type_id = psewqt.id and psewqtpst.archived is false
              left join flow.company_event_status_type cest on psewqtest.company_event_status_type_id = cest.id and cest.archived is false
@@ -37,7 +37,7 @@ BEGIN
              left join flow.process_step_status_type psst on psewqtpsst.process_step_status_type_id = psst.id and psst.archived is false
              left join flow.company_project_status_type cpst on psewqtpst.company_project_status_type_id = cpst.id and cpst.archived is false
              left join flow.project_status_type pst on psewqtpst.project_status_type_id = pst.id and pst.archived is false
-      where  psewqtpsst.archived is false and pse.id = p_process_step_event_id;
+      where  psewqtest.archived is not true and pse.id = p_process_step_event_id;
 END
 $BODY$
 LANGUAGE plpgsql VOLATILE
