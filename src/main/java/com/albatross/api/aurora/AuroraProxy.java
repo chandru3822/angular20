@@ -32,10 +32,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -192,10 +189,12 @@ public class AuroraProxy {
   }
 
   public String getDesignId(Long ppsId, Long cfgaId) {
-    log.info("ZZZ1 ppsId: " + ppsId);
-    log.info("ZZZ1 designCfgaId: " + cfgaId);
-    return sqlCache.queryForObjectOptional("aurora.getIdByProjectProcessStepId", Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class)
-      .orElse(null);
+    Map<String, Object> params =  new HashMap<>();
+    params.put("ppsId", ppsId);
+    params.put("cfgaId", cfgaId);
+    Optional<String> result = sqlCache.queryForObjectOptional("aurora.getIdByProjectProcessStepId", params, String.class);
+    log.info("ZZZ result: " + result.toString());
+    return result.orElse(null);
   }
 
   ///////////////////////////////////////////////////////////////////////////
