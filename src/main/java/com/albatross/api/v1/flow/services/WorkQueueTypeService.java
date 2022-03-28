@@ -125,6 +125,8 @@ public class WorkQueueTypeService {
     sqlCache.update(
         "workQueueType.deleteProcessStepWorkQueueType",
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
+
+    callConfigChangeFunction(id, null);
   }
 
   public Optional<ProcessStepWorkQueueType> getProcessStepWorkQueueType(Long id) {
@@ -157,6 +159,8 @@ public class WorkQueueTypeService {
     wqt.setId(id);
     saveProjectStatusTypesToWorkQueueType(wqt, null);
     saveProcessStepStatusTypesToWorkQueueType(wqt, null);
+
+    callConfigChangeFunction(wqt.getId(), null);
 
     return getProcessStepWorkQueueType(id);
   }
@@ -344,6 +348,8 @@ public class WorkQueueTypeService {
     sqlCache.update(
         "workQueueType.deleteEventWorkQueueType",
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
+
+    callConfigChangeFunction(null, id);
   }
 
   public Optional<ProcessStepEventWorkQueueType> getEventWorkQueueType(Long id) {
@@ -377,6 +383,8 @@ public class WorkQueueTypeService {
     saveProjectStatusTypesToWorkQueueType(null, wqt);
     saveProcessStepStatusTypesToWorkQueueType(null, wqt);
     saveEventStatusTypesToWorkQueueType(wqt);
+
+    callConfigChangeFunction(null, wqt.getId());
 
     return getEventWorkQueueType(id);
   }
