@@ -122,6 +122,7 @@ public class WorkQueueTypeService {
   public void deleteProcessStepWorkQueueType(Long id) {
     User currentUser = securityService.getCurrentUser();
 
+    //this was updated to also delete the psWqt - process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
     sqlCache.update(
         "workQueueType.deleteProcessStepWorkQueueType",
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
@@ -345,6 +346,7 @@ public class WorkQueueTypeService {
   public void deleteEventWorkQueueType(Long id) {
     User currentUser = securityService.getCurrentUser();
 
+    //this was updated to also deletes the pseWqt - events statuses, process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
     sqlCache.update(
         "workQueueType.deleteEventWorkQueueType",
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
