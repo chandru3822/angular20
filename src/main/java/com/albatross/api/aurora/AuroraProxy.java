@@ -192,10 +192,9 @@ public class AuroraProxy {
   }
 
   public String getDesignId(Long ppsId, Long cfgaId) {
-    return sqlCache.queryForObject(
-        "aurora.getIdByProjectProcessStepId",
-        Map.of("ppsId", ppsId, "cfgaId", cfgaId),
-        String.class);
+    log.info("ZZZ1 ppsId: " + ppsId);
+    log.info("ZZZ1 designCfgaId: " + cfgaId);
+    return sqlCache.queryForObject("aurora.getIdByProjectProcessStepId", Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class);
   }
 
   ///////////////////////////////////////////////////////////////////////////
