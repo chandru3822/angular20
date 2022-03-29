@@ -7,6 +7,7 @@
         inner join flow.db_function df on df.id = cf.db_function_id
       where cf.company_id = :companyId
         and cf.archived is not true
+        and df.archived is not true
       order by cf.company_function_name
   ]]></companyFunction.getFunctions>
 
@@ -18,7 +19,10 @@
         inner join flow.db_function df on df.id = cf.db_function_id
       where cf.company_id = :companyId
         and cf.archived is not true
+        and df.archived is not true
         and df.db_function_type_id = :typeId
+        and case when :eventActionable::boolean then df.event_actionable = :eventActionable
+             when :processStepActionable::boolean then df.process_step_actionable = :processStepActionable else true end
       order by cf.company_function_name
   ]]></companyFunction.getFunctionsByType>
 
@@ -83,8 +87,9 @@
   <companyFunction.getFunctionDynamicParams><![CDATA[
     select dfp.id db_function_param_id,
            dfp.data_type_id,
-       dfp.parameter_name,
-       null as dynamic_value
+           dfp.parameter_name,
+           dfp.description,
+           null as dynamic_value
     from flow.db_function_param dfp
     where dfp.db_function_id = :dbFunctionId
       and dfp.archived is not true

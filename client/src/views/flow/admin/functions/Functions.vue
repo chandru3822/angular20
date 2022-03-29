@@ -40,6 +40,20 @@
             <v-checkbox
               v-if="newFunction.dbFunctionTypeId === 2"
               type="checkbox"
+              v-model="newFunction.processStepActionable"
+              label="Allow use by process steps"
+            />
+
+            <v-checkbox
+              v-if="newFunction.dbFunctionTypeId === 2"
+              type="checkbox"
+              v-model="newFunction.eventActionable"
+              label="Allow use by events"
+            />
+
+            <v-checkbox
+              v-if="newFunction.dbFunctionTypeId === 2"
+              type="checkbox"
               v-model="newFunction.runInBackend"
               label="Run in backend"
             />
