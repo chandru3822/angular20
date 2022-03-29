@@ -28,6 +28,12 @@
             <v-list-item-title>Function Return Data Type: <strong>{{dbFunction.returnDataType}}</strong></v-list-item-title>
           </v-list-item>
           <v-list-item v-if="dbFunction.dbFunctionTypeId === 2">
+            <v-list-item-title>Allow use by process steps: <strong>{{dbFunction.processStepActionable}}</strong></v-list-item-title>
+          </v-list-item>
+          <v-list-item v-if="dbFunction.dbFunctionTypeId === 2">
+            <v-list-item-title>Allow use by events: <strong>{{dbFunction.eventActionable}}</strong></v-list-item-title>
+          </v-list-item>
+          <v-list-item v-if="dbFunction.dbFunctionTypeId === 2">
             <v-list-item-title>Run in Backend: <strong>{{dbFunction.runInBackend}}</strong></v-list-item-title>
           </v-list-item>
           <v-list-item>
