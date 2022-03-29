@@ -70,7 +70,7 @@ public class VerseWebhookService {
             "VERSE: Unable to update Contact Id "
                 + versusLeadEvent.getExternalLeadId()
                 + " lead status due to unknown lead status";
-        log.error(msg);
+        //log.error(msg);
       }
 
       return ResponseEntity.status(HttpStatus.ACCEPTED).body(msg);
