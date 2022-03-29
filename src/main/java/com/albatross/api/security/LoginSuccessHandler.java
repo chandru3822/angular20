@@ -12,33 +12,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+//TODO: This is never invoked on login, should we remove it?
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Autowired
-    private ObjectMapper objectMapper;
+  @Autowired private ObjectMapper objectMapper;
 
-    @Autowired
-    private SecurityService securityService;
+  @Autowired private SecurityService securityService;
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
-        // setting the status as ok and PLEASE avoid redirects.
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader("Content-Type", "application/json");
+  @Override
+  public void onAuthenticationSuccess(
+      HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+      throws IOException, ServletException {
+    // setting the status as ok and PLEASE avoid redirects.
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.setHeader("Content-Type", "application/json");
 
-        UserAccountDetails details = securityService.getCurrentUserDetails();
-//        Long effective = details.getTrueUserId();
+    UserAccountDetails details = securityService.getCurrentUserDetails();
 
-        String json = objectMapper.writeValueAsString(
-            new Params("user", details)
-                    .buildNullable()
-        );
+    String json = objectMapper.writeValueAsString(new Params("user", details).buildNullable());
 
-
-        response.getWriter().write(json);
-    }
-
-
+    response.getWriter().write(json);
+  }
 }
-

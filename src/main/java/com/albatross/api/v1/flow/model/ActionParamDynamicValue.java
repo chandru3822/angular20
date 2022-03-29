@@ -12,7 +12,7 @@ import lombok.Setter;
 public class ActionParamDynamicValue {
 
   private Long id, dbFunctionParamId, processStepActionCompanyFunctionId, dbFunctionId, dataTypeId;
-  private String dynamicValue, parameterName;
+  private String dynamicValue, parameterName, description;
   private Boolean archived;
 
 

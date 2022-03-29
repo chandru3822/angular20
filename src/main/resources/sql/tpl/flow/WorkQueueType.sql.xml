@@ -202,7 +202,17 @@
       set archived = true,
         modified_by_id = :modifiedById,
         date_modified = now()
-      where id = :id
+      where id = :id;
+      update flow.process_step_work_queue_type_project_status_type
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where process_step_work_queue_type_id = :id;
+      update flow.process_step_work_queue_type_process_step_status_type
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where process_step_work_queue_type_id = :id;
   ]]></workQueueType.deleteProcessStepWorkQueueType>
 
   <workQueueType.callPsConfigChangeFunction><![CDATA[
@@ -316,7 +326,17 @@
         set archived = true,
           modified_by_id = :modifiedById,
           date_modified = now()
-        where id = :id
+        where id = :id;
+        update flow.process_step_event_work_queue_type_project_status_type
+          set archived = true,
+              modified_by_id = :modifiedById,
+              date_modified = now()
+          where process_step_event_work_queue_type_id = :id;
+          update flow.process_step_event_work_queue_type_process_step_status_type
+          set archived = true,
+              modified_by_id = :modifiedById,
+              date_modified = now()
+          where process_step_event_work_queue_type_id = :id;
     ]]>
   </workQueueType.deleteEventWorkQueueType>
 

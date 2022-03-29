@@ -122,9 +122,12 @@ public class WorkQueueTypeService {
   public void deleteProcessStepWorkQueueType(Long id) {
     User currentUser = securityService.getCurrentUser();
 
+    //this was updated to also delete the psWqt - process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
     sqlCache.update(
         "workQueueType.deleteProcessStepWorkQueueType",
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
+
+    callConfigChangeFunction(id, null);
   }
 
   public Optional<ProcessStepWorkQueueType> getProcessStepWorkQueueType(Long id) {
@@ -157,6 +160,8 @@ public class WorkQueueTypeService {
     wqt.setId(id);
     saveProjectStatusTypesToWorkQueueType(wqt, null);
     saveProcessStepStatusTypesToWorkQueueType(wqt, null);
+
+    callConfigChangeFunction(wqt.getId(), null);
 
     return getProcessStepWorkQueueType(id);
   }
@@ -341,9 +346,12 @@ public class WorkQueueTypeService {
   public void deleteEventWorkQueueType(Long id) {
     User currentUser = securityService.getCurrentUser();
 
+    //this was updated to also deletes the pseWqt - events statuses, process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
     sqlCache.update(
         "workQueueType.deleteEventWorkQueueType",
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
+
+    callConfigChangeFunction(null, id);
   }
 
   public Optional<ProcessStepEventWorkQueueType> getEventWorkQueueType(Long id) {
@@ -377,6 +385,8 @@ public class WorkQueueTypeService {
     saveProjectStatusTypesToWorkQueueType(null, wqt);
     saveProcessStepStatusTypesToWorkQueueType(null, wqt);
     saveEventStatusTypesToWorkQueueType(wqt);
+
+    callConfigChangeFunction(null, wqt.getId());
 
     return getEventWorkQueueType(id);
   }
