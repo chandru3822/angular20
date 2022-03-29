@@ -25,7 +25,8 @@ BEGIN
                 (p_new_company_process_step_status_type_id = event.company_process_status_type_id or
                  p_new_process_step_status_type_id = event.process_step_status_type_id) and
                 (p_new_company_project_status_type_id = event.company_project_status_type_id or
-                 p_new_project_status_type_id = event.project_status_type_id)))
+                 p_new_project_status_type_id = event.project_status_type_id)) and
+           event.process_step_event_work_queue_type_event_status_type_id = wqc.process_step_event_work_queue_type_event_status_type_id)
     and wqc.date_exited_queue is null;
 
   insert into flow.work_queue_cycle(project_process_step_event_id,

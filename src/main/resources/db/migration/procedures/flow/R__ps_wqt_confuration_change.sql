@@ -20,7 +20,7 @@ BEGIN
                    from flow.project_process_step pps
                           inner join flow.company_process_step_status_type cpsst
                                      on pps.company_process_step_status_type_id = cpsst.id
-                          inner join flow.project p on pps.project_id = p.id
+                          inner join flow.project p on pps.project_id = p.id and p.archived is false
                           inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
                           inner join flow.get_process_step_work_queue_type_configs(pps.process_step_id) pc
                                      on pc.process_step_work_queue_type_process_step_status_type_id =
@@ -40,11 +40,11 @@ BEGIN
      from flow.project_process_step pps2
             inner join flow.company_process_step_status_type cpsst2
                        on pps2.company_process_step_status_type_id = cpsst2.id
-            inner join flow.project p on pps2.project_id = p.id
+            inner join flow.project p on pps2.project_id = p.id and p.archived is false
             inner join flow.company_project_status_type cpst2 on p.company_project_status_type_id = cpst2.id
             inner join flow.process_step_work_queue_type pswqt4 on pswqt4.id = p_process_step_work_queue_type_id
             inner join flow.get_process_step_work_queue_type_configs(pswqt4.process_step_id) pc
-                       on pc.work_queue_type_id = pswqt4.id
+                       on pc.work_queue_type_id = pswqt4.work_queue_type_id
             inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst3
                        on pc.process_step_work_queue_type_process_step_status_type_id = pswqtpsst3.id
             left join flow.work_queue_cycle wqc3
@@ -54,7 +54,12 @@ BEGIN
        and pps2.process_step_id = pswqt4.process_step_id
        and (pc.company_process_status_type_id = cpsst2.id or
             pc.process_step_status_type_id = cpsst2.process_step_status_type_id)
-       and (pc.company_project_status_type_id = cpst2.id or pc.project_status_type_id = cpst2.id));
+       and (pc.company_project_status_type_id = cpst2.id or pc.project_status_type_id = cpst2.project_status_type_id))
+  on conflict (project_process_step_id, company_process_step_status_type_id,
+    process_step_work_queue_type_process_step_status_type_id)
+  where ((date_exited_queue IS NULL) AND (project_process_step_id IS NOT NULL) AND
+         (company_process_step_status_type_id IS NOT NULL) AND
+         (process_step_work_queue_type_process_step_status_type_id IS NOT NULL)) do nothing;
 
 END
 $$

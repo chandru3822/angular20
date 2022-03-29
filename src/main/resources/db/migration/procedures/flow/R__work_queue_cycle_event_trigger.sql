@@ -18,7 +18,7 @@ BEGIN
   into v_company_project_status_type_id,v_project_status_type_id,
     v_company_process_step_status_type_id,v_process_step_status_type_id
   from flow.project_process_step pps
-       inner join flow.project p on pps.project_id = p.id
+       inner join flow.project p on pps.project_id = p.id and p.archived is false
          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
        inner join flow.company_process_step_status_type cpsst2 on pps.company_process_step_status_type_id = cpsst2.id
   where pps.id = new.project_process_step_id;
