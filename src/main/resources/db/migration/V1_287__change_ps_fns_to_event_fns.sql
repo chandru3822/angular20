@@ -41,7 +41,7 @@ where not exists (
 ;
 
 insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, description)
-select 64, 'Property to Save', 1, 5, 2, null, 'Options are: start_time, end_time, resource_id, resource_name, status_id, status_type'
+select 64, 'Property to Save', 2, 5, 2, null, 'Options are: start_time, end_time, resource_id, resource_name, status_id, status_type'
 where not exists (
   select id from flow.db_function_param
   where db_function_id = 64

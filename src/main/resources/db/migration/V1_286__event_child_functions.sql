@@ -108,3 +108,13 @@ where not exists (
 
 alter table flow.project_process_step add column if not exists parent_project_process_step_event_id int references flow.project_process_step_event(id);
 drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer, integer);
+
+
+--db function to create child pps from event
+alter table flow.db_function
+  add column if not exists creates_pps boolean not null default false;
+
+update flow.db_function
+set creates_pps = true,
+    return_data_type_id = 6
+where id in (select id from flow.db_function where function_name = 'flow.create_child_ps_from_event');
