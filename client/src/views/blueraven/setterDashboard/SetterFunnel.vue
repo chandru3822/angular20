@@ -712,7 +712,7 @@
     },
     methods: {
       doRepWatcher() {
-        console.log('CCCC')
+        // console.log('CCCC')
         if(this.repValuesChanged) {
           if (this.isSetter) {
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
