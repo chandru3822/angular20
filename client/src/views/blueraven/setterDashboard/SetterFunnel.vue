@@ -471,6 +471,7 @@
                 <td :class="item.appointment_outcome_class">
                   {{ item.appointment_outcome || '' }}
                 </td>
+                <td>{{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}</td>
                 <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.state || '' }}</td>
                 <td>{{ item.office || '' }}</td>
@@ -601,6 +602,7 @@
         { text: 'Closer', value: 'owner_name', show: true, width: 90 },
         { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
+        { text: 'Checked In Time', value: 'checked_in_time', show: true, width: 175 },
         { text: 'Date Created', value: 'date_created', show: true, width: 115 },
         { text: 'State', value: 'state', show: true, width: 80 },
         { text: 'Office', value: 'office', show: true, width: 90 }
