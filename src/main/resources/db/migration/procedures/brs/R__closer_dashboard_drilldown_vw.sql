@@ -16,7 +16,10 @@ select pd.closer_name                 as owner_name,
        pd.primary_financier_name         financier,
        ppse.start_time                   appointment_date,
        pd.cancelled_date,
-       lov.name                          appointment_outcome,
+       (select lov.name
+         from flow.list_of_value lov
+         where lov.id = ppscfv1.int_value
+       ) as appointment_outcome,
        pps.process_step_id,
        coalesce(ppscfv2.timestamp_value, ppsea.date_created) as checked_in_time,
        ppscfv1.int_value              as closer_appt_outcome_int_value,
@@ -32,7 +35,6 @@ from brs.project_details pd
        left join flow.project_process_step_event_custom_field_value ppscfv1
                  on ppse.id = ppscfv1.project_process_step_event_id and
                     ppscfv1.custom_field_group_assignment_id = 4 -- Closer Appointment Outcome
-       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
        left join flow.project_process_step_event_action ppsea on ppsea.project_process_step_event_id = ppse.id and
                                                                  ppsea.process_step_event_action_id =
                                                                  408 --408 = check in action on event
