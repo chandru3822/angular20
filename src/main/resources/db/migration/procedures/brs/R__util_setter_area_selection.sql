@@ -27,8 +27,8 @@ BEGIN
                             end) as org_name,
                        o.active_flag as active
                 from flow.user_positions_vw upv
-                    inner join flow.org o on o.id = upv.org_id
-                    inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 20
+                    inner join flow.org o on o.id = upv.org_id and o.org_type_id = 20
+--                     inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 20
                     left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
                 where upv.org_id is not null

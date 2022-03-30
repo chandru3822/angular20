@@ -193,13 +193,13 @@ public class SetterDashboardService {
   }
 
   public String funnelStandard(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], false)";
 
     return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
 
   public String funnelCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_cohort(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], true)";
 
     return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
@@ -216,13 +216,14 @@ public class SetterDashboardService {
   }
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+//    String sqlQuery = "select brs.rpt_setter_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
 
   public String funnelDrilldownCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
