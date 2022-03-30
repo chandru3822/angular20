@@ -266,25 +266,23 @@ public class BrsProcessStepActionFunctionService {
 
       var design = designResponse.getFields().get("design");
       int productionEstimate = (int) Double.parseDouble(design.get("energy_production").get("annual").toString());
-      var stringInverters = design.get("string_inverters"); //account for empty array
       var arrays = design.get("arrays");
       int panelQuantity = 0;
+      int panelWatts = 0;
       String manufacturer = null;
       String inverter = null;
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
         manufacturer = arrays.get(0).get("module").get("manufacturer").toString().replace("\"", "");
+        panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
+        inverter = arrays.get(0).get("microinverter").get("name").toString();
 
         for (JsonNode array : arrays) {
           if (array.has("module")) {
             panelQuantity += Integer.parseInt(array.get("module").get("count").toString());
           }
         }
-      }
-
-      if (!stringInverters.isEmpty()) {
-        inverter = stringInverters.get(0).get("name").toString();
       }
 
       HashMap<String, Object> params = new HashMap<>();
@@ -323,10 +321,13 @@ public class BrsProcessStepActionFunctionService {
           }
           sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } else if (paramName.contains("Inverter Brand")) {
-          if (inverter != null) {
-            Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", inverter), Long.class);
-            params.put("intValue", lovId);
-          }
+//          if (inverter != null) {
+//            Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", inverter), Long.class);
+//            params.put("intValue", lovId);
+//          }
+//          sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+        }  else if (paramName.contains("Panel Watts")) {
+          params.put("intValue", panelWatts);
           sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } else if (paramName.contains("Design JSON")) {
           //store the entire json object for future proposal log history calculations
