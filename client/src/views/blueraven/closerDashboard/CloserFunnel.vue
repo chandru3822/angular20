@@ -1625,6 +1625,11 @@ export default {
     },
 
     async repLoad(preSelectLists) {
+      //reset these any time we are reloading reps or things get weird
+      this.repModel = []
+      this.repData = []
+      this.repLengthOverride = false
+
       if (!this.currentUserId) return
 
       let areas = this.areaModel.map(function (area) {
