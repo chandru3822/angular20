@@ -85,9 +85,7 @@ BEGIN
                                                                                                         where code = 'SETTER_POSITION_IDS')
                                           and up.archived is not true and up.id = upv.user_position_id
                            inner join flow.org o on o.id = up.org_id
---                            inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-                    where upv.user_status_type_id != 13
---                     where ust.user_status_type != 'Expired'
+                    where upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
                   ) as sub_rows  order by active desc, name) as sub_rows;
     else
     -- org_level_id of 7 = Office
@@ -111,9 +109,7 @@ BEGIN
 --                                        inner join flow.org o on upv.org_id = o.id
                               where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                 and upv.archived is not true
-                                and upv.user_status_type_id != 13
-                       --not sure why the upper query was only checking expired, but these ones were checking these 3
---                                 and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
+                                and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
                           ) as users
                      order by active desc, name
                  ) as sub_rows;
@@ -138,8 +134,7 @@ BEGIN
                                   where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                     and upv.archived is not true
                                     and u.id = p_platform_user_id
-                                    and upv.user_status_type_id != 13
---                                     and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
+                                    and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
                               ) as users
                          order by active desc, name
                      ) as sub_rows;

@@ -44,8 +44,8 @@ BEGIN
                       from brs.project_details pd
                              inner join flow.user_position up on up.id = pd.setter_user_position_id
                              inner join flow.org o on o.id = up.org_id
-
---                             inner join flow.user su on su.id = pd.setter_user_id
+                            --the list of reps is filtered to only show users in these statuses so we have to filter the funnel data the same way
+                             inner join flow.company_user_status cus on cus.user_id = up.user_id and cus.user_status_type_id  in (9, 11, 14)
                       where pd.company_id = 3
                         and pd.archived is false
                         and case
