@@ -62,7 +62,6 @@ BEGIN
                             end) as org_name,
                        o.active_flag as active
                 from flow.user_positions_vw upv
-                    inner join flow.org o on o.id = upv.org_id
                     inner join flow.org o on o.id = upv.org_id and o.org_type_id = 117
 --                     inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 117
 
