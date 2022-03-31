@@ -1,8 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ProcessStepEvent;
-import com.albatross.api.v1.flow.model.ProcessStepEventAction;
-import com.albatross.api.v1.flow.model.ProcessStepEventActionField;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProcessStepEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +84,25 @@ public class ProcessStepEventController {
   @DeleteMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteStepEventAction (@PathVariable Long actionId) {
     processStepEventService.deleteActionFromEvent(actionId);
+  }
+
+  // event action child functions
+
+  @PostMapping(value = "/{eventId}/action/{actionId}/addChildFunctionToAction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepEventActionChildFunction addChildFunctionToAction(@PathVariable Long actionId,
+                                                                      @RequestBody ProcessStepEventActionChildFunction child) {
+    return processStepEventService.addChildFunctionToAction(actionId, child);
+  }
+
+  @DeleteMapping(value = "/{eventId}/action/{actionId}/deleteChildFunction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteChildFunctionFromAction(@PathVariable Long id) {
+    processStepEventService.deleteChildFunctionFromAction(id);
+  }
+
+  @PutMapping(value = "/{eventId}/action/{actionId}/updateActionChildFunction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateActionChildFunction(@PathVariable Long actionId,
+                                        @RequestBody ProcessStepActionChildFunction child) {
+    processStepEventService.updateActionChildFunction(actionId, child);
   }
 
   //fields

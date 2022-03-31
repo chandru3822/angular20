@@ -2,8 +2,11 @@
   <v-container id="setter-dash-container" ref="setterDashContainer">
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- FUNNEL -->
-    <div id="pipeline-container"
+    <div id="pipeline-container" class="funnel-relative"
          :class="{'mb-8': funnelStats.length > 0}">
+      <div v-if="dropdownValuesLoading || setterPipelineLoading" class="funnel-spinner">
+        <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+      </div>
       <div class="pipeline-header-container">
         <div id="pipeline-header-top">
           <v-icon class="pipeline-icon">mdi-poll</v-icon>
@@ -213,6 +216,7 @@
                             dense
                             hide-details
                             return-object
+                            :disabled="repsLoading"
                             @input="repValuesChanged = true">
 
               <template v-slot:selection="{ item, index }">
@@ -253,9 +257,6 @@
 
       <!-- FUNNEL -->
       <div class="funnel-relative funnel-container">
-        <div v-if="funnelStatsLoading" class="funnel-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
-        </div>
         <div v-show="funnelStats.length > 0" id="funnel-background"
              :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"
              :stype="{'margin-top': showPipelineCustomDates && windowInnerWidth < 1135 ? '81px' :
@@ -313,7 +314,7 @@
             </th>
           </tr>
           <!-- FUNNEL ROWS -->
-          <tr class="funnel-tr" :class="{'blue-sub-row': [3,2].indexOf(line.id) !== -1}"
+          <tr class="funnel-tr" :class="{'blue-sub-row': index % 2 === 0}"
               v-for="(line, index) in funnelStats" :key="line.id">
             <td v-if="showExpectationInput(index)" id="expectation-input"
                 class="funnel-td funnel-expectation">
@@ -333,15 +334,15 @@
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
 
             <!-- TODAY COUNT -->
-            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, 'today', line.name) : ''">
+            <td class="funnel-td" :style="{'cursor': line.id !== 30 ? 'pointer' : ''}"
+                @click="line.id !== 30 ? funnelDrilldown(line.id, 'today', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.countTodayState}"
                      :title="line.todayHover">
-                  {{line.today_day_count}}{{line.id === 4 ? '%' : ''}}
+                  {{line.today_day_count}}{{line.id === 30 ? '%' : ''}}
                 </div>
 
-                <div class="funnel-percentage" :style="{color: line.percentTodayState}"
+                <div v-if="line.id !== 30" class="funnel-percentage" :style="{color: line.percentTodayState}"
                      :title="line.percentTodayHover">
                   {{line.percentToday}}
                 </div>
@@ -355,15 +356,15 @@
             </td>
 
             <!-- LAST 7 DAYS COUNT -->
-            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, '7days', line.name) : ''">
+            <td class="funnel-td" :style="{'cursor': line.id !== 30 ? 'pointer' : ''}"
+                @click="line.id !== 30 ? funnelDrilldown(line.id, '7days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count7state}"
                      :title="line.sevenDayHover">
-                  {{line.seven_day_count}}{{line.id === 4 ? '%' : ''}}
+                  {{line.seven_day_count}}{{line.id === 30 ? '%' : ''}}
                 </div>
 
-                <div class="funnel-percentage" :style="{color: line.percent7state}"
+                <div v-if="line.id !== 30" class="funnel-percentage" :style="{color: line.percent7state}"
                      :title="line.percent7hover">
                   {{line.percent7}}
                 </div>
@@ -377,15 +378,15 @@
             </td>
 
             <!-- LAST 30 DAYS COUNT -->
-            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, '30days', line.name) : ''">
+            <td class="funnel-td" :style="{'cursor': line.id !== 30 ? 'pointer' : ''}"
+                @click="line.id !== 30 ? funnelDrilldown(line.id, '30days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.thirtyDayHover">
-                  {{line.thirty_day_count}}{{line.id === 4 ? '%' : ''}}
+                  {{line.thirty_day_count}}{{line.id === 30 ? '%' : ''}}
                 </div>
 
-                <div class="funnel-percentage" :style="{color: line.percent30state}"
+                <div v-if="line.id !== 30" class="funnel-percentage" :style="{color: line.percent30state}"
                      :title="line.percent30hover">
                   {{line.percent30}}
                 </div>
@@ -400,10 +401,10 @@
 
             <!-- CUSTOM DATE RANGE COUNT -->
             <td class="funnel-td"
-                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
+                :style="{color: line.customCountState, 'cursor': line.id !== 30 ? 'pointer' : ''}"
                 :title="line.customDayHover"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
-              {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
+                @click="line.id !== 30 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
+              {{line.custom_date_range_count}}{{line.id === 30 ? '%' : ''}}
             </td>
           </tr>
         </table>
@@ -470,6 +471,7 @@
                 <td :class="item.appointment_outcome_class">
                   {{ item.appointment_outcome || '' }}
                 </td>
+                <td>{{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}</td>
                 <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.state || '' }}</td>
                 <td>{{ item.office || '' }}</td>
@@ -526,6 +528,9 @@
     data: () => ({
       snackbar: {},
       constants,
+      setterPipelineLoading: false,
+      repsLoading: true,
+      dropdownValuesLoading: true,
       funnelDrilldownDialog: false,
       currentUserId: null,
       isSetter: false,
@@ -557,8 +562,10 @@
       repModel: [],
       repData: [],
       repDataMaster: [],
+      modelOverride: false,
       //if we allow users to "Select All" when there are more than this the UI slows to a halt
       maxRepLimit: 1000,
+      repLengthOverride: false,
       repDataSelectAll: false,
       initialPageLoad: true,
       pipelineDateRanges: [
@@ -595,6 +602,7 @@
         { text: 'Closer', value: 'owner_name', show: true, width: 90 },
         { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
+        { text: 'Checked In Time', value: 'checked_in_time', show: true, width: 175 },
         { text: 'Date Created', value: 'date_created', show: true, width: 115 },
         { text: 'State', value: 'state', show: true, width: 80 },
         { text: 'Office', value: 'office', show: true, width: 90 }
@@ -675,7 +683,7 @@
         return 'check_box_outline_blank'
       },
       selectAllReps () {
-        return this.repModel.length === this.repData.length
+        return this.repModel.length === this.repData.length || this.repLengthOverride
       },
       selectSomeReps () {
         return this.repModel.length > 0 && !this.selectAllReps
@@ -706,8 +714,8 @@
     },
     methods: {
       doRepWatcher() {
+        // console.log('CCCC')
         if(this.repValuesChanged) {
-          console.log('IS SETTER? ',this.isSetter)
           if (this.isSetter) {
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
           } else if (this.selectAllReps) {
@@ -746,7 +754,6 @@
           this.repModel = []
 
           if (!this.initialPageLoad) {
-            console.log('loading here')
             this.regionLoad(preSelectLists, true)
             // this.officeLoad(preSelectLists, true)
             // this.repLoad(preSelectLists, true)
@@ -770,7 +777,7 @@
         this.officeModel = []
         this.repModel = []
 
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        // this.$store.commit(AppMutations.SET_LOADING, true)
 
         await getSetterRegions(this.currentUserId, JSON.stringify(areas)).then(res => {
           this.regionData = res
@@ -785,7 +792,7 @@
         })
 
         this.funnelStats = []
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       async districtLoad (preSelectLists) {
@@ -803,7 +810,7 @@
           }
         })
 
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        // this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterDistricts(this.currentUserId, JSON.stringify(areas), JSON.stringify(regions)).then(res => {
           if (res?.length > 0) {
             this.districtData = res
@@ -828,7 +835,7 @@
             // this.officeLoad(preSelectLists, true)
             // this.repLoad(preSelectLists, true)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          // this.$store.commit(AppMutations.SET_LOADING, false)
         })
 
         this.funnelStats = []
@@ -869,7 +876,7 @@
         this.repModel = []
         this.repData = []
 
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        // this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterOffices(this.currentUserId, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts)).then(res => {
           this.officeData = res
 
@@ -883,10 +890,16 @@
         })
 
         this.funnelStats = []
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       async repLoad (preSelectLists, loadFilterOnFirstLoad) {
+        //reset these any time we are reloading reps or things get weird
+        this.repModel = []
+        this.repData = []
+        this.repLengthOverride = false
+
+        this.repsLoading = true
         if (!this.currentUserId) return
 
         let areas = this.areaModel.map(function (area) {
@@ -921,7 +934,7 @@
         //   if (offices?.length === 0) return
         // }
 
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        // this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterReps(this.currentUserId, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), JSON.stringify(offices)).then(res => {
           this.repData = res
           this.repDataMaster = cloneDeep(res)
@@ -937,8 +950,10 @@
           }
         })
 
+        this.dropdownValuesLoading = false
         this.initialPageLoad = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.repsLoading = false
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       roundTenth (value) {
@@ -990,24 +1005,24 @@
         this.officeModel = []
 
         this.repModel = [
-          {user_id: -1, name: 'All Reps', active: true}
+          {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
         ]
 
         this.repData = [
-          {user_id: -1, name: 'All Reps', active: true}
+          {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
         ]
 
         this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       async pipelineLoad (targetInstallations, start, end, useRepDataInstead) {
-        this.funnelDataLoaded = false
+        this.setterPipelineLoading = true
         let reps = []
         let orgs = []
 
         if ((this.repModel.length === 0 && !useRepDataInstead) || (useRepDataInstead && this.repData.length === 0)) {
           this.funnelStats = []
-          this.funnelDataLoaded = true
+          this.setterPipelineLoading = false
           return
         }
 
@@ -1016,7 +1031,7 @@
         this.modelOverride = false
         if (useRepDataInstead) {
           this.repData.forEach((rep, index) => {
-            reps.push(rep.user_id)
+            reps.push(rep.user_position_id)
 
             if (index === this.repData.length - 1) {
               // this.districtModel = []
@@ -1026,24 +1041,24 @@
               if (this.repDataSelectAll && this.repDataMaster?.length > this.maxRepLimit) {
                 this.modelOverride = true
                 this.repModel = [
-                  {user_id: -2, name: 'All Filtered Reps', active: true}
+                  {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
                 ]
                 this.repData = [
-                  {user_id: -2, name: 'All Filtered Reps', active: true}
+                  {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
                 ]
               }
             }
           })
         } else {
-          this.repModel.forEach(rep => reps.push(rep.user_id))
+          this.repModel.forEach(rep => reps.push(rep.user_position_id))
         }
 
         if(this.modelOverride) {
           reps = []
           //this gets used when there are more than 1000 users selected
-          this.repDataMaster.forEach(rep => reps.push(rep.user_id))
+          this.repDataMaster.forEach(rep => reps.push(rep.user_position_id))
         }
-        this.funnelStatsLoading = true
+        // this.funnelStatsLoading = true
         try {
           const requestBody = {
             targetInstallations: targetInstallations,
@@ -1085,9 +1100,10 @@
             })
 
             this.funnelStats = data
-            this.funnelStatsLoading = false
+            this.setterPipelineLoading = false
           })
         } catch (e) {
+          this.setterPipelineLoading = false
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving pipeline data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -1219,8 +1235,7 @@
         if (this.viewSelect !== view) {
           this.viewSelect = view
 
-          if ((this.districtModel.length > 0 && this.regionModel.length > 0 && this.officeModel.length > 0 && this.repModel.length > 0) || this.repModel[0]?.user_id === -1) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
+          if ((this.repModel.length > 0) || this.repModel[0]?.user_position_id === -1) {
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           }
         }
@@ -1330,17 +1345,20 @@
         this.$nextTick(() => {
           if (this.selectAllReps) {
             this.repModel = []
+            this.repLengthOverride = false
             this.funnelStats = []
           } else {
-            if (!this.selectAllReps && this.isSetter) {
-              this.$store.commit(AppMutations.SET_LOADING, true)
-              // this.repModel = cloneDeep(this.repData)
-              // this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+            if (this.repDataSelectAll && this.repData?.length > this.maxRepLimit) {
+              //this is different than clicking the All Reps button and needs to be filtered.
+              // -2 was updated to mean - select all reps in the selected orgs
+              this.repLengthOverride = true
+              this.repModel = [
+                {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
+              ]
               this.doRepWatcher()
             } else {
               this.repModel = cloneDeep(this.repData)
-              //the pipeline load gets called automatically when the menu closes
-              // this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, true)
+              this.doRepWatcher()
             }
           }
         })
@@ -1350,7 +1368,7 @@
         let reps = []
         let orgs = []
         let start, end
-        reps = this.modelOverride ? this.repDataMaster.map(rep => rep.user_id) : this.repModel.map(rep => rep.user_id)
+        reps = this.modelOverride ? this.repDataMaster.map(rep => rep.user_position_id) : this.repModel.map(rep => rep.user_position_id)
         orgs = this.officeModel.map(org => org.org_id)
 
         switch (dateRange) {
@@ -1543,18 +1561,18 @@
   position: relative;
 }
 
-  .funnel-spinner {
-    position: absolute;
-    //height: 200px !important;
-    height: 100% !important;
-    width: 100%;
-    text-align: center;
-    opacity: .6;
-    background: white;
-    display: flex;
-    align-items: center;
-    z-index: 1000;
-  }
+.funnel-spinner {
+  position: absolute;
+  //height: 200px !important;
+  height: 100% !important;
+  width: 100%;
+  text-align: center;
+  opacity: .6;
+  background: white;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+}
 
   .align-items-center {
     align-items: center;

@@ -30,23 +30,23 @@ constants.EMAIL_RULES = [
 
 constants.POSTAL_CODE_RULES = [
   v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 characters',
-  v => /^\d{5}(?:[-\s]\d{4})?$/.test(v) || "Postal Code must be a valid format: ##### or #####-####"
+  v => (!v || /^\d{5}(?:[-\s]\d{4})?$/.test(v)) || "Postal Code must be a valid format: ##### or #####-####"
 ]
 
 constants.POSTAL_CODE_REQUIRED_RULES = [
   v => !!v || "Field is required",
   v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 characters',
-  v => /^\d{5}(?:[-\s]\d{4})?$/.test(v) || "Postal Code must be a valid format: ##### or #####-####"
+  v => (!v || /^\d{5}(?:[-\s]\d{4})?$/.test(v)) || "Postal Code must be a valid format: ##### or #####-####"
 ]
 
 constants.CITY_RULES = [
   v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-  v => /^[-.a-zA-Z0-9\s]+$/.test(v) || "City must only contain alphanumeric, hyphen, period, or whitespace characters"
+  v => (!v || /^[-.a-zA-Z0-9\s]+$/.test(v)) || "City must only contain alphanumeric, hyphen, period, or whitespace characters"
 ]
 
 constants.ADDRESS_RULES = [
   v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-  v => /^[-#'.a-zA-Z0-9&\s]+$/.test(v) || "Address must only contain alphanumeric, whitespace, or [-#'.&] characters"
+  v => (!v || /^[-#'.a-zA-Z0-9&\s]+$/.test(v)) || "Address must only contain alphanumeric, whitespace, or [-#'.&] characters"
 ]
 
 constants.PHONE_RULES = [
