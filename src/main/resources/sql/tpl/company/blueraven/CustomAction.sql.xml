@@ -1,0 +1,9 @@
+<sql>
+    <customAction.rescheduleCloserAppt>
+        <![CDATA[
+            select *
+            from brs.reschedule_closer_appointment(:ppsEventId::int, :userId::int)
+        ]]>
+    </customAction.rescheduleCloserAppt>
+
+</sql>
