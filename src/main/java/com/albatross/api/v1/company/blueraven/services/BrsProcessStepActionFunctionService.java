@@ -253,38 +253,30 @@ public class BrsProcessStepActionFunctionService {
   public void getDesignSummary(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
     try {
 
-      log.info(systemValues.toString());
-
       Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
       //This is hardcoded to the specific custom field group assignment ID of the used custom field. Not ideal
       Long designCfgaId = 22560L;
-
-      log.info("ZZZ debug 0");
 
       String designId = auroraService.getDesignId(ppsId, designCfgaId);
       if (designId == null) {
         throw new RuntimeException("Unable to fetch design ID");
       }
 
-      log.info("ZZZ debug 1");
-
       AuroraProxy.DesignSummary designResponse = auroraService.getDesignSummary(designId);
-
-      log.info("ZZZ debug 2");
 
       var design = designResponse.getFields().get("design");
       int productionEstimate = (int) Double.parseDouble(design.get("energy_production").get("annual").toString());
-      var stringInverters = design.get("string_inverters"); //account for empty array
       var arrays = design.get("arrays");
       int panelQuantity = 0;
+      int panelWatts = 0;
       String manufacturer = null;
       String inverter = null;
-
-      log.info("ZZZ debug 3");
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
         manufacturer = arrays.get(0).get("module").get("manufacturer").toString().replace("\"", "");
+        panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
+        inverter = arrays.get(0).get("microinverter").get("name").toString();
 
         for (JsonNode array : arrays) {
           if (array.has("module")) {
@@ -293,15 +285,9 @@ public class BrsProcessStepActionFunctionService {
         }
       }
 
-      if (!stringInverters.isEmpty()) {
-        inverter = stringInverters.get(0).get("name").toString();
-      }
-
       HashMap<String, Object> params = new HashMap<>();
       params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
       params.put("sourceId", ppsId);
-
-      log.info("ZZZ debug 4");
 
       for(ActionParamDynamicValue dynamicValue : func.getActionParamDynamicValues()) {
         final String paramName = dynamicValue.getParameterName();
@@ -317,8 +303,6 @@ public class BrsProcessStepActionFunctionService {
         params.put("intValue", null);
         params.put("intArrayValue", null);
         params.put("jsonValue", null);
-
-        log.info("ZZZ debug CDGA ID: " + cfgaId);
 
         //IDing by field name is about a generic as we can get as of now, but not ideal
         if (paramName.contains("System Size")) {
@@ -337,10 +321,13 @@ public class BrsProcessStepActionFunctionService {
           }
           sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } else if (paramName.contains("Inverter Brand")) {
-          if (inverter != null) {
-            Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", inverter), Long.class);
-            params.put("intValue", lovId);
-          }
+//          if (inverter != null) {
+//            Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", inverter), Long.class);
+//            params.put("intValue", lovId);
+//          }
+//          sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+        }  else if (paramName.contains("Panel Watts")) {
+          params.put("intValue", panelWatts);
           sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } else if (paramName.contains("Design JSON")) {
           //store the entire json object for future proposal log history calculations

@@ -52,7 +52,7 @@ BEGIN
              inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1 and pps.archived is false
              inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id and ppse.archived is false
              inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
-             inner join flow.event_status_type est on cest.event_status_type_id = est.id and (est.id in (1,2) or cest.id = 24) -- 24 = needs to be rescheduled, per judson we dont want a user to be available if they already have an appt in needs to be rescheduled
+             inner join flow.event_status_type est on cest.event_status_type_id = est.id and (est.id in (1,2) or (p.id = p_project_id and cest.id = 24)) -- 24 = needs to be rescheduled, per judson we dont want a user to be available if they already have an appt in needs to be rescheduled
              inner join user_ids ui on ppse.resource_id = any (ui.user_position_ids)
              inner join flow.company_process_step_status_type cpsst
                         on cpsst.id = pps.company_process_step_status_type_id
@@ -102,7 +102,7 @@ BEGIN
              inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1 and pps.archived is false
              inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id and ppse.archived is false
              inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
-             inner join flow.event_status_type est on cest.event_status_type_id = est.id and (est.id in (1,2) or cest.id = 24) -- 24 = needs to be rescheduled, per judson we dont want a user to be available if they already have an appt in needs to be rescheduled
+             inner join flow.event_status_type est on cest.event_status_type_id = est.id and (est.id in (1,2) or (p.id = p_project_id and cest.id = 24)) -- 24 = needs to be rescheduled, per judson we dont want a user to be available if they already have an appt in needs to be rescheduled
              inner join user_ids ui on ppse.resource_id = any (ui.user_position_ids)
              inner join flow.company_process_step_status_type cpsst
                         on cpsst.id = pps.company_process_step_status_type_id

@@ -19,5 +19,6 @@ public class ProcessStepEventAction {
     canPerform, logicListChanged, alwaysEnabled, alreadyTriggered, multipleUses, hideFromMobile, hideFromWeb;
   private List<ProcessStepEventActionField> customFields, requiredFields, optionalFields;
   private List<ProcessStepEventLogic> processStepEventLogicList;
+  private List<ProcessStepEventActionChildFunction> childFunctions;
 }
 

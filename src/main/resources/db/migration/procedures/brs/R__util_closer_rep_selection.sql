@@ -111,10 +111,11 @@ BEGIN
                                                  end)                                                  as active,
                                              upv.user_position_id
                                       from flow.user_positions_vw upv
-                                        inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
+--                                         inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
                                       where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                         and upv.archived is not true
-                                        and ust.user_status_type != 'Expired'
+                                        and upv.user_status_type_id != 13
+--                                         and ust.user_status_type != 'Expired'
                                   ) as users
                              order by active desc, name
                          ) as sub_rows;
@@ -137,11 +138,12 @@ BEGIN
                                                      end)                                                  as active,
                                                  upv.user_position_id
                                           from flow.user_positions_vw upv
-                                            inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
+--                                             inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
                                           where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                             and upv.archived is not true
                                              and upv.user_id = p_platform_user_id
-                                             and ust.user_status_type != 'Expired'
+                                             and upv.user_status_type_id != 13
+--                                              and ust.user_status_type != 'Expired'
                                     ) as users
                                  order by active desc, name
                              ) as sub_rows;

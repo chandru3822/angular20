@@ -622,7 +622,7 @@ public class ProjectProcessStepService {
 
     if (r.getProcessStepRequirementTypeId() == 2) {
       try {
-        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId));
+        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId, null));
         String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
         Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
         requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
@@ -1050,7 +1050,7 @@ public class ProjectProcessStepService {
                 // @TODO: Add company IDs here during onboarding
               }
             } else {
-              String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
+              String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, null));
               String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
               sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
             }
@@ -1068,7 +1068,7 @@ public class ProjectProcessStepService {
         return shouldRunAutoTriggers;
     }
 
-  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId) throws Exception {
+  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId, Long ppsEventId) throws Exception {
     Map<Long, String> params = new TreeMap<>();
 
     functionParams.forEach(param -> {
@@ -1088,6 +1088,9 @@ public class ProjectProcessStepService {
                 break;
               case 4:
                 systemValue = processStepId;
+                break;
+              case 5:
+                systemValue = ppsEventId;
                 break;
               default:
                 throw new RuntimeException(String.format("Unable to determine param type, CF param ID: %s", param.getId()));

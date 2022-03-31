@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -25,6 +26,7 @@ public class ProcessStepEventService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final ObjectMapper om;
+  private final ProcessStepActionService processStepActionService;
 
   public List<ProcessStepEvent> getStepEvents(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -238,8 +240,57 @@ public class ProcessStepEventService {
     sqlCache.update("processStepEvent.deleteActionFromEvent", params);
   }
 
-  public Long updateRequiredFieldStatus(
-      Long actionId, ProcessStepEventActionField processStepEventActionField) {
+  public ProcessStepEventActionChildFunction addChildFunctionToAction(Long actionId, ProcessStepEventActionChildFunction child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyFunctionId", child.getCompanyFunctionId());
+    params.put("processStepEventActionId", actionId);
+    params.put("displayOrder", child.getDisplayOrder());
+    params.put("createdById", currentUser.trueUserId());
+
+    Long id = sqlCache.updateReturningId("processStepEvent.addChildFunctionToAction", params, "id").longValue();
+
+    processStepActionService.handleDynamicValueParams(child.getActionParamDynamicValues(), null, id);
+
+    return getActionChildFunction(id);
+  }
+
+  public void deleteChildFunctionFromAction(Long childProcessId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("id", childProcessId);
+    sqlCache.update("processStepEvent.deleteActionChildFunction", params);
+  }
+
+  public void updateActionChildFunction(Long actionId, ProcessStepActionChildFunction child) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("id", child.getId());
+    params.put("displayOrder", child.getDisplayOrder());
+    sqlCache.update("processStepEvent.updateActionChildFunction", params);
+
+    processStepActionService.handleDynamicValueParams(child.getActionParamDynamicValues(), null, child.getId());
+  }
+
+  public List<ProcessStepEventActionChildFunction> getChildFunctionsWithParamValues(Long actionId, Long ppsEventId) {
+    Map<String, Object> params = Map.of("id", actionId, "ppsEventId", ppsEventId);
+    return sqlCache.query("processStepEvent.getChildFunctionsByPpsEventId", params, new ProcessStepEventActionChildFunctionMapper<>(ProcessStepEventActionChildFunction.class, om));
+  }
+
+  public ProcessStepEventActionChildFunction getActionChildFunction(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ProcessStepEventActionChildFunction> result = sqlCache.get("processStepEvent.getActionChildFunction", params, new ProcessStepEventActionChildFunctionMapper<>(ProcessStepEventActionChildFunction.class, om));
+    return result.orElse(null);
+  }
+
+
+  public Long updateRequiredFieldStatus(Long actionId, ProcessStepEventActionField processStepEventActionField) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionId", actionId);
@@ -330,6 +381,25 @@ public class ProcessStepEventService {
           List.class,
           "customFields",
           new JsonCollectionDeserializer(customFieldsRef, objectMapper));
+    }
+  }
+
+  public static class ProcessStepEventActionChildFunctionMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProcessStepEventActionChildFunctionMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ActionParamDynamicValue>> actionParamDynamicValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "actionParamDynamicValues",
+        new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
+
+      TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "companyFunctionParams", new JsonCollectionDeserializer<>(companyFunctionParamsRef, objectMapper));
     }
   }
 }

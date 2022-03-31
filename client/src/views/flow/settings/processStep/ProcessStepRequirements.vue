@@ -668,7 +668,8 @@ export default {
           this.newRequirement.customValue = true
           this.loadOperatorTypes(7, 10)
         } else {
-          const {data} = await getRequest(`/function/requirement`)
+          let objectTypeId = this.eventRequirements ? 6 : 4;
+          const {data} = await getRequest(`/function/requirement/${objectTypeId}`)
           this.availableFunctions = data
         }
         this.$store.commit(AppMutations.SET_LOADING, false)

@@ -75,11 +75,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @PostConstruct
     public void init() {
         log.info("*** CRON: cron service enabled ***");
-//      if (initialAutoTriggers) {
-//        log.info("*** CRON: start INITIAL auto triggers ***");
-//        projectProcessStepService.performInitialAutoTriggers();
-//        log.info("*** CRON: end INITIAL auto triggers ***");
-//      }
     }
 
     //    every  minute
