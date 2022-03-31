@@ -140,13 +140,13 @@
                 </template>
               </v-select>
             </td>
-            <td class="funnel-td" @click="funnelDrilldown(line.id, 'today', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line, 'today', 'apptsCreatedPipeline', false)">
               {{ line.today_count }}
             </td>
-            <td class="funnel-td" @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line, 'wtd', 'apptsCreatedPipeline', false)">
               {{ line.week_to_date_count }}
             </td>
-            <td class="funnel-td" @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line, 'custom', 'apptsCreatedPipeline', false)">
               {{ line.custom_date_range_count }}
             </td>
           </tr>
