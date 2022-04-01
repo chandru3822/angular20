@@ -181,8 +181,8 @@
             <div class="mt-2">
               <span class="vertical-top project-detail-label">Owner:</span>
               <div class="d-inline-block project-detail-item" v-if="project && project.owner">
-                {{ project.owner.fullName }} - {{ project.owner.position }} <br/>
-                {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+                <span :class="{'error-text': !project.owner.hasAccess}">{{ project.owner.fullName }} - {{ project.owner.position }} <br/></span>
+                <span v-if="project.owner.hasAccess">{{ formatPhoneNumber(project.owner.phoneNumber) }}<br/></span>
               </div>
             </div>
             <div class="mt-3">
