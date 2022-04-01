@@ -45,7 +45,12 @@ BEGIN
            (v_company_process_step_status_type_id = event.company_process_status_type_id or
            v_process_step_status_type_id = event.process_step_status_type_id) and
           (v_company_project_status_type_id = event.company_project_status_type_id or
-           v_project_status_type_id = event.project_status_type_id)));
+           v_project_status_type_id = event.project_status_type_id)))
+    on conflict (project_process_step_event_id, company_event_status_type_id,
+      process_step_event_work_queue_type_event_status_type_id)
+    where ((date_exited_queue IS NULL) AND (project_process_step_event_id IS NOT NULL) AND
+           (company_event_status_type_id IS NOT NULL) AND
+           (process_step_event_work_queue_type_event_status_type_id IS NOT NULL)) do nothing;
 
     /*We only update if the statuses change*/
   elsif (TG_OP = 'UPDATE') and (old.company_event_status_type_id is not null and old.company_event_status_type_id != new.company_event_status_type_id) THEN
