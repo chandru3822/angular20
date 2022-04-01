@@ -135,7 +135,9 @@ public class ProcessStepEventService {
         "companyProcessStepStatusTypeId",
         processStepEventAction.getCompanyProcessStepStatusTypeId());
     params.put("actionName", processStepEventAction.getActionName());
-    params.put("requireStartTime", true); // we have changed to ALWAYS require start time
+    params.put("requireStartTime", null != processStepEventAction.getRequireStartTime()
+                                     ? processStepEventAction.getRequireStartTime()
+                                     : false); // we have changed to ALWAYS require start time
     params.put(
         "requireEndTime",
         null != processStepEventAction.getRequireEndTime()
