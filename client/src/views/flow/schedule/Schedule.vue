@@ -273,7 +273,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="7" class="py-0">
+      <v-col cols="12" md="7" class="py-0 height-one-hunned">
         <div class="list-container">
           <div id="list-loader" v-if="listLoading">
             <v-progress-circular
@@ -753,8 +753,9 @@
 
 <style lang="scss">
   #schedule-container .v-data-table__wrapper {
-    height: calc(35vh);
-    min-height: 300px;
+    height: calc(40vh - 118px);
+    //this is smaller because it is the inner wrapper of the table
+    min-height: 211px;
   }
 
   #schedule-container .v-data-footer__pagination {
@@ -777,7 +778,7 @@
   }
 
   .schedule-row {
-    height: calc(40% - 20px);
+    height: calc(40% - 10px);
     min-height: 300px;
   }
 
