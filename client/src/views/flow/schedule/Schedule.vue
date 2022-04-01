@@ -1,11 +1,11 @@
 <template>
   <v-container id="schedule-container">
-    <v-row>
-      <v-col cols="12" md="5" class="map-row">
+    <v-row class="map-row">
+      <v-col cols="12" md="5">
         <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
              :zoom="state.mapZoom" :map-resources="mapResources"></Map>
       </v-col>
-      <v-col cols="12" md="7" class="map-row" style="overflow: auto;">
+      <v-col cols="12" md="7" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"
@@ -16,7 +16,7 @@
     </v-row>
     <v-row class="schedule-row">
       <v-col cols="12" md="5" class="py-0">
-        <v-card color="white" class="text-left py-0">
+        <v-card color="white" class="text-left py-0 square-card">
           <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
             <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
@@ -299,7 +299,7 @@
               :show-select="true"
               :item-selected="(item, value) => this.zoomToMap(item, value)"
               :toggle-select-all="(value) => this.zoomToMap(value)"
-              class="elevation-1"
+              class="elevation-1 square-card"
           >
             <template #no-data>
               No Results Found
