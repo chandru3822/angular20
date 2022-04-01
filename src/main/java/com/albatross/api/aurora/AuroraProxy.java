@@ -368,7 +368,7 @@ public class AuroraProxy {
           missingAnyArrayValue = true;
           // checkArgument(tsrf.isPresent(), "array is missing TSRF value");
           // checkArgument(panels.isPresent(), "array is missing panel count");
-          log.error("AURORA: Missing TSRF Value");
+          //log.error("AURORA: Missing TSRF Value");
         } else {
           weightedSum += panels.get() * tsrf.get();
           numPanels += panels.get();
@@ -391,7 +391,7 @@ public class AuroraProxy {
           // checkArgument(annualSolarAccess.isPresent(), "array is missing annual solar access
           // value");
           // checkArgument(panels.isPresent(), "array is missing panel count");
-          log.error("AURORA: Missing Annual Solar Access Value");
+          //log.error("AURORA: Missing Annual Solar Access Value");
         } else {
           weightedSum += panels.get() * annualSolarAccess.get();
           numPanels += panels.get();
