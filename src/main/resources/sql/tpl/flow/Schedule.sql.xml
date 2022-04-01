@@ -65,6 +65,7 @@
       ppse.id as project_process_step_event_id,
       pse.id as process_step_event_id,
       e.event_name,
+      cest.event_status_type_id,
       e.id as event_id,
       sl.system_list_type_id,
       ppse.start_time as start,
@@ -121,7 +122,9 @@
                  then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                else ps.company_id = :companyId end
       and ps.archived is not true
-      and cest.event_status_type_id != 3 -- dont include cancelled events, we include active events on cancelled PS cuz BR told us to
+      and case when :includeCancelled::boolean is false
+        then cest.event_status_type_id != 3
+         else true end -- dont include cancelled events unless they told us to, we include active events on cancelled PS cuz BR told us to
       and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
       and ppse.resource_id is not null
       and ppse.resource_id = any(array[ :combined ]::int[])
