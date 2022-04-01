@@ -137,6 +137,16 @@
       </v-row>
       <v-row class="py-0">
         <v-col class="py-0" cols="12" md="4">
+          <div>
+            <v-switch
+              v-model="includeCancelled"
+              dense
+              hide-details
+              class="fix-switch-color cancelled-event-switch"
+              label="Include Cancelled Events"
+              @change="getEvents(null)"
+            />
+          </div>
         </v-col>
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgs"
@@ -349,6 +359,7 @@
       return {
         snackbar: {},
         calendarLoading: false,
+        includeCancelled: false,
         calendarInitialRender: true,
         calendarApi: null,
         calendarStart: null,
@@ -681,11 +692,16 @@
         })
       },
       async getEvents(isOrgs, reload) {
-        // localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
-        // localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
-        //dont reload events if they deselected all of one type
-        //and only load if the selected values changed
-        if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
+        //if `isOrgs` is not passed in, it is because we don't know it (came from v-switch change)
+        if(null == isOrgs) {
+          isOrgs = this.selectedOrgs?.length > 0
+          this.orgValuesChanged = true
+          this.userValuesChanged = true
+        }
+
+        //dont reload events if they deselected all of one type and only load if the selected values changed
+        if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender))
+          || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
           if (reload || !this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
           }
@@ -709,7 +725,8 @@
                 // userPositionIds: this.getUserPositionIds(),
                 userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
                 startTime: this.calendarStartTime,
-                endTime: this.calendarEndTime
+                endTime: this.calendarEndTime,
+                includeCancelled: this.includeCancelled
               }
               const {data} = await postRequest(`/schedule`, params)
               data.forEach(d => {
@@ -719,7 +736,12 @@
                 d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.eventName}`
                 d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
                 let matchingResource = this.resources.find(r => r.id === d.resourceId)
-                d.colorForBorder = matchingResource?.color
+                if(d.eventStatusTypeId === 3) {
+                  d.colorForBorder = '#919191'
+                  d.textColor = '#919191'
+                } else {
+                  d.colorForBorder = matchingResource?.color
+                }
               })
               this.eventSources[0].events = cloneDeep(data)
 
@@ -880,6 +902,15 @@
     /*height: inherit;*/
     border-radius: 5px;
     padding-left: 7px;
+  }
+
+  #calendar-container .cancelled-event-switch label {
+    font-size: 12px;
+  }
+
+  #calendar-container .cancelled-event-switch .v-input--selection-controls__input {
+    transform: scale(0.775);
+    transform-origin: center;
   }
 
   #calendar-container .fc-event:hover {
