@@ -295,6 +295,26 @@ BEGIN
                   inner join group_uuid_federal_rebate g1 on g1.proposal_group_uuid = vv2.proposal_group_uuid
                   inner join brs.custom_field cf on cf.id = vv2.field_id
                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id),
+         group_uuid_referral_rebate as (
+           select vv.proposal_group_uuid
+           from version_values vv
+           where vv.object_code = 'PROPOSAL_REBATE'
+             and (vv.value ->> 'intValue')::integer = 535
+             and vv.custom_field_group_assignment_id = 150
+             and vv.proposal_version_id <= v_version_id),
+         referral_rebate_results as (
+           select vv2.proposal_group_uuid,
+                  vv2.field_id,
+                  vv2.field_name,
+                  cdt.data_type_id,
+                  (vv2.value ->> 'value')::text    as value,
+                  vv2.object_code,
+                  (vv2.value ->> 'intValue')::text as int_value
+           from version_values vv2
+                  inner join group_uuid_referral_rebate g1 on g1.proposal_group_uuid = vv2.proposal_group_uuid
+                  inner join brs.custom_field cf on cf.id = vv2.field_id
+                  inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id),
+
          state_rebate as (select cs.state_id
                           from brs.proposal prop
                                  inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
@@ -627,6 +647,16 @@ BEGIN
            frr.int_value
     from federal_rebate_results frr
     union
+    select rrr.proposal_group_uuid,
+           rrr.field_id,
+           rrr.field_name,
+           rrr.data_type_id,
+           rrr.value,
+           null::integer,
+           rrr.object_code,
+           rrr.int_value
+    from referral_rebate_results rrr
+    union
     select srr.proposal_group_uuid,
            srr.field_id,
            srr.field_name,
@@ -958,6 +988,21 @@ BEGIN
                             and object_code = 'PROPOSAL_ZONE_ADDERS')::numeric);
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
+  with referral_promotion as (
+    select proposal_group_uuid
+    from proposal_value pv
+    where object_code = 'PROPOSAL_REBATE'
+      and pv.field_id::integer = 93
+      and pv.int_value::integer = 535)
+  select value::numeric
+  into v_referral_promotion
+  from proposal_value pv1
+         inner join referral_promotion rp on rp.proposal_group_uuid = pv1.proposal_group_uuid
+    and pv1.field_id = 98;
+
+  raise notice 'v_referral_promotion = %',v_referral_promotion;
+
+
   with federal as (
     select proposal_group_uuid
     from proposal_value pv
@@ -1091,10 +1136,6 @@ BEGIN
   v_monthly_payment_no_tax_credits_and_rebates_to_loan_26 = 0.00;
 
   raise notice 'v_monthly_payment_no_tax_credits_and_rebates_to_loan_26 = %',v_monthly_payment_no_tax_credits_and_rebates_to_loan_26;
-
-  v_referral_promotion = 500.00::numeric;
-
-  raise notice 'v_referral_promotion = %',v_referral_promotion;
 
   v_net_system_cost = v_total_system_cost - v_referral_promotion - v_federal_tax_incentive_amount;
   raise notice 'v_net_system_cost = %',v_net_system_cost;
