@@ -25,7 +25,6 @@ export default {
 <style scoped lang="scss">
 .spinner-container {
   z-index: 1;
-  background-color: var(--v-secondary-base);
   opacity: .5;
 }
 
