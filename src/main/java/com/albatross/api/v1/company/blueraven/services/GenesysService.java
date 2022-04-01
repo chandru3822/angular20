@@ -430,10 +430,10 @@ public class GenesysService {
             apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
           } catch (ApiException ae) {
             JSONObject apiException = new JSONObject(ae.getRawBody());
-            log.error(
-                "GENE: Error updating contactId={}, msg={}",
-                contactId,
-                apiException.getString("message"));
+//            log.error(
+//                "GENE: Error updating contactId={}, msg={}",
+//                contactId,
+//                apiException.getString("message"));
           }
         }
       }
