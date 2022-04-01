@@ -1,4 +1,4 @@
-drop function if exists brs.get_calculated_proposal_values( integer);
+drop function if exists brs.get_calculated_proposal_values( integer,boolean);
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
   p_proposal_id integer,
   p_insert_prop_log_history boolean default false)
@@ -87,7 +87,7 @@ declare
   v_solar_access numeric;
   v_inverter_efficiency numeric;
   v_derate_factor numeric;
-  v_initial_payment_factor;
+  v_initial_payment_factor numeric;
   v_col_springs_rebate numeric;
   v_utility_cost_escalator numeric;
   v_state_rebate_amount numeric;
@@ -749,7 +749,7 @@ BEGIN
   )select value::numeric
     into v_state_rebate_amount
     from proposal_value pv1
-  inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid and
+  inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
   where pv1.field_id = 98;
   raise notice 'v_state_rebate_amount = % ',v_state_rebate_amount;
   raise notice 'v_utility_company_id = % ',v_utility_company_id;
