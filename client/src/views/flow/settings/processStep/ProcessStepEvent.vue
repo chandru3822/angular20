@@ -132,7 +132,7 @@
                 <table>
                   <tr>
                     <td>Require Start Time</td>
-                    <td><input type="checkbox" class="ml-2" checked disabled readonly></td>
+                    <td><input type="checkbox" class="ml-2" v-model="action.requireStartTime"></td>
                   </tr>
                   <tr>
                     <td>Require End Time</td>

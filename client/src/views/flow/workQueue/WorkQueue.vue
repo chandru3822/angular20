@@ -13,6 +13,7 @@
                               return-object
                               solo
                               hide-details
+                              :loading="categoriesLoading"
                               dark
                               background-color="primaryCustom"
                               class="white--text work-queue-selector d-inline-block clickable"
@@ -71,7 +72,10 @@
                     v-if="!selectedWorkQueueCategory || !selectedWorkQueueCategory.id">
               Please select a Work Queue Category
             </v-card>
-            <v-card flat tile v-for="wq in workQueues" class="flex-display card-main"
+            <div v-if="cardsLoading" class="one-hunned text-center">
+              <SpinnerInline :size="60" color="primaryCustom"/>
+            </div>
+            <v-card v-else flat tile v-for="wq in workQueues" class="flex-display card-main"
                     :class="{'clickable': wq.workQueueCount > 0,
                              'light-border': !wq.useEventData,
                              'dark-border': wq.useEventData}"
@@ -178,6 +182,8 @@ import {AppMutations} from '@/stores/AppStore'
 
 import orderBy from 'lodash.orderby'
 import {getWorkQueueCategories} from '@/services/workQueueService'
+import SpinnerInline from '@/components/SpinnerInline'
+import axios from 'axios'
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -188,10 +194,15 @@ import {
 
 export default {
   name: 'WorkQueue',
+  components: {
+    SpinnerInline
+  },
   data() {
     return {
       snackbar: {},
       model: {},
+      categoriesLoading: true,
+      cardsLoading: false,
       hideFutureFollowUps: false,
       hideFutureEvents: false,
       showAll: false,
@@ -230,13 +241,16 @@ export default {
         && wq.shortWindowDurationType && wq.longWindowDurationType && wq.expectedCycleDurationType
     },
     async getWorkQueueCategories() {
+      this.categoriesLoading = true
       try {
         const {data} = await getWorkQueueCategories()
         this.workQueueCategories = orderBy(data, [wqc => wqc.displayOrder])
+        this.categoriesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.categoriesLoading = false
       }
     },
     async getWorkQueueOwners() {
@@ -257,9 +271,17 @@ export default {
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
       localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
       if (this.selectedWorkQueueCategory?.id || this.showAll) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        if(this.source){
+          this.source.cancel()
+        }
+        const CancelToken = axios.CancelToken
+        this.source = CancelToken.source()
+
+        this.cardsLoading = true
         try {
           const {data, status} = await getRequestWithParams(`/workQueue`, {
+            source: this.source,
+            cancelToken: this.source.token,
             params: {
               workQueueCategoryId: this.selectedWorkQueueCategory.id,
               userId: this.selectedUserPosition.userId,
@@ -269,12 +291,15 @@ export default {
             }
           })
           this.workQueues = data
-          handleHidingGlobalLoader(this, status)
+          //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
+          if(status === 200) {
+            this.cardsLoading = false
+          }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.cardsLoading = false
         }
       } else {
         this.workQueues = []
