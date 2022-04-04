@@ -549,7 +549,7 @@ export default {
     validateActionRequirements: async function (action) {
       this.eventActionMissingRequirements = false
       this.eventSaveOverrideRequired = false
-      this.actionRequiresStart = true //action?.requireStartTime
+      this.actionRequiresStart = action?.requireStartTime //this is no longer required to be true
       this.actionRequiresEnd = action?.requireEndTime
       this.actionRequiresResource = action?.requireResource
       //will only be used if there is an error shown here
@@ -956,16 +956,18 @@ export default {
           this.eventActionMissingRequirements = true
           this.saveErrorMsg = 'End time must be after start time'
         }
-      } else {
-        //only startTime is required to save fields
-        validSave = false
-        this.actionRequiresEnd = false
-        this.actionRequiresResource = false
-        this.eventActionMissingRequirements = true
-        this.saveErrorMsg = 'Start Time is required to save the event fields'
-        //dont do this for now. makes the page look weird after save
-        // document.getElementById('event-header').scrollIntoView()
       }
+      //per judson, dont require start time anymore
+      // else {
+      //   //only startTime is required to save fields
+      //   validSave = false
+      //   this.actionRequiresEnd = false
+      //   this.actionRequiresResource = false
+      //   this.eventActionMissingRequirements = true
+      //   this.saveErrorMsg = 'Start Time is required to save the event fields'
+      //   //dont do this for now. makes the page look weird after save
+      //   // document.getElementById('event-header').scrollIntoView()
+      // }
 
       //after everything, only save if valid
       if (validSave) {

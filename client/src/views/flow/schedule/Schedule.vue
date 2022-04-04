@@ -1,11 +1,11 @@
 <template>
-  <v-container id="schedule-container">
-    <v-row>
-      <v-col cols="12" md="5" class="map-row">
+  <v-container id="schedule-container" class="py-0">
+    <v-row class="map-row">
+      <v-col cols="12" md="5">
         <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
              :zoom="state.mapZoom" :map-resources="mapResources"></Map>
       </v-col>
-      <v-col cols="12" md="7" class="map-row" style="overflow: auto;">
+      <v-col cols="12" md="7" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"
@@ -15,17 +15,19 @@
       </v-col>
     </v-row>
     <v-row class="schedule-row">
-      <v-col cols="12" md="5" class="py-0">
-        <v-card color="white" class="text-left py-0">
+      <v-col cols="12" md="5" class="py-0 schedule-row-filter-container">
+        <v-card color="white" class="text-left py-0 square-card height-one-hunned">
           <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
             <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
-          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)" class="pt-0">
+          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)"
+                       class="filter-text-card">
             <v-autocomplete attach v-model="state"
                       :items="states"
                       label="State"
                       return-object
+                            hide-details
                       item-text="state"
                       item-value="id"
             ></v-autocomplete>
@@ -36,6 +38,7 @@
                       item-text="eventName"
                       item-value="id"
                       return-object
+                            hide-details
                       clearable
                       :disabled="!state || !state.id"
                       multiple
@@ -60,6 +63,7 @@
                       :items="eventStatusTypes"
                       label="Event Step Status"
                       clearable
+                            hide-details
                       item-text="eventStatusType"
                       item-value="id"
                       :disabled="selectedEventTypes.length === 0"
@@ -70,18 +74,19 @@
                       :items="processStepStatusTypes"
                       label="Process Step Status"
                       clearable
+                      hide-details
                       item-text="processStepStatusType"
                       item-value="id"
                       :disabled="selectedEventTypes.length === 0"
                       return-object
             />
-            <v-btn color="primaryCustom" class="white--text"
+            <v-btn color="primaryCustom" class="white--text schedule-row-go-button"
                    :disabled="!selectedEventTypes || selectedEventTypes.length === 0 || !state
                    || !selectedEventStatusType || !selectedEventStatusType.id
                    || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
                    @click="getProjects(true)">Go</v-btn>
           </v-card-text>
-          <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
+          <v-card-text class="filter-text-card" v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
             <v-autocomplete v-model="searchProject"
                             :items="searchProjects"
                             :search-input.sync="search"
@@ -89,6 +94,7 @@
                             :key="0"
                             prepend-icon="search"
                             text
+                            hide-details
                             label="Search for project..."
                             autocomplete="off"
                             :loading="searchProjectsLoading"
@@ -105,6 +111,7 @@
             <v-select attach v-model="searchEventType"
                       :items="eventTypes"
                       label="Event"
+                      hide-details
                       item-text="eventName"
                       item-value="id"
                       return-object
@@ -114,6 +121,7 @@
                             :items="eventStatusTypes"
                             label="Event Step Status"
                             clearable
+                            hide-details
                             item-text="eventStatusType"
                             item-value="id"
                             return-object
@@ -121,16 +129,17 @@
             <v-select attach v-model="searchProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Process Step Status"
+                      hide-details
                       item-text="processStepStatusType"
                       item-value="id"
                       return-object
             >
             </v-select>
-            <v-btn color="primaryCustom" class="white--text"
+            <v-btn color="primaryCustom" class="white--text schedule-row-go-button"
                    :disabled="!searchProject || !searchProject.projectId
                         || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchEventStatusType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
-          <v-card-text v-else>
+          <v-card-text class="height-one-hunned" v-else>
             <v-toolbar color="white" flat>
               <v-toolbar-title class="app-title">
                 {{selectedProject.projectName}}
@@ -174,19 +183,18 @@
                 </v-tooltip>
               </v-toolbar-items>
             </v-toolbar>
-            <div class="pa-3">
+            <div class="px-3">
               <h4>{{selectedProject.eventName}}</h4>
-              <div class="map-field-label">Event Start Time</div>
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
+                hide-details
                 :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
                 @input="validateSaveEvent()"
               />
-              <div class="map-field-label mt-3">Event End Time</div>
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
@@ -194,6 +202,7 @@
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
+                hide-details
                 @input="validateSaveEvent()"
               />
               <v-autocomplete v-model="selectedProject.resource"
@@ -202,15 +211,15 @@
                         placeholder=" "
                         return-object
                         clearable
+                              hide-details
                         item-text="name"
                         :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                         :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                         item-value="id"
-                        class="mt-3"
                         @input="validateSaveEvent()"
               />
               <v-btn color="primaryCustom"
-                     class="white--text"
+                     class="white--text schedule-row-go-button"
                      :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                      @click="[fieldsSaving = true, scheduleProject()]">Save</v-btn>
               <v-dialog
@@ -264,7 +273,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="7" class="py-0">
+      <v-col cols="12" md="7" class="py-0 height-one-hunned">
         <div class="list-container">
           <div id="list-loader" v-if="listLoading">
             <v-progress-circular
@@ -299,7 +308,7 @@
               :show-select="true"
               :item-selected="(item, value) => this.zoomToMap(item, value)"
               :toggle-select-all="(value) => this.zoomToMap(value)"
-              class="elevation-1"
+              class="elevation-1 square-card"
           >
             <template #no-data>
               No Results Found
@@ -744,8 +753,9 @@
 
 <style lang="scss">
   #schedule-container .v-data-table__wrapper {
-    height: calc(35vh);
-    min-height: 300px;
+    height: calc(40vh - 118px);
+    //this is smaller because it is the inner wrapper of the table
+    min-height: 211px;
   }
 
   #schedule-container .v-data-footer__pagination {
@@ -763,12 +773,30 @@
 
 <style lang="scss" scoped>
   .map-row {
+    height: 60%;
     min-height: 300px;
   }
 
   .schedule-row {
-    /*height: 40vh;*/
+    height: calc(40% - 10px);
     min-height: 300px;
+  }
+
+  .schedule-row-filter-container {
+    height: 100%;
+    position: relative;
+  }
+
+  .filter-text-card {
+    padding-top: 0 !important;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 90px);
+  }
+
+  .schedule-row-go-button {
+    position: absolute;
+    bottom: 10px;
   }
 
   .map-field-label {
@@ -796,13 +824,6 @@
     margin: auto;
     background-color: var(--v-secondary-base);
     opacity: .5;
-  }
-
-  @media (min-width: 769px) {
-    .map-row {
-      height: calc(65vh - 95px);
-      min-height: 200px;
-    }
   }
 </style>
 

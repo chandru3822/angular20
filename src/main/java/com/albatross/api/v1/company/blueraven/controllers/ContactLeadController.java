@@ -265,4 +265,9 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/solarsesame", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarSesame(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
 }

@@ -27,6 +27,7 @@ public class ReadonlyDataSource {
     config.setUsername(propConfig.databaseUsername);
     config.setPassword(propConfig.databasePassword);
     config.setMaximumPoolSize(25);
+    config.setReadOnly(true);
     config.setPoolName("HikariPool-RO");
     ds = new HikariDataSource(config);
   }

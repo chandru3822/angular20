@@ -78,6 +78,7 @@ public class ScheduleController {
     private List<Long> userIds, orgIds, eventIds, userPositionIds, postalCodeZoneUserIds;
     private String startTime, endTime, search;
     private Long companyStateId, projectId, eventId, processStepStatusTypeId, eventStatusTypeId, projectProcessStepEventId;
+    private Boolean includeCancelled;
   }
 
   @Data
