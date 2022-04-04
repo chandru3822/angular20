@@ -49,12 +49,14 @@ public class ContactLeadService {
     log.debug(
         "CONTACTLEAD: Received new contact information from a Contact Lead. {}", cl.toString());
 
+    String formattedZip = null != cl.getZip() ? cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)) : null;
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", CleanString.replaceApostrophe(cl.getFirstName()));
     params.put("lastName", CleanString.replaceApostrophe(cl.getLastName()));
     params.put("street1", cl.getAddress());
     params.put("city", cl.getCity());
-    params.put("postalCode", cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)));
+    params.put("postalCode", formattedZip);
     params.put("email", cl.getEmail());
     params.put("companyId", 3);
     params.put("createdById", currentUser.trueUserId());
@@ -96,7 +98,7 @@ public class ContactLeadService {
                     cl.getAddress(),
                     cl.getCity(),
                     stateValue,
-                    cl.getZip().substring(0, Math.min(cl.getZip().length(), 10))));
+                    formattedZip));
         if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
           // 1 = lat, 0 = long
           latitude = coordinates.get(1);
