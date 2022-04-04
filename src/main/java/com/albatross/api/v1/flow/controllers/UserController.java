@@ -185,11 +185,11 @@ public class UserController {
             "SalesOps@blueravensolar.com",
             "Blue Raven Sales Operation",
             user.trueUserId());
-        log.info(
+        log.debug(
             "AUTH: Password reset email has been sent to {}",
             passwordResetRequest.getUsernameOrEmail());
       } else {
-        log.warn(
+        log.debug(
             "AUTH: Password reset attempted for unknown user email {}.",
             passwordResetRequest.getUsernameOrEmail());
         return ResponseEntity.badRequest()
@@ -249,7 +249,7 @@ public class UserController {
       }
 
     } else {
-      log.warn("AUTH: Password reset attempted for unknown user {}.", userUuid);
+      log.debug("AUTH: Password reset attempted for unknown user {}.", userUuid);
       ResponseEntity.badRequest().body(Map.of("message", "Can't find user for this request"));
     }
 
