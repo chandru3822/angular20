@@ -81,7 +81,7 @@ public class PandaDocService {
         "PANDADOC: Template Name we are looking for: name={}, found templateId={}", name, tplId);
     // attempt to find a generic template for the state and financier
     if (tplId == null) {
-      log.warn("PANDADOC: falling back to generic utility company");
+      log.debug("PANDADOC: falling back to generic utility company");
       deets.setUtilityCompany(pandaDoc.getGenericName());
       name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
       tplId = findTemplateIdByName(name);
@@ -113,7 +113,7 @@ public class PandaDocService {
 
     JSONArray templates = out.getJSONArray("results");
     if (templates.length() > 0) {
-      log.warn("PANDADOC: found multiple templates matching tag={}: {}", name, templates);
+      log.debug("PANDADOC: found multiple templates matching tag={}: {}", name, templates);
       for (int i = 0; i < templates.length(); i++) {
         JSONObject tpl = templates.getJSONObject(i);
         String tplName = tpl.getString("name");

@@ -62,7 +62,7 @@ public class AuthController {
   public ResponseEntity<?> getJwtToken(@RequestBody Credentials creds) {
     User user = securityService.getUser(creds.getUsername());
     if (user == null) {
-      log.warn("AUTH: Login attempted with unknown username. {}", creds.getUsername());
+      log.debug("AUTH: Login attempted with unknown username. {}", creds.getUsername());
       return ResponseEntity.badRequest().body("Invalid Username or Password");
     } else if (user.getLoginAttempts() >= 9) {
       String msg = "Too Many Attempts. Account is Locked";
@@ -74,7 +74,7 @@ public class AuthController {
     if (!validPassword) {
       int attempts = user.getLoginAttempts() + 1;
       securityService.updateLoginAttempts(attempts, user.getId());
-      log.warn(
+      log.debug(
           "AUTH: Login attempted with bad password for user={}, count={}",
           creds.getUsername(),
           attempts);
