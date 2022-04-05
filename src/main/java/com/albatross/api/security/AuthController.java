@@ -85,7 +85,7 @@ public class AuthController {
     }
 
     if (!user.isUnlocked()) {
-      log.warn("AUTH: Cannot log in; user does not have access: {}", creds.getUsername());
+      log.debug("AUTH: Cannot log in; user does not have access: {}", creds.getUsername());
       return ResponseEntity.badRequest().body("This account does not have access.");
     }
 
