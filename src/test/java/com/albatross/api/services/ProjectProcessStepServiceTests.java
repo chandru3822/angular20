@@ -62,6 +62,8 @@ public class ProjectProcessStepServiceTests {
 
   AuroraProxy auroraService = mock(AuroraProxy.class);
 
+  ListOfValueService listOfValueService = mock(ListOfValueService.class);
+
   private ProjectProcessStepAction action;
 
   private List<ProcessStepLogic> processStepLogicList;
@@ -71,7 +73,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService, listOfValueService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
