@@ -5,7 +5,9 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -30,6 +33,8 @@ public class BrsProcessStepActionFunctionService {
     private final GoodleapService goodleapService;
 
     private final AuroraProxy auroraService;
+
+    private final ListOfValueService listOfValueService;
 
     public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
 
@@ -328,11 +333,24 @@ public class BrsProcessStepActionFunctionService {
                     }
                     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                 } else if (paramName.contains("Inverter Brand")) {
-                    //          if (inverter != null) {
-                    //            Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", inverter), Long.class);
-                    //            params.put("intValue", lovId);
-                    //          }
-                    //          sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                    if (inverter != null) {
+                        final String javaSucksInverter = inverter.replace("\"", "");
+                        //this is as general as I can make it as of now...
+                        final long companyId = Long.parseLong(systemValues.get("companyId").toString());
+                        final String sql = "select id from flow.custom_field cf where field_name = 'Inverter Brand' and company_id = " + companyId;
+                        Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
+                        List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
+                        final Long inverterLovId = values.stream()
+                                                         .filter(i -> i.getCode().equals(javaSucksInverter))
+                                                         .map(ListOfValue::getId)
+                                                         .findFirst()
+                                                         .orElse(null);
+                        if (inverterLovId != null) {
+                            params.put("intValue", inverterLovId);
+                            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                        }
+                        //@TODO: might be good to fail here if an inverter comes back from aurora but we can't identify it? Maybe add to the error log screen?
+                    }
                 } else if (paramName.contains("Panel Watts")) {
                     params.put("intValue", panelWatts);
                     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);

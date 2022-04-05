@@ -76,6 +76,8 @@ public class ProjectProcessStepService {
 
   private final AuroraProxy auroraService;
 
+  private final ListOfValueService listOfValueService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -1041,9 +1043,10 @@ public class ProjectProcessStepService {
               systemValues.put("ppsId", ppsId);
               systemValues.put("projectId", projectId);
               systemValues.put("userId", user.getId());
+              systemValues.put("companyId", user.getCompanyId());
 
               if (functionAbbreviation.equals("brs")) {
-                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService);
+                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, listOfValueService);
                 Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
                 method.invoke(functionClass, childFunction, systemValues);
               } else {
