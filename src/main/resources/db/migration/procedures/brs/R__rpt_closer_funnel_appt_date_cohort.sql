@@ -84,7 +84,8 @@ BEGIN
                                    pd.final_design_sent_to_homeowner_date,
                                    pd.final_design_signed_date,
                                    pd.final_design_complete_date,
-                                   pd.substantial_completion_date
+                                   pd.substantial_completion_date,
+                                   pd.credit_check
                         )
                         select f.id,
                                f.name,
