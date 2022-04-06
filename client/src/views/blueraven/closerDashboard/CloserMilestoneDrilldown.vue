@@ -27,7 +27,7 @@
               <td class="text-left">{{ item.system_size || '' }}</td>
               <td class="text-left">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
               <td class="text-left">
-                <input type="checkbox" v-model="item.self_gen">
+                <input readonly disabled type="checkbox" v-model="item.self_gen">
               </td>
             </tr>
           </template>
