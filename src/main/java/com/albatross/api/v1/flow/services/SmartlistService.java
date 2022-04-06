@@ -3599,9 +3599,11 @@ public class SmartlistService {
         }
       } else if (f.getProcessStepId() != null) { //if field is process step or event
 
+        final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getProcessStepEventId().toString() : f.getProcessStepId().toString());
+
         //if field is system list, PS owner, or event resource
         if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user") || Objects.equals(f.getReferenceTable(), "flow.org")) {
-          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
+          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), fieldName));
         } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
           Objects.equals(f.getReferenceTable(), "flow.process_step") ||
           Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
@@ -3610,22 +3612,22 @@ public class SmartlistService {
           Objects.equals(f.getReferenceTable(), "flow.event_status_type"))
         {//else if field is process step or event system field
           if (f.getDataTypeId() == 1) {
-            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
           } else if(f.getDataTypeId() == 2) {
             if (timezone != null) {
-              selectQuery.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
+              selectQuery.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, fieldName));
             } else {
-              selectQuery.append(String.format(" to_char(%s.%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+              selectQuery.append(String.format(" to_char(%s.%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
             }
           } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
-            selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
           } else if (f.getDataTypeId() == 7) {
-            selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
           } else {
-            selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
           }
         } else {//else field is process step or event custom field
-          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getName(), f.getHasListValues(), timezone));
+          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), fieldName, f.getHasListValues(), timezone));
         }
       } else {
         //if field is custom sql
