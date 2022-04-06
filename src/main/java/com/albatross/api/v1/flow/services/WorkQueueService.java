@@ -79,23 +79,29 @@ public class WorkQueueService {
     log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
-    String query = null;
-    if ((workQueueType.isPresent() && !workQueueType.get().getUseEventData())
-        || (null != installationCrewIds && !installationCrewIds.isEmpty())) {
-      // if the work queue type is not for event data OR it is for install crews, then keep doing
-      // the same thing
-      query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
-    } else {
-      // this should only be called for wqt using event data
-      query = smartlistService.buildWorkQueueSql(smartlist, fields, true, timezone);
+      String query = null;
+      if ((workQueueType.isPresent() && !workQueueType.get().getUseEventData()) || (null != installationCrewIds && !installationCrewIds.isEmpty())) {
+          // if the work queue type is not for event data OR it is for install crews, then keep doing
+          // the same thing
+          query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
+      } else {
+          // this should only be called for wqt using event data
+          query = smartlistService.buildWorkQueueSql(smartlist, fields, true, timezone);
 
-      // add default fields to fields list
-      var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
-      defaultFields.addAll(fields);
-      fields = defaultFields;
-    }
-    List<Map<String, Object>> results =
-        sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+          // add default fields to fields list
+          var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
+
+          for (SmartlistFieldAssignment f : fields) {
+              if (f.getProcessStepId() != null) {
+                  final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getProcessStepEventId().toString() : f.getProcessStepId().toString());
+                  f.setName(fieldName);
+              }
+          }
+
+          defaultFields.addAll(fields);
+          fields = defaultFields;
+      }
+    List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
     List<Map<String, Object>> randasResults = new ArrayList<>();
 
@@ -121,29 +127,35 @@ public class WorkQueueService {
     return new SmartlistResult(fields, randasResults);
   }
 
-  public String buildSql(Long smartlistId, Boolean useEventData) {
-    Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
-    if (smartlist == null) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
-    }
+    public String buildSql(Long smartlistId, Boolean useEventData) {
+        Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
+        if (smartlist == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+        }
 
-    log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
-    List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
-    String query;
-    if (useEventData) {
-      //      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
-      query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
+        log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
+        List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
+        String query;
+        if (useEventData) {
+            //      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
+            query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
 
-      // add default fields to fields list
-      var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
-      defaultFields.addAll(fields);
-      fields = defaultFields;
-    } else {
-      query = smartlistService.buildSql(smartlist, fields);
+            for (SmartlistFieldAssignment f : fields) {
+                if (f.getProcessStepId() != null) {
+                    final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getProcessStepEventId().toString() : f.getProcessStepId().toString());
+                    f.setName(fieldName);
+                }
+            }
+
+            // add default fields to fields list
+            var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
+            defaultFields.addAll(fields);
+            fields = defaultFields;
+        } else {
+            query = smartlistService.buildSql(smartlist, fields);
+        }
+        return query;
     }
-    return query;
-  }
 
   public List<WorkQueueOwner> getWorkQueueOwners() {
     User user = securityService.getCurrentUser();
