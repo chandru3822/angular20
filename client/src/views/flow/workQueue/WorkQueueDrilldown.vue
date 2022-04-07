@@ -304,12 +304,7 @@ export default {
       }
     },
     getColumnValue(item, c) {
-      if (c.processStepName == null || !this.useProcessStepHeaders) {
         return item[c.name]
-      } else {
-        let columnName = c.processStepName + ' - ' + c.name
-        return item[columnName.substring(0, 63)]
-      }
     },
     async exportCsv() {
       try {
@@ -399,11 +394,9 @@ export default {
 
         this.customColumns = data?.headers || []
         this.customColumns.forEach(c => {
-          let textValue = c.processStepName == null || !this.useProcessStepHeaders ? c.name : c.processStepName + ' - ' + c.name
           this.headers.push({
-            // text: textValue,
-            text: textValue,
-            value: textValue.substring(0, 63),
+            text: c.name,
+            value: c.name,
             sort: (a, b) => {
               //if it is a date, format the string as a date and sort by that value
               //without the .toString() this fails for numeric values
