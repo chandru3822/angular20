@@ -3599,7 +3599,7 @@ public class SmartlistService {
         }
       } else if (f.getProcessStepId() != null) { //if field is process step or event
 
-        final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getProcessStepEventId().toString() : f.getProcessStepId().toString());
+        final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName());
 
         //if field is system list, PS owner, or event resource
         if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user") || Objects.equals(f.getReferenceTable(), "flow.org")) {

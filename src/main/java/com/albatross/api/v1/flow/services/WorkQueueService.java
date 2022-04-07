@@ -93,7 +93,7 @@ public class WorkQueueService {
 
           for (SmartlistFieldAssignment f : fields) {
               if (f.getProcessStepId() != null) {
-                  final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getProcessStepEventId().toString() : f.getProcessStepId().toString());
+                  final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName());
                   f.setName(fieldName);
               }
           }
@@ -142,7 +142,7 @@ public class WorkQueueService {
 
             for (SmartlistFieldAssignment f : fields) {
                 if (f.getProcessStepId() != null) {
-                    final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getProcessStepEventId().toString() : f.getProcessStepId().toString());
+                    final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName());
                     f.setName(fieldName);
                 }
             }
