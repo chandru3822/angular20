@@ -397,6 +397,9 @@ public class SmartlistService {
 
     log.debug("SMARTLIST: Running smartlist ID: {}" , smartlistId);
     List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+
+    fields = prettifyFieldNames(fields);
+
     String query;
 
     if (smartlist.getObjectTypeId() == 4) {
@@ -439,29 +442,14 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-    final List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
     }
 
     if (!smartlist.isProjectDetails()) {
-      for (SmartlistFieldAssignment f: fields) {
-        // Truncate field name if it's longer than postgres' column/field limit of 63
-        if (f.getName().length() > 63) {
-          f.setName(f.getName().substring(0, 60) + "...");
-        }
-
-        if (f.getObjectTypeId() == 4 || f.getObjectTypeId() == 6) {
-          final Long appendId = (f.getObjectTypeId() == 4) ? f.getProcessStepId() : f.getEventId();
-          final String append = String.format(" (%s)", appendId);
-          if (f.getName().length() + append.length() > 63) {
-            f.setName(f.getName().substring(0, f.getName().length() - append.length() - 3) + append + "...");
-          } else {
-            f.setName(f.getName() + append);
-          }
-        }
-      }
+      fields = prettifyFieldNames(fields);
     }
 
     log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
@@ -950,27 +938,25 @@ public class SmartlistService {
         }
       }
 
-      boolean showProcessStepName = null != smartlist.getWorkQueueTypeId() && null != f.getProcessStepId();
-      String fieldName = showProcessStepName ? f.getProcessStepName() + " - " + f.getName() : f.getName();
       if (Objects.equals(f.getReferenceTable(), "flow.process_step")) {
         if (smartlist.getObjectTypeId() == 4) {
-          query.append(String.format("  (select %s from %s where %s.id = %s) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getProcessStepId(), fieldName));
+          query.append(String.format("  (select %s from %s where %s.id = %s) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getProcessStepId(), f.getName()));
         } else {
-          query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), fieldName));
+          query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), f.getName()));
         }
       } else if (f.getDataTypeId() == 1) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, fieldName));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, fieldName));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 7 && f.getSmartlistSystemListId() == null) {
-          query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, fieldName));
+          query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
           final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
 
-          final String sql = String.format("  (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), fieldName);
+          final String sql = String.format("  (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), f.getName());
           query.append(sql);
       } else {
-        query.append(String.format("  %s as \"%s\", ", location, fieldName));
+        query.append(String.format("  %s as \"%s\", ", location, f.getName()));
       }
 
       if (f.getCustomFieldSqlKey() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
@@ -3599,11 +3585,9 @@ public class SmartlistService {
         }
       } else if (f.getProcessStepId() != null) { //if field is process step or event
 
-        final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName());
-
         //if field is system list, PS owner, or event resource
         if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user") || Objects.equals(f.getReferenceTable(), "flow.org")) {
-          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), fieldName));
+          selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
         } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
           Objects.equals(f.getReferenceTable(), "flow.process_step") ||
           Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
@@ -3612,22 +3596,22 @@ public class SmartlistService {
           Objects.equals(f.getReferenceTable(), "flow.event_status_type"))
         {//else if field is process step or event system field
           if (f.getDataTypeId() == 1) {
-            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
+            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if(f.getDataTypeId() == 2) {
             if (timezone != null) {
-              selectQuery.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, fieldName));
+              selectQuery.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
             } else {
-              selectQuery.append(String.format(" to_char(%s.%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
+              selectQuery.append(String.format(" to_char(%s.%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
             }
           } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
-            selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
+            selectQuery.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if (f.getDataTypeId() == 7) {
-            selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
+            selectQuery.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s.%s)), ',')) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else {
-            selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), fieldName));
+            selectQuery.append(String.format(" %s.%s as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           }
         } else {//else field is process step or event custom field
-          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), fieldName, f.getHasListValues(), timezone));
+          selectQuery.append(addSelectCustomField(f.getDataTypeId(), f.getValueReferenceTable(), f.getName(), f.getHasListValues(), timezone));
         }
       } else {
         //if field is custom sql
@@ -3867,15 +3851,7 @@ public class SmartlistService {
     }
 
     for (SmartlistFieldAssignment f : headers) {
-      String headerName = f.getName();
-      //if it is a work queue smartlist the custom columns have the process step name in them so this part has to be different
-      if(workQueueSmartlist && !useEventData && null != f.getProcessStepName()) {
-        headerName = f.getProcessStepName() + " - " + f.getName();
-        if (headerName.length() > 63) {
-          headerName = headerName.substring(0, 63);
-        }
-      }
-      builder.addColumn(headerName, CsvSchema.ColumnType.NUMBER_OR_STRING);
+      builder.addColumn(f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
     }
 
     CsvSchema schema = builder.build().withHeader();
@@ -4879,6 +4855,25 @@ public class SmartlistService {
       dumbJava.put("additionalJoins", additionalJoins.toString());
     }
     return dumbJava;
+  }
+
+    /**
+     * Changes event/PS field names into `fieldName (event/PSName)` and truncates to 63 chars
+     *
+     * @param fields
+     * @return
+     */
+  public List<SmartlistFieldAssignment> prettifyFieldNames(List<SmartlistFieldAssignment> fields) {
+      for (SmartlistFieldAssignment f: fields) {
+          if (f.getObjectTypeId() == 4 || f.getObjectTypeId() == 6) {
+              f.setName(String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName()));
+
+              if (f.getName().length() > 63) {
+                  f.setName(f.getName().substring(0, 60) + "...");
+              }
+          }
+      }
+      return fields;
   }
 
   //@TODO: still need to fill this in

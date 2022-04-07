@@ -79,6 +79,8 @@ public class WorkQueueService {
     log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
     List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
+    fields = smartlistService.prettifyFieldNames(fields);
+
       String query = null;
       if ((workQueueType.isPresent() && !workQueueType.get().getUseEventData()) || (null != installationCrewIds && !installationCrewIds.isEmpty())) {
           // if the work queue type is not for event data OR it is for install crews, then keep doing
@@ -90,13 +92,6 @@ public class WorkQueueService {
 
           // add default fields to fields list
           var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
-
-          for (SmartlistFieldAssignment f : fields) {
-              if (f.getProcessStepId() != null) {
-                  final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName());
-                  f.setName(fieldName);
-              }
-          }
 
           defaultFields.addAll(fields);
           fields = defaultFields;
@@ -135,17 +130,10 @@ public class WorkQueueService {
 
         log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
         List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
+        fields = smartlistService.prettifyFieldNames(fields);
         String query;
         if (useEventData) {
-            //      query = smartlistService.buildProcessStepSql(smartlist, fields, null, true);
             query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
-
-            for (SmartlistFieldAssignment f : fields) {
-                if (f.getProcessStepId() != null) {
-                    final String fieldName = String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName());
-                    f.setName(fieldName);
-                }
-            }
 
             // add default fields to fields list
             var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
