@@ -364,6 +364,16 @@ public class AttachmentTypeService {
         "attachmentType.getEventTypesByPpsEventId", params, EventAttachmentType.class);
   }
 
+  //doing this ensures that the frontend cant load mismatched details via the url
+  public List<EventAttachmentType> getEventTypesByPpsEventIdAndPps(Long projectId, Long ppsId, Long ppsEventId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("ppsId", ppsId);
+    params.put("ppsEventId", ppsEventId);
+    return sqlCache.query(
+      "attachmentType.getEventTypesByPpsEventIdAndPps", params, EventAttachmentType.class);
+  }
+
   public List<EventAttachmentType> getEventAndPsTypes(Long psId, Long eventId) {
     Map<String, Object> params = new HashMap<>();
     params.put("eventId", eventId);
