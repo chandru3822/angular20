@@ -1,5 +1,10 @@
 <template>
-  <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+  <v-main v-if="!eventDetailsLoading && projectMismatch">
+    <div class="error--text">
+      No Matching Event Found
+    </div>
+  </v-main>
+  <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-else-if="!eventDetailsLoading">
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
@@ -383,6 +388,7 @@ export default {
       snackbar: {},
       selectedEvent: {},
       showUploadModal: false,
+      projectMismatch: false,
       uploadModalWidth: 600,
       defaultValuesChanged: false,
       //this is used to determine if we should save the status or not. should only save if it changes
@@ -401,7 +407,7 @@ export default {
       dirtyCfvs: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       timezone: this.$store.state.user.details.timezone.value,
-      projectId: this.$route.params.projectId,
+      projectId: parseInt(this.$route.params.projectId),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
       userCanManage: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'),
@@ -751,33 +757,41 @@ export default {
     // },
     getEventDetails: async function () {
       try {
+        this.projectMismatch = false
         const {
           data,
           status
         } = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
-        this.selectedEvent = data
-        //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
-        this.selectedEvent.allowAllUserDeletion = data.startTime === null
-        //have to reset the pps stuff too in case they just go directly to the url
-        this.$store.commit(ProjectMutations.SET_PPS, {
-          projectProcessStepId: this.selectedEvent.projectProcessStepId,
-          processStepId: this.selectedEvent.processStepId,
-          processStepName: this.selectedEvent.processStepName
-        })
-        window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
-          : `${this.selectedEvent.eventName}`
-        this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
-        if (data.uniqueBehaviorTypeId === 1) {
-          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
-          this.getRoundRobinNumDays()
-          this.userCanScheduleLeadAllocation()
-          this.userCanScheduleRemoteLeadAllocation()
+        if(data && data.projectId && data.projectId !== this.projectId) {
+          this.projectMismatch = true
+          this.eventDetailsLoading = false
+          this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } else {
+          this.selectedEvent = data
+          //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
+          this.selectedEvent.allowAllUserDeletion = data.startTime === null
+          //have to reset the pps stuff too in case they just go directly to the url
+          this.$store.commit(ProjectMutations.SET_PPS, {
+            projectProcessStepId: this.selectedEvent.projectProcessStepId,
+            processStepId: this.selectedEvent.processStepId,
+            processStepName: this.selectedEvent.processStepName
+          })
+          window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
+            : `${this.selectedEvent.eventName}`
+          this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
+          if (data.uniqueBehaviorTypeId === 1) {
+            this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
+            this.getRoundRobinNumDays()
+            this.userCanScheduleLeadAllocation()
+            this.userCanScheduleRemoteLeadAllocation()
+          }
+          //this was causing an error if you clicked too fast between events
+          if (data.id) {
+            await this.getStatusesAssignedToEvent()
+          }
+          return status
         }
-        //this was causing an error if you clicked too fast between events
-        if (data.id) {
-          await this.getStatusesAssignedToEvent()
-        }
-        return status
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message || 'Error Retrieving Details'

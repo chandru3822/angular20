@@ -69,7 +69,7 @@ public class ProjectProcessStepEventService {
 
     Long id =
         sqlCache.updateReturningId("projectProcessStepEvent.insertEvent", params, "id").longValue();
-    return getPpsEvent(id);
+    return getPpsEvent(projectProcessStepId, id);
   }
 
   public void deletePpsEvent(Long ppseId) {
@@ -91,10 +91,10 @@ public class ProjectProcessStepEventService {
         CompanyEventStatusType.class);
   }
 
-  public void setStatus(Long projectProcessStepEventId, Long companyEventStatusTypeId)
+  public void setStatus(Long ppsId, Long projectProcessStepEventId, Long companyEventStatusTypeId)
       throws Exception {
     User user = securityService.getCurrentUser();
-    Optional<ProjectProcessStepEvent> pps = getPpsEvent(projectProcessStepEventId);
+    Optional<ProjectProcessStepEvent> pps = getPpsEvent(ppsId, projectProcessStepEventId);
 
     if (pps.isEmpty()) {
       throw new RuntimeException("The given process step does not exist");
@@ -114,10 +114,12 @@ public class ProjectProcessStepEventService {
     sqlCache.update("projectProcessStepEvent.setStatus", params);
   }
 
-  public Optional<ProjectProcessStepEvent> getPpsEvent(Long id) throws Exception {
+  public Optional<ProjectProcessStepEvent> getPpsEvent(Long ppsId, Long ppsEventId) throws Exception {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
+    params.put("id", ppsEventId);
+    params.put("ppsId", ppsId);
 
+    //using ppsId ensures that they cannot modify the url and have a mismatch of ppsId vs event.project_process_step_id
     Optional<ProjectProcessStepEvent> result =
         sqlCache.get(
             "projectProcessStepEvent.get",
@@ -126,7 +128,7 @@ public class ProjectProcessStepEventService {
     if (result.isPresent()) {
       ProjectProcessStepEvent event = result.get();
       event.setCustomFieldGroups(
-          customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id));
+          customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), ppsEventId));
 
       if (null != event.getEventActions() && !event.getEventActions().isEmpty()) {
         // if there are event actions, then check if the pps status change can be performed here
@@ -226,7 +228,7 @@ public class ProjectProcessStepEventService {
     return true;
   }
 
-  public Optional<ProjectProcessStepEvent> savePpsEventDetails(
+  public Optional<ProjectProcessStepEvent> savePpsEventDetails(Long ppsId,
       Long eventId, ProjectProcessStepEventController.SaveEventRequest saveEvent) throws Exception {
     if (null != saveEvent.getStartTime()
         && null != saveEvent.getEndTime()
@@ -269,7 +271,7 @@ public class ProjectProcessStepEventService {
             saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
       }
 
-      return getPpsEvent(eventId);
+      return getPpsEvent(ppsId, eventId);
     }
   }
 
@@ -338,7 +340,7 @@ public class ProjectProcessStepEventService {
           params.put("ppsId", ppsId);
           params.put("projectProcessStepEventId", ppsEventId);
 
-          Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(ppsEventId);
+          Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(ppsId, ppsEventId);
           if (ppse.isEmpty()) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
@@ -430,7 +432,7 @@ public class ProjectProcessStepEventService {
           params.put("allowMultipleUses", processStepEventAction.getMultipleUses());
           sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
 
-          return ResponseEntity.ok(getPpsEvent(ppsEventId));
+          return ResponseEntity.ok(getPpsEvent(ppsId, ppsEventId));
         } else {
           throw new ResponseStatusException(
               HttpStatus.PRECONDITION_FAILED,
