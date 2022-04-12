@@ -106,9 +106,17 @@ public class AttachmentTypeController {
     attachmentTypeService.deleteProcessStepType(id);
   }
 
+  //this loads by processStepId
   @GetMapping(value = "/processStepTypes/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypes(@PathVariable Long processStepId) {
     return new ResponseEntity<>(attachmentTypeService.getProcessStepTypes(processStepId), HttpStatus.OK);
+  }
+
+  //this loads by projectProcessStepId - we include projectId so we can verify that the request is valid
+  @GetMapping(value = "/project/{projectId}/processStepTypes/{ppsId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypesByPps(@PathVariable Long projectId,
+                                                                                  @PathVariable Long ppsId) {
+    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypesByPps(projectId, ppsId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/processStepType", produces = MediaType.APPLICATION_JSON_VALUE)
