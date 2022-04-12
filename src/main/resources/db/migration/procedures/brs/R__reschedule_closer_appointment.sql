@@ -140,14 +140,15 @@ BEGIN
           if (v_appt_rescheduled)
           then
             v_failed = false;
+            --if we did reschedule then set the closer appt outcome to Closer Cannot Attend: Reassign on the old pps event
+            update flow.project_process_step_event_custom_field_value
+              set int_value = 15327
+            where project_process_step_event_id = p_pps_event_id
+              and custom_field_group_assignment_id = 4;
+
             --if we did reschedule then set the status of the current ppsEvent to Can Not Attend - Rescheduled
             update flow.project_process_step_event set company_event_status_type_id = 24 where id = p_pps_event_id;
 
-            --also set the closer appt outcome to Closer Cannot Attend: Reassign on the new ppsEvent
-            update flow.project_process_step_event_custom_field_value
-              set int_value = 15327
-            where project_process_step_event_id = v_new_pps_event_id
-              and custom_field_group_assignment_id = 4;
 
             --return success
             return query select true, v_lead_source_id, v_lead_source, null;
