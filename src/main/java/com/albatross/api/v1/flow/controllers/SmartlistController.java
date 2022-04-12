@@ -158,12 +158,20 @@ public class SmartlistController {
   @GetMapping(value = "/{smartlistId}/csv", produces = "text/csv")
   public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId,
                                                     @RequestParam(required = false) String timezone) throws JsonProcessingException {
-    return new ResponseEntity<>(smartlistService.getCsv(smartlistId, timezone), HttpStatus.OK);
+    try {
+        return new ResponseEntity<>(smartlistService.getCsv(smartlistId, timezone), HttpStatus.OK);
+    } catch (RuntimeException e) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to generate CSV file", e);
+    }
   }
 
   @GetMapping(value = "/{smartlistId}/data", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SmartlistResult> getSmartlistDataById(@PathVariable Long smartlistId) {
-      return new ResponseEntity<>(smartlistService.getSmartlistResults(smartlistId), HttpStatus.OK);
+      try {
+          return new ResponseEntity<>(smartlistService.getSmartlistResults(smartlistId), HttpStatus.OK);
+      } catch (RuntimeException e) {
+          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to generate results", e);
+      }
   }
 
   @GetMapping(value = "/companyObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
