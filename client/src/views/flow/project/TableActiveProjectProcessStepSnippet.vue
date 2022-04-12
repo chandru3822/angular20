@@ -21,7 +21,7 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr class="clickable" @click="goToPath(`/project/${projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${contactId}`)">
+          <tr class="clickable" @click="goToPath(`/project/${projectId}/processStep/${item.projectProcessStepId}`)">
             <td class="text-left" id="qa-process-link">
               {{ item.projectProcessStepId }}
             </td>

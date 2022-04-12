@@ -159,7 +159,7 @@
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
                            target="_blank"
-                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}?processStepId=${selectedProject.processStepId}&contactId=${selectedProject.contactId}`">
+                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}`">
                       <v-icon>mdi-chevron-double-right</v-icon>
                     </v-btn>
                   </template>

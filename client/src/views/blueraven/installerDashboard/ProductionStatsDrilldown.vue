@@ -34,7 +34,7 @@
       <template #item="{ item, index }">
         <tr :class="{'green-row': item.isnumerator}">
           <td v-if="title === 'Same-week Closeout %' || title === 'On-time Closeout %'" class="text-left">
-            <router-link :to="`/project/${item.project_id}/processStep/${item.processstepid}?processStepId=3365`"
+            <router-link :to="`/project/${item.project_id}/processStep/${item.processstepid}`"
                          target="_blank">{{ item.project_id }}
             </router-link>
           </td>

@@ -678,7 +678,7 @@ export default {
           //set navigation override so we dont get the unsaved fields popup
           this.navigationOverride = true
           //if ps root status is active but event root status is not then go back to ps
-          let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
+          let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}`
           this.$router.push(path)
         } else {
           //stay on the screen and refresh values
@@ -793,7 +793,7 @@ export default {
         this.navigationOverride = true
         this.$emit('refresh-upcoming-events')
         //go to the process step
-        this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`)
+        this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
