@@ -362,7 +362,7 @@ export default {
       timezone: this.$store.state.user.details.timezone.value,
       projectId: parseInt(this.$route.params.projectId),
       projectProcessStepId: this.$route.params.processStepId,
-      processStepId: this.$route.query.processStepId,
+      processStepId: null,
       processStep: {},
       customFieldGroups: [],
       isProcessStepLoading: true,
@@ -390,7 +390,6 @@ export default {
     // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
       // reset the selected item
-      this.processStepId = this.$route.query.processStepId
       this.projectProcessStepId = this.$route.params.processStepId
       await this.loadAllPageDetails()
     },
@@ -457,8 +456,8 @@ export default {
     async loadAllPageDetails() {
       this.processStepLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
-      await Promise.all(requests).then((statusVals) => {
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true)]
+      await Promise.all(requests).then(async (statusVals) => {
         let success = true
         statusVals.forEach(status => {
           if (status !== 200) {
@@ -466,8 +465,21 @@ export default {
           }
         })
         if (success) {
-          //this was causing issues if you moved too quickly between pps
-          this.processStepLoading = false
+          //this was causing issues if you moved too quickly between pps, now we load the pps first then other items when we have the process step id
+          const req2 = [this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
+          await Promise.all(req2).then((statuses) => {
+            let success2 = true
+            statuses.forEach(status => {
+              if (status !== 200) {
+                success2 = false
+              }
+            })
+            if (success2) {
+              //this was causing issues if you moved too quickly between pps
+              this.processStepLoading = false
+              const req2 = [this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
+            }
+          })
         }
       })
     },
@@ -494,6 +506,8 @@ export default {
         this.processStepLoading = true
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
         this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
+        this.processStepId = this.processStep.processStepId
+        // this.contactId = this.processStep.contactId
         this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
         if(reloadAll) {
           //dont reload if only doing simple refresh

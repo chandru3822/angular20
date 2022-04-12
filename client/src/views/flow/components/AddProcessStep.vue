@@ -164,7 +164,7 @@ export default {
         handleHidingGlobalLoader(this, status)
         this.$emit('step-added')
         //the data returned is the ppsId
-        this.$router.push(`/project/${this.projectId}/processStep/${data}?processStepId=${psId}&contactId=${this.contactId}`)
+        this.$router.push(`/project/${this.projectId}/processStep/${data}`)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding new process step')

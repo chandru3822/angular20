@@ -225,6 +225,9 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
+    User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
+
     try {
         String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId), String.class);
         if(null != json) {
