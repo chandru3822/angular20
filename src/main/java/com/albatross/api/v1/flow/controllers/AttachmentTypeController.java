@@ -165,6 +165,13 @@ public class AttachmentTypeController {
     return new ResponseEntity<>(attachmentTypeService.getEventTypesByPpsEventId(ppsEventId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/project/{projectId}/pps/{ppsId}/eventTypesByPpsEventId/{ppsEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<EventAttachmentType>> getEventTypesByPpsEventIdAndPps(@PathVariable Long projectId,
+                                                                                   @PathVariable Long ppsId,
+                                                                                   @PathVariable Long ppsEventId) {
+    return new ResponseEntity<>(attachmentTypeService.getEventTypesByPpsEventIdAndPps(projectId, ppsId, ppsEventId), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/eventAndPsTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<EventAttachmentType>> getEventAndPsTypes(@RequestParam Long psId,
                                                                       @RequestParam Long eventId) {

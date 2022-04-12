@@ -199,6 +199,7 @@
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id
     where ppse.id = :id
+      and ppse.project_process_step_id = :ppsId
       and ppse.archived is false
   ]]></projectProcessStepEvent.get>
 

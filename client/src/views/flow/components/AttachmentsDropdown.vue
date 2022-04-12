@@ -145,7 +145,8 @@ export default {
     },
     loadAllPageDetails() {
       if (this.projectProcessStepEventId) {
-        this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
+        //adding more params so the backend can filter out mismatched data via url
+        this.typePath = `/project/${this.projectId}/pps/${this.projectProcessStepId}/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
       } else if (this.projectProcessStepId) {
         this.typePath = `/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`
