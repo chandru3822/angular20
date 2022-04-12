@@ -456,7 +456,7 @@ export default {
     async loadAllPageDetails() {
       this.processStepLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true)]
+      const requests = [this.getCustomFieldGroups(), this.getProcessStepAttachmentTypes(), this.getProcessStep(true)]
       await Promise.all(requests).then(async (statusVals) => {
         let success = true
         statusVals.forEach(status => {
@@ -466,7 +466,7 @@ export default {
         })
         if (success) {
           //this was causing issues if you moved too quickly between pps, now we load the pps first then other items when we have the process step id
-          const req2 = [this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
+          const req2 = [this.getProcessStepEvents()]
           await Promise.all(req2).then((statuses) => {
             let success2 = true
             statuses.forEach(status => {
@@ -725,7 +725,7 @@ export default {
     getProcessStepAttachmentTypes: async function () {
       //this gets the attachment types assigned to the process step so we know whether to show the upload button
       try {
-        const {data, status} = await getRequest(`/attachmentType/processStepTypes/${this.processStepId}`, null, [])
+        const {data, status} = await getRequest(`/attachmentType/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`, null, [])
         this.attachmentTypes = data
         return status
       } catch (e) {

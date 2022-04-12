@@ -148,7 +148,7 @@ export default {
         this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
       } else if (this.projectProcessStepId) {
-        this.typePath = `/processStepTypes/${this.processStepId}`
+        this.typePath = `/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
       } else if (this.projectId) {
         this.typePath = '/projectTypes'

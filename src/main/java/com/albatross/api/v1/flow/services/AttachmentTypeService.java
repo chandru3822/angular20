@@ -211,6 +211,18 @@ public class AttachmentTypeService {
         "attachmentType.getProcessStepTypes", params, ProcessStepAttachmentType.class);
   }
 
+  public List<ProcessStepAttachmentType> getProcessStepTypesByPps(Long projectId, Long ppsId) {
+    User user = securityService.getCurrentUser();
+
+    //using all 3 params verifies that the call is coming from the right company and that the project and pps match
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("ppsId", ppsId);
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.query(
+      "attachmentType.getProcessStepTypesByPps", params, ProcessStepAttachmentType.class);
+  }
+
   public Optional<ProcessStepAttachmentType> insertProcessStepType(
       ProcessStepAttachmentType attachmentType) {
     User currentUser = securityService.getCurrentUser();
