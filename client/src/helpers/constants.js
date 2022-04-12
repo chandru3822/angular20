@@ -21,7 +21,7 @@ constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .
 constants.STANDARD_IMAGES_ONLY = 'image/*'
 constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
 constants.APP_FILE_TYPES = '.apk, .plist, .ipa'
-
+constants.MAX_FILE_UPLOADS = 10
 //TODO: rules likely need to be adjusted
 constants.EMAIL_RULES = [
   v => !!v || "E-mail is required",

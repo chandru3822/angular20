@@ -73,6 +73,7 @@ export default {
     return {
       dragTypeId: null,
       clickedTypeId: null,
+      maxFiles: constants.MAX_FILE_UPLOADS,
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
     }
   },
@@ -85,7 +86,10 @@ export default {
       await this.uploadDocument(files, attachmentTypeId)
     },
     uploadDocument: async function (files, attachmentTypeId) {
-      if (files?.length > 0) {
+      if (files?.length > this.maxFiles) {
+        this.snackbar = getSnackbar('ERROR', `Cannot upload more than ${this.maxFiles} files at one time. Please try again and select fewer files.`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else if (files?.length > 0) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           //reset error message when trying to upload new file
