@@ -25,6 +25,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
@@ -431,7 +433,14 @@ public class SmartlistService {
       query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, true );
     }
 
-    List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+      List<Map<String, Object>> results;
+
+      try {
+          results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+      } catch (Exception e) {
+          saveError(smartlist, fields, e);
+          throw e;
+      }
 
     return new SmartlistResult(fields, results);
   }
@@ -472,7 +481,14 @@ public class SmartlistService {
       }
     }
 
-    final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+      List<Map<String, Object>> results;
+
+      try {
+          results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+      } catch (Exception e) {
+          saveError(smartlist, fields, e);
+          throw e;
+      }
 
     if (results.isEmpty()) {
       return writeEmptyCsv(fields);
@@ -4976,6 +4992,29 @@ public class SmartlistService {
     } catch (Exception e) {
       return false;
     }
+  }
+
+  private void saveError(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Exception e) {
+      Map<String, Object> params = new HashMap<>();
+      params.put("smartlistId", smartlist.getId());
+      params.put("createdById", securityService.getCurrentUser().getId());
+
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+      params.put("stacktrace", sw.toString());
+
+      try {
+          params.put("smartlist", om.writeValueAsString(smartlist));
+          params.put("fields", om.writeValueAsString(fields));
+          params.put("requirements", om.writeValueAsString(getRequirements(smartlist.getId(), false)));
+      } catch (Exception err) {
+          //noop
+      }
+
+      sqlCache.update("smartlist.addError", params);
+
+      log.error(String.format("SMARTLIST: Error while running smartlist ID: %s, message: %s", smartlist.getId(), e.getMessage()));
   }
 
 //  public String getPpsTableAlias(StringBuilder query, List<SmartlistFieldAssignment> fields) {
