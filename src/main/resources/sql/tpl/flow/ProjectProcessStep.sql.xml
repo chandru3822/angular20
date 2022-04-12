@@ -28,7 +28,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
   ]]></projectProcessStep.getHistory>
 
   <projectProcessStep.getProjectProcessStep><![CDATA[
-    select * from flow.get_pps_with_actions_and_requirements(:stepId::integer)
+    select * from flow.get_pps_with_actions_and_requirements(:stepId::integer, :companyId::integer)
   ]]></projectProcessStep.getProjectProcessStep>
 
   <projectProcessStep.getStatus><![CDATA[

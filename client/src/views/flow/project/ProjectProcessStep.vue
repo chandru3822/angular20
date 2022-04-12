@@ -477,7 +477,6 @@ export default {
             if (success2) {
               //this was causing issues if you moved too quickly between pps
               this.processStepLoading = false
-              const req2 = [this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
             }
           })
         }

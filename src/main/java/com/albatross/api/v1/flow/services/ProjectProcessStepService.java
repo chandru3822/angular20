@@ -226,10 +226,9 @@ public class ProjectProcessStepService {
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
     User user = securityService.getCurrentUser();
-    Long companyId = user.getCompanyId();
 
     try {
-        String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId), String.class);
+        String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId, "companyId", user.getCompanyId()), String.class);
         if(null != json) {
           return om.readValue(json, new TypeReference<>(){});
         } else {
