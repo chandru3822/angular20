@@ -460,7 +460,7 @@
                 <td>{{ item.setter_name || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
-                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
+                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}/details`">
                     {{ item.project_id }}
                   </router-link>
                   <div v-else>{{ item.project_id || '' }}</div>
