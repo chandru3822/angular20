@@ -39,7 +39,7 @@
             </router-link>
           </td>
           <td v-else-if="title === 'Inspection Pass Rate' || title === 'Substantial Completions'" class="text-left">
-            <router-link :to="`/project/${item.project_id}`" target="_blank">{{ item.project_id }}</router-link>
+            <router-link :to="`/project/${item.project_id}/details`" target="_blank">{{ item.project_id }}</router-link>
           </td>
           <td v-else class="text-left">{{ item.project_id }}</td>
           <td class="text-left">{{ item.project_name }}</td>
