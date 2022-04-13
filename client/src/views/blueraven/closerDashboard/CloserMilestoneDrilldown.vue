@@ -22,12 +22,13 @@
             <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
               <td class="text-left">{{ index + 1 }}</td>
               <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
-              <td class="text-left"><a :href="'/project/' + item.id">{{ item.id || '' }}</a></td>
+              <td class="text-left"><a :href="`/project/${item.id}/details`">{{ item.id || '' }}</a></td>
               <td class="text-left">{{ item.source_name || '' }}</td>
               <td class="text-left">{{ item.system_size || '' }}</td>
               <td class="text-left">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
               <td class="text-left">
-                <input readonly disabled type="checkbox" v-model="item.self_gen">
+<!--                <input readonly type="checkbox" v-model="item.self_gen">-->
+                <v-checkbox readonly color="green" v-model="item.self_gen"></v-checkbox>
               </td>
             </tr>
           </template>

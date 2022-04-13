@@ -8,7 +8,7 @@
         </div>
         <div class="project-subtitle">
           Project ID:
-          <router-link :to="`/project/${project.id}`">{{ project.id }}</router-link>
+          <router-link :to="`/project/${project.id}/details`">{{ project.id }}</router-link>
           <br/>
           Address: {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
           <br/>
@@ -233,7 +233,7 @@ export default {
     async getProposalProject() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/project/${this.projectId}`)
+        const {data, status} = await getRequest(`/project/${this.projectId}/details`)
         this.project = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
