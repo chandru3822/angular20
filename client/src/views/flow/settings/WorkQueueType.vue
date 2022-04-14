@@ -49,7 +49,7 @@
                 <label>Use Event Data:</label>
                 <input type="checkbox" class="ml-3" disabled v-model="workQueueType.useEventData">
               </div>
-              <table class="one-hunned" v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
+              <table class="one-hunned" v-if="workQueueType && workQueueType.id">
                 <tr>
                   <td class="wqt-row pr-2">
                     <v-text-field text

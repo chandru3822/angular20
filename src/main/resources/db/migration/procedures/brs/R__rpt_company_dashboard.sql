@@ -538,7 +538,7 @@ BEGIN
                                                         ON pswqtpsst.process_step_work_queue_type_id = pswqt.id
                                              inner join flow.user u on u.id = pps.created_by_id
                                              JOIN flow.work_queue_type wqt ON pswqt.work_queue_type_id = wqt.id
-                                             inner join flow.project p ON pps.project_id = p.id
+                                             inner join flow.project p ON pps.project_id = p.id and p.archived is false
                                       WHERE pps.process_step_id = 3365
                                         AND work_queue_type_id = 93
                                       group by p.id

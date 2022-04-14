@@ -173,7 +173,7 @@ import {deleteAttachment} from '@/services/attachmentService'
 import AttachmentUpload from "@/views/flow/components/AttachmentUpload";
 import orderBy from 'lodash.orderby'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-
+import constants from "@/helpers/constants"
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
 export default {
@@ -189,6 +189,7 @@ export default {
       displayType: null,
       dragTypeId: null,
       typePath: null,
+      maxFiles: constants.MAX_FILE_UPLOADS,
       attachmentPath: null,
       error: {},
       renderTicker: 0,
@@ -315,7 +316,10 @@ export default {
       await this.uploadDocument(files, attachmentTypeId)
     },
     uploadDocument: async function (files, attachmentTypeId) {
-      if (files?.length > 0) {
+      if (files?.length > this.maxFiles) {
+        this.snackbar = getSnackbar('ERROR', `Cannot upload more than ${this.maxFiles} files at one time. Please try again and select fewer files.`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else if (files?.length > 0) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           //reset error message when trying to upload new file

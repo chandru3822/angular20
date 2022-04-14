@@ -140,7 +140,7 @@
                         || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchEventStatusType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
           <v-card-text class="height-one-hunned" v-else>
-            <v-toolbar color="white" flat>
+            <v-toolbar color="white" flat id="schedule-project-toolbar">
               <v-toolbar-title class="app-title">
                 {{selectedProject.projectName}}
                 <div class="toolbar-subtitle">{{selectedProject.processStepName}}</div>
@@ -159,7 +159,7 @@
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
                            target="_blank"
-                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}?processStepId=${selectedProject.processStepId}&contactId=${selectedProject.contactId}`">
+                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}`">
                       <v-icon>mdi-chevron-double-right</v-icon>
                     </v-btn>
                   </template>
@@ -228,7 +228,7 @@
                   width="500">
                 <template #activator="{ on }">
                   <v-btn color="secondaryCustom"
-                         class="ml-3"
+                         class="unschedule-button"
                          @click="getCancelledCompanyEventStatuses"
                          v-on="on">Unschedule Event</v-btn>
                 </template>
@@ -766,6 +766,10 @@
     height: 30px;
   }
 
+  #schedule-project-toolbar .v-toolbar__content {
+    padding: 4px 0 !important;
+  }
+
   .map-field-input {
     border-bottom: solid 1px rgba(0, 0, 0, 0.42);
   }
@@ -797,6 +801,12 @@
   .schedule-row-go-button {
     position: absolute;
     bottom: 10px;
+  }
+
+  .unschedule-button {
+    position: absolute;
+    bottom: 10px;
+    right: 25px;
   }
 
   .map-field-label {

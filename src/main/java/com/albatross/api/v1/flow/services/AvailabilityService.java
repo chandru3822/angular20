@@ -742,7 +742,7 @@ public class AvailabilityService {
 
           // after the auto triggers have run then get the event
           Optional<ProjectProcessStepEvent> ppsEvent =
-              projectProcessStepEventService.getPpsEvent(request.getProjectProcessStepEventId());
+              projectProcessStepEventService.getPpsEvent(request.getProjectProcessStepId(), request.getProjectProcessStepEventId());
 
           ppsEvent.ifPresent(
               projectProcessStepEvent -> {

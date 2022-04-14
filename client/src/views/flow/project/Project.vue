@@ -112,7 +112,7 @@
         <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
         <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
           <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}?processStepId=${$store.state.project.pps.processStepId}&contactId=${project.contactId}`">
+          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
             {{$store.state.project.pps.processStepName}}
           </router-link>
         </span>
