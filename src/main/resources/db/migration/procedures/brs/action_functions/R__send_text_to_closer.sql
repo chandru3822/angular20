@@ -14,38 +14,32 @@ declare
     v_contact_state text;
     v_appt_start_time text;
     v_appt_end_time text;
+    v_system_size text;
 BEGIN
 
-    --get the closers phone number
-    select u.phone_number, u.first_name, u.id
+    -- get the closers phone number
+    -- and start and end times converted to the contact or closers time zone
+    -- and contact name and address and system size (converted to text)
+    select u.phone_number, u.first_name, u.id, (closer_appointment_start at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text,
+           (closer_appointment_end at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text, pd.contact_name, pd.project_street1,
+           pd.project_city, pd.project_state_abbreviation, pd.system_size::text
     into v_closer_phone_number,
          v_closer_first_name,
-         v_closer_user_id
+         v_closer_user_id,
+         v_appt_start_time,
+         v_appt_end_time,
+         v_contact_name,
+         v_contact_street,
+         v_contact_city,
+         v_contact_state,
+         v_system_size
     from brs.project_details pd
         inner join flow."user" u on u.id = pd.closer_user_id
+        inner join flow.user_position up on up.id = pd.closer_user_position_id
+        inner join flow.org o on o.id = up.org_id
+        inner join flow.company_timezone ct on ct.id = o.company_timezone_id
+        inner join flow.timezone t on t.id = ct.timezone_id
     where pd.project_id = p_project_id;
-
-    --get the contact name
-    select concat(c.first_name, ' ', c.last_name), p.street1, p.city, s.abbreviation
-    into v_contact_name, v_contact_street, v_contact_city, v_contact_state
-    from flow.project p
-        inner join flow.contact c on c.id = p.contact_id
-        inner join flow.company_state cs on p.company_state_id = cs.id
-        inner join flow.state s on s.id = cs.state_id
-    where p.id = p_project_id;
-
-    -- get the start and end times converted to the contact or closers time zone
-    select (closer_appointment_start at time zone 'UTC') at time zone coalesce(p.time_zone, t.timezone)::text,
-           (closer_appointment_end at time zone 'UTC') at time zone coalesce(p.time_zone, t.timezone)::text
-    into v_appt_start_time, v_appt_end_time
-    from brs.project_details pd
-             inner join flow.project p on p.id = pd.project_id
-             inner join flow.user_position up on up.id = pd.closer_user_position_id
-             inner join flow.org o on o.id = up.org_id
-             inner join flow.company_timezone ct on ct.id = o.company_timezone_id
-             inner join flow.timezone t on t.id = ct.timezone_id
-    where project_id = p_project_id;
-
 
     -- the user_id was jacked up.  user_id == the user it is being sent to, message_sent_by_id = the currently logged in user
     if v_closer_phone_number is not null then
@@ -117,6 +111,12 @@ BEGIN
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
                  concat('Hello ', v_closer_first_name, ',  a proposal design has been completed for Project ', v_contact_name),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 12 then
+          -- do the message for id 12 = Installation scheduled
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('Hi ', v_closer_first_name, ',  The installation for ', v_contact_name, ', ', p_project_id, ' has been scheduled for ', v_appt_start_time, '.  Address: ', v_contact_street, ', ', v_contact_city, ', ', v_contact_state, '.  Size (kW): '),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;
