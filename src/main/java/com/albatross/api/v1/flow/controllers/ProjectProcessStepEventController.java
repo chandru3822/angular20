@@ -36,7 +36,7 @@ public class ProjectProcessStepEventController {
   @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectProcessStepEvent> getPpsEvent(@PathVariable Long ppsId,
                                                        @PathVariable Long eventId) throws Exception {
-    return projectProcessStepEventService.getPpsEvent(eventId);
+    return projectProcessStepEventService.getPpsEvent(ppsId, eventId);
   }
 
   @DeleteMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,9 +50,10 @@ public class ProjectProcessStepEventController {
   }
 
   @PutMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long eventId,
+  public Optional<ProjectProcessStepEvent> savePpsEventDetails(@PathVariable Long ppsId,
+                                                               @PathVariable Long eventId,
                                                                @RequestBody SaveEventRequest saveEvent) throws Exception {
-    return projectProcessStepEventService.savePpsEventDetails(eventId, saveEvent);
+    return projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent);
   }
 
   @GetMapping(value = "/{projectProcessStepEventId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -76,7 +77,7 @@ public class ProjectProcessStepEventController {
                                                        @PathVariable Long actionId,
                                                        @RequestBody SaveEventRequest saveEvent) throws Exception {
     //save the custom field values and default values
-    projectProcessStepEventService.savePpsEventDetails(eventId, saveEvent);
+    projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent);
 
     //do the action
     return projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
@@ -86,7 +87,7 @@ public class ProjectProcessStepEventController {
   public void updateProjectProcessStepEventStatus(@PathVariable Long ppsId,
                                                                   @PathVariable Long eventId,
                                                                   @RequestBody CompanyEventStatusType status) throws Exception {
-    projectProcessStepEventService.setStatus(eventId, status.getId());
+    projectProcessStepEventService.setStatus(ppsId, eventId, status.getId());
   }
 
   @Data

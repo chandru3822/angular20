@@ -327,6 +327,13 @@ public class ContactLeadService {
       cfvList.add(leadPrice);
     }
 
+    if (cl.getGclid() != null) {
+      CustomFieldValue gclidValue = new CustomFieldValue();
+      gclidValue.setCustomFieldGroupAssignmentId(23102L);
+      gclidValue.setTextValue(cl.getGclid());
+      cfvList.add(gclidValue);
+    }
+
     // handles saving 'Referral Generation Representative' custom field
     if (cl.getReferralGenerationRepresentative() != null) {
       // Get Referral Generation Representative list of values

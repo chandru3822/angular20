@@ -73,7 +73,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left underline" v-if="useProcessStepHeaders">
                 <v-btn text small
-                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${item.contactId}`">
+                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Project Name'] }}
                 </v-btn>
               </td>
@@ -304,12 +304,7 @@ export default {
       }
     },
     getColumnValue(item, c) {
-      if (c.processStepName == null || !this.useProcessStepHeaders) {
         return item[c.name]
-      } else {
-        let columnName = c.processStepName + ' - ' + c.name
-        return item[columnName.substring(0, 63)]
-      }
     },
     async exportCsv() {
       try {
@@ -399,11 +394,9 @@ export default {
 
         this.customColumns = data?.headers || []
         this.customColumns.forEach(c => {
-          let textValue = c.processStepName == null || !this.useProcessStepHeaders ? c.name : c.processStepName + ' - ' + c.name
           this.headers.push({
-            // text: textValue,
-            text: textValue,
-            value: textValue.substring(0, 63),
+            text: c.name,
+            value: c.name,
             sort: (a, b) => {
               //if it is a date, format the string as a date and sort by that value
               //without the .toString() this fails for numeric values
@@ -506,7 +499,7 @@ export default {
       return canAssign
     },
     clickRow(row) {
-      this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&contactId=${row.contactId}`})
+      this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}`})
     },
     filterResults() {
       this.results = this.masterResults.filter(r => {

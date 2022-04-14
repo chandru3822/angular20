@@ -263,15 +263,17 @@ public class ProjectService {
                 user.getHighestParentCompanyId()),
             new ProjectMapper<>(Project.class, om));
 
-    if (project.isPresent()
-        && null != project.get().getOwner()
-        && null != project.get().getOwner().getUserId()) {
-      String presignedUrl =
-          attachmentService.getAttachmentPresignedUrl(
-              project.get().getOwner().getUserId(),
-              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
-      project.get().getOwner().setPresignedUrl(presignedUrl);
-    }
+
+    //pretty sure we don't show the user's image anywhere anymore and s3 stuff is slow. taking out for now.
+//    if (project.isPresent()
+//        && null != project.get().getOwner()
+//        && null != project.get().getOwner().getUserId()) {
+//      String presignedUrl =
+//          attachmentService.getAttachmentPresignedUrl(
+//              project.get().getOwner().getUserId(),
+//              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
+//      project.get().getOwner().setPresignedUrl(presignedUrl);
+//    }
 
     return project;
   }

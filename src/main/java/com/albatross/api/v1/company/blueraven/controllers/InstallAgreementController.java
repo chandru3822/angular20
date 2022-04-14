@@ -143,7 +143,7 @@ public class InstallAgreementController {
         }
       }
     } catch (Exception e) {
-      log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
+      log.debug("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
       if (e.getMessage().contains("locate")) {
         throw new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
@@ -163,7 +163,7 @@ public class InstallAgreementController {
       JSONObject loanApp = goodleapService.getApplicationByProjectId(Long.parseLong(projectId));
       return ResponseEntity.ok(loanApp.toString());
     } catch (Exception e) {
-      log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
+      log.debug("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
       if (e.getMessage().contains("locate")) {
         throw new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());

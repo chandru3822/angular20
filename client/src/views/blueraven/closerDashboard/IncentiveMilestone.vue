@@ -6,7 +6,7 @@
                         'align-items-flex-start': windowInnerWidth >= 1135,
                         'active-milestone': active
                         }"
-         @click="milestoneDrilldown(currentQuarter)">
+         @click="milestoneDrilldown(quarter.value)">
       <span class="milestone-top-label">{{ upperLabel }}</span>
       <div class="milestone-content mt-1" :class="colorClass">
         <div class="milestone-content-left-side d-flex align-items-flex-end"><trophy-dynamic :color="colorClass" :active="active"></trophy-dynamic></div>
@@ -50,7 +50,6 @@ export default {
       incentive_constants,
       milestoneDialog: false,
       currentUserId: null,
-      selectedQuarter: 1,
       currentQuarter: moment().quarter(),
       drilldownData: [],
       upperLabel: '',
@@ -163,7 +162,6 @@ export default {
           this.drilldownData = []
         }
 
-        this.selectedQuarter = quarter
         this.milestoneDialog = true
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

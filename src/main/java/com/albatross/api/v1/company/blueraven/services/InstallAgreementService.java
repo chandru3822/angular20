@@ -339,7 +339,7 @@ public class InstallAgreementService {
           b.addParameter("srfn", s(pd.getCloserFirstName()));
           b.addParameter("srln", s(pd.getCloserLastName()));
           b.addParameter("sre", s(pd.getCloserEmail()));
-          b.addParameter("cost", s(pd.getTotalSystemPrice()));
+          b.addParameter("cost", s(pd.getLoanAmount()));
           b.addParameter("refnum", s(pd.getProjectId()));
           return b.build().toString().replaceAll("\\+", "%20");
         } catch (URISyntaxException e) {

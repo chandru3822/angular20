@@ -89,6 +89,7 @@
                                            :is-disabled="item.workQueueTypes.length > 0"
                                            :show-tooltip="item.workQueueTypes.length > 0"
                                            tooltip-text="Cannot delete a Process Step with assigned Work Queue Types"
+                                           @confirm-delete="deleteProcessStep(item)"
                     ></confirm-delete-dialog>
                   </td>
                 </tr>
