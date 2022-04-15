@@ -244,7 +244,7 @@
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
             scrollTime: moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'),
-            hiddenDays: [0],
+            hiddenDays: [],
             minTime: '02:00:00',
             maxTime: '23:00:00',
             height: 'parent',
@@ -544,7 +544,7 @@
           //open event clicks in new window every time so they dont have to keep reloading the calendar
           let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
           window.open(routerData.href, '_blank')
-          // this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}?processStepId=${props.processStepId}&contactId=${props.contactId}`})
+          // this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}`})
         }
       },
       handleEventRender (info) {

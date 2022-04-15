@@ -91,44 +91,12 @@
                       <v-icon v-else-if="item.custom">add</v-icon>
                       <v-icon v-else>edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-model="item.deleteConfirm"
-                      v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this field: <strong>{{ item.fieldName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="deleteField(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                        label="this field: "
+                        :item-to-delete="item.fieldName"
+                        @confirm-delete="deleteField(item)"
+                    ></confirm-delete-dialog>
                   </div>
                 </td>
               </tr>
@@ -146,13 +114,36 @@
                       tabindex="1"
                       v-model="item.newFieldName"
                     />
-                    <div v-if="!apiPath" class="text-left read-only-label">
-                      <label>Read-only:</label>
+                    <div v-if="!apiPath && userIsSystemAdmin" class="text-left read-only-label">
+                      <label>System Level Read-only:</label>
                       <input type="checkbox"
                              :readonly="!userCanEdit"
                              :disabled="!userCanEdit"
                              class="ml-2"
+                             v-model="item.systemReadonly">
+                    </div>
+                    <div v-if="!apiPath" class="text-left read-only-label">
+                      <label>{{ item.systemReadonly ? 'This field is readonly at system level and cannot be changed.' : 'Read-only:'}}</label>
+                      <input type="checkbox"
+                             v-if="!item.systemReadonly"
+                             :readonly="!userCanEdit"
+                             :disabled="!userCanEdit"
+                             class="ml-2"
                              v-model="item.readonly">
+                      <input type="checkbox"
+                             v-else
+                             :readonly="true"
+                             :disabled="true"
+                             class="ml-2"
+                             v-model="item.systemReadonly">
+                      <br>
+                      <label>Allow Selecting Now: </label>
+                      <input type="checkbox"
+                             v-if="item.dataTypeId === 1 || item.dataTypeId === 2"
+                             :readonly="!userCanEdit"
+                             :disabled="!userCanEdit"
+                             class="ml-2"
+                             v-model="item.allowNow">
                     </div>
                     <v-autocomplete
                       v-model="item.companyDataType"
@@ -281,7 +272,7 @@
                                     :false-value="true" :true-value="false"
                                     :label="ot.objectType" />
                       </v-container>
-                      <v-container>
+                      <v-container v-else>
                         <v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"
                                     :key="index"
                                     flat
@@ -326,6 +317,7 @@ import {
   putRequest
 } from "@/helpers/helpers";
 import constants from "@/helpers/constants";
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: "CustomFields",
@@ -334,6 +326,7 @@ export default {
     apiPath: { type: String }
   },
   components: {
+    ConfirmDeleteDialog,
     draggable
   },
   data() {
@@ -366,6 +359,7 @@ export default {
       selectedObjectType: { id: -1, objectType: "All" },
       customFieldObjectTypes: [],
       objectFilters: [],
+      userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
       blankNewObject: {
         id: -1,
@@ -380,6 +374,7 @@ export default {
   },
   async created() {
     await this.getCompanyDataTypes();
+    //todo @randa do this so that if there are exclusions they will load correctly
     this.getCustomFieldObjectTypes();
     this.getCustomFields();
     this.getSystemLists();
@@ -398,7 +393,7 @@ export default {
       return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder);
     },
     filterDataTypes(item) {
-      if (this.$store.getters.userHasFeature("SYSTEM")) {
+      if (this.userIsSystemAdmin) {
         return this.dataTypes;
       } else {
         // filter out the system item if not a system admin
@@ -482,7 +477,7 @@ export default {
     async getCustomFieldObjectTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        const { data, status } = await getRequest(`/objectType/getCustomFieldObjectTypes`, this.apiPath, null, []);
+        const { data, status } = await getRequest(`/objectType/getCompanyObjectTypes`, this.apiPath, null, []);
         data?.forEach(d => d.archived = true);
         this.customFieldObjectTypes = cloneDeep(data);
         this.objectFilters = data;

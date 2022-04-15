@@ -15,7 +15,7 @@ public class CompanyFunction {
 
   private Long id, dbFunctionId, returnDataTypeId, dbFunctionTypeId, companyId;
   private String companyFunctionName, companyName, description;
-  private Boolean archived;
+  private Boolean archived, processStepActionable, eventActionable;
   private List<CompanyFunctionParam> companyFunctionParams;
 }
 

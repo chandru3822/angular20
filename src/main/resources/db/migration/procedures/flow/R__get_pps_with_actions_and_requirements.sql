@@ -1,6 +1,6 @@
 -- DROP FUNCTION IF EXISTS flow.get_pps_with_actions_and_requirements(integer);
 
-CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id integer)
+CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id integer, p_company_id integer)
     RETURNS json AS
 $$
 DECLARE
@@ -27,6 +27,7 @@ BEGIN
          )
          select
              ps.id as "processStepId",
+             ps.company_id as "companyId",
              pps.id as "projectProcessStepId",
              pps.project_id as "projectId",
              pps.process_step_complete_date as "processStepCompleteDate",
@@ -199,6 +200,7 @@ BEGIN
                                                                               dfp.db_function_id as "dbFunctionId",
                                                                               dfp.parameter_name as "parameterName",
                                                                               dfp.data_type_id as "dataTypeId",
+                                                                              dfp.description,
                                                                               apdv.db_function_param_id as "dbFunctionParamId",
                                                                               apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                                                               apdv.dynamic_value as "dynamicValue"
@@ -280,7 +282,10 @@ BEGIN
                         inner join flow.project p on p.id = pps.project_id
                         inner join flow.company_process cp on cp.id = p.company_process_id
                         left join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.company_process_id = cp.id
-         where pps.id = p_project_process_step_id
+         where pps.id = p_project_process_step_id and
+               pps.archived is false and
+               --this ensures that a user from company A cannot load pps details from company B
+               ps.company_id = p_company_id
 ) as sub_rows;
 RETURN v_json;
 END;

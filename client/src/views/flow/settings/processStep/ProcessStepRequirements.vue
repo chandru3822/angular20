@@ -668,7 +668,8 @@ export default {
           this.newRequirement.customValue = true
           this.loadOperatorTypes(7, 10)
         } else {
-          const {data} = await getRequest(`/function/requirement`)
+          let objectTypeId = this.eventRequirements ? 6 : 4;
+          const {data} = await getRequest(`/function/requirement/${objectTypeId}`)
           this.availableFunctions = data
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -764,7 +765,11 @@ export default {
     async loadFieldsByParent(parent) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
+        //this exclusion is temporary until requirements/action can handle the new system readonly data type
+        //could probably do this cleaner/more generically i just dont want to cuz it is temporary
+        const {data} = await getRequestWithParams(`/customField/getByParentProcessStep/${parent.id}`, { params: {
+            excludedUnhandledDataTypes: true
+          }})
         this.customFields = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -777,7 +782,9 @@ export default {
     async loadCustomFieldsByObjectType(objectTypeId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customField/getByParentType/${objectTypeId}`)
+        const {data} = await getRequestWithParams(`/customField/getByParentType/${objectTypeId}`, { params: {
+            excludedUnhandledDataTypes: true
+          }})
         this.customFields = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

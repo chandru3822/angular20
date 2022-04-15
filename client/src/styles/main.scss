@@ -17,12 +17,19 @@
 .theme--light.application .text--primary,
 .theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
 .theme--light.v-input:not(.v-input--is-disabled) input,
+.theme--light.v-input:not(.fix-switch-color) .v-input--switch__thumb,
+.theme--light.v-input:not(.fix-switch-color) .v-input--switch__track,
 .theme--light.v-select .v-select__selections {
   color: var(--v-primaryText-base) !important;
   /*color: #1F3C73 !important;*/
 }
-
+//v-input--switch__thumb theme--light
+//v-input--switch__track theme--light
 .theme--light.v-input--is-disabled i,
+.theme--light.fix-switch-color:not(.v-input--is-label-active) .v-input--switch__thumb,
+.theme--light.fix-switch-color:not(.v-input--is-label-active) .v-input--switch__track,
+.theme--light.v-input--switch input,
+.v-list-item--disabled .v-list-item__content .v-list-item__title,
 .theme--light.v-input--is-disabled label{
   color: #9E9E9E !important;
 }
@@ -61,6 +68,12 @@ body {
   position: -webkit-sticky; /* for Safari */
   top: 0;
   z-index: 1;
+}
+
+//assign this to the content-class of a tooltip to use it
+.full-opacity-tooltip {
+  opacity: 1 !important;
+  background: #616161 !important;
 }
 
 .primary-custom-bg {

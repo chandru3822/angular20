@@ -20,10 +20,10 @@ import com.mypurecloud.sdk.v2.model.ContactList;
 import com.mypurecloud.sdk.v2.model.ContactListEntityListing;
 import com.mypurecloud.sdk.v2.model.DialerContact;
 import com.mypurecloud.sdk.v2.model.WritableDialerContact;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -33,9 +33,19 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class GenesysService {
+
+  private final ContactService contactService;
+  private final CustomFieldValueService customFieldValueService;
+  private final SecurityService securityService;
+  private final SMSService smsService;
+  private final VerseWebhookService verseWebhookService;
+  private final SqlCache sqlCache;
+  private final ObjectMapper om;
+
   @Value(value = "${genesys.api.client.id}")
   private String clientId;
 
@@ -44,20 +54,6 @@ public class GenesysService {
 
   @Value("${app.home_url}")
   private String homeUrl;
-
-  @Autowired private ContactService contactService;
-
-  @Autowired private CustomFieldValueService customFieldValueService;
-
-  @Autowired private SecurityService securityService;
-
-  @Autowired private SMSService smsService;
-
-  @Autowired private VerseWebhookService verseWebhookService;
-
-  @Autowired private SqlCache sqlCache;
-
-  @Autowired private ObjectMapper om;
 
   private ApiClient initGenesysApi() throws IOException, ApiException {
     PureCloudRegionHosts region = PureCloudRegionHosts.us_west_2;
@@ -81,12 +77,12 @@ public class GenesysService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
-    Optional<Contact> result =
-        sqlCache.get(
+    return sqlCache
+        .get(
             "genesys.getContactIdByPhone",
             params,
-            new ContactService.ContactMapper<>(Contact.class, om));
-    return result.orElse(null);
+            new ContactService.ContactMapper<>(Contact.class, om))
+        .orElse(null);
   }
 
   public JSONObject getContactUrlByPhone(String phoneNumber) {
@@ -219,6 +215,7 @@ public class GenesysService {
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     HashMap<String, Object> contactMap = new HashMap<>();
+    wdc.setId(contact.getId().toString());
     contactMap.put("id", contact.getId());
     contactMap.put("first_name", contact.getFirstName() != null ? contact.getFirstName() : "");
     contactMap.put("last_name", contact.getLastName() != null ? contact.getLastName() : "");
@@ -271,7 +268,7 @@ public class GenesysService {
 
     List<DialerContact> dc =
         apiInstance.postOutboundContactlistContacts(
-            contactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
+            contactListId, List.of(wdc), false, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
 
@@ -283,9 +280,8 @@ public class GenesysService {
         return;
       }
 
-      List<DialerContact> dcOld =
-          apiInstance.postOutboundContactlistContacts(
-              oldContactListId, new ArrayList<>(Arrays.asList(wdc)), false, false, false);
+      apiInstance.postOutboundContactlistContacts(
+          oldContactListId, List.of(wdc), false, false, false);
     }
   }
 
@@ -311,7 +307,12 @@ public class GenesysService {
     try {
       sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
     } catch (Exception e) {
-      log.error("GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}", contactId, textValue, cfgaId, e.getMessage());
+      log.error(
+          "GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}",
+          contactId,
+          textValue,
+          cfgaId,
+          e.getMessage());
     }
   }
 
@@ -429,10 +430,10 @@ public class GenesysService {
             apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
           } catch (ApiException ae) {
             JSONObject apiException = new JSONObject(ae.getRawBody());
-            log.error(
-                "GENE: Error updating contactId={}, msg={}",
-                contactId,
-                apiException.getString("message"));
+//            log.error(
+//                "GENE: Error updating contactId={}, msg={}",
+//                contactId,
+//                apiException.getString("message"));
           }
         }
       }
@@ -784,7 +785,6 @@ public class GenesysService {
         addContact(contact.getId(), values, false);
       } catch (Exception e) {
         log.error("GENESYS: Error updating contact list", e);
-        e.printStackTrace();
       }
     }
   }
@@ -819,15 +819,37 @@ public class GenesysService {
   }
 
   private void addTextelParameters(HashMap<String, Object> contactMap, boolean isUpdate) {
-    contactMap.put("messageBody1", "Hello " + contactMap.get("first_name") + ", this is Blue Raven Solar. We are just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
-    contactMap.put("messageBody2", "Hey " + contactMap.get("first_name") + ", I'd love to share some incentives that are available right now to help you save money on your electric bill! Is now a good time to talk?");
-    contactMap.put("messageBody3", "Hello " + contactMap.get("first_name") + ", are you still interested in learning more about how you can save money on your electric bill by going solar? I'd be happy to answer any questions you have!");
-    contactMap.put("messageBody4", "Hi " + contactMap.get("first_name") + ", if you would prefer to see if you qualify without talking to us, click the link below to see if you qualify. https://blueravensolar.aidaform.com/qualify_now");
-    contactMap.put("messageBody5", "Just wanted to check in. We would be more than happy to assist you.");
-    contactMap.put("messageBody6", "Hey " + contactMap.get("first_name") +", we don't want to bother you, but we do want to be here to help with your request. Is there anything questions we can assist with about going solar?");
-    contactMap.put("messageBody7", "Hi " + contactMap.get("first_name") +", are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
-    contactMap.put("messageBodyAfterHours", "Thank you for your text! We are currently out of office but will reply to your message as soon as we get back in.");
-    contactMap.put("messageBodyStop", "We have removed you from our messaging campaign. No more messages will be sent. Questions? Send them to sales@blueravensolar.com or call 385-233-0858");
+    contactMap.put(
+        "messageBody1",
+        "Hello "
+            + contactMap.get("first_name")
+            + ", this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
+    contactMap.put("messageBody2", "Let me know which is better for you!");
+    contactMap.put(
+        "messageBody3",
+        "Hi there, Blue Raven Solar again. We’d be happy to put together a proposal to help you see what solar would look like for you. Let me know when it’s a good time to talk!");
+    contactMap.put(
+        "messageBody4",
+        "Hi there! Just following up on your request for a solar proposal for your home. Is it a good time to chat? You can also text me if that’s easier for you.");
+    contactMap.put(
+        "messageBody5",
+        "Just wanted to check in. We would be more than happy to assist you. Let me know when it’s a good time to talk.");
+    contactMap.put(
+        "messageBody6",
+        "Hey "
+            + contactMap.get("first_name")
+            + ", we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
+    contactMap.put(
+        "messageBody7",
+        "Hi "
+            + contactMap.get("first_name")
+            + ", are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
+    contactMap.put(
+        "messageBodyAfterHours",
+        "Thank you for your text! We are currently out of office but will reply to your message as soon as we get back in.");
+    contactMap.put(
+        "messageBodyStop",
+        "We have removed you from our messaging campaign. No more messages will be sent. Questions? Send them to sales@blueravensolar.com or call 385-233-0858");
 
     Long contactId = (Long) contactMap.get("id");
     if (isUpdate) {
@@ -837,25 +859,33 @@ public class GenesysService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("contactId", contactId);
         Optional<String> textelPhoneKey =
-          sqlCache.get(
-            "genesys.getTextelPhoneKeyByContactId",
-            params,
-            new SingleColumnRowMapper<>(String.class));
+            sqlCache.get(
+                "genesys.getTextelPhoneKeyByContactId",
+                params,
+                new SingleColumnRowMapper<>(String.class));
         if (textelPhoneKey.isPresent()) {
           contactMap.put("line_id", textelPhoneKey.get());
-        }
-        else {
+        } else {
           saveTextelPhoneKey(contactId, contactMap);
         }
       } catch (Exception e) {
-        log.error("GENESYS: Error saving Textel Phone Key for contactId={}, msg={}", contactId, e.getMessage());
+        log.error(
+            "GENESYS: Error saving Textel Phone Key for contactId={}, msg={}",
+            contactId,
+            e.getMessage());
       }
     }
   }
 
   private void saveTextelPhoneKey(Long contactId, HashMap<String, Object> contactMap) {
-    ArrayList<String> textelPhoneKeys = new ArrayList<>(Arrays.asList("8CEB0154-A24A-4158-B791-3CD1B6EF40CF", "EE67684C-8096-4990-8FA1-5C902AD45CBC",
-      "0B631987-84D0-4DB2-9629-A0D6E22E95B4", "6C2E00EC-CEFD-4BBE-920B-528D19BA7263", "D62840D5-A25A-41BD-9FFE-E89BEDDE70FD"));
+    ArrayList<String> textelPhoneKeys =
+        new ArrayList<>(
+            Arrays.asList(
+                "8CEB0154-A24A-4158-B791-3CD1B6EF40CF",
+                "EE67684C-8096-4990-8FA1-5C902AD45CBC",
+                "0B631987-84D0-4DB2-9629-A0D6E22E95B4",
+                "6C2E00EC-CEFD-4BBE-920B-528D19BA7263",
+                "D62840D5-A25A-41BD-9FFE-E89BEDDE70FD"));
 
     Random random = new Random();
     String textelPhoneKey = textelPhoneKeys.get(random.nextInt(textelPhoneKeys.size()));

@@ -5,11 +5,13 @@ declare
   v_owner_user_position_id integer;
   v_owner_user_id          integer;
   v_project_ids            integer[];
+  v_setter_name            varchar;
 BEGIN
-  select owner_user_position_id, up.user_id
-  into v_owner_user_position_id,v_owner_user_id
+  select owner_user_position_id, up.user_id,concat(u.first_name,' ',u.last_name)
+  into v_owner_user_position_id,v_owner_user_id,v_setter_name
   from flow.contact c
          left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow.user u on u.id = up.user_id
   where c.id = new.id;
 
 
@@ -20,7 +22,8 @@ BEGIN
 
   update brs.project_details
   set setter_user_position_id = v_owner_user_position_id,
-      setter_user_id          = v_owner_user_id
+      setter_user_id          = v_owner_user_id,
+      setter_name = v_setter_name
   where project_id = any (v_project_ids);
 
   RETURN NULL;
@@ -30,10 +33,9 @@ $$
 
 drop trigger if exists project_project_details_for_contact_trg on flow.contact;
 CREATE TRIGGER project_project_details_for_contact_trg
-    after update
-    ON flow.contact
-    FOR EACH ROW
-    when (new.temp_geo_attempted is false)
+  after update
+  ON flow.contact
+  FOR EACH ROW
 EXECUTE PROCEDURE flow.project_details_from_contact();
 
 
@@ -61,6 +63,7 @@ declare
   v_on_hold_date               timestamp;
   v_off_hold_date              timestamp;
   v_company_project_status     character varying(100);
+v_setter_name varchar;
 BEGIN
   select company_id
   into v_company_id
@@ -91,10 +94,11 @@ BEGIN
     where pd.project_id = new.id;
   end if;
 
-  select email, phone, mobile, first_name || ' ' || last_name, owner_user_position_id, up.user_id
-  into v_contact_email,v_contact_phone,v_contact_mobile_phone,v_contact_name,v_owner_user_position_id,v_owner_user_id
+  select c.email, c.phone, c.mobile, concat(c.first_name, ' ' , c.last_name), c.owner_user_position_id, up.user_id,concat(u.first_name,' ',u.last_name)
+  into v_contact_email,v_contact_phone,v_contact_mobile_phone,v_contact_name,v_owner_user_position_id,v_owner_user_id,v_setter_name
   from flow.contact c
          left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow.user u on u.id = up.user_id
   where c.id = new.contact_id;
 
   select s.id, s.abbreviation
@@ -194,13 +198,13 @@ BEGIN
                                     contact_phone, contact_mobile_phone,
                                     project_street1, project_city, project_postal_code,
                                     project_time_zone, project_state_id, project_state_abbreviation, contact_name,
-                                    setter_user_position_id, setter_user_id, closer_user_id,
+                                    setter_user_position_id, setter_user_id,setter_name, closer_user_id,
                                     closer_user_position_id, closer_name,
                                     project_creator, contact_id, project_created_date,
                                     company_project_status_type_id, company_project_status_type)
     values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
             new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
-            v_owner_user_position_id, v_owner_user_id, v_user_id,
+            v_owner_user_position_id, v_owner_user_id,v_setter_name, v_user_id,
             coalesce(new.user_position_id, v_pd_closer_user_position_id), v_closer_name,
             v_project_creator, new.contact_id, new.date_created,
             new.company_project_status_type_id, v_company_project_status);
@@ -226,7 +230,8 @@ BEGIN
         project_created_date           = new.date_created,
         company_project_status_type_id = new.company_project_status_type_id,
         company_project_status_type    = v_company_project_status,
-        archived                       = new.archived
+        archived                       = new.archived,
+        setter_name                    = v_setter_name
     where project_id = new.id;
 
   elsif (TG_OP = 'DELETE') THEN
@@ -359,7 +364,7 @@ BEGIN
                 from brs.proposal_log_history
                 where id = new.int_value;
               end case;
---           elsif v_record.field_to_update = 'closer_user_position_id' and
+            --           elsif v_record.field_to_update = 'closer_user_position_id' and
 --                 v_record.second_field_to_update = 'closer_user_id' then
 --             case when new.int_value is null then select 'null' into v_value;
 --               else
@@ -458,21 +463,14 @@ CREATE OR REPLACE FUNCTION flow.update_project_details_process_steps_from_events
 $body$
 
 declare
-  v_project_id              integer;
-  v_sql                     character varying;
-  v_value                   character varying;
-  v_record                  record;
-  v_timestamp_value         timestamp;
-  v_project_id1             integer;
-  v_field_name              varchar;
-  v_parent_custom_field_id  integer;
-  v_project_id2             integer;
-  v_missed_id             integer;
-  v_missed       timestamp;
-  v_pitched_id  integer;
-  v_pitched timestamp;
-  v_not_either_id integer;
-  v_not_either timestamp;
+  v_project_id                 integer;
+  v_sql                        character varying;
+  v_value                      character varying;
+  v_record                     record;
+  v_project_id1                integer;
+  v_field_name                 varchar;
+  v_parent_custom_field_id     integer;
+  v_project_id2                integer;
 BEGIN
 
   select pps.project_id
@@ -500,120 +498,8 @@ BEGIN
 
 
   if v_parent_custom_field_id = 10541 then
+    perform brs.update_appointment_data(new.project_process_step_event_id,v_project_id1);
 
-    select start_time
-    into v_timestamp_value
-    from flow.project_process_step_event ppse3
-           inner join flow.project_process_step_event_custom_field_value ppsecfv
-                      on ppse3.id = ppsecfv.project_process_step_event_id
-    where ppse3.id = new.project_process_step_event_id;
-
-    if new.int_value is not null then
-      update brs.project_details
-      set first_appointment_id     = new.int_value,
-          first_appointment_id_ppse_id = new.project_process_step_event_id
-      where project_id = v_project_id1
-        and (first_appointment_id is null or
-             (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.project_process_step_event_id));
-    end if;
-
-    if new.int_value in (2, 1139, 1140) and (TG_OP = 'INSERT')  then
-
-      update brs.project_details
-      set setter_milestone_pay           = coalesce(v_timestamp_value, now())
-      where project_id = v_project_id1
-        and setter_milestone_pay is null;
-
-      update brs.project_details
-      set first_appointment_pitched           = coalesce(v_timestamp_value, now()),
-          first_appointment_pitched_id        = new.int_value
-      where project_id = v_project_id1
-        and first_appointment_pitched is null;
-
-    elsif new.int_value in (3) and (TG_OP = 'INSERT') then
-      update brs.project_details
-      set setter_milestone_pay           = coalesce(v_timestamp_value, now())
-      where project_id = v_project_id1
-        and setter_milestone_pay is null;
-
-      update brs.project_details
-      set first_appointment_missed           = coalesce(v_timestamp_value, now()),
-          first_appointment_missed_id        = new.int_value
-      where project_id = v_project_id1
-        and first_appointment_missed is null;
-
-    elseif new.int_value is not null and
-           new.int_value not in (2, 3, 1139, 1140) and (TG_OP = 'INSERT') then
-      update brs.project_details
-      set first_appointment_not_pitched_or_missed           =coalesce(v_timestamp_value, now()),
-          first_appointment_not_pitched_or_missed_id        = new.int_value
-      where project_id = v_project_id1
-        and first_appointment_not_pitched_or_missed is null;
-
-      elsif new.int_value is null or new.int_value != old.int_value then
-      update brs.project_details
-      set first_appointment_not_pitched_or_missed = null,
-          first_appointment_not_pitched_or_missed_id = null,
-          first_appointment_missed = null,
-          first_appointment_missed_id = null,
-          first_appointment_pitched = null,
-          first_appointment_pitched_id = null,
-          setter_milestone_pay = null
-      where project_id = v_project_id1;
-
-
-      select ppsecfv2.int_value,ppse2.start_time, min(ppse2.date_created)
-      into v_pitched_id,v_pitched
-      from flow.project_process_step_event ppse
-      inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-      inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
-      inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = pps1.id
-      inner join flow.project_process_step_event_custom_field_value ppsecfv2  on ppse2.id = ppsecfv2.project_process_step_event_id
-      and ppsecfv2.custom_field_group_assignment_id = 4
-      where ppse.id = new.project_process_step_event_id
-      and ppsecfv2.int_value in (2, 1139, 1140)
-      group by ppsecfv2.int_value,ppse2.start_time;
-
-      select ppsecfv2.int_value,ppse2.start_time, min(ppse2.date_created)
-      into v_missed_id,v_missed
-      from flow.project_process_step_event ppse
-             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
-             inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = pps1.id
-             inner join flow.project_process_step_event_custom_field_value ppsecfv2  on ppse2.id = ppsecfv2.project_process_step_event_id
-        and ppsecfv2.custom_field_group_assignment_id = 4
-      where ppse.id = new.project_process_step_event_id
-        and ppsecfv2.int_value in (3)
-      group by ppsecfv2.int_value,ppse2.start_time;
-
-      select ppsecfv2.int_value,ppse2.start_time, min(ppse2.date_created)
-      into v_not_either_id,v_not_either
-      from flow.project_process_step_event ppse
-             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
-             inner join flow.project_process_step_event ppse2  on ppse2.project_process_step_id = pps1.id
-             inner join flow.project_process_step_event_custom_field_value ppsecfv2  on ppse2.id = ppsecfv2.project_process_step_event_id
-        and ppsecfv2.custom_field_group_assignment_id = 4
-      where ppse.id = new.project_process_step_event_id
-        and ppsecfv2.int_value not in (2, 3, 1139, 1140)
-      group by ppsecfv2.int_value,ppse2.start_time;
-
-      update brs.project_details
-      set first_appointment_missed_id = v_missed_id,
-          first_appointment_missed = v_missed,
-          first_appointment_pitched_id = v_pitched_id,
-          first_appointment_pitched = v_pitched,
-          first_appointment_not_pitched_or_missed_id = v_not_either_id,
-          first_appointment_not_pitched_or_missed = v_not_either
-      where project_id = v_project_id1;
-
-      if v_missed_id is not null or v_pitched_id is not null then
-        update brs.project_details
-        set setter_milestone_pay  = coalesce(least(v_missed,v_pitched), now())
-        where project_id = v_project_id1;
-      end if;
-
-    end if;
   end if;
 
 
@@ -694,7 +580,7 @@ BEGIN
                 from brs.proposal_log_history
                 where id = new.int_value;
               end case;
---           elsif v_record.field_to_update = 'closer_user_position_id' and
+            --           elsif v_record.field_to_update = 'closer_user_position_id' and
 --                 v_record.second_field_to_update = 'closer_user_id' then
 --             case when new.int_value is null then select 'null' into v_value;
 --               else
@@ -793,24 +679,24 @@ CREATE OR REPLACE FUNCTION flow.update_events()
 $body$
 
 declare
-  v_project_id       integer;
-  v_closer_name      varchar;
-  v_user_id          integer;
-  v_user_position_id integer;
+  v_project_id              integer;
+  v_closer_name             varchar;
+  v_user_id                 integer;
+  v_user_position_id        integer;
   v_unique_behavior_type_id integer;
-  x                  record;
-  v_config_id        integer;
-  v_sql              text;
-  v_sql1             text;
-  v_resource_name    text;
-  v_count            bigint;
-  v_value            text;
-  v_event_status_type_id integer;
+  x                         record;
+  v_config_id               integer;
+  v_sql                     text;
+  v_sql1                    text;
+  v_resource_name           text;
+  v_count                   bigint;
+  v_value                   text;
+  v_event_status_type_id    integer;
 BEGIN
   select est.id
   into v_event_status_type_id
   from flow.company_event_status_type cest
-  inner join flow.event_status_type est on cest.event_status_type_id = est.id
+         inner join flow.event_status_type est on cest.event_status_type_id = est.id
   where cest.id = new.company_event_status_type_id;
 
   if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
@@ -836,6 +722,7 @@ BEGIN
     where id = new.id;
 
   end if;
+
 
   select count(1)
   into v_count
@@ -872,7 +759,8 @@ BEGIN
            inner join flow.custom_field cf on e.resource_custom_field_id = cf.id and cf.archived is false
            inner join flow.company_system_list csl on cf.company_system_list_id = csl.id and csl.archived is false
            inner join flow.system_list sl on csl.system_list_id = sl.id and sl.archived is false
-           left join flow.user u on u.id = new.resource_id
+           left join flow.user_position up on up.id = new.resource_id
+           left join flow.user u on u.id = up.user_id
            left join flow.org o on o.id = new.resource_id
     where ppse.id = new.id;
   end if;
@@ -889,10 +777,11 @@ BEGIN
         -- raise notice 'I am here';
         case when x.update_first_value_only is false then
           v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
-                  $$ where project_id = $$ || v_project_id;
+                  $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use || $$ is not null $$;
           else
             v_sql = $$update brs.project_details set $$ || x.field_to_update || $$ =  $1.$$ || x.field_to_use ||
-                    $$ where project_id = $$ || v_project_id || $$ and ($$ || x.field_to_update ||
+                    $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||
+                    $$ is not null and ($$ || x.field_to_update ||
                     $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
           end case;
         --raise notice 'v_sql % ',v_sql;
@@ -910,11 +799,12 @@ BEGIN
             --  raise notice 'am I in the first case %',v_resource_name;
             v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
                      v_value ||
-                     $$ where project_id = $$ || v_project_id;
+                     $$ where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use || $$ is not null $$;
             else
               v_sql1 = $$update brs.project_details set $$ || x.second_field_to_update || $$ =  $$ ||
-                       v_value ||$$ , $$||x.update_first_value_only_id||$$ =  $1.id
-                        where project_id = $$ || v_project_id || $$ and ($$ || x.second_field_to_update ||
+                       v_value || $$ , $$ || x.update_first_value_only_id || $$ =  $1.id
+                        where project_id = $$ || v_project_id || $$ and $1.$$ || x.field_to_use ||
+                       $$ is not null and ($$ || x.second_field_to_update ||
                        $$ is null  or ( $$ || x.update_first_value_only_id || $$ = $1.id))$$;
             end case;
           -- raise notice 'v_sql1 % ',v_sql1;
@@ -946,33 +836,26 @@ BEGIN
     select u.id, u.first_name || ' ' || u.last_name, up.id
     into v_user_id,v_closer_name,v_user_position_id
     from flow.user u
-           inner join flow.user_position up on u.id = up.user_id and up.primary_flag is true
+           inner join flow.user_position up on u.id = up.user_id
     where up.id = new.resource_id;
 
-    if new.start_time is not null and new.end_time is not null and new.resource_id is not null then
-      update brs.project_details
-      set first_appointment         = new.start_time,
-          first_appointment_ppse_id = new.id
-      where project_id = v_project_id
-        and (first_appointment is null or
-             (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
+    if new.start_time is not null then
+      perform brs.update_appointment_data(new.id,v_project_id);
+    end if;
+
+    if new.resource_id is not null and old.resource_id is null then
       update brs.project_details
       set closer_user_id          = v_user_id,
           closer_name             = v_closer_name,
           closer_user_position_id = v_user_position_id
       where project_id = v_project_id;
+
+      update flow.project p
+      set user_position_id = new.resource_id,
+          date_modified    = now()
+      where p.id = v_project_id;
     end if;
   end if;
-
-  if ((old.resource_id is null and new.resource_id is not null) or
-     (old.resource_id != new.resource_id)) and (v_unique_behavior_type_id is not null and v_unique_behavior_type_id = 1) then
-
-    update flow.project p
-    set user_position_id = new.resource_id,
-        date_modified =  now()
-    where p.id = v_project_id;
-  end if;
-
 
   RETURN new;
 END
@@ -981,7 +864,7 @@ $body$
 
 drop trigger if exists update_events_trg on flow.project_process_step_event;
 CREATE TRIGGER update_events_trg
-  after INSERT or update OF company_event_status_type_id,start_time,end_time,resource_id
+  after INSERT or update OF start_time,end_time,resource_id,company_event_status_type_id
   ON flow.project_process_step_event
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_events();
@@ -1029,13 +912,13 @@ CREATE OR REPLACE FUNCTION flow.update_project_details_project()
 $body$
 
 declare
-    v_field_to_update        character varying;
-    v_data_type_id           integer;
-    v_config_id              integer;
-    v_sql                    character varying;
-    v_value                  character varying;
-    v_second_field_to_update character varying;
-    v_count                  integer;
+  v_field_to_update        character varying;
+  v_data_type_id           integer;
+  v_config_id              integer;
+  v_sql                    character varying;
+  v_value                  character varying;
+  v_second_field_to_update character varying;
+  v_count                  integer;
 BEGIN
 
   select pdc.id, field_to_update, data_type_id, second_field_to_update
@@ -1103,22 +986,22 @@ BEGIN
       end if;
       v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || new.project_id;
-            execute v_sql;
-        end if;
+      execute v_sql;
     end if;
+  end if;
 
-    if (TG_OP = 'UPDATE') THEN
-      select count(1)
-      into v_count
-      from flow.user_position up
-             inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
-      where up.user_id = coalesce(new.modified_by_id, new.created_by_id)
-        and up.end_date is null
-        and wlp.custom_field_group_assignment_id = 17280;
-      if new.custom_field_group_assignment_id = 17280 and old.int_value != new.int_value and v_count < 1 then
-        raise exception 'You do not have rights to update the Lead Source for this Contact (A).';
-      end if;
+  if (TG_OP = 'UPDATE') THEN
+    select count(1)
+    into v_count
+    from flow.user_position up
+           inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
+    where up.user_id = coalesce(new.modified_by_id, new.created_by_id)
+      and up.end_date is null
+      and wlp.custom_field_group_assignment_id = 17280;
+    if new.custom_field_group_assignment_id = 17280 and old.int_value != new.int_value and v_count < 1 then
+      raise exception 'You do not have rights to update the Lead Source for this Contact (A).';
     end if;
+  end if;
 
   RETURN NULL;
 END
@@ -1187,16 +1070,17 @@ BEGIN
 
   if (TG_OP = 'UPDATE') THEN
 
-      select count(1)
-      into v_count
-      from flow.user_position up
-      inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
-      where up.user_id = new.modified_by_id and
-            up.end_date is null and wlp.custom_field_group_assignment_id = 395;
-      if new.custom_field_group_assignment_id = 395 and old.int_value != new.int_value and v_count < 1 then
-        raise exception 'You do not have rights to update the Lead Source for this Contact. (B)';
-      end if;
+    select count(1)
+    into v_count
+    from flow.user_position up
+           inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
+    where up.user_id = new.modified_by_id
+      and up.end_date is null
+      and wlp.custom_field_group_assignment_id = 395;
+    if new.custom_field_group_assignment_id = 395 and old.int_value != new.int_value and v_count < 1 then
+      raise exception 'You do not have rights to update the Lead Source for this Contact. (B)';
     end if;
+  end if;
 
   RETURN NULL;
 END

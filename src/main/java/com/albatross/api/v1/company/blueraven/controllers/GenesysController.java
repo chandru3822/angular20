@@ -96,12 +96,12 @@ public class GenesysController {
     } catch (ApiException e) {
       JSONObject apiException = new JSONObject(e.getRawBody());
       String msg = "GENE: Error adding contact: {}";
-      log.error(msg, apiException.getString("message"));
+//      log.error(msg, apiException.getString("message"));
       return ResponseEntity.badRequest().body("Error adding contact");
     }
     catch (IOException e) {
       String msg = "GENE: Error adding contact: {}";
-      log.error(msg, e.getMessage());
+//      log.error(msg, e.getMessage());
       return ResponseEntity.badRequest().body("Error adding contact");
     }
   }
@@ -114,12 +114,12 @@ public class GenesysController {
     } catch (ApiException e) {
       JSONObject apiException = new JSONObject(e.getRawBody());
       String msg = "GENE: Error updating contact: {}";
-      log.error(msg, apiException.getString("message"));
+      //log.error(msg, apiException.getString("message"));
       return ResponseEntity.badRequest().body("Error updating contact");
     }
     catch (IOException e) {
       String msg = "GENE: Error updating contact: {}";
-      log.error(msg, e.getMessage());
+      //log.error(msg, e.getMessage());
       return ResponseEntity.badRequest().body("Error updating contact");
     }
   }
@@ -143,7 +143,7 @@ public class GenesysController {
       return ResponseEntity.ok("Contacts successfully updated.");
     } catch (Exception e) {
       String msg = "GENE: Error updating contact: {}";
-      log.error(msg, e.getMessage());
+      //log.error(msg, e.getMessage());
       return ResponseEntity.badRequest().body("Error updating contact");
     }
   }

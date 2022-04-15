@@ -10,7 +10,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -61,20 +60,36 @@ public class ProjectService {
 
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
-    return sqlCache.query("project.getAllForCompanyProcess", ImmutableMap.of("companyId", user.getCompanyId() , "processId", processId), Project.class);
+    return sqlCache.query(
+        "project.getAllForCompanyProcess",
+        ImmutableMap.of("companyId", user.getCompanyId(), "processId", processId),
+        Project.class);
   }
 
   public Long getProjectIdByProjectProcessStepId(Long projectProcessStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    Long projectId = sqlCache.queryForObject("project.getProjectIdByProjectProcessStepId", params, Long.class);
+    Long projectId =
+        sqlCache.queryForObject("project.getProjectIdByProjectProcessStepId", params, Long.class);
+    return projectId;
+  }
+
+  public Long getProjectIdByProjectProcessStepEventId(Long projectProcessStepEventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepEventId", projectProcessStepEventId);
+    Long projectId =
+        sqlCache.queryForObject(
+            "project.getProjectIdByProjectProcessStepEventId", params, Long.class);
     return projectId;
   }
 
   public List<ProjectDensityResult> getProjectsInGeoArea(DensitySearch search) {
     User currentUser = securityService.getCurrentUser();
 
-    if(null != search.getUpperBoundLatitude() && null != search.getUpperBoundLongitude() && null != search.getLowerBoundLatitude() && null != search.getLowerBoundLongitude()) {
+    if (null != search.getUpperBoundLatitude()
+        && null != search.getUpperBoundLongitude()
+        && null != search.getLowerBoundLatitude()
+        && null != search.getLowerBoundLongitude()) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("upperBoundLatitude", search.getUpperBoundLatitude());
       params.put("upperBoundLongitude", search.getUpperBoundLongitude());
@@ -87,28 +102,52 @@ public class ProjectService {
       params.put("companyId", currentUser.getCompanyId());
       params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
 
-      //if no search type is sent in then return "all projects" //1 = all project, 2 = my projects, 3 = downline projects
+      // if no search type is sent in then return "all projects" //1 = all project, 2 = my projects,
+      // 3 = downline projects
       if (null != search.getSearchTypeId() && search.getSearchTypeId() == 3L) {
-        List<ProjectDensityResult> results = sqlCache.query("project.getProjectsInGeoAreaDownline", params, ProjectDensityResult.class);
+        List<ProjectDensityResult> results =
+            sqlCache.query(
+                "project.getProjectsInGeoAreaDownline", params, ProjectDensityResult.class);
         return results;
       } else {
         params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
-        List<ProjectDensityResult> results = sqlCache.query("project.getProjectsInGeoArea", params, ProjectDensityResult.class);
+        List<ProjectDensityResult> results =
+            sqlCache.query("project.getProjectsInGeoArea", params, ProjectDensityResult.class);
         return results;
       }
     } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Bound Parameters", new Exception());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid Bound Parameters", new Exception());
     }
   }
 
-  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, String overrideType, String sortColumn, String sortDirection, Pageable pageable) {
+  public Page<Project> searchProjects(
+      String query,
+      Long companyProjectStatusTypeId,
+      String overrideType,
+      String sortColumn,
+      String sortDirection,
+      Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
+    Boolean viewAll =
+        securityService.userHasFeatureAccessLevel(
+            user.getId(),
+            user.getCompanyId(),
+            user.getHighestCompanyId(),
+            "PROJECTS",
+            List.of("VIEW_ALL"));
     Boolean viewDownline = false;
 
-    if((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
-      viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
+    if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
+        || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
+      viewDownline =
+          securityService.userHasFeatureAccessLevel(
+              user.getId(),
+              user.getCompanyId(),
+              user.getHighestCompanyId(),
+              "PROJECTS",
+              List.of("VIEW_DOWNLINE"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -129,21 +168,37 @@ public class ProjectService {
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
       searchSqlKey = "project.search";
     }
-//    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
+    //    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ?
+    // "project.searchDownlineCount" : "project.searchByOwnerCount";
 
-    List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
-//    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
+    List<Project> projects =
+        sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
+    //    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     Integer total = 10000;
-    return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
+    return new PageImpl<>(
+        projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
   public List<ProjectStatusCount> projectCountsByStatus(String overrideType) {
     User user = securityService.getCurrentUser();
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
+    Boolean viewAll =
+        securityService.userHasFeatureAccessLevel(
+            user.getId(),
+            user.getCompanyId(),
+            user.getHighestCompanyId(),
+            "PROJECTS",
+            List.of("VIEW_ALL"));
     Boolean viewDownline = false;
 
-    if((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
-      viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
+    if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
+        || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
+      viewDownline =
+          securityService.userHasFeatureAccessLevel(
+              user.getId(),
+              user.getCompanyId(),
+              user.getHighestCompanyId(),
+              "PROJECTS",
+              List.of("VIEW_DOWNLINE"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -152,16 +207,21 @@ public class ProjectService {
     params.put("viewDownline", viewDownline);
 
     String searchSqlKey = "project.countsByStatusByUser";
-    if(viewAll && (null == overrideType || (!overrideType.equalsIgnoreCase("view") && !overrideType.equalsIgnoreCase("downline")))) {
+    if (viewAll
+        && (null == overrideType
+            || (!overrideType.equalsIgnoreCase("view")
+                && !overrideType.equalsIgnoreCase("downline")))) {
       searchSqlKey = "project.countsByStatus";
     }
-//    String searchSqlKey = viewAll ? "project.countsByStatus" : "project.countsByStatusByUser";
+    //    String searchSqlKey = viewAll ? "project.countsByStatus" : "project.countsByStatusByUser";
 
-    List<ProjectStatusCount> results = sqlCache.query(searchSqlKey, params, ProjectStatusCount.class);
+    List<ProjectStatusCount> results =
+        sqlCache.query(searchSqlKey, params, ProjectStatusCount.class);
 
     for (ProjectStatusCount c : results) {
       // set the icon for the status
-      Attachment a = attachmentService.getOneBySourceIdAndType(c.getCompanyProjectStatusTypeId(), 463L);
+      Attachment a =
+          attachmentService.getOneBySourceIdAndType(c.getCompanyProjectStatusTypeId(), 463L);
       c.setIcon(null != a && null != a.getId() ? a : new Attachment());
     }
 
@@ -189,25 +249,45 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    Optional<Project> project = sqlCache.get("project.get",
-      ImmutableMap.of("projectId", projectId,
-                      "companyId", user.getCompanyId(),
-                      "isParent", isParent,
-                      "parentCompanyId", user.getHighestParentCompanyId()),
-      new ProjectMapper<>(Project.class, om));
+    Optional<Project> project =
+        sqlCache.get(
+            "project.get",
+            ImmutableMap.of(
+                "projectId",
+                projectId,
+                "companyId",
+                user.getCompanyId(),
+                "isParent",
+                isParent,
+                "parentCompanyId",
+                user.getHighestParentCompanyId()),
+            new ProjectMapper<>(Project.class, om));
 
-    if(project.isPresent() && null != project.get().getOwner() && null != project.get().getOwner().getUserId()) {
-      String presignedUrl = attachmentService.getAttachmentPresignedUrl(project.get().getOwner().getUserId(), com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
-      project.get().getOwner().setPresignedUrl(presignedUrl);
-    }
+
+    //pretty sure we don't show the user's image anywhere anymore and s3 stuff is slow. taking out for now.
+//    if (project.isPresent()
+//        && null != project.get().getOwner()
+//        && null != project.get().getOwner().getUserId()) {
+//      String presignedUrl =
+//          attachmentService.getAttachmentPresignedUrl(
+//              project.get().getOwner().getUserId(),
+//              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
+//      project.get().getOwner().setPresignedUrl(presignedUrl);
+//    }
 
     return project;
   }
 
   public void deleteProject(Long projectId) {
     User user = securityService.getCurrentUser();
-    //todo: security: this is still a problem if the user doesn't have access to the specific company
-    securityService.validateUserFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROCESS_STEPS", List.of("ADMIN"));
+    // todo: security: this is still a problem if the user doesn't have access to the specific
+    // company
+    securityService.validateUserFeatureAccessLevel(
+        user.getId(),
+        user.getCompanyId(),
+        user.getHighestCompanyId(),
+        "PROCESS_STEPS",
+        List.of("ADMIN"));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.trueUserId());
@@ -220,12 +300,13 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    return sqlCache.query("project.getOwners",
-      ImmutableMap.of(
-                      "companyId", user.getCompanyId(),
-                      "isParent", isParent,
-                      "parentCompanyId", user.getHighestParentCompanyId()),
-      Owner.class);
+    return sqlCache.query(
+        "project.getOwners",
+        ImmutableMap.of(
+            "companyId", user.getCompanyId(),
+            "isParent", isParent,
+            "parentCompanyId", user.getHighestParentCompanyId()),
+        Owner.class);
   }
 
   public void updateProject(Project project) throws Exception {
@@ -259,7 +340,8 @@ public class ProjectService {
         longitude = mapboxGeoResponse.longitude();
         timezone = mapboxGeoResponse.timezone();
       } else {
-        //if the address changed but we didn't find valid coordinates for the new address then set these values to null
+        // if the address changed but we didn't find valid coordinates for the new address then set
+        // these values to null
         latitude = null;
         longitude = null;
         timezone = null;
@@ -284,12 +366,14 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) throws Exception {
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact)
+      throws Exception {
     User user = securityService.getCurrentUser();
 
     if (null != contactId && null != processId) {
       // Get active company project status type so new projects can have an active status
-      CompanyProjectStatusType companyStatusType = this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
+      CompanyProjectStatusType companyStatusType =
+          this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
       Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
       HashMap<String, Object> params = new HashMap<>();
@@ -304,7 +388,8 @@ public class ProjectService {
       params.put("postalCode", contact.getPostalCode());
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
-      //with my most recent changes the contact should already have a valid lat/long if the address was valid
+      // with my most recent changes the contact should already have a valid lat/long if the address
+      // was valid
       params.put("latitude", contact.getLatitude());
       params.put("longitude", contact.getLongitude());
       String timezone = null;
@@ -314,30 +399,36 @@ public class ProjectService {
       }
       params.put("timezone", timezone);
 
-//      List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(), contact.getState(), contact.getPostalCode()));
-//      Double latitude = null, longitude = null;
-//      String timezone = null;
-//      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
-//        //1 = lat, 0 = long
-//        latitude = coordinates.get(1);
-//        longitude = coordinates.get(0);
-//
-//        if(null != latitude && null != longitude) {
-//          //if we have a lat/long then attempt to load the timezone
-//          timezone = mapboxApiService.getTimezone(latitude, longitude);
-//        }
-//      }
-//      params.put("latitude", latitude);
-//      params.put("longitude", longitude);
-//      params.put("timezone", timezone);
+      //      List<Double> coordinates =
+      // mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(),
+      // contact.getState(), contact.getPostalCode()));
+      //      Double latitude = null, longitude = null;
+      //      String timezone = null;
+      //      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1))
+      // {
+      //        //1 = lat, 0 = long
+      //        latitude = coordinates.get(1);
+      //        longitude = coordinates.get(0);
+      //
+      //        if(null != latitude && null != longitude) {
+      //          //if we have a lat/long then attempt to load the timezone
+      //          timezone = mapboxApiService.getTimezone(latitude, longitude);
+      //        }
+      //      }
+      //      params.put("latitude", latitude);
+      //      params.put("longitude", longitude);
+      //      params.put("timezone", timezone);
 
       Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
       Optional<Project> project = getProject(id);
-      //load coordinates when new project added
-//      project.ifPresent(value -> getProjectCoordinates(value, id));
+      // load coordinates when new project added
+      //      project.ifPresent(value -> getProjectCoordinates(value, id));
       return project;
     } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact ID and Process ID are required to add a project.", new Exception());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Contact ID and Process ID are required to add a project.",
+          new Exception());
     }
   }
 
@@ -372,7 +463,9 @@ public class ProjectService {
     StringJoiner sj = new StringJoiner(", ");
     sj.add(project.getStreet1());
     sj.add(project.getCity());
-    sj.add(project.getState() + ( null == project.getPostalCode() ? "" : " " + project.getPostalCode() ));
+    sj.add(
+        project.getState()
+            + (null == project.getPostalCode() ? "" : " " + project.getPostalCode()));
 
     return sj.toString();
   }
@@ -381,41 +474,51 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     // Get project attachments
-    List<Attachment> attachments = sqlCache.query("project.getAttachments", params, Attachment.class);
+    List<Attachment> attachments =
+        sqlCache.query("project.getAttachments", params, Attachment.class);
     // Get project process step attachments
-    List<Attachment> ppsAttachments = sqlCache.query("projectProcessStep.getProjectProcessStepAttachmentsForProjectId", params, Attachment.class);
+    List<Attachment> ppsAttachments =
+        sqlCache.query(
+            "projectProcessStep.getProjectProcessStepAttachmentsForProjectId",
+            params,
+            Attachment.class);
     attachments.addAll(ppsAttachments);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+    return attachmentService.getAttachmentPresignedUrls(
+        attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long projectId, Long attachmentTypeId) throws IOException {
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped
+  // code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, Long projectId, Long attachmentTypeId)
+      throws IOException {
     User currentUser = securityService.getCurrentUser();
 
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
 
-    //had to change this so that a parent looking at a child project could still see project statuses
+    // had to change this so that a parent looking at a child project could still see project
+    // statuses
     HashMap<String, Object> p2 = new HashMap<>();
     p2.put("projectId", projectId);
     Long companyId = sqlCache.queryForObject("project.getCompanyId", p2, Long.class);
 
-    //get keyPattern from attachmentType
+    // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key = String.format( currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+    String key =
+        String.format(
+            currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
     metadata.setCacheControl("public, max-age=31536000");
 
-    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+    PutObjectRequest objectRequest =
+        new PutObjectRequest(
+            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    PutObjectResult result = s3.putObject(objectRequest
-      .withCannedAcl(CannedAccessControlList.PublicRead));
-
-    String url = s3.getUrl(currentUser.getAwsBucket(), key).toExternalForm();
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
@@ -439,9 +542,10 @@ public class ProjectService {
   }
 
   public Optional<Project> updateStatus(Long projectId, Long companyProjectStatusTypeId) {
-      sqlCache.update("project.updateStatus",
+    sqlCache.update(
+        "project.updateStatus",
         Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
-      return getStatus(projectId);
+    return getStatus(projectId);
   }
 
   public Optional<Project> getStatus(Long projectId) {
@@ -451,9 +555,13 @@ public class ProjectService {
     return result;
   }
 
-
   private CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
-    return sqlCache.get("project.getDefaultProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
+    return sqlCache
+        .get(
+            "project.getDefaultProjectStatusTypeByCompanyId",
+            Map.of("companyId", companyId),
+            CompanyProjectStatusType.class)
+        .orElse(null);
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId, Long statusTypeId) {
@@ -465,8 +573,10 @@ public class ProjectService {
     params.put("statusTypeId", statusTypeId);
     params.put("isParent", isParent);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    return sqlCache.query("project.getProcessStepsByProjectId", params,
-      new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
+    return sqlCache.query(
+        "project.getProcessStepsByProjectId",
+        params,
+        new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
   public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId) {
@@ -481,7 +591,8 @@ public class ProjectService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<WorkQueueTypeProjectStatus> results = sqlCache.query("project.getStatusesForWqt", params, WorkQueueTypeProjectStatus.class);
+    List<WorkQueueTypeProjectStatus> results =
+        sqlCache.query("project.getStatusesForWqt", params, WorkQueueTypeProjectStatus.class);
     return results;
   }
 
@@ -489,16 +600,20 @@ public class ProjectService {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
 
-    if(null != projectId) {
-      //had to change this so that a parent looking at a child project could still see project statuses
+    if (null != projectId) {
+      // had to change this so that a parent looking at a child project could still see project
+      // statuses
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
     }
 
     // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
-    List<ProjectStatusType> results = sqlCache.query("project.getCompanyStatuses",
-      ImmutableMap.of("companyId", companyId), ProjectStatusType.class);
+    List<ProjectStatusType> results =
+        sqlCache.query(
+            "project.getCompanyStatuses",
+            ImmutableMap.of("companyId", companyId),
+            ProjectStatusType.class);
 
     for (ProjectStatusType c : results) {
       // set the icon for the status
@@ -510,8 +625,9 @@ public class ProjectService {
   }
 
   public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
-    Optional<ProjectStatusType> result = sqlCache.get("project.getOneCompanyStatus",
-      ImmutableMap.of("id", id), ProjectStatusType.class);
+    Optional<ProjectStatusType> result =
+        sqlCache.get(
+            "project.getOneCompanyStatus", ImmutableMap.of("id", id), ProjectStatusType.class);
 
     if (result.isPresent()) {
       Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
@@ -572,14 +688,19 @@ public class ProjectService {
   }
 
   public List<ProjectStatusType> getProjectStatuses() {
-    List<ProjectStatusType> results = sqlCache.query("project.getStatuses", Collections.emptyMap(), ProjectStatusType.class);
+    List<ProjectStatusType> results =
+        sqlCache.query("project.getStatuses", Collections.emptyMap(), ProjectStatusType.class);
 
     return results;
   }
 
   public String generateReport(String query) {
     User user = securityService.getCurrentUser();
-    List<Map<String, Object>> projects = sqlCache.query("project.generateReport", Map.of("companyId", user.getCompanyId(), "query", query), new ColumnMapRowMapper());
+    List<Map<String, Object>> projects =
+        sqlCache.query(
+            "project.generateReport",
+            Map.of("companyId", user.getCompanyId(), "query", query),
+            new ColumnMapRowMapper());
 
     // write CSV
     CsvSchema.Builder builder = CsvSchema.builder();
@@ -612,20 +733,27 @@ public class ProjectService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-        TypeReference<Contact> contactRef = new TypeReference<>() {};
-        bw.registerCustomEditor(Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
+      TypeReference<Contact> contactRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+          Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
 
-        TypeReference<Owner> ownerRef = new TypeReference<>() {};
-        bw.registerCustomEditor(Object.class, "owner",
-          new JsonCollectionDeserializer(ownerRef, objectMapper));
+      TypeReference<Owner> ownerRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+          Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
 
-      TypeReference<List<WhiteListedPosition>> statusReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "statusReadOnlyWhiteListedPositions",
-        new JsonCollectionDeserializer(statusReadOnlyWhiteListedPositionsRef, objectMapper));
+      TypeReference<List<WhiteListedPosition>> statusReadOnlyWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "statusReadOnlyWhiteListedPositions",
+          new JsonCollectionDeserializer(statusReadOnlyWhiteListedPositionsRef, objectMapper));
 
-      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "ownerReadOnlyWhiteListedPositions",
-        new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
+      TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "ownerReadOnlyWhiteListedPositions",
+          new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
     }
   }
 }

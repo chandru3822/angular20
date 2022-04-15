@@ -239,7 +239,8 @@ BEGIN
                                 when new.numeric_value is not null then new.numeric_value::text
                                 when new.int_value is not null then new.int_value::text
                                 when new.int_array_value is not null then new.int_array_value::text
-                                when new.boolean_value is not null then new.boolean_value::text end,
+                                when new.boolean_value is not null then new.boolean_value::text
+                                when new.json_value is not null then new.json_value::text end,
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
@@ -250,14 +251,16 @@ BEGIN
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
                            when old.int_array_value is not null then old.int_array_value::text
-                           when old.boolean_value is not null then old.boolean_value::text end,
+                           when old.boolean_value is not null then old.boolean_value::text
+                           when old.json_value is not null then old.json_value::text end,
                case when new.date_value is not null then new.date_value::text
                     when new.timestamp_value is not null then new.timestamp_value::text
                     when new.text_value is not null then new.text_value
                     when new.numeric_value is not null then new.numeric_value::text
                     when new.int_value is not null then new.int_value::text
                     when new.int_array_value is not null then new.int_array_value::text
-                    when new.boolean_value is not null then new.boolean_value::text end,
+                    when new.boolean_value is not null then new.boolean_value::text
+                    when new.json_value is not null then new.json_value::text end,
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
@@ -268,7 +271,8 @@ BEGIN
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
                            when old.int_array_value is not null then old.int_array_value::text
-                           when old.boolean_value is not null then old.boolean_value::text end,
+                           when old.boolean_value is not null then old.boolean_value::text
+                           when old.json_value is not null then old.json_value::text end,
                null,
                now(),
                new.modified_by_id);
@@ -400,7 +404,6 @@ drop trigger if exists concrete_contact_audit_trg ON flow.contact;
 CREATE TRIGGER concrete_contact_audit_trg
     after INSERT or update ON flow.contact
     FOR EACH ROW
-    when (new.temp_geo_attempted is false)
     EXECUTE PROCEDURE flow.concrete_contact_audit();
 
 CREATE OR REPLACE FUNCTION flow.concrete_user_audit()
@@ -436,16 +439,11 @@ BEGIN
                                               user_position_id, company_process_step_status_type_id,
                                               process_step_complete_date, date_created, date_modified,
                                               created_by_id, modified_by_id, archived, main,
-                                              cancelled_date,
-                                              migrated_created_date,
-                                              migrated_work_type_id, migrated_org_id, migrated_start_time,
-                                              migrated_end_time)
+                                              cancelled_date)
   values (new.id, new.project_id, new.process_step_id,
           new.user_position_id, new.company_process_step_status_type_id,
           new.process_step_complete_date, new.date_created, new.date_modified,
-          new.created_by_id, new.modified_by_id, new.archived, new.main, new.cancelled_date,
-          new.migrated_created_date,
-          new.migrated_work_type_id, new.migrated_org_id, new.migrated_start_time, new.migrated_end_time);
+          new.created_by_id, new.modified_by_id, new.archived, new.main, new.cancelled_date);
   RETURN NULL;
 END
 $$
@@ -463,11 +461,11 @@ BEGIN
     insert into flow.project_process_step_event_audit(project_process_step_event_id, project_process_step_id,
                                                       process_step_event_id, resource_id, company_event_status_type_id,
                                                       start_time, end_time, date_created, date_modified,
-                                                      created_by_id, modified_by_id, archived)
+                                                      created_by_id, modified_by_id, archived,scheduled_date,cancelled_date,completed_date)
     values(new.id, new.project_process_step_id,
            new.process_step_event_id, new.resource_id, new.company_event_status_type_id,
            new.start_time, new.end_time, new.date_created, new.date_modified,
-           new.created_by_id, new.modified_by_id, new.archived);
+           new.created_by_id, new.modified_by_id, new.archived,new.scheduled_date,new.cancelled_date,new.completed_date);
 
 
   RETURN NULL;

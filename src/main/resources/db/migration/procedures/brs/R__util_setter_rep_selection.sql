@@ -8,6 +8,26 @@ DECLARE
     v_current_position_ids integer[];
     v_org_ids integer[];
 BEGIN
+  select array_agg(position_id)
+  into v_current_position_ids
+  from flow.user_position
+  where user_id = p_platform_user_id
+    and archived is not true
+    and end_date is null
+    and start_date <= (now() at time zone 'US/Mountain')::date;
+
+  select min(ol.level)
+  into v_org_level_id
+  from flow.user_position up
+         inner join flow.org o on o.id = up.org_id
+         inner join flow.org_type ot on o.org_type_id = ot.id
+         inner join flow.org_level ol on ol.id = ot.org_level_id
+  where up.user_id = p_platform_user_id
+    and up.end_date is null
+    and up.start_date <= (now() at time zone 'US/Mountain')::date
+    and up.archived is not true
+    and up.primary_flag is true;
+
   if p_office_ids::text != '[]'::text then
     raise notice '1';
     select array_agg(elem)
@@ -39,26 +59,6 @@ BEGIN
            FROM json_array_elements(p_area_ids::JSON) elem)as elem;
   end if;
 
-  select array_agg(position_id)
-  into v_current_position_ids
-  from flow.user_position
-  where user_id = p_platform_user_id
-    and archived is not true
-    and end_date is null
-    and start_date <= (now() at time zone 'US/Mountain')::date;
-
-  select min(ol.level)
-  into v_org_level_id
-  from flow.user_position up
-         inner join flow.org o on o.id = up.org_id
-         inner join flow.org_type ot on o.org_type_id = ot.id
-         inner join flow.org_level ol on ol.id = ot.org_level_id
-  where up.user_id = p_platform_user_id
-    and up.end_date is null
-    and up.start_date <= (now() at time zone 'US/Mountain')::date
-    and up.archived is not true
-    and up.primary_flag is true;
-
   case when p_area_ids::text = '[]'::text and p_region_ids::text = '[]'::text and
             p_district_ids::text = '[]'::text and p_office_ids::text = '[]'::text then
     raise notice 'not here please';
@@ -83,10 +83,9 @@ BEGIN
                            inner join flow.user_position up on u.id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
-                      and up.archived is not true and up.id = upv.user_position_id
+                                          and up.archived is not true and up.id = upv.user_position_id
                            inner join flow.org o on o.id = up.org_id
-                           inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-                    where ust.user_status_type != 'Expired'
+                    where upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
                   ) as sub_rows  order by active desc, name) as sub_rows;
     else
     -- org_level_id of 7 = Office
@@ -94,9 +93,10 @@ BEGIN
         RETURN QUERY
             select array_to_json(array_agg(row_to_json(sub_rows)))
             from (
-                     select distinct user_id, name, active
+                     select distinct user_id, name, active, user_position_id
                      from (
                               select u.id                                      user_id,
+                                     user_position_id,
                                      concat(u.first_name, ' ', u.last_name) as name,
                                      (case
                                           when upv.start_date is not null and (upv.end_date is null or
@@ -106,7 +106,7 @@ BEGIN
                                          end)                               as active
                               from flow.user_positions_vw upv
                                        inner join flow.user u on u.id = upv.user_id
-                                       inner join flow.org o on upv.org_id = o.id
+--                                        inner join flow.org o on upv.org_id = o.id
                               where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                 and upv.archived is not true
                                 and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
@@ -117,9 +117,10 @@ BEGIN
             RETURN QUERY
                 select array_to_json(array_agg(row_to_json(sub_rows)))
                 from (
-                         select distinct user_id, name, active
+                         select distinct user_id, name, active, user_position_id
                          from (
                                   select distinct upv.user_id,
+                                                  user_position_id,
                                                   concat(u.first_name, ' ', u.last_name) as name,
                                                   (case
                                                        when upv.start_date is not null and (upv.end_date is null or
@@ -129,7 +130,7 @@ BEGIN
                                                       end)                               as active
                                   from flow.user_positions_vw upv
                                            inner join flow.user u on u.id = upv.user_id
-                                           inner join flow.org o on upv.org_id = o.id
+--                                            inner join flow.org o on upv.org_id = o.id
                                   where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                     and upv.archived is not true
                                     and u.id = p_platform_user_id

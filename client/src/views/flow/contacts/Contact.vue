@@ -181,7 +181,8 @@
                             label="Address"
                             id="qa-address-field"
                             placeholder=" "
-                            :rules="addressRules"
+                            :required="true"
+                            :rules="[ ...addressRules, ...addressFieldRequired.street]"
                             :readonly="!userCanEdit"
                             @change="[addressChanged = true, dirtySystemFields = true]"
                             v-model="contact.street1"></v-text-field>
@@ -189,7 +190,7 @@
                             label="City"
                             id="qa-city-field"
                             placeholder=" "
-                            :rules="cityRules"
+                            :rules="[...cityRules, ...addressFieldRequired.city]"
                             @change="[addressChanged = true, dirtySystemFields = true]"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
@@ -199,6 +200,7 @@
                         id="qa-state-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
+                        :rules="[ ...addressFieldRequired.state ]"
                         @change="[addressChanged = true, dirtySystemFields = true]"
                         item-text="state"
                         item-value="id"
@@ -209,6 +211,7 @@
                         id="qa-country-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
+                        :rules="[ ...addressFieldRequired.country ]"
                         @change="[addressChanged = true, dirtySystemFields = true]"
                         item-text="country"
                         item-value="id"
@@ -222,7 +225,7 @@
                             :readonly="!userCanEdit"
                             counter
                             @keypress="isNumberOrHyphen"
-                            :rules="postalCodeRules"
+                            :rules="[ ...postalCodeRules, ...addressFieldRequired.zip ]"
                             maxlength="10"
                             v-model="contact.postalCode"></v-text-field>
               <v-text-field text
@@ -245,6 +248,7 @@
                             label="E-Mail"
                             id="qa-email-field"
                             placeholder=" "
+                            :rules="emailRules"
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.email"></v-text-field>
@@ -436,6 +440,19 @@ export default {
           to: `/contacts`
         },
       ]
+    }
+  },
+  computed: {
+    addressFieldRequired() {
+      //this logic seems backwards but it is just the way rules work
+      //if one address field is filled in then all of them are required
+      return {
+        street: [ !(!this.contact.street1 && (Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
+        city: [ !(!this.contact.city && (Boolean(this.contact.street1) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
+        state: [ !(!this.contact.companyStateId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
+        country: [ !(!this.contact.companyCountryId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
+        zip: [ !(!this.contact.postalCode && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId))) || "Required when other address fields are populated" ]
+      }
     }
   },
   created() {

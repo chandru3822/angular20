@@ -8,9 +8,9 @@ import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -20,47 +20,44 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Joseph Canto on 2019-07-17.
- */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AhjPermitService {
-  @Autowired
-  private SqlCache sqlCache;
-
-  @Autowired
-  private ObjectMapper om;
-
-  @Autowired
-  private SecurityService securityService;
-
-  @Autowired
-  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
+  private final SqlCache sqlCache;
+  private final ObjectMapper om;
+  private final SecurityService securityService;
+  private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public Optional<AhjPermitDetail> getAhjPermitDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
 
-    Optional<AhjPermitDetail> permit = sqlCache.get("ahj.permit.detailByAhj", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
+    Optional<AhjPermitDetail> permit =
+        sqlCache.get(
+            "ahj.permit.detailByAhj",
+            params,
+            new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
     if (permit.isPresent()) {
       return permit;
-    } else {
-      User currentUser = securityService.getCurrentUser();
-      params.put("currentUser", currentUser.trueUserId());
-
-      // add a blank permit and return that
-      Integer id = sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
-      if (id != null) {
-        Optional<AhjPermitDetail> permit2 = sqlCache.get("ahj.permit.detailByAhj", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
-        return permit2;
-      }
     }
-    return null;
+    User currentUser = securityService.getCurrentUser();
+    params.put("currentUser", currentUser.trueUserId());
+
+    // add a blank permit and return that
+    var created =
+        sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class));
+
+    if (created.isPresent()) {
+      return sqlCache.get(
+          "ahj.permit.detailByAhj", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
+    }
+    return Optional.empty();
   }
 
   @Transactional
-  public Optional<AhjPermitDetail> saveAhjPermit(Long ahjId, Long permitId, AhjPermit permit, Boolean returnValue) {
+  public Optional<AhjPermitDetail> saveAhjPermit(
+      Long ahjId, Long permitId, AhjPermit permit, Boolean returnValue) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -82,9 +79,13 @@ public class AhjPermitService {
     params.put("deliveryFeeAmount", permit.getDeliveryFeeAmount());
     params.put("approvalTimeline", permit.getApprovalTimeline());
     params.put("documentsAvailable", permit.getDocumentsAvailable());
-    params.put("brsTechnicianPermitSubmissionInstructions", permit.getBrsTechnicianPermitSubmissionInstructions());
+    params.put(
+        "brsTechnicianPermitSubmissionInstructions",
+        permit.getBrsTechnicianPermitSubmissionInstructions());
     params.put("cancellationAndRefundInstructions", permit.getCancellationAndRefundInstructions());
-    params.put("brsTechnicianPermitPickupAndDeliveryInstructions", permit.getBrsTechnicianPermitPickupAndDeliveryInstructions());
+    params.put(
+        "brsTechnicianPermitPickupAndDeliveryInstructions",
+        permit.getBrsTechnicianPermitPickupAndDeliveryInstructions());
     params.put("approvalInstructions", permit.getApprovalInstructions());
 
     // NOTES
@@ -97,7 +98,8 @@ public class AhjPermitService {
     if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState()) {
       params.put("ahjIds", permit.getAhjIds());
       sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
-      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permit.getPermitIds());
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
+          ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permit.getPermitIds());
     } else {
       params.put("ahjId", ahjId);
 
@@ -106,7 +108,8 @@ public class AhjPermitService {
       } else {
         params.put("id", permitId);
         sqlCache.update("ahj.permit.update", params);
-        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permitId);
+        blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
+            ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permitId);
       }
     }
 
@@ -188,38 +191,46 @@ public class AhjPermitService {
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(List.class, "submissionLinks",
-        new JsonCollectionDeserializer(linkRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "submissionLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "followUpLinks",
-        new JsonCollectionDeserializer(linkRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "followUpLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "submissionChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "submissionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "revisionChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "revisionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "asBuiltChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "asBuiltChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "nonStandardChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "nonStandardChecklist",
+          new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "notes",
-        new JsonCollectionDeserializer(noteTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "notes", new JsonCollectionDeserializer(noteTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "submissionContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "submissionContacts",
+          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "followUpContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "followUpContacts",
+          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "printLocations",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "printLocations",
+          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "servicingFots",
-        new JsonCollectionDeserializer(userRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "servicingFots", new JsonCollectionDeserializer(userRef, objectMapper));
     }
   }
 }

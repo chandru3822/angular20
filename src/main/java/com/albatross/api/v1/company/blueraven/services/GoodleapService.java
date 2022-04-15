@@ -111,7 +111,8 @@ public class GoodleapService {
       }
     } else if (applications.isEmpty()) {
       final String message = String.format("GOODLEAP: Unable to locate application for project ID: %s", projectId);
-      log.info(message);
+      //this error is ALWAYS accompanied by the error from "ARQ: Installation agreement: Failed to get loan...." turning this one off since the same info is available in the accompanying error
+//      log.info(message);
       throw new NotFoundException(message);
     } else {
       application = applications.getJSONObject(0);

@@ -15,31 +15,26 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Created by Joseph Canto on 2019-08-01.
- */
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class PublicService {
 
   private final SecurityService securityService;
   private final AttachmentService attachmentService;
 
-  public void loadPublicAttachment(Long attachmentId, UUID uuid, HttpServletResponse response) throws IOException {
+  public void loadPublicAttachment(Long attachmentId, UUID uuid, HttpServletResponse response)
+      throws IOException {
     Optional<Attachment> attachment = attachmentService.getAttachmentForUuid(attachmentId);
 
-    if(attachment.isPresent() && attachment.get().getUuid().equals(uuid)) {
+    if (attachment.isPresent() && attachment.get().getUuid().equals(uuid)) {
       response.sendRedirect(attachment.get().getPresignedUrl());
     } else {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Request", new Exception());
     }
   }
 
-
   public List<Attachment> loadMaintenanceAttachments() {
-    List<Attachment> results = attachmentService.getAttachmentsByTypeWithoutSource(938L);
-    return results;
+    return attachmentService.getAttachmentsByTypeWithoutSource(938L);
   }
-
 }

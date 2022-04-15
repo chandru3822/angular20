@@ -1,5 +1,5 @@
 <template>
-  <v-container id="closer-dash-container">
+  <v-container id="closer-dash-container" ref="closerDashContainer">
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
     <!--    1: {{this.showFunnels}}-->
@@ -140,13 +140,13 @@
                 </template>
               </v-select>
             </td>
-            <td class="funnel-td" @click="funnelDrilldown(line.id, 'today', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line, 'today', 'apptsCreatedPipeline', false)">
               {{ line.today_count }}
             </td>
-            <td class="funnel-td" @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line, 'wtd', 'apptsCreatedPipeline', false)">
               {{ line.week_to_date_count }}
             </td>
-            <td class="funnel-td" @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line, 'custom', 'apptsCreatedPipeline', false)">
               {{ line.custom_date_range_count }}
             </td>
           </tr>
@@ -508,25 +508,29 @@
                 <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                   <!-- CHECKED-IN COUNT -->
                   <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-if="[18,19,20,22,24,23,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
-                       class="checked-in-column-center"
+                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
+                       class="checked-in-column-center clickable"
                        :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                       @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
-                    {{ line.id === 21 ? '' : line.checked_in_today_count }}
-                  </div>
-                  <div v-if="line.id === 21"
-                       class="checked-in-column-bottom checked-in-column-line-overlap"
-                       @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
+                       @click="funnelDrilldown(line, 'today', viewSelect, true)">
                     {{ line.checked_in_today_count }}
                   </div>
+                  <div v-else class="no-checked-in-column-placeholder"></div>
+                  <!--                  <div v-if="line.id === 21"-->
+                  <!--                       class="checked-in-column-bottom checked-in-column-line-overlap"-->
+                  <!--                       @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">-->
+                  <!--                    {{ line.checked_in_today_count }}-->
+                  <!--                  </div>-->
 
                   <!-- COUNT -->
-                  <div @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
+                  <div @click="funnelDrilldown(line, 'today', viewSelect, false)" class="clickable">
                     {{ line.today_count }}
                   </div>
                 </div>
-                <div v-else @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
-                  {{ line.today_count }}
+                <div v-else class="funnel-data-container clickable">
+                  <div class="no-checked-in-column-placeholder"></div>
+                  <div class="clickable" @click="funnelDrilldown(line, 'today', viewSelect, false)">
+                    {{ line.today_count }}
+                  </div>
                 </div>
               </td>
 
@@ -535,25 +539,24 @@
                 <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                   <!-- CHECKED-IN COUNT -->
                   <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
-                       class="checked-in-column-center"
+                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
+                       class="checked-in-column-center clickable"
                        :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                       @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
-                    {{ line.id === 21 ? '' : line.checked_in_week_to_date_count }}
+                       @click="funnelDrilldown(line, 'wtd', viewSelect, true)">
+                    {{ line.checked_in_today_count }}
                   </div>
-                  <div v-if="line.id === 21"
-                       class="checked-in-column-bottom checked-in-column-line-overlap"
-                       @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
-                    {{ line.checked_in_week_to_date_count }}
-                  </div>
+                  <div v-else class="no-checked-in-column-placeholder"></div>
 
                   <!-- COUNT -->
-                  <div @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
+                  <div @click="funnelDrilldown(line, 'wtd', viewSelect, false)" class="clickable">
                     {{ line.week_to_date_count }}
                   </div>
                 </div>
-                <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
-                  {{ line.week_to_date_count }}
+                <div v-else class="funnel-data-container clickable">
+                  <div class="no-checked-in-column-placeholder"></div>
+                  <div class="clickable" @click="funnelDrilldown(line, 'wtd', viewSelect, false)">
+                    {{ line.week_to_date_count }}
+                  </div>
                 </div>
               </td>
 
@@ -563,25 +566,24 @@
                 <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                   <!-- CHECKED-IN COUNT -->
                   <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
-                       class="checked-in-column-center"
+                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
+                       class="checked-in-column-center clickable"
                        :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
-                       @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
+                       @click="funnelDrilldown(line, 'custom', viewSelect, true)">
                     {{ line.id === 21 ? '' : line.checked_in_custom_date_range_count }}
                   </div>
-                  <div v-if="line.id === 21"
-                       class="checked-in-column-bottom checked-in-column-line-overlap"
-                       @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
-                    {{ line.checked_in_custom_date_range_count }}
-                  </div>
+                  <div v-else class="no-checked-in-column-placeholder"></div>
 
                   <!-- COUNT -->
-                  <div @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
+                  <div @click="funnelDrilldown(line, 'custom', viewSelect, false)" class="clickable">
                     {{ line.custom_date_range_count }}
                   </div>
                 </div>
-                <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
-                  {{ line.custom_date_range_count }}
+                <div v-else class="funnel-data-container clickable">
+                  <div class="no-checked-in-column-placeholder"></div>
+                  <div class="clickable" @click="funnelDrilldown(line, 'custom', viewSelect, false)">
+                    {{ line.custom_date_range_count }}
+                  </div>
                 </div>
               </td>
             </tr>
@@ -617,7 +619,7 @@
               class="elevation-1"
               :class="{'mt-6': funnelDrilldownData.length === 0}"
               :mobile-breakpoint="0"
-              :headers="visibleFunnelDrilldownHeaders"
+              :headers="visibleFunnelDrilldownHeaders()"
               fixed-header
               :items="funnelDrilldownData"
               @current-items="filteredFunnelDrilldownItems"
@@ -644,10 +646,17 @@
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
                     <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')"
-                                 :to="`/project/${item.project_id}`">
+                                 :to="`/project/${item.project_id}/details`">
                       {{ item.project_id }}
                     </router-link>
                     <div v-else>{{ item.project_id || '' }}</div>
+                  </td>
+                  <td v-if="selectedFunnel.funnel_type_id === 1">
+                    <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && $store.getters.userHasFeature('EVENTS')"
+                                 :to="`/project/${item.project_id}/processStep/${item.project_process_step_id}/event/${item.project_process_step_event_id}`">
+                      {{ item.project_process_step_event_id }}
+                    </router-link>
+                    <div v-else>{{ item.project_process_step_event_id || '' }}</div>
                   </td>
                   <!--                <td :class="item.stage">{{ item.stage || '' }}</td>-->
                   <td :class="item.source_name_class">{{ item.source_name || '' }}</td>
@@ -655,61 +664,65 @@
                   <td :class="item.financier_class">{{ item.financier || '' }}</td>
                   <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                   <td>{{ item.cancelled_date | formatDate('date', 'MM/DD/YYYY') }}</td>
-                  <td v-if="funnelDrilldownHeaders[12].show">
+                  <td v-if="funnelDrilldownHeaders[13].show">
                     {{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}
                   </td>
-                  <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[13].show">
+                  <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[14].show">
                     {{ item.appointment_outcome || '' }}
                   </td>
-                  <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[14].show">
+                  <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[15].show">
                     {{ item.credit_decision_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
-                  <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[15].show">
+                  <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[16].show">
                     {{ item.credit_check || '' }}
                   </td>
                   <td :class="item.installation_agreement_signed_date_class"
-                      v-if="funnelDrilldownHeaders[16].show">
+                      v-if="funnelDrilldownHeaders[17].show">
                     {{ item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.site_survey_verified_date_class"
-                      v-if="funnelDrilldownHeaders[17].show">
+                      v-if="funnelDrilldownHeaders[18].show">
                     {{ item.site_survey_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.site_survey_completed_date_class"
-                      v-if="funnelDrilldownHeaders[18].show">
+                      v-if="funnelDrilldownHeaders[19].show">
                     {{ item.site_survey_completed_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.final_design_sent_to_homeowner_date_class"
-                      v-if="funnelDrilldownHeaders[19].show">
+                      v-if="funnelDrilldownHeaders[20].show">
                     {{ item.final_design_sent_to_homeowner_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.final_design_signed_date_class"
-                      v-if="funnelDrilldownHeaders[20].show">
+                      v-if="funnelDrilldownHeaders[21].show">
                     {{ item.final_design_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
-                      v-if="funnelDrilldownHeaders[21].show">
+                      v-if="funnelDrilldownHeaders[22].show">
                     {{ item.proof_of_homeowners_insurance_obtained_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.utility_bill_verified_date_class"
-                      v-if="funnelDrilldownHeaders[22].show">
+                      v-if="funnelDrilldownHeaders[23].show">
                     {{ item.utility_bill_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.financial_agreement_signed_date_class"
-                      v-if="funnelDrilldownHeaders[23].show">
+                      v-if="funnelDrilldownHeaders[24].show">
                     {{ item.financial_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.cash_down_payment_class"
-                      v-if="funnelDrilldownHeaders[24].show">
+                      v-if="funnelDrilldownHeaders[25].show">
                     {{ item.cash_down_payment | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.final_design_complete_date_class"
-                      v-if="funnelDrilldownHeaders[25].show">
+                      v-if="funnelDrilldownHeaders[26].show">
                     {{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.substantial_completion_date_class"
-                      v-if="funnelDrilldownHeaders[26].show">
+                      v-if="funnelDrilldownHeaders[27].show">
                     {{ item.substantial_completion_date | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td :class="item.checked_in_time_date_class"
+                      v-if="funnelDrilldownHeaders[28].show">
+                    {{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}
                   </td>
                 </tr>
               </template>
@@ -785,6 +798,7 @@ export default {
       dropdownValuesLoading: true,
       isCloser: false,
       isCloserMgr: false,
+      selectedFunnel: {},
       isCloserRegional: false,
       userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'),
       headers: [
@@ -883,77 +897,6 @@ export default {
       appts_to_fdc_pipeline_dt2_formatted: moment().format('M/D/YY'),
       appts_to_fdc_pipeline_menu2: false,
       funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [
-        {text: '', value: '', show: true, sortable: false, width: 25, optional: false}, // 0
-        {text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false}, // 1
-        {text: 'Office', value: 'office', show: true, width: 75, optional: false}, // 2
-        {text: 'State', value: 'state', show: true, width: 75, optional: false}, // 3 -- new
-        {text: 'Status', value: 'status_type', show: true, width: 75, optional: false}, // 4 -- new
-        {text: 'Name', value: 'customer_name', show: true, width: 90, optional: false}, // 5
-        {text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false}, // 6
-        {text: 'Source', value: 'source_name', show: true, width: 85, optional: false}, // 7
-        {text: 'System Size', value: 'system_size', show: true, width: 110, optional: false}, // 8
-        {text: 'Financier', value: 'financier', show: true, width: 95, optional: false}, // 9
-        {text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false}, // 10
-        {text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false}, // 11
-        {text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true}, // 12
-        {text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true}, // 13
-        {text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true}, // 14
-        {text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true}, // 15
-        {
-          text: 'Installation Agreement Signed Date',
-          value: 'installation_agreement_signed_date',
-          show: false,
-          width: 235,
-          optional: true
-        }, // 16
-        {
-          text: 'Site Survey Verified Date',
-          value: 'site_survey_verified_date',
-          show: false,
-          width: 160,
-          optional: true
-        }, // 17
-        {text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true}, // 18
-        {
-          text: 'FD Sent to Homeowner Date',
-          value: 'final_design_sent_to_homeowner_date',
-          show: false,
-          width: 200,
-          optional: true
-        }, // 19
-        {text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true}, // 20
-        {
-          text: 'Proof of HOI Obtained Date',
-          value: 'proof_of_homeowners_insurance_obtained_date',
-          show: false,
-          width: 200,
-          optional: true
-        }, // 21
-        {
-          text: 'Utility Bill Verified Date',
-          value: 'utility_bill_verified_date',
-          show: false,
-          width: 175,
-          optional: true
-        }, // 22
-        {
-          text: 'Financial Agreement Signed',
-          value: 'financial_agreement_signed_date',
-          show: false,
-          width: 195,
-          optional: true
-        }, // 23
-        {text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true}, // 24
-        {text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true}, // 25
-        {
-          text: 'Substantial Completion Date',
-          value: 'substantial_completion_date',
-          show: false,
-          width: 175,
-          optional: true
-        } // 26
-      ],
       funnelDrilldownData: [],
       funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
@@ -971,6 +914,79 @@ export default {
     }
   },
   computed: {
+    funnelDrilldownHeaders() { return [
+      {text: '', value: '', show: true, sortable: false, width: 25, optional: false}, // 0
+      {text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false}, // 1
+      {text: 'Office', value: 'office', show: true, width: 75, optional: false}, // 2
+      {text: 'State', value: 'state', show: true, width: 75, optional: false}, // 3 -- new
+      {text: 'Status', value: 'status_type', show: true, width: 75, optional: false}, // 4 -- new
+      {text: 'Name', value: 'customer_name', show: true, width: 90, optional: false}, // 5
+      {text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false}, // 6
+      {text: 'Event ID', value: 'project_process_step_event_id', show: this.selectedFunnel.funnel_type_id === 1, width: 85, optional: false}, // 7
+      {text: 'Source', value: 'source_name', show: true, width: 85, optional: false}, // 8
+      {text: 'System Size', value: 'system_size', show: true, width: 110, optional: false}, // 9
+      {text: 'Financier', value: 'financier', show: true, width: 95, optional: false}, // 10
+      {text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false}, // 11
+      {text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false}, // 12
+      {text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true}, // 13
+      {text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true}, // 14
+      {text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true}, // 15
+      {text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true}, // 16
+      {
+        text: 'Installation Agreement Signed Date',
+        value: 'installation_agreement_signed_date',
+        show: false,
+        width: 235,
+        optional: true
+      }, // 17
+      {
+        text: 'Site Survey Verified Date',
+        value: 'site_survey_verified_date',
+        show: false,
+        width: 160,
+        optional: true
+      }, // 18
+      {text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true}, // 19
+      {
+        text: 'FD Sent to Homeowner Date',
+        value: 'final_design_sent_to_homeowner_date',
+        show: false,
+        width: 200,
+        optional: true
+      }, // 20
+      {text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true}, // 21
+      {
+        text: 'Proof of HOI Obtained Date',
+        value: 'proof_of_homeowners_insurance_obtained_date',
+        show: false,
+        width: 200,
+        optional: true
+      }, // 22
+      {
+        text: 'Utility Bill Verified Date',
+        value: 'utility_bill_verified_date',
+        show: false,
+        width: 175,
+        optional: true
+      }, // 23
+      {
+        text: 'Financial Agreement Signed',
+        value: 'financial_agreement_signed_date',
+        show: false,
+        width: 195,
+        optional: true
+      }, // 24
+      {text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true}, // 25
+      {text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true}, // 26
+      {
+        text: 'Substantial Completion Date',
+        value: 'substantial_completion_date',
+        show: false,
+        width: 175,
+        optional: true
+      }, // 27
+      {text: 'Checked In Time', value: 'checked_in_time', show: false, width: 160, optional: true}, // 28
+    ]},
     windowInnerWidth() {
       return window.innerWidth
     },
@@ -1079,9 +1095,9 @@ export default {
       }
       return 'check_box_outline_blank'
     },
-    visibleFunnelDrilldownHeaders() {
-      return this.funnelDrilldownHeaders.filter(header => header.show === true)
-    },
+    // visibleFunnelDrilldownHeaders() {
+    //   return this.funnelDrilldownHeaders.filter(header => header.show === true)
+    // },
     showTotalSystemSize() {
       return this.funnelDrilldownRowCount > 0
     }
@@ -1114,9 +1130,12 @@ export default {
     }
   },
   methods: {
+    visibleFunnelDrilldownHeaders() {
+      return this.funnelDrilldownHeaders.filter(header => header.show === true)
+    },
     resetScrollBarPosition() {
       // reset scroll bar position to top
-      document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+      this.$refs.closerDashContainer.scrollTop = 0
     },
 
     /* FUNNEL-RELATED CODE START */
@@ -1240,13 +1259,14 @@ export default {
       this.officeModel = []
 
       this.repModel = [
-        {user_id: -1, name: 'All Reps', active: true}
+        {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
       ]
 
       this.repData = [
-        {user_id: -1, name: 'All Reps', active: true}
+        {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
       ]
 
+      // this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
       this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
     },
 
@@ -1333,7 +1353,7 @@ export default {
       let modelOverride = false
       if (useRepDataInstead) {
         this.repData.forEach((rep, index) => {
-          reps.push(rep.user_id)
+          reps.push(rep.user_position_id)
           if (index === this.repData.length - 1) {
             //   this.districtModel = []
             //   this.regionModel = []
@@ -1350,13 +1370,13 @@ export default {
           }
         })
       } else {
-        this.repModel.forEach(rep => reps.push(rep.user_id))
+        this.repModel.forEach(rep => reps.push(rep.user_position_id))
       }
 
       if (modelOverride) {
         reps = []
         //this gets used when there are more than 1000 users selected
-        this.repDataMaster.forEach(rep => reps.push(rep.user_id))
+        this.repDataMaster.forEach(rep => reps.push(rep.user_position_id))
       }
 
       const requestBody = {
@@ -1608,6 +1628,11 @@ export default {
     },
 
     async repLoad(preSelectLists) {
+      //reset these any time we are reloading reps or things get weird
+      this.repModel = []
+      this.repData = []
+      this.repLengthOverride = false
+
       if (!this.currentUserId) return
 
       let areas = this.areaModel.map(function (area) {
@@ -1745,7 +1770,8 @@ export default {
       }
     },
 
-    async funnelDrilldown(funnelId, dateRange, funnelName, pipelineName, isCheckedInColumn) {
+    async funnelDrilldown(funnel, dateRange, pipelineName, isCheckedInColumn) {
+      this.selectedFunnel = funnel
       let sourceIds = []
       let userIds = []
       let orgIds = []
@@ -1753,10 +1779,14 @@ export default {
       let datesMatch = false
 
       if (pipelineName === 'apptsCreatedPipeline') {
-        if (funnelId === 12) { // BRS-provided sources
-          sourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
-        } else { // Self-gen sources
-          sourceIds = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
+        let brsSourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
+        let selfGenSourceIds = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
+        if (funnel.id === 12) { // BRS-provided sources
+          sourceIds = brsSourceIds
+        } else if (funnel.id === 13) { // Self-gen sources
+          sourceIds = selfGenSourceIds
+        } else {
+          sourceIds = brsSourceIds.concat(selfGenSourceIds)
         }
 
         switch (dateRange) {
@@ -1774,7 +1804,7 @@ export default {
             break
         }
       } else {
-        userIds = this.repModel.map(rep => rep.user_id)
+        userIds = this.repModel.map(rep => rep.user_position_id)
         orgIds = this.officeModel.map(org => org.org_id)
 
         switch (dateRange) {
@@ -1796,16 +1826,17 @@ export default {
       datesMatch = moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')
 
       if (datesMatch) {
-        this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
+        this.funnelDrilldownTitle = funnel.name + ' on ' + moment(start).format('M/D/YYYY')
       } else {
-        this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
+        this.funnelDrilldownTitle = funnel.name + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
       }
 
-      switch (funnelId) {
+      switch (funnel.id) {
         // Appointments Created Pipeline
         case 12: // BRS-provided appointments created
         case 13: // Self-gen appointments created
         case 10: // Total Appointments Created
+        case 26: // Missing source
           this.funnelDrilldownHeaders[12].show = true // date_created
           break
 
@@ -1823,47 +1854,49 @@ export default {
         case 24: // Non-dispositioned appointments
         case 23: // Yet to occur
         case 11: // Pitched
-          this.funnelDrilldownHeaders[13].show = true // appointment_outcome
+          // this.funnelDrilldownHeaders[14].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[14].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[28].show = isCheckedInColumn // check_in_time
           break
         case 9: // Credits run
-          this.funnelDrilldownHeaders[13].show = true // appointment_outcome
-          this.funnelDrilldownHeaders[14].show = true // credit_decision_date
+          this.funnelDrilldownHeaders[14].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[15].show = true // credit_decision_date
           break
         case 3: // Credits passed
-          this.funnelDrilldownHeaders[13].show = true // appointment_outcome
-          this.funnelDrilldownHeaders[14].show = true // credit_decision_date
-          this.funnelDrilldownHeaders[15].show = true // credit_check
+          this.funnelDrilldownHeaders[14].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[15].show = true // credit_decision_date
+          this.funnelDrilldownHeaders[16].show = true // credit_check
           break
         case 4: // Bookings Complete
-          this.funnelDrilldownHeaders[16].show = true // installation_agreement_signed_date
-          this.funnelDrilldownHeaders[18].show = true // site_survey_completed_date
+          this.funnelDrilldownHeaders[17].show = true // installation_agreement_signed_date
+          this.funnelDrilldownHeaders[19].show = true // site_survey_completed_date
           break
         case 5: // Site Surveys Verified
-          this.funnelDrilldownHeaders[17].show = true // site_survey_verified_date
+          this.funnelDrilldownHeaders[18].show = true // site_survey_verified_date
           break
         case 6: // Final Designs sent to Homeowner
-          this.funnelDrilldownHeaders[19].show = true // final_design_sent_to_homeowner_date
-          this.funnelDrilldownHeaders[20].show = true // final_design_signed_date
+          this.funnelDrilldownHeaders[20].show = true // final_design_sent_to_homeowner_date
+          this.funnelDrilldownHeaders[21].show = true // final_design_signed_date
           break
         case 7: // Final Designs Approved
-          this.funnelDrilldownHeaders[20].show = true // final_design_signed_date
-          this.funnelDrilldownHeaders[23].show = true // financial_agreement_signed_date
-          this.funnelDrilldownHeaders[21].show = true // proof_of_homeowners_insurance_obtained_date
-          this.funnelDrilldownHeaders[24].show = true // cash_down_payment
-          this.funnelDrilldownHeaders[22].show = true // utility_bill_verified_date
+          this.funnelDrilldownHeaders[21].show = true // final_design_signed_date
+          this.funnelDrilldownHeaders[24].show = true // financial_agreement_signed_date
+          this.funnelDrilldownHeaders[22].show = true // proof_of_homeowners_insurance_obtained_date
+          this.funnelDrilldownHeaders[25].show = true // cash_down_payment
+          this.funnelDrilldownHeaders[23].show = true // utility_bill_verified_date
           break
         case 21: // Final Designs Completed
-          this.funnelDrilldownHeaders[25].show = true // final_design_complete_date
+          this.funnelDrilldownHeaders[26].show = true // final_design_complete_date
           break
         case 8: // Installations Completed
-          this.funnelDrilldownHeaders[26].show = true // substantial_completion_date
+          this.funnelDrilldownHeaders[27].show = true // substantial_completion_date
           break
       }
 
       const requestBody = {
         start: start,
         end: end,
-        funnelId: funnelId
+        funnelId: funnel.id
       }
 
       if (pipelineName === 'apptsCreatedPipeline') {
@@ -2067,7 +2100,7 @@ export default {
             // -2 was updated to mean - select all reps in the selected orgs
             this.repLengthOverride = true
             this.repModel = [
-              {user_id: -2, name: 'All Filtered Reps', active: true}
+              {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
             ]
             this.doRepWatcher()
           } else {
@@ -2603,7 +2636,6 @@ export default {
       }
 
       .funnel-td {
-        cursor: pointer;
         font-size: 8px;
         text-align: center;
       }
@@ -2811,7 +2843,6 @@ export default {
       }
 
       .funnel-td {
-        cursor: pointer;
         text-align: center;
         font-size: 7px;
         width: 90px;
@@ -2822,7 +2853,6 @@ export default {
       }
 
       .funnel-data-container {
-        cursor: pointer;
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
@@ -2842,12 +2872,24 @@ export default {
         width: 38px;
       }
 
+      .no-checked-in-column-placeholder{
+        text-align: center;
+        margin-right: 5px;
+        width: 38px;
+      }
+
+
+      //.weird-placeholder {
+      //  margin-left: 60px;
+      //}
+
       .checked-in-column-top {
         border-bottom: none;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
+        border-top: none;
+        //border-top-left-radius: 5px;
+        //border-top-right-radius: 5px;
         padding: 3px 2px 5.5px 2px;
-        margin-top: 3px;
+        //margin-top: 3px;
       }
 
       .checked-in-column-center {
@@ -3435,6 +3477,7 @@ export default {
 
         .checked-in-column-top,
         .checked-in-column-center,
+        .no-checked-in-column-placeholder,
         .checked-in-column-bottom {
           margin-right: 10px;
           width: 60px;
@@ -3442,7 +3485,7 @@ export default {
 
         .checked-in-column-top {
           padding: 6px 1px;
-          margin-top: 5px;
+          //margin-top: 5px;
         }
 
         .checked-in-column-center {
@@ -3890,13 +3933,14 @@ export default {
 
         .checked-in-column-top,
         .checked-in-column-center,
+        .no-checked-in-column-placeholder,
         .checked-in-column-bottom {
           width: 90px;
         }
 
         .checked-in-column-top {
           padding: 10px 5px;
-          margin-top: 5px;
+          //margin-top: 5px;
         }
 
         .checked-in-column-center {
@@ -4114,6 +4158,7 @@ export default {
 
         .checked-in-column-top,
         .checked-in-column-center,
+        .no-checked-in-column-placeholder,
         .checked-in-column-bottom {
           margin-right: 15px;
         }

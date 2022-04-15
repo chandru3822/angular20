@@ -31,6 +31,11 @@ public class AttachmentTypeController {
     return attachmentTypeService.getAttachmentTypesForCompany();
   }
 
+  @GetMapping(value = "/system", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getSystemAttachmentTypes () {
+    return attachmentTypeService.getSystemAttachmentTypes();
+  }
+
   @PutMapping(value = "/updateOrderInProcessStep", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateOrderInProcessStep(@RequestBody List<ProcessStepAttachmentType> attachmentTypes) {
     attachmentTypeService.updateOrderInProcessStep(attachmentTypes);
@@ -101,9 +106,17 @@ public class AttachmentTypeController {
     attachmentTypeService.deleteProcessStepType(id);
   }
 
+  //this loads by processStepId
   @GetMapping(value = "/processStepTypes/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypes(@PathVariable Long processStepId) {
     return new ResponseEntity<>(attachmentTypeService.getProcessStepTypes(processStepId), HttpStatus.OK);
+  }
+
+  //this loads by projectProcessStepId - we include projectId so we can verify that the request is valid
+  @GetMapping(value = "/project/{projectId}/processStepTypes/{ppsId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypesByPps(@PathVariable Long projectId,
+                                                                                  @PathVariable Long ppsId) {
+    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypesByPps(projectId, ppsId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/processStepType", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -150,6 +163,13 @@ public class AttachmentTypeController {
   @GetMapping(value = "/eventTypesByPpsEventId/{ppsEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<EventAttachmentType>> getEventTypesByPpsEventId(@PathVariable Long ppsEventId) {
     return new ResponseEntity<>(attachmentTypeService.getEventTypesByPpsEventId(ppsEventId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/project/{projectId}/pps/{ppsId}/eventTypesByPpsEventId/{ppsEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<EventAttachmentType>> getEventTypesByPpsEventIdAndPps(@PathVariable Long projectId,
+                                                                                   @PathVariable Long ppsId,
+                                                                                   @PathVariable Long ppsEventId) {
+    return new ResponseEntity<>(attachmentTypeService.getEventTypesByPpsEventIdAndPps(projectId, ppsId, ppsEventId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/eventAndPsTypes", produces = MediaType.APPLICATION_JSON_VALUE)

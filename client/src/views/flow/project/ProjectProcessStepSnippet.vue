@@ -22,7 +22,7 @@
           <template #item="{ item, index }">
             <tr :class="{'primary-row': item.main}">
               <td class="text-left">
-                <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${contactId}`">{{ item.projectProcessStepId }}</router-link>
+                <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}`">{{ item.projectProcessStepId }}</router-link>
               </td>
               <td class="text-left">{{item.processStepName}}</td>
               <td class="text-left">{{ item.dateCreated | formatDate('timestamp') }}</td>

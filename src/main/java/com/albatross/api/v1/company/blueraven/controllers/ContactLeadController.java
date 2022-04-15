@@ -250,4 +250,24 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/asksolar", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAskSolar(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/zealousservices", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactZealousServices(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/sunpower", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSunPower(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/solarsesame", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarSesame(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
 }

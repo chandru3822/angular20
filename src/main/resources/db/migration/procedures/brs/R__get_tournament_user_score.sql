@@ -38,7 +38,7 @@ BEGIN
                         and pd.closer_user_id = p_user_id
                         and pd.cancelled_date is null
                         AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                            v_tournament_start_date - 10) +
+                            '2022-03-01'::date) +
                      ((select count(1)
                        from brs.project_details pd
                               inner join flow.project p on p.id = pd.project_id
@@ -51,7 +51,7 @@ BEGIN
                          and (ccfv.boolean_value is null or ccfv.boolean_value is false)
                          and pd.source != 523
                          AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                             v_tournament_start_date - 10) * 4) +
+                             '2022-03-01'::date) * 4) +
                      ((select count(1)
                        from brs.project_details pd
                               inner join flow.project p on p.id = pd.project_id
@@ -65,7 +65,7 @@ BEGIN
                          and (ccfv.boolean_value is true
                          or pd.source = 523)
                          AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                             v_tournament_start_date - 10) * 5))) as cnt;
+                             '2022-03-01'::date) * 5))) as cnt;
       when p_tournament_formula_id = 2 then
         select *
         into v_score

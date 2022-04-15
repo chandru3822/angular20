@@ -168,44 +168,12 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn class="d-inline-block" text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
-                <v-dialog
+                <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')"
-                  class="d-inline-block"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this User Position: <strong>{{ item.position }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteUserPosition(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                    label="this position: "
+                    :item-to-delete="item.position"
+                    @confirm-delete="deleteUserPosition(item)"
+                ></confirm-delete-dialog>
               </td>
             </tr>
           </template>
@@ -225,10 +193,12 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from "@/helpers/constants";
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'UserPositions',
     components: {
+      ConfirmDeleteDialog,
 
       DatetimePickerInput
     },

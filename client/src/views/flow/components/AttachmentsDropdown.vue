@@ -11,7 +11,7 @@
             <div class="expansion-panel-header-open" v-if="open"
                  key="0">
               <input
-                  id="fileInput"
+                  :id="`fileInput${type.attachmentTypeId}`"
                   type="file"
                   multiple
                   :accept="acceptedFileTypes"
@@ -20,7 +20,7 @@
                   @click.stop=""
                   ref='fileInput'
               >
-              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile"
+              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile(type.attachmentTypeId)"
                      @dragenter="dragTypeId=type.attachmentTypeId"
                      @dragleave="dragTypeId=null"
                      @dragend="dragTypeId=null"
@@ -91,6 +91,7 @@ export default {
       dragTypeId: null,
       attachmentTypesLoading: true,
       error: {},
+      maxFiles: constants.MAX_FILE_UPLOADS,
       renderTicker: 0,
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       companyId: this.$store.state.user.details.companyId,
@@ -144,10 +145,11 @@ export default {
     },
     loadAllPageDetails() {
       if (this.projectProcessStepEventId) {
-        this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
+        //adding more params so the backend can filter out mismatched data via url
+        this.typePath = `/project/${this.projectId}/pps/${this.projectProcessStepId}/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
       } else if (this.projectProcessStepId) {
-        this.typePath = `/processStepTypes/${this.processStepId}`
+        this.typePath = `/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
       } else if (this.projectId) {
         this.typePath = '/projectTypes'
@@ -169,10 +171,6 @@ export default {
       this.fetchAttachmentTypes()
       this.fetchAttachments()
     },
-    toggleShowNonPrimary(){
-      this.showNonPrimaryDocs = !this.showNonPrimaryDocs;
-    },
-
     fetchAttachmentTypes: async function () {
       this.attachmentTypesLoading = true
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
@@ -193,11 +191,6 @@ export default {
 
       this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
     },
-    drillDown: function(type) {
-      this.displayType = type
-      //not sure why i am having to unset this value
-      this.dragTypeId = null
-    },
     getTypeCount: function(typeId) {
       try {
         return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
@@ -216,11 +209,14 @@ export default {
       let files = e.dataTransfer.files
       await this.uploadDocument(files, attachmentTypeId)
     },
-    selectFile: function(){
-      document.getElementById('fileInput')?.click();
+    selectFile: function(typeId){
+      document.getElementById(`fileInput${typeId}`)?.click();
     },
     uploadDocument: async function (files, attachmentTypeId) {
-      if (files?.length > 0) {
+      if (files?.length > this.maxFiles) {
+        this.snackbar = getSnackbar('ERROR', `Cannot upload more than ${this.maxFiles} files at one time. Please try again and select fewer files.`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else if (files?.length > 0) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           //reset error message when trying to upload new file
@@ -234,7 +230,7 @@ export default {
                       (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
                           Actions.OBJECT_TYPE_FILE_UPLOAD, {
                 file,
-                attachmentTypeId: attachmentTypeId ?? this.displayType?.attachmentTypeId,
+                attachmentTypeId: attachmentTypeId,
                 projectId: this.projectId,
                 projectProcessStepId: this.projectProcessStepId,
                 userId: this.userId,

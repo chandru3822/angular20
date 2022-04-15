@@ -1,7 +1,7 @@
 <template>
   <v-container class="pt-0">
-    <v-row>
-      <v-col cols="12" md="3" class="text-left pt-0 px-0 left-column">
+    <v-row class="settings-container">
+      <v-col cols="12" md="3" class="text-left pa-0 left-column">
         <v-menu data-app left
                 v-if="constants.IS_MOBILE"
                 offset-y
@@ -242,11 +242,11 @@ export default {
     }
   },
   methods: {
-    async getCustomFieldObjectTypes () {
+    async getCompanyObjectTypes () {
       if(this.hasSettingsAccess) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/objectType/getCustomFieldObjectTypes`)
+          const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`)
           this.companyObjectTypes = data
           this.setTitle()
           handleHidingGlobalLoader(this, status)
@@ -275,27 +275,37 @@ export default {
     }
   },
   created () {
-    this.getCustomFieldObjectTypes()
+    this.getCompanyObjectTypes()
   }
 }
 </script>
 
 <style scoped lang="scss">
+.settings-container {
+  height: calc(100vh - 50px);
+  overflow: hidden;
+}
+
 a {
   text-decoration: none;
 }
 
 .left-menu {
-  height: 100vh;
+  max-height: 100%;
+  height: 100%;
   overflow: auto;
 }
 
 .left-column {
   background-color: #F6F7F8;
+  height: 100%;
+  max-height: 100%;
 }
 
 .main-section {
   background-color: #fff;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .dense-setting-row {

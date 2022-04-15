@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -23,8 +24,8 @@ public class CustomFieldValue {
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
-  private Boolean booleanValue, hasListValues, readonly, customFieldGroupAssignmentReadOnly, detailView,
-    customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, showOnUserProfile, useParentData;
+  private Boolean booleanValue, hasListValues, readonly, systemReadonly, customFieldGroupAssignmentReadOnly, detailView,
+    customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, showOnUserProfile, useParentData, allowNow;
 
   private Timestamp dateValue, timestampValue;
 
@@ -32,4 +33,8 @@ public class CustomFieldValue {
   private List<ListOfValue> listOfValues;
   private List<Long> systemListOptionIds;
 
+  //This data type could change to JsonNode once albatross adds a legit json data type. As of 2022-03-01, it is used
+  //only to store the returned Aurora design object
+  @JsonIgnore
+  private String jsonValue;
 }

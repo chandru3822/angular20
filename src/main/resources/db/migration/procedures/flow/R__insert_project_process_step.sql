@@ -1,7 +1,8 @@
 -- drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer, integer);
 CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id integer, p_process_step_id integer, p_user_position_id integer, p_user_id integer,
                                                             p_company_id integer, p_parent_project_process_step_id integer,
-                                                            p_initial_company_process_step_status_type_id integer, p_existing_company_process_step_status_type_id integer default null)
+                                                            p_initial_company_process_step_status_type_id integer, p_existing_company_process_step_status_type_id integer default null,
+                                                            p_parent_project_process_step_event_id integer default null)
 -- i am leaving p_user_position_id as a param in case they ask us to put it back. just needs added to the insert at the bottom
 RETURNS integer
 LANGUAGE plpgsql AS
@@ -50,8 +51,8 @@ from pps1, cpsst
 where pps.id = pps1.id;
 
 -- Insert new active and main pps
-insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, main, user_position_id, parent_project_process_step_id, created_by_id, date_created, modified_by_id, date_modified)
-values (p_project_id, p_process_step_id, p_initial_company_process_step_status_type_id, true, p_user_position_id, p_parent_project_process_step_id, p_user_id, now(), p_user_id, now())
+insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, main, user_position_id, parent_project_process_step_id, created_by_id, date_created, modified_by_id, date_modified, parent_project_process_step_event_id)
+values (p_project_id, p_process_step_id, p_initial_company_process_step_status_type_id, true, p_user_position_id, p_parent_project_process_step_id, p_user_id, now(), p_user_id, now(), p_parent_project_process_step_event_id)
 returning id into p_project_process_step_id;
 
 RETURN p_project_process_step_id;

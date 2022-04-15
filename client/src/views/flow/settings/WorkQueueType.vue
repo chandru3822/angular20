@@ -49,7 +49,7 @@
                 <label>Use Event Data:</label>
                 <input type="checkbox" class="ml-3" disabled v-model="workQueueType.useEventData">
               </div>
-              <table class="one-hunned" v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
+              <table class="one-hunned" v-if="workQueueType && workQueueType.id">
                 <tr>
                   <td class="wqt-row pr-2">
                     <v-text-field text
@@ -325,7 +325,7 @@ export default {
     },
     async getCompanyObjectTypes() {
       try {
-        const {data} = await getRequest(`/smartlist/customFieldObjectTypes`)
+        const {data} = await getRequest(`/smartlist/companyObjectTypes`)
         this.companyObjectTypes = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
       } catch (e) {
         logError(e)

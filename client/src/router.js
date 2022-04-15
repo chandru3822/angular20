@@ -597,6 +597,17 @@ const router = new Router({
                       return accessDenied()
                     }
                   },
+                },
+          {
+                  path: 'email',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                    if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                      return import (/* webpackChunkName: "company" */ './views/flow/settings/defaults/EmailSettings.vue')
+                    } else {
+                      return accessDenied()
+                    }
+                  },
                 }
               ]
             }, {
@@ -1278,6 +1289,9 @@ const router = new Router({
             }, {
               path: 'function/:id',
               component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/functions/Function.vue'),
+            }, {
+              path: 'uploads',
+              component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/Uploads.vue'),
             }
           ]
         }, {

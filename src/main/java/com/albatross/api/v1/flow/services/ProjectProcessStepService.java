@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
@@ -49,8 +50,8 @@ import java.util.stream.Collectors;
 // I don't like it and would rather have them be private. Change back if/when possible
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ProjectProcessStepService {
 
   private final SqlCache sqlCache;
@@ -72,6 +73,10 @@ public class ProjectProcessStepService {
   private final CustomFieldValueService customFieldValueService;
 
   private final GoodleapService goodleapService;
+
+  private final AuroraProxy auroraService;
+
+  private final ListOfValueService listOfValueService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -220,8 +225,10 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
+    User user = securityService.getCurrentUser();
+
     try {
-        String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId), String.class);
+        String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId, "companyId", user.getCompanyId()), String.class);
         if(null != json) {
           return om.readValue(json, new TypeReference<>(){});
         } else {
@@ -453,7 +460,6 @@ public class ProjectProcessStepService {
                   } catch (Exception e) {
                     final String errMessage = String.format("PPS: Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
                     log.error(errMessage);
-                    e.printStackTrace();
                     throw new RuntimeException(errMessage);
                   }
               }
@@ -620,7 +626,7 @@ public class ProjectProcessStepService {
 
     if (r.getProcessStepRequirementTypeId() == 2) {
       try {
-        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId));
+        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId, null));
         String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
         Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
         requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
@@ -1039,16 +1045,17 @@ public class ProjectProcessStepService {
               systemValues.put("ppsId", ppsId);
               systemValues.put("projectId", projectId);
               systemValues.put("userId", user.getId());
+              systemValues.put("companyId", user.getCompanyId());
 
               if (functionAbbreviation.equals("brs")) {
-                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService);
+                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, listOfValueService);
                 Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
                 method.invoke(functionClass, childFunction, systemValues);
               } else {
                 // @TODO: Add company IDs here during onboarding
               }
             } else {
-              String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
+              String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, null));
               String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
               sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
             }
@@ -1066,7 +1073,7 @@ public class ProjectProcessStepService {
         return shouldRunAutoTriggers;
     }
 
-  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId) throws Exception {
+  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId, Long ppsEventId) throws Exception {
     Map<Long, String> params = new TreeMap<>();
 
     functionParams.forEach(param -> {
@@ -1086,6 +1093,9 @@ public class ProjectProcessStepService {
                 break;
               case 4:
                 systemValue = processStepId;
+                break;
+              case 5:
+                systemValue = ppsEventId;
                 break;
               default:
                 throw new RuntimeException(String.format("Unable to determine param type, CF param ID: %s", param.getId()));

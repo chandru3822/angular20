@@ -20,15 +20,16 @@ BEGIN
                                pd.project_id,
                                s.abbreviation                         state,
                                pd.source_name,
-                               pd.first_appointment        as         date_value,
+                               ppse.scheduled_date        as         date_value,
                                'Appointments Created Date' as         date_label,
                                'timestamp'                 as         date_type
                         from brs.project_details pd
+                              inner join flow.project_process_step_event ppse on ppse.id = pd.first_appointment_ppse_id
                                inner join flow.project p on p.id = pd.project_id
                                inner join flow.contact c on c.id = p.contact_id
                                left outer join flow.company_state cs on cs.id = c.company_state_id
                                left outer join flow.state s on s.id = cs.state_id
-                        where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                        where ((ppse.scheduled_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                           and pd.archived is false
                           and case
                                 when p_company_id is not null and p_company_id != 2 and p_company_id != 2
@@ -575,7 +576,7 @@ BEGIN
                                               ON pswqtpsst.process_step_work_queue_type_id = pswqt.id
                                    inner join flow.user u on u.id = pps.created_by_id
                                    JOIN flow.work_queue_type wqt ON pswqt.work_queue_type_id = wqt.id
-                                   inner join flow.project p ON pps.project_id = p.id
+                                   inner join flow.project p ON pps.project_id = p.id and p.archived is false
                             WHERE pps.process_step_id = 3365
                               AND work_queue_type_id = 93
                             group by p.id

@@ -3,30 +3,22 @@
     <v-row>
       <v-col cols="12" class="pt-3">
         <v-card color="white" class="square-card work-queue-container-top">
-          <v-autocomplete v-model="selectedWorkQueueCategory"
-                          :items="workQueueCategories"
-                          label="Work Queue Category"
-                          item-text="workQueueCategory"
-                          item-value="id"
-                          return-object
-                          solo
-                          hide-details
-                          dark
-                          background-color="primaryCustom"
-                          class="white--text work-queue-selector d-inline-block clickable"
-                          @input="getWorkQueues()"
-          ></v-autocomplete>
-          <!--        <v-select v-model="selectedUserPosition"-->
-          <!--                  :items="workQueueOwners"-->
-          <!--                  label="Assigned to"-->
-          <!--                  class="work-queue-selector d-inline-block pl-3"-->
-          <!--                  item-text="fullName"-->
-          <!--                  hide-details-->
-          <!--                  return-object-->
-          <!--                  @input="getWorkQueues(false)"-->
-          <!--        ></v-select>-->
           <v-row>
-            <v-col cols="12" md="6" class="py-0">
+            <v-col cols="6" class="">
+              <v-autocomplete v-model="selectedWorkQueueCategory"
+                              :items="workQueueCategories"
+                              label="Work Queue Category"
+                              item-text="workQueueCategory"
+                              item-value="id"
+                              return-object
+                              solo
+                              hide-details
+                              :loading="categoriesLoading"
+                              dark
+                              background-color="primaryCustom"
+                              class="white--text work-queue-selector d-inline-block clickable"
+                              @input="getWorkQueues()"
+              ></v-autocomplete>
               <div class="radio-group-container mt-0">
                 <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
                   <v-radio class="d-inline-block mx-4 wq-radio-label"
@@ -47,16 +39,30 @@
                 </v-radio-group>
               </div>
             </v-col>
-            <v-col cols="12" md="6" class="py-0 future-follow-ups-column">
-              <v-switch
-                dense
-                hide-details
-                color="primaryCustom"
-                v-model="hideFutureFollowUps"
-                class="mx-2 mt-5 wq-follow-up-switch"
-                label="Hide work with a next follow-up date in the future"
-                @change="getWorkQueues()"
-              />
+            <v-col cols="6" class="future-switches">
+
+              <div class="future-switch">
+                <label class="wq-follow-up-switch-label">Hide work with a next follow-up date in the future</label>
+                <v-switch
+                  dense
+                  hide-details
+                  color="primaryCustom"
+                  v-model="hideFutureFollowUps"
+                  class="wq-follow-up-switch d-inline-block fix-switch-color"
+                  @change="getWorkQueues()"
+                />
+              </div>
+              <div class="future-switch">
+                <label class="wq-follow-up-switch-label">Hide work with an event start date in the future</label>
+                <v-switch
+                  dense
+                  hide-details
+                  color="primaryCustom"
+                  v-model="hideFutureEvents"
+                  class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
+                  @change="getWorkQueues()"
+                />
+              </div>
             </v-col>
           </v-row>
         </v-card>
@@ -66,16 +72,21 @@
                     v-if="!selectedWorkQueueCategory || !selectedWorkQueueCategory.id">
               Please select a Work Queue Category
             </v-card>
-            <v-card flat tile v-for="wq in workQueues" class="flex-display card-main"
+            <div v-if="cardsLoading" class="one-hunned text-center">
+              <SpinnerInline :size="60" color="primaryCustom"/>
+            </div>
+            <v-card v-else flat tile v-for="wq in workQueues" class="flex-display card-main"
                     :class="{'clickable': wq.workQueueCount > 0,
                              'light-border': !wq.useEventData,
                              'dark-border': wq.useEventData}"
                     :key="wq.id"
                     width="288" :height="wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
-                <div class="no-text-decoration card-link"
-                     :class="{'clickable': wq.workQueueCount > 0}"
-                     @click="goToRoute(wq.workQueueCount > 0, 'workQueueDrilldown',  {id: wq.workQueueTypeId}, { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned})">
+                <router-link class="no-text-decoration card-link"
+                             :to="wq.workQueueCount > 0 ? {name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}} : ''">
+                  <!--                <div class="no-text-decoration card-link"-->
+                  <!--                     :class="{'clickable': wq.workQueueCount > 0}"-->
+                  <!--                     @click="goToRoute(wq.workQueueCount > 0, 'workQueueDrilldown',  {id: wq.workQueueTypeId}, { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned})">-->
                   <div class="card-title-container text-left"
                        :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
                        :style="{'background-color': wq.color + '20' }">
@@ -139,7 +150,7 @@
                       {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
                     </div>
                   </div>
-                </div>
+                </router-link>
               </v-card-text>
             </v-card>
           </v-row>
@@ -171,6 +182,8 @@ import {AppMutations} from '@/stores/AppStore'
 
 import orderBy from 'lodash.orderby'
 import {getWorkQueueCategories} from '@/services/workQueueService'
+import SpinnerInline from '@/components/SpinnerInline'
+import axios from 'axios'
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -181,11 +194,17 @@ import {
 
 export default {
   name: 'WorkQueue',
+  components: {
+    SpinnerInline
+  },
   data() {
     return {
       snackbar: {},
       model: {},
+      categoriesLoading: true,
+      cardsLoading: false,
       hideFutureFollowUps: false,
+      hideFutureEvents: false,
       showAll: false,
       selectedWorkQueueCategory: {},
       workQueueCategories: [],
@@ -201,16 +220,16 @@ export default {
   computed: {},
   async created() {
     this.getWorkQueueCategories()
-    // this.getWorkQueueOwners()
     this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
     this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
+    this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
     if (this.selectedWorkQueueCategory.id) {
       this.getWorkQueues()
     }
   },
   methods: {
     goToRoute(changeRoute, routeName, params, query) {
-      if(changeRoute) {
+      if (changeRoute) {
         this.$router.push({name: routeName, params, query})
       }
     },
@@ -222,13 +241,16 @@ export default {
         && wq.shortWindowDurationType && wq.longWindowDurationType && wq.expectedCycleDurationType
     },
     async getWorkQueueCategories() {
+      this.categoriesLoading = true
       try {
         const {data} = await getWorkQueueCategories()
         this.workQueueCategories = orderBy(data, [wqc => wqc.displayOrder])
+        this.categoriesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.categoriesLoading = false
       }
     },
     async getWorkQueueOwners() {
@@ -247,24 +269,37 @@ export default {
     async getWorkQueues() {
       localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
+      localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
       if (this.selectedWorkQueueCategory?.id || this.showAll) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        if(this.source){
+          this.source.cancel()
+        }
+        const CancelToken = axios.CancelToken
+        this.source = CancelToken.source()
+
+        this.cardsLoading = true
         try {
           const {data, status} = await getRequestWithParams(`/workQueue`, {
+            source: this.source,
+            cancelToken: this.source.token,
             params: {
               workQueueCategoryId: this.selectedWorkQueueCategory.id,
               userId: this.selectedUserPosition.userId,
               unassigned: this.selectedUserPosition.unassigned,
-              filterFutureFollowUps: this.hideFutureFollowUps
+              filterFutureFollowUps: this.hideFutureFollowUps,
+              filterFutureEvents: this.hideFutureEvents
             }
           })
           this.workQueues = data
-          handleHidingGlobalLoader(this, status)
+          //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
+          if(status === 200) {
+            this.cardsLoading = false
+          }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.cardsLoading = false
         }
       } else {
         this.workQueues = []
@@ -324,6 +359,23 @@ export default {
   font-size: 14px;
 }
 
+.future-switches {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  justify-content: end;
+  margin-bottom: 10px;
+}
+
+.future-switch {
+
+}
+
+.wq-follow-up-switch-label {
+  font-size: 14px;
+  margin-right: 10px;
+}
+
 .wq-follow-up-switch label {
   font-size: 14px;
 }
@@ -349,7 +401,7 @@ export default {
 }
 
 .work-queue-selector {
-  width: 50%;
+  width: 100%;
   border-top-left-radius: 4px !important;
   border-top-right-radius: 4px !important;
 }

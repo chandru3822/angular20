@@ -290,48 +290,14 @@
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
                       </v-btn>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="item.deleteConfirm"
-                        width="500">
-                        <template #activator="{ on }">
-                          <v-btn small text v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title>
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text class="pt-4">
-                            <span class="error--text">WARNING:</span>
-                            By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
-
-                            Are you sure you want to delete this Custom Field Group: <strong>{{
-                              item.groupName
-                            }}</strong>?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="item.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="deleteWithChecks(item, item.id, null)">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
+                      <confirm-delete-dialog
+                          v-if="userCanEdit"
+                          label="this Custom Field Group: "
+                          :item-to-delete="item.groupName"
+                          @confirm-delete="deleteWithChecks(item, item.id, null)"
+                      ><span class="error--text">WARNING:</span>
+                        By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                      </confirm-delete-dialog>
                     </div>
                   </td>
                 </tr>
@@ -380,7 +346,7 @@
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            {{ cf.fieldName }} <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
+                            {{ cf.fieldName }} <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                             <div>
                               Detail View:
                               <input type="checkbox" class="ml-2" v-model="cf.detailView"
@@ -393,10 +359,17 @@
                                           class="square-card">
                                     <v-card-title style="height: 40px" class="py-0">
                                       Read Only
-                                      <v-checkbox type="checkbox" class="ml-3"
+                                      <v-checkbox type="checkbox" class="ml-3" v-if="cf.systemReadonly"
+                                                  :disabled="true"
+                                                  :readonly="true"
+                                                  v-model="cf.systemReadonly"></v-checkbox>
+                                      <v-checkbox type="checkbox" class="ml-3" v-else
                                                   v-model="cf.customFieldGroupAssignmentReadOnly"></v-checkbox>
                                     </v-card-title>
-                                    <v-card-text>
+                                    <v-card-text v-if="cf.systemReadonly" class="mt-2">
+                                      System Readonly Cannot Change
+                                    </v-card-text>
+                                    <v-card-text v-else>
                                       <v-autocomplete
                                         v-if="cf.customFieldGroupAssignmentReadOnly"
                                         v-model="cf.whiteListedPositions"
@@ -551,11 +524,13 @@ import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: 'EventCustomFieldGroups',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmDeleteDialog,
     draggable,
   },
   updated() {

@@ -1,5 +1,10 @@
 <template>
-  <v-main v-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
+  <v-main v-if="!processStepLoading && projectMismatch">
+    <div class="error--text">
+      No Matching Process Step Found
+    </div>
+  </v-main>
+  <v-main v-else-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -137,9 +142,10 @@
       )">
         <div class="pps-subheader albatross-header-3">
           All Events
+<!--          only allow events added to active process steps -->
           <v-autocomplete
             v-model="eventToAdd"
-            v-if="userCanAddEvents && processStepEvents && processStepEvents.length > 0"
+            v-if="processStep.processStepStatusTypeId === 1 && userCanAddEvents && processStepEvents && processStepEvents.length > 0"
             :items="processStepEvents"
             placeholder="Select Event to add"
             item-text="eventName"
@@ -344,6 +350,7 @@ export default {
       snackbar: {},
       unsavedFieldsModal: false,
       fieldsSaving: false,
+      projectMismatch: false,
       getStatusClass,
       showUploadModal: false,
       uploadModalWidth: 600,
@@ -361,7 +368,7 @@ export default {
       timezone: this.$store.state.user.details.timezone.value,
       projectId: parseInt(this.$route.params.projectId),
       projectProcessStepId: this.$route.params.processStepId,
-      processStepId: this.$route.query.processStepId,
+      processStepId: null,
       processStep: {},
       customFieldGroups: [],
       isProcessStepLoading: true,
@@ -389,7 +396,6 @@ export default {
     // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
       // reset the selected item
-      this.processStepId = this.$route.query.processStepId
       this.projectProcessStepId = this.$route.params.processStepId
       await this.loadAllPageDetails()
     },
@@ -456,8 +462,8 @@ export default {
     async loadAllPageDetails() {
       this.processStepLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true), this.getProcessStepEvents(), this.getProcessStepAttachmentTypes()]
-      await Promise.all(requests).then((statusVals) => {
+      const requests = [this.getCustomFieldGroups(), this.getProcessStepAttachmentTypes(), this.getProcessStep(true)]
+      await Promise.all(requests).then(async (statusVals) => {
         let success = true
         statusVals.forEach(status => {
           if (status !== 200) {
@@ -465,8 +471,20 @@ export default {
           }
         })
         if (success) {
-          //this was causing issues if you moved too quickly between pps
-          this.processStepLoading = false
+          //this was causing issues if you moved too quickly between pps, now we load the pps first then other items when we have the process step id
+          const req2 = [this.getProcessStepEvents()]
+          await Promise.all(req2).then((statuses) => {
+            let success2 = true
+            statuses.forEach(status => {
+              if (status !== 200) {
+                success2 = false
+              }
+            })
+            if (success2) {
+              //this was causing issues if you moved too quickly between pps
+              this.processStepLoading = false
+            }
+          })
         }
       })
     },
@@ -490,22 +508,32 @@ export default {
     },
     getProcessStep: async function (reloadAll) {
       try {
+        this.projectMismatch = false
         this.processStepLoading = true
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
-        this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
-        this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
-        if(reloadAll) {
-          //dont reload if only doing simple refresh
-          this.getAvailableStatuses()
-          this.getAvailableOwners()
-        } else {
-          //only set this to false when doing a simple refresh or else it will turn off loaders too soon
+        if(data && data.projectId && data.projectId !== this.projectId) {
+          this.projectMismatch = true
           this.processStepLoading = false
+          this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } else {
+          this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
+          this.processStepId = this.processStep.processStepId
+          // this.contactId = this.processStep.contactId
+          this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
+          if(reloadAll) {
+            //dont reload if only doing simple refresh
+            this.getAvailableStatuses()
+            this.getAvailableOwners()
+          } else {
+            //only set this to false when doing a simple refresh or else it will turn off loaders too soon
+            this.processStepLoading = false
+          }
+          window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
+            : `${this.processStep.processStepName}`
+          // return {data, status}
+          return status
         }
-        window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
-          : `${this.processStep.processStepName}`
-        // return {data, status}
-        return status
       } catch (e) {
         logError(e)
       }
@@ -711,7 +739,7 @@ export default {
     getProcessStepAttachmentTypes: async function () {
       //this gets the attachment types assigned to the process step so we know whether to show the upload button
       try {
-        const {data, status} = await getRequest(`/attachmentType/processStepTypes/${this.processStepId}`, null, [])
+        const {data, status} = await getRequest(`/attachmentType/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`, null, [])
         this.attachmentTypes = data
         return status
       } catch (e) {

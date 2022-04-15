@@ -68,6 +68,8 @@ public class CustomFieldService {
         null != customField.getSortListValuesAlphabetically()
             && customField.getSortListValuesAlphabetically());
     params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
+    params.put("systemReadonly", customField.getSystemReadonly() != null && customField.getSystemReadonly());
+    params.put("allowNow", customField.getAllowNow() != null && customField.getAllowNow());
     params.put("systemListId", customField.getCompanySystemListId());
     params.put(
         "systemListOptionIds",
@@ -201,12 +203,13 @@ public class CustomFieldService {
     }
   }
 
-  public List<CustomField> getByParentProcessStep(Long id) {
+  public List<CustomField> getByParentProcessStep(Long id, Boolean excludedUnhandledDataTypes) {
     User user = securityService.getCurrentUser();
     return sqlCache
         .query(
             "customField.getByParentProcessStep",
-            Map.of("companyId", user.getCompanyId(), "id", id),
+            Map.of("companyId", user.getCompanyId(), "id", id,
+              "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
             new CustomField.CustomFieldMapper<>(CustomField.class, om))
         .stream()
         .peek(
@@ -219,12 +222,13 @@ public class CustomFieldService {
         .toList();
   }
 
-  public List<CustomField> getByParentType(Long id) {
+  public List<CustomField> getByParentType(Long id, Boolean excludedUnhandledDataTypes) {
     User user = securityService.getCurrentUser();
     return sqlCache
         .query(
             "customField.getByParentType",
-            Map.of("companyId", user.getCompanyId(), "id", id),
+            Map.of("companyId", user.getCompanyId(), "id", id,
+              "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
             new CustomField.CustomFieldMapper<>(CustomField.class, om))
         .stream()
         .peek(

@@ -66,6 +66,7 @@ public class ScheduleService {
 //    params.put("userIds", esp.getUserIds());
 //    params.put("orgIds", esp.getOrgIds());
     params.put("combined", combined );
+    params.put("includeCancelled", esp.getIncludeCancelled() != null ? esp.getIncludeCancelled() : false );
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
@@ -169,6 +170,7 @@ public class ScheduleService {
       params.put("endTime", ev.getEnd());
       params.put("companyEventStatusTypeId", ev.getCompanyEventStatusTypeId());
       params.put("resourceId", ev.getResourceId());
+      params.put("saveVersion", ev.getSaveVersion());
       params.put("modifiedById", user.getId());
       //i am lazy and didn't want to re-code the frontend so this this calls the right function even though that seems weird
       sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);

@@ -3,8 +3,8 @@ package com.albatross.api.v1.company.blueraven.controllers;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
-import com.albatross.api.v1.company.blueraven.services.InstallAgreementService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
+import com.albatross.api.v1.company.blueraven.services.InstallAgreementService;
 import com.albatross.api.v1.company.blueraven.services.SunlightService;
 import com.albatross.api.v1.company.blueraven.services.SunpowerService;
 import com.albatross.api.v1.flow.model.Contact;
@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,24 +22,20 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-@RestController
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RestController
 @RequestMapping(value = "/api/v1/company/blueraven/install-agreement")
+@RequiredArgsConstructor
 public class InstallAgreementController {
 
   private final InstallAgreementService installAgreementRepository;
-
   private final GoodleapService goodleapService;
-
   private final SunlightService sunlightService;
-
   private final SunpowerService sunpowerService;
-
-  @Autowired
-  private SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
   @GetMapping(value = "/projects")
   public Page<InstallAgreementProject> getProjects(@RequestParam String query, Pageable pageable) {
@@ -49,54 +44,67 @@ public class InstallAgreementController {
 
   @PostMapping(value = "/create")
   public ResponseEntity<String> saveRequest(@RequestBody InstallAgreementRequest request) {
-      JSONObject result = new JSONObject();
-      try {
-        String resultMsg = installAgreementRepository.saveRequest(request);
-        if (resultMsg == null || resultMsg.equals(StringUtils.EMPTY)) {
-            request.setRequest_successful(true);
-            installAgreementRepository.setRequestStatus(request);
-            result.put("message", "Request successfully submitted");
-            return ResponseEntity.ok(result.toString());
-        }
-        else {
-            request.setRequest_successful(false);
-            installAgreementRepository.setRequestStatus(request);
-            result.put("message", resultMsg);
-            return ResponseEntity.badRequest().body(result.toString());
-        }
-    } catch (Exception e) {
-        result.put("message", e.getMessage());
+    JSONObject result = new JSONObject();
+    try {
+      String resultMsg = installAgreementRepository.saveRequest(request);
+      if (resultMsg == null || resultMsg.equals(StringUtils.EMPTY)) {
+        request.setRequest_successful(true);
+        installAgreementRepository.setRequestStatus(request);
+        result.put("message", "Request successfully submitted");
+        return ResponseEntity.ok(result.toString());
+      } else {
+        request.setRequest_successful(false);
+        installAgreementRepository.setRequestStatus(request);
+        result.put("message", resultMsg);
         return ResponseEntity.badRequest().body(result.toString());
+      }
+    } catch (Exception e) {
+      result.put("message", e.getMessage());
+      return ResponseEntity.badRequest().body(result.toString());
     }
   }
 
   @GetMapping(value = "/getProposalNumbers/{projectId}")
-  public List<InstallAgreementService.ProposalInfo> getProposalNumbers(@PathVariable Long projectId) {
-      return installAgreementRepository.getProposalNumbers(projectId);
+  public List<InstallAgreementService.ProposalInfo> getProposalNumbers(
+      @PathVariable Long projectId) {
+    return installAgreementRepository.getProposalNumbers(projectId);
   }
 
   @GetMapping(value = "/generate/{projectId}/{proposalNbr}")
-  public ResponseEntity<Object> generate(@PathVariable Long projectId, @PathVariable Long proposalNbr,
-                                         @RequestParam(required = false) String sendVia) throws Exception {
+  public ResponseEntity<Object> generate(
+      @PathVariable Long projectId,
+      @PathVariable Long proposalNbr,
+      @RequestParam(required = false) String sendVia)
+      throws Exception {
     try {
-      return ResponseEntity.ok(installAgreementRepository.generateLoanApplication(projectId, proposalNbr, sendVia));
+      return ResponseEntity.ok(
+          installAgreementRepository.generateLoanApplication(projectId, proposalNbr, sendVia));
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), new Exception());
     }
   }
 
   @PostMapping(value = "/updateSunpowerApp/{projectId}/{proposalNbr}")
-  public ResponseEntity<Object> updateSunpowerApp(@PathVariable Long projectId, @PathVariable Long proposalNbr) {
-    String message = "";
-    JSONObject updateResponse = new JSONObject();
+  public ResponseEntity<Object> updateSunpowerApp(
+      @PathVariable Long projectId, @PathVariable Long proposalNbr) {
     try {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("proposalNbr", proposalNbr);
-      Optional<InstallAgreementService.PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
-      message = sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
-      updateResponse.put("message", message);
-      return ResponseEntity.ok(updateResponse.toString());
+      var propLogDetail =
+          sqlCache.get(
+              "installAgreement.getProjectDetailsFromLog",
+              params,
+              InstallAgreementService.PropLogDetail.class);
+
+      if (propLogDetail.isPresent()) {
+        var message =
+            sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
+        return ResponseEntity.ok(Map.of("message", message));
+      }
+
+      return ResponseEntity.ok(Map.of("message", ""));
+
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), new Exception());
     }
@@ -104,58 +112,65 @@ public class InstallAgreementController {
 
   @PutMapping(value = "/updateEmailAddress/{projectId}")
   public void updateEmailAddress(@PathVariable Long projectId, @RequestBody Contact contact) {
-      installAgreementRepository.updateEmailAddress(projectId, contact.getEmail());
+    installAgreementRepository.updateEmailAddress(projectId, contact.getEmail());
   }
 
   @GetMapping(value = "/loanStatus/{projectId}/{proposalNbr}")
-  public ResponseEntity<Object> getLoanStatus(@PathVariable String projectId, @PathVariable String proposalNbr) {
+  public ResponseEntity<Object> getLoanStatus(
+      @PathVariable String projectId, @PathVariable String proposalNbr) {
     try {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", Long.valueOf(projectId));
       params.put("proposalNbr", Long.valueOf(proposalNbr));
-      Optional<Object> loanType = sqlCache.get("installAgreement.getLoanType", params, new SingleColumnRowMapper<>(Object.class));
+      Optional<Object> loanType =
+          sqlCache.get(
+              "installAgreement.getLoanType", params, new SingleColumnRowMapper<>(Object.class));
 
       if (loanType.isPresent()) {
         String loan = loanType.get().toString();
         if (loan.contains("LoanPal")) {
           JSONObject loanApp = goodleapService.getApplicationByProjectId(Long.parseLong(projectId));
           return ResponseEntity.ok(loanApp.toString());
-        }
-        else if (loan.contains("Sunlight")) {
-          JSONObject sunlightApp = sunlightService.getApplicationByProjectId(Long.parseLong(projectId));
+        } else if (loan.contains("Sunlight")) {
+          JSONObject sunlightApp =
+              sunlightService.getApplicationByProjectId(Long.parseLong(projectId));
           return ResponseEntity.ok(sunlightApp.toString());
-        }
-        else if (loan.toLowerCase().contains("sunpower")) {
-          JSONObject sunlightApp = sunpowerService.getApplicationDetails(Long.parseLong(projectId), Long.parseLong(proposalNbr));
+        } else if (loan.toLowerCase().contains("sunpower")) {
+          JSONObject sunlightApp =
+              sunpowerService.getApplicationDetails(
+                  Long.parseLong(projectId), Long.parseLong(proposalNbr));
           return ResponseEntity.ok(sunlightApp.toString());
         }
       }
     } catch (Exception e) {
-      log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
+      log.debug("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
       if (e.getMessage().contains("locate")) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
-      }
-      else {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
+        throw new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
+      } else {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
       }
     }
-    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
+    throw new ResponseStatusException(
+        HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
   }
 
   @Deprecated //  I believe this isn't used anywhere
   @GetMapping(value = "/loanStatus/{projectId}")
   public ResponseEntity<Object> getLoanStatus(@PathVariable String projectId) {
-      try {
-        JSONObject loanApp = goodleapService.getApplicationByProjectId(Long.parseLong(projectId));
-        return ResponseEntity.ok(loanApp.toString());
-      } catch (Exception e) {
-          log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
-          if (e.getMessage().contains("locate")) {
-              throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
-          }
-          else {
-              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
-          }
+    try {
+      JSONObject loanApp = goodleapService.getApplicationByProjectId(Long.parseLong(projectId));
+      return ResponseEntity.ok(loanApp.toString());
+    } catch (Exception e) {
+      log.debug("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
+      if (e.getMessage().contains("locate")) {
+        throw new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
+      } else {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
       }
+    }
   }
 }

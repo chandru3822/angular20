@@ -92,7 +92,7 @@
               <tr>
                 <td class="text-left">
                   <router-link
-                    :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}?processStepId=${projectProcessStep.processStepId}&contactId=${project.contactId}`">
+                    :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}`">
                     {{ projectProcessStep.projectProcessStepId }}
                   </router-link>
                 </td>

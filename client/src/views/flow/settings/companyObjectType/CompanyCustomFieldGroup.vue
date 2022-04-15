@@ -83,43 +83,12 @@
                       <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-if="userCanEdit"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template #activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="deleteGroup(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="userCanEdit"
+                        label="this Custom Field Group: "
+                        :item-to-delete="item.groupName"
+                        @confirm-delete="deleteGroup(item)"
+                    ></confirm-delete-dialog>
                   </div>
                 </td>
               </tr>
@@ -185,7 +154,7 @@
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                     <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
-                      <v-list-item class="grab">
+                      <v-list-item class="grab pr-1">
                         <v-list-item-action v-if="userCanEdit">
                           <v-icon>drag_handle</v-icon>
                         </v-list-item-action>
@@ -204,47 +173,16 @@
                             </div>
                           </div>
                         </v-list-item-content>
-                        <v-dialog
+                        <confirm-delete-dialog
                             v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                            v-model="cf.deleteConfirm"
-                            width="500">
-                          <template #activator="{ on }">
-                            <v-list-item-action class="clickable" v-on="on">
-                              <v-icon>delete</v-icon>
-                            </v-list-item-action>
-                          </template>
-                          <v-card>
-                            <v-card-title
-                                class="text-h5 grey lighten-2"
-                                primary-title
-                            >
-                              Confirm
-                            </v-card-title>
-
-                            <v-card-text class="mt-2">
-                              <span class="error--text">WARNING:</span>
-                              By deleting a field you will lose all data associated with the field.<br/><br/>
-                              Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
-                              item.groupName }}</strong>?
-                            </v-card-text>
-
-                            <v-divider></v-divider>
-
-                            <v-card-actions>
-                              <v-spacer></v-spacer>
-                              <v-btn
-                                  @click="cf.deleteConfirm = false">
-                                No
-                              </v-btn>
-                              <v-btn
-                                  color="primaryCustom"
-                                  text
-                                  @click="deleteFieldFromGroup(cf)">
-                                Yes
-                              </v-btn>
-                            </v-card-actions>
-                          </v-card>
-                        </v-dialog>
+                            :label="`this field from ${item.groupName}: `"
+                            :item-to-delete="cf.fieldName"
+                            @confirm-delete="deleteFieldFromGroup(cf)"
+                            :button-class="{'remove-padding':true}"
+                        >
+                          <span class="error--text">WARNING:</span>
+                          By deleting a field you will lose all data associated with the field.<br/><br/>
+                        </confirm-delete-dialog>
                       </v-list-item>
                     </v-list>
                   </draggable>
@@ -268,11 +206,13 @@ import Sortable from 'sortablejs'
 
 import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, deleteRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
   name: 'CompanyCustomFieldGroup',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmDeleteDialog,
     draggable,
   },
   data () {

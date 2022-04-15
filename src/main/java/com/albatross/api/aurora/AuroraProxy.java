@@ -1,11 +1,11 @@
 package com.albatross.api.aurora;
 
+import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.google.common.io.BaseEncoding;
 import com.google.common.net.UrlEscapers;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +32,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -43,12 +41,16 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.stream.Collectors.groupingBy;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+// @TODO: this class should probably be renamed to 'AuroraService' and moved to the brs service
+// folder to match convention
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuroraProxy {
   private final ObjectMapper om = new ObjectMapper();
   private final CloseableHttpClient httpClient = HttpClients.createDefault();
   private final String host = "https://api.aurorasolar.com";
+  private final SqlCache sqlCache;
 
   @Value(value = "${aurora.api.tenantId}")
   private String tenantId;
@@ -186,6 +188,11 @@ public class AuroraProxy {
     return new AuroraRequest(HttpMethod.GET, uri, null);
   }
 
+  public String getDesignId(Long ppsId, Long cfgaId) {
+    return sqlCache.queryForObjectOptional("aurora.getIdByProjectProcessStepId", Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class)
+      .orElse(null);
+  }
+
   ///////////////////////////////////////////////////////////////////////////
   // class encapsulating making requests to Aurora
   ///////////////////////////////////////////////////////////////////////////
@@ -239,7 +246,7 @@ public class AuroraProxy {
       String msg = toSignatureString(params);
       byte[] bs = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, secretKey).hmac(msg);
 
-      return uriEscape(BaseEncoding.base64().encode(bs));
+      return uriEscape(Base64.getEncoder().encodeToString(bs));
     }
 
     /** Converts this request to the format required by Aurora's authentication. */
@@ -361,7 +368,7 @@ public class AuroraProxy {
           missingAnyArrayValue = true;
           // checkArgument(tsrf.isPresent(), "array is missing TSRF value");
           // checkArgument(panels.isPresent(), "array is missing panel count");
-          log.error("AURORA: Missing TSRF Value");
+          //log.error("AURORA: Missing TSRF Value");
         } else {
           weightedSum += panels.get() * tsrf.get();
           numPanels += panels.get();
@@ -384,7 +391,7 @@ public class AuroraProxy {
           // checkArgument(annualSolarAccess.isPresent(), "array is missing annual solar access
           // value");
           // checkArgument(panels.isPresent(), "array is missing panel count");
-          log.error("AURORA: Missing Annual Solar Access Value");
+          //log.error("AURORA: Missing Annual Solar Access Value");
         } else {
           weightedSum += panels.get() * annualSolarAccess.get();
           numPanels += panels.get();

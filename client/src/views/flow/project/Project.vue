@@ -1,7 +1,9 @@
 <template>
   <div id="project-container">
     <!--    modal for editing project fields -->
-    <v-dialog width="500" v-model="showEditProjectModal" content-class="square-card">
+    <v-dialog width="500"
+              v-if="project && project.id"
+              v-model="showEditProjectModal" content-class="square-card">
       <v-card class="px-6 py-4 square-card">
         <v-form ref="projectEditForm">
           <v-card-title
@@ -110,7 +112,7 @@
         <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
         <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
           <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}?processStepId=${$store.state.project.pps.processStepId}&contactId=${project.contactId}`">
+          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
             {{$store.state.project.pps.processStepName}}
           </router-link>
         </span>
@@ -179,8 +181,8 @@
             <div class="mt-2">
               <span class="vertical-top project-detail-label">Owner:</span>
               <div class="d-inline-block project-detail-item" v-if="project && project.owner">
-                {{ project.owner.fullName }} - {{ project.owner.position }} <br/>
-                {{ formatPhoneNumber(project.owner.phoneNumber) }}<br/>
+                <span :class="{'error-text': !project.owner.hasAccess}">{{ project.owner.fullName }} - {{ project.owner.position }} <br/></span>
+                <span v-if="project.owner.hasAccess">{{ formatPhoneNumber(project.owner.phoneNumber) }}<br/></span>
               </div>
             </div>
             <div class="mt-3">
@@ -275,6 +277,7 @@ export default {
       projectLoading: true,
       projectId: parseInt(this.$route.params.projectId),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
+      is7oaksAdmin: this.$store.getters.isFullAdmin,
       userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
     }
   },
@@ -352,14 +355,18 @@ export default {
       }
     },
     projectStatusIsReadOnly() {
-      if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
+      if(this.is7oaksAdmin) {
+        return false
+      } else if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.project.statusReadOnly
       }
     },
     projectOwnerFieldIsReadOnly() {
-      if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
+      if(this.is7oaksAdmin) {
+        return false
+      } else if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
         return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.project.ownerReadOnly

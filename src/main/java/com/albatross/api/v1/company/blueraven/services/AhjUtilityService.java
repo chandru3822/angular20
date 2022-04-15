@@ -8,9 +8,9 @@ import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -21,26 +21,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Joseph Canto on 2019-07-12.
- */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AhjUtilityService {
-  @Autowired
-  private SqlCache sqlCache;
 
-  @Autowired
-  private ObjectMapper om;
-
-  @Autowired
-  private SecurityService securityService;
-
-  @Autowired
-  private NamedParameterJdbcTemplate jdbc;
-
-  @Autowired
-  private BlueravenCustomFieldValueService blueravenCustomFieldValueService;
+  private final SqlCache sqlCache;
+  private final ObjectMapper om;
+  private final SecurityService securityService;
+  private final NamedParameterJdbcTemplate jdbc;
+  private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public List<AhjUtility> getAllAhjUtilities() {
     HashMap<String, Object> params = new HashMap<>();
@@ -51,7 +41,8 @@ public class AhjUtilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    return sqlCache.get("ahj.utility.detailById", params, new AhjUtilityDetailMapper<>(AhjUtilityDetail.class, om));
+    return sqlCache.get(
+        "ahj.utility.detailById", params, new AhjUtilityDetailMapper<>(AhjUtilityDetail.class, om));
   }
 
   public Optional<AhjUtilityDetail> simpleUpdate(AhjUtility utility) {
@@ -106,7 +97,8 @@ public class AhjUtilityService {
       id = sqlCache.updateReturningId("ahj.utility.insert", params, "id").longValue();
     }
 
-    blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(ObjectType.AHJ_UTILITY.textValue(), utility.getCustomFieldGroups(), id);
+    blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
+        ObjectType.AHJ_UTILITY.textValue(), utility.getCustomFieldGroups(), id);
 
     return getUtilityById(id);
   }
@@ -119,7 +111,8 @@ public class AhjUtilityService {
     return sqlCache.get("ahj.utility.contact.findById", params, AhjContact.class);
   }
 
-  public Optional<AhjContact> saveUtilityContact(Long utilityId, Long contactId, AhjContact contact) {
+  public Optional<AhjContact> saveUtilityContact(
+      Long utilityId, Long contactId, AhjContact contact) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -162,7 +155,8 @@ public class AhjUtilityService {
     return sqlCache.get("ahj.checklist.findById", idMap, AhjChecklistItem.class);
   }
 
-  public Optional<AhjChecklistItem> saveChecklistItem(Long utilityId, Long itemId, AhjChecklistItem item) {
+  public Optional<AhjChecklistItem> saveChecklistItem(
+      Long utilityId, Long itemId, AhjChecklistItem item) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -240,7 +234,7 @@ public class AhjUtilityService {
     return sqlCache.query("ahj.utility.requirement.history", params, AhjRequirement.class);
   }
 
-  public AhjRequirement addRequirement(Long utilityId, AhjRequirement ahjRequirement) {
+  public Optional<AhjRequirement> addRequirement(Long utilityId, AhjRequirement ahjRequirement) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -252,16 +246,22 @@ public class AhjUtilityService {
     params.put("modifiedById", user.trueUserId());
     params.put("description", ahjRequirement.getDescription());
 
-    Integer id = sqlCache.get("ahj.utility.requirement.add", params, new SingleColumnRowMapper<>(Integer.class)).get();
-
-    params.put("originalRequirementId", id);
-    return sqlCache.get("ahj.utility.requirement.active.detail", params, AhjRequirement.class).get();
+    var created =
+        sqlCache.get(
+            "ahj.utility.requirement.add", params, new SingleColumnRowMapper<>(Integer.class));
+    if (created.isPresent()) {
+      params.put("originalRequirementId", created.get());
+      return sqlCache.get("ahj.utility.requirement.active.detail", params, AhjRequirement.class);
+    }
+    return Optional.empty();
   }
 
-  public AhjRequirement updateRequirement(Long utilityId, Long requirementId, AhjRequirement ahjRequirement) {
+  public Optional<AhjRequirement> updateRequirement(
+      Long utilityId, Long requirementId, AhjRequirement ahjRequirement) {
     User user = securityService.getCurrentUser();
 
-    String sqlQuery = "SELECT * FROM brs.ahj_update_requirement(:utilityId::integer, null, :requirementId::integer, :description::varchar, :position::integer, :complete::boolean, :statusId::integer, :userId::integer, :archived::boolean)";
+    String sqlQuery =
+        "SELECT * FROM brs.ahj_update_requirement(:utilityId::integer, null, :requirementId::integer, :description::varchar, :position::integer, :complete::boolean, :statusId::integer, :userId::integer, :archived::boolean)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("utilityId", utilityId);
@@ -279,7 +279,7 @@ public class AhjUtilityService {
     params.put("originalRequirementId", ahjRequirement.getOriginalRequirementId());
     params.put("utilityId", utilityId);
 
-    return sqlCache.get("ahj.utility.requirement.active.detail", params, AhjRequirement.class).get();
+    return sqlCache.get("ahj.utility.requirement.active.detail", params, AhjRequirement.class);
   }
 
   public void archiveRequirement(Long originalRequirementId) {
@@ -306,35 +306,43 @@ public class AhjUtilityService {
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(List.class, "customerSignatureLinks",
-        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "customerSignatureLinks",
+          new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "ptoLinks",
-        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "ptoLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "ptoFollowupLinks",
-        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "ptoFollowupLinks",
+          new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "submissionLinks",
-        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "submissionLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "submissionChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "submissionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "approvalChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "approvalChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "ptoChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "ptoChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "utilityInspectionChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "utilityInspectionChecklist",
+          new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "contacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "contacts", new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "utilityRequirements",
-        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class,
+          "utilityRequirements",
+          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
     }
   }
 }

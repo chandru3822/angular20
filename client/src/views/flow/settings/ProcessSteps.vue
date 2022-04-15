@@ -83,55 +83,15 @@
                     <v-btn small text @click="goToProcessStep(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                        v-model="item.deleteConfirm" width="500">
-                      <template v-slot:activator="{ on: dialog }">
-                        <v-tooltip top v-if="item.workQueueTypes.length > 0">
-                          <template v-slot:activator="{ on: tooltip }">
-                            <div v-on="{ ...tooltip }" class="d-inline-block">
-                              <v-btn small text disabled>
-                                <v-icon>delete</v-icon>
-                              </v-btn>
-                            </div>
-                          </template>
-                          <span>Cannot delete a Process Step with assigned Work Queue Types</span>
-                        </v-tooltip>
-
-                        <v-btn small text v-on="{ ...dialog }" v-else>
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this process step: <strong>{{ item.processStepName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="deleteProcessStep(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                                           label="this process step: "
+                                           :item-to-delete="item.processStepName"
+                                           :is-disabled="item.workQueueTypes.length > 0"
+                                           :show-tooltip="item.workQueueTypes.length > 0"
+                                           tooltip-text="Cannot delete a Process Step with assigned Work Queue Types"
+                                           @confirm-delete="deleteProcessStep(item)"
+                    ></confirm-delete-dialog>
                   </td>
-
                 </tr>
               </template>
             </v-data-table>
@@ -149,9 +109,11 @@
 
   import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'ProcessSteps',
+    components: {ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {

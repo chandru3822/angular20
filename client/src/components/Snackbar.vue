@@ -12,7 +12,9 @@
       :class="snackbar.fontClass"
       :vertical="snackbar.mode === 'vertical'"
   >
-    {{ snackbar.text }}
+    <div v-if="snackbar.displayAsHtml" v-html="snackbar.text"></div>
+    <span v-else>{{ snackbar.text }}</span>
+
     <template v-slot:action="{ attrs }">
       <v-btn text v-bind="attrs"
              @click="show = false">

@@ -1,5 +1,10 @@
 <template>
-  <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-if="!eventDetailsLoading">
+  <v-main v-if="!eventDetailsLoading && projectMismatch">
+    <div class="error--text">
+      No Matching Event Found
+    </div>
+  </v-main>
+  <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-else-if="!eventDetailsLoading">
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
@@ -34,8 +39,13 @@
       <v-toolbar color="transparent" height="auto"
                  class="elevation-0 cfg-name-toolbar px-6" id="event-header">
         <v-toolbar-title class="albatross-header-2">
-          <div>{{ selectedEvent.eventName}}</div>
-          <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{selectedEvent.eventStatusType}})</div> <br>
+          <div>{{ selectedEvent.eventName }}</div>
+          <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{ selectedEvent.eventStatusType }})</div>
+          <div class="scheduled-time" v-if="selectedEvent.scheduledDate">
+            Scheduled {{ selectedEvent.scheduledDate | formatDate('timestamp', 'M/D/YYYY [at] h:mm a') }}
+            <br>
+            Created by {{selectedEvent.createdBy}}
+          </div>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -99,7 +109,16 @@
                v-if="!action.hideFromWeb"
                :disabled="!action.canPerform"
                @click="[attemptedAction = action, validateActionRequirements(action)]">
-          {{ action.actionName }}
+          <div>
+            <div class="action-button-name">
+              {{ action.actionName }}
+            </div>
+            <div class="action-button-subtitle">
+              <span class="action-button-subtitle-date">{{ action.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+              {{ action.actionRunBy}}
+            </div>
+          </div>
+          <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">check</v-icon>
         </v-btn>
       </div>
       </div>
@@ -114,16 +133,17 @@
               <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
               <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
-              <v-btn v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
-                <v-icon class="px-0">mdi-upload</v-icon>
-              </v-btn>
-              <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-                <UploadDocumentModal @cancel="showUploadModal = false"
-                                     :width="uploadModalWidth"
-                                     :show-success-snackbar="true"
-                                     :pps-event-id="ppsEventId"
-                                     :attachment-types="attachmentTypes"></UploadDocumentModal>
-              </v-dialog>
+            <v-btn v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" text small
+                   @click="showUploadModal = true" class="px-0">
+              <v-icon class="px-0">mdi-upload</v-icon>
+            </v-btn>
+            <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
+              <UploadDocumentModal @cancel="showUploadModal = false"
+                                   :width="uploadModalWidth"
+                                   :show-success-snackbar="true"
+                                   :pps-event-id="ppsEventId"
+                                   :attachment-types="attachmentTypes"></UploadDocumentModal>
+            </v-dialog>
             <div>
               <v-btn class="white--text mt-3 ml-2"
                      @click="checkFieldsForUnique()"
@@ -146,11 +166,12 @@
 
       <v-form ref="eventFieldForm" class="px-6" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
-        <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
-                                                         class="px-0 d-flex align-baseline" target="_blank"
-                                                         :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
-              <span class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span><v-icon class="scheduler-button-icon">mdi-open-in-new</v-icon>
-            </v-btn>
+          <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+                 class="px-0 d-flex align-baseline" target="_blank"
+                 :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+            <span class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
+            <v-icon class="scheduler-button-icon">mdi-open-in-new</v-icon>
+          </v-btn>
         </div>
         <v-card class="square-card px-4 pt-4 mt-4">
         <v-autocomplete
@@ -160,7 +181,7 @@
           :disabled="!userCanManage"
           item-text="eventStatusType"
           item-value="id"
-          @input="defaultValuesChanged = true"
+          @input="[statusChanged = true, defaultValuesChanged = true]"
         ></v-autocomplete>
         <DatetimePickerInput
           v-model="selectedEvent.startTime"
@@ -171,7 +192,7 @@
           :type="'timestamp'"
           :format="'MMMM DD, YYYY, h:mm A'"
           label="Start Time"
-          :change-callback="() => { this.defaultValuesChanged = true}"
+          :change-callback="startTimeChanged"
         />
         <DatetimePickerInput
           v-model="selectedEvent.endTime"
@@ -197,74 +218,74 @@
           @input="defaultValuesChanged = true"
         ></v-autocomplete>
 
-        <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
-               class="white--text mb-4"
-               :disabled="uniqueAlreadyHasValue"
-               id="qa-round-robin-button"
-               @click="showRoundRobin = !showRoundRobin">Round Robin
-        </v-btn>
-        <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
-          <v-toolbar flat color="transparent">
-            <v-toolbar-title>Lead Allocation</v-toolbar-title>
-          </v-toolbar>
-          <v-card-text class="py-0">
-            <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit">
-              You do not have access to schedule projects in this Postal Code
+          <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
+                 class="white--text mb-4"
+                 :disabled="uniqueAlreadyHasValue"
+                 id="qa-round-robin-button"
+                 @click="showRoundRobin = !showRoundRobin">Round Robin
+          </v-btn>
+          <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
+            <v-toolbar flat color="transparent">
+              <v-toolbar-title>Lead Allocation</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="py-0">
+              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !userIsAdmin">
+                You do not have access to schedule projects in this Postal Code
+              </v-card-text>
+              <div class="pb-3" v-else>
+                <CustomValueInput
+                  :readonly="!userCanEdit"
+                  :min-date="minDate"
+                  :callback="checkAvailabilityDate"
+                  :field="availabilityDateField"
+                />
+                <div class="text-right" v-if="availabilityDateField.dateValue">
+                  <v-btn color="primaryCustom" class="white--text"
+                         :loading="remoteSearchLoading"
+                         :disabled="inPersonSearchLoading"
+                         v-if="showRemoteSearch || userIsAdmin"
+                         id="qa-round-robin-search-remote"
+                         @click="getAvailableTimeSlots(true)">
+                    Search Remote Appt. Slots
+                  </v-btn>
+                  <v-btn color="primaryCustom" class="white--text ml-3"
+                         :loading="inPersonSearchLoading"
+                         v-if="schedulerCanEdit || userIsAdmin"
+                         :disabled="remoteSearchLoading"
+                         id="qa-round-robin-search"
+                         @click="getAvailableTimeSlots(false)">
+                    Search In-person Appt. Slots
+                  </v-btn>
+                </div>
+                <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
+                          v-model="selectedTimeSlot"
+                          class="qa-round-robin-time-select"
+                          :items="timeSlots"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          label="Select an Available Time Slot"
+                          return-object
+                >
+                  <template slot="selection" slot-scope="data">
+                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                  </template>
+                  <template slot="item" slot-scope="data">
+                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                  </template>
+                </v-select>
+                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
+                  Selected Date
+                </div>
+                <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
+                  <v-btn color="primaryCustom" class="white--text"
+                         @click="saveCloserAppointment" id="qa-round-robin-save">
+                    Save Appointment
+                  </v-btn>
+                </div>
+              </div>
             </v-card-text>
-            <div class="pb-3">
-              <CustomValueInput
-                :readonly="!userCanEdit"
-                :min-date="minDate"
-                :callback="checkAvailabilityDate"
-                :field="availabilityDateField"
-              />
-              <div class="text-right" v-if="availabilityDateField.dateValue">
-                <v-btn color="primaryCustom" class="white--text"
-                       :loading="remoteSearchLoading"
-                       :disabled="inPersonSearchLoading"
-                       v-if="showRemoteSearch || userIsAdmin"
-                       id="qa-round-robin-search-remote"
-                       @click="getAvailableTimeSlots(true)">
-                  Search Remote Appt. Slots
-                </v-btn>
-                <v-btn color="primaryCustom" class="white--text ml-3"
-                       :loading="inPersonSearchLoading"
-                       v-if="schedulerCanEdit || userIsAdmin"
-                       :disabled="remoteSearchLoading"
-                       id="qa-round-robin-search"
-                       @click="getAvailableTimeSlots(false)">
-                  Search In-person Appt. Slots
-                </v-btn>
-              </div>
-              <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
-                        v-model="selectedTimeSlot"
-                        class="qa-round-robin-time-select"
-                        :items="timeSlots"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Select an Available Time Slot"
-                        return-object
-              >
-                <template slot="selection" slot-scope="data">
-                  {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                </template>
-                <template slot="item" slot-scope="data">
-                  {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                </template>
-              </v-select>
-              <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
-                Selected Date
-              </div>
-              <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
-                <v-btn color="primaryCustom" class="white--text"
-                       @click="saveCloserAppointment" id="qa-round-robin-save">
-                  Save Appointment
-                </v-btn>
-              </div>
-            </div>
-          </v-card-text>
 
-        </div>
+          </div>
         </v-card>
         <v-col
           v-if="selectedEvent && selectedEvent.id"
@@ -367,8 +388,11 @@ export default {
       snackbar: {},
       selectedEvent: {},
       showUploadModal: false,
+      projectMismatch: false,
       uploadModalWidth: 600,
       defaultValuesChanged: false,
+      //this is used to determine if we should save the status or not. should only save if it changes
+      statusChanged: false,
       unsavedFieldsModal: false,
       navigationOverride: false,
       toPath: null,
@@ -383,7 +407,7 @@ export default {
       dirtyCfvs: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       timezone: this.$store.state.user.details.timezone.value,
-      projectId: this.$route.params.projectId,
+      projectId: parseInt(this.$route.params.projectId),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
       userCanManage: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'),
@@ -478,9 +502,12 @@ export default {
     }
   },
   methods: {
+    doSomething() {
+      console.log('this happened')
+    },
     goToPath(path, query) {
       this.unsavedFieldsModal = false
-      this.$router.push({ path, query })
+      this.$router.push({path, query})
     },
     setSplitColumnValue() {
       //flip the flag
@@ -528,7 +555,7 @@ export default {
     validateActionRequirements: async function (action) {
       this.eventActionMissingRequirements = false
       this.eventSaveOverrideRequired = false
-      this.actionRequiresStart = true //action?.requireStartTime
+      this.actionRequiresStart = action?.requireStartTime //this is no longer required to be true
       this.actionRequiresEnd = action?.requireEndTime
       this.actionRequiresResource = action?.requireResource
       //will only be used if there is an error shown here
@@ -630,6 +657,7 @@ export default {
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
+          saveVersion: this.selectedEvent.saveVersion,
           companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
           customFieldValues: this.dirtyCfvs
         }
@@ -656,7 +684,7 @@ export default {
           //set navigation override so we dont get the unsaved fields popup
           this.navigationOverride = true
           //if ps root status is active but event root status is not then go back to ps
-          let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`
+          let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}`
           this.$router.push(path)
         } else {
           //stay on the screen and refresh values
@@ -666,7 +694,9 @@ export default {
 
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Performing Event')
+        let saveMismatch = e.data?.message === 'Save Version Mismatch'
+        let msg = saveMismatch ? `Cannot save changes, this event has been updated by another user. Click <a class="white--text underline" href="">here</a> to refresh.` : 'Error Performing Event'
+        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -680,6 +710,15 @@ export default {
         }
       })
       this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
+    },
+    startTimeChanged() {
+      this.defaultValuesChanged = true
+      //if it is the closer event then auto populate the end time with (start time + 1 hour)
+      if(this.selectedEvent?.uniqueBehaviorTypeId === 1 && this.selectedEvent?.startTime != null) {
+        console.log('STARTER TOWN', this.selectedEvent.startTime)
+        this.selectedEvent.endTime = moment.utc(this.selectedEvent.startTime).add(90, 'm').format('YYYY-MM-DDTHH:mm:ssZ')
+        console.log('END TOWN', this.selectedEvent.endTime)
+      }
     },
     getReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
@@ -718,33 +757,41 @@ export default {
     // },
     getEventDetails: async function () {
       try {
+        this.projectMismatch = false
         const {
           data,
           status
         } = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
-        this.selectedEvent = data
-        //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
-        this.selectedEvent.allowAllUserDeletion = data.startTime === null
-        //have to reset the pps stuff too in case they just go directly to the url
-        this.$store.commit(ProjectMutations.SET_PPS, {
-          projectProcessStepId: this.selectedEvent.projectProcessStepId,
-          processStepId: this.selectedEvent.processStepId,
-          processStepName: this.selectedEvent.processStepName
-        })
-        window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
-          : `${this.selectedEvent.eventName}`
-        this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
-        if (data.uniqueBehaviorTypeId === 1) {
-          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
-          this.getRoundRobinNumDays()
-          this.userCanScheduleLeadAllocation()
-          this.userCanScheduleRemoteLeadAllocation()
+        if(data && data.projectId && data.projectId !== this.projectId) {
+          this.projectMismatch = true
+          this.eventDetailsLoading = false
+          this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } else {
+          this.selectedEvent = data
+          //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
+          this.selectedEvent.allowAllUserDeletion = data.startTime === null
+          //have to reset the pps stuff too in case they just go directly to the url
+          this.$store.commit(ProjectMutations.SET_PPS, {
+            projectProcessStepId: this.selectedEvent.projectProcessStepId,
+            processStepId: this.selectedEvent.processStepId,
+            processStepName: this.selectedEvent.processStepName
+          })
+          window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
+            : `${this.selectedEvent.eventName}`
+          this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
+          if (data.uniqueBehaviorTypeId === 1) {
+            this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
+            this.getRoundRobinNumDays()
+            this.userCanScheduleLeadAllocation()
+            this.userCanScheduleRemoteLeadAllocation()
+          }
+          //this was causing an error if you clicked too fast between events
+          if (data.id) {
+            await this.getStatusesAssignedToEvent()
+          }
+          return status
         }
-        //this was causing an error if you clicked too fast between events
-        if (data.id) {
-          await this.getStatusesAssignedToEvent()
-        }
-        return status
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message || 'Error Retrieving Details'
@@ -760,7 +807,7 @@ export default {
         this.navigationOverride = true
         this.$emit('refresh-upcoming-events')
         //go to the process step
-        this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}?processStepId=${this.selectedEvent.processStepId}&contactId=${this.project.contactId}`)
+        this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
@@ -778,10 +825,13 @@ export default {
           startTime: this.selectedEvent.startTime,
           endTime: this.selectedEvent.endTime,
           resourceId: this.selectedEvent.resourceId,
-          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
+          saveVersion: this.selectedEvent.saveVersion,
+          //we only send up the status if it changed. sql handles whether to save the value or not
+          companyEventStatusTypeId: this.statusChanged ? this.selectedEvent.companyEventStatusTypeId : null,
           customFieldValues: this.dirtyCfvs
         }
         const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
+        this.statusChanged = false
         this.dirtyCfvs = []
         this.selectedEvent = data
         this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
@@ -793,7 +843,9 @@ export default {
         }
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Event')
+        let saveMismatch = e.data?.message === 'Save Version Mismatch'
+        let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
+        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -837,7 +889,9 @@ export default {
           // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-          users: this.selectedTimeSlot.users
+          users: this.selectedTimeSlot.users,
+          remote: this.mostRecentSearchWasRemote,
+          customFieldValues: this.dirtyCfvs
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/availability/setCloserAppointment`, body)
@@ -849,12 +903,18 @@ export default {
           this.availabilityDateField.dateValue = null
           this.timeSlots = []
           this.selectedTimeSlot = {}
-          //set the start time, end time and resource on the event
+          //set the some values that may have updated when setting the closer appt event
           this.selectedEvent.startTime = data.appointmentStartTime
           this.selectedEvent.endTime = data.appointmentEndTime
           this.selectedEvent.resourceId = data.userPositionId
           this.selectedEvent.resource = data.userFullName
+          this.selectedEvent.companyEventStatusTypeId = data.companyEventStatusTypeId
+          this.selectedEvent.eventActions = data.eventActions
           this.uniqueAlreadyHasValue = true
+          //reset the error messages:
+          this.eventActionMissingRequirements = false
+          this.saveErrorMsg = ''
+          this.showUnperformableActions = true
 
         }
       } catch (e) {
@@ -905,21 +965,23 @@ export default {
         }
       } else if (null != this.selectedEvent.startTime) {
         //for all other types just compare start to end if end not null
-        if (startTime && endTime && !moment(endTime).isAfter(startTime)){
+        if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
           validSave = false
           this.eventActionMissingRequirements = true
           this.saveErrorMsg = 'End time must be after start time'
         }
-      } else {
-        //only startTime is required to save fields
-        validSave = false
-        this.actionRequiresEnd = false
-        this.actionRequiresResource = false
-        this.eventActionMissingRequirements = true
-        this.saveErrorMsg = 'Start Time is required to save the event fields'
-        //dont do this for now. makes the page look weird after save
-        // document.getElementById('event-header').scrollIntoView()
       }
+      //per judson, dont require start time anymore
+      // else {
+      //   //only startTime is required to save fields
+      //   validSave = false
+      //   this.actionRequiresEnd = false
+      //   this.actionRequiresResource = false
+      //   this.eventActionMissingRequirements = true
+      //   this.saveErrorMsg = 'Start Time is required to save the event fields'
+      //   //dont do this for now. makes the page look weird after save
+      //   // document.getElementById('event-header').scrollIntoView()
+      // }
 
       //after everything, only save if valid
       if (validSave) {
@@ -987,13 +1049,21 @@ export default {
   padding-left: 10px;
   padding-right: 10px;
 }
+
 .scheduler-button-text {
   text-transform: capitalize;
   text-decoration: underline;
 }
+
 .scheduler-button-icon {
- text-decoration: none;
+  text-decoration: none;
   font-size: 12px;
+}
+
+.scheduled-time {
+  color: #9E9C9C;
+  font-size: 12px;
+  font-weight: normal;
 }
 
 .action-subheader {
@@ -1029,6 +1099,19 @@ export default {
     margin-left: 10px;
     font-size: 12px;
   }
+}
+
+.action-button-name {
+  display: block;
+}
+
+.action-button-subtitle {
+  display: block;
+  font-size: 10px;
+}
+
+.action-button-subtitle-date {
+  text-transform: lowercase;
 }
 
 </style>

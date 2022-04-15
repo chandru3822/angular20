@@ -4,7 +4,7 @@
     <v-card flat v-for="ps in steps"
             :class="{'active-ps': ppsId === ps.projectProcessStepId}"
             class="active-ps-button albatross-body-1"
-            @click="goToPath(`/project/${projectId}/processStep/${ps.projectProcessStepId}?processStepId=${ps.processStepId}&contactId=${contactId}`)">
+            @click="goToPath(`/project/${projectId}/processStep/${ps.projectProcessStepId}`)">
       {{ ps.processStepName }}
       <span :class="getStatusClass(ps.processStepStatusTypeId)">{{ps.processStepStatusType}}</span>
       <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>

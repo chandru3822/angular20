@@ -27,15 +27,15 @@ BEGIN
                            end) as org_name,
                        o.active_flag as active
                 from flow.user_positions_vw upv
-                    inner join flow.org o on o.id = upv.org_id
-                    inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 3
+                    inner join flow.org o on o.id = upv.org_id and o.org_type_id = 3
+--                     inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 3
 
-                    inner join flow.org o2 on o2.id = o.parent_org_id  -- district
-                    inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 117 --district
-                    inner join flow.org o3 on o3.id = o2.parent_org_id  -- region
-                    inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 2 --region
-                    inner join flow.org o4 on o4.id = o3.parent_org_id  -- area
-                    inner join flow.org_type ot3 on ot3.id = o4.org_type_id and ot3.id = 21 --area
+                    inner join flow.org o2 on o2.id = o.parent_org_id and o2.org_type_id = 117 -- district
+--                     inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 117 --district
+                    inner join flow.org o3 on o3.id = o2.parent_org_id and o3.org_type_id = 2 -- region
+--                     inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 2 --region
+                    inner join flow.org o4 on o4.id = o3.parent_org_id and o4.org_type_id = 21 -- area
+--                     inner join flow.org_type ot3 on ot3.id = o4.org_type_id and ot3.id = 21 --area
 
 --                     inner join flow.org o2 on o2.id = o.parent_org_id  -- region
 --                     inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 2 --region
@@ -70,15 +70,15 @@ BEGIN
                             end) as org_name,
                        o.active_flag as active
                 from flow.user_positions_vw upv
-                    inner join flow.org o on o.id = upv.org_id
-                    inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 3
+                    inner join flow.org o on o.id = upv.org_id and o.org_type_id = 3
+--                     inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 3
 
-                    inner join flow.org o2 on o2.id = o.parent_org_id  -- district
-                    inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 117 --district
-                    inner join flow.org o3 on o3.id = o2.parent_org_id  -- region
-                    inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 2 --region
-                    inner join flow.org o4 on o4.id = o3.parent_org_id  -- area
-                    inner join flow.org_type ot3 on ot3.id = o4.org_type_id and ot3.id = 21 --area
+                    inner join flow.org o2 on o2.id = o.parent_org_id and o2.org_type_id = 117 -- district
+--                     inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 117 --district
+                    inner join flow.org o3 on o3.id = o2.parent_org_id and o3.org_type_id = 2 -- region
+--                     inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 2 --region
+                    inner join flow.org o4 on o4.id = o3.parent_org_id and o4.org_type_id = 21 -- area
+--                     inner join flow.org_type ot3 on ot3.id = o4.org_type_id and ot3.id = 21 --area
 
 --                     inner join flow.org o2 on o2.id = o.parent_org_id  -- region
 --                     inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 2 --region

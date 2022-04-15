@@ -3,12 +3,15 @@
     select cf.id,
      cf.list_of_value_id,
      cf.company_id,
-     cf.readonly,
+     case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+     cf.system_readonly,
      cf.field_name,
      cf.archived,
      cf.sort_list_values_alphabetically,
      cf.created_by_id,
      cf.modified_by_id,
+     cdt.data_type_id,
+     cf.allow_now,
      cf.company_data_type_id,
      cf.custom_field_sql_key,
      cf.custom_field_sql_reference_table,
@@ -30,6 +33,13 @@
                                 and cot.archived is not true
                                 and ot.archived is not true
                                 and cfot.archived is not true
+                                 and not exists (
+                                   select company_object_type_id
+                                   from flow.custom_field_excluded_object_type cfeot
+                                   where custom_field_id = cf.id
+                                     and cfeot.company_object_type_id = cot.id
+                                     and cfeot.archived is false
+                                 )
                        ) rows), '[]') AS custom_field_object_types,
      coalesce((
                    select array_to_json(array_agg(rows))
@@ -51,6 +61,7 @@
                                case when cf.sort_list_values_alphabetically is false then lv.display_order end
                         ) rows), '[]') AS list_of_values
     from flow.custom_field cf
+      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where cf.id = :id
     order by cf.field_name
   ]]></customField.getOne>
@@ -59,13 +70,16 @@
     select cf.id,
        cf.list_of_value_id,
        cf.company_id,
-       cf.readonly,
+       case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+       cf.system_readonly,
        cf.field_name,
        cf.sort_list_values_alphabetically,
        cf.archived,
        cf.created_by_id,
        cf.modified_by_id,
        cf.company_data_type_id,
+       cdt.data_type_id,
+       cf.allow_now,
        cf.custom_field_sql_key,
        cf.custom_field_sql_reference_table,
        cf.company_system_list_id,
@@ -86,6 +100,13 @@
                                 and cot.archived is not true
                                 and ot.archived is not true
                                 and cfot.archived is not true
+                                 and not exists (
+                                   select company_object_type_id
+                                   from flow.custom_field_excluded_object_type cfeot
+                                   where custom_field_id = cf.id
+                                     and cfeot.company_object_type_id = cot.id
+                                     and cfeot.archived is false
+                                 )
                        ) rows), '[]') AS custom_field_object_types,
        coalesce((
                      select array_to_json(array_agg(rows))
@@ -153,6 +174,8 @@
       set field_name = trim(:fieldName),
           company_system_list_id = :systemListId,
           readonly = :readonly,
+          allow_now = :allowNow,
+          system_readonly = :systemReadonly,
           sort_list_values_alphabetically = :sortListValuesAlphabetically,
           system_list_option_ids = :systemListOptionIds::int[],
           modified_by_id = :modifiedById,
@@ -164,10 +187,10 @@
     insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key,
                                   custom_field_sql_reference_table, company_system_list_id, system_list_option_ids,
                                   readonly, sort_list_values_alphabetically,
-                                  date_created, created_by_id, date_modified, modified_by_id)
+                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now)
     values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey,
             :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly,
-            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById)
+            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow)
     returning id
   ]]></customField.insertField>
 
@@ -211,7 +234,8 @@
   <customField.getByParentProcessStep><![CDATA[
     select cf.id,
        cf.list_of_value_id,
-       cf.readonly,
+       cf.system_readonly,
+       case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
        cf.custom_field_sql_key,
        cf.company_id,
        cf.field_name,
@@ -252,6 +276,7 @@
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
              inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where ps.id = :id
+      and case when :excludedUnhandledDataTypes is true then cdt.data_type_id != 12 else 1=1 end
       and cfga.ancillary_custom_field_group_assignment_id is null
       and cfg.archived is not true
       and cfga.archived is not true
@@ -263,7 +288,7 @@
   <customField.getByParentType><![CDATA[
     select  cf.id,
             cf.list_of_value_id,
-            cf.readonly,
+            case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
             cf.custom_field_sql_key,
             cf.company_id,
             cf.field_name,
@@ -304,6 +329,7 @@
              inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where cot.object_type_id = :id
       and cot.company_id = :companyId
+      and case when :excludedUnhandledDataTypes is true then cdt.data_type_id != 12 else 1=1 end
       and cfga.ancillary_custom_field_group_assignment_id is null
       and cfg.archived is not true
       and cfga.archived is not true

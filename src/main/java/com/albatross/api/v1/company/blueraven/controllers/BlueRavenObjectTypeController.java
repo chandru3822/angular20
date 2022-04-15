@@ -28,8 +28,8 @@ public class BlueRavenObjectTypeController {
 
   private final BlueravenObjectTypeService objectTypeService;
 
-  @GetMapping(value = "/getCustomFieldObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyObjectType> getCustomFieldObjectTypes() {
+  @GetMapping(value = "/getCompanyObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyObjectType> getCompanyObjectTypes() {
     return objectTypeService.getCompanyObjectTypes();
   }
 

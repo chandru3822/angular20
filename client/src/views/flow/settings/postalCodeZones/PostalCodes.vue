@@ -77,44 +77,12 @@
                     <v-btn small text @click="goToPostalCodeZone(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-if="userCanDelete"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this round robin: <strong>{{ item.zoneName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="[item.archived = true, deletePostalCodeZone(item.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <confirm-delete-dialog
+                        v-if="userCanDelete"
+                        label="this round robin: "
+                        :item-to-delete="item.zoneName"
+                        @confirm-delete="[item.archived = true, deletePostalCodeZone(item.id)]"
+                    ></confirm-delete-dialog>
                   </td>
 
                 </tr>
@@ -134,9 +102,11 @@
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import {  handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
   export default {
     name: 'PostalCodes',
+    components: {ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
