@@ -83,7 +83,6 @@ declare
   v_panel_warranty                                         integer;
   v_inverter_warranty                                      integer;
   v_inverter_efficiency                                    numeric;
-  v_derate_factor                                          numeric;
   v_initial_payment_factor                                 numeric;
   v_col_springs_rebate                                     numeric;
   v_utility_cost_escalator                                 numeric;
