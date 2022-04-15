@@ -14,7 +14,7 @@ declare
 BEGIN
   v_amount = 0;
   FOR i IN 1..p_years LOOP
-      v_amount = v_amount + (p_first_year_annual_production * power(p_panel_degradation_factor,i-1) /300);
+      v_amount = v_amount + (p_first_year_annual_production * power((1- p_panel_degradation_factor),i-1));
   end loop;
 
   return coalesce(v_amount, 0);
