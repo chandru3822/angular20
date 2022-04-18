@@ -3,20 +3,17 @@ package com.albatross.api.v1.flow.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 /**
  * Created by randanunn on 2019-05-20.
  * !Describe Purpose!
  */
 @Getter
 @Setter
-public class DataView {
+public class DataViewFieldConfig {
 
-  private Long id, companyId;
-  private String viewName, displayName;
+  private Long id, fieldConfigId, defaultFieldId, customFieldGroupAssignmentId, processStepEventId;
+  private String fieldToUpdate;
   private Boolean archived;
-  private List<DataViewFieldConfig> dataViewFieldConfigs;
 
 }
 

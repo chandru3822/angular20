@@ -1,15 +1,61 @@
 <template>
-  <v-container>
+  <v-container id="data-view-container">
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
-            {{dataView.displayName}}
+            {{dataView.displayName}} ({{dataView.viewName}})
           </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="[addNew = !addNew, newField = {}]">
+              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
+              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
+            </v-btn>
+          </v-toolbar-items>
         </v-toolbar>
+        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
+          <h3>Add Field Config</h3>
+          i dont know what to do here
+          <v-btn :disabled="true"
+                 color="primaryCustom" class="white--text mr-2"
+                 @click="">
+            Save
+          </v-btn>
+          <v-btn @click="[addNew = !addNew, newField = {}]">Cancel</v-btn>
+        </v-card>
 
-        data view stuff here:
-        {{dataView}}
+        <v-data-table
+          v-if="dataView.dataViewFieldConfigs"
+          :headers="headers"
+          :items="dataView.dataViewFieldConfigs"
+          :fixed-header="true"
+          :items-per-page="100"
+          :search="search"
+          class="elevation-1"
+        >
+          <template #no-data>
+            NO DATA HERE!
+          </template>
+
+          <template #no-results>
+            No fields assigned
+          </template>
+
+          <template #item="{ item }">
+            <tr  class="text-left" :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
+              <td class="text-left">{{ item.fieldName }}</td>
+              <td class="text-left">{{ item.fieldToUpdate }}</td>
+              <td>
+                <v-btn small text @click="">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+
+              </td>
+            </tr>
+          </template>
+
+        </v-data-table>
       </v-col>
     </v-row>
 
@@ -28,10 +74,18 @@
       return {
         snackbar: {},
         constants,
+        search: '',
+        addNew: false,
+        newField: {},
         viewId: parseInt(this.$route.params.id),
         dataView: {},
         userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        headers: [
+          { text: 'Field Name', value: 'fieldName', show: true },
+          { text: 'Field to Update', value: 'fieldToUpdate', show: true },
+          { text: null, value: 'icons', show: true, sortable: false }
+        ]
       }
     },
     async created () {
@@ -54,3 +108,10 @@
     }
   }
 </script>
+
+<style lang="scss">
+#data-view-container .v-data-table__wrapper {
+  max-height: calc(100vh - 250px);
+  min-height: 300px;
+}
+</style>

@@ -1,11 +1,15 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.DataView;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -21,6 +25,7 @@ public class DataViewService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final ObjectMapper om;
 
   public List<DataView> getCompanyDataViews() {
     User user = securityService.getCurrentUser();
@@ -36,8 +41,26 @@ public class DataViewService {
 //    use company id to verify user has access to this view
     params.put("companyId", user.getCompanyId());
     params.put("viewId", viewId);
-    Optional<DataView> result = sqlCache.get("dataView.getOne", params, DataView.class);
+    Optional<DataView> result = sqlCache.get("dataView.getOne", params, new DataViewMapper<>(DataView.class, om));
     return result;
+  }
+
+  public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public DataViewMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<DataViewFieldConfig>> fieldConfigsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "dataViewFieldConfigs",
+        new JsonCollectionDeserializer(fieldConfigsRef, objectMapper));
+    }
   }
 
 }

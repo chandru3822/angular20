@@ -7,9 +7,25 @@
   ]]></dataView.getAllForCompany>
 
   <dataView.getOne><![CDATA[
-    select *
-    from flow.data_view
-    where id = :viewId
-    and company_id = :companyId
+    select dv.*,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(fields)))
+                      FROM (
+                             select dvfc.id,
+                                    fc.id as "fieldConfigId",
+                                    fc.default_field_id as "defaultFieldId",
+                                    fc.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                    fc.process_step_event_id as "processStepEventId",
+                                    fc.field_to_update as "fieldToUpdate",
+                                    fc.archived
+                             from flow.data_view_field_config dvfc
+                                    inner join flow.field_config fc on dvfc.field_config_id = fc.id
+                             where fc.archived is false
+                               and dvfc.archived is false
+                               and dvfc.data_view_id = dv.id
+                           ) fields), '[]') AS "dataViewFieldConfigs"
+    from flow.data_view dv
+    where dv.id = :viewId
+      and dv.company_id = :companyId
   ]]></dataView.getOne>
 </sql>
