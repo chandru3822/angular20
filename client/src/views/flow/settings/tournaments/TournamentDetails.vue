@@ -21,6 +21,24 @@
               item-value="id"
               attach
             ></v-autocomplete>
+            <DatetimePickerInput
+              v-model="tournament.startDate"
+              :readonly="!edit"
+              :disabled="!edit"
+              :timezone="this.timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="Tournament Start Date"
+            />
+            <DatetimePickerInput
+              v-model="tournament.endDate"
+              :readonly="!edit"
+              :disabled="!edit"
+              :timezone="this.timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="Tournament End Date"
+            />
             <v-autocomplete
               readonly
               disabled
@@ -31,24 +49,15 @@
               item-value="id"
               attach
             ></v-autocomplete>
-            <DatetimePickerInput
-              v-model="tournament.startDate"
-              :readonly="!edit"
-              :disabled="!edit"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Start Date"
-            />
-            <DatetimePickerInput
-              v-model="tournament.endDate"
-              :readonly="!edit"
-              :disabled="!edit"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="End Date"
-            />
+            <div v-if="tournament.tournamentFormulaFields && tournament.tournamentFormulaFields.length > 0"
+                 v-for="tff in tournament.tournamentFormulaFields">
+              <TournamentCustomField
+                :callback="(item) => populateDirtyCfvs(item)"
+                :readonly="!edit"
+                :field="tff">
+              </TournamentCustomField>
+
+            </div>
             <div class="mb-4">
               <label>Tournament Is Live: </label>
               <input type="checkbox"
@@ -68,7 +77,8 @@
               <v-btn
                 color="primary"
                 class="white--text"
-                :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || (tournament.startDate >= tournament.endDate) || !tournament.tournamentOwnerTypeId || !tournament.tournamentFormulaId"
+                :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || (tournament.startDate >= tournament.endDate) || !tournament.tournamentOwnerTypeId || !tournament.tournamentFormulaId
+                          || validateCustomFields()"
                 @click="updateTournament">Save
               </v-btn>
               <v-btn class="ml-2" @click="edit = false">Cancel</v-btn>
@@ -125,6 +135,7 @@
   import {Actions} from '@/store'
   import constants from '@/helpers/constants'
   import Vue2Filters from 'vue2-filters'
+  import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
     handleHidingGlobalLoader,
@@ -137,7 +148,8 @@
     name: 'TournamentDetails',
     mixins: [Vue2Filters.mixin],
     components: {
-      DatetimePickerInput
+      DatetimePickerInput,
+      TournamentCustomField
     },
     data() {
       return {
@@ -153,6 +165,7 @@
         tournament: {},
         timezone: this.$store.state.user.details.timezone.value,
         ownerTypes: [],
+        dirtyCfvs: [],
         formulas: [],
         tournamentId: parseInt(this.$route.params.id),
         userId: this.$store.state.user.details.id
@@ -165,6 +178,19 @@
       this.getTournamentFormulas()
     },
     methods: {
+      validateCustomFields() {
+        let invalid = false
+        if(this.tournament.tournamentFormulaFields?.length > 0) {
+          //if the tournament has custom fields then none of them can be null
+          this.tournament.tournamentFormulaFields.forEach(tff => {
+            //datatype 3 = booleans can be null if they dont have a value
+            if((tff.fieldValue === null || tff.fieldValue === '') && tff.dataTypeId !== 3) {
+              invalid = true
+            }
+          })
+        }
+        return invalid
+      },
       async getTournamentOwnerTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -209,8 +235,11 @@
       async updateTournament() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          //they cannot archive a field from here so when we send these up we will only update/insert those that changed
+          this.tournament.tournamentFormulaFields = this.dirtyCfvs
           const {data, status} = await putRequest(`/tournament`, this.tournament, 'blueraven')
           this.tournament = data
+          this.dirtyCfvs = []
           this.edit = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -271,6 +300,12 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      populateDirtyCfvs(field) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id))
+        if (!match) {
+          this.dirtyCfvs.push(field)
+        }
+      }
     }
   }
 </script>

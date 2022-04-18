@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Tournaments</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newTournament = {}]" v-if="userCanAdd">
+            <v-btn text @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -34,7 +34,17 @@
               item-text="formulaTitle"
               item-value="id"
               attach
+              @change="getTournamentFormulaFields"
             ></v-autocomplete>
+
+            <div v-if="newTournament.tournamentFormulaFields && newTournament.tournamentFormulaFields.length > 0"
+                 v-for="tff in newTournament.tournamentFormulaFields">
+              <TournamentCustomField
+                :field="tff"
+                :callback="() => {}">
+              </TournamentCustomField>
+
+            </div>
             <DatetimePickerInput
               v-model="newTournament.startDate"
               :timezone="this.timezone"
@@ -49,8 +59,13 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
-            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate || (newTournament.startDate >= newTournament.endDate) || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId" @click="addTournament">Save</v-btn>
-            <v-btn class="ml-2" @click="[newTournament = {}, addNew = false]">Cancel</v-btn>
+            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate
+                   || (newTournament.startDate >= newTournament.endDate) || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId
+                   || validateCustomFields()"
+                   @click="addTournament">
+              Save
+            </v-btn>
+            <v-btn class="ml-2" @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">Cancel</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -99,20 +114,24 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
 
   export default {
     name: 'TournamentsAdmin',
     mixins: [Vue2Filters.mixin],
     components: {
       ConfirmDeleteDialog,
-      DatetimePickerInput
+      DatetimePickerInput,
+      TournamentCustomField
     },
     data () {
       return {
         snackbar: {},
         addNew: false,
         search: null,
-        newTournament: {},
+        newTournament: {
+          tournamentFormulaFields: []
+        },
         timezone: this.$store.state.user.details.timezone.value,
         dataLoading: true,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD'),
@@ -135,6 +154,19 @@
     computed: {
     },
     methods: {
+      validateCustomFields() {
+        let invalid = false
+        if(this.newTournament.tournamentFormulaFields?.length > 0) {
+          //if the tournament has custom fields then none of them can be null
+          this.newTournament.tournamentFormulaFields.forEach(tff => {
+            //datatype 3 = booleans can be null if they dont have a value
+            if((tff.fieldValue === null || tff.fieldValue === '') && tff.dataTypeId !== 3) {
+              invalid = true
+            }
+          })
+        }
+        return invalid
+      },
       filterTournaments () {
         return this.tournaments.filter(t => { return !t.archived})
       },
@@ -143,10 +175,26 @@
       },
       async getTournamentFormulas() {
         this.newTournament.tournamentFormulaId = null
+        this.newTournament.tournamentFormulaFields = []
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/tournament/formulas/${this.newTournament.tournamentOwnerTypeId}`, 'blueraven')
           this.formulas = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.dataLoading = false
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getTournamentFormulaFields() {
+        this.newTournament.tournamentFormulaFields = []
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/tournament/formula/${this.newTournament.tournamentFormulaId}/fields`, 'blueraven')
+          this.newTournament.tournamentFormulaFields = data
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
