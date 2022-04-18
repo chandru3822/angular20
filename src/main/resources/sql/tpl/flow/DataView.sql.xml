@@ -1,0 +1,15 @@
+<sql>
+  <dataView.getAllForCompany><![CDATA[
+    select *
+    from flow.data_view
+    where company_id = :companyId
+    and archived is false
+  ]]></dataView.getAllForCompany>
+
+  <dataView.getOne><![CDATA[
+    select *
+    from flow.data_view
+    where id = :viewId
+    and company_id = :companyId
+  ]]></dataView.getOne>
+</sql>

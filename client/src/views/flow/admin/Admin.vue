@@ -117,6 +117,10 @@ export default {
         path: '/admin/uploads',
         title: 'File Upload',
         show: !this.$store.getters.isCompanyRoot(this.companyId)
+      },  {
+        path: '/admin/dataViews',
+        title: 'Data Views',
+        show: !this.$store.getters.isCompanyRoot(this.companyId)
       }
     ]
   }

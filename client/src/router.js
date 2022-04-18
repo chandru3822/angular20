@@ -1292,6 +1292,12 @@ const router = new Router({
             }, {
               path: 'uploads',
               component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/Uploads.vue'),
+            }, {
+              path: 'dataViews',
+              component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/DataViews.vue'),
+            }, {
+              path: 'dataView/:id',
+              component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/DataView.vue'),
             }
           ]
         }, {
