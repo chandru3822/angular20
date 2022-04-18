@@ -449,7 +449,7 @@ create index if not exists pd_contact_last_name_idx
   on brs.project_details (contact_last_name);
 alter table brs.project_details drop column if exists setter_user_id;
 alter table brs.project_details drop column if exists closer_user_id;
-alter table brs.project_details drop column if exists contact_name;
+alter table brs.project_details drop column if exists contact_name;--TODO why didn't this drop?
 
 --TODO migrate the contact first name and last name and setter name to project details.
 
