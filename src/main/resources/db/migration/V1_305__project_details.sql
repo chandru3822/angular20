@@ -12,6 +12,7 @@ CREATE TABLE if not exists flow.data_view
   id             serial  not null,
   company_id     integer not null,
   view_name      character varying(63),
+  display_name   character varying(63),
   date_created   timestamp without time zone DEFAULT now() not null,
   date_modified  timestamp without time zone,
   created_by_id  integer not null,
@@ -85,8 +86,8 @@ create index if not exists dvc_process_step_event_id_idx
   on flow.field_config (process_step_event_id);
 
 
-insert into flow.data_view(company_id, view_name, date_created, created_by_id)
-  (select 3, 'project_details', now(), 2350555
+insert into flow.data_view(company_id, view_name, date_created, created_by_id,display_name)
+  (select 3, 'project_details', now(), 2350555,'Project Details'
    where not exists(select id from flow.data_view where view_name = 'project_details'));
 
 create table flow.data_view_field_config
