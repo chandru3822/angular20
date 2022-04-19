@@ -20,20 +20,53 @@
             <v-text-field text v-model="newField.displayName"
                           label="Display Name"/>
             <v-autocomplete
-              v-model="defaultField"
+              v-model="selectedDefaultField"
               :items="defaultFields"
               label="Default Fields"
               attach
               @change="getProcessStepEventData"
               item-text="fieldName"
               return-object></v-autocomplete>
+            <v-autocomplete
+              v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
+              v-model="selectedProcessStepEvent"
+              :items="processStepEvents"
+              label="Default Fields"
+              attach
+              @change="getProcessStepEventData"
+              item-text="fieldName"
+              return-object></v-autocomplete>
           </div>
+          <v-autocomplete v-model="cfgaParentObject"
+                          :items="parentObjects"
+                          label="Parent Object"
+                          item-text="name"
+                          return-object
+                          autocomplete="off"
+                          @input="loadFieldsByParent"
+          >
+            <template slot='item' slot-scope='{ item }'>
+              {{ item.name }}
+            </template>
+          </v-autocomplete>
+          <v-autocomplete v-model="selectedCustomField"
+                          :items="customFields"
+                          label="Custom Field"
+                          item-text="fieldName"
+                          return-object
+                          autocomplete="off">
+            <template slot='item' slot-scope='{ item }'>
+              {{ item.fieldName }}
+            </template>
+          </v-autocomplete>
+
+
           <v-btn :disabled="!newField.displayName"
                  color="primaryCustom" class="white--text mr-2"
                  @click="saveFieldConfig(newField, true)">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, newField = {}]">Cancel</v-btn>
+          <v-btn @click="[addNew = !addNew, newField = {}, selectedProcessStepEvent = {}, selectedDefaultField = {}]">Cancel</v-btn>
         </v-card>
         <v-text-field
           v-model="search"
@@ -83,7 +116,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -92,9 +125,14 @@ export default {
   data() {
     return {
       snackbar: {},
-      defaultField: {},
+      selectedDefaultField: {},
       defaultFields: [],
+      selectedProcessStepEvent: {},
       processStepEvents: [],
+      cfgaParentObject: {},
+      parentObjects: [],
+      selectedCustomField: {},
+      customFields: [],
       constants,
       search: '',
       addNew: false,
@@ -118,6 +156,38 @@ export default {
       this.defaultFields = []
       this.processStepEvents = []
       await this.getAvailableDefaultFields
+    },
+    async loadFieldsByParent() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        if (this.cfgaParentObject.isProcessStep) {
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.cfgaParentObject.id}`)
+          this.customFields = data
+          handleHidingGlobalLoader(this, status)
+        } else {
+          const {data, status} = await getRequest(`/customField/getByParentType/${this.cfgaParentObject.id}`)
+          this.customFields = data
+          handleHidingGlobalLoader(this, status)
+        }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getParentObjects() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`)
+          this.parentObjects = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
     },
     async getProcessStepEventData() {
       if (this.defaultField.objectTypeId === 6) {
