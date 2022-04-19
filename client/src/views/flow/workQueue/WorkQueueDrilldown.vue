@@ -285,7 +285,6 @@ export default {
           }
         })
       } else if (this.workQueue.useEventData && (this.hideFutureEvents || this.hideFutureFollowUps)) {
-        console.log('randaLogger', this.filteredResults)
         this.results = this.filteredResults.filter(r => {
           let noteFilter = true
           if(r.notes && r.notes.length > 0) {
@@ -400,7 +399,9 @@ export default {
             sort: (a, b) => {
               //if it is a date, format the string as a date and sort by that value
               //without the .toString() this fails for numeric values
-              if ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))) {
+              if ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
+                  || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b)))))) {
+                //todo: keep an eye on if Date.parse returns false for regular numbers and such
                 return new Date(a) - new Date(b)
               } else {
                 //otherwise sort normally
@@ -544,7 +545,6 @@ export default {
 
       let dateFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null
       this.results[this.notesPpsIndex].firstNoteCreatedAtFormatted = dateFormatted
-      console.log('randaLogger',matchInFilteredResults)
       matchInFilteredResults.firstNoteCreatedAtFormatted = dateFormatted
 
       this.results[this.notesPpsIndex].firstNoteContent = item.note
