@@ -45,6 +45,34 @@ public class DataViewService {
     return result;
   }
 
+  public Optional<DataViewFieldConfig> addFieldConfig(Long viewId, DataViewFieldConfig field) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", user.trueUserId());
+    params.put("viewId", viewId);
+
+    log.info("WEEEEE GOTTTT HEEEERRRE");
+    //todo turn this back on after figuring out what it needs
+//    Optional<DataViewFieldConfig> result = sqlCache.get("dataView.addFieldConfig", params, DataViewFieldConfig.class);
+//    return result;
+    return null;
+  }
+
+  public List<DataViewFieldConfig> getAvailableDefaultFields(Long viewId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("viewId", viewId);
+    List<DataViewFieldConfig> result = sqlCache.query("dataView.getAvailableDefaultFields", params, DataViewFieldConfig.class);
+    return result;
+  }
+
+  public List<ProcessStepEvent> getAvailablePsEventsForDefaultField(Long viewId, Long defaultFieldId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("viewId", viewId);
+    params.put("defaultFieldId", defaultFieldId);
+    List<ProcessStepEvent> result = sqlCache.query("dataView.getAvailablePsEventsForDefaultField", params, ProcessStepEvent.class);
+    return result;
+  }
+
   public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

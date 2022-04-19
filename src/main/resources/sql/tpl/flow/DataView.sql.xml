@@ -28,4 +28,17 @@
     where dv.id = :viewId
       and dv.company_id = :companyId
   ]]></dataView.getOne>
+
+  <dataView.addField><![CDATA[
+    insert into flow.data_view_field_config()
+    values ()
+  ]]></dataView.addField>
+
+  <dataView.getAvailableDefaultFields><![CDATA[
+    --get all default fields that are not already assigned to this view and not archived
+  ]]></dataView.getAvailableDefaultFields>
+
+  <dataView.getAvailablePsEventsForDefaultField><![CDATA[
+    --get all process steps not already in use by this default field (start time, end time, resource)
+  ]]></dataView.getAvailablePsEventsForDefaultField>
 </sql>

@@ -1,15 +1,14 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.DataView;
+import com.albatross.api.v1.flow.model.DataViewFieldConfig;
+import com.albatross.api.v1.flow.model.ProcessStepEvent;
 import com.albatross.api.v1.flow.services.DataViewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +35,23 @@ public class DataViewController {
   @GetMapping(value = "/{viewId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<DataView> getViewById(@PathVariable Long viewId) {
     return dataViewService.getView(viewId);
+  }
+
+  @PostMapping(value = "/{viewId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<DataViewFieldConfig> addFieldConfig(@PathVariable Long viewId,
+                             @RequestBody DataViewFieldConfig field) {
+    return dataViewService.addFieldConfig(viewId, field);
+  }
+
+  @GetMapping(value = "/{viewId}/getAvailableDefaultFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<DataViewFieldConfig> getAvailableDefaultFields(@PathVariable Long viewId) {
+    return dataViewService.getAvailableDefaultFields(viewId);
+  }
+
+  @GetMapping(value = "/{viewId}/defaultFieldPsEvents/{defaultFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepEvent> getAvailablePsEventsForDefaultField(@PathVariable Long viewId,
+                                                                    @PathVariable Long defaultFieldId) {
+    return dataViewService.getAvailablePsEventsForDefaultField(viewId, defaultFieldId);
   }
 
 }
