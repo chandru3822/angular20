@@ -78,6 +78,13 @@ public class ProcessStepRequirementService {
         ProcessStepRequirementType.class);
   }
 
+  public List<ProcessStepRequirementType> getEventRequirementTypes() {
+    return sqlCache.query(
+      "processStepRequirement.getEventRequirementTypes",
+      Collections.emptyMap(),
+      ProcessStepRequirementType.class);
+  }
+
   public ProcessStepRequirement getRequirementById(Long id) {
 
     HashMap<String, Object> params = new HashMap<>();

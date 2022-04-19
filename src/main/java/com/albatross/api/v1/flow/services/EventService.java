@@ -104,6 +104,13 @@ public class EventService {
     return sqlCache.query("event.getAssignedStatuses", params, CompanyEventStatusType.class);
   }
 
+  public List<CompanyEventStatusType> getAssignedProcessStepEventStatuses(Long pseId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("pseId", pseId);
+
+    return sqlCache.query("event.getAssignedProcessStepEventStatuses", params, CompanyEventStatusType.class);
+  }
+
   public List<ListOfValue> getAssignedEventStatusesByListOfValue(Long eventId) {
     final Long companyId = securityService.getCurrentUser().getCompanyId();
     return sqlCache.query(
