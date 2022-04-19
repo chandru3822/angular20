@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -13,5 +12,5 @@ public class SmartlistError {
 
     private Timestamp dateCreated;
 
-    private String smartlist, fields, requirements, stacktrace;
+    private String smartlist, query, fields, requirements, stacktrace;
 }
