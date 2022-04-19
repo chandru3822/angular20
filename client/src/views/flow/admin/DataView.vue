@@ -14,6 +14,15 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <v-text-field
+          v-model="search"
+          class="mb-2 px-4 py-2"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
+        <v-divider></v-divider>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Field Config</h3>
           i dont know what to do here
@@ -111,7 +120,7 @@
 
 <style lang="scss">
 #data-view-container .v-data-table__wrapper {
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 300px);
   min-height: 300px;
 }
 </style>
