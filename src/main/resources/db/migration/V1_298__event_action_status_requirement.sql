@@ -1,5 +1,5 @@
-select *
-from flow.process_step_requirement_type;
+-- select *
+-- from flow.process_step_requirement_type;
 
 alter table flow.process_step_requirement_type
 add column if not exists use_by_event boolean not null default false;

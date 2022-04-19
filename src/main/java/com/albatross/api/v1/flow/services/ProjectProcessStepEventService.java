@@ -184,7 +184,7 @@ public class ProjectProcessStepEventService {
       for (ProjectProcessStepRequirement r : requirements) {
         try {
           r.setFulfilled(
-              projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId()));
+              projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId(), event.getId()));
         } catch (Exception e) {
           log.error(
               String.format(

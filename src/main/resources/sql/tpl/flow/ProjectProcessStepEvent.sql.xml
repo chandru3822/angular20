@@ -12,6 +12,16 @@
     where id = :ppseId
   ]]></projectProcessStepEvent.delete>
 
+  <projectProcessStepEvent.getWithStatus><![CDATA[
+      select ppse.id,
+             ppse.company_event_status_type_id,
+             cest.event_status_type_id,
+             cest.event_status_type
+      from flow.project_process_step_event ppse
+        inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+      where ppse.id = :ppseId
+  ]]></projectProcessStepEvent.getWithStatus>
+
   <projectProcessStepEvent.getBasic><![CDATA[
       select ppse.*,
              cest.event_status_type,
