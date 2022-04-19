@@ -79,7 +79,7 @@
           </v-btn>
         </v-card>
         <v-data-table
-          v-if="!addNewEventAction"
+          v-show="!addNewEventAction"
           :headers="actionHeaders"
           :items="filterEventActions()"
           :items-per-page="-1"
