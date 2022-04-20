@@ -287,37 +287,37 @@
                       <div v-for="(fp, index) in item.requirementParamDynamicValues" :key="index">
                         <v-text-field
                           v-if="fp.dataTypeId === 1"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="item.immutable || !userCanEdit"
+                          :disabled="item.immutable || !userCanEdit"
                           placeholder="Enter a date"
                           type="date"
                           v-model="fp.dynamicValue"
                           :label="fp.parameterName"></v-text-field>
                         <v-text-field
                           v-if="fp.dataTypeId === 2"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="item.immutable || !userCanEdit"
+                          :disabled="item.immutable || !userCanEdit"
                           placeholder="Enter a timestamp"
                           v-model="fp.dynamicValue"
                           :label="fp.parameterName"></v-text-field>
                         <v-text-field
                           v-if="fp.dataTypeId === 3"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="item.immutable || !userCanEdit"
+                          :disabled="item.immutable || !userCanEdit"
                           placeholder="Enter a boolean"
                           v-model="fp.dynamicValue"
                           :label="fp.parameterName"></v-text-field>
                         <v-text-field
                           v-if="fp.dataTypeId === 4"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="item.immutable || !userCanEdit"
+                          :disabled="item.immutable || !userCanEdit"
                           placeholder="Enter a number"
                           v-model="fp.dynamicValue"
                           :label="fp.parameterName"></v-text-field>
                         <v-text-field
                           v-if="fp.dataTypeId === 6"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="item.immutable || !userCanEdit"
+                          :disabled="item.immutable || !userCanEdit"
                           placeholder="Enter an integer"
                           type="number"
                           step="1"
@@ -325,8 +325,8 @@
                           :label="fp.parameterName"></v-text-field>
                         <v-text-field
                           v-else
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="item.immutable || !userCanEdit"
+                          :disabled="item.immutable || !userCanEdit"
                           placeholder="Enter a dynamic value"
                           v-model="fp.dynamicValue"
                           :label="fp.parameterName"></v-text-field>
@@ -373,6 +373,8 @@
                   <v-autocomplete
                     v-else-if="item.operatorTypeId && [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
                     v-model="item.listOfValues"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
                     :items="item.availableListOfValues"
                     label="Available Values"
                     multiple
@@ -437,8 +439,8 @@
                     <label>Fail if no
                       <strong>{{item.referenceProcessStepName}}</strong> steps are found:</label>
                     <input type="checkbox" class="ml-3 mb-4" v-model="item.failIfNoReferenceStepFound"
-                           :readonly="!userCanEdit"
-                           :disabled="!userCanEdit">
+                           :readonly="item.immutable || !userCanEdit"
+                           :disabled="item.immutable || !userCanEdit">
                   </div>
                   <v-btn v-if="userCanEdit" @click="updateRequirement(item)">
                     <v-icon>save</v-icon>
