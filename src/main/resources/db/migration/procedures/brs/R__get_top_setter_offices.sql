@@ -32,7 +32,8 @@ BEGIN
                             and pd.first_appointment_missed is not null
                             then pd.first_appointment_missed
                         else pd.closer_appointment_start
-                        end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
+                      --end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
+                        end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_days = 1 then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
             and (case when pd.first_appointment_pitched is not null
                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                       when pd.first_appointment_pitched is null
