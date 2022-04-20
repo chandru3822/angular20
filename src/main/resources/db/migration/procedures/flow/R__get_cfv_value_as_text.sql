@@ -1,5 +1,5 @@
-CREATE OR REPLACE FUNCTION flow.get_cfv_value_as_text(p_project_id integer, p_pps_id integer,
-                                                      p_ppse_id integer, p_cfga_id integer)
+-- drop function if exists flow.get_cfv_value_as_text(int, int, int, int);
+CREATE OR REPLACE FUNCTION flow.get_cfv_value_as_text(p_project_id integer, p_ppse_id integer, p_cfga_id integer)
   returns text AS
 $BODY$
 declare
@@ -59,8 +59,8 @@ BEGIN
                when v_cfga_data_type_id = 7 then int_array_value::text end
       into v_cfga_value
       from flow.project_process_step_custom_field_value cfv
-      where cfv.custom_field_group_assignment_id = p_cfga_id
-        and cfv.project_process_step_id = p_pps_id;
+        inner join flow.project_process_step pps on cfv.project_process_step_id = pps.id and pps.main is true and pps.archived is false
+      where cfv.custom_field_group_assignment_id = p_cfga_id;
     elseif (v_cfga_object_type_id = 6) then
       --get the value from event cfv
       select case
