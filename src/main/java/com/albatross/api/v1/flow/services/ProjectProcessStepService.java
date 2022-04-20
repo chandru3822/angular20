@@ -629,7 +629,7 @@ public class ProjectProcessStepService {
     //2 = function
     if (r.getProcessStepRequirementTypeId() == 2) {
       try {
-        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId, null));
+        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId, ppseId));
         String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
         Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
         requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);

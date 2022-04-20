@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container id="functions-admin-container">
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -38,14 +38,12 @@
             ></v-select>
 
             <v-checkbox
-              v-if="newFunction.dbFunctionTypeId === 2"
               type="checkbox"
               v-model="newFunction.processStepActionable"
               label="Allow use by process steps"
             />
 
             <v-checkbox
-              v-if="newFunction.dbFunctionTypeId === 2"
               type="checkbox"
               v-model="newFunction.eventActionable"
               label="Allow use by events"
@@ -65,8 +63,18 @@
           </v-btn>
           <v-btn @click="[addNew = !addNew, newFunction = {}]">Cancel</v-btn>
         </v-card>
+        <v-text-field
+          v-model="search"
+          class="mb-2 px-4 py-2"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
+        <v-divider></v-divider>
         <v-data-table
             :headers="headers"
+            :search="search"
             :items="filterFunctions()"
             :fixed-header="true"
             :items-per-page="-1"
@@ -147,6 +155,7 @@
       return {
         constants,
         snackbar: {},
+        search: '',
         addNew: false,
         functions: [],
         dbFunctionTypes: [],
@@ -246,3 +255,10 @@
     }
   }
 </script>
+
+<style lang="scss">
+#functions-admin-container .v-data-table__wrapper {
+  max-height: calc(100vh - 275px);
+  min-height: 300px;
+}
+</style>

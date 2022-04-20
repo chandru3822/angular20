@@ -128,7 +128,7 @@
                                       rpdv.process_step_event_requirement_id as "processStepEventRequirementId",
                                       rpdv.dynamic_value as "dynamicValue"
                                from flow.db_function_param dfp
-                                      left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_event_requirement_id = psr.id
+                                      left join flow.event_requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_event_requirement_id = psr.id
                                where dfp.db_function_id = cfn.db_function_id
                                  and dfp.parameter_type_id = 2
                                  and rpdv.archived is not true
@@ -348,7 +348,7 @@
                                       rpdv.process_step_event_requirement_id as "processStepEventRequirementId",
                                       rpdv.dynamic_value as "dynamicValue"
                                from flow.db_function_param dfp
-                                      left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
+                                      left join flow.event_requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_event_requirement_id = psr.id
                                where dfp.db_function_id = cfn.db_function_id
                                  and dfp.parameter_type_id = 2
                                  and rpdv.archived is not true
