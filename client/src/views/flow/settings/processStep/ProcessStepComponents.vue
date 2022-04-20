@@ -111,12 +111,17 @@
                   <tr class="clickable" :class="{'shaded-row': index % 2}">
                     <td class="text-left">{{ item.processStepStatusType }}</td>
                     <td class="text-left">{{ item.rootProcessStepStatusType }}</td>
+                    <td class="text-left" v-if="allowNonAdminAdd">
+                      <input type="checkbox" v-model="item.allowNonAdminUse"
+                             @input="saveNonAdminUse($event, item)"
+                             :disabled="!userCanEdit" :readonly="!userCanEdit" />
+                    </td>
                     <td class="text-right">
                       <div class="flex-display">
                         <confirm-delete-dialog
-                            v-if="userCanEdit"
-                            :item-to-delete="item.processStepStatusType"
-                            @confirm-delete="deleteStatusTypeFromStep(item)"
+                          v-if="userCanEdit"
+                          :item-to-delete="item.processStepStatusType"
+                          @confirm-delete="deleteStatusTypeFromStep(item)"
                         ></confirm-delete-dialog>
                       </div>
                     </td>
@@ -169,10 +174,10 @@
                       {{ a.link }} | {{ a.url }}
                     </v-list-item-content>
                     <confirm-delete-dialog
-                        v-if="userCanEdit"
-                        label="this link: "
-                        :item-to-delete="a.link"
-                        @confirm-delete="[a.archived = true, deleteLinkFromStep(a.id)]"
+                      v-if="userCanEdit"
+                      label="this link: "
+                      :item-to-delete="a.link"
+                      @confirm-delete="[a.archived = true, deleteLinkFromStep(a.id)]"
                     ></confirm-delete-dialog>
                   </v-list-item>
                 </v-list>
@@ -222,10 +227,10 @@
                       {{ a.attachmentType }}
                     </v-list-item-content>
                     <confirm-delete-dialog
-                        v-if="userCanEdit"
-                        label="this attachment type: "
-                        :item-to-delete="a.attachmentType"
-                        @confirm-delete="[a.archived = true, deleteTypeFromStep(a.id)]"
+                      v-if="userCanEdit"
+                      label="this attachment type: "
+                      :item-to-delete="a.attachmentType"
+                      @confirm-delete="[a.archived = true, deleteTypeFromStep(a.id)]"
                     ></confirm-delete-dialog>
                   </v-list-item>
                 </v-list>
@@ -249,7 +254,15 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 import orderBy from "lodash.orderby"
 import cloneDeep from 'lodash.clonedeep'
 
-import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getSnackbar,
+  getRequestWithParams
+} from '@/helpers/helpers'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
@@ -260,6 +273,9 @@ export default {
     ProcessStepWorkQueueTypes,
     ProcessStepCustomFieldGroups,
     draggable,
+  },
+  props: {
+    nonAdminAdd: Boolean
   },
   data() {
     return {
@@ -287,11 +303,6 @@ export default {
       availableCompanyProcessStepStatusTypes: [],
       addNewProcessStepStatusType: false,
       newProcessStepStatusTypeId: null,
-      processStepHeaders: [
-        {text: 'Status Type', value: 'statusType', show: true},
-        {text: 'Category', value: 'category', show: true},
-        {text: '', value: 'icons', show: false, width: '100px'},
-      ],
       checkedIds: [],
       breadcrumbs: [
         {
@@ -303,13 +314,26 @@ export default {
       ],
     }
   },
-  computed: {},
+  computed: {
+    allowNonAdminAdd() {
+      return this.nonAdminAdd
+    },
+    processStepHeaders() {
+      let headers = [
+        {text: 'Status Type', value: 'statusType', show: true},
+        {text: 'Category', value: 'category', show: true},
+        {text: 'Allow Non-Admin Use', value: 'allowNonAdminUse', show: this.nonAdminAdd || false},
+        {text: '', value: 'icons', show: true, width: '100px'},
+      ]
+      return headers.filter(h => h.show)
+    },
+  },
   async created() {
     await this.getProcessStepDetails()
   },
   methods: {
     async getCompanyProcessStepStatusTypes() {
-      if(this.addNewProcessStepStatusType) {
+      if (this.addNewProcessStepStatusType) {
         this.companyStatusesLoading = true
         try {
           const {data} = await getAvailableForProcessStep(this.processStepId)
@@ -344,6 +368,23 @@ export default {
           this.cannotDeleteReasons = e.data
         }
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Status Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveNonAdminUse(e, item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let body = {
+          allowNonAdminUse: e.target.checked || false
+        }
+        const {data, status} = await putRequest(`/processStep/status/${item.id}/updateAllowNonAdminUse`, body)
+        this.snackbar = getSnackbar('SUCCESS', 'Changes Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

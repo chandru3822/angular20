@@ -15,6 +15,6 @@ public class ProcessStepCompanyProcessStepStatusType {
 
   private Long id, companyId, processStepId, companyProcessStepStatusTypeId, processStepStatusTypeId, createdById, modifiedById;
   private String processStepStatusType, rootProcessStepStatusType, processStepName;
-  private Boolean archived;
+  private Boolean archived, allowNonAdminUse;
 }
 
