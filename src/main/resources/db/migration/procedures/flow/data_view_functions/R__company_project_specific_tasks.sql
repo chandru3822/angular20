@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.company_project_specific_tasks(p_company_id integer,p_new_company_project_status_type_id integer,
+CREATE OR REPLACE FUNCTION flow.company_project_specific_tasks(p_company_id integer,p_new_company_project_status_type_id integer,
                                                        p_old_company_project_status_type_id integer,
                                                        p_project_id integer)
 

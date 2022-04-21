@@ -128,7 +128,7 @@ BEGIN
         --  values (new.id, SQLERRM);
       --end;
     end loop;
-  perform brs.company_project_specific_tasks(v_company_id, new.company_project_status_type_id,
+  perform flow.company_project_specific_tasks(v_company_id, new.company_project_status_type_id,
                                       old.company_project_status_type_id,
                                       new.id);
 
