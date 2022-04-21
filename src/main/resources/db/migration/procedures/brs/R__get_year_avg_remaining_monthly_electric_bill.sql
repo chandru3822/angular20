@@ -1,11 +1,14 @@
-drop function if exists brs.get_monthly_cost_25_year_average_without_solar(
+drop function if exists brs.get_year_avg_remaining_monthly_electric_bill(
   p_khw_rate numeric,
   p_utility_cost_escalator numeric,
-  p_estimated_annual_consumption numeric);
+  p_adjusted_annual_consumption numeric,
+  p_first_year_annual_production numeric,
+  p_panel_degradation_factor numeric,
+  p_years integer);
 CREATE OR REPLACE FUNCTION brs.get_year_avg_remaining_monthly_electric_bill(
   p_khw_rate numeric,
   p_utility_cost_escalator numeric,
-  p_estimated_annual_consumption numeric,
+  p_adjusted_annual_consumption numeric,
   p_first_year_annual_production numeric,
   p_panel_degradation_factor numeric,
   p_years integer)
@@ -18,7 +21,7 @@ BEGIN
   v_amount = 0;
   FOR i IN 1..p_years LOOP
       v_amount = v_amount + ((p_khw_rate * power((1 + p_utility_cost_escalator),i-1) *
-                              greatest(p_estimated_annual_consumption - (p_first_year_annual_production *
+                              greatest(p_adjusted_annual_consumption - (p_first_year_annual_production *
                                                                          (power(1-p_panel_degradation_factor,i-1))),0))/case when p_years = 25 then 300 else 360 end);
   end loop;
 
