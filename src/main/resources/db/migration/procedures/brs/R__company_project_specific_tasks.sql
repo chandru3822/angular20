@@ -11,7 +11,6 @@ DECLARE
   v_cancelled_date             timestamp;
   v_on_hold_date               timestamp;
   v_off_hold_date              timestamp;
-v_value text;
 BEGIN
   if p_company_id = 3 then
     select pst.id

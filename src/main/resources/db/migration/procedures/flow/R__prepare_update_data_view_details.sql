@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION flow.prepare_update_data_view_details(p_id integer,
                                                          p_sql text,
                                                          p_field_to_update character varying,
                                                          p_value text,
-                                                         p_secondary_field text,
+                                                         p_secondary_field_to_update text,
                                                          p_secondary_value text,
                                                          p_update_first_value_only boolean,
                                                          p_update_first_value_only_id character varying,
@@ -18,8 +18,9 @@ BEGIN
   select flow.get_prepared_value(2, now()::text)
   into v_now;
   if p_add_where_clause is false then
-    if p_secondary_field is not null then
-      p_sql = p_sql || p_secondary_field || $$ = $$ || p_secondary_value || $$ ,$$;
+    if p_secondary_field_to_update is not null then
+         p_sql = p_sql || p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$ ,$$;
+         return p_sql;
     end if;
     p_sql = p_sql || p_field_to_update || $$ = $$ || p_value || $$ ,$$;
     if p_last_row is true then

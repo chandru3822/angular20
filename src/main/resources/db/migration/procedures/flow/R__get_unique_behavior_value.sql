@@ -34,8 +34,15 @@ BEGIN
            inner join flow.state s on cs.state_id = s.id
     where cs.id = p_value;
 
+  elsif p_unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER' then
+    select concat(first_name, ' ', last_name)
+    into v_value
+    from flow.user_position up
+           inner join flow.user u on up.user_id = u.id
+    where up.id = p_value;
+
   elsif p_unique_behavior_type = 'USER_POSITION_ID_TRIGGER' then
-    select first_name || ' ' || last_name
+    select u.id
     into v_value
     from flow.user_position up
            inner join flow.user u on up.user_id = u.id
@@ -60,11 +67,29 @@ BEGIN
            inner join flow.process p on cp.process_id = p.id
     where cp.id = p_value;
 
-  elsif p_unique_behavior_type = 'USER_ID_TRIGGER' then
-    select u.first_name||' '||u.last_name
+  elsif p_unique_behavior_type = 'USER_NAME_BY_ID_TRIGGER' then
+    select concat(u.first_name,' ',u.last_name)
     into v_value
     from flow.user u
     where u.id = p_value;
+
+  elsif p_unique_behavior_type = 'USER_ID_TRIGGER' then
+    select id
+    into v_value
+    from flow.user u
+    where u.id = p_value;
+
+  elsif p_unique_behavior_type = 'CONTACT_NAME_BY_ID_TRIGGER' then
+    select concat(c.first_name,' ',c.last_name)
+    into v_value
+    from flow.contact c
+    where c.id = p_value;
+
+--   elsif p_unique_behavior_type = 'DEFAULT_CFGA_TRIGGER' then
+--     select id
+--     into v_value
+--     from flow.user u
+--     where u.id = p_value;
 
   end if;
   return v_value;

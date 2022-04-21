@@ -2,12 +2,11 @@ CREATE OR REPLACE FUNCTION flow.contact_details()
   RETURNS TRIGGER AS
 $body$
 declare
-  v_project_ids    text;
-  x                record;
-  v_sql            text;
-  z                record;
-  v_value          text;
-  v_second_value   text;
+  v_project_ids       text;
+  x                   record;
+  v_sql               text;
+  z                   record;
+  v_value             text;
 BEGIN
   select quote_literal(array_agg(id)::text)
   into v_project_ids
@@ -15,59 +14,38 @@ BEGIN
   where contact_id = new.id;
 
   if v_project_ids is not null then
-    for z in select c.schema_name, dv.view_name, dv.id
-             from flow.company c
-                    inner join flow.data_view dv on c.id = dv.company_id
-             where c.id = new.company_id
+    for z in select * from brs.get_schema_by_company(new.company_id)
       loop
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-        for x in select fc.field_to_update,
-                        fc.secondary_field,
-                        fc.secondary_data_type_id,
-                        fc.update_first_value_only,
-                        fc.update_first_value_only_id,
-                        df.column_name,
-                        df.unique_behavior_type_id,
-                        ubt.unique_behavior_type,
-                        dt.id                                as data_type_id,
-                        lead(fc.id) OVER () IS NULL::boolean AS is_last_row
-                 from flow.data_view_field_config dvfc
-                        inner join flow.field_config fc on fc.id = dvfc.field_config_id
-                        inner join flow.default_field df
-                                   on fc.default_field_id = df.id and df.watched_by_trigger is true
-                        left join flow.unique_behavior_type ubt on df.unique_behavior_type_id = ubt.id
-                        inner join flow.data_type dt on df.data_type_id = dt.id
-                        inner join flow.object_type ot on df.object_type_id = ot.id and ot.object_code = 'CONTACT'
-                 where dvfc.data_view_id = z.id
+        for x in select * from brs.get_data_view_field_configs(z.id,
+                                                               'CONTACT')
           loop
             execute format('SELECT $1.%I', x.column_name)
               into v_value using new;
-            if x.secondary_field is not null then
-              select flow.get_unique_behavior_value(x.unique_behavior_type, v_value::integer)
-              into v_second_value;
-              select flow.get_prepared_value(x.secondary_data_type_id, v_second_value)
-              into v_second_value;
-            end if;
-            select flow.get_prepared_value(x.data_type_id, v_value)
-            into v_value;
-            select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                 v_value, x.secondary_field, v_second_value,
-                                                 x.update_first_value_only,
-                                                 x.update_first_value_only_id,
-                                                 x.is_last_row)
-            into v_sql;
+            select *
+            into v_sql
+            from brs.execute_data_view_field_configs(x.contains_children,
+                                                     v_value,
+                                                     x.dvfc_id,
+                                                     new.id,
+                                                     v_sql,
+                                                     x.field_to_update,
+                                                     x.update_first_value_only,
+                                                     x.update_first_value_only_id,
+                                                     x.is_last_row,
+                                                     x.data_type_id);
           end loop;
         select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                             v_value, x.secondary_field, v_second_value,
-                                             x.update_first_value_only,
-                                             x.update_first_value_only_id,
-                                             x.is_last_row, true, v_project_ids)
+                                                     v_value, null, null,
+                                                     x.update_first_value_only,
+                                                     x.update_first_value_only_id,
+                                                     x.is_last_row, true, v_project_ids)
         into v_sql;
-       -- begin
-          execute v_sql;
-       -- exception
-       --   when others then
+        -- begin
+        execute v_sql;
+        -- exception
+        --   when others then
         --    insert into flow.trigger_error(project_process_step_custom_value_id, error)
         --    values (new.id, SQLERRM);
         --end;
@@ -97,7 +75,6 @@ declare
   v_company_id   integer;
   v_project_ids  text;
   v_value        text;
-  v_second_value text;
 BEGIN
   select company_id
   into v_company_id
@@ -113,52 +90,32 @@ BEGIN
 
   select quote_literal(array_agg(new.id)::text)
   into v_project_ids;
-  for z in select c.schema_name, dv.view_name, dv.id
-           from flow.company c
-                  inner join flow.data_view dv on c.id = dv.company_id
-           where c.id = v_company_id
+
+  for z in select * from brs.get_schema_by_company(v_company_id)
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select fc.field_to_update,
-                      fc.secondary_field,
-                      fc.secondary_data_type_id,
-                      fc.update_first_value_only,
-                      fc.update_first_value_only_id,
-                      df.column_name,
-                      df.unique_behavior_type_id,
-                      ubt.unique_behavior_type,
-                      dt.id                                as data_type_id,
-                      lead(fc.id) OVER () IS NULL::boolean AS is_last_row
-               from flow.data_view_field_config dvfc
-                      inner join flow.field_config fc on fc.id = dvfc.field_config_id
-                      inner join flow.default_field df
-                                 on fc.default_field_id = df.id and df.watched_by_trigger is true
-                      left join flow.unique_behavior_type ubt on df.unique_behavior_type_id = ubt.id
-                      inner join flow.data_type dt on df.data_type_id = dt.id
-                      inner join flow.object_type ot on df.object_type_id = ot.id and ot.object_code = 'PROJECT'
-               where dvfc.data_view_id = z.id
+      for x in select * from brs.get_data_view_field_configs(z.id,
+                                                             'PROJECT')
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
-          if x.secondary_field is not null then
-            select flow.get_unique_behavior_value(x.unique_behavior_type, v_value::integer)
-            into v_second_value;
-            select flow.get_prepared_value(x.secondary_data_type_id, v_second_value)
-            into v_second_value;
-          end if;
-          select flow.get_prepared_value(x.data_type_id, v_value)
-          into v_value;
-          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                               v_value, x.secondary_field, v_second_value,
-                                               x.update_first_value_only,
-                                               x.update_first_value_only_id,
-                                               x.is_last_row)
-          into v_sql;
+          select *
+          into v_sql
+          from brs.execute_data_view_field_configs(x.contains_children,
+                                                   v_value,
+                                                   x.dvfc_id,
+                                                   new.id,
+                                                   v_sql,
+                                                   x.field_to_update,
+                                                   x.update_first_value_only,
+                                                   x.update_first_value_only_id,
+                                                   x.is_last_row,
+                                                   x.data_type_id);
 
         end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                           v_value, x.secondary_field, v_second_value,
+                                           v_value, null, null,
                                            x.update_first_value_only,
                                            x.update_first_value_only_id,
                                            x.is_last_row, true, v_project_ids)
