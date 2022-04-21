@@ -59,7 +59,7 @@ declare
   v_eto_rebate_unit_type_id                                integer;
   v_federal_unit_type_id                                   integer;
   v_monthly_cost_today_without_solar                       numeric;
-  v_monthly_cost_today_with_blue_power                     numeric;
+  v_monthly_cost_today_with_solar                    numeric;
   v_monthly_cost_today_avg_remaining_electrical_bill       numeric;
   v_monthly_payment_all_tax_credits_and_rebates_to_loan    numeric;
   v_monthly_payment_no_tax_credits_and_rebates_to_loan     numeric;
@@ -95,6 +95,16 @@ declare
   v_led_light_bulbs_adder                                  numeric;
   v_energy_efficiency_reduction_thermostat                 numeric;
   v_energy_efficiency_reduction_light_bulbs                numeric;
+  v_adjusted_annual_consumption                            numeric;
+  v_instantly_used                                         numeric;
+  v_sent_to_grid                                           numeric;
+  v_after_net_metering                                     numeric;
+  v_adjusted_annual_production                             numeric;
+  v_instant_use_assumption                                 numeric;
+  v_net_metring_rate                                       numeric;
+  v_cost_of_solar                                          numeric;
+  v_monthly_cost_30_year_average_with_solar                numeric;
+  v_reamortized_payment_factor_without_itc_paydown         numeric;
 BEGIN
   select proposal_version_id,
          prop.project_process_step_id,
@@ -853,6 +863,38 @@ BEGIN
   raise notice 'v_panel_brand_id = % ',v_panel_brand_id;
   raise notice 'v_state_id = % ',v_state_id;
 
+  select value::numeric
+  into v_instant_use_assumption
+  from proposal_value pv1
+  where pv1.field_id = 147
+    and object_code = 'PROPOSAL_PRICING';
+
+  select value::numeric
+  into v_reamortized_payment_factor_without_itc_paydown
+  from proposal_value pv1
+  where pv1.field_id = 148
+    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+  raise notice 'v_reamortized_payment_factor_without_itc_paydown = % ',v_reamortized_payment_factor_without_itc_paydown;
+
+
+  select value::numeric
+  into v_net_metring_rate
+  from proposal_value pv1
+  where pv1.field_id = 92
+    and object_code = 'PROPOSAL_PRICING';
+
+  v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;
+  v_sent_to_grid = v_first_year_production_estimate - v_instantly_used;
+  v_after_net_metering = v_sent_to_grid * v_net_metring_rate;
+  v_adjusted_annual_production = v_instantly_used + v_after_net_metering;
+
+  raise notice 'v_instant_use_assumption = % ',v_instant_use_assumption;
+  raise notice 'v_net_metring_rate = % ',v_net_metring_rate;
+  raise notice 'v_instantly_used = % ',v_instantly_used;
+  raise notice 'v_sent_to_grid = % ',v_sent_to_grid;
+  raise notice 'v_after_net_metering = % ',v_after_net_metering;
+  raise notice 'v_adjusted_annual_production = % ',v_adjusted_annual_production;
+
 
   with smart_thermostat as (select proposal_group_uuid
                             from proposal_value
@@ -1020,15 +1062,6 @@ BEGIN
     and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
   raise notice 'v_initial_payment_factor = %',v_initial_payment_factor;
 
-  v_promotion_cost =
-      ((v_initial_system_cost + v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
-        v_misc_adders) * v_initial_payment_factor * 18)
-      /
-      (1 - v_dealer_fee - (v_initial_payment_factor * 18));
-  raise notice 'v_promotion_cost = %',v_promotion_cost;
-
-  raise notice 'v_down_payment_amount = %',v_down_payment_amount;
-
   v_smart_thermostat_adder = 0.00::numeric;
   if v_smart_thermostat is not null and v_smart_thermostat_value is not null then
     v_smart_thermostat_adder = v_smart_thermostat * v_smart_thermostat_value;
@@ -1040,10 +1073,28 @@ BEGIN
   end if;
   raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
+  v_promotion_cost = 0.00;
+  if v_product_id = 293 then
+    v_promotion_cost =
+        ((v_initial_system_cost + v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
+          v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder) * v_initial_payment_factor * 18)
+        /
+        (1 - v_dealer_fee - (v_initial_payment_factor * 18));
+  elsif v_product_id = 19424 then
+    v_promotion_cost =  ((v_initial_system_cost + v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
+                         v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder) *
+                        (v_reamortization_factor - v_initial_payment_factor ) * 42)/(1-v_dealer_fee-(v_reamortization_factor-v_initial_payment_factor)*
+                                                                                                  42);
+  end if;
+  raise notice 'v_promotion_cost = %',v_promotion_cost;
+
+  raise notice 'v_down_payment_amount = %',v_down_payment_amount;
+
+
   v_total_loan_amount_before_rebate = ((v_initial_system_cost - v_down_payment_amount) + v_equipment_inverter_adder +
                                        v_equipment_panel_adder + v_equipment_storage_adder +
                                        v_smart_thermostat_adder + v_led_light_bulbs_adder +
-                                       v_misc_adders + case when v_product_id = 293 then v_promotion_cost else 0 end +
+                                       v_misc_adders + v_promotion_cost +
                                        (select value::numeric
                                         from proposal_value
                                         where field_id = 119
@@ -1176,11 +1227,20 @@ BEGIN
 
   raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
 
+  v_total_ee_reduction =
+    greatest(((v_estimated_annual_energy_consumption_kwh * v_energy_efficiency_reduction_thermostat) +
+              (v_energy_efficiency_reduction_light_bulbs * v_led_light_bulbs)),
+             v_estimated_annual_energy_consumption_kwh * .2);
+  raise notice 'v_total_ee_reduction = %',v_total_ee_reduction;
+
+  v_adjusted_annual_consumption = v_estimated_annual_energy_consumption_kwh::numeric - v_total_ee_reduction;
+  raise notice 'v_adjusted_annual_consumption = %',v_adjusted_annual_consumption;
+
   v_remaining_monthly_electric_bill_25_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
-    v_estimated_annual_energy_consumption_kwh,
-    v_first_year_production_estimate,
+    v_adjusted_annual_consumption,
+    v_adjusted_annual_production,
     v_panel_degradation_factor,
     25);
   raise notice 'v_remaining_monthly_electric_bill_25_year_average = %',v_remaining_monthly_electric_bill_25_year_average;
@@ -1188,27 +1248,49 @@ BEGIN
   v_remaining_monthly_electric_bill_30_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
-    v_estimated_annual_energy_consumption_kwh,
-    v_first_year_production_estimate,
+    v_adjusted_annual_consumption,
+    v_adjusted_annual_production,
     v_panel_degradation_factor,
     30);
   raise notice 'v_remaining_monthly_electric_bill_30_year_average = %',v_remaining_monthly_electric_bill_30_year_average;
 
-  v_monthly_cost_25_year_average_without_solar = brs.get_monthly_cost_25_year_average_without_solar(
+  v_monthly_cost_25_year_average_without_solar = brs.get_monthly_cost_average_without_solar(
     v_current_estimated_cost_per_kwh::numeric,
     v_utility_cost_escalator,
-    v_estimated_annual_energy_consumption_kwh::numeric);
+    v_estimated_annual_energy_consumption_kwh::numeric,
+    300,
+    25);
   raise notice 'v_monthly_cost_25_year_average_without_solar = %',v_monthly_cost_25_year_average_without_solar;
 
+  v_monthly_cost_30_year_average_without_solar = brs.get_monthly_cost_average_without_solar(
+    v_current_estimated_cost_per_kwh::numeric,
+    v_utility_cost_escalator,
+    v_estimated_annual_energy_consumption_kwh::numeric,
+    360,
+    30);
+  raise notice 'v_monthly_cost_30_year_average_without_solar = %',v_monthly_cost_30_year_average_without_solar;
+
+
+  v_monthly_payment_all_tax_credits_and_rebates_to_loan_19 =
+      (v_total_loan_amount - v_federal_tax_incentive_amount - v_state_rebate_amount) * v_reamortization_factor;
+
+  raise notice 'v_monthly_payment_all_tax_credits_and_rebates_to_loan_19 = %',v_monthly_payment_all_tax_credits_and_rebates_to_loan_19;
+
+  v_cost_of_solar = v_monthly_payment_all_tax_credits_and_rebates_to_loan_19 * 12 * v_loan_term;
+  raise notice 'v_cost_of_solar = %',v_cost_of_solar;
+
   v_monthly_cost_25_year_average_with_solar = v_remaining_monthly_electric_bill_25_year_average +
-                                              ((v_monthly_solar_payment * 12 * v_loan_term) / 300)
+                                              ((v_monthly_payment_all_tax_credits_and_rebates_to_loan_19 * 12 *
+                                                v_loan_term) / 300)
     + (v_down_payment_amount / 300);
   raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
 
-  v_monthly_cost_30_year_average_without_solar = v_remaining_monthly_electric_bill_30_year_average +
-                                                 ((v_monthly_solar_payment * 12 * v_loan_term) / 360)
+  v_monthly_cost_30_year_average_with_solar = v_remaining_monthly_electric_bill_30_year_average +
+                                              ((v_monthly_payment_all_tax_credits_and_rebates_to_loan_19 * 12 *
+                                                v_loan_term) / 360)
     + (v_down_payment_amount / 360);
-  raise notice 'v_monthly_cost_30_year_average_without_solar = %',v_monthly_cost_30_year_average_without_solar;
+  raise notice 'v_monthly_cost_30_year_average_with_solar = %',v_monthly_cost_30_year_average_with_solar;
+
 
   v_total_cost_25_years = brs.get_year_cost_by_years(
     v_current_estimated_cost_per_kwh,
@@ -1227,28 +1309,21 @@ BEGIN
   v_total_savings_25_years = v_total_cost_25_years - (v_monthly_cost_25_year_average_with_solar * 300);
   raise notice 'v_total_savings_25_years = %',v_total_savings_25_years;
 
-  v_total_savings_30_years = v_total_cost_30_years - (v_monthly_cost_30_year_average_without_solar * 360);
+  v_total_savings_30_years = v_total_cost_30_years - (v_monthly_cost_30_year_average_with_solar * 360);
   raise notice 'v_total_savings_30_years = %',v_total_savings_30_years;
 
   v_monthly_cost_today_without_solar =
         v_estimated_annual_energy_consumption_kwh * v_current_estimated_cost_per_kwh / 12;
   raise notice 'v_monthly_cost_today_without_solar = %',v_monthly_cost_today_without_solar;
 
-
-
-  v_total_ee_reduction =
-    greatest(((v_estimated_annual_energy_consumption_kwh * v_energy_efficiency_reduction_thermostat) +
-              (v_energy_efficiency_reduction_light_bulbs * v_led_light_bulbs)),
-             v_estimated_annual_energy_consumption_kwh * .2);
-  raise notice 'v_total_ee_reduction = %',v_total_ee_reduction;
-
-  v_estimated_offset = (v_first_year_production_estimate::numeric /
-                        (v_estimated_annual_energy_consumption_kwh::numeric - v_total_ee_reduction))::numeric;
+  v_estimated_offset = (v_adjusted_annual_production::numeric /
+                        (v_adjusted_annual_consumption))::numeric;
   raise notice 'v_estimated_offset = %',v_estimated_offset;
 
   v_monthly_cost_today_avg_remaining_electrical_bill = greatest(0.00::numeric, (v_current_estimated_cost_per_kwh *
-                                                                    (v_estimated_annual_energy_consumption_kwh -
-                                                                     v_first_year_production_estimate-v_total_ee_reduction)) / 12);
+                                                                                (v_adjusted_annual_consumption -
+                                                                                 v_adjusted_annual_production)) /
+                                                                               12);
   raise notice 'v_monthly_cost_today_avg_remaining_electrical_bill = %',v_monthly_cost_today_avg_remaining_electrical_bill;
 
   v_monthly_payment_all_tax_credits_and_rebates_to_loan = v_total_loan_amount * v_initial_payment_factor;
@@ -1256,11 +1331,6 @@ BEGIN
 
   v_monthly_payment_no_tax_credits_and_rebates_to_loan = v_total_loan_amount * v_initial_payment_factor;
   raise notice 'v_monthly_payment_no_tax_credits_and_rebates_to_loan = %',v_monthly_payment_no_tax_credits_and_rebates_to_loan;
-
-  v_monthly_payment_all_tax_credits_and_rebates_to_loan_19 =
-      (v_total_loan_amount - v_federal_tax_incentive_amount - v_state_rebate_amount) * v_reamortization_factor;
-
-  raise notice 'v_monthly_payment_all_tax_credits_and_rebates_to_loan_19 = %',v_monthly_payment_all_tax_credits_and_rebates_to_loan_19;
 
   v_monthly_payment_no_tax_credits_and_rebates_to_loan_19 = v_total_loan_amount * v_reamortization_factor;
 
@@ -1273,11 +1343,11 @@ BEGIN
 
   raise notice 'v_monthly_payment_no_tax_credits_and_rebates_to_loan_26 = %',v_monthly_payment_no_tax_credits_and_rebates_to_loan_26;
 
-  v_monthly_cost_today_with_blue_power = greatest(0, (v_current_estimated_cost_per_kwh *
-                                                      (v_estimated_annual_energy_consumption_kwh -
-                                                       v_first_year_production_estimate-v_total_ee_reduction)) / 12) +
+  v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
+                                                      (v_adjusted_annual_consumption -
+                                                       v_adjusted_annual_production)) / 12) +
                                          v_monthly_payment_all_tax_credits_and_rebates_to_loan_19;
-  raise notice 'v_monthly_cost_today_with_blue_power = %',v_monthly_cost_today_with_blue_power;
+  raise notice 'v_monthly_cost_today_with_solar = %',v_monthly_cost_today_with_solar;
 
   v_net_system_cost = v_total_system_cost - v_referral_promotion - v_federal_tax_incentive_amount - v_above_line_rebate;
   raise notice 'v_net_system_cost = %',v_net_system_cost;
@@ -1307,6 +1377,74 @@ BEGIN
   v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount;
   raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
 
+  --   if p_insert_prop_log_history is true then
+--     insert into brs.proposal_log_history(filename, project_id, fullname, address, city, state, zip, phone,
+--                                          email, loan_type, loan_term, interest_rate, optional_down_payment,
+--                                          number_of_leds, number_of_ecobees, cost_per_kwh_before_solar, cost_per_kwh_after_solar,
+--                                          bp_plus_promotion, velocity_marketing, military_discount, show_graph, year_1_kwh_output,
+--                                          panel_number, panel_wattage, system_size, panel, number_of_inverters, inverter_mfg,
+--                                          inverter_default_model, inverter_custom_getting, number_of_monitors, monitor,
+--                                          utility_name, rate_structure, total_yearly_usage_pre_solar, tile_roof_adder,
+--                                          hidden_conduit_adder, flat_roof_adder, upsize_inverter, extra_adder, option_3_adder,
+--                                          extra_promotion_cost, plane_1_number_of_panels, plane_1_tsrf, plane_2_number_of_panels,
+--                                          plane_2_tsrf, plane_3_number_of_panels, plane_3_tsrf, plane_4_number_of_panels,
+--                                          plane_4_tsrf, plane_5_number_of_panels, plane_5_tsrf, plane_6_number_of_panels,
+--                                          plane_6_tsrf, plane_7_number_of_panels, plane_7_tsrf, automatic_adder,
+--                                          automatic_adder_cost, tile_roof_adder_cost, three_kw_adder, three_kw_adder_cost,
+--                                          four_kw_adder, four_kw_adder_cost, upsize_inverter_adder_cost, panel_adder,
+--                                          panel_adder_cost, flat_roof_adder_cost, hidden_conduit_adder_cost, total_adder_costs,
+--                                          ee_cost_per_watt, funding_amount, loan_fundingw, loan_cost_to_customer,
+--                                          total_cost_to_customer, offset_percent, dealer_fee, utility_escalator,
+--                                          solar_degradation, home_appreciationw, funding_cap, production_factor,
+--                                          south_production, south_production_dollarw, eastwest_production, eastwest_production_dollarw,
+--                                          total_cost, down_payment_above_line_incentive, referral_promotion,
+--                                          loan_funding_amount, loan_amount, itc, state_tax_credit, customer_oop_itc_only_applied,
+--                                          customer_oop_all_rebates_applied, average_monthly_usage_before_solar,
+--                                          average_monthly_power_costs_before_solar, average_monthly_usage_after_solar,
+--                                          average_monthly_solar_production, monthly_solar_costs, average_monthly_leftover_utility_power_kwh,
+--                                          average_leftover_utility_rate, average_monthly_utility_cost_after_solar,
+--                                          average_monthly_power_cost_after_solar, total_monthly_savings,
+--                                          current_monthly_consumption, consumption_after_ee, kwh_savings_from_ee,
+--                                          percent_saving_from_ee, current_yearly_consumption, yearly_consumption_after_ee,
+--                                          total_added_home_value_estimate, twenty_five_year_cost_of_power_before_solar,
+--                                          twenty_five_energy_cost, lifetime_savings, twenty_five_year_remaining_utility_bill,
+--                                          twenty_five_year_production, thirty_five_year_production, thirty_five_year_solar_cost,
+--                                          thirty_five_year_solar_cost_per_kwh, thirty_five_year_utility_usage,
+--                                          thirty_five_year_cost_before_solar, thirty_five_year_cost_per_kw_before_solar,
+--                                          current_utility_oet_rebate_per_watt, current_max_oet_rebate, current_oet_rebate,
+--                                          max_or_tax_credit, current_or_tax_credit, choice_pf, choice_payment,
+--                                          month_eighteen_payment, eighteen_plus_payment, month_eighteen_payment_itc_only,
+--                                          eighteen_plus_payment_itc_only, month_eighteen_payment_all_incentives,
+--                                          eighteen_plus_payments_all_incentives, date_created,
+--                                          promotion_eighteen_months_free, secondary_loan_amount, salal_primary_loan_monthly_payment,
+--                                          salal_prmiary_loan_total_payment, salal_primary_loan_finance_charge,
+--                                          salal_primary_loan_total_sales_price, salal_secondary_loan_monthly_payment,
+--                                          salal_secondary_loan_total_payments, salal_secondary_loan_finance_charge,
+--                                          lead_source, non_standard_work, proposal_date, proposal_nbr, source, proposal_log_id,
+--                                          non_standard_work_2, zip_code_zone, proposal_owner, non_standard_work_1, non_standard_work_1_cost,
+--                                          non_standard_work_2_cost, non_standard_work_3, non_standard_work_3_cost,
+--                                          extra_adders_dollar_per_watt, bp_plus_amount, project_owner, cost_per_watt_adder,
+--                                          eto_eligible_kw, nv_energy_system_size_for_rebate, above_line_item_type,
+--                                          state_incentive_type, gallons_of_gasoline, home_electricity_use_for_one_year,
+--                                          trees_growing_for_ten_years, tons_of_waste_sent_to_landfill, is_epc, epc_price,
+--                                          aurora_design_id, five_year_payoff, six_year_payoff, seven_year_payoff, eight_year_payoff,
+--                                          nine_year_payoff, ten_year_payoff, eleven_year_payoff, twelve_year_payoff, thirteen_year_payoff,
+--                                          fourteen_year_payoff, fifteen_year_payoff, twenty_year_payoff, sunlight_hash_id,
+--                                          monthly_cost_today_after_solar, monthly_cost_5_years_after_solar, monthly_cost_5_years_before_solar,
+--                                          twenty_five_year_cost_before_solar, twenty_five_year_savings_after_solar,
+--                                          monthly_payment_first_5_years_tax_to_loan, monthly_payment_first_5_years_tax_and_savings_to_loan,
+--                                          monthly_payment_6_to_24_years_tax_to_loan, monthly_payment_6_to_24_years_tax_and_savings_to_loan,
+--                                          monthly_payment_first_5_years_no_incentive, monthly_payment_6_to_24_years_no_incentive,
+--                                          smart_start_months_19_to_60_monthly_rebate, month_19_required_payment, month_0_to_18_loan_payment,
+--                                          month_0_to_18_net_payment, month_19_to_60_net_payment, month_60_plus_net_payment,
+--                                          total_ancillary_cost, loan_product, number_of_promotion_payments, promotion_payment_amount,
+--                                          proposal_tool_version, storage_brand, storage_size_kwh, financed_ancillary_cost_with_fees,
+--                                          financed_system_cost_with_fees, discount, manual_adjustment, total_promotion_amount,
+--                                          storage_cost_with_fees, site_survey_resource_type, site_survey_time_estimate, site_survey_items,
+--                                          sunpower_url)
+--         values ()
+--   end if;
+
   return query
     select v_monthly_cost_25_year_average_without_solar,
            v_monthly_cost_30_year_average_without_solar,
@@ -1319,7 +1457,7 @@ BEGIN
            v_total_savings_30_years,
            v_monthly_solar_payment,
            v_monthly_cost_today_without_solar,
-           v_monthly_cost_today_with_blue_power,
+           v_monthly_cost_today_with_solar,
            v_monthly_cost_today_avg_remaining_electrical_bill,
            v_monthly_payment_all_tax_credits_and_rebates_to_loan,
            v_monthly_payment_no_tax_credits_and_rebates_to_loan,
@@ -1389,7 +1527,17 @@ BEGIN
            v_led_light_bulbs_value,
            v_led_light_bulbs_adder,
            v_energy_efficiency_reduction_light_bulbs,
-           v_energy_efficiency_reduction_thermostat;
+           v_energy_efficiency_reduction_thermostat,
+           v_adjusted_annual_consumption,
+           v_instantly_used,
+           v_sent_to_grid,
+           v_after_net_metering,
+           v_adjusted_annual_production,
+           v_instant_use_assumption,
+           v_net_metring_rate,
+           v_cost_of_solar,
+           v_monthly_cost_30_year_average_with_solar,
+           v_reamortized_payment_factor_without_itc_paydown;
   drop table proposal_value;
 
 END

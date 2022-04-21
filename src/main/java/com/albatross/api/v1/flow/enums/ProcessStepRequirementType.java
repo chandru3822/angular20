@@ -8,7 +8,8 @@ public enum ProcessStepRequirementType {
     PROCESS_STEP_STATUS(7L),
     PROCESS_STEP_STATUS_CATEGORY(8L),
     PROJECT_STATUS(9L),
-    PROJECT_STATUS_CATEGORY(10L);
+    PROJECT_STATUS_CATEGORY(10L),
+    EVENT_STATUS(11L);
 
     public final Long id;
 

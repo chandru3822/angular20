@@ -1536,8 +1536,12 @@ where smartlist_id = :oldId and archived is not true
 ]]></smartlist.copyRequirements>
 
 <smartlist.addError><![CDATA[
-  insert into flow.smartlist_error(smartlist_id, smartlist, smartlist_fields, smartlist_requirements, stacktrace, created_by)
-  values (:smartlistId, :smartlist::jsonb, :fields::jsonb, :requirements::jsonb, :stacktrace, :createdById)
+  insert into flow.smartlist_error(smartlist_id, smartlist, smartlist_fields, smartlist_requirements, stacktrace, created_by, query)
+  values (:smartlistId, :smartlist::jsonb, :fields::jsonb, :requirements::jsonb, :stacktrace, :createdById, :query)
 ]]></smartlist.addError>
+
+<smartlist.isSyntaxValid><![CDATA[
+  select * from flow.is_syntax_valid(:query)
+]]></smartlist.isSyntaxValid>
 </sql>
 

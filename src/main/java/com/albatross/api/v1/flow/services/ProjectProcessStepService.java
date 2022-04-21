@@ -55,27 +55,16 @@ import java.util.stream.Collectors;
 public class ProjectProcessStepService {
 
   private final SqlCache sqlCache;
-
   private final SecurityService securityService;
-
   private final ProjectService projectService;
-
   private final AttachmentService attachmentService;
-
   private final AmazonS3 s3;
-
   private final ProcessStepActionService processStepActionService;
-
   private final ObjectMapper om;
-
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
-
   private final CustomFieldValueService customFieldValueService;
-
   private final GoodleapService goodleapService;
-
   private final AuroraProxy auroraService;
-
   private final ListOfValueService listOfValueService;
 
   @Value("${aws.storageBucket}")
@@ -482,6 +471,15 @@ public class ProjectProcessStepService {
       return createdPpsIds;
   }
 
+  //putting this here due to circular reference issue i dont want to solve. yes it is weird i know
+  public Optional<ProjectProcessStepEvent> getPpseEventWithStatus(Long ppseId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ppseId", ppseId);
+
+    Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.getWithStatus", params, ProjectProcessStepEvent.class);
+    return result;
+  }
+
   @Transactional
   public List<Long> performAction(ProcessStepAction action, ProjectProcessStep pps, List<Long> performedActions) {
     /*
@@ -619,14 +617,19 @@ public class ProjectProcessStepService {
     return action;
   }
 
-  // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
   public boolean isRequirementMet(ProjectProcessStepRequirement r, Long ppsId) throws Exception {
+    return isRequirementMet(r, ppsId, null);
+  }
+
+  // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
+  public boolean isRequirementMet(ProjectProcessStepRequirement r, Long ppsId, Long ppseId) throws Exception {
 
     boolean requirementMet = false;
 
+    //2 = function
     if (r.getProcessStepRequirementTypeId() == 2) {
       try {
-        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId, null));
+        String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId, ppseId));
         String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
         Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
         requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
@@ -641,6 +644,9 @@ public class ProjectProcessStepService {
       // 9 = check project status type
       // 8 = check project status category type
       requirementMet = calculateStatusRequirement(r, ppsId, true, r.getProcessStepRequirementTypeId());
+    } else if (r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.EVENT_STATUS.id)) {
+      //11 = company event status check
+      requirementMet = calculateEventStatusRequirement(r, ppseId, r.getProcessStepRequirementTypeId());
     } else {
 //      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
 
@@ -726,6 +732,21 @@ public class ProjectProcessStepService {
       }
 
       return passed;
+  }
+
+  public boolean calculateEventStatusRequirement(ProjectProcessStepRequirement requirement, Long ppseId, Long requirementTypeId) {
+    boolean passed = false;
+
+    Optional<ProjectProcessStepEvent> ppseWithStatus = getPpseEventWithStatus(ppseId);
+    if(ppseWithStatus.isPresent()) {
+      // check if the status is in one of the statuses
+      //use this one vv when they change to want event category too
+      //int idToCheck = requirementTypeId.equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.EVENT_STATUS.id) ? ppseWithStatus.get().getCompanyEventStatusTypeId().intValue() : ppseWithStatus.get().getEventStatusTypeId().intValue();
+      int idToCheck = ppseWithStatus.get().getCompanyEventStatusTypeId().intValue();
+      passed = requirement.getListOfValueIds().contains(idToCheck);
+    }
+
+    return passed;
   }
 
   public boolean calculateStatusRequirement(ProjectProcessStepRequirement requirement, Long projectProcessStepId, Boolean isProject, Long requirementTypeId) {

@@ -438,7 +438,7 @@ public class SmartlistService {
       try {
           results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
       } catch (Exception e) {
-          saveError(smartlist, fields, e);
+          saveError(smartlist, query, fields, e);
           throw e;
       }
 
@@ -486,7 +486,7 @@ public class SmartlistService {
       try {
           results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
       } catch (Exception e) {
-          saveError(smartlist, fields, e);
+          saveError(smartlist, query, fields, e);
           throw e;
       }
 
@@ -4996,10 +4996,11 @@ public class SmartlistService {
     }
   }
 
-  private void saveError(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Exception e) {
+  private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, Exception e) {
       Map<String, Object> params = new HashMap<>();
       params.put("smartlistId", smartlist.getId());
       params.put("createdById", securityService.getCurrentUser().getId());
+      params.put("query", query);
 
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);

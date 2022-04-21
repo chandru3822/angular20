@@ -13,7 +13,7 @@
           Actions using this requirement:
           <v-list v-for="(item, index) in actionsUsingLogic" :key="index">
             <v-list-item-content>
-              {{item.actionName}}
+              {{ item.actionName }}
             </v-list-item-content>
           </v-list>
 
@@ -42,7 +42,7 @@
           <v-toolbar-items>
             <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text v-if="userCanAdd">
               <v-icon v-if="!addNewRequirement">add</v-icon>
-              {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
+              {{ addNewRequirement ? 'Cancel' : 'Add Requirement' }}
             </v-btn>
             <v-btn text @click="expandRequirements = !expandRequirements">
               <v-icon v-if="!expandRequirements">mdi-chevron-down</v-icon>
@@ -60,10 +60,10 @@
                       item-text="processStepRequirementType"
                       @input="[selectRequirementType(), parent = {}, selectedCustomField = {}, selectedDataTypeRequirement = {},
                               validateRequirementForm(),
-                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
+                              selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
-<!--            show this for both custom fields AND statuses-->
+            <!--            show this for both custom fields AND statuses-->
             <v-autocomplete
               v-if="newRequirement.processStepRequirementTypeId && (newRequirement.processStepRequirementTypeId === 1 || newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8)"
               v-model="parent"
@@ -74,7 +74,7 @@
               attach
               @input="[loadValues(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
                         validateRequirementForm(),
-                        selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
+                        selectedFunction = {}, newRequirement.operatorTypeId = null,
                         newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-autocomplete>
             <!-- if it is a process step custom field it needs parent, other custom fields do not-->
@@ -89,7 +89,7 @@
               @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
                               validateRequirementForm(),
-                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
+                              selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-autocomplete>
             <!-- if it is a function -->
@@ -106,21 +106,43 @@
               <h5 class="text-left">Dynamic Function Parameters</h5>
               <v-card flat>
                 <div v-for="(fp, index) in newRequirement.requirementParamDynamicValues">
-                  <v-text-field
-                    v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
-                    :key="index"
-                    type="number"
-                    placeholder="Enter a dynamic value (number)"
-                    v-model="fp.dynamicValue"
-                    @input="validateRequirementForm()"
-                    :label="fp.parameterName"></v-text-field>
-                  <v-text-field
-                    :key="index"
-                    v-else
-                    placeholder="Enter a dynamic value"
-                    v-model="fp.dynamicValue"
-                    @input="validateRequirementForm()"
-                    :label="fp.parameterName"></v-text-field>
+                  <v-tooltip
+                    v-if="fp.description != null"
+                    content-class="full-opacity-tooltip"
+                    :max-width="300"
+                    top
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        text
+                        class="d-inline-block"
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>
+                          mdi-information
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ fp.description }}</span>
+                  </v-tooltip>
+                  <div class="dynamic-field-container">
+                    <v-text-field
+                      v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
+                      :key="index"
+                      type="number"
+                      placeholder="Enter a dynamic value (number)"
+                      v-model="fp.dynamicValue"
+                      @input="validateRequirementForm()"
+                      :label="fp.parameterName"></v-text-field>
+                    <v-text-field
+                      :key="index"
+                      v-else
+                      placeholder="Enter a dynamic value"
+                      v-model="fp.dynamicValue"
+                      @input="validateRequirementForm()"
+                      :label="fp.parameterName"></v-text-field>
+                  </div>
                 </div>
               </v-card>
             </div>
@@ -128,7 +150,7 @@
               v-if="(newRequirement.processStepRequirementTypeId !== 2 && newRequirement.processStepRequirementTypeId !== 7 && selectedCustomField.customFieldGroupAssignmentId)
                       || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)
                       || ((newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8) && parent.id)
-                      || [9,10].includes(newRequirement.processStepRequirementTypeId)"
+                      || [9,10,11].includes(newRequirement.processStepRequirementTypeId)"
               v-model="newRequirement.operatorTypeId"
               :items="operatorTypes"
               label="Operator"
@@ -139,14 +161,14 @@
             <v-switch
               v-if="newRequirement.operatorTypeId"
               v-model="newRequirement.customValue"
-              :readonly="(selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3 || [7,8,9,10].includes(newRequirement.processStepRequirementTypeId)"
-              :disabled="(selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3 || [7,8,9,10].includes(newRequirement.processStepRequirementTypeId)"
+              :readonly="(selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3 || [7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)"
+              :disabled="(selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3 || [7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)"
               @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
               class="mx-2"
               label="Custom"
             ></v-switch>
             <v-text-field
-              v-if="newRequirement.operatorTypeId && newRequirement.customValue && ![7,8,9,10].includes(newRequirement.processStepRequirementTypeId)
+              v-if="newRequirement.operatorTypeId && newRequirement.customValue && ![7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)
                     && ((!selectedCustomField.listOfValueId || selectedCustomField.listOfValueId === null) && (!selectedCustomField.customFieldSqlKey || selectedCustomField.customFieldSqlKey === null) && (!selectedCustomField.companySystemListId || selectedCustomField.companySystemListId === null))"
               v-model="newRequirement.requirementValue"
               placeholder="Enter a value X"
@@ -156,7 +178,7 @@
             <v-select
               v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
-                              && ![7,8,9,10].includes(newRequirement.processStepRequirementTypeId)
+                              && ![7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)
                               && ((selectedCustomField.listOfValueId && selectedCustomField.listOfValueId !== null) || (selectedCustomField.customFieldSqlKey && selectedCustomField.customFieldSqlKey !== null) || (selectedCustomField.companySystemListId && selectedCustomField.companySystemListId !== null))
                               && !selectedCustomField.allowMultiple"
               v-model="selectedListValue"
@@ -166,6 +188,23 @@
               item-text="name"
               return-object
             ></v-select>
+            <!-- if the requirement is event status -->
+            <v-autocomplete
+              v-else-if="newRequirement.operatorTypeId && newRequirement.processStepRequirementTypeId === 11"
+              v-model="selectedListOfValues"
+              :items="eventStatuses"
+              label="Event Status"
+              multiple
+              attach
+              @change="validateRequirementForm()"
+              item-text="eventStatusType"
+              return-object
+            >
+              <template slot="item" slot-scope="data">
+                <!-- HTML that describes how select should render items when the select is open -->
+                {{ data.item.eventStatusType }}
+              </template>
+            </v-autocomplete>
             <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
             <v-select
               v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
@@ -191,7 +230,8 @@
               <template slot="item" slot-scope="data">
                 <!-- HTML that describes how select should render items when the select is open -->
                 {{ data.item.processStepStatusType }}
-                <span v-if="newRequirement.processStepRequirementTypeId === 7" class="ml-1">({{ data.item.rootProcessStepStatusType }})</span>
+                <span v-if="newRequirement.processStepRequirementTypeId === 7"
+                      class="ml-1">({{ data.item.rootProcessStepStatusType }})</span>
               </template>
             </v-autocomplete>
             <v-autocomplete
@@ -208,7 +248,9 @@
               <template slot="item" slot-scope="data">
                 <!-- HTML that describes how select should render items when the select is open -->
                 {{ data.item.projectStatusType }}
-                <span v-if="newRequirement.projectStatusTypeId === 9" class="ml-1">({{ data.item.projectStatusType }})</span>
+                <span v-if="newRequirement.projectStatusTypeId === 9" class="ml-1">({{
+                    data.item.projectStatusType
+                  }})</span>
               </template>
             </v-autocomplete>
             <v-select
@@ -227,9 +269,10 @@
                           @input="validateRequirementForm()"
                           label="Value">
             </v-text-field>
-            <div v-if="(newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8) && newRequirement.operatorTypeId">
+            <div
+              v-if="(newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8) && newRequirement.operatorTypeId">
               <label>Fail if no
-                <strong>{{parent.processStepName}}</strong> steps are found:</label>
+                <strong>{{ parent.processStepName }}</strong> steps are found:</label>
               <input type="checkbox" class="ml-3 mb-4" v-model="newRequirement.failIfNoReferenceStepFound"
                      :readonly="!userCanEdit"
                      :disabled="!userCanEdit">
@@ -268,51 +311,73 @@
                     <h5 class="text-left">Dynamic Function Parameters</h5>
                     <v-card flat color="transparent">
                       <div v-for="(fp, index) in item.requirementParamDynamicValues" :key="index">
-                        <v-text-field
-                          v-if="fp.dataTypeId === 1"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          placeholder="Enter a date"
-                          type="date"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
-                        <v-text-field
-                          v-if="fp.dataTypeId === 2"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          placeholder="Enter a timestamp"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
-                        <v-text-field
-                          v-if="fp.dataTypeId === 3"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          placeholder="Enter a boolean"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
-                        <v-text-field
-                          v-if="fp.dataTypeId === 4"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          placeholder="Enter a number"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
-                        <v-text-field
-                          v-if="fp.dataTypeId === 6"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          placeholder="Enter an integer"
-                          type="number"
-                          step="1"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
-                        <v-text-field
-                          v-else
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          placeholder="Enter a dynamic value"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
+                        <v-tooltip
+                          v-if="fp.description != null"
+                          content-class="full-opacity-tooltip"
+                          :max-width="300"
+                          top
+                        >
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn
+                              text
+                              class="d-inline-block"
+                              v-bind="attrs"
+                              v-on="on"
+                            >
+                              <v-icon>
+                                mdi-information
+                              </v-icon>
+                            </v-btn>
+                          </template>
+                          <span>{{ fp.description }}</span>
+                        </v-tooltip>
+                        <div class="dynamic-field-container">
+                          <v-text-field
+                            v-if="fp.dataTypeId === 1"
+                            :readonly="item.immutable || !userCanEdit"
+                            :disabled="item.immutable || !userCanEdit"
+                            placeholder="Enter a date"
+                            type="date"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                          <v-text-field
+                            v-if="fp.dataTypeId === 2"
+                            :readonly="item.immutable || !userCanEdit"
+                            :disabled="item.immutable || !userCanEdit"
+                            placeholder="Enter a timestamp"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                          <v-text-field
+                            v-if="fp.dataTypeId === 3"
+                            :readonly="item.immutable || !userCanEdit"
+                            :disabled="item.immutable || !userCanEdit"
+                            placeholder="Enter a boolean"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                          <v-text-field
+                            v-if="fp.dataTypeId === 4"
+                            :readonly="item.immutable || !userCanEdit"
+                            :disabled="item.immutable || !userCanEdit"
+                            placeholder="Enter a number"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                          <v-text-field
+                            v-if="fp.dataTypeId === 6"
+                            :readonly="item.immutable || !userCanEdit"
+                            :disabled="item.immutable || !userCanEdit"
+                            placeholder="Enter an integer"
+                            type="number"
+                            step="1"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                          <v-text-field
+                            v-else
+                            :readonly="item.immutable || !userCanEdit"
+                            :disabled="item.immutable || !userCanEdit"
+                            placeholder="Enter a dynamic value"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        </div>
                       </div>
                     </v-card>
                   </div>
@@ -328,8 +393,8 @@
                   ></v-select>
                   <v-switch v-model="item.customValue"
                             class="mx-2"
-                            :readonly="(item.dataTypeId === 7) || item.dataTypeId === 3 || !userCanEdit || [7,8,9,10].includes(item.processStepRequirementTypeId)"
-                            :disabled="(item.dataTypeId === 7) || item.dataTypeId === 3 || item.immutable  || !userCanEdit || [7,8,9,10].includes(item.processStepRequirementTypeId)"
+                            :readonly="(item.dataTypeId === 7) || item.dataTypeId === 3 || !userCanEdit || [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
+                            :disabled="(item.dataTypeId === 7) || item.dataTypeId === 3 || item.immutable  || !userCanEdit || [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
                             label="Custom"
                   ></v-switch>
                   <!-- single text field for non list custom values -->
@@ -343,7 +408,7 @@
                   </v-text-field>
                   <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
-                    v-else-if="item.customValue && item.customField && ![7,8,9,10].includes(item.processStepRequirementTypeId)
+                    v-else-if="item.customValue && item.customField && ![7,8,9,10,11].includes(item.processStepRequirementTypeId)
                             && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null || item.customField.companySystemListId !== null) && !item.customField.allowMultiple)"
                     v-model="item.listOfValueId"
                     :disabled="item.immutable || !userCanEdit"
@@ -354,8 +419,10 @@
                     item-value="id"
                   ></v-select>
                   <v-autocomplete
-                    v-else-if="item.operatorTypeId && [7,8,9,10].includes(item.processStepRequirementTypeId)"
+                    v-else-if="item.operatorTypeId && [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
                     v-model="item.listOfValues"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
                     :items="item.availableListOfValues"
                     label="Available Values"
                     multiple
@@ -416,12 +483,13 @@
                                 :readonly="item.immutable || !userCanEdit"
                                 label="Value">
                   </v-text-field>
-                  <div v-if="(item.processStepRequirementTypeId === 7 || item.processStepRequirementTypeId === 8) && item.operatorTypeId">
+                  <div
+                    v-if="(item.processStepRequirementTypeId === 7 || item.processStepRequirementTypeId === 8) && item.operatorTypeId">
                     <label>Fail if no
-                      <strong>{{item.referenceProcessStepName}}</strong> steps are found:</label>
+                      <strong>{{ item.referenceProcessStepName }}</strong> steps are found:</label>
                     <input type="checkbox" class="ml-3 mb-4" v-model="item.failIfNoReferenceStepFound"
-                           :readonly="!userCanEdit"
-                           :disabled="!userCanEdit">
+                           :readonly="item.immutable || !userCanEdit"
+                           :disabled="item.immutable || !userCanEdit">
                   </div>
                   <v-btn v-if="userCanEdit" @click="updateRequirement(item)">
                     <v-icon>save</v-icon>
@@ -432,8 +500,8 @@
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left" style="width: 65px">{{item.requirementNbr}}</td>
-                  <td class="text-left">{{item.processStepRequirementType}}</td>
+                  <td class="text-left" style="width: 65px">{{ item.requirementNbr }}</td>
+                  <td class="text-left">{{ item.processStepRequirementType }}</td>
                   <td class="text-left">
                     <span v-if="item.processStepRequirementTypeId === 1">
                       {{ item.parentName }} | {{ item.fieldName }}
@@ -441,20 +509,23 @@
                     <span v-else-if="item.processStepRequirementTypeId === 2">
                       {{ item.companyFunctionName }}
                     </span>
-                    <span v-else-if="item.processStepRequirementTypeId === 7 || item.processStepRequirementTypeId === 8">
+                    <span
+                      v-else-if="item.processStepRequirementTypeId === 7 || item.processStepRequirementTypeId === 8">
                       {{ item.referenceProcessStepName }}
                     </span>
                     <span v-else>
                       {{ item.fieldName }}
                     </span>
                   </td>
-                  <td class="text-left">{{item.operatorType}}</td>
+                  <td class="text-left">{{ item.operatorType }}</td>
                   <td class="text-left">
                     <span v-if="item.requirementValue">
-                      {{item.requirementValue}}
+                      {{ item.requirementValue }}
                     </span>
                     <span v-else-if="item.dataTypeRequirementId">
-                      {{item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'}} {{item.secondaryRequirementValue}}
+                      {{
+                        item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'
+                      }} {{ item.secondaryRequirementValue }}
                     </span>
                     <span v-else-if="item.listOfValueId || item.customFieldSqlKey || item.companySystemListId">
 <!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
@@ -528,8 +599,8 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
-import { getCompanyAssignedToProcessStep, getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-import { getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
+import {getCompanyAssignedToProcessStep, getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+import {getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {
   getRequest,
   putRequest,
@@ -545,7 +616,8 @@ export default {
     eventRequirements: Boolean,
     callback: Function
   },
-  mounted() {},
+  mounted() {
+  },
   watch: {
     requirements: function () {
       //any time the requirements change, send back to parent component
@@ -575,6 +647,8 @@ export default {
         requirementParamDynamicValues: [],
         customValue: false
       },
+      eventStatuses: [],
+      // selectedEventStatuses: [],
       dataTypeRequirements: [],
       selectedDataTypeRequirement: {},
       selectedCustomField: {},
@@ -632,7 +706,8 @@ export default {
       if (this.addNewRequirement) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
+          let url = this.eventRequirements ? `/processStep/${this.processStepId}/requirement/event/types` : `/processStep/${this.processStepId}/requirement/types`
+          const {data} = await getRequest(url)
           this.availableRequirementTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -667,6 +742,10 @@ export default {
           this.getProjectStatuses()
           this.newRequirement.customValue = true
           this.loadOperatorTypes(7, 10)
+        } else if (this.newRequirement.processStepRequirementTypeId === 11) {
+          this.newRequirement.customValue = true
+          this.loadOperatorTypes(7, 11)
+          this.getEventStatuses()
         } else {
           let objectTypeId = this.eventRequirements ? 6 : 4;
           const {data} = await getRequest(`/function/requirement/${objectTypeId}`)
@@ -694,7 +773,7 @@ export default {
       }
     },
     async loadValues(parent) {
-      if(this.newRequirement?.processStepRequirementTypeId === 1) {
+      if (this.newRequirement?.processStepRequirementTypeId === 1) {
         await this.loadFieldsByParent(parent)
       } else if (this.newRequirement?.processStepRequirementTypeId === 7) {
         this.newRequirement.customValue = true
@@ -749,6 +828,20 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async getEventStatuses() {
+      //this has to load event statuses using the pseId
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/event/statusesForPsEvent/${this.processStepEventId}`)
+        this.eventStatuses = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCompanyProjectStatuses() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -767,9 +860,11 @@ export default {
       try {
         //this exclusion is temporary until requirements/action can handle the new system readonly data type
         //could probably do this cleaner/more generically i just dont want to cuz it is temporary
-        const {data} = await getRequestWithParams(`/customField/getByParentProcessStep/${parent.id}`, { params: {
+        const {data} = await getRequestWithParams(`/customField/getByParentProcessStep/${parent.id}`, {
+          params: {
             excludedUnhandledDataTypes: true
-          }})
+          }
+        })
         this.customFields = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -782,9 +877,11 @@ export default {
     async loadCustomFieldsByObjectType(objectTypeId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customField/getByParentType/${objectTypeId}`, { params: {
+        const {data} = await getRequestWithParams(`/customField/getByParentType/${objectTypeId}`, {
+          params: {
             excludedUnhandledDataTypes: true
-          }})
+          }
+        })
         this.customFields = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -815,7 +912,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/operator/${dataTypeId}`)
-        if([7,8,9,10].includes(processStepRequirementTypeId)) {
+        if ([7, 8, 9, 10, 11].includes(processStepRequirementTypeId)) {
           this.operatorTypes = data.filter(d => d.id === 5)
         } else {
           this.operatorTypes = data
@@ -932,10 +1029,10 @@ export default {
         } else if (this.newRequirement.customValue) {
           //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
           //here
-          if(this.newRequirement.processStepRequirementTypeId === 7 || this.newRequirement.processStepRequirementTypeId === 8) {
+          if ([7, 8].includes(this.newRequirement.processStepRequirementTypeId)) {
             this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
             this.newRequirement.referenceProcessStepId = this.parent.id
-          } else if(this.newRequirement.processStepRequirementTypeId === 9 || this.newRequirement.processStepRequirementTypeId === 10) {
+          } else if ([9, 10, 11].includes(this.newRequirement.processStepRequirementTypeId)) {
             this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
           } else {
             this.newRequirement.listOfValueIds = null
@@ -954,7 +1051,7 @@ export default {
           this.newRequirement.requirementValue = null
         }
 
-        if(this.eventRequirements) {
+        if (this.eventRequirements) {
           this.newRequirement.processStepEventId = this.processStepEventId
         }
         const {data} = await postRequest(this.apiUrl, this.newRequirement)
@@ -1002,7 +1099,7 @@ export default {
           requirement.requirementValue = null
         }
 
-        if(this.eventRequirements) {
+        if (this.eventRequirements) {
           this.newRequirement.processStepEventId = this.processStepEventId
         }
 
@@ -1063,6 +1160,11 @@ export default {
 
 .req-header-bar {
   border-bottom: 1px solid #E6E6E6;
+}
+
+.dynamic-field-container {
+  width: 80%;
+  display: inline-block;
 }
 
 </style>
