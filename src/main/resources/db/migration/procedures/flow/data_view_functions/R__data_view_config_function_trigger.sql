@@ -784,10 +784,8 @@ BEGIN
     and main is false
     and new.main is true;
   v_count = 0;
-  raise notice 'made it here %',v_old_process_steps_found;
   if ((TG_OP = 'INSERT') and new.main is true and v_old_process_steps_found > 0) or
      (TG_OP = 'UPDATE') and old.main is false and new.main is true and v_old_process_steps_found > 0 then
-       raise notice 'inside first if';
     select c.company_id, p.id
     into v_company_id,v_project_id
     from flow.project p
@@ -812,7 +810,6 @@ BEGIN
              where dv.reset_data_view is true
 
       loop
-      raise notice '1';
         if v_count = 0 then
           v_sql = NULL;
           v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
@@ -831,7 +828,6 @@ BEGIN
     v_sql = trim(trailing ' ,' from v_sql);
     v_sql = v_sql || ' where project_id = ' || v_project_id || ';';
     if v_count > 0 then
-      raise notice '2';
       -- raise notice 'v_sql%',v_sql;
       execute v_sql;
     end if;
