@@ -14,13 +14,20 @@ BEGIN
   where contact_id = new.id;
 
   if v_project_ids is not null then
-    for z in select * from flow.get_schema_by_company(new.company_id)
+    for z in select * from flow.get_schema_by_company(new.company_id) dv
+      where exists (select ao.dvfc_id from flow.get_data_view_field_configs(dv.id,
+                                               'CONTACT',
+                                               null)ao)
       loop
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
         for x in select * from flow.get_data_view_field_configs(z.id,
                                                                'CONTACT',
-                                                                null)
+                                                                null) a
+                 where exists (select dvfc2.id
+                               from flow.data_view_field_config dvfc2
+                               where dvfc2.data_view_id = z.id and dvfc2.id = a.dvfc_id
+                         )
           loop
             execute format('SELECT $1.%I', x.column_name)
               into v_value using new;
@@ -93,13 +100,20 @@ BEGIN
   select quote_literal(array_agg(new.id)::text)
   into v_project_ids;
 
-  for z in select * from flow.get_schema_by_company(v_company_id)
+  for z in select * from flow.get_schema_by_company(v_company_id)dv
+           where exists (select ao.dvfc_id from flow.get_data_view_field_configs(dv.id,
+                                                                                 'PROJECT',
+                                                                                 null)ao)
+
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
       for x in select * from flow.get_data_view_field_configs(z.id,
                                                              'PROJECT',
-                                                              null)
+                                                              null)a
+               where exists (select dvfc2.id
+                             from flow.data_view_field_config dvfc2
+                             where dvfc2.data_view_id = z.id and dvfc2.id = a.dvfc_id)
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
@@ -180,11 +194,10 @@ BEGIN
 
   select quote_literal(array_agg(coalesce(v_project_id, v_project_id1))::text)
   into v_project_ids;
-  for z in select * from flow.get_schema_by_company(v_company_id) a
-           where exists (select dvfc2.id
-                      from flow.data_view_field_config dvfc2
-                      where dvfc2.data_view_id = a.id and dvfc2.custom_field_group_assignment_id = new.custom_field_group_assignment_id
-                      )
+  for z in select * from flow.get_schema_by_company(v_company_id) dv
+           where exists (select ao.dvfc_id from flow.get_data_view_field_configs(dv.id,
+                                                                                 null,
+                                                                                 new.custom_field_group_assignment_id)ao)
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
@@ -280,11 +293,10 @@ BEGIN
   select quote_literal(array_agg(coalesce(v_project_id, v_project_id1))::text)
   into v_project_ids;
 
-  for z in select * from flow.get_schema_by_company(v_company_id) a
-             where exists (select dvfc2.id
-                         from flow.data_view_field_config dvfc2
-                         where dvfc2.data_view_id = a.id and dvfc2.custom_field_group_assignment_id = new.custom_field_group_assignment_id
-             )
+  for z in select * from flow.get_schema_by_company(v_company_id) dv
+           where exists (select ao.dvfc_id from flow.get_data_view_field_configs(dv.id,
+                                                                                 null,
+                                                                                 new.custom_field_group_assignment_id)ao)
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
@@ -356,9 +368,6 @@ $body$
 
 declare
   v_project_id       integer;
-  v_closer_name      varchar;
-  v_user_id          integer;
-  v_user_position_id integer;
   v_sql              text;
   z                  record;
   x                  record;
@@ -409,11 +418,10 @@ BEGIN
   select quote_literal(array_agg(coalesce(v_project_id, v_project_id))::text)
   into v_project_ids;
 
-  for z in select * from flow.get_schema_by_company(v_company_id) a
-             where exists (select dvfc2.id
-                         from flow.data_view_field_config dvfc2
-                         where a.id = dvfc2.data_view_id and dvfc2.process_step_event_id = new.id
-             )
+  for z in select * from flow.get_schema_by_company(v_company_id)  dv
+           where exists (select ao.dvfc_id from flow.get_data_view_field_configs(dv.id,
+                                                                                 'EVENT',
+                                                                                 null)ao)
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
@@ -454,36 +462,23 @@ BEGIN
       --end;
     end loop;
 
-
-  if v_count > 0 then
-    select u.id, u.first_name || ' ' || u.last_name, up.id
-    into v_user_id,v_closer_name,v_user_position_id
-    from flow.user u
-           inner join flow.user_position up on u.id = up.user_id and up.primary_flag is true
-    where up.id = new.resource_id;
-
-    update brs.project_details
-    set first_appointment         = new.start_time,
-        first_appointment_ppse_id = new.id
-    where project_id = v_project_id
-      and (first_appointment is null or
-           (first_appointment_ppse_id is not null and first_appointment_ppse_id = new.id));
-    update brs.project_details
-    set closer_user_id          = v_user_id,
-        closer_name             = v_closer_name,
-        closer_user_position_id = v_user_position_id
-    where project_id = v_project_id;
+  if new.process_step_event_id = 14  then
+    if new.start_time is not null then
+      perform flow.company_event_specific_tasks(v_company_id,
+                                        new.resource_id,
+                                        new.id,
+                                        v_project_id,
+                                        'UPDATE_APPOINTMENT_DATA');
+    elsif
+     ((old.resource_id is null and new.resource_id is not null) or
+      (old.resource_id != new.resource_id)) then
+      perform flow.company_event_specific_tasks(v_company_id,
+                                                new.resource_id,
+                                                new.id,
+                                                v_project_id,
+                                                'UPDATE_OWNER_ON_PROJECT');
+    end if;
   end if;
-
-  if ((old.resource_id is null and new.resource_id is not null) or
-     (old.resource_id != new.resource_id)) and (v_unique_behavior_type_id is not null and v_unique_behavior_type_id = 1) then
-
-    update flow.project p
-    set user_position_id = new.resource_id,
-        date_modified =  now()
-    where p.id = v_project_id;
-  end if;
-
 
   RETURN NULL;
 END
