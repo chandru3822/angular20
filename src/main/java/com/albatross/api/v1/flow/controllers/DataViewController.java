@@ -1,8 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.DataView;
-import com.albatross.api.v1.flow.model.DataViewFieldConfig;
-import com.albatross.api.v1.flow.model.ProcessStepEvent;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.DataViewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +26,13 @@ public class DataViewController {
   private final DataViewService dataViewService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<DataView> getCompanyDataViews () {
+  public List<DataView> getCompanyDataViews() {
     return dataViewService.getCompanyDataViews();
+  }
+
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<DataView> addDataView(@RequestBody DataView dataView) {
+    return dataViewService.addDataView(dataView);
   }
 
   @GetMapping(value = "/{viewId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,12 +42,19 @@ public class DataViewController {
 
   @PostMapping(value = "/{viewId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<DataViewFieldConfig> addFieldConfig(@PathVariable Long viewId,
-                             @RequestBody DataViewFieldConfig field) {
+                                                      @RequestBody DataViewFieldConfig field) {
     return dataViewService.addFieldConfig(viewId, field);
   }
 
+  @PostMapping(value = "/{viewId}/field/{fieldId}/childField", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<DataViewChildFieldConfig> addChildFieldConfig(@PathVariable Long viewId,
+                                                                @PathVariable Long fieldId,
+                                                                @RequestBody DataViewChildFieldConfig childField) {
+    return dataViewService.addChildFieldConfig(viewId, fieldId, childField);
+  }
+
   @GetMapping(value = "/{viewId}/getAvailableDefaultFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<DataViewFieldConfig> getAvailableDefaultFields(@PathVariable Long viewId) {
+  public List<DefaultField> getAvailableDefaultFields(@PathVariable Long viewId) {
     return dataViewService.getAvailableDefaultFields(viewId);
   }
 
@@ -52,6 +62,11 @@ public class DataViewController {
   public List<ProcessStepEvent> getAvailablePsEventsForDefaultField(@PathVariable Long viewId,
                                                                     @PathVariable Long defaultFieldId) {
     return dataViewService.getAvailablePsEventsForDefaultField(viewId, defaultFieldId);
+  }
+
+  @GetMapping(value = "/getUniqueBehaviorTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<UniqueBehaviorType> getUniqueBehaviorTypes() {
+    return dataViewService.getUniqueBehaviorTypes();
   }
 
 }

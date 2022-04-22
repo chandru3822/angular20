@@ -12,10 +12,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
@@ -34,6 +31,29 @@ public class DataViewService {
     return sqlCache.query("dataView.getAllForCompany", params, DataView.class);
   }
 
+  public Optional<DataView> getDataView(Long companyId, String tableName) {
+    //it would be hard for the dynamic sql to return the id and only 7oaks should be doing this so we will just get it by name
+    Map<String, Object> params = new HashMap<>();
+    params.put("tableName", tableName);
+    params.put("companyId", companyId);
+    return sqlCache.get("dataView.getDataView", params, DataView.class);
+  }
+
+  public Optional<DataView> addDataView(DataView dataView) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("displayName", dataView.getDisplayName());
+    params.put("viewName", dataView.getViewName());
+    params.put("userId", user.trueUserId());
+
+    Long id = sqlCache.updateReturningId("dataView.addDataView", params, "id").longValue();
+
+    params.put("id", id);
+    sqlCache.query("dataView.addTableForView", params, String.class);
+
+    return getDataView(user.getCompanyId(), dataView.getDisplayName());
+  }
 
   public Optional<DataView> getView(Long viewId) {
     User user = securityService.getCurrentUser();
@@ -45,23 +65,63 @@ public class DataViewService {
     return result;
   }
 
+  public Optional<DataViewChildFieldConfig> addChildFieldConfig(Long viewId, Long fieldId, DataViewChildFieldConfig childField) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("viewId", viewId);
+    params.put("fieldId", fieldId);
+    params.put("fieldToUpdate", childField.getFieldToUpdate());
+    params.put("uniqueBehaviorTypeId", childField.getUniqueBehaviorTypeId());
+    params.put("dataTypeId", childField.getDataTypeId());
+    params.put("userId", user.trueUserId());
+
+    Long id = sqlCache.updateReturningId("dataView.addChildFieldConfig", params, "id").longValue();
+
+    params.put("id", id);
+    sqlCache.query("dataView.addChildColumnToTable", params, String.class);
+
+    return getDataViewChildFieldConfig(id);
+  }
+
+  public Optional<DataViewChildFieldConfig> getDataViewChildFieldConfig(Long id) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<DataViewChildFieldConfig> result = sqlCache.get("dataView.getChildFieldConfig", params, DataViewChildFieldConfig.class);
+    return result;
+  }
+
   public Optional<DataViewFieldConfig> addFieldConfig(Long viewId, DataViewFieldConfig field) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
-    params.put("userId", user.trueUserId());
     params.put("viewId", viewId);
+    params.put("defaultFieldId", field.getDefaultFieldId());
+    params.put("customFieldGroupAssignmentId", field.getDefaultFieldId());
+    params.put("processStepEventId", field.getProcessStepEventId());
+    params.put("fieldToUpdate", field.getFieldToUpdate());
+    params.put("displayName", field.getDisplayName());
+    params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
+    params.put("userId", user.trueUserId());
 
-    log.info("WEEEEE GOTTTT HEEEERRRE");
-    //todo turn this back on after figuring out what it needs
-//    Optional<DataViewFieldConfig> result = sqlCache.get("dataView.addFieldConfig", params, DataViewFieldConfig.class);
-//    return result;
-    return null;
+    Long id = sqlCache.updateReturningId("dataView.addFieldConfig", params, "id").longValue();
+
+    HashMap<String, Object> params2 = new HashMap<>();
+    params2.put("id", id);
+    sqlCache.query("dataView.addColumnToTable", params2, String.class);
+
+    return getDataViewFieldConfig(id);
   }
 
-  public List<DataViewFieldConfig> getAvailableDefaultFields(Long viewId) {
+  public Optional<DataViewFieldConfig> getDataViewFieldConfig(Long id) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<DataViewFieldConfig> result = sqlCache.get("dataView.getFieldConfig", params, DataViewFieldConfig.class);
+    return result;
+  }
+
+  public List<DefaultField> getAvailableDefaultFields(Long viewId) {
     Map<String, Object> params = new HashMap<>();
     params.put("viewId", viewId);
-    List<DataViewFieldConfig> result = sqlCache.query("dataView.getAvailableDefaultFields", params, DataViewFieldConfig.class);
+    List<DefaultField> result = sqlCache.query("dataView.getAvailableDefaultFields", params, DefaultField.class);
     return result;
   }
 
@@ -71,6 +131,11 @@ public class DataViewService {
     params.put("defaultFieldId", defaultFieldId);
     List<ProcessStepEvent> result = sqlCache.query("dataView.getAvailablePsEventsForDefaultField", params, ProcessStepEvent.class);
     return result;
+  }
+
+  public List<UniqueBehaviorType> getUniqueBehaviorTypes() {
+    List<UniqueBehaviorType> results = sqlCache.query("dataView.getUniqueBehaviorTypes", Collections.emptyMap(), UniqueBehaviorType.class);
+    return results;
   }
 
   public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
