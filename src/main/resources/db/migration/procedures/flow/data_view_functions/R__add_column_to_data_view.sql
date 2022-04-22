@@ -1,5 +1,5 @@
 CREATE OR REPLACE function flow.add_column_to_data_view(p_data_view_field_config_id integer,
-                                                        p_data_view_child_view_config_id integer)
+                                                        p_data_view_child_field_config_id integer)
   returns void
 AS
 $BODY$
@@ -15,7 +15,7 @@ declare
   x                            record;
 BEGIN
 
-  if p_data_view_field_config_id is not null and p_data_view_child_view_config_id is null then
+  if p_data_view_field_config_id is not null and p_data_view_child_field_config_id is null then
     select dvfc.id,
            dvfc.field_to_update,
            coalesce(dt.data_type, dt2.data_type) as data_type,
@@ -67,7 +67,7 @@ BEGIN
            inner join flow.data_view_field_config dvfc2 on dvcvw.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on c.id = dv.company_id
-    where dvcvw.id = p_data_view_child_view_config_id;
+    where dvcvw.id = p_data_view_child_field_config_id;
 
     EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
             v_field_to_update || $$ $$ || v_data_type || $$;$$;
