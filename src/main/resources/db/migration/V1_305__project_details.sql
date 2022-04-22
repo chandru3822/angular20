@@ -1109,6 +1109,12 @@ drop FUNCTION if exists flow.update_project_details_process_steps_from_events();
 drop trigger if exists update_events_trg on flow.project_process_step_event;
 drop FUNCTION if exists flow.update_events();
 
+drop trigger if exists update_project_details_project_trg on flow.project_custom_field_value;
+drop function if exists flow.update_project_details_project();
+
+drop trigger if exists update_contact_details_project_details_trg on flow.contact_custom_field_value;
+drop function if exists flow.update_contact_details_project_details();
+
 update flow.data_view_child_field_config
 set data_type_id = 6
 where data_view_field_config_id in (
