@@ -3,6 +3,10 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.PostalCodeZoneUserType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.postalCode.PostalCodeAllocationUser;
+import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
+import com.albatross.api.v1.flow.model.postalCode.PostalCodeZonePostalCode;
+import com.albatross.api.v1.flow.model.postalCode.PostalCodeZoneUser;
 import com.albatross.api.v1.flow.services.PostalCodeService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

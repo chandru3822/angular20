@@ -1,9 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.SMSQueueExportItem;
-import com.albatross.api.v1.flow.model.SMSQueueItem;
-import com.albatross.api.v1.flow.model.SmsQueueRow;
+import com.albatross.api.v1.flow.model.smsQueue.SMSQueueExportItem;
+import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
+import com.albatross.api.v1.flow.model.smsQueue.SmsQueueRow;
 import com.albatross.api.v1.flow.services.SMSService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.WorkQueueCategory;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueCategory;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

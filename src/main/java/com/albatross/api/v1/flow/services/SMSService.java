@@ -7,6 +7,7 @@ import com.albatross.api.utils.JodaDateTimeEditor;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.smsQueue.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

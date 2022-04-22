@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Link;
-import com.albatross.api.v1.flow.model.ProcessStepLink;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepLink;
 import com.albatross.api.v1.flow.services.LinkService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

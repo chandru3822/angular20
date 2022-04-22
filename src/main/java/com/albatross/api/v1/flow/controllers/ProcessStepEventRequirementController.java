@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ProcessStepAction;
-import com.albatross.api.v1.flow.model.ProcessStepEventRequirement;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEventRequirement;
 import com.albatross.api.v1.flow.services.ProcessStepEventRequirementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

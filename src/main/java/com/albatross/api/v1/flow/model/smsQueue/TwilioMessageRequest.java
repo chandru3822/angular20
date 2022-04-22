@@ -1,0 +1,58 @@
+package com.albatross.api.v1.flow.model.smsQueue;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@Data
+public class TwilioMessageRequest {
+  private Long id;
+
+  @JsonProperty(value = "MessageSid")
+  private String messageSid;
+
+  @JsonProperty(value = "SmsSid")
+  private String smsSid;
+
+  @JsonProperty(value = "AccountSid")
+  private String accountSid;
+
+  @JsonProperty(value = "MessagingServiceSid")
+  private String messagingServiceSid;
+
+  @JsonProperty(value = "From")
+  private String from;
+
+  @JsonProperty(value = "To")
+  private String to;
+
+  @JsonProperty(value = "Body")
+  private String body;
+
+  @JsonProperty(value = "NumMedia")
+  private Integer numMedia;
+
+  @JsonProperty(value = "MediaUrl0")
+  private String mediaUrl0;
+
+  private Date date_received;
+
+  public Map<String, Object> toHashMap() {
+    Map<String, Object> data = new HashMap<>();
+
+    data.put("messageSid", messageSid);
+    data.put("smsSid", smsSid);
+    data.put("accountSid", accountSid);
+    data.put("messagingServiceSid", messagingServiceSid);
+    data.put("from", from);
+    data.put("to", to);
+    data.put("body", body);
+    data.put("numMedia", numMedia);
+    data.put("mediaUrls", mediaUrl0 == null ? null : new String[] {mediaUrl0});
+
+    return data;
+  }
+}

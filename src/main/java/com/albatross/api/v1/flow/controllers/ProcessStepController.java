@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.ProcessStep;
+import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.services.ProcessStepService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
