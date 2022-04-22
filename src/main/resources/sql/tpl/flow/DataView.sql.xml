@@ -129,6 +129,7 @@
   <dataView.getChildFieldConfig><![CDATA[
     select dvcfc.*,
            ubt.unique_behavior_type as "uniqueBehaviorType",
+           ubt.description as "uniqueBehaviorTypeDescription",
            dt.data_type as "dataType"
     from flow.data_view_child_field_config dvcfc
       inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
