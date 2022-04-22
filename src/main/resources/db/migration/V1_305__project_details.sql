@@ -743,6 +743,41 @@ insert into flow.default_field(field_name, column_name, property_name, data_type
 values('Process Step Event ID','process_step_event_id','processStepEventID',6,(select id from flow.object_type where object_code = 'EVENT'),
        now(),2350555,true,true);
 
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'resource_id'),
+          null,
+          14,
+          'closer_user_position_id',
+          'Closer Name',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'closer_user_position_id' and dvfc.process_step_event_id = 14),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER'),
+          'closer_name',
+          5,
+          now(),now(),2350555,false);
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'closer_user_position_id' and dvfc.process_step_event_id = 14),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_ID_TRIGGER'),
+          'closer_user_id',
+          6,
+          now(),now(),2350555,false);
+
+
 insert into flow.default_field(field_name, column_name, property_name, data_type_id,
                                object_type_id, date_created, created_by_id,
                                watched_by_trigger, allow_child_fields)
@@ -1149,4 +1184,12 @@ CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config 
 CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null;
 
 
+drop index if exists flow.dv_view_name_uidx;
+CREATE UNIQUE INDEX dv_view_name_uidx ON flow.data_view (company_id,view_name);
+drop index if exists flow.dv_display_name_uidx;
+CREATE UNIQUE INDEX dv_display_name_uidx ON flow.data_view (company_id,display_name);
+
+
+drop index if exists flow.dvcfc_field_to_update_uidx;
+CREATE UNIQUE INDEX dvcfc_field_to_update_uidx ON flow.data_view_child_field_config (data_view_field_config_id,field_to_update);
 --TODO ask Kaleb about SQL Injection
