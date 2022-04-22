@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION flow.get_data_view_field_configs(p_data_view_id integ
             column_name                varchar,
             contains_children          boolean,
             data_type_id               integer,
+            process_step_event_id      integer,
             is_last_row                boolean
           )
 AS
@@ -26,6 +27,7 @@ BEGIN
                     from flow.data_view_child_field_config dvcvc2
                     where dvcvc2.data_view_field_config_id = dvfc.id) as contains_children,
              dt.id                                as data_type_id,
+             dvfc.process_step_event_id,
              lead(dvfc.id) OVER () IS NULL::boolean AS is_last_row
       from flow.data_view_field_config dvfc
              inner join flow.custom_field_group_assignment cfga
@@ -45,6 +47,7 @@ BEGIN
                   from flow.data_view_child_field_config dvcvc2
                   where dvcvc2.data_view_field_config_id = dvfc.id) as contains_children,
            dt.id                                                    as data_type_id,
+           dvfc.process_step_event_id,
            lead(dvfc.id) OVER () IS NULL::boolean                   AS is_last_row
     from flow.data_view_field_config dvfc
            inner join flow.default_field df

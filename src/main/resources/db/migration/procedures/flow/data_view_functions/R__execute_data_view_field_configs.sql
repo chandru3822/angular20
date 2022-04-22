@@ -31,8 +31,8 @@ BEGIN
           v_convert_date = true;
         end if;
         select flow.prepare_update_data_view_details(p_id, p_sql, p_field_to_update,
-                                                     p_value, v_secondary_records.field_to_update,
-                                                     v_secondary_records.value,
+                                                     p_value, v_secondary_records.field_to_update::text,
+                                                     v_secondary_records.value::text,
                                                      p_update_first_value_only,
                                                      p_update_first_value_only_id,
                                                      v_convert_date,

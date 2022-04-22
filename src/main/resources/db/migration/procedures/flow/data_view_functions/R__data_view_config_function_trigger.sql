@@ -45,7 +45,7 @@ BEGIN
                                                      x.data_type_id);
           end loop;
         select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                     v_value, null, null,
+                                                     v_value, null::text, null::text,
                                                      x.update_first_value_only,
                                                      x.update_first_value_only_id,
                                                      false,
@@ -132,7 +132,7 @@ BEGIN
 
         end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                           v_value, null, null,
+                                           v_value, null::text, null::text,
                                            x.update_first_value_only,
                                            x.update_first_value_only_id,
                                            false,
@@ -229,7 +229,7 @@ BEGIN
 
          end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, null, null,
+                                                   v_value, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
                                                    false,
@@ -335,9 +335,10 @@ BEGIN
 
       end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, null, null,
+                                                   v_value, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
+                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       -- begin
@@ -429,10 +430,12 @@ BEGIN
                from flow.get_data_view_field_configs(z.id,
                                                      'EVENT',
                                                      null)
+              where process_step_event_id = new.process_step_event_id
 
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
+          raise notice 'v_value %',v_value;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -448,9 +451,10 @@ BEGIN
 
         end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, null, null,
+                                                   v_value::text, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
+                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       -- begin
@@ -463,13 +467,15 @@ BEGIN
     end loop;
 
   if new.process_step_event_id = 14  then
+    raise notice '1';
     if new.start_time is not null then
       perform flow.company_event_specific_tasks(v_company_id,
                                         new.resource_id,
                                         new.id,
                                         v_project_id,
                                         'UPDATE_APPOINTMENT_DATA');
-    elsif
+      end if;
+    if
      ((old.resource_id is null and new.resource_id is not null) or
       (old.resource_id != new.resource_id)) then
       perform flow.company_event_specific_tasks(v_company_id,
@@ -487,7 +493,7 @@ $body$
 
 drop trigger if exists update_project_process_step_event_trg on flow.project_process_step_event;
 CREATE TRIGGER update_project_process_step_event_trg
-  after INSERT or update
+  after update OF start_time,end_time,resource_id,company_event_status_type_id
   ON flow.project_process_step_event
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_process_step_event_details();
