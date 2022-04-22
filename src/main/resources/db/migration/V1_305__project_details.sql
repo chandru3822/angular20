@@ -18,6 +18,7 @@ CREATE TABLE if not exists flow.data_view
   date_modified  timestamp without time zone DEFAULT now() not null,
   created_by_id  integer not null,
   modified_by_id integer,
+  reset_data_view boolean not null default false,
   archived       boolean not null            default false,
   CONSTRAINT data_view_pk primary key (id),
   CONSTRAINT dv_modified_by_id_fk FOREIGN KEY (modified_by_id)

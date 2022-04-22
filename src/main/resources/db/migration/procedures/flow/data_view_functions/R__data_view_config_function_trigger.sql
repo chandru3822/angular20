@@ -761,73 +761,95 @@ EXECUTE PROCEDURE flow.update_contact_custom_field_value_details();
 
 
 
--- CREATE OR REPLACE FUNCTION flow.update_project_process_step_custom_value()
---     RETURNS TRIGGER AS
--- $body$
---
--- declare
---     v_record record;
---     v_sql    text;
---     v_found  bigint;
---     v_count  integer = 0;
--- BEGIN
---
---     select count(1)
---     into v_found
---     from flow.project_process_step
---     where process_step_id = new.process_step_id
---       and project_id = new.project_id
---       and id != new.id
---       and main is false
---       and new.main is true;
---
---     if old.main is false and new.main is true or v_found > 0 then
---         v_sql = 'update brs.project_details set ';
---         for v_record in
---             select pdc.field_to_update, pdc.second_field_to_update
---             from flow.custom_field_group_assignment cfga
---                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                      inner join flow.data_type dt on dt.id = cdt.data_type_id
---                      inner join brs.project_details_config pdc on pdc.custom_field_group_assignment_id = cfga.id
---             where cfg.process_step_id = new.process_step_id
---               and cf.archived is false
---               and cfg.archived is false
---               and cfga.archived is false
---               and cf.parent_custom_field_id not in (10283, 10248,
---                                                 10057, 10118,
---                                                 10243, 10242)
---             loop
---                 v_count = v_count + 1;
---                 if v_record.second_field_to_update is not null then
---                     if not v_record.second_field_to_update = any (string_to_array(v_sql, ' ')) then
---                         v_sql = v_sql || v_record.second_field_to_update || ' = null , ';
---                     end if;
---                 end if;
---                 if not v_record.field_to_update = any (string_to_array(v_sql, ' ')) then
---                     v_sql = v_sql || v_record.field_to_update || ' = null , ';
---                 end if;
---             end loop;
---         v_sql = trim(trailing ' ,' from v_sql);
---         v_sql = v_sql || ' where project_id = ' || new.project_id || ';';
---         if v_count > 0 then
---             -- raise notice 'v_sql%',v_sql;
---             execute v_sql;
---         end if;
---     end if;
---
---     update flow.project_process_step_custom_field_value
---     set id = id
---     where project_process_step_id = new.id;
---     RETURN NULL;
--- END
--- $body$
---     LANGUAGE plpgsql;
---
--- drop trigger if exists update_project_process_step_custom_value_trg on flow.project_process_step;
--- CREATE TRIGGER update_project_process_step_custom_value_trg
---     after INSERT or update
---     ON flow.project_process_step
---     FOR EACH ROW
--- EXECUTE PROCEDURE flow.update_project_process_step_custom_value();
+CREATE OR REPLACE FUNCTION flow.reset_data_view_columns_from_process_step()
+  RETURNS TRIGGER AS
+$body$
+
+declare
+  v_sql                     text;
+  v_old_process_steps_found bigint;
+  v_count                   integer = 0;
+  z                         record;
+  x                         record;
+  v_company_id              integer;
+  v_project_id              integer;
+BEGIN
+
+  select count(1)
+  into v_old_process_steps_found
+  from flow.project_process_step
+  where process_step_id = new.process_step_id
+    and project_id = new.project_id
+    and id != new.id
+    and main is false
+    and new.main is true;
+  v_count = 0;
+  raise notice 'made it here %',v_old_process_steps_found;
+  if ((TG_OP = 'INSERT') and new.main is true and v_old_process_steps_found > 0) or
+     (TG_OP = 'UPDATE') and old.main is false and new.main is true and v_old_process_steps_found > 0 then
+       raise notice 'inside first if';
+    select c.company_id, p.id
+    into v_company_id,v_project_id
+    from flow.project p
+           inner join flow.contact c on p.contact_id = c.id
+    where new.project_id = p.id;
+
+
+    for z in select dv.schema_name,
+                    dv.view_name,
+                    dvfc.field_to_update,
+                    dvfc.id,
+                    flow.get_prepared_value(cdt.data_type_id,null) as value
+             from flow.get_schema_by_company(v_company_id) dv
+                    inner join flow.data_view_field_config dvfc on dvfc.data_view_id = dv.id
+                    inner join flow.custom_field_group_assignment cfga
+                               on dvfc.custom_field_group_assignment_id = cfga.id
+                    inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+                    inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and
+                                                              cfg.process_step_id = new.process_step_id and
+                                                              cfg.archived is false
+             where dv.reset_data_view is true
+
+      loop
+      raise notice '1';
+        if v_count = 0 then
+          v_sql = NULL;
+          v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+        end if;
+        v_count = v_count + 1;
+        v_sql = v_sql || z.field_to_update || $$ = $$ ||z.value || $$ ,$$;
+
+        for x in select dvcfc.field_to_update,
+                        flow.get_prepared_value(dvcfc.data_type_id,null) as value
+                 from flow.data_view_child_field_config dvcfc
+                 where dvcfc.data_view_field_config_id = z.id
+          loop
+            v_sql = v_sql || x.field_to_update || $$ = $$ ||z.value || $$ ,$$;
+          end loop;
+      end loop;
+    v_sql = trim(trailing ' ,' from v_sql);
+    v_sql = v_sql || ' where project_id = ' || v_project_id || ';';
+    if v_count > 0 then
+      raise notice '2';
+      -- raise notice 'v_sql%',v_sql;
+      execute v_sql;
+    end if;
+  end if;
+
+  if (TG_OP = 'UPDATE') and old.main is false and new.main is true and  v_count > 0 then
+    update flow.project_process_step_custom_field_value
+    set id = id
+    where project_process_step_id = new.id;
+  end if;
+  RETURN NULL;
+END
+$body$
+  LANGUAGE plpgsql;
+
+drop trigger if exists reset_data_view_columns_from_process_step_trg on flow.project_process_step;
+CREATE TRIGGER reset_data_view_columns_from_process_step_trg
+  after INSERT or update
+  ON flow.project_process_step
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.reset_data_view_columns_from_process_step();
