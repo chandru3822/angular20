@@ -268,6 +268,7 @@
                   :items-per-page="-1"
                   :mobile-breakpoint="0"
                   hide-default-footer
+                  :class="{'mt-4': addChild}"
                   class="elevation-1"
                 >
                   <template #item="{ item: childField }">
