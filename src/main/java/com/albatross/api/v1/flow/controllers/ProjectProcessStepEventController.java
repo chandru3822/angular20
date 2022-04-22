@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyEventStatusType;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.model.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

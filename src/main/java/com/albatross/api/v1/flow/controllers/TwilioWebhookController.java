@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.TwilioMessageRequest;
-import com.albatross.api.v1.flow.model.TwilioSMSResponse;
+import com.albatross.api.v1.flow.model.smsQueue.TwilioMessageRequest;
+import com.albatross.api.v1.flow.model.smsQueue.TwilioSMSResponse;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.twilio.twiml.MessagingResponse;

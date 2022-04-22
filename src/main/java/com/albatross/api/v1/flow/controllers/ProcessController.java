@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.CompanyProcess;
-import com.albatross.api.v1.flow.model.ProcessStep;
-import com.albatross.api.v1.flow.model.ProcessStepProcess;
+import com.albatross.api.v1.flow.model.processStep.ProcessStep;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepProcess;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.ProcessService;
 import lombok.RequiredArgsConstructor;

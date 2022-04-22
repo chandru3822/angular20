@@ -1,9 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.DurationType;
-import com.albatross.api.v1.flow.model.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
-import com.albatross.api.v1.flow.model.WorkQueueType;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
 import com.albatross.api.v1.flow.services.WorkQueueTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

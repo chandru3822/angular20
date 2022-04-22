@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.WorkQueueCategory;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueCategory;
 import com.albatross.api.v1.flow.services.WorkQueueCategoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
