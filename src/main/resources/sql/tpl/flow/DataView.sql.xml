@@ -31,10 +31,15 @@
                                                       select dvcfc.id,
                                                              dvcfc.data_view_field_config_id as "dataViewFieldConfigId",
                                                              dvcfc.unique_behavior_type_id as "uniqueBehaviorTypeId",
+                                                             ubt.unique_behavior_type as "uniqueBehaviorType",
+                                                             ubt.description as "uniqueBehaviorTypeDescription",
                                                              dvcfc.field_to_update as "fieldToUpdate",
                                                              dvcfc.data_type_id as "dataTypeId",
+                                                             dt.data_type as "dataType",
                                                              dvcfc.archived
                                                       from flow.data_view_child_field_config dvcfc
+                                                        inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
+                                                        inner join flow.data_type dt on dvcfc.data_type_id = dt.id
                                                       where dvcfc.archived is false
                                                         and dvcfc.data_view_field_config_id = dvfc.id
                                                       order by dvcfc.field_to_update
@@ -53,6 +58,14 @@
     insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, field_to_update, display_name, update_first_value_only, created_by_id)
     values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :userId)
   ]]></dataView.addFieldConfig>
+
+  <dataView.updateFieldConfig><![CDATA[
+    update flow.data_view_field_config
+      set display_name = :displayName,
+          modified_by_id = :userId,
+          date_modified = now()
+    where id = :id
+  ]]></dataView.updateFieldConfig>
 
   <dataView.addColumnToTable><![CDATA[
     select from flow.add_column_to_data_view(:id::int, null::int)
@@ -117,10 +130,18 @@
     and dvcfc.id = :id
   ]]></dataView.getChildFieldConfig>
 
-  <dataView.addDataView><![CDATA[
+  <dataView.add><![CDATA[
     insert into flow.data_view(company_id, view_name, display_name, created_by_id)
      values (:companyId, :viewName, :displayName, :userId)
-  ]]></dataView.addDataView>
+  ]]></dataView.add>
+
+  <dataView.update><![CDATA[
+    update flow.data_view
+    set display_name = :displayName,
+        modified_by_id = :userId,
+        date_modified = now()
+    where id = :id
+  ]]></dataView.update>
 
   <dataView.addTableForView><![CDATA[
     select from flow.initialize_data_view_table(:companyId::int, :viewName::character varying)

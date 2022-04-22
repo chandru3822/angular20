@@ -31,8 +31,8 @@ public class DataViewController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<DataView> addDataView(@RequestBody DataView dataView) {
-    return dataViewService.addDataView(dataView);
+  public Optional<DataView> saveDataView(@RequestBody DataView dataView) {
+    return dataViewService.saveDataView(dataView);
   }
 
   @GetMapping(value = "/{viewId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -41,9 +41,9 @@ public class DataViewController {
   }
 
   @PostMapping(value = "/{viewId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<DataViewFieldConfig> addFieldConfig(@PathVariable Long viewId,
+  public Optional<DataViewFieldConfig> saveFieldConfig(@PathVariable Long viewId,
                                                       @RequestBody DataViewFieldConfig field) {
-    return dataViewService.addFieldConfig(viewId, field);
+    return dataViewService.saveFieldConfig(viewId, field);
   }
 
   @PostMapping(value = "/{viewId}/field/{fieldId}/childField", produces = MediaType.APPLICATION_JSON_VALUE)

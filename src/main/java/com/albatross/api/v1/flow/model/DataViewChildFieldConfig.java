@@ -12,7 +12,7 @@ import lombok.Setter;
 public class DataViewChildFieldConfig {
 
   private Long id, dataTypeId, uniqueBehaviorTypeId, dataViewFieldConfigId;
-  private String fieldToUpdate;
+  private String fieldToUpdate, dataType, uniqueBehaviorType, uniqueBehaviorTypeDescription;
   private Boolean archived;
 
 }

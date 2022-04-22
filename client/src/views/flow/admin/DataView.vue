@@ -1,30 +1,73 @@
 <template>
-  <v-container id="data-view-container">
+  <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
-        <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
-            {{ dataView.displayName }} ({{ dataView.viewName }})
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
+        <!--        <v-toolbar flat class="app-toolbar">-->
+        <!--          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">-->
+        <!--            {{ dataView.displayName }} ({{ dataView.viewName }})-->
+        <!--          </v-toolbar-title>-->
+        <!--          <v-spacer></v-spacer>-->
+        <!--          <v-toolbar-items>-->
+        <!--            <v-btn text-->
+        <!--                   @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">-->
+        <!--              <v-icon v-if="constants.IS_MOBILE">add</v-icon>-->
+        <!--              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>-->
+        <!--            </v-btn>-->
+        <!--          </v-toolbar-items>-->
+        <!--        </v-toolbar>-->
+        <div class="flex-display pt-3 px-3 mb-4 one-hunned">
+          <div class="one-hunned pl-3">
+            <span class="page-title" v-if="!editName">{{ dataView.displayName }}</span>
+            <v-text-field v-else color="primaryCustom"
+                          v-model="dataView.displayName"
+                          label="Display Name"></v-text-field>
+            <div>
+              <label class="mt-4">Table Name: {{ dataView.viewName }}</label>
+            </div>
+          </div>
+          <div class="text-right">
+            <v-btn text v-if="!editName" class=""
+                   @click="[oldName = dataView.displayName, editName = !editName]">
+              <v-icon>edit</v-icon>
             </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
+            <v-btn text class="" v-else @click="[editName = false, saveDataView()]">
+              <v-icon>save</v-icon>
+            </v-btn>
+            <v-btn text v-if="editName" class="" @click="[dataView.displayName = oldName, editName = !editName]">
+              cancel
+            </v-btn>
+          </div>
+        </div>
+        <v-divider class="mt-3 mb-1"></v-divider>
+        <div class="search-header">
+          <v-text-field
+            v-if="!addNew"
+            v-model="search"
+            class="mb-2 px-4 py-2 d-inline-block"
+            prepend-inner-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+          <v-btn text class="d-inline-block" v-if="!addNew"
+                 @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">
+            <v-icon v-if="constants.IS_MOBILE">add</v-icon>
+            <span v-else>{{ addNew ? 'Cancel' : 'Add New Field' }}</span>
+          </v-btn>
+        </div>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add Field Config</h3>
           <div class="mb-3">
             <v-form ref="fieldConfigForm">
               <v-text-field text v-model="newField.displayName"
+                            :rules="requiredRules"
                             label="Display Name"/>
               <v-text-field text v-model="newField.fieldToUpdate"
                             hint="5-60 lowercase characters, no spaces, no symbols"
                             persistent-hint
+                            :rules="fieldToUpdateRule"
                             label="Field to Update"/>
-              <v-radio-group v-model="fieldType" @change="resetAllFields()">
+              <v-radio-group v-model="fieldType" @change="resetAllFields()" hide-details>
                 <v-radio label="Default Field" :value="1"></v-radio>
                 <v-radio label="Custom Field" :value="2"></v-radio>
               </v-radio-group>
@@ -71,7 +114,7 @@
                 </template>
               </v-autocomplete>
 
-              <div>
+              <div class="mb-3">
                 <span class="mr-3">Update First Value Only?</span>
                 <input
                   type="checkbox"
@@ -79,32 +122,22 @@
                 />
               </div>
             </v-form>
-            <div v-if="saveError" class="error--text">
-              {{saveErrorMsg}}
-            </div>
             <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
                               || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId)"
                    color="primaryCustom" class="white--text mr-2"
                    @click="validateFields(newField, true)">
               Save
             </v-btn>
-            <v-btn @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]">
+            <v-btn
+              @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]">
               Cancel
             </v-btn>
           </div>
 
         </v-card>
-        <v-text-field
-          v-model="search"
-          class="mb-2 px-4 py-2"
-          prepend-inner-icon="search"
-          label="Search"
-          single-line
-          hide-details
-        ></v-text-field>
         <v-divider></v-divider>
         <v-data-table
-          v-if="dataView.dataViewFieldConfigs"
+          v-if="dataView.dataViewFieldConfigs && !addNew"
           :headers="headers"
           single-expand
           :expanded.sync="expanded"
@@ -126,8 +159,15 @@
             <td :colspan="headers.length" class="pa-4"
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <h3>Edit Field Configs</h3>
-              <v-text-field text v-model="item.displayName"
-                            label="Display Name"/>
+              <div>
+                <v-text-field text v-model="item.displayName" class="d-inline-block display-name-field"
+                              label="Display Name"/>
+                <v-btn text :disabled="!item.displayName"
+                       color="primaryCustom" class="white--text mr-2 d-inline-block"
+                       @click="saveFieldConfig(item, false)">
+                  <v-icon>save</v-icon>
+                </v-btn>
+              </div>
               <v-text-field text v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
               <v-autocomplete
@@ -168,7 +208,7 @@
               </v-autocomplete>
 
               <div>
-                <span class="mr-3">Update First Value Only?</span>
+                <span class="mr-3 disabled-label">Update First Value Only?</span>
                 <input
                   type="checkbox"
                   disabled readonly
@@ -188,38 +228,60 @@
                 </v-toolbar>
 
                 <div v-if="addChild">
-                  <v-text-field text v-model="childField.fieldToUpdate"
-                                label="Child Field to Update"/>
-                  <v-autocomplete
-                    v-model="childField.dataTypeId"
-                    :items="dataTypes"
-                    label="Data Type"
-                    attach
-                    item-value="id"
-                    item-text="dataType"></v-autocomplete>
-                  <v-autocomplete
-                    v-model="childField.uniqueBehaviorTypeId"
-                    :items="uniqueBehaviorTypes"
-                    label="Unique Behavior Types"
-                    attach
-                    item-value="id"
-                    item-text="uniqueBehaviorType"></v-autocomplete>
-                  <v-btn :disabled="!childField.fieldToUpdate"
-                         color="primaryCustom" class="white--text mr-2"
-                         @click="saveChildFieldConfig(item, childField, true)">
-                    Save New Child
-                  </v-btn>
+                  <v-form ref="childFieldForm">
+                    <v-text-field text v-model="childField.fieldToUpdate"
+                                  :rules="fieldToUpdateRule"
+                                  label="Child Field to Update"/>
+                    <v-autocomplete
+                      v-model="childField.dataTypeId"
+                      :items="dataTypes"
+                      label="Data Type"
+                      attach
+                      item-value="id"
+                      item-text="dataType"></v-autocomplete>
+                    <v-autocomplete
+                      v-model="childField.uniqueBehaviorTypeId"
+                      :items="uniqueBehaviorTypes"
+                      label="Unique Behavior Types"
+                      attach
+                      item-value="id"
+                      item-text="uniqueBehaviorType">
+                      <template slot="item" slot-scope="data">
+                        {{ data.item.uniqueBehaviorType }} - {{ data.item.description }}
+                      </template>
+                    </v-autocomplete>
+                    <div class="mb-3 error--text" v-if="childSaveError">
+                      {{ childSaveErrorMsg }}
+                    </div>
+                    <v-btn
+                      :disabled="!childField.fieldToUpdate || !childField.dataTypeId || !childField.uniqueBehaviorTypeId"
+                      color="primaryCustom" class="white--text mr-2"
+                      @click="validateChildField(item, childField, true)">
+                      Add Child Field
+                    </v-btn>
+                  </v-form>
                 </div>
-                <div v-for="cf in item.childFieldConfigs">
-                  {{ cf.fieldToUpdate }}
-                </div>
+                <v-data-table
+                  v-if="item.childFieldConfigs && item.childFieldConfigs.length > 0"
+                  :headers="childFieldHeaders"
+                  :items="item.childFieldConfigs"
+                  :items-per-page="-1"
+                  :mobile-breakpoint="0"
+                  hide-default-footer
+                  class="elevation-1"
+                >
+                  <template #item="{ item: childField }">
+                    <tr class="text-left" :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
+                      <td class="text-left">{{ childField.fieldToUpdate }}</td>
+                      <td class="text-left">{{ childField.dataType }}</td>
+                      <td class="text-left">
+                        {{ childField.uniqueBehaviorType }} <br/>
+                        {{ childField.uniqueBehaviorTypeDescription }}
+                      </td>
+                    </tr>
+                  </template>
+                </v-data-table>
               </v-card>
-
-              <v-btn :disabled="!item.displayName"
-                     color="primaryCustom" class="white--text mr-2"
-                     @click="saveFieldConfig(item, false)">
-                Save Primary
-              </v-btn>
             </td>
           </template>
 
@@ -257,14 +319,30 @@ export default {
     return {
       snackbar: {},
       childField: {},
+      viewLoaded: false,
       addChild: false,
-      saveError: false,
+      childFieldHeaders: [
+        {text: 'Field To Update', value: 'fieldToUpdate', show: true},
+        {text: 'Data Type', value: 'dataType', show: true},
+        {text: 'Unique Behavior Type', value: 'uniqueBehaviorType', show: true},
+      ],
       fieldType: 1,
-      saveErrorMsg: '',
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      fieldToUpdateRule: [
+        // () => (this.newField.fieldToUpdate != null && this.newField.fieldToUpdate !== '') || "Field to Update is required",
+        v => !!v || "Field is required",
+        v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
+        v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
+        v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start and end with a letter",
+        v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
+        v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
+      ],
       selectedDefaultField: {},
       uniqueBehaviorTypes: [],
       dataTypes: [],
       expanded: [],
+      editName: false,
+      oldName: null,
       defaultFields: [],
       processStepEvents: [],
       cfgaParentObject: {},
@@ -273,6 +351,8 @@ export default {
       constants,
       search: '',
       addNew: false,
+      childSaveError: false,
+      childSaveErrorMsg: '',
       newField: {},
       viewId: parseInt(this.$route.params.id),
       dataView: {},
@@ -290,6 +370,21 @@ export default {
     this.getParentObjects()
   },
   methods: {
+    async saveDataView() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await postRequest(`/dataView`, this.dataView)
+
+        this.snackbar = getSnackbar('SUCCESS', 'Data View Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Data View')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     resetAllFields() {
       //gets called when the field type changes so that all data is clean again
       this.selectedDefaultField = {}
@@ -298,26 +393,23 @@ export default {
       this.newField.processStepEventId = null
     },
     validateFields(field, isNew) {
-      this.saveError = false
       let valid = this.$refs.fieldConfigForm?.validate()
-      let regex = /^[^a-z]*$/
 
-      console.log('randaLogger',regex.test(field.fieldToUpdate))
-
-      if(field.fieldToUpdate.indexOf(' ') >= 0) {
-        this.saveError = true
-        this.saveErrorMsg = 'Field to Update cannot contain whitespace'
-      } else if(!regex.test(field.fieldToUpdate)) {
-        this.saveError = true
-        this.saveErrorMsg = 'Field to Update must be all lowercase characters'
-      } else if(field.fieldToUpdate.length < 5 || field.fieldToUpdate.length > 60) {
-        this.saveError = true
-        this.saveErrorMsg = 'Field to Update must be 5-60 characters'
-      } else if (valid) {
+      if (valid) {
         this.saveFieldConfig(field, isNew)
       }
     },
+    validateChildField(item, newChildField, isNew) {
+      this.childSaveError = false
+      let match = item?.childFieldConfigs.find(cfc => cfc.fieldToUpdate === newChildField.fieldToUpdate)
 
+      if (match) {
+        this.childSaveError = true
+        this.childSaveErrorMsg = 'Field to Update already in use'
+      } else if (this.$refs.childFieldForm?.validate()) {
+        this.saveChildFieldConfig(item, newChildField, isNew)
+      }
+    },
     async validateForm() {
       if (this.$refs.projectEditForm.validate()) {
         //these could be combined - just dont have time atm
@@ -365,7 +457,7 @@ export default {
       this.customFields = []
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        if (this.cfgaParentObject.isProcessStep) {
+        if (this.cfgaParentObject?.isProcessStep) {
           const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.cfgaParentObject.id}`)
           this.customFields = data
           handleHidingGlobalLoader(this, status)
@@ -438,6 +530,7 @@ export default {
       try {
         const {data, status} = await getRequest(`/dataView/${this.viewId}`)
         this.dataView = data
+        this.viewLoaded = true
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -498,7 +591,24 @@ export default {
 
 <style lang="scss">
 #data-view-container .v-data-table__wrapper {
-  max-height: calc(100vh - 300px);
-  min-height: 300px;
+  max-height: calc(100vh - 350px);
+  min-height: 90px;
+}
+</style>
+
+<style lang="scss" scoped>
+.display-name-field {
+  width: 90%;
+}
+
+.search-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 200;
 }
 </style>

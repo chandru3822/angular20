@@ -122,6 +122,10 @@ body {
   align-content: center;
 }
 
+.disabled-label {
+  color: #9E9E9E !important;
+}
+
 /* theme the date time picker */
 .theme-datetime .vdatetime-popup__header,
 .theme-datetime .vdatetime-calendar__month__day--selected > span > span,

@@ -15,14 +15,21 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Data View</h3>
           <div class="mb-3">
+            <v-form ref="dataViewForm">
             <v-text-field text v-model="newDataView.displayName"
+                          :rules="requiredRules"
                           label="Display Name" />
             <v-text-field text v-model="newDataView.viewName"
+                          :rules="tableNameRule"
                           label="Table Name (all lower case, underscores instead of spaces)" />
+            </v-form>
+          </div>
+          <div class="mb-3 error--text" v-if="saveError">
+            {{saveErrorMsg}}
           </div>
           <v-btn :disabled="!newDataView.displayName || !newDataView.viewName"
                  color="primaryCustom" class="white--text mr-2"
-                 @click="saveDataView(newDataView, true)">
+                 @click="validateForm(newDataView, true)">
             Save
           </v-btn>
           <v-btn @click="[addNew = !addNew, newDataView = {}]">Cancel</v-btn>
@@ -45,11 +52,11 @@
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': dataViews.indexOf(item) % 2}">
+            <tr  class="text-left" @click="goToView(item.id)" :class="{'shaded-row': dataViews.indexOf(item) % 2}">
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.viewName }}</td>
-              <td>
-                <v-btn small text @click="goToView(item.id)">
+              <td class="text-right">
+                <v-btn small text>
                   <v-icon>edit</v-icon>
                 </v-btn>
 
@@ -77,7 +84,18 @@
         snackbar: {},
         constants,
         addNew: false,
+        saveError: false,
+        saveErrorMsg: '',
         dataViews: [],
+        requiredRules: constants.BASIC_REQUIRED_RULE,
+        tableNameRule: [
+          () => (this.newDataView.viewName != null && this.newDataView.viewName !== '') || "Field to Update is required",
+          v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
+          v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
+          v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
+          v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
+          v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start and end with a letter"
+        ],
         newDataView: {},
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
@@ -92,6 +110,16 @@
       this.getDataViews()
     },
     methods: {
+      validateForm(view, isNew) {
+        this.saveError = false
+        let match = this.dataViews?.find(dv => dv.viewName === view.viewName)
+        if(match) {
+          this.saveError = true
+          this.saveErrorMsg = 'Table Name already in use'
+        } else if (this.$refs.dataViewForm?.validate()) {
+          this.saveDataView(view, isNew)
+        }
+      },
       async goToView(id) {
         this.$router.push(`/admin/dataView/${id}`)
       },

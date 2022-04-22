@@ -39,18 +39,25 @@ public class DataViewService {
     return sqlCache.get("dataView.getDataView", params, DataView.class);
   }
 
-  public Optional<DataView> addDataView(DataView dataView) {
+  public Optional<DataView> saveDataView(DataView dataView) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("displayName", dataView.getDisplayName());
-    params.put("viewName", dataView.getViewName());
     params.put("userId", user.trueUserId());
+    Long id;
+    if(null != dataView.getId()) {
+      id= dataView.getId();
+      params.put("id", id);
+      sqlCache.update("dataView.update", params);
+    } else {
+      params.put("viewName", dataView.getViewName());
 
-    Long id = sqlCache.updateReturningId("dataView.addDataView", params, "id").longValue();
+      id = sqlCache.updateReturningId("dataView.add", params, "id").longValue();
 
-    params.put("id", id);
-    sqlCache.query("dataView.addTableForView", params, String.class);
+      params.put("id", id);
+      sqlCache.query("dataView.addTableForView", params, String.class);
+    }
 
     return getDataView(user.getCompanyId(), dataView.getDisplayName());
   }
@@ -90,23 +97,31 @@ public class DataViewService {
     return result;
   }
 
-  public Optional<DataViewFieldConfig> addFieldConfig(Long viewId, DataViewFieldConfig field) {
+  public Optional<DataViewFieldConfig> saveFieldConfig(Long viewId, DataViewFieldConfig field) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("viewId", viewId);
-    params.put("defaultFieldId", field.getDefaultFieldId());
-    params.put("customFieldGroupAssignmentId", field.getDefaultFieldId());
-    params.put("processStepEventId", field.getProcessStepEventId());
-    params.put("fieldToUpdate", field.getFieldToUpdate());
     params.put("displayName", field.getDisplayName());
-    params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
     params.put("userId", user.trueUserId());
 
-    Long id = sqlCache.updateReturningId("dataView.addFieldConfig", params, "id").longValue();
+    Long id;
+    if(null != field.getId()) {
+      id = field.getId();
+      params.put("id", id);
+      sqlCache.update("dataView.updateFieldConfig", params);
+    } else {
+      params.put("defaultFieldId", field.getDefaultFieldId());
+      params.put("customFieldGroupAssignmentId", field.getDefaultFieldId());
+      params.put("processStepEventId", field.getProcessStepEventId());
+      params.put("fieldToUpdate", field.getFieldToUpdate());
+      params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
 
-    HashMap<String, Object> params2 = new HashMap<>();
-    params2.put("id", id);
-    sqlCache.query("dataView.addColumnToTable", params2, String.class);
+      id = sqlCache.updateReturningId("dataView.addFieldConfig", params, "id").longValue();
+
+      HashMap<String, Object> params2 = new HashMap<>();
+      params2.put("id", id);
+      sqlCache.query("dataView.addColumnToTable", params2, String.class);
+    }
 
     return getDataViewFieldConfig(id);
   }
