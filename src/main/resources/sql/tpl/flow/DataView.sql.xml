@@ -34,7 +34,7 @@
                                                              dvcfc.field_to_update as "fieldToUpdate",
                                                              dvcfc.data_type_id as "dataTypeId",
                                                              dvcfc.archived
-                                                      from flow.data_view_child_view_config dvcfc
+                                                      from flow.data_view_child_field_config dvcfc
                                                       where dvcfc.archived is false
                                                         and dvcfc.data_view_field_config_id = dvfc.id
                                                       order by dvcfc.field_to_update
@@ -102,7 +102,7 @@
   ]]></dataView.getAvailablePsEventsForDefaultField>
 
   <dataView.addChildFieldConfig><![CDATA[
-    insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id, field_to_update, data_type_id, created_by_id)
+    insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id, field_to_update, data_type_id, created_by_id)
     values (:fieldId, :uniqueBehaviorTypeId, :fieldToUpdate, :dataTypeId, :userId)
   ]]></dataView.addChildFieldConfig>
 
@@ -112,7 +112,7 @@
 
   <dataView.getChildFieldConfig><![CDATA[
     select *
-    from flow.data_view_child_view_config dvcfc
+    from flow.data_view_child_field_config dvcfc
     where dvcfc.archived is false
     and dvcfc.id = :id
   ]]></dataView.getChildFieldConfig>
