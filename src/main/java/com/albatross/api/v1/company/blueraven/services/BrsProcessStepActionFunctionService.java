@@ -6,7 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
 import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;

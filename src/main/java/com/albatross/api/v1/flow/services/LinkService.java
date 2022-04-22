@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Link;
-import com.albatross.api.v1.flow.model.ProcessStepLink;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepLink;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;

@@ -2,8 +2,8 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.CloserDashboardService;
-import com.albatross.api.v1.flow.model.Org;
-import com.albatross.api.v1.flow.model.PostalCodeZone;
+import com.albatross.api.v1.flow.model.org.Org;
+import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
