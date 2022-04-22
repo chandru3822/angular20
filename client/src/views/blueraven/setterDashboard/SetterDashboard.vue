@@ -7,9 +7,9 @@
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
               <v-btn text @click="setTimeInterval('Today')">Today</v-btn>
               <v-btn text @click="setTimeInterval('Yesterday')">Yesterday</v-btn>
-              <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
-              <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
-              <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
+              <v-btn text @click="setTimeInterval('WTD')">Week</v-btn>
+              <v-btn text @click="setTimeInterval('MTD')">Month</v-btn>
+              <v-btn text @click="setTimeInterval('QTD')">Quarter</v-btn>
               <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
             </v-btn-toggle>
           </v-toolbar-items>
@@ -521,6 +521,9 @@
           this.timeIntervalString = timeIntervalString
           this.rankingData = {}
 
+          // let test = moment
+          // debugger
+
           switch (timeIntervalString) {
             case 'Today':
               this.timeInterval = 0 // TODAY
@@ -528,16 +531,19 @@
             case 'Yesterday':
               this.timeInterval = 1 // YESTERDAY
               break
+            case 'WTD':
+              //gets # day of week. -1 because BR week starts on monday
+              this.timeInterval = moment().day() - 1 // WTD
+              break
             case 'MTD':
-              this.timeInterval = +moment().format('DD') - 1 // MTD
+              //gets current # day of month (-1 so that we dont go down to 0)
+              this.timeInterval = moment().format('DD') - 1 // MTD
               break
-            case '60 days':
-              this.timeInterval = 60
-              break
-            case '90 days':
-              this.timeInterval = 90
+            case 'QTD':
+              this.timeInterval =  moment().diff(moment().startOf('quarter'), 'days')// QTD
               break
             case 'YTD':
+              //gets current # day of year (-1 so that we dont go down to 0)
               this.timeInterval = moment().dayOfYear() - 1 // YTD
               break
           }
