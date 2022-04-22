@@ -14,18 +14,19 @@ BEGIN
   where contact_id = new.id;
 
   if v_project_ids is not null then
-    for z in select * from brs.get_schema_by_company(new.company_id)
+    for z in select * from flow.get_schema_by_company(new.company_id)
       loop
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-        for x in select * from brs.get_data_view_field_configs(z.id,
-                                                               'CONTACT')
+        for x in select * from flow.get_data_view_field_configs(z.id,
+                                                               'CONTACT',
+                                                                null)
           loop
             execute format('SELECT $1.%I', x.column_name)
               into v_value using new;
             select *
             into v_sql
-            from brs.execute_data_view_field_configs(x.contains_children,
+            from flow.execute_data_view_field_configs(x.contains_children,
                                                      v_value,
                                                      x.dvfc_id,
                                                      new.id,
@@ -40,6 +41,7 @@ BEGIN
                                                      v_value, null, null,
                                                      x.update_first_value_only,
                                                      x.update_first_value_only_id,
+                                                     false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
         -- begin
@@ -91,18 +93,19 @@ BEGIN
   select quote_literal(array_agg(new.id)::text)
   into v_project_ids;
 
-  for z in select * from brs.get_schema_by_company(v_company_id)
+  for z in select * from flow.get_schema_by_company(v_company_id)
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select * from brs.get_data_view_field_configs(z.id,
-                                                             'PROJECT')
+      for x in select * from flow.get_data_view_field_configs(z.id,
+                                                             'PROJECT',
+                                                              null)
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
           select *
           into v_sql
-          from brs.execute_data_view_field_configs(x.contains_children,
+          from flow.execute_data_view_field_configs(x.contains_children,
                                                    v_value,
                                                    x.dvfc_id,
                                                    new.id,
@@ -118,6 +121,7 @@ BEGIN
                                            v_value, null, null,
                                            x.update_first_value_only,
                                            x.update_first_value_only_id,
+                                           false,
                                            x.is_last_row, true, v_project_ids)
       into v_sql;
      --- begin
@@ -154,7 +158,6 @@ declare
   v_project_id   integer;
   v_sql          character varying;
   v_value        character varying;
-  v_second_value text;
   v_project_id1  integer;
   v_company_id   integer;
   z              record;
@@ -177,78 +180,46 @@ BEGIN
 
   select quote_literal(array_agg(coalesce(v_project_id, v_project_id1))::text)
   into v_project_ids;
-  for z in select c.schema_name, dv.view_name, dv.id
-           from flow.company c
-                  inner join flow.data_view dv on c.id = dv.company_id
-           where c.id = v_company_id
-           and exists (select dvfc2.id
+  for z in select * from flow.get_schema_by_company(v_company_id) a
+           where exists (select dvfc2.id
                       from flow.data_view_field_config dvfc2
-                      inner join flow.field_config fc2 on dvfc2.field_config_id = fc2.id
-                      where dvfc2.data_view_id = dv.id and fc2.custom_field_group_assignment_id = new.custom_field_group_assignment_id
+                      where dvfc2.data_view_id = a.id and dvfc2.custom_field_group_assignment_id = new.custom_field_group_assignment_id
                       )
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select fc.field_to_update,
-                      fc.secondary_field,
-                      fc.secondary_data_type_id,
-                      fc.update_first_value_only,
-                      fc.update_first_value_only_id,
-                      cf.id                                as custom_field_id,
-                      cf.field_name,
-                      cf.list_of_value_id,
-                      cf.system_list_option_ids,
-                      cf.company_system_list_id,
-                      cf.custom_field_sql_reference_table,
-                      cf.custom_field_sql_column,
-                      dt.id                                as data_type_id,
-                      lead(fc.id) OVER () IS NULL::boolean AS is_last_row
-               from flow.data_view_field_config dvfc
-                      inner join flow.field_config fc on fc.id = dvfc.field_config_id
-                      inner join flow.custom_field_group_assignment cfga
-                                 on fc.custom_field_group_assignment_id = cfga.id
-                      inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-                      inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-                      inner join flow.data_type dt on cdt.data_type_id = dt.id
-               where cfga.id = new.custom_field_group_assignment_id and dvfc.data_view_id = z.id
+      for x in select * from flow.get_data_view_field_configs(z.id,
+                                                              null,
+                                                              new.custom_field_group_assignment_id)
         loop
-          if x.secondary_field is not null and x.data_type_id = 2 and x.secondary_data_type_id = 1 then
-             case when new.timestamp_value is null then select 'null' into v_second_value; else select quote_literal(new.timestamp_value) into v_second_value; end case;
-             v_second_value = '(' || v_second_value || '::timestamp at time zone ' || quote_literal('UTC') ||
-                       ' at time zone ' || quote_literal('US/Mountain') || ')::date';
-          elsif x.secondary_field is not null then
-            select flow.get_secondary_detail_value(x.list_of_value_id,
-                                                   x.company_system_list_id,
-                                                   new.int_value,
-                                                   x.custom_field_sql_column,
-                                                   x.custom_field_sql_reference_table)
-            into v_second_value;
-            select flow.get_prepared_value(x.secondary_data_type_id, v_second_value)
-            into v_second_value;
-          end if;
+          select *
+          into v_sql
+          from flow.execute_data_view_field_configs(x.contains_children,
+                                                    case
+                                                      when x.data_type_id = 1 then new.date_value::text
+                                                      when x.data_type_id = 2 then new.timestamp_value::text
+                                                      when x.data_type_id = 3 then new.boolean_value::text
+                                                      when x.data_type_id = 4 then new.numeric_value::text
+                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id = 6 then new.int_value::text
+                                                      when x.data_type_id = 7 then new.int_array_value::text
+                                                      when x.data_type_id in (8,9) then new.int_value::text end,
+                                                    x.dvfc_id,
+                                                    new.id,
+                                                    v_sql,
+                                                    x.field_to_update,
+                                                    x.update_first_value_only,
+                                                    x.update_first_value_only_id,
+                                                    x.is_last_row,
+                                                    x.data_type_id);
 
-          select flow.get_prepared_value(x.data_type_id, case
-                                                           when x.data_type_id = 1 then new.date_value::text
-                                                           when x.data_type_id = 2 then new.timestamp_value::text
-                                                           when x.data_type_id = 3 then new.boolean_value::text
-                                                           when x.data_type_id = 4 then new.numeric_value::text
-                                                           when x.data_type_id = 5 then new.text_value::text
-                                                           when x.data_type_id = 6 then new.int_value::text
-                                                           when x.data_type_id = 7 then new.int_array_value::text
-                                                           when x.data_type_id in (8,9) then new.int_value::text end)
-          into v_value;
-          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                       v_value, x.secondary_field, v_second_value,
-                                                       x.update_first_value_only,
-                                                       x.update_first_value_only_id,
-                                                       x.is_last_row)
-          into v_sql;
 
-        end loop;
+         end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, x.secondary_field, v_second_value,
+                                                   v_value, null, null,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
+                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
      -- begin
@@ -286,7 +257,6 @@ declare
   x record;
   v_company_id integer;
   v_project_ids  text;
-  v_second_value text;
 BEGIN
 
   select pps.project_id,c.company_id
@@ -310,86 +280,50 @@ BEGIN
   select quote_literal(array_agg(coalesce(v_project_id, v_project_id1))::text)
   into v_project_ids;
 
-  for z in select c.schema_name, dv.view_name, dv.id
-           from flow.company c
-                  inner join flow.data_view dv on c.id = dv.company_id
-           where c.id = v_company_id
-             and exists (select dvfc2.id
+  for z in select * from flow.get_schema_by_company(v_company_id) a
+             where exists (select dvfc2.id
                          from flow.data_view_field_config dvfc2
-                                inner join flow.field_config fc2 on dvfc2.field_config_id = fc2.id
-                         where dvfc2.data_view_id = dv.id and fc2.custom_field_group_assignment_id = new.custom_field_group_assignment_id
+                         where dvfc2.data_view_id = a.id and dvfc2.custom_field_group_assignment_id = new.custom_field_group_assignment_id
              )
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select fc.field_to_update,
-                      fc.secondary_field,
-                      fc.secondary_data_type_id,
-                      fc.update_first_value_only,
-                      fc.update_first_value_only_id,
-                      cf.id                                as custom_field_id,
-                      cf.field_name,
-                      cf.list_of_value_id,
-                      cf.system_list_option_ids,
-                      cf.company_system_list_id,
-                      cf.custom_field_sql_reference_table,
-                      cf.custom_field_sql_column,
-                      dt.id                                as data_type_id,
-                      lead(fc.id) OVER () IS NULL::boolean AS is_last_row
-               from flow.data_view_field_config dvfc
-                      inner join flow.field_config fc on fc.id = dvfc.field_config_id
-                      inner join flow.custom_field_group_assignment cfga
-                                 on fc.custom_field_group_assignment_id = cfga.id
-                      inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-                      inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-                      inner join flow.data_type dt on cdt.data_type_id = dt.id
-               where cfga.id = new.custom_field_group_assignment_id and dvfc.data_view_id = z.id
+      for x in select * from flow.get_data_view_field_configs(z.id,
+                                                              null,
+                                                              new.custom_field_group_assignment_id)
 
         loop
 
-          if v_company_id = 3 and new.custom_field_group_assignment_id in (4,21506) and z.view_name = 'project_details' then
-            perform brs.company_event_specific_tasks(coalesce(v_project_id,v_project_id1),
+          if new.custom_field_group_assignment_id in (4,21506) and z.view_name = 'project_details' then
+            perform flow.company_custom_field_event_specific_tasks(v_company_id,
                                                      new.project_process_step_event_id,
-                                                     new.id,
-                                                     new.int_value,
-                                                     new.custom_field_group_assignment_id);
+                                                     coalesce(v_project_id,v_project_id1));
           end if;
+          select *
+          into v_sql
+          from flow.execute_data_view_field_configs(x.contains_children,
+                                                    case
+                                                      when x.data_type_id = 1 then new.date_value::text
+                                                      when x.data_type_id = 2 then new.timestamp_value::text
+                                                      when x.data_type_id = 3 then new.boolean_value::text
+                                                      when x.data_type_id = 4 then new.numeric_value::text
+                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id = 6 then new.int_value::text
+                                                      when x.data_type_id = 7 then new.int_array_value::text
+                                                      when x.data_type_id in (8,9) then new.int_value::text end,
+                                                    x.dvfc_id,
+                                                    new.id,
+                                                    v_sql,
+                                                    x.field_to_update,
+                                                    x.update_first_value_only,
+                                                    x.update_first_value_only_id,
+                                                    x.is_last_row,
+                                                    x.data_type_id);
 
-          if x.secondary_field is not null and x.data_type_id = 2 and x.secondary_data_type_id = 1 then
-            case when new.timestamp_value is null then select 'null' into v_second_value; else select quote_literal(new.timestamp_value) into v_second_value; end case;
-            v_second_value = '(' || v_second_value || '::timestamp at time zone ' || quote_literal('UTC') ||
-                             ' at time zone ' || quote_literal('US/Mountain') || ')::date';
-          elsif x.secondary_field is not null then
-            select flow.get_secondary_detail_value(x.list_of_value_id,
-                                                   x.company_system_list_id,
-                                                   new.int_value,
-                                                   x.custom_field_sql_column,
-                                                   x.custom_field_sql_reference_table)
-            into v_second_value;
-            select flow.get_prepared_value(x.secondary_data_type_id, v_second_value)
-            into v_second_value;
-          end if;
 
-          select flow.get_prepared_value(x.data_type_id, case
-                                                           when x.data_type_id = 1 then new.date_value::text
-                                                           when x.data_type_id = 2 then new.timestamp_value::text
-                                                           when x.data_type_id = 3 then new.boolean_value::text
-                                                           when x.data_type_id = 4 then new.numeric_value::text
-                                                           when x.data_type_id = 5 then new.text_value::text
-                                                           when x.data_type_id = 6 then new.int_value::text
-                                                           when x.data_type_id = 7 then new.int_array_value::text
-                                                           when x.data_type_id in (8,9) then new.int_value::text end)
-          into v_value;
-          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                       v_value, x.secondary_field, v_second_value,
-                                                       x.update_first_value_only,
-                                                       x.update_first_value_only_id,
-                                                       x.is_last_row)
-          into v_sql;
-
-        end loop;
+      end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, x.secondary_field, v_second_value,
+                                                   v_value, null, null,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
                                                    x.is_last_row, true, v_project_ids)
@@ -426,12 +360,12 @@ declare
   v_user_id          integer;
   v_user_position_id integer;
   v_sql              text;
-  z record;
-  x record;
-  v_company_id integer;
-  v_project_ids  text;
-  v_second_value text;
-v_value  character varying;;
+  z                  record;
+  x                  record;
+  v_company_id       integer;
+  v_project_ids      text;
+  v_value            character varying;
+  v_event_status_type_id    integer;
 BEGIN
 
   select pps.project_id,c.company_id
@@ -442,72 +376,71 @@ BEGIN
   inner join flow.contact c on p.contact_id = c.id
   where ppse.id = new.id;
 
+  select est.id
+  into v_event_status_type_id
+  from flow.company_event_status_type cest
+         inner join flow.event_status_type est on cest.event_status_type_id = est.id
+  where cest.id = new.company_event_status_type_id;
+
+  if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
+    update flow.project_process_step_event
+    set cancelled_date = null,
+        completed_date = now()
+    where id = new.id;
+  elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
+    update flow.project_process_step_event
+    set cancelled_date = now(),
+        completed_date = null
+    where id = new.id;
+  else
+    update flow.project_process_step_event
+    set cancelled_date = null,
+        completed_date = null
+    where id = new.id;
+  end if;
+
+  if (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE')) then
+    update flow.project_process_step_event
+    set scheduled_date = now()
+    where id = new.id;
+
+  end if;
+
   select quote_literal(array_agg(coalesce(v_project_id, v_project_id))::text)
   into v_project_ids;
 
-  for z in select c.schema_name, dv.view_name, dv.id
-           from flow.company c
-                  inner join flow.data_view dv on c.id = dv.company_id
-           where c.id = v_company_id
-             and exists (select dvfc2.id
+  for z in select * from flow.get_schema_by_company(v_company_id) a
+             where exists (select dvfc2.id
                          from flow.data_view_field_config dvfc2
-                                inner join flow.field_config fc2 on dvfc2.field_config_id = fc2.id
-                         where dvfc2.data_view_id = dv.id and fc2.process_step_event_id = new.id
+                         where a.id = dvfc2.data_view_id and dvfc2.process_step_event_id = new.id
              )
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select fc.field_to_update,
-                      fc.secondary_field,
-                      fc.secondary_data_type_id,
-                      fc.update_first_value_only,
-                      fc.update_first_value_only_id,
-                      df.column_name,
-                      dt.data_type as data_type_id,
-                      cf.company_system_list_id,
-                      pse3.unique_behavior_type_id,
-                      lead(fc.id) OVER () IS NULL::boolean AS is_last_row
-               from flow.data_view_field_config dvfc
-                      inner join flow.field_config fc on fc.id = dvfc.field_config_id
-                      inner join flow.process_step_event pse3
-                                 on fc.process_step_event_id = pse3.id
-                      inner join flow.event e on pse3.event_id = e.id
-                      inner join flow.custom_field cf on e.resource_custom_field_id = cf.id
-                      inner join flow.default_field df on fc.default_field_id = df.id
-                      inner join flow.data_type dt on df.data_type_id = dt.id
-               where pse3.id = new.process_step_event_id and dvfc.data_view_id = z.id
+      for x in select *
+               from flow.get_data_view_field_configs(z.id,
+                                                     'EVENT',
+                                                     null)
 
         loop
-          if x.secondary_field is not null and x.data_type_id = 2 and x.secondary_data_type_id = 1 then
-            case when new.start_time is null then select 'null' into v_second_value; else select quote_literal(new.start_time) into v_second_value; end case;
-            v_second_value = '(' || v_second_value || '::timestamp at time zone ' || quote_literal('UTC') ||
-                             ' at time zone ' || quote_literal('US/Mountain') || ')::date';
-          elsif x.secondary_field is not null then
-            select flow.get_secondary_detail_value(null,
-                                                   x.company_system_list_id,
-                                                   new.resource_id,
-                                                   null,
-                                                   null)
-            into v_second_value;
-            select flow.get_prepared_value(x.secondary_data_type_id, v_second_value)
-            into v_second_value;
-          end if;
-
-          select flow.get_prepared_value(case when x.column_name in ('end_time','start_time') then 2
-                                                    else 6 end, case when x.column_name = 'end_time' then new.end_time
-                                                                      when x.column_name = 'start_time' then new.start_time
-                                                                      else new.resource_id end)
-          into v_value;
-          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                       v_value, x.secondary_field, v_second_value,
-                                                       x.update_first_value_only,
-                                                       x.update_first_value_only_id,
-                                                       x.is_last_row)
-          into v_sql;
+          execute format('SELECT $1.%I', x.column_name)
+            into v_value using new;
+          select *
+          into v_sql
+          from flow.execute_data_view_field_configs(x.contains_children,
+                                                    v_value,
+                                                    x.dvfc_id,
+                                                    new.id,
+                                                    v_sql,
+                                                    x.field_to_update,
+                                                    x.update_first_value_only,
+                                                    x.update_first_value_only_id,
+                                                    x.is_last_row,
+                                                    x.data_type_id);
 
         end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, x.secondary_field, v_second_value,
+                                                   v_value, null, null,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
                                                    x.is_last_row, true, v_project_ids)

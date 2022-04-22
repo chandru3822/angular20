@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_schema_by_company(p_company_id integer)
+CREATE OR REPLACE FUNCTION flow.get_schema_by_company(p_company_id integer)
   RETURNS TABLE
           (
             schema_name  varchar,

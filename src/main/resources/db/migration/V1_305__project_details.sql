@@ -1,5 +1,6 @@
 --TODO create function for data_view insert to add the new table and  add project_id and contact_id and date_modified as the first columns in the table.
-
+delete from brs.project_details_config
+  where id = 5290;
 alter table flow.company
   add column if not exists schema_name varchar;
 
@@ -14,7 +15,7 @@ CREATE TABLE if not exists flow.data_view
   view_name      character varying(63),
   display_name   character varying(63),
   date_created   timestamp without time zone DEFAULT now() not null,
-  date_modified  timestamp without time zone,
+  date_modified  timestamp without time zone DEFAULT now() not null,
   created_by_id  integer not null,
   modified_by_id integer,
   archived       boolean not null            default false,
@@ -39,7 +40,7 @@ create index if not exists dv_view_name_idx
 insert into flow.data_view(company_id, view_name, date_created, created_by_id,display_name)
   (select 3, 'project_details', now(), 2350555,'Project Details'
    where not exists(select id from flow.data_view where view_name = 'project_details'));
-
+--TODO add constraint that doesn't allow them to have the same field_to_update in the same object.
 create table flow.data_view_field_config
 (
   id              serial  not null,
@@ -52,7 +53,7 @@ create table flow.data_view_field_config
   update_first_value_only          boolean                     default false not null,
   update_first_value_only_id       varchar,
   date_created    timestamp without time zone DEFAULT now() not null,
-  date_modified   timestamp without time zone,
+  date_modified   timestamp without time zone DEFAULT now() not null,
   created_by_id   integer not null,
   modified_by_id  integer,
   archived        boolean not null            default false,
@@ -92,7 +93,7 @@ create index if not exists dvfc_process_step_event_id_idx
   on flow.data_view_field_config (process_step_event_id);
 
 
-CREATE TABLE if not exists flow.data_view_child_view_config
+CREATE TABLE if not exists flow.data_view_child_field_config
 (
   id  serial,
   data_view_field_config_id integer,
@@ -100,32 +101,32 @@ CREATE TABLE if not exists flow.data_view_child_view_config
   field_to_update character varying(100),
   data_type_id integer,
   date_created                     timestamp without time zone DEFAULT now() not null,
-  date_modified                    timestamp without time zone,
+  date_modified                    timestamp without time zone DEFAULT now() not null,
   created_by_id                    integer                                   not null,
   modified_by_id                   integer,
-  archived                         boolean,
-  CONSTRAINT dvcvc_field_config_id_fk FOREIGN KEY (data_view_field_config_id)
+  archived                         boolean  not null  default false,
+  CONSTRAINT dvcfc_field_config_id_fk FOREIGN KEY (data_view_field_config_id)
     REFERENCES flow.data_view_field_config (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT dvcvc_unique_behavour_type_id_fk FOREIGN KEY (unique_behavior_type_id)
+  CONSTRAINT dvcfc_unique_behavour_type_id_fk FOREIGN KEY (unique_behavior_type_id)
     REFERENCES flow.unique_behavior_type (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT dvcvc_data_type_id_fk FOREIGN KEY (data_type_id)
+  CONSTRAINT dvcfc_data_type_id_fk FOREIGN KEY (data_type_id)
     REFERENCES flow.data_type (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT dvcvc_modified_by_id_fk FOREIGN KEY (modified_by_id)
+  CONSTRAINT dvcfc_modified_by_id_fk FOREIGN KEY (modified_by_id)
     REFERENCES flow.user (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT dvcvc_created_by_id_fk FOREIGN KEY (created_by_id)
+  CONSTRAINT dvcfc_created_by_id_fk FOREIGN KEY (created_by_id)
     REFERENCES flow.user (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-create index if not exists dvcvc_data_view_field_config_id_idx
-  on flow.data_view_child_view_config (data_view_field_config_id);
+create index if not exists dvcfc_data_view_field_config_id_idx
+  on flow.data_view_child_field_config (data_view_field_config_id);
 
-create index if not exists dvcvc_unique_behavour_type_id_idx
-  on flow.data_view_child_view_config (unique_behavior_type_id);
+create index if not exists dvcfc_unique_behavour_type_id_idx
+  on flow.data_view_child_field_config (unique_behavior_type_id);
 
 
 alter table flow.custom_field
@@ -240,7 +241,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
         from brs.project_detail_events_config pdec
  where field_to_use = 'start_time');
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
 (select (select dvfc.id from flow.data_view_field_config dvfc
                    inner join flow.default_field df on dvfc.default_field_id = df.id and df.column_name = 'start_time'
                     where field_to_update = pdec.field_to_update and
@@ -271,7 +272,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
    from brs.project_detail_events_config pdec
    where field_to_use = 'end_time');
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id from flow.data_view_field_config dvfc
                                  inner join flow.default_field df on dvfc.default_field_id = df.id and df.column_name = 'end_time'
            where field_to_update = pdec.field_to_update and
@@ -300,7 +301,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
    from brs.project_detail_events_config pdec
    where field_to_use = 'resource_id');
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id from flow.data_view_field_config dvfc
                                  inner join flow.default_field df on dvfc.default_field_id = df.id and df.column_name = 'resource_id'
            where field_to_update = pdec.field_to_update and
@@ -333,7 +334,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
      and company_id = 3 and pdc.field_to_update not in ( 'closer_user_position_id','cancelled_date'));
 
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = pdc.field_to_update and
@@ -490,7 +491,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
    where pdc.company_id = 3 and pdc.custom_field_group_assignment_id < 1 and pdc.field_to_update in ('project_state_abbreviation'));
 
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'project_state_id'),
@@ -640,7 +641,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
           now(),now(),2350555,false);
 
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'setter_user_position_id'),
@@ -649,7 +650,7 @@ insert into flow.data_view_child_view_config(data_view_field_config_id, unique_b
           5,
           now(),now(),2350555,false);
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'setter_user_position_id'),
@@ -725,7 +726,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
           now(),now(),2350555,false);
 
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'contact_id'),
@@ -789,7 +790,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
           now(),now(),2350555,false);
 
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'project_created_by_id'),
@@ -834,7 +835,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
           now(),now(),2350555,false);
 
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'company_project_status_type_id'),
@@ -868,7 +869,7 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
           now(),now(),2350555,false);
 
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'closer_user_position_id'),
@@ -877,7 +878,7 @@ insert into flow.data_view_child_view_config(data_view_field_config_id, unique_b
           5,
           now(),now(),2350555,false);
 
-insert into flow.data_view_child_view_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
            where field_to_update = 'closer_user_position_id'),
@@ -945,7 +946,8 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
 --drop table if exists brs.project_details_config;
 
 
-CREATE OR REPLACE function flow.add_column_to_data_view(p_data_view_field_config_id integer)
+CREATE OR REPLACE function flow.add_column_to_data_view(p_data_view_field_config_id integer,
+                                                        p_data_view_child_field_config_id integer)
   returns void
 AS
 $BODY$
@@ -960,57 +962,65 @@ declare
   v_data_view_field_config_id  integer;
   x                            record;
 BEGIN
-  select dvfc.id,
-         dvfc.field_to_update,
-         coalesce(dt.data_type, dt2.data_type) as data_type,
-         dvfc.update_first_value_only,
-         coalesce(dt.id, dt2.id)               as data_type_id,
-         c.schema_name,
-         dv.view_name,
-         dvfc.update_first_value_only_id
-  into v_data_view_field_config_id,v_field_to_update,v_data_type,v_update_first_value_only,v_data_type_id,
-    v_schema_name,v_view_name,v_update_first_value_only_id
-  from flow.data_view_field_config dvfc
-         inner join flow.data_view dv on dvfc.data_view_id = dv.id
-         inner join flow.company c on dv.company_id = c.id
-         left join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
-         left join flow.custom_field cf on cfga.custom_field_id = cf.id
-         left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-         left join flow.data_type dt2 on cdt.data_type_id = dt2.id
-         left join flow.default_field df on dvfc.default_field_id = df.id
-         left join flow.data_type dt on df.data_type_id = dt.id
-  where dvfc.id = p_data_view_field_config_id;
 
-  if v_data_type_id = 7 then
-    v_data_type = 'integer[]';
-  elsif v_data_type_id in (8, 9) then
-    v_data_type = 'integer';
-  end if;
-  --     v_sql = $$ALTER TABLE $$||v_schema_name||$$.$$||v_view_name||$$ ADD COLUMN if not exists $$ || v_field_to_update || $$ $$ ||v_data_type||$$;$$;
+  if p_data_view_field_config_id is not null and p_data_view_child_field_config_id is null then
+    select dvfc.id,
+           dvfc.field_to_update,
+           coalesce(dt.data_type, dt2.data_type) as data_type,
+           dvfc.update_first_value_only,
+           coalesce(dt.id, dt2.id)               as data_type_id,
+           c.schema_name,
+           dv.view_name,
+           dvfc.update_first_value_only_id
+    into v_data_view_field_config_id,v_field_to_update,v_data_type,v_update_first_value_only,v_data_type_id,
+      v_schema_name,v_view_name,v_update_first_value_only_id
+    from flow.data_view_field_config dvfc
+           inner join flow.data_view dv on dvfc.data_view_id = dv.id
+           inner join flow.company c on dv.company_id = c.id
+           left join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+           left join flow.custom_field cf on cfga.custom_field_id = cf.id
+           left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+           left join flow.data_type dt2 on cdt.data_type_id = dt2.id
+           left join flow.default_field df on dvfc.default_field_id = df.id
+           left join flow.data_type dt on df.data_type_id = dt.id
+    where dvfc.id = p_data_view_field_config_id;
+
+    if v_data_type_id = 7 then
+      v_data_type = 'integer[]';
+    elsif v_data_type_id in (8, 9) then
+      v_data_type = 'integer';
+    end if;
+    --     v_sql = $$ALTER TABLE $$||v_schema_name||$$.$$||v_view_name||$$ ADD COLUMN if not exists $$ || v_field_to_update || $$ $$ ||v_data_type||$$;$$;
 --     raise notice 'what is this %',v_sql;
-  EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
-          v_field_to_update || $$ $$ || v_data_type || $$;$$;
-  EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
-
-  if v_update_first_value_only is true then
-    v_data_type = 'integer';
     EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
-            v_update_first_value_only_id || $$_cfv_id $$ || v_data_type || $$;$$;
-    EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_update_first_value_only_id ||
-            $$_cfv_id);$$;
+            v_field_to_update || $$ $$ || v_data_type || $$;$$;
+    EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
 
+    if v_update_first_value_only is true then
+      v_data_type = 'integer';
+      EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
+              v_field_to_update || $$_cfv_id $$ || v_data_type || $$;$$;
+      EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||
+              $$_cfv_id);$$;
+
+    end if;
+
+  else
+    select dvcfc.field_to_update, dt2.data_type,
+           c.schema_name,dv.view_name
+    into v_field_to_update,v_data_type,
+      v_schema_name,v_view_name
+    from flow.data_view_child_field_config dvcfc
+           inner join flow.data_type dt2 on dvcfc.data_type_id = dt2.id
+           inner join flow.data_view_field_config dvfc2 on dvcfc.data_view_field_config_id = dvfc2.id
+           inner join flow.data_view dv on dvfc2.data_view_id = dv.id
+           inner join flow.company c on c.id = dv.company_id
+    where dvcfc.id = p_data_view_child_field_config_id;
+
+    EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
+            v_field_to_update || $$ $$ || v_data_type || $$;$$;
+    EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
   end if;
-
-  for x in select dvcvw.field_to_update,dt2.data_type
-           from flow.data_view_child_view_config dvcvw
-                  inner join flow.data_type dt2 on dvcvw.data_type_id = dt2.id
-           where dvcvw.id = v_data_view_field_config_id
-    loop
-        v_data_type = 'text';
-        EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
-                x.field_to_update || $$ $$ || v_data_type || $$;$$;
-        EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || x.field_to_update || $$);$$;
-    end loop;
 END
 $BODY$
   LANGUAGE plpgsql;
@@ -1044,7 +1054,7 @@ BEGIN
   execute $$Create table if NOT EXISTS $$||v_schema_name||$$.$$||p_table_name||$$ (id serial not null primary key,
                                                                       project_id integer not null,
                                                                       contact_id integer,
-                                                                      date_modified timestamp );$$;
+                                                                      date_modified timestamp without time zone DEFAULT now() not null );$$;
 
   execute $$insert into $$||v_schema_name||$$.$$||p_table_name||$$(project_id, contact_id, date_modified)
 (select p.id,p.contact_id,now()
@@ -1064,7 +1074,7 @@ drop FUNCTION if exists flow.update_project_details_process_steps_from_events();
 drop trigger if exists update_events_trg on flow.project_process_step_event;
 drop FUNCTION if exists flow.update_events();
 
-update flow.data_view_child_view_config
+update flow.data_view_child_field_config
 set data_type_id = 6
 where data_view_field_config_id in (
   select id
@@ -1082,7 +1092,7 @@ where data_view_field_config_id in (
                             'proposal_number_id_final_design')
   and data_type_id = 1);
 
-update flow.data_view_child_view_config
+update flow.data_view_child_field_config
 set data_type_id = 1
 where data_view_field_config_id in (
   select id from flow.data_view_field_config
@@ -1124,3 +1134,16 @@ delete from brs.project_details_config where id in (
          inner join my_data md on md.custom_field_group_assignment_id = pdc2.custom_field_group_assignment_id);
 
 
+alter table flow.default_field drop column if exists allow_child_fields;
+alter table flow.unique_behavior_type
+  add column if not exists data_view boolean not null default false;
+update flow.unique_behavior_type
+set data_view = true
+where id > 3;
+
+drop index if exists flow.dvfc_field_to_update_cfg_uidx;
+drop index if exists flow.dvfc_field_to_update_ps_uidx;
+drop index if exists flow.dvfc_field_to_update_df_uidx;
+CREATE UNIQUE INDEX dvfc_field_to_update_cfg_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id);
+CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config (data_view_id,field_to_update,process_step_event_id,default_field_id);
+CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null;

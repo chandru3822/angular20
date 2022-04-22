@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION flow.get_unique_behavior_value(p_unique_behavior_type text, p_value int,
-                                                          p_process_step_event_id integer default 0)
+                                                          p_id integer default 0)
   RETURNS text AS
 $BODY$
 DECLARE
@@ -12,7 +12,7 @@ BEGIN
     from flow.process_step_event pse
            inner join flow.event e on pse.event_id = e.id
            inner join flow.custom_field cf on e.resource_custom_field_id = cf.id
-    where pse.id = p_process_step_event_id;
+    where pse.id = p_id;
 
   elsif p_unique_behavior_type = 'STATE_FIELD_TRIGGER' then
     select s.state
@@ -85,11 +85,18 @@ BEGIN
     from flow.contact c
     where c.id = p_value;
 
---   elsif p_unique_behavior_type = 'DEFAULT_CFGA_TRIGGER' then
---     select id
---     into v_value
---     from flow.user u
---     where u.id = p_value;
+  elsif p_unique_behavior_type = 'DEFAULT_CFGA_TRIGGER' then
+
+    select flow.get_secondary_detail_value(cf.list_of_value_id,
+                                           cf.company_system_list_id,
+                                           p_value,
+                                           cf.custom_field_sql_column,
+                                           cf.custom_field_sql_reference_table)
+    into v_value
+    from flow.project_process_step_custom_field_value ppscfv
+    inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
+    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where ppscfv.id = p_id;
 
   end if;
   return v_value;
