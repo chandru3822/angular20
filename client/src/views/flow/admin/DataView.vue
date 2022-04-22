@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newField = {}, getAvailableDefaultFields(), getParentObjects()]">
+            <v-btn text @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
@@ -17,64 +17,78 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add Field Config</h3>
           <div class="mb-3">
-            <v-text-field text v-model="newField.displayName"
-                          label="Display Name"/>
-            <v-text-field text v-model="newField.fieldToUpdate"
-                          label="Field to Update"/>
-            <v-autocomplete
-              v-model="selectedDefaultField"
-              :items="defaultFields"
-              label="Default Field"
-              attach
-              @change="getProcessStepEventData"
-              item-text="fieldName"
-              return-object></v-autocomplete>
-            <v-autocomplete
-              v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
-              v-model="selectedProcessStepEvent"
-              :items="processStepEvents"
-              label="Process Step Event"
-              attach
-              @change="getProcessStepEventData"
-              item-text="eventName"
-              return-object></v-autocomplete>
-            <v-autocomplete v-model="cfgaParentObject"
-                            :items="parentObjects"
-                            label="Parent Object"
-                            item-text="name"
-                            return-object
-                            autocomplete="off"
-                            @input="loadFieldsByParent"
-            >
-              <template slot='item' slot-scope='{ item }'>
-                {{ item.name }}
-              </template>
-            </v-autocomplete>
-            <v-autocomplete v-model="selectedCustomField"
-                            :items="customFields"
-                            label="Custom Field"
-                            item-text="fieldName"
-                            return-object
-                            autocomplete="off">
-              <template slot='item' slot-scope='{ item }'>
-                {{ item.fieldName }}
-              </template>
-            </v-autocomplete>
+            <v-form ref="fieldConfigForm">
+              <v-text-field text v-model="newField.displayName"
+                            label="Display Name"/>
+              <v-text-field text v-model="newField.fieldToUpdate"
+                            hint="5-60 lowercase characters, no spaces, no symbols"
+                            persistent-hint
+                            label="Field to Update"/>
+              <v-radio-group v-model="fieldType" @change="resetAllFields()">
+                <v-radio label="Default Field" :value="1"></v-radio>
+                <v-radio label="Custom Field" :value="2"></v-radio>
+              </v-radio-group>
 
-            <div>
-              <span class="mr-3">Update First Value Only?</span>
-              <input
-                type="checkbox"
-                v-model="newField.updateFirstValueOnly"
-              />
+              <v-autocomplete
+                v-if="fieldType === 1"
+                v-model="selectedDefaultField"
+                :items="defaultFields"
+                label="Default Field"
+                attach
+                @change="getProcessStepEventData"
+                item-text="fieldName"
+                return-object></v-autocomplete>
+              <v-autocomplete
+                v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
+                v-model="newField.processStepEventId"
+                :items="processStepEvents"
+                label="Process Step Event"
+                attach
+                item-text="eventName"
+                item-value="id"></v-autocomplete>
+              <v-autocomplete v-if="fieldType === 2"
+                              v-model="cfgaParentObject"
+                              :items="parentObjects"
+                              label="Parent Object"
+                              item-text="name"
+                              return-object
+                              autocomplete="off"
+                              @input="loadFieldsByParent"
+              >
+                <template slot='item' slot-scope='{ item }'>
+                  {{ item.name }}
+                </template>
+              </v-autocomplete>
+              <v-autocomplete v-if="cfgaParentObject && cfgaParentObject.id"
+                              v-model="newField.customFieldGroupAssignmentId"
+                              :items="customFields"
+                              label="Custom Field"
+                              item-text="fieldName"
+                              item-value="id"
+                              autocomplete="off">
+                <template slot='item' slot-scope='{ item }'>
+                  {{ item.fieldName }}
+                </template>
+              </v-autocomplete>
+
+              <div>
+                <span class="mr-3">Update First Value Only?</span>
+                <input
+                  type="checkbox"
+                  v-model="newField.updateFirstValueOnly"
+                />
+              </div>
+            </v-form>
+            <div v-if="saveError" class="error--text">
+              {{saveErrorMsg}}
             </div>
-
-            <v-btn :disabled="!newField.displayName"
+            <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
+                              || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId)"
                    color="primaryCustom" class="white--text mr-2"
-                   @click="saveFieldConfig(newField, true)">
+                   @click="validateFields(newField, true)">
               Save
             </v-btn>
-            <v-btn @click="[addNew = !addNew, newField = {}, selectedProcessStepEvent = {}, selectedDefaultField = {}]">
+            <v-btn @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]">
               Cancel
             </v-btn>
           </div>
@@ -197,7 +211,7 @@
                   </v-btn>
                 </div>
                 <div v-for="cf in item.childFieldConfigs">
-                  {{cf.fieldToUpdate}}
+                  {{ cf.fieldToUpdate }}
                 </div>
               </v-card>
 
@@ -214,7 +228,8 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.fieldToUpdate }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)" @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getDataTypes(), getUniqueBehaviorTypes()]">
+                <v-btn small text v-if="!expanded.includes(item)"
+                       @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getDataTypes(), getUniqueBehaviorTypes()]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
@@ -243,16 +258,17 @@ export default {
       snackbar: {},
       childField: {},
       addChild: false,
+      saveError: false,
+      fieldType: 1,
+      saveErrorMsg: '',
       selectedDefaultField: {},
       uniqueBehaviorTypes: [],
       dataTypes: [],
       expanded: [],
       defaultFields: [],
-      selectedProcessStepEvent: {},
       processStepEvents: [],
       cfgaParentObject: {},
       parentObjects: [],
-      selectedCustomField: {},
       customFields: [],
       constants,
       search: '',
@@ -274,8 +290,48 @@ export default {
     this.getParentObjects()
   },
   methods: {
+    resetAllFields() {
+      //gets called when the field type changes so that all data is clean again
+      this.selectedDefaultField = {}
+      this.cfgaParentObject = {}
+      this.newField.customFieldGroupAssignmentId = null
+      this.newField.processStepEventId = null
+    },
+    validateFields(field, isNew) {
+      this.saveError = false
+      let valid = this.$refs.fieldConfigForm?.validate()
+      let regex = /^[^a-z]*$/
+
+      console.log('randaLogger',regex.test(field.fieldToUpdate))
+
+      if(field.fieldToUpdate.indexOf(' ') >= 0) {
+        this.saveError = true
+        this.saveErrorMsg = 'Field to Update cannot contain whitespace'
+      } else if(!regex.test(field.fieldToUpdate)) {
+        this.saveError = true
+        this.saveErrorMsg = 'Field to Update must be all lowercase characters'
+      } else if(field.fieldToUpdate.length < 5 || field.fieldToUpdate.length > 60) {
+        this.saveError = true
+        this.saveErrorMsg = 'Field to Update must be 5-60 characters'
+      } else if (valid) {
+        this.saveFieldConfig(field, isNew)
+      }
+    },
+
+    async validateForm() {
+      if (this.$refs.projectEditForm.validate()) {
+        //these could be combined - just dont have time atm
+        this.saveProjectAddressFields()
+        this.updateOwner()
+        //have to wait for this one to complete or it doesn't have the right values to display fresh ones
+        await this.updateStatus()
+        //set project values if they hit save
+        this.project = cloneDeep(this.tempProject)
+        this.showEditProjectModal = false
+      }
+    },
     async getDataTypes() {
-      if(this.dataTypes.length === 0) {
+      if (this.dataTypes.length === 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/dataType/getSystem`)
@@ -290,7 +346,7 @@ export default {
       }
     },
     async getUniqueBehaviorTypes() {
-      if(this.uniqueBehaviorTypes.length === 0) {
+      if (this.uniqueBehaviorTypes.length === 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/dataView/getUniqueBehaviorTypes`)
@@ -305,7 +361,7 @@ export default {
       }
     },
     async loadFieldsByParent() {
-      this.selectedCustomField = {}
+      this.newField.customFieldGroupAssignmentId = null
       this.customFields = []
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -326,7 +382,7 @@ export default {
       }
     },
     async getParentObjects() {
-      this.selectedCustomField = {}
+      this.newField.customFieldGroupAssignmentId = null
       this.cfgaParentObject = {}
       this.customFields = []
       this.parentObjects = []
@@ -343,7 +399,7 @@ export default {
       }
     },
     async getProcessStepEventData() {
-      this.selectedProcessStepEvent = {}
+      this.newField.processStepEventId = null
       this.processStepEvents = []
       if (this.selectedDefaultField.objectTypeId === 6) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -393,15 +449,14 @@ export default {
     async saveFieldConfig(field, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        //we have to use the whole object for selectedDefaultField because we need to use the data type in some other checks
         field.defaultFieldId = this.selectedDefaultField.id
-        field.processStepEventId = this.selectedProcessStepEvent.id
-        field.customFieldGroupAssignmentId = this.selectedCustomField.id
 
         const {data, status} = await postRequest(`/dataView/${this.viewId}/field`, field)
         if (isNew) {
           this.dataView.dataViewFieldConfigs.push(data)
           this.addNew = false
-          this.newField = {}
+          this.newField = {processStepEventId: null, customFieldGroupAssignmentId: null}
           this.defaultFields = []
           this.snackbar = getSnackbar('SUCCESS', 'New Field Config Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -420,12 +475,15 @@ export default {
     async saveChildFieldConfig(primaryField, childField) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/dataView/${this.viewId}/field/${primaryField.id}/childField`, childField)
-          primaryField.childFieldConfigs.push(data)
-          this.addChild = false
-          this.childField = {}
-          this.snackbar = getSnackbar('SUCCESS', 'New Child Field Config Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        const {
+          data,
+          status
+        } = await postRequest(`/dataView/${this.viewId}/field/${primaryField.id}/childField`, childField)
+        primaryField.childFieldConfigs.push(data)
+        this.addChild = false
+        this.childField = {}
+        this.snackbar = getSnackbar('SUCCESS', 'New Child Field Config Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
