@@ -11,6 +11,7 @@
     from flow.unique_behavior_type
     where archived is false
     and data_view is true
+    order by unique_behavior_type
   ]]></dataView.getUniqueBehaviorTypes>
 
   <dataView.getOne><![CDATA[
