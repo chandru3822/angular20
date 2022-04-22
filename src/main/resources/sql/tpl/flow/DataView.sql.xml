@@ -127,8 +127,12 @@
   ]]></dataView.addChildColumnToTable>
 
   <dataView.getChildFieldConfig><![CDATA[
-    select *
+    select dvcfc.*,
+           ubt.unique_behavior_type as "uniqueBehaviorType",
+           dt.data_type as "dataType"
     from flow.data_view_child_field_config dvcfc
+      inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
+      inner join flow.data_type dt on dvcfc.data_type_id = dt.id
     where dvcfc.archived is false
     and dvcfc.id = :id
   ]]></dataView.getChildFieldConfig>
