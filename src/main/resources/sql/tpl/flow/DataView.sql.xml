@@ -110,6 +110,8 @@
       from flow.data_view_field_config dvfc
       where dvfc.archived is not true
       and dvfc.process_step_event_id = pse.id
+      and dvfc.data_view_id = :viewId
+      and dvfc.default_field_id = :defaultFieldId
       )
     order by ps.process_step_name, e.event_name
   ]]></dataView.getAvailablePsEventsForDefaultField>
