@@ -2,19 +2,6 @@
   <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
-        <!--        <v-toolbar flat class="app-toolbar">-->
-        <!--          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">-->
-        <!--            {{ dataView.displayName }} ({{ dataView.viewName }})-->
-        <!--          </v-toolbar-title>-->
-        <!--          <v-spacer></v-spacer>-->
-        <!--          <v-toolbar-items>-->
-        <!--            <v-btn text-->
-        <!--                   @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">-->
-        <!--              <v-icon v-if="constants.IS_MOBILE">add</v-icon>-->
-        <!--              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>-->
-        <!--            </v-btn>-->
-        <!--          </v-toolbar-items>-->
-        <!--        </v-toolbar>-->
         <div class="flex-display pt-3 px-3 mb-4 one-hunned">
           <div class="one-hunned pl-3">
             <span class="page-title" v-if="!editName">{{ dataView.displayName }}</span>
@@ -107,7 +94,7 @@
                               :items="customFields"
                               label="Custom Field"
                               item-text="fieldName"
-                              item-value="id"
+                              item-value="customFieldGroupAssignmentId"
                               autocomplete="off">
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.fieldName }}
@@ -171,6 +158,7 @@
               <v-text-field text v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
               <v-autocomplete
+                v-if="item.defaultFieldId"
                 v-model="item.defaultFieldId"
                 disabled readonly
                 :items="defaultFields"
@@ -186,6 +174,7 @@
                 attach
                 item-text="eventName"></v-autocomplete>
               <v-autocomplete v-model="item.cfgaParentObjectId"
+                              v-if="item.customFieldGroupAssignmentId"
                               :items="parentObjects"
                               disabled readonly
                               label="Parent Object"
@@ -197,10 +186,12 @@
                 </template>
               </v-autocomplete>
               <v-autocomplete v-model="item.customFieldGroupAssignmentId"
+                              v-if="item.customFieldGroupAssignmentId"
                               :items="customFields"
                               label="Custom Field"
                               disabled readonly
                               item-text="fieldName"
+                              item-value="customFieldGroupAssignmentId"
                               autocomplete="off">
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.fieldName }}
@@ -360,7 +351,7 @@ export default {
       userId: this.$store.state.user.details.id,
       companyId: this.$store.state.user.details.companyId,
       headers: [
-        {text: 'Field Name', value: 'fieldName', show: true},
+        {text: 'Field Name', value: 'displayName', show: true},
         {text: 'Field to Update', value: 'fieldToUpdate', show: true},
         {text: null, value: 'icons', show: true, sortable: false}
       ]
