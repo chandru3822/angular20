@@ -44,7 +44,7 @@ BEGIN
     else
       p_sql = p_sql || $$ where project_id = any( $$ || p_where_clause_condition_ids::text || $$);$$;
     end if;
-    raise notice 'This is the p_sql %',p_sql;
+    --raise notice 'This is the p_sql %',p_sql;
     return p_sql;
   end if;
 END ;

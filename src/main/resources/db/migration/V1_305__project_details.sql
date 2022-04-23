@@ -18,7 +18,6 @@ CREATE TABLE if not exists flow.data_view
   date_modified  timestamp without time zone DEFAULT now() not null,
   created_by_id  integer not null,
   modified_by_id integer,
-  reset_data_view boolean not null default false,
   archived       boolean not null            default false,
   CONSTRAINT data_view_pk primary key (id),
   CONSTRAINT dv_modified_by_id_fk FOREIGN KEY (modified_by_id)
@@ -53,6 +52,7 @@ create table flow.data_view_field_config
   display_name                     varchar(100),
   update_first_value_only          boolean                     default false not null,
   update_first_value_only_id       varchar,
+  reset_on_new boolean not null default false,
   date_created    timestamp without time zone DEFAULT now() not null,
   date_modified   timestamp without time zone DEFAULT now() not null,
   created_by_id   integer not null,
@@ -1184,9 +1184,11 @@ set data_view = true
 where id > 3;
 
 drop index if exists flow.dvfc_field_to_update_cfg_uidx;
+drop index if exists flow.dvfc_field_to_update_cfg1_uidx;
 drop index if exists flow.dvfc_field_to_update_ps_uidx;
 drop index if exists flow.dvfc_field_to_update_df_uidx;
-CREATE UNIQUE INDEX dvfc_field_to_update_cfg_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id);
+CREATE UNIQUE INDEX dvfc_field_to_update_cfg_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id,process_step_event_id);
+CREATE UNIQUE INDEX dvfc_field_to_update_cfg1_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id) where process_step_event_id is null;
 CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config (data_view_id,field_to_update,process_step_event_id,default_field_id);
 CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null;
 
