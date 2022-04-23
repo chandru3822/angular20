@@ -65,17 +65,21 @@
                 :items="defaultFields"
                 label="Default Field"
                 attach
-                @change="getProcessStepEventData"
+                @change="[getProcessStepEventData(), setObjectTypeId(selectedDefaultField)]"
                 item-text="fieldName"
                 return-object></v-autocomplete>
               <v-autocomplete
-                v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
-                v-model="newField.processStepEventId"
-                :items="processStepEvents"
-                label="Process Step Event"
-                attach
-                item-text="eventName"
-                item-value="id"></v-autocomplete>
+                    v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
+                    v-model="newField.processStepEventId"
+                    :items="processStepEvents"
+                    label="Process Step Event"
+                    attach
+                    item-text="eventName"
+                    item-value="id">
+                <template slot='item' slot-scope='{ item }'>
+                  {{ item.processStepName }} - {{ item.eventName }}
+                </template>
+              </v-autocomplete>
               <v-autocomplete v-if="fieldType === 2"
                               v-model="cfgaParentObject"
                               :items="parentObjects"
@@ -83,11 +87,21 @@
                               item-text="name"
                               return-object
                               autocomplete="off"
-                              @input="loadFieldsByParent"
+                              @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents()]"
               >
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.name }}
                 </template>
+              </v-autocomplete>
+              <v-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === 4"
+                              v-model="parentProcessStepEvent"
+                              :items="parentProcessStepEvents"
+                              label="Process Step Event"
+                              item-text="eventName"
+                              return-object
+                              autocomplete="off"
+                              @input="[loadFieldsByParent(true), setObjectTypeId({objectTypeId: 6})]"
+              >
               </v-autocomplete>
               <v-autocomplete v-if="cfgaParentObject && cfgaParentObject.id"
                               v-model="newField.customFieldGroupAssignmentId"
@@ -101,11 +115,20 @@
                 </template>
               </v-autocomplete>
 
-              <div class="mb-3">
+              <div class="mb-3" v-if="[4,6].includes(selectedObjectTypeId)">
                 <span class="mr-3">Update First Value Only?</span>
                 <input
                   type="checkbox"
+                  :disabled="newField.resetOnNew"
                   v-model="newField.updateFirstValueOnly"
+                />
+
+                <br/>
+                <span class="mr-3">Reset on New {{ selectedObjectTypeId === 4 ? 'Main Process Step?' : 'Event?'}}</span>
+                <input
+                  :disabled="newField.updateFirstValueOnly"
+                  type="checkbox"
+                  v-model="newField.resetOnNew"
                 />
               </div>
             </v-form>
@@ -157,53 +180,41 @@
               </div>
               <v-text-field text v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
-              <v-autocomplete
-                v-if="item.defaultFieldId"
-                v-model="item.defaultFieldId"
-                disabled readonly
-                :items="defaultFields"
+              <v-text-field v-if="item.defaultFieldId"
                 label="Default Field"
-                attach
-                item-text="fieldName"></v-autocomplete>
-              <v-autocomplete
-                v-if="item.objectTypeId === 6"
                 disabled readonly
-                v-model="item.processStepEventId"
-                :items="processStepEvents"
-                label="Process Step Event"
-                attach
-                item-text="eventName"></v-autocomplete>
-              <v-autocomplete v-model="item.cfgaParentObjectId"
-                              v-if="item.customFieldGroupAssignmentId"
-                              :items="parentObjects"
-                              disabled readonly
-                              label="Parent Object"
-                              item-text="name"
-                              autocomplete="off"
-              >
-                <template slot='item' slot-scope='{ item }'>
-                  {{ item.name }}
-                </template>
-              </v-autocomplete>
-              <v-autocomplete v-model="item.customFieldGroupAssignmentId"
-                              v-if="item.customFieldGroupAssignmentId"
-                              :items="customFields"
-                              label="Custom Field"
-                              disabled readonly
-                              item-text="fieldName"
-                              item-value="customFieldGroupAssignmentId"
-                              autocomplete="off">
-                <template slot='item' slot-scope='{ item }'>
-                  {{ item.fieldName }}
-                </template>
-              </v-autocomplete>
+                v-model="item.fieldName"
+              ></v-text-field>
+              <v-text-field v-if="item.customFieldGroupAssignmentId"
+                            label="Parent Object"
+                            disabled readonly
+                            v-model="item.parentObjectName"
+              ></v-text-field>
+              <v-text-field v-if="item.processStepEventId || (item.customFieldGroupAssignmentId && item.objectTypeId === 6)"
+                            label="Process Step Event"
+                            disabled readonly
+                            v-model="item.processStepEventName"
+              ></v-text-field>
+              <v-text-field v-if="item.customFieldGroupAssignmentId"
+                            label="Custom Field"
+                            disabled readonly
+                            v-model="item.fieldName"
+              ></v-text-field>
 
-              <div>
+              <div v-if="[4,6].includes(item.objectTypeId)">
                 <span class="mr-3 disabled-label">Update First Value Only?</span>
                 <input
                   type="checkbox"
                   disabled readonly
                   v-model="item.updateFirstValueOnly"
+                />
+
+                <br/>
+                <span class="mr-3 disabled-label">Reset on New {{ item.objectTypeId === 4 ? 'Main Process Step?' : 'Event?'}}</span>
+                <input
+                  disabled readonly
+                  type="checkbox"
+                  v-model="item.resetOnNew"
                 />
               </div>
 
@@ -312,6 +323,7 @@ export default {
       snackbar: {},
       childField: {},
       viewLoaded: false,
+      selectedObjectTypeId: null,
       addChild: false,
       childFieldHeaders: [
         {text: 'Field To Update', value: 'fieldToUpdate', show: true},
@@ -339,6 +351,8 @@ export default {
       processStepEvents: [],
       cfgaParentObject: {},
       parentObjects: [],
+      parentProcessStepEvent: {},
+      parentProcessStepEvents: [],
       customFields: [],
       constants,
       search: '',
@@ -362,6 +376,9 @@ export default {
     this.getParentObjects()
   },
   methods: {
+    setObjectTypeId(field) {
+      this.selectedObjectTypeId = field.objectTypeId
+    },
     async saveDataView() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -380,12 +397,21 @@ export default {
     resetAllFields() {
       //gets called when the field type changes so that all data is clean again
       this.selectedDefaultField = {}
-      this.cfgaParentObject = {}
+      this.selectedObjectTypeId = null
       this.newField.customFieldGroupAssignmentId = null
+      this.newField.resetOnNew = false
+      this.newField.updateFirstValueOnly = false
+      this.cfgaParentObject = {}
       this.newField.processStepEventId = null
     },
     validateFields(field, isNew) {
       let valid = this.$refs.fieldConfigForm?.validate()
+
+      //if they had set one of these as true but then changed the field type to a different type then reset the values here
+      if(![4,6].includes(this.selectedObjectTypeId)) {
+        this.newField.updateFirstValueOnly = false
+        this.newField.resetOnNew = false
+      }
 
       if (valid) {
         this.saveFieldConfig(field, isNew)
@@ -444,17 +470,40 @@ export default {
         }
       }
     },
-    async loadFieldsByParent() {
+    async loadProcessStepEvents() {
+      //only load this data if the parent was a process step
+      if(this.cfgaParentObject?.isProcessStep) {
+        this.parentProcessStepEvent = {}
+        this.parentProcessStepEvents = []
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+            const {data, status} = await getRequest(`/processStep/${this.cfgaParentObject?.id}/event`)
+            this.parentProcessStepEvents = data
+          console.log('randaLogger',data)
+            handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async loadFieldsByParent(isEvent) {
       this.newField.customFieldGroupAssignmentId = null
       this.customFields = []
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        if (this.cfgaParentObject?.isProcessStep) {
-          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.cfgaParentObject.id}`)
+        if(isEvent) {
+          const {data, status} = await getRequest(`/customField/getByProcessStepEvent/${this.parentProcessStepEvent?.id}`)
+          this.customFields = data
+          handleHidingGlobalLoader(this, status)
+        } else if (this.cfgaParentObject?.isProcessStep) {
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.cfgaParentObject?.id}`)
           this.customFields = data
           handleHidingGlobalLoader(this, status)
         } else {
-          const {data, status} = await getRequest(`/customField/getByParentType/${this.cfgaParentObject.id}`)
+          const {data, status} = await getRequest(`/customField/getByParentType/${this.cfgaParentObject?.id}`)
           this.customFields = data
           handleHidingGlobalLoader(this, status)
         }
@@ -485,7 +534,7 @@ export default {
     async getProcessStepEventData() {
       this.newField.processStepEventId = null
       this.processStepEvents = []
-      if (this.selectedDefaultField.objectTypeId === 6) {
+      if (this.selectedDefaultField?.objectTypeId === 6) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {
@@ -537,10 +586,16 @@ export default {
         //we have to use the whole object for selectedDefaultField because we need to use the data type in some other checks
         field.defaultFieldId = this.selectedDefaultField.id
 
+        //if it was a cfga id for a pse we need to add this here
+        if(this.parentProcessStepEvent && this.parentProcessStepEvent.id) {
+          field.processStepEventId = this.parentProcessStepEvent.id
+        }
+
         const {data, status} = await postRequest(`/dataView/${this.viewId}/field`, field)
         if (isNew) {
           this.dataView.dataViewFieldConfigs.push(data)
           this.addNew = false
+          this.selectedDefaultField = {}
           this.newField = {processStepEventId: null, customFieldGroupAssignmentId: null}
           this.defaultFields = []
           this.snackbar = getSnackbar('SUCCESS', 'New Field Config Added')

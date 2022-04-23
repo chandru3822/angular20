@@ -116,6 +116,7 @@ public class DataViewService {
       params.put("customFieldGroupAssignmentId", field.getCustomFieldGroupAssignmentId());
       params.put("fieldToUpdate", field.getFieldToUpdate());
       params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
+      params.put("resetOnNew", null != field.getResetOnNew() && field.getResetOnNew());
 
       id = sqlCache.updateReturningId("dataView.addFieldConfig", params, "id").longValue();
 
