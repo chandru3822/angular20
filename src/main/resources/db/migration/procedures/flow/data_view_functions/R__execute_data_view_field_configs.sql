@@ -16,6 +16,7 @@ declare
   v_convert_date      boolean default false;
 BEGIN
   if p_contains_children then
+--     raise notice 'p_id = %',p_id;
     for v_secondary_records in
       select dvcvc.field_to_update,
              dvcvc.data_type_id,

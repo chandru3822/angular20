@@ -97,6 +97,44 @@ BEGIN
     inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
     inner join flow.custom_field cf on cf.id = cfga.custom_field_id
     where ppscfv.id = p_id;
+    if v_value is null then
+      select flow.get_secondary_detail_value(cf.list_of_value_id,
+                                             cf.company_system_list_id,
+                                             p_value,
+                                             cf.custom_field_sql_column,
+                                             cf.custom_field_sql_reference_table)
+      into v_value
+      from flow.project_process_step_event_custom_field_value ppscfv
+             inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+      where ppscfv.id = p_id;
+    end if;
+    if v_value is null then
+      select flow.get_secondary_detail_value(cf.list_of_value_id,
+                                             cf.company_system_list_id,
+                                             p_value,
+                                             cf.custom_field_sql_column,
+                                             cf.custom_field_sql_reference_table)
+      into v_value
+      from flow.project_custom_field_value ppscfv
+             inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+      where ppscfv.id = p_id;
+    end if;
+
+    if v_value is null then
+      select flow.get_secondary_detail_value(cf.list_of_value_id,
+                                             cf.company_system_list_id,
+                                             p_value,
+                                             cf.custom_field_sql_column,
+                                             cf.custom_field_sql_reference_table)
+      into v_value
+      from flow.contact_custom_field_value ppscfv
+             inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+      where ppscfv.id = p_id;
+    end if;
+
 
   end if;
   return v_value;
