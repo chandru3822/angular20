@@ -112,8 +112,8 @@ public class DataViewService {
       sqlCache.update("dataView.updateFieldConfig", params);
     } else {
       params.put("defaultFieldId", field.getDefaultFieldId());
-      params.put("customFieldGroupAssignmentId", field.getDefaultFieldId());
       params.put("processStepEventId", field.getProcessStepEventId());
+      params.put("customFieldGroupAssignmentId", field.getCustomFieldGroupAssignmentId());
       params.put("fieldToUpdate", field.getFieldToUpdate());
       params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
 

@@ -521,9 +521,6 @@
           this.timeIntervalString = timeIntervalString
           this.rankingData = {}
 
-          // let test = moment
-          // debugger
-
           switch (timeIntervalString) {
             case 'Today':
               this.timeInterval = 0 // TODAY
