@@ -14,6 +14,7 @@ CREATE TABLE if not exists flow.data_view
   company_id     integer not null,
   view_name      character varying(63),
   display_name   character varying(63),
+  company_process_ids  integer[] not null,
   date_created   timestamp without time zone DEFAULT now() not null,
   date_modified  timestamp without time zone DEFAULT now() not null,
   created_by_id  integer not null,
@@ -41,7 +42,7 @@ insert into flow.data_view(company_id, view_name, date_created, created_by_id,di
   (select 3, 'project_details', now(), 2350555,'Project Details'
    where not exists(select id from flow.data_view where view_name = 'project_details'));
 --TODO add constraint that doesn't allow them to have the same field_to_update in the same object.
-create table flow.data_view_field_config
+create table  if not exists flow.data_view_field_config
 (
   id              serial  not null,
   data_view_id    integer not null,
@@ -1202,3 +1203,26 @@ CREATE UNIQUE INDEX dv_display_name_uidx ON flow.data_view (company_id,display_n
 drop index if exists flow.dvcfc_field_to_update_uidx;
 CREATE UNIQUE INDEX dvcfc_field_to_update_uidx ON flow.data_view_child_field_config (data_view_field_config_id,field_to_update);
 --TODO ask Kaleb about SQL Injection
+
+
+create table  if not exists flow.data_view_field_config_data
+(
+  id              serial  not null,
+  data_view_field_config_id    integer not null,
+  processed                 boolean not null default false,
+  process_start_time timestamp without time zone,
+  process_end_time timestamp without time zone,
+  date_created    timestamp without time zone DEFAULT now() not null,
+  CONSTRAINT data_view_field_config_data_pk primary key (id),
+  CONSTRAINT dvfcd_data_view_field_config_id_fk FOREIGN KEY (data_view_field_config_id)
+    REFERENCES flow.data_view_field_config (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create index if not exists dvfcd_data_view_field_config_id_idx
+  on flow.data_view_field_config_data (data_view_field_config_id);
+
+drop index if exists flow.dvfcd_data_view_field_config_id_uidx;
+CREATE UNIQUE INDEX dvfcd_data_view_field_config_id_uidx ON flow.data_view_field_config_data (data_view_field_config_id);
+
+

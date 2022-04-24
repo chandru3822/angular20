@@ -12,7 +12,6 @@ declare
   v_view_name                  varchar;
   v_update_first_value_only_id varchar;
   v_data_view_field_config_id  integer;
-  x                            record;
 BEGIN
 
   if p_data_view_field_config_id is not null and p_data_view_child_field_config_id is null then
@@ -73,6 +72,9 @@ BEGIN
             v_field_to_update || $$ $$ || v_data_type || $$;$$;
     EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
   end if;
+
+  insert into flow.data_view_field_config_data(data_view_field_config_id,date_created)
+  values(p_data_view_field_config_id,now());
 END
 $BODY$
   LANGUAGE plpgsql;
