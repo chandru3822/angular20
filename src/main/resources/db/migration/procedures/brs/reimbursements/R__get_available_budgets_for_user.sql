@@ -88,6 +88,7 @@ BEGIN
                   INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
                   INNER JOIN flow."user" u on u.id = eb.user_id
            where bt.archived is false
+             and eb.archived is false
              AND u.id = v_budget_user_id
              AND eb.start_date <= p_expense_date
              AND eb.end_date >= p_expense_date
