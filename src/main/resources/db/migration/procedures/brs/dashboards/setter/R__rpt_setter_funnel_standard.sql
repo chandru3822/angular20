@@ -23,6 +23,7 @@ BEGIN
                       with project_data as (
                         select pd.project_id,
                                pd.project_created_date,
+                               ppse.date_created as first_appointment_created,
                                pd.prioritized_closer_appointment_outcome,
                                coalesce(pd.prioritized_closer_appointment_outcome_date,
                                         pd.closer_appointment_start) as appointment_date
@@ -32,11 +33,12 @@ BEGIN
                                inner join flow.company_user_status cus on cus.user_id = up.user_id and cus.user_status_type_id  in (9, 11, 14)
 
                                inner join flow.org o on o.id = up.org_id
+                               inner join flow.project_process_step_event ppse on pd.first_appointment_ppse_id = ppse.id
                         where (pd.prioritized_closer_appointment_outcome_date is not null or
                                (pd.prioritized_closer_appointment_outcome_date is null and
                                 pd.closer_appointment_start is not null))
                           and pd.company_id = 3
-                          and pd.source = 525
+                          and pd.source in (525, 526)
                           and pd.archived is false
                           and case
                                 when v_whole_company is false then
@@ -54,9 +56,10 @@ BEGIN
                           and (pd.prioritized_closer_appointment_outcome_date is not null or
                                (pd.prioritized_closer_appointment_outcome_date is null and
                                 pd.closer_appointment_start is not null))
+                          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                           and (
-                            ((((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
-                              OR ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                            ((((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
+                              OR ((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                between (now() at time zone 'US/Mountain')::date - 60 and (now() at time zone 'US/Mountain')::date)
                             OR
                             ((((coalesce(pd.prioritized_closer_appointment_outcome_date,
@@ -72,7 +75,7 @@ BEGIN
                                     f.name,
                                     count(1) filter (where
                                           ((case
-                                              when f.id = 27 then pd.project_created_date
+                                              when f.id = 27 then pd.first_appointment_created
                                               else pd.appointment_date end at time zone 'UTC') at time zone
                                            'US/Mountain')::DATE =
                                           (now() at time zone 'US/Mountain') :: DATE
@@ -90,7 +93,7 @@ BEGIN
                                       )                    as today_day_count,
                                     count(1) filter (where
                                           ((case
-                                              when f.id = 27 then pd.project_created_date
+                                              when f.id = 27 then pd.first_appointment_created
                                               else pd.appointment_date end at time zone 'UTC') at time zone
                                            'US/Mountain')::DATE =
                                           (now() at time zone 'US/Mountain') :: DATE - 1
@@ -108,7 +111,7 @@ BEGIN
                                       )                    as yesterday_day_count,
                                     count(1)
                                     filter (where ((case
-                                                      when f.id = 27 then pd.project_created_date
+                                                      when f.id = 27 then pd.first_appointment_created
                                                       else pd.appointment_date end at time zone 'UTC') at time zone
                                                    'US/Mountain')::DATE
                                                     between (now() at time zone 'US/Mountain')::date - 7 and (now() at time zone 'US/Mountain')::date
@@ -125,7 +128,7 @@ BEGIN
                                       )                    as seven_day_count,
                                     count(1)
                                     filter (where ((case
-                                                      when f.id = 27 then pd.project_created_date
+                                                      when f.id = 27 then pd.first_appointment_created
                                                       else pd.appointment_date end at time zone 'UTC') at time zone
                                                    'US/Mountain')::DATE
                                                     between (now() at time zone 'US/Mountain')::date - 14 and (now() at time zone 'US/Mountain')::date - 7
@@ -142,7 +145,7 @@ BEGIN
                                       )                    as prev_seven_day_count,
                                     count(1)
                                     filter (where ((case
-                                                      when f.id = 27 then pd.project_created_date
+                                                      when f.id = 27 then pd.first_appointment_created
                                                       else pd.appointment_date end at time zone 'UTC') at time zone
                                                    'US/Mountain')::DATE
                                                     between (now() at time zone 'US/Mountain')::date - 30 and (now() at time zone 'US/Mountain')::date
@@ -159,7 +162,7 @@ BEGIN
                                       )                    as thirty_day_count,
                                     count(1)
                                     filter (where ((case
-                                                      when f.id = 27 then pd.project_created_date
+                                                      when f.id = 27 then pd.first_appointment_created
                                                       else pd.appointment_date end at time zone 'UTC') at time zone
                                                    'US/Mountain')::DATE
                                                     between (now() at time zone 'US/Mountain')::date - 60 and (now() at time zone 'US/Mountain')::date - 30
@@ -176,7 +179,7 @@ BEGIN
                                       )                    as prev_thirty_day_count,
                                     count(1)
                                     filter (where ((case
-                                                      when f.id = 27 then pd.project_created_date
+                                                      when f.id = 27 then pd.first_appointment_created
                                                       else pd.appointment_date end at time zone 'UTC') at time zone
                                                    'US/Mountain')::DATE between p_custom_start_date and p_custom_end_date
                                       and case

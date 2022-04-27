@@ -1287,7 +1287,14 @@ public class SmartlistService {
                 referenceTable = UUID.randomUUID().toString();
                 final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
                 additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = %s.%s ", subquery, referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
+              } else {
+                  referenceTable = requirements.stream()
+                                               .filter(t -> Objects.equals(t.getSmartlistSystemListId(), r.getSmartlistSystemListId()))
+                                               .map(SmartlistRequirement::getValueReferenceTable)
+                                               .findFirst()
+                                               .orElse(null);
               }
+              r.setValueReferenceTable(referenceTable);
             } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
               String joinTable;
               try {

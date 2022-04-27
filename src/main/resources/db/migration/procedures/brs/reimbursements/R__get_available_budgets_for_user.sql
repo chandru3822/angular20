@@ -24,9 +24,6 @@ BEGIN
     when (p_platform_user_id = 2354046) then
       -- if the user is Austin Thompson then use Dane Nielson's user id, yep, that's right
       select 2353912 into v_budget_user_id;
-    when (v_position_ids && '{3,6,10,227,237,238,226,219,73,517}') then
-      -- if the user is a closer regional,setter regional, or recruiter use their own user id
-      select p_platform_user_id into v_budget_user_id;
     when (v_position_ids && '{1,2}') then
       -- if the user is a closer, find the closer regional and use that user id
       with closers as (
@@ -62,7 +59,7 @@ BEGIN
         and u.start_date < now()
         and (u.end_date is null or u.end_date > now());
     else
-      select null into v_budget_user_id;
+      select p_platform_user_id into v_budget_user_id;
     END case;
   RETURN QUERY
     select array_to_json(array_agg(row_to_json(sub_rows)))
@@ -91,6 +88,7 @@ BEGIN
                   INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
                   INNER JOIN flow."user" u on u.id = eb.user_id
            where bt.archived is false
+             and eb.archived is false
              AND u.id = v_budget_user_id
              AND eb.start_date <= p_expense_date
              AND eb.end_date >= p_expense_date
