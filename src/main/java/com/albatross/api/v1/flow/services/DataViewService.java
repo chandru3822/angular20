@@ -131,7 +131,7 @@ public class DataViewService {
   public Optional<DataViewFieldConfig> getDataViewFieldConfig(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<DataViewFieldConfig> result = sqlCache.get("dataView.getFieldConfig", params, DataViewFieldConfig.class);
+    Optional<DataViewFieldConfig> result = sqlCache.get("dataView.getFieldConfig", params, new DataViewFieldConfigMapper<>(DataViewFieldConfig.class, om));
     return result;
   }
 
@@ -170,6 +170,24 @@ public class DataViewService {
         List.class,
         "dataViewFieldConfigs",
         new JsonCollectionDeserializer(fieldConfigsRef, objectMapper));
+    }
+  }
+
+  public static class DataViewFieldConfigMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public DataViewFieldConfigMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<DataViewChildFieldConfig>> childFieldConfigsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "childFieldConfigs",
+        new JsonCollectionDeserializer(childFieldConfigsRef, objectMapper));
     }
   }
 
