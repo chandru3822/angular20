@@ -106,6 +106,7 @@ declare
   v_monthly_cost_30_year_average_with_solar          numeric;
   v_reamortized_payment_factor_without_itc_paydown   numeric;
   v_unit_type_state_rebate                           integer;
+  v_secondary_monthly_payment_no_credits_to_loan numeric;
 BEGIN
   select proposal_version_id,
          prop.project_process_step_id,
@@ -1413,7 +1414,9 @@ BEGIN
 
   raise notice 'v_smart_thermostat = %',v_smart_thermostat;
 
-
+  v_secondary_monthly_payment_no_credits_to_loan =
+    v_reamortized_monthly_payment_no_credits_to_loan - (v_reamortized_monthly_payment_all_credits_to_loan - v_initial_monthly_payment_all_credits_to_loan);
+  raise notice 'v_secondary_monthly_payment_no_credits_to_loan = %',v_secondary_monthly_payment_no_credits_to_loan;
 
   v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount;
   raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
@@ -1578,7 +1581,8 @@ BEGIN
            v_net_metring_rate,
            v_cost_of_solar,
            v_monthly_cost_30_year_average_with_solar,
-           v_reamortized_payment_factor_without_itc_paydown;
+           v_reamortized_payment_factor_without_itc_paydown,
+           v_secondary_monthly_payment_no_credits_to_loan;
   drop table proposal_value;
 
 END
