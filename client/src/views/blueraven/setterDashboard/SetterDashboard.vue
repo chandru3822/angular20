@@ -243,9 +243,9 @@
       performanceDataLoading: false,
       topRepsLoading: false,
       topOfficesLoading: false,
-      timeIntervalBtnGroup: 2,
+      timeIntervalBtnGroup: 3,
       timeIntervalString: 'MTD', // MTD is selected by default
-      timeInterval: +moment().format('DD') - 1,
+      timeInterval: moment().format('DD') - 1,
       tabNum: 1, // Funnel tab is selected by default
       performanceDataLoaded: false,
       rankingTablesLoaded: false,
