@@ -65,8 +65,8 @@ BEGIN
                                          when array_length(p_org_ids, 1) > 0 then org_id = any (p_org_ids)
                                          else 1 = 1 end))
                               else true end
-
-                        and pd.source = 525 --setter gen only
+                        and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
+                        and pd.source in (525, 526) --setter gen and retargeted
                         --pretty sure all of them have this check
                         and (pd.prioritized_closer_appointment_outcome_date is not null or
                              (pd.prioritized_closer_appointment_outcome_date is null and
