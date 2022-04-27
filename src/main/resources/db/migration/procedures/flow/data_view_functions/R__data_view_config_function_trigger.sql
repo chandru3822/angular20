@@ -21,7 +21,7 @@ BEGIN
                           from flow.get_data_view_field_configs(dv.id,
                                                                 'CONTACT',
                                                                 null) ao)
-              and v_company_process_ids && dv.company_process_ids
+              and v_company_process_ids && dv.company_process_ids --TODO think through this better
       loop
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
@@ -57,6 +57,7 @@ BEGIN
                                                      false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
+        raise notice 'kaleb update  %',v_sql;
         -- begin
         execute v_sql;
         -- exception

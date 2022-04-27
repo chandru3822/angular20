@@ -55,7 +55,8 @@ BEGIN
               $$_cfv_id);$$;
 
     end if;
-
+    insert into flow.data_view_field_config_data(data_view_field_config_id,date_created)
+    values(p_data_view_field_config_id,now());
   else
     select dvcvw.field_to_update, dt2.data_type,
           c.schema_name,dv.view_name
@@ -73,8 +74,6 @@ BEGIN
     EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
   end if;
 
-  insert into flow.data_view_field_config_data(data_view_field_config_id,date_created)
-  values(p_data_view_field_config_id,now());
 END
 $BODY$
   LANGUAGE plpgsql;
