@@ -12,18 +12,18 @@ export function getSnackbar(type, text, displayMsgAsHtml) {
 }
 
 export function isLightColor(color) {
-  const hex = color.replace('#', '');
-  const c_r = parseInt(hex.substr(0, 2), 16);
-  const c_g = parseInt(hex.substr(2, 2), 16);
-  const c_b = parseInt(hex.substr(4, 2), 16);
-  const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
-  return brightness > 155;
+  const hex = color.replace('#', '')
+  const c_r = parseInt(hex.substr(0, 2), 16)
+  const c_g = parseInt(hex.substr(2, 2), 16)
+  const c_b = parseInt(hex.substr(4, 2), 16)
+  const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000
+  return brightness > 155
 }
 
-export function getMinMaxRule (min, max) {
+export function getMinMaxRule(min, max) {
   return [
     v => (!v || (v && (v <= max))) || `Value must be less than ${max}`,
-    v => (!v || (v && (v >= min))) || `Value must be greater than ${min}`,
+    v => (!v || (v && (v >= min))) || `Value must be greater than ${min}`
   ]
 }
 
@@ -63,19 +63,19 @@ export function followLink(url, projectId) {
 
 export function getUrlForLink(url, projectId) {
   //currently project_id is the only param this would work for
-  if(url.includes("ALB_PROJECT_ID") && null !== projectId && undefined !== projectId) {
+  if (url.includes('ALB_PROJECT_ID') && null !== projectId && undefined !== projectId) {
     //this part would not work globally but I am just trying to hack up a POC
-    url = url.replace("ALB_PROJECT_ID", projectId)
+    url = url.replace('ALB_PROJECT_ID', projectId)
   }
-  if(url.includes("ALB_HOST")) {
-    url = url.replace("ALB_HOST", (constants.VUE_APP_ENV === 'local' ? 'http://' : 'https://') + location.host)
+  if (url.includes('ALB_HOST')) {
+    url = url.replace('ALB_HOST', (constants.VUE_APP_ENV === 'local' ? 'http://' : 'https://') + location.host)
   }
   return url
 }
 
 export function isNumberOrHyphen(val) {
   if (val.key !== '-' && isNaN(Number(val.key))) {
-    return val.preventDefault();
+    return val.preventDefault()
   }
 }
 
@@ -93,7 +93,7 @@ export function formatPhoneNumber(phoneNumberString) {
 export function handleHidingGlobalLoader(instance, status) {
   //if a request is cancelled we should not turn off the spinner because the route changed and may have already turned the spinner back on
   //if the status is null it means that the request was cancelled (otherwise it will have a success or error status)
-  if(status != null) {
+  if (status != null) {
     instance.$store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -102,7 +102,10 @@ export function handleHidingGlobalLoader(instance, status) {
 // pass in [] as returnType if you need an empty result to return you an empty list instead of an object
 export async function getRequest(path, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  return await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {data: returnType, status: null}
+  return await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {
+    data: returnType,
+    status: null
+  }
 }
 
 export async function getRequestWithParams(path, params, companyAbbreviation, returnType = {}) {
@@ -113,22 +116,34 @@ export async function getRequestWithParams(path, params, companyAbbreviation, re
 export async function postRequest(path, body, companyAbbreviation, returnType = {}, extraParams = {}) {
   //"extraParams" can be used to cancel post requests and send in the token and/or the source
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, extraParams) ?? {data: returnType, status: null}
+  return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, extraParams) ?? {
+    data: returnType,
+    status: null
+  }
 }
 
 export async function postRequestWithRequestParams(path, body, params, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params}) ?? {data: returnType, status: null}
+  return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, { params }) ?? {
+    data: returnType,
+    status: null
+  }
 }
 
 export async function putRequest(path, body, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body) ?? {data: returnType, status: null}
+  return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body) ?? {
+    data: returnType,
+    status: null
+  }
 }
 
 export async function putRequestWithRequestParams(path, body, params, companyAbbreviation, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, {params}) ?? {data: returnType, status: null}
+  return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, { params }) ?? {
+    data: returnType,
+    status: null
+  }
 }
 
 export async function deleteRequest(path, companyAbbreviation) {
@@ -142,6 +157,14 @@ export async function deleteRequestWithPayload(path, companyAbbreviation) {
   return await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
 }
 
+export function apiRequest(companyAbbreviation, axiosConfig) {
+  const companyPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
+  const apiPath = `${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${companyPath}`
+  return axios({
+    baseURL: apiPath,
+    ...axiosConfig
+  })
+}
 
 export function logError(e) {
   console.error('*** ERROR ***', e)
@@ -157,10 +180,10 @@ export function jsonToCsv(data) {
   csvData.pop()
   csvData.push('\r\n')
 
-  data.map(function (item) {
+  data.map(function(item) {
     for (let key in item) {
       // if value isn't nullish, cast Numbers to string. Else empty string
-      let escapedCSV = (item[key]) ? item[key] + '' : '';
+      let escapedCSV = (item[key]) ? item[key] + '' : ''
       if (escapedCSV.match(/[,"\n]/)) {
         escapedCSV = '"' + escapedCSV.replace(/\"/g, '""') + '"'
       }
@@ -169,7 +192,7 @@ export function jsonToCsv(data) {
     }
     csvData.pop()
     csvData.push('\r\n')
-  });
+  })
 
   return csvData.join('')
 }
