@@ -38,8 +38,8 @@ create index if not exists dv_company_id_idx
 create index if not exists dv_view_name_idx
   on flow.data_view (view_name);
 
-insert into flow.data_view(company_id, view_name, date_created, created_by_id,display_name)
-  (select 3, 'project_details', now(), 2350555,'Project Details'
+insert into flow.data_view(company_id, view_name, date_created, created_by_id,display_name,company_process_ids)
+  (select 3, 'project_details', now(), 2350555,'Project Details','{1,18}'
    where not exists(select id from flow.data_view where view_name = 'project_details'));
 --TODO add constraint that doesn't allow them to have the same field_to_update in the same object.
 create table  if not exists flow.data_view_field_config
