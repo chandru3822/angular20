@@ -421,9 +421,13 @@ export default {
       this.childSaveError = false
       let match = item?.childFieldConfigs.find(cfc => cfc.fieldToUpdate === newChildField.fieldToUpdate)
 
+
       if (match) {
         this.childSaveError = true
         this.childSaveErrorMsg = 'Field to Update already in use'
+      } else if (newChildField.fieldToUpdate === item.fieldToUpdate) {
+        this.childSaveError = true
+        this.childSaveErrorMsg = 'Field to Update already in use by parent'
       } else if (this.$refs.childFieldForm?.validate()) {
         this.saveChildFieldConfig(item, newChildField, isNew)
       }
