@@ -611,7 +611,8 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Field' : 'Error Updating Field')
+        let msg = null != e.data?.message ? e.data?.message : isNew ? 'Error Adding Field' : 'Error Updating Field'
+        this.snackbar = getSnackbar('ERROR', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -631,7 +632,8 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Field')
+        let msg = null != e.data?.message ? e.data?.message : 'Error Adding Field'
+        this.snackbar = getSnackbar('ERROR', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

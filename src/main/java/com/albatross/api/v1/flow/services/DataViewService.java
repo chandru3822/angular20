@@ -10,8 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -83,12 +85,23 @@ public class DataViewService {
     params.put("dataTypeId", childField.getDataTypeId());
     params.put("userId", user.trueUserId());
 
-    Long id = sqlCache.updateReturningId("dataView.addChildFieldConfig", params, "id").longValue();
+    //todo validate that fieldToUpdate is not one of the default fields to update
+    Boolean invalid = fieldConflictWithDefault(childField.getFieldToUpdate());
 
-    params.put("id", id);
-    sqlCache.query("dataView.addChildColumnToTable", params, String.class);
+    if(!invalid) {
+      Long id = sqlCache.updateReturningId("dataView.addChildFieldConfig", params, "id").longValue();
 
-    return getDataViewChildFieldConfig(id);
+      params.put("id", id);
+      sqlCache.query("dataView.addChildColumnToTable", params, String.class);
+      return getDataViewChildFieldConfig(id);
+    } else {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "ERROR: This Field to Update is Reserved by a Default Field",
+        new Exception());
+    }
+
+
   }
 
   public Optional<DataViewChildFieldConfig> getDataViewChildFieldConfig(Long id) {
@@ -111,21 +124,51 @@ public class DataViewService {
       params.put("id", id);
       sqlCache.update("dataView.updateFieldConfig", params);
     } else {
-      params.put("defaultFieldId", field.getDefaultFieldId());
-      params.put("processStepEventId", field.getProcessStepEventId());
-      params.put("customFieldGroupAssignmentId", field.getCustomFieldGroupAssignmentId());
-      params.put("fieldToUpdate", field.getFieldToUpdate());
-      params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
-      params.put("resetOnNew", null != field.getResetOnNew() && field.getResetOnNew());
+      Boolean invalid = fieldConflictWithDefault(field.getFieldToUpdate());
 
-      id = sqlCache.updateReturningId("dataView.addFieldConfig", params, "id").longValue();
+      if(!invalid) {
+        params.put("defaultFieldId", field.getDefaultFieldId());
+        params.put("processStepEventId", field.getProcessStepEventId());
+        params.put("customFieldGroupAssignmentId", field.getCustomFieldGroupAssignmentId());
+        params.put("fieldToUpdate", field.getFieldToUpdate());
+        params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
+        params.put("resetOnNew", null != field.getResetOnNew() && field.getResetOnNew());
 
-      HashMap<String, Object> params2 = new HashMap<>();
-      params2.put("id", id);
-      sqlCache.query("dataView.addColumnToTable", params2, String.class);
+        id = sqlCache.updateReturningId("dataView.addFieldConfig", params, "id").longValue();
+
+        HashMap<String, Object> params2 = new HashMap<>();
+        params2.put("id", id);
+        sqlCache.query("dataView.addColumnToTable", params2, String.class);
+      } else {
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "ERROR: This Field to Update is Reserved by a Default Field",
+          new Exception());
+      }
     }
 
     return getDataViewFieldConfig(id);
+  }
+
+  public Boolean fieldConflictWithDefault(String fieldToUpdate) {
+    //this function checks that the fieldToUpdate is not one of the default fields to update
+    List<DefaultField> defaultFields = getAllDefaultFields();
+
+    for(DefaultField df : defaultFields) {
+      if(df.getColumnName().equals(fieldToUpdate)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public List<DefaultField> getAllDefaultFields() {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", user.trueUserId());
+
+    return sqlCache.query("dataView.getAllDefaultFields", params, DefaultField.class);
   }
 
   public Optional<DataViewFieldConfig> getDataViewFieldConfig(Long id) {
