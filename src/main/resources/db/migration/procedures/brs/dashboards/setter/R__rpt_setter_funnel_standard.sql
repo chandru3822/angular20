@@ -56,7 +56,7 @@ BEGIN
                           and (pd.prioritized_closer_appointment_outcome_date is not null or
                                (pd.prioritized_closer_appointment_outcome_date is null and
                                 pd.closer_appointment_start is not null))
-                          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
+--                           and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                           and (
                             ((((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
                               OR ((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain') :: DATE
