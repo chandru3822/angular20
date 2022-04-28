@@ -69,7 +69,7 @@ export default {
     processId: {
       type: Number
     },
-    contactId: Number
+    contactId: Number,
   },
 
   data () {
@@ -117,7 +117,7 @@ export default {
       this.activeStatusesAssignedToStep = []
       try {
         let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
-        const {data} = await getActiveAssignedToProcessStep(stepId)
+        const {data} = await getActiveAssignedToProcessStep(stepId, !this.admin)
         this.activeStatusesAssignedToStep = data
         if (data?.length === 1) {
           this.newPps.initialCompanyProcessStepStatusTypeId = data[0].id
@@ -134,7 +134,7 @@ export default {
         let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
         if(stepId) {
           this.fetchingStatuses = true
-          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId)
+          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId, !this.admin)
           this.cancelledCompanyStatuses = data
           if(data?.length === 1) {
             this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id

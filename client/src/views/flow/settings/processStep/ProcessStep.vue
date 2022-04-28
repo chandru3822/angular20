@@ -16,7 +16,7 @@
                           label="Process Step Name"></v-text-field>
             <div>
               <label class="mt-4">Allow Non-Admin to Add to Project:</label>
-              <input class="ml-3" type="checkbox" :readonly="!userCanEdit" @input="saveProcessStep(false)"
+              <input class="ml-3" type="checkbox" :readonly="!userCanEdit" @input="saveProcessStep($event,false)"
                      :disabled="!userCanEdit" v-model="processStep.nonAdminAdd">
             </div>
           </div>
@@ -24,7 +24,7 @@
             <v-btn text v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else @click="saveProcessStep(true)">
+            <v-btn text class="" v-else @click="saveProcessStep($event,true)">
               <v-icon>save</v-icon>
             </v-btn>
             <v-btn text  v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
@@ -40,7 +40,7 @@
           </v-tab>
         </v-tabs>
 
-        <router-view/>
+        <router-view :non-admin-add="processStep.nonAdminAdd"/>
       </v-col>
 
     </v-row>
@@ -123,11 +123,13 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveProcessStep(closeEditor) {
+      async saveProcessStep(e, closeEditor) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          //vue is weird and doesn't update this value before the @input is called
+          this.processStep.nonAdminAdd = e.target.checked || false
           const {status} = await putRequest(`/processStep`, this.processStep)
-          this.editName = !closeEditor
+          this.editName = false
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)

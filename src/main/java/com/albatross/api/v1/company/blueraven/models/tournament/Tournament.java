@@ -20,5 +20,6 @@ public class Tournament {
   private Boolean archived, active;
   private List<Bracket> brackets;
   private List<TournamentPool> pools;
+  private List<TournamentFormulaField> tournamentFormulaFields;
 }
 

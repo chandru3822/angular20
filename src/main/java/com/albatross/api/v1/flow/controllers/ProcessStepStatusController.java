@@ -1,6 +1,11 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildProcess;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepCompanyProcessStepStatusType;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepStatusType;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -26,29 +31,29 @@ public class ProcessStepStatusController {
   private ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepStatusType> getStatusTypes () {
+  public List<ProcessStepStatusType> getStatusTypes() {
     return processStepStatusService.getStatusTypes();
   }
 
   @GetMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyProcessStepStatusType> getStatusTypesForCompany (@RequestParam(required = false) Long projectId,
-                                                                      @RequestParam(required = false) Long projectProcessStepId) {
+  public List<CompanyProcessStepStatusType> getStatusTypesForCompany(@RequestParam(required = false) Long projectId,
+                                                                     @RequestParam(required = false) Long projectProcessStepId) {
     return processStepStatusService.getStatusTypesForCompany(projectId, projectProcessStepId);
   }
 
   @GetMapping(value = "/forWqt", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueTypeProcessStepStatus> getStatusesForWqt (@RequestParam Long processStepId) {
+  public List<WorkQueueTypeProcessStepStatus> getStatusesForWqt(@RequestParam Long processStepId) {
     return processStepStatusService.getStatusesForWqt(processStepId);
   }
 
   @GetMapping(value = "/company/availableForProcessStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyProcessStepStatusType> getAvailableForProcessStep (@PathVariable Long id) {
+  public List<CompanyProcessStepStatusType> getAvailableForProcessStep(@PathVariable Long id) {
     return processStepStatusService.getAvailableForProcessStep(id);
   }
 
   @GetMapping(value = "/company/cancelled", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyProcessStepStatusType> getCancelledCompanyStatusTypesForCompany (@RequestParam(required = false) Long projectId,
-                                                                                      @RequestParam(required = false) Long projectProcessStepId) {
+  public List<CompanyProcessStepStatusType> getCancelledCompanyStatusTypesForCompany(@RequestParam(required = false) Long projectId,
+                                                                                     @RequestParam(required = false) Long projectProcessStepId) {
     return processStepStatusService.getCancelledCompanyStatusTypesForCompany(projectId, projectProcessStepId);
   }
 
@@ -68,8 +73,9 @@ public class ProcessStepStatusController {
   }
 
   @GetMapping(value = "/company/activeAssignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyProcessStepStatusType> getActiveAssignedToProcessStep(@PathVariable Long processStepId) {
-    return processStepStatusService.getActiveAssignedToProcessStep(processStepId);
+  public List<CompanyProcessStepStatusType> getActiveAssignedToProcessStep(@PathVariable Long processStepId,
+                                                                           @RequestParam Boolean nonAdmin) {
+    return processStepStatusService.getActiveAssignedToProcessStep(processStepId, nonAdmin);
   }
 
   @GetMapping(value = "/assignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -83,14 +89,21 @@ public class ProcessStepStatusController {
   }
 
   @GetMapping(value = "/company/cancelledAssignedToProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyProcessStepStatusType> getCancelledAssignedToStep(@PathVariable Long processStepId) {
-    return processStepStatusService.getCancelledAssignedToStep(processStepId);
+  public List<CompanyProcessStepStatusType> getCancelledAssignedToStep(@PathVariable Long processStepId,
+                                                                       @RequestParam Boolean nonAdmin) {
+    return processStepStatusService.getCancelledAssignedToStep(processStepId, nonAdmin);
   }
 
   @PostMapping(value = "/assignCompanyStatus/{companyStatusTypeId}/toProcessStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepCompanyProcessStepStatusType> assignStatusToProcessStep(@PathVariable Long companyStatusTypeId,
-                                                                           @PathVariable Long processStepId) {
+                                                                                     @PathVariable Long processStepId) {
     return processStepStatusService.assignStatusToProcessStep(companyStatusTypeId, processStepId);
+  }
+
+  @PutMapping(value = "/{id}/updateAllowNonAdminUse", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateAllowNonAdminUse(@PathVariable Long id,
+                                     @RequestBody ProcessStepCompanyProcessStepStatusType pscpsst) {
+    processStepStatusService.updateAllowNonAdminUse(id, pscpsst);
   }
 
   @PutMapping(value = "/removeStatus/{id}/fromStep/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)

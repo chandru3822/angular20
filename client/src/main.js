@@ -6,7 +6,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios'
-import { UserMutations } from './stores/UserStore'
+import { UserMutations } from '@/stores/UserStore'
+import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
 
@@ -75,7 +76,7 @@ axios.interceptors.request.use((config) => {
     store &&
     store.state &&
     store.state.user &&
-    config.url.indexOf(VUE_APP_BASE_API) > -1
+    (config.baseURL?.indexOf(VUE_APP_BASE_API) > -1 || config.url.indexOf(VUE_APP_BASE_API) > -1)
   ) {
     config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
   }
@@ -132,7 +133,7 @@ axios.interceptors.response.use(
         }
       } else if (status >= 500 && status <= 599) {
         //remove the loading spinner that was likely turned on before this error happened
-        store.commit(UserMutations.SET_LOADING, false)
+        store.commit(AppMutations.SET_LOADING, false)
         //dont do this reroute on local, it is super annoying
         if (VUE_APP_ENV !== 'local') {
           router.push({ path: `/serverError?code=${response.status}` })

@@ -1,6 +1,11 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.event.Event;
+import com.albatross.api.v1.flow.model.event.EventCompanyEventStatusType;
+import com.albatross.api.v1.flow.model.event.EventStatusType;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEvent;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.albatross.api.v1.flow.services.EventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +87,11 @@ public class EventController {
   @GetMapping(value = "/{eventId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CompanyEventStatusType>> getAssignedEventStatuses(@PathVariable Long eventId) {
     return new ResponseEntity<>(eventService.getAssignedEventStatuses(eventId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/statusesForPsEvent/{psEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<CompanyEventStatusType>> getAssignedProcessStepEventStatuses(@PathVariable Long psEventId) {
+    return new ResponseEntity<>(eventService.getAssignedProcessStepEventStatuses(psEventId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{eventId}/lovStatus", produces = MediaType.APPLICATION_JSON_VALUE)

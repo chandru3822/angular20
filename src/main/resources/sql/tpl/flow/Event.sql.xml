@@ -309,6 +309,21 @@
     and ecest.archived is not true
   ]]></event.getAssignedStatuses>
 
+  <event.getAssignedProcessStepEventStatuses><![CDATA[
+      select
+        cest.id,
+        cest.event_status_type,
+        ecest.archived,
+        est.event_status_type as rootEventStatusType,
+        cest.event_status_type_id
+      from flow.process_step_event pse
+          inner join flow.event_company_event_status_type ecest on ecest.event_id = pse.event_id
+          inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+          inner join flow.event_status_type est on cest.event_status_type_id = est.id
+      where pse.id = :pseId
+        and ecest.archived is not true
+  ]]></event.getAssignedProcessStepEventStatuses>
+
   <event.getCompanyStatuses><![CDATA[
       select
         cpst.id,

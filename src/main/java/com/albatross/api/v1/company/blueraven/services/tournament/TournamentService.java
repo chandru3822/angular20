@@ -69,6 +69,13 @@ public class TournamentService {
     return results;
   }
 
+  public List<TournamentFormulaField> getTournamentFormulaFields(Long formulaId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("formulaId", formulaId);
+    List<TournamentFormulaField> results = sqlCache.query("tournament.getFormulaFields", params, TournamentFormulaField.class);
+    return results;
+  }
+
   public void deleteTournament(Long id) {
     User user = securityService.getCurrentUser();
 
@@ -91,8 +98,26 @@ public class TournamentService {
     params.put("endDate", tournament.getEndDate());
     params.put("active", null != tournament.getActive() ? tournament.getActive() : false);
 
+    //update the tournament itself
     Long id = sqlCache.updateReturningId("tournament.update", params, "id").longValue();
+
+    saveTournamentFormulaFields(tournament.getTournamentFormulaFields(), id, user.trueUserId());
+
     return getTournament(id);
+  }
+
+  public void saveTournamentFormulaFields(List<TournamentFormulaField> fields, Long tournamentId, Long userId) {
+    for (TournamentFormulaField tff : fields) {
+      //if the field came here it was dirty and should always be saved
+      HashMap<String, Object> tffParams = new HashMap<>();
+      tffParams.put("fieldValue", tff.getFieldValue());
+      tffParams.put("fieldId", tff.getId());
+      tffParams.put("tournamentId", tournamentId);
+      tffParams.put("userId", userId);
+
+      String sql = "tournament.saveFieldValue";
+      sqlCache.update(sql, tffParams);
+    }
   }
 
   public Optional<Tournament> addTournament(Tournament tournament) {
@@ -108,6 +133,9 @@ public class TournamentService {
 
     // this also adds a qualifying, loser and winner pool
     Long id = sqlCache.queryForObject("tournament.insert", params, Long.class);
+
+    saveTournamentFormulaFields(tournament.getTournamentFormulaFields(), id, user.trueUserId());
+
     return getTournament(id);
   }
 
@@ -296,6 +324,10 @@ public class TournamentService {
       TypeReference<List<TournamentPool>> poolsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "pools",
         new JsonCollectionDeserializer(poolsRef, objectMapper));
+
+      TypeReference<List<TournamentFormulaField>> formulaFieldsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "tournamentFormulaFields",
+        new JsonCollectionDeserializer(formulaFieldsRef, objectMapper));
     }
   }
 

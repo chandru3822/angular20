@@ -11,6 +11,10 @@ import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -184,7 +188,7 @@ public class ProjectProcessStepEventService {
       for (ProjectProcessStepRequirement r : requirements) {
         try {
           r.setFulfilled(
-              projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId()));
+              projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId(), event.getId()));
         } catch (Exception e) {
           log.error(
               String.format(
