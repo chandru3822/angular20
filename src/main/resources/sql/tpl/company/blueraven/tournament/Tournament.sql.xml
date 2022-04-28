@@ -1,6 +1,6 @@
 <sql>
   <tournament.getTournaments><![CDATA[
-    select *
+    select t.*
     from brs.tournament t
     where archived is not true
     order by t.active is not true, t.tournament_name
@@ -38,6 +38,18 @@
     where archived is not true
     and tournament_owner_type_id = :ownerTypeId
   ]]></tournament.getFormulas>
+
+  <tournament.getFormulaFields><![CDATA[
+      select tff.id,
+            tff.tournament_formula_id as "tournamentFormulaId",
+            tff.field_name as "fieldName",
+            tff.archived,
+            tff.data_type_id as "dataTypeId"
+     from brs.tournament_formula_field tff
+     where tff.tournament_formula_id = :formulaId
+      and tff.archived is false
+      order by tff.display_order
+  ]]></tournament.getFormulaFields>
 
   <tournament.delete><![CDATA[
     update brs.tournament
@@ -147,7 +159,25 @@
                FROM brs.tournament_bracket tb
                WHERE tb.tournament_id = t.id
                  AND tb.archived is not true
-           ) tb), '[]') AS "brackets"
+           ) tb), '[]') AS "brackets",
+                      coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(fields)))
+                      FROM (
+                             select tff.id,
+                                    tff.tournament_formula_id as "tournamentFormulaId",
+                                    tff.field_name as "fieldName",
+                                    tff.archived,
+                                    tff.data_type_id as "dataTypeId",
+                                    tffv.field_value as "fieldValue",
+                                    tffv.tournament_id as "tournamentId",
+                                    tffv.id as "fieldValueId"
+                             from brs.tournament_formula_field tff
+                                    left join brs.tournament_formula_field_value tffv
+                                              on tff.id = tffv.tournament_formula_field_id
+                                              and tffv.tournament_id = t.id
+                             where tff.tournament_formula_id = t.tournament_formula_id
+                              order by tff.display_order
+                           ) fields), '[]') AS "tournamentFormulaFields"
       from brs.tournament t
       where id = :id
   ]]></tournament.get>
@@ -309,4 +339,13 @@
         modified_by_id = :currentUserId
     where id = :matchId
   ]]></tournament.overrideMatchUser2>
+
+  <tournament.saveFieldValue><![CDATA[
+    insert into brs.tournament_formula_field_value(field_value, tournament_formula_field_id, tournament_id, created_by_id)
+    values (:fieldValue::text, :fieldId, :tournamentId, :userId)
+    on conflict (tournament_formula_field_id, tournament_id)
+    do update set field_value = :fieldValue::text,
+                  date_modified = now(),
+                  modified_by_id = :userId;
+  ]]></tournament.saveFieldValue>
 </sql>

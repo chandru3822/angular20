@@ -1,0 +1,1 @@
+alter table if exists flow.smartlist_error add query text;

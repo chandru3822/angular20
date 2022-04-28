@@ -4,6 +4,9 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirement;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirementType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -76,6 +79,13 @@ public class ProcessStepRequirementService {
         "processStepRequirement.getRequirementTypes",
         Collections.emptyMap(),
         ProcessStepRequirementType.class);
+  }
+
+  public List<ProcessStepRequirementType> getEventRequirementTypes() {
+    return sqlCache.query(
+      "processStepRequirement.getEventRequirementTypes",
+      Collections.emptyMap(),
+      ProcessStepRequirementType.class);
   }
 
   public ProcessStepRequirement getRequirementById(Long id) {

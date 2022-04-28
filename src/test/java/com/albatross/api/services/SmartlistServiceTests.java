@@ -20,6 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.AssertionErrors.fail;
@@ -122,21 +123,26 @@ public class SmartlistServiceTests {
     final var newFailing = List.of(19, 2903);
 
     final String query = """
-      select s.id
+      select distinct s.id
       from flow.smartlist s
              inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+             inner join flow.smartlist_field_assignment sfa on sfa.smartlist_id = s.id and sfa.archived is false
       where s.archived is false and
             cot.company_id = 3 and
             s.project_details = false and
             cot.object_type_id = 4 and
             s.main_process_steps = true
-      order by s.id;
+      order by s.id desc;
     """;
     List<Long> smartlistIds = sqlCacheRO.queryBySql(query, null, new SingleColumnRowMapper<>(Long.class));
     smartlistIds.forEach(id -> {
       try {
         log.info("Running smartlist ID: " + id);
-        smartlistService.getSmartlistResults(id);
+        final String sql = smartlistService.getSmartlistSqlString(id);
+        final Boolean isValid = sqlCacheRO.queryForObject("smartlist.isSyntaxValid", Map.of("query", sql), Boolean.class);
+        if (!isValid) {
+            throw new RuntimeException(String.format("Invalid Syntax, Smartlist ID: %s, Query: %s", id, sql));
+        }
       } catch (Exception e) {
         if (!currentlyFailingProcessStepMain.contains(id.intValue())) {
           log.error(String.format("Failed on smartlist ID: %s", id));

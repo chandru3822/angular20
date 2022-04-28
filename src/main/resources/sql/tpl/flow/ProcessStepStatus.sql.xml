@@ -159,6 +159,14 @@
     ]]>
   </processStepStatus.assignStatusToProcessStep>
 
+  <processStepStatus.updateAllowNonAdminUse><![CDATA[
+    update flow.process_step_company_process_step_status_type
+    set allow_non_admin_use = :allowNonAdminUse,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></processStepStatus.updateAllowNonAdminUse>
+
   <processStepStatus.getProcessStepCompanyProcessStepStatusType><![CDATA[
       select pscpsst.*,
              ps.process_step_name,
@@ -244,6 +252,7 @@ and psa.archived is not true
         AND pscpsst.archived is not true
         and cpsst.archived is not true
         and cpsst.process_step_status_type_id = 1
+        and case when :nonAdmin::boolean is true then pscpsst.allow_non_admin_use = true else true end
       order by cpsst.process_step_status_type
   ]]></processStepStatus.getActiveAssignedToProcessStep>
 
@@ -264,6 +273,7 @@ and psa.archived is not true
              pscpsst.process_step_id as "processStepId",
              pscpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
              cpsst.archived,
+             pscpsst.allow_non_admin_use,
              ps2.process_step_name as "processStepName",
              cpsst.process_step_status_type as "processStepStatusType",
              cpsst.process_step_status_type_id as "processStepStatusTypeId",
@@ -297,6 +307,7 @@ and psa.archived is not true
         AND pscpsst.archived is not true
         and cpsst.archived is not true
         AND cpsst.process_step_status_type_id = 3
+        and case when :nonAdmin::boolean is true then pscpsst.allow_non_admin_use = true else true end
       order by cpsst.process_step_status_type
   ]]></processStepStatus.getCancelledAssignedToStep>
 </sql>

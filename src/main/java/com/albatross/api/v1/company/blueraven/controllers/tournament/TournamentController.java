@@ -50,6 +50,11 @@ public class TournamentController {
     return tournamentService.getTournamentFormulas(ownerTypeId);
   }
 
+  @GetMapping(value = "/formula/{formulaId}/fields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<TournamentFormulaField> getTournamentFormulaFields(@PathVariable Long formulaId) {
+    return tournamentService.getTournamentFormulaFields(formulaId);
+  }
+
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteTournament(@PathVariable Long id) {
     tournamentService.deleteTournament(id);

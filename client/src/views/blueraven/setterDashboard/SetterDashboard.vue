@@ -5,9 +5,11 @@
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-              <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
-              <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
-              <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
+              <v-btn text @click="setTimeInterval('Today')">Today</v-btn>
+              <v-btn text @click="setTimeInterval('Yesterday')">Yesterday</v-btn>
+              <v-btn text @click="setTimeInterval('WTD')">Week</v-btn>
+              <v-btn text @click="setTimeInterval('MTD')">Month</v-btn>
+              <v-btn text @click="setTimeInterval('QTD')">Quarter</v-btn>
               <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
             </v-btn-toggle>
           </v-toolbar-items>
@@ -29,7 +31,7 @@
           {{ rankingData.total_appointments ? rankingData.total_appointments : 0 }}
         </span>
         <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }} (not cancelled)
+          {{ getTimeIntervalText() }} (not cancelled)
         </span>
       </div>
       <div class="personal-performance-box">
@@ -38,7 +40,7 @@
           {{ rankingData.total_pitches ? rankingData.total_pitches : 0 }}
         </span>
         <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+          {{ getTimeIntervalText() }}
         </span>
       </div>
       <div class="personal-performance-box">
@@ -47,7 +49,7 @@
           {{ rankingData.pitch_percentage ? rankingData.pitch_percentage : 0 }}%
         </span>
         <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+          {{ getTimeIntervalText() }}
         </span>
       </div>
       <div id="personal-performance-rank-box">
@@ -60,7 +62,7 @@
             {{ rankBoxData.current_user_rank ? rankBoxData.current_user_rank : 'TBD' }}
           </span>
           <span class="personal-performance-box-subtitle">
-            {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+            {{ getTimeIntervalText() }}
           </span>
         </div>
         <div id="rank-box-separator"></div>
@@ -119,7 +121,7 @@
               <th class="left-text">Office</th>
               <th class="center-text">
                 Total Pitched Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+                {{ getTimeIntervalText() }}
               </th>
             </tr>
             <tr v-for="office in offices"
@@ -151,7 +153,7 @@
               <th class="left-text">Rep</th>
               <th class="center-text">
                 Total Pitched Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+                {{ getTimeIntervalText() }}
               </th>
             </tr>
             <tr v-for="rep in reps" :key="rep.user_id"
@@ -191,7 +193,7 @@
               <th class="left-text">Office</th>
               <th class="center-text">
                 Total Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+                {{ getTimeIntervalText() }}
               </th>
               <th class="center-text">Pitches</th>
               <th class="center-text">Pitch %</th>
@@ -241,9 +243,9 @@
       performanceDataLoading: false,
       topRepsLoading: false,
       topOfficesLoading: false,
-      timeIntervalBtnGroup: 0,
+      timeIntervalBtnGroup: 3,
       timeIntervalString: 'MTD', // MTD is selected by default
-      timeInterval: +moment().format('DD') - 1,
+      timeInterval: moment().format('DD') - 1,
       tabNum: 1, // Funnel tab is selected by default
       performanceDataLoaded: false,
       rankingTablesLoaded: false,
@@ -274,7 +276,8 @@
 
         try {
           let startDate = moment().subtract(this.timeInterval, 'd').format('YYYY-MM-DD')
-          let endDate = moment().format('YYYY-MM-DD')
+          //dont include today if the selected option is yesterday
+          let endDate = this.timeInterval === 1 ? startDate : moment().format('YYYY-MM-DD')
 
           if (this.isSetterMgr) {
             let performanceData = await getRequestWithParams('/setterDashboard/getMgrPerformanceReport',
@@ -509,24 +512,38 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
-
+      getTimeIntervalText() {
+        return this.timeInterval === 0 ? 'Today' : this.timeInterval === 1 ? 'Since yesterday' : 'Last ' + this.timeInterval + ' days'
+      },
       setTimeInterval (timeIntervalString) {
         try {
           this.rankingTablesLoaded = false
           this.timeIntervalString = timeIntervalString
           this.rankingData = {}
 
+          // let test = moment
+          // debugger
+
           switch (timeIntervalString) {
+            case 'Today':
+              this.timeInterval = 0 // TODAY
+              break
+            case 'Yesterday':
+              this.timeInterval = 1 // YESTERDAY
+              break
+            case 'WTD':
+              //gets # day of week. -1 because BR week starts on monday
+              this.timeInterval = moment().day() - 1 // WTD
+              break
             case 'MTD':
-              this.timeInterval = +moment().format('DD') - 1 // MTD
+              //gets current # day of month (-1 so that we dont go down to 0)
+              this.timeInterval = moment().format('DD') - 1 // MTD
               break
-            case '60 days':
-              this.timeInterval = 60
-              break
-            case '90 days':
-              this.timeInterval = 90
+            case 'QTD':
+              this.timeInterval =  moment().diff(moment().startOf('quarter'), 'days')// QTD
               break
             case 'YTD':
+              //gets current # day of year (-1 so that we dont go down to 0)
               this.timeInterval = moment().dayOfYear() - 1 // YTD
               break
           }

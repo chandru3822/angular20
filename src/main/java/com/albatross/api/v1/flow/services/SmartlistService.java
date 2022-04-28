@@ -5,6 +5,11 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
+import com.albatross.api.v1.flow.model.smartlist.*;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -438,7 +443,7 @@ public class SmartlistService {
       try {
           results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
       } catch (Exception e) {
-          saveError(smartlist, fields, e);
+          saveError(smartlist, query, fields, e);
           throw e;
       }
 
@@ -486,7 +491,7 @@ public class SmartlistService {
       try {
           results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
       } catch (Exception e) {
-          saveError(smartlist, fields, e);
+          saveError(smartlist, query, fields, e);
           throw e;
       }
 
@@ -1282,7 +1287,14 @@ public class SmartlistService {
                 referenceTable = UUID.randomUUID().toString();
                 final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
                 additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = %s.%s ", subquery, referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
+              } else {
+                  referenceTable = requirements.stream()
+                                               .filter(t -> Objects.equals(t.getSmartlistSystemListId(), r.getSmartlistSystemListId()))
+                                               .map(SmartlistRequirement::getValueReferenceTable)
+                                               .findFirst()
+                                               .orElse(null);
               }
+              r.setValueReferenceTable(referenceTable);
             } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
               String joinTable;
               try {
@@ -4996,10 +5008,11 @@ public class SmartlistService {
     }
   }
 
-  private void saveError(Smartlist smartlist, List<SmartlistFieldAssignment> fields, Exception e) {
+  private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, Exception e) {
       Map<String, Object> params = new HashMap<>();
       params.put("smartlistId", smartlist.getId());
       params.put("createdById", securityService.getCurrentUser().getId());
+      params.put("query", query);
 
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);

@@ -4,6 +4,11 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.event.Event;
+import com.albatross.api.v1.flow.model.event.EventCompanyEventStatusType;
+import com.albatross.api.v1.flow.model.event.EventStatusType;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEvent;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -102,6 +107,13 @@ public class EventService {
     params.put("eventId", eventId);
 
     return sqlCache.query("event.getAssignedStatuses", params, CompanyEventStatusType.class);
+  }
+
+  public List<CompanyEventStatusType> getAssignedProcessStepEventStatuses(Long pseId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("pseId", pseId);
+
+    return sqlCache.query("event.getAssignedProcessStepEventStatuses", params, CompanyEventStatusType.class);
   }
 
   public List<ListOfValue> getAssignedEventStatusesByListOfValue(Long eventId) {

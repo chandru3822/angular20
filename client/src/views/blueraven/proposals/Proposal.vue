@@ -19,19 +19,19 @@
           <div>
             <div class="configuration-title">Configurations</div>
             <v-card
-                flat
-                class="pt-0"
-                v-for="(cfg, index) in sortedCustomFieldGroups"
-                :key="index"
+              flat
+              class="pt-0"
+              v-for="(cfg, index) in sortedCustomFieldGroups"
+              :key="index"
             >
-              <div class="configuration-group-title">{{cfg.groupName}}</div>
+              <div class="configuration-group-title">{{ cfg.groupName }}</div>
               <CustomValueInput
-                  v-for="(field, idx) in cfg.customFieldValues"
-                  :key="idx"
-                  :callback="populateDirtyCfvs"
-                  :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
-                  :field="field"
-                  :show-field-name="false"
+                v-for="(field, idx) in cfg.customFieldValues"
+                :key="idx"
+                :callback="populateDirtyCfvs"
+                :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+                :field="field"
+                :show-field-name="false"
               />
             </v-card>
           </div>
@@ -64,21 +64,25 @@
             <v-spacer></v-spacer>
             <v-btn depressed
                    :disabled="dirtyCfvs.length === 0"
-                   class="proposal-container-buttons text-capitalize font-weight-bold">Present</v-btn>
+                   class="proposal-container-buttons text-capitalize font-weight-bold">Present
+            </v-btn>
             <!--todo: above button requires @click and accompanying function-->
             <!--todo: fix disabled logic-->
             <v-btn depressed
                    :disabled="dirtyCfvs.length === 0"
-                   class="proposal-container-buttons text-capitalize font-weight-bold">Save Proposal</v-btn>
+                   class="proposal-container-buttons text-capitalize font-weight-bold">Save Proposal
+            </v-btn>
             <!--todo: above button requires @click and accompanying function-->
-            <!--todo: fix disabled logic-->
-            <v-btn depressed
-                   :disabled="dirtyCfvs.length === 0"
-                   class="proposal-container-buttons text-capitalize font-weight-bold">Download</v-btn>
+            <v-btn class="proposal-container-buttons text-capitalize font-weight-bold"
+                   @click="downloadPdf">
+              Download
+            </v-btn>
             <!--todo: above button requires @click and accompanying function-->
             <!--todo: fix disabled logic-->
           </div>
-          proposal goes here
+          <div class="proposal-container">
+            <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="false" :editable="false" />
+          </div>
         </v-card>
       </v-col>
     </v-row>
@@ -87,14 +91,18 @@
 
 <script>
 
-import {handleHidingGlobalLoader, logError, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from "@/stores/AppStore";
+import { apiRequest, getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest } from '@/helpers/helpers'
+import { AppMutations } from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import ProposalTemplate from '@/views/blueraven/settings/proposalDesigner/ProposalTemplate'
+import { ProposalActions } from '@/views/blueraven/settings/proposalDesigner/store'
+import { mapState } from 'vuex'
 
 export default {
-  name: "Proposal",
+  name: 'Proposal',
   components: {
-    CustomValueInput
+    CustomValueInput,
+    ProposalTemplate
   },
   data() {
     return {
@@ -107,26 +115,33 @@ export default {
   },
   created() {
     this.getProposalDetails()
+    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
   },
   computed: {
-    sortedCustomFieldGroups(){
+    pages() {
+      return this.template?.filter(x => x.parentId === undefined)
+    },
+    sortedCustomFieldGroups() {
       const customFieldGroups = [...this.proposal?.customFieldGroups]
-      return customFieldGroups.sort((cfg1, cfg2)=>{
-        if (cfg1.groupOrder < cfg2.groupOrder){
+      return customFieldGroups.sort((cfg1, cfg2) => {
+        if (cfg1.groupOrder < cfg2.groupOrder) {
           return -1
         }
-        if (cfg1.groupOrder > cfg2.groupOrder){
+        if (cfg1.groupOrder > cfg2.groupOrder) {
           return 1
         }
         return 0
       })
-    }
+    },
+    ...mapState({
+      template: (state) => state.proposal.template
+    })
   },
   methods: {
     async getProposalDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
+        const { data, status } = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
         this.proposal = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -139,10 +154,13 @@ export default {
     async saveCustomFieldValues() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
+        const { data, status } = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
         this.proposal = data
         this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
         this.dirtyCfvs = []
+
+        this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
+
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -157,6 +175,32 @@ export default {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
       if (!match) {
         this.dirtyCfvs.push(field)
+      }
+    },
+    async downloadPdf() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        const { data } = await apiRequest('blueraven', {
+          method: 'get',
+          url: `/proposal/${this.proposalId}/pdf`,
+          responseType: 'blob'
+        })
+
+        if (data) {
+          const pdfFile = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+          const docUrl = document.createElement('a')
+          docUrl.href = pdfFile
+          docUrl.setAttribute('download', `proposal-${this.proposalId}.pdf`)
+          document.body.appendChild(docUrl)
+          docUrl.click()
+          setTimeout(() => {
+            docUrl.remove()
+            URL.revokeObjectURL(pdfFile)
+          }, 100)
+        }
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   }
@@ -190,12 +234,14 @@ tr:nth-of-type(even) {
   flex-direction: column;
   justify-content: space-between;
 }
+
 .configuration-title {
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 24px;
   color: var(--v-blackText-base);
 }
+
 .configuration-group-title {
   font-size: 14px;
   font-weight: 700;
@@ -209,7 +255,7 @@ tr:nth-of-type(even) {
 
 .proposal-container {
   padding: 28px;
-  height: calc(100vh - 180px);
+  //height: calc(100vh - 180px);
 }
 
 .proposal-container-header {

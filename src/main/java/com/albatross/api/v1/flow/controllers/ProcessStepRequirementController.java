@@ -1,8 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ProcessStepAction;
-import com.albatross.api.v1.flow.model.ProcessStepRequirement;
-import com.albatross.api.v1.flow.model.ProcessStepRequirementType;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirement;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirementType;
 import com.albatross.api.v1.flow.services.ProcessStepRequirementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +32,11 @@ public class ProcessStepRequirementController {
   @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepRequirementType> getRequirementTypes () {
     return processStepRequirementService.getRequirementTypes();
+  }
+
+  @GetMapping(value = "/event/types", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepRequirementType> getEventRequirementTypes () {
+    return processStepRequirementService.getEventRequirementTypes();
   }
 
   @PutMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -1,8 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.FunctionType;
-import com.albatross.api.v1.flow.model.CompanyFunction;
-import com.albatross.api.v1.flow.model.CompanyFunctionParam;
+import com.albatross.api.v1.flow.model.function.CompanyFunction;
+import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.albatross.api.v1.flow.services.CompanyFunctionService;
 import lombok.extern.slf4j.Slf4j;

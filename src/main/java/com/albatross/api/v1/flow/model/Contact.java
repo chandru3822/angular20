@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
+import com.albatross.api.v1.flow.model.project.Project;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;

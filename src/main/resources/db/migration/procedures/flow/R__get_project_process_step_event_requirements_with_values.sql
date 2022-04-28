@@ -129,10 +129,10 @@ BEGIN
                                dfp.parameter_name as "parameterName",
                                dfp.data_type_id as "dataTypeId",
                                rpdv.db_function_param_id as "dbFunctionParamId",
-                               rpdv.process_step_requirement_id as "processStepRequirementId",
+                               rpdv.process_step_event_requirement_id as "processStepRequirementId",
                                rpdv.dynamic_value as "dynamicValue"
                         from flow.db_function_param dfp
-                               left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
+                               left join flow.event_requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_event_requirement_id = psr.id
                         where dfp.db_function_id = cfn.db_function_id
                           and dfp.parameter_type_id = 2
                           and rpdv.archived is not true
@@ -154,7 +154,7 @@ BEGIN
                         from flow.db_function_param dfp
                                left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
                                left join flow.system_value sv on sv.id = dfp.system_value_id
-                               left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
+                               left join flow.event_requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_event_requirement_id = psr.id
                                left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
                         where dfp.db_function_id = df.id
                           and dfp.archived is not true

@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.ProjectWithEvents;
+import com.albatross.api.v1.flow.model.project.ProjectWithEvents;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.services.ScheduleService;
 import lombok.Data;

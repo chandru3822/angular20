@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.OrgLevel;
-import com.albatross.api.v1.flow.model.OrgType;
+import com.albatross.api.v1.flow.model.org.OrgLevel;
+import com.albatross.api.v1.flow.model.org.OrgType;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
