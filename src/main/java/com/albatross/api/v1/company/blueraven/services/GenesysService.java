@@ -237,6 +237,7 @@ public class GenesysService {
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
     contactMap.put("date_created", formatter.format(calendar.getTime()));
+    contactMap.put("priority", true);
 
     addTextelParameters(contactMap, false);
 
@@ -260,7 +261,7 @@ public class GenesysService {
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
-    String contactListId = getContactListId(leadLevel, apiInstance, genesysContactListName, false);
+    String contactListId = getContactListId(leadLevel, apiInstance, genesysContactListName);
     // If no Contact  List is found
     if (contactListId == null) {
       return;
@@ -271,18 +272,6 @@ public class GenesysService {
             contactListId, List.of(wdc), false, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
-
-    if (genesysContactListName == null || genesysContactListName.isEmpty()) {
-      String oldContactListId =
-          getContactListId(leadLevel, apiInstance, genesysContactListName, true);
-      // If no Contact  List is found
-      if (contactListId == null) {
-        return;
-      }
-
-      apiInstance.postOutboundContactlistContacts(
-          oldContactListId, List.of(wdc), false, false, false);
-    }
   }
 
   private void updateGenesysCfv(Long contactId, String textValue, Long cfgaId) {
@@ -351,6 +340,7 @@ public class GenesysService {
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
     contactMap.put("date_created", formatter.format(calendar.getTime()));
+    contactMap.put("priority", true);
 
     addTextelParameters(contactMap, true);
 
@@ -536,22 +526,6 @@ public class GenesysService {
     }
   }
 
-  private String getContactListOldName(String leadLevel) {
-    if (leadLevel.equals("1")) {
-      return "Level 1";
-    } else if (leadLevel.equals("2")) {
-      return "Level 2";
-    } else if (leadLevel.equals("3")) {
-      return "Level 3";
-    } else if (leadLevel.equals("9")) {
-      return "Level 9";
-    } else if (leadLevel.equals("10")) {
-      return "InsideSales";
-    }
-
-    return null;
-  }
-
   private String getContactListName(String leadLevel) {
     if (leadLevel.equals("1")) {
       return "leadlevel1_Day1";
@@ -638,19 +612,14 @@ public class GenesysService {
   private String getContactListId(
       String leadLevel,
       OutboundApi apiInstance,
-      String genesysContactListName,
-      Boolean useOldContactLists)
+      String genesysContactListName)
       throws IOException, ApiException {
     GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
     String contactListName = "";
     if (genesysContactListName == null || genesysContactListName.isEmpty()) {
-      if (useOldContactLists) {
-        contactListName = getContactListOldName(leadLevel);
-      } else {
-        contactListName = getContactListName(leadLevel);
-      }
+      contactListName = getContactListName(leadLevel);
 
       if (contactListName == null) {
         return null;
@@ -682,7 +651,6 @@ public class GenesysService {
     GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
-    contactListNames.add(getContactListOldName(leadLevel));
     contactListNames.add(getContactListName(leadLevel));
     contactListNames.add(getTextelContactListName(leadLevel));
     contactListNames.addAll(getContactListNameCron(leadLevel));
