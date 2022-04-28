@@ -282,5 +282,32 @@
     where company_id = :companyId
   ]]></proposal.getCurrentVersion>
 
+  <proposal.getCalculatedProposalValues><![CDATA[
+select pr.id,
+       pr.proposal_version_id,
+       pps.project_id,
+       pr.project_process_step_id,
+       pr.archived,
+       c.first_name,
+       c.last_name,
+       p.project_name,
+       p.street1,
+       p.street2,
+       p.city,
+       p.postal_code,
+       s.state,
+       s.abbreviation as state_abbreviation,
+       calc.*
+from brs.proposal pr
+         inner join flow.project_process_step pps on pr.project_process_step_id = pps.id
+         inner join flow.project p on pps.project_id = p.id
+         inner join flow.contact c on p.contact_id = c.id
+         inner join flow.company_state cs on p.company_state_id = cs.id
+         inner join flow.state s on cs.state_id = s.id
+         left join lateral brs.get_calculated_proposal_values(pr.id, :insertPropLogHistory::boolean) calc on true
+where pr.id = :proposalId
+  and pr.archived is false
+  ]]></proposal.getCalculatedProposalValues>
+
 
 </sql>
