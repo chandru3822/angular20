@@ -1,6 +1,6 @@
 --write code for adding and removing company_process_ids
 CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_id integer)
-  RETURNS void
+  RETURNS text
 AS
 $BODY$
 declare
@@ -35,7 +35,7 @@ BEGIN
            df.column_name,
            lower(ot.object_code) as object_type,
            dvfc2.id              as data_view_field_config_id
-    from flow.data_view_field_config_data dvfcd
+    from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
@@ -49,7 +49,6 @@ BEGIN
     loop
       v_in_contact = v_in_contact + 1;
       if z.object_type = 'contact' and (v_sql = '') IS NOT FALSE then
-
         v_sql = $$with update_contact as (select p.id,$$;
         v_text_array_tables = array_append(v_text_array_tables, ('update_contact uc')::character varying);
       elsif z.object_type = 'contact' and (v_sql = '') IS FALSE and
@@ -101,11 +100,11 @@ BEGIN
            lower(ot.object_code) as object_type,
            dvfc2.id              as data_view_field_config_id,
            dvfc2.custom_field_group_assignment_id
-    from flow.data_view_field_config_data dvfcd
+    from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
-           inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = p_data_view_id
+           inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 1
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
     where dvfc2.default_field_id is not null
@@ -114,10 +113,10 @@ BEGIN
       and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_project = v_in_project + 1;
-      if z.object_type = 'project' and z.custom_field_group_assignment_id is null and (v_sql = '') IS NOT FALSE then
+      if z.object_type = 'project' and (v_sql = '') IS NOT FALSE then
         v_sql = $$with update_project as (select p.id,$$;
         v_text_array_tables = array_append(v_text_array_tables, ('update_project up')::character varying);
-      elsif z.object_type = 'project' and z.custom_field_group_assignment_id is null and (v_sql = '') IS FALSE and
+      elsif z.object_type = 'project' and (v_sql = '') IS FALSE and
             position('update_project' in v_sql) < 1 then
         v_sql = v_sql || $$ update_project as (select p.id,$$;
         v_text_array_tables = array_append(v_text_array_tables, ('update_project up')::character varying);
@@ -166,7 +165,7 @@ BEGIN
            lower(ot.object_code) as object_type,
            dvfc2.id              as data_view_field_config_id,
            dt.id                 as data_type_id
-    from flow.data_view_field_config_data dvfcd
+    from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
@@ -205,7 +204,7 @@ BEGIN
            lower(ot.object_code) as object_type,
            dvfc2.id              as data_view_field_config_id,
            dt.id                 as data_type_id
-    from flow.data_view_field_config_data dvfcd
+    from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
@@ -213,7 +212,7 @@ BEGIN
            inner join flow.custom_field cf on cf.id = cfga.custom_field_id
            inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
            inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-           inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = p_data_view_id
+           inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 1
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
     where dvfc2.custom_field_group_assignment_id is not null
@@ -244,7 +243,7 @@ BEGIN
            lower(ot.object_code) as object_type,
            dvfc2.id              as data_view_field_config_id,
            dt.id                 as data_type_id
-    from flow.data_view_field_config_data dvfcd
+    from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
@@ -287,7 +286,7 @@ BEGIN
            dvfc2.id              as data_view_field_config_id,
            dt.id                 as data_type_id,
            dvfc2.process_step_event_id
-    from flow.data_view_field_config_data dvfcd
+    from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
@@ -327,7 +326,7 @@ BEGIN
            dvfc2.id              as data_view_field_config_id,
            dvfc2.custom_field_group_assignment_id,
            dvfc2.process_step_event_id
-    from flow.data_view_field_config_data dvfcd
+    from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
@@ -376,6 +375,7 @@ BEGIN
   v_sql = trim(trailing ' ,' from v_sql);
   v_sql = v_sql || $$ from update_data ud where ud.project_id = foo.id;$$;
   raise notice 'v_sql = %',v_sql;
+  return v_sql;
 
 END
 $BODY$

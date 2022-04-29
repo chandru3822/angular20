@@ -1206,7 +1206,6 @@ CREATE UNIQUE INDEX dvcfc_field_to_update_uidx ON flow.data_view_child_field_con
 
 
 
---TODO fix this after lunch
 create table  if not exists flow.data_view_maintenance
 (
   id              serial  not null,
@@ -1214,19 +1213,20 @@ create table  if not exists flow.data_view_maintenance
   company_process_ids     integer[],
   data_view_id    integer,
   processed                 boolean not null default false,
-  process_start_time timestamp without time zone,
-  process_end_time timestamp without time zone,
   date_created    timestamp without time zone DEFAULT now() not null,
-  CONSTRAINT data_view_field_config_data_pk primary key (id),
-  CONSTRAINT dvfcd_data_view_field_config_id_fk FOREIGN KEY (data_view_field_config_id)
+  CONSTRAINT data_view_maintenance_pk primary key (id),
+  CONSTRAINT dvm_data_view_field_config_id_fk FOREIGN KEY (data_view_field_config_id)
     REFERENCES flow.data_view_field_config (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvm_data_view_id_id_fk FOREIGN KEY (data_view_id)
+    REFERENCES flow.data_view (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
 create index if not exists dvfcd_data_view_field_config_id_idx
-  on flow.data_view_field_config_data (data_view_field_config_id);
+  on flow.data_view_maintenance (data_view_field_config_id);
 
-drop index if exists flow.dvfcd_data_view_field_config_id_uidx;
-CREATE UNIQUE INDEX dvfcd_data_view_field_config_id_uidx ON flow.data_view_field_config_data (data_view_field_config_id);
+drop index if exists flow.dvm_data_view_field_config_id_uidx;
+CREATE UNIQUE INDEX dvm_data_view_field_config_id_uidx ON flow.data_view_maintenance (data_view_field_config_id) where data_view_field_config_id is not null;
 
 
