@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@EqualsAndHashCode
 @Data
 @NoArgsConstructor
 public class Proposal {

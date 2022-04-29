@@ -44,6 +44,39 @@ public class PostalCodeService {
     return sqlCache.query("postalCode.getZones", params, PostalCodeZone.class);
   }
 
+  public List<PostalCodeZone> getZonesForUser() {
+    User user = securityService.getCurrentUser();
+
+    Boolean viewAll =
+      securityService.userHasFeatureAccessLevel(
+        user.getId(),
+        user.getCompanyId(),
+        user.getHighestCompanyId(),
+        "CLOSER_AVAILABILITY",
+        List.of("VIEW_ALL"));
+
+    Boolean viewDownline = false;
+    //only check view downline if they dont have view all
+    if(!viewAll) {
+      viewDownline =
+        securityService.userHasFeatureAccessLevel(
+          user.getId(),
+          user.getCompanyId(),
+          user.getHighestCompanyId(),
+          "CLOSER_AVAILABILITY",
+          List.of("VIEW_DOWNLINE"));
+    }
+
+    //if !viewAll && !viewDownline then we assume they have view or else they couldn't be making this call
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+    params.put("viewAll", viewAll);
+    params.put("viewDownline", viewDownline);
+
+    return sqlCache.query("postalCode.getZonesForUser", params, PostalCodeZone.class);
+  }
+
   public PostalCodeZone getZone(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -327,6 +360,43 @@ public class PostalCodeService {
 
     return sqlCache.query(
         "postalCode.getAllZoneUsers",
+        params,
+        new PostalCodeZoneUserMapper<>(PostalCodeZoneUser.class, om));
+  }
+
+  public List<PostalCodeZoneUser> getZoneUsersByDownline(List<Integer> zoneIds) throws SQLException {
+    User user = securityService.getCurrentUser();
+
+    Boolean viewAll =
+      securityService.userHasFeatureAccessLevel(
+        user.getId(),
+        user.getCompanyId(),
+        user.getHighestCompanyId(),
+        "CLOSER_AVAILABILITY",
+        List.of("VIEW_ALL"));
+
+    Boolean viewDownline = false;
+    //only check view downline if they dont have view all
+    if(!viewAll) {
+      viewDownline =
+        securityService.userHasFeatureAccessLevel(
+          user.getId(),
+          user.getCompanyId(),
+          user.getHighestCompanyId(),
+          "CLOSER_AVAILABILITY",
+          List.of("VIEW_DOWNLINE"));
+    }
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+    params.put("viewAll", viewAll);
+    params.put("viewDownline", viewDownline);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("zoneIds", sqlArrayService.createSqlArrayOfType("int", zoneIds));
+
+    return sqlCache.query(
+        "postalCode.getZoneUsersByDownline",
         params,
         new PostalCodeZoneUserMapper<>(PostalCodeZoneUser.class, om));
   }

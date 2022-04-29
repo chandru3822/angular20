@@ -1,15 +1,15 @@
 package com.albatross.api.config;
 
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,13 +24,10 @@ import java.util.UUID;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class BeansConfiguration {
 
-  @Value("${aws.accessKeyId}")
-  private String accessKey;
-
-  @Value("${aws.secretKey}")
-  private String secretKey;
+  private final AwsProperties awsProperties;
 
   @Value("${firebase.type}")
   private String firebaseType;
@@ -79,9 +76,12 @@ public class BeansConfiguration {
     firebaseCredentials.put("auth_provider_x509_cert_url", firebaseAuthProviderX509CertUrl);
     firebaseCredentials.put("client_x509_cert_url", firebaseClientX509CertUrl);
 
-    FirebaseOptions firebaseOptions = FirebaseOptions.builder()
-      .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(firebaseCredentials.toString().getBytes())))
-      .build();
+    FirebaseOptions firebaseOptions =
+        FirebaseOptions.builder()
+            .setCredentials(
+                GoogleCredentials.fromStream(
+                    new ByteArrayInputStream(firebaseCredentials.toString().getBytes())))
+            .build();
 
     firebaseApp = FirebaseApp.initializeApp(firebaseOptions, UUID.randomUUID().toString());
   }
@@ -89,18 +89,26 @@ public class BeansConfiguration {
   @Bean
   @Primary
   public AmazonS3 s3Client() {
-      AWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
-      AmazonS3 awsClientBuilder = AmazonS3ClientBuilder
-              .standard()
-              .withRegion(Regions.US_EAST_1)
-              .withCredentials(new AWSStaticCredentialsProvider(creds))
-              .build();
-      return awsClientBuilder;
+    var creds =
+        new BasicAWSCredentials(awsProperties.getAccessKeyId(), awsProperties.getSecretKey());
+    var builder =
+        AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(creds));
+
+    if (awsProperties.getServiceEndpoint() != null) {
+      builder =
+          builder.withEndpointConfiguration(
+              new EndpointConfiguration(
+                  awsProperties.getServiceEndpoint().toString(),
+                  awsProperties.getRegion().getName()));
+    } else {
+      builder = builder.withRegion(awsProperties.getRegion());
+    }
+    return builder.build();
   }
 
   @Bean
   @Primary
   public FirebaseMessaging firebaseMessaging() {
-      return FirebaseMessaging.getInstance(firebaseApp);
+    return FirebaseMessaging.getInstance(firebaseApp);
   }
 }

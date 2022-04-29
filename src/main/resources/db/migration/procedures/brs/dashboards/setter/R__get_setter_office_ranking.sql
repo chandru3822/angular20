@@ -43,7 +43,7 @@ BEGIN
                          end
                           and ((ppse2.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_days = 1 then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
 
-                     and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date))
+--                      and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date))
                      and o2.id = o.id
                      and pd2.company_id = 3
                 ) as total_appointments,

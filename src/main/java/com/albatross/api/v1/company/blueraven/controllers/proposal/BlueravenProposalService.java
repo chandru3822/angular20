@@ -13,6 +13,7 @@ import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -35,7 +37,6 @@ import java.util.Optional;
 @PreAuthorize("hasCompanyAccess(3)")
 @RequiredArgsConstructor
 public class BlueravenProposalService {
-
   private final SqlCache sqlCache;
   private final ObjectMapper om;
   private final SecurityService securityService;
@@ -78,9 +79,7 @@ public class BlueravenProposalService {
     params.put("projectId", projectId);
 
     return sqlCache.get(
-        "proposal.getActiveDesign",
-        params,
-        new ProposalDesignMapper<>(ProposalDesign.class, om));
+        "proposal.getActiveDesign", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
   }
 
   public List<ProposalDesign> requestNewDesign(
@@ -162,6 +161,17 @@ public class BlueravenProposalService {
 
     Long id = sqlCache.updateReturningId("proposal.insert", params, "id").longValue();
     return getProposal(id);
+  }
+
+  public Map<String, Object> getCalculatedProposalValues(
+      @NonNull Long proposalId, boolean insertPropLogHistory) {
+
+
+    final Map<String, Object> context = sqlCache.queryForMap(
+      "proposal.getCalculatedProposalValues",
+      Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
+
+    return context;
   }
 
   public static class ProposalDesignMapper<T> extends BeanPropertyRowMapper<T> {

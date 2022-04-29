@@ -103,6 +103,19 @@ public class BaseSqlCache {
     return (T) jdbc.queryForObject(sql, paramSource, elementType);
   }
 
+  public <T> List<T> queryForList(String key, Map<String, Object> params, Class<T> elementType) {
+    MapSqlParameterSource paramSource = scrubParams(params);
+    String sql = getByKey(key);
+    return jdbc.queryForList(sql, paramSource, elementType);
+  }
+
+  public <T> T queryForMap(String key, Map<String, Object> params) {
+    MapSqlParameterSource paramSource = scrubParams(params);
+    String sql = getByKey(key);
+
+    return (T) jdbc.queryForMap(sql, paramSource);
+  }
+
   public <T> Optional<T> queryForObjectOptional(
       String key, Map<String, Object> params, Class<T> elementType) {
     try {

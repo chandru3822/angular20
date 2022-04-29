@@ -6,6 +6,7 @@ import store from './store'
 import {UserMutations} from './stores/UserStore'
 import {getRequest} from '@/helpers/helpers'
 import ProposalVersionSettingsRoutes from '@/views/blueraven/settings/proposals/routes'
+import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/routes'
 import {AppMutations} from "@/stores/AppStore";
 
 Vue.use(Router)
@@ -359,7 +360,7 @@ const router = new Router({
           meta: {title: 'Albatross - Closer Availability'},
           props: true,
           component: () => {
-            if (store.getters.userHasFeature('CLOSER_AVAILABILITY')) {
+            if (store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_DOWNLINE') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_ALL')) {
               return import(/* webpackChunkName: "closerAvailability" */ './views/blueraven/closerAvailability/CloserAvailability.vue')
             } else {
               return accessDenied()
@@ -473,6 +474,7 @@ const router = new Router({
           component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
           children: [
             ProposalVersionSettingsRoutes,
+            ProposalDesignerRoutes,
             {
               path: 'attachments',
               meta: {title: 'Albatross - Settings'},
