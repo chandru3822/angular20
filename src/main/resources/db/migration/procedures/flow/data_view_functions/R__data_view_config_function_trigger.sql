@@ -21,8 +21,13 @@ BEGIN
                           from flow.get_data_view_field_configs(dv.id,
                                                                 'CONTACT',
                                                                 null) ao)
-              and v_company_process_ids && dv.company_process_ids --TODO think through this better
+              and v_company_process_ids && dv.company_process_ids
       loop
+        select quote_literal(array_agg(id)::text)
+        into v_project_ids
+        from flow.project
+        where contact_id = new.id and
+              company_process_id = any(z.company_process_ids);
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
         for x in select *
@@ -1073,7 +1078,7 @@ END
 $body$
   LANGUAGE plpgsql;
 
-drop trigger if exists reset_data_view_columns_from_process_step_trg on flow.project_process_step;
+drop trigger if exists reset_data_view_columns_from_process_step_trg on flow.project_process_step_event;
 CREATE TRIGGER reset_data_view_columns_from_process_step_trg
   after INSERT or update
   ON flow.project_process_step_event
