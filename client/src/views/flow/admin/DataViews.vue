@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newDataView = {}]">
+            <v-btn text @click="[addNew = !addNew, newDataView = {}]" v-if="is7oaksAdmin">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -88,6 +88,7 @@
         saveErrorMsg: '',
         dataViews: [],
         requiredRules: constants.BASIC_REQUIRED_RULE,
+        is7oaksAdmin: this.$store.getters.isFullAdmin,
         tableNameRule: [
           () => (this.newDataView.viewName != null && this.newDataView.viewName !== '') || "Field to Update is required",
           v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
