@@ -147,7 +147,7 @@ BEGIN
             update flow.project_process_step_event set company_event_status_type_id = 24 where id = p_pps_event_id;
 
             --if we did reshcedule then send a text to the new closer
-            select brs.send_text_to_closer(v_project_id, p_current_user_id, 1);
+            perform brs.send_text_to_closer(v_project_id, p_current_user_id, 1);
 
             --return success
             return query select true, v_lead_source_id, v_lead_source, null;
