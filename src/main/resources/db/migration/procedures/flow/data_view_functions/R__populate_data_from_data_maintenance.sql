@@ -1,5 +1,5 @@
 --write code for adding and removing company_process_ids
-CREATE OR REPLACE FUNCTION flow.populate_data_from_data_view_insert()
+CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_id integer)
   RETURNS void
 AS
 $BODY$
@@ -45,7 +45,7 @@ BEGIN
     where dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is null
       and processed is false
-      and dvfc2.data_view_id = 1
+      and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_contact = v_in_contact + 1;
       if z.object_type = 'contact' and (v_sql = '') IS NOT FALSE then
@@ -105,13 +105,13 @@ BEGIN
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on dv.company_id = c.id
-           inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 1
+           inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = p_data_view_id
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
     where dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is null
       and processed is false
-      and dvfc2.data_view_id = 1
+      and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_project = v_in_project + 1;
       if z.object_type = 'project' and z.custom_field_group_assignment_id is null and (v_sql = '') IS NOT FALSE then
@@ -181,7 +181,7 @@ BEGIN
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
       and processed is false
-      and dvfc2.data_view_id = 1
+      and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_ppscfv = v_in_ppscfv + 1;
       call flow.generate_sql_for_ppscfv(z,
@@ -213,14 +213,14 @@ BEGIN
            inner join flow.custom_field cf on cf.id = cfga.custom_field_id
            inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
            inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-           inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 1
+           inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = p_data_view_id
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
     where dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
       and processed is false
-      and dvfc2.data_view_id = 1
+      and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_project_details = v_in_project_details + 1;
       call flow.generate_sql_for_pcfv(z,
@@ -259,7 +259,7 @@ BEGIN
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
       and processed is false
-      and dvfc2.data_view_id = 1
+      and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_contact_details = v_in_contact_details + 1;
       call flow.generate_sql_for_ccfv(z,
@@ -302,7 +302,7 @@ BEGIN
       and dvfc2.process_step_event_id is not null
       and dvfc2.default_field_id is null
       and processed is false
-      and dvfc2.data_view_id = 1
+      and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_event_details = v_in_event_details + 1;
       call flow.generate_sql_for_event_details(z,
@@ -337,7 +337,7 @@ BEGIN
     where dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is not null
       and processed is false
-      and dvfc2.data_view_id = 1
+      and dvfc2.data_view_id = p_data_view_id
     loop
       v_in_event = v_in_event + 1;
       call flow.generate_sql_for_event(z,

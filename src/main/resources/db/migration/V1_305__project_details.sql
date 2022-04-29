@@ -1202,13 +1202,17 @@ CREATE UNIQUE INDEX dv_display_name_uidx ON flow.data_view (company_id,display_n
 
 drop index if exists flow.dvcfc_field_to_update_uidx;
 CREATE UNIQUE INDEX dvcfc_field_to_update_uidx ON flow.data_view_child_field_config (data_view_field_config_id,field_to_update);
---TODO ask Kaleb about SQL Injection
 
 
-create table  if not exists flow.data_view_field_config_data
+
+
+--TODO fix this after lunch
+create table  if not exists flow.data_view_maintenance
 (
   id              serial  not null,
-  data_view_field_config_id    integer not null,
+  data_view_field_config_id    integer,
+  company_process_ids     integer[],
+  data_view_id    integer,
   processed                 boolean not null default false,
   process_start_time timestamp without time zone,
   process_end_time timestamp without time zone,
