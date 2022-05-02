@@ -166,10 +166,10 @@ public class BlueravenProposalService {
   public Map<String, Object> getCalculatedProposalValues(
       @NonNull Long proposalId, boolean insertPropLogHistory) {
 
-
-    final Map<String, Object> context = sqlCache.queryForMap(
-      "proposal.getCalculatedProposalValues",
-      Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
+    final Map<String, Object> context =
+        sqlCache.queryForMap(
+            "proposal.getCalculatedProposalValues",
+            Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
 
     return context;
   }
