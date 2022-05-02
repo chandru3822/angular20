@@ -1230,3 +1230,4 @@ drop index if exists flow.dvm_data_view_field_config_id_uidx;
 CREATE UNIQUE INDEX dvm_data_view_field_config_id_uidx ON flow.data_view_maintenance (data_view_field_config_id) where data_view_field_config_id is not null;
 
 
+alter table flow.data_view_child_field_config add column if not exists display_name character varying(63);
