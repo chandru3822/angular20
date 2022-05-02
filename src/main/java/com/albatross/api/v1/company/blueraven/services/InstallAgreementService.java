@@ -48,6 +48,9 @@ public class InstallAgreementService {
   @Value(value = "${sunlight.api.portal}")
   private String sunlightPortalUrl;
 
+  @Value(value = "${app.goodleap.newLoanUrl}")
+  private String goodleapNewLoanUrl;
+
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean viewAll =
@@ -327,7 +330,7 @@ public class InstallAgreementService {
 
         try {
           String financeOption = getFinanceOption(pd.getLoanTerm(), pd.getInterestRate());
-          URIBuilder b = new URIBuilder(loanPalBaseUrl + financeOption + ".html");
+          URIBuilder b = new URIBuilder(goodleapNewLoanUrl + financeOption + ".html");
           b.addParameter("fname", s(pd.getCustomerFirstName()));
           b.addParameter("lname", s(pd.getCustomerLastName()));
           b.addParameter("street", bothStreets);
@@ -349,7 +352,7 @@ public class InstallAgreementService {
     }
 
     sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
-    return loanPalBaseUrl;
+    return goodleapNewLoanUrl;
   }
 
   private String getFinanceOption(String loanTerm, String interestRate) {
