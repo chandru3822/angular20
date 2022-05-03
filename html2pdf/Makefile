@@ -23,7 +23,7 @@ bin:
 
 
 UPX := $(shell which upx)
-upx_version := 3.94
+upx_version := 3.96
 
 # fetch a local copy of upx for binary compression (only if it's not already installed)
 #TODO: update based on arch
