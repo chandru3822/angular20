@@ -34,6 +34,13 @@
       max-width: 100%;
       object-fit: contain;
     }
+
+    .placeholder-img {
+      background-color: #f0f1f3;
+      align-items: center;
+      flex-direction: column;
+      color: #e0e2e8;
+    }
   </style>
     <#-- company specific styles  -->
   <style> <@b.globalStyles styles=theme/></style>

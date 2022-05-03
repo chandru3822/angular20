@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +46,7 @@ public class BlueravenProposalService {
   private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
   private final AttachmentService attachmentService;
+  private final PropertiesConfiguration propertiesConfiguration;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
     HashMap<String, Object> params = new HashMap<>();
@@ -171,7 +174,36 @@ public class BlueravenProposalService {
             "proposal.getCalculatedProposalValues",
             Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
 
+    final Map<String, Object> proposalAttachments =
+        getProposalAttachments(proposalId).stream()
+            .collect(
+                Collectors.toMap(
+                    attachment -> {
+                      if (attachment.getAttachmentTypeId() == 936) {
+                        return "2D_PROPOSAL_IMAGE";
+                      }
+
+                      if (attachment.getAttachmentTypeId() == 937) {
+                        return "3D_PROPOSAL_IMAGE";
+                      }
+
+                      return "UNKNOWN";
+                    },
+                    attachment ->
+                        "%s/public/attachment/%s/%s"
+                            .formatted(
+                                propertiesConfiguration.getApplicationHostUrl(),
+                                attachment.getId(),
+                                attachment.getUuid())));
+
+    context.putAll(proposalAttachments);
+
     return context;
+  }
+
+  private List<Attachment> getProposalAttachments(@NonNull Long proposalId) {
+    return sqlCache.query(
+        "proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class);
   }
 
   public static class ProposalDesignMapper<T> extends BeanPropertyRowMapper<T> {
