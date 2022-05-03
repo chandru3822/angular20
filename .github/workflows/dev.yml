@@ -106,9 +106,10 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Extract branch name
-        id: branch
+      - name: set env
+        id: vars
         run: |
+          echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
           echo ::set-output name=github_branch::$(echo ${GITHUB_REF##*/})
 
       - name: Build & Push Image
@@ -118,10 +119,11 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: albatross-html2pdf-repo
           IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
+          GH_BRANCH: ${{ steps.vars.outputs.github_branch }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${github_branch} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${github_branch}
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
   frontend-build:
