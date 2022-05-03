@@ -121,6 +121,7 @@ jobs:
           IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
           GH_BRANCH: ${{ steps.vars.outputs.github_branch }}
         run: |
+          cd html2pdf
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH
