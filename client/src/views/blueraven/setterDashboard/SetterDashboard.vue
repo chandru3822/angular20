@@ -415,7 +415,7 @@
       async getTopReps () {
         try {
           this.topRepsLoading = true
-          const params = {limit: 5, days: this.timeInterval}
+          const params = {limit: 5, days: this.timeInterval, interval: this.timeIntervalString}
           const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
@@ -469,7 +469,8 @@
             {
               params: {
                 limit: 5,
-                days: this.timeInterval
+                days: this.timeInterval,
+                interval: this.timeIntervalString
               }
             }, 'blueraven', [])
           this.offices = data || []
@@ -495,7 +496,8 @@
             {
               params: {
                 limit: 13,
-                days: this.timeInterval
+                days: this.timeInterval,
+                interval: this.timeIntervalString
               }
             }, 'blueraven', [])
           this.officeRankingData = data || []
