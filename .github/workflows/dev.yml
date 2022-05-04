@@ -127,6 +127,21 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+      - name: Fill in the new image ID for html2pdf definition
+        id: html2pdf-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/html2pdf-definition.json
+          container-name: albatross-html2pdf-dev-container
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Html2Pdf Fargate Task
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.html2pdf-task-def.outputs.task-definition }}
+          service: albatross-dev-service
+          cluster: albatross-dev-cluster
+
   frontend-build:
     name: Build Front End
     runs-on: ubuntu-latest

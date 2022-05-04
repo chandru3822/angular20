@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.config.AppProperties;
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.convert.JsonObjectDeserializer;
 import com.albatross.api.exception.NotFoundException;
@@ -50,15 +51,18 @@ import java.util.stream.Collectors;
 public class ProposalTemplateService {
   private final SqlCache sqlCache;
   private final ObjectMapper objectMapper;
+  private final AppProperties appProperties;
   private final freemarker.template.Configuration freemarkerConfiguration;
   private final com.jayway.jsonpath.Configuration jsonPathConfiguration;
 
   public ProposalTemplateService(
       @Autowired SqlCache sqlCache,
       @Autowired ObjectMapper objectMapper,
+      @Autowired AppProperties appProperties,
       @Autowired freemarker.template.Configuration freemarkerConfiguration ) {
     this.sqlCache = sqlCache;
     this.objectMapper = objectMapper;
+    this.appProperties = appProperties;
     this.freemarkerConfiguration = freemarkerConfiguration;
 
     this.jsonPathConfiguration =
@@ -213,10 +217,9 @@ public class ProposalTemplateService {
 
     final String generatedHtml = generateHtml(blocks, theme);
 
-    final String uri = "http://localhost:1323/api/convert";
     final Flux<DataBuffer> pdf = WebClient.create()
       .post()
-      .uri(uri)
+      .uri(appProperties.getHtmlToPdfApi())
       .contentType(MediaType.APPLICATION_FORM_URLENCODED)
       .accept(MediaType.APPLICATION_PDF)
       .body(BodyInserters.fromFormData("html", generatedHtml))
