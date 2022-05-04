@@ -131,8 +131,8 @@ jobs:
         id: html2pdf-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: .aws/html2pdf-definition.json
-          container-name: albatross-html2pdf-dev-container
+          task-definition: .aws/html2pdf-dev-definition.json
+          container-name: albatross-html2pdf-container
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Html2Pdf Fargate Task
