@@ -909,7 +909,8 @@ insert into flow.data_view_field_config(data_view_id, default_field_id, custom_f
 insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
-           where field_to_update = 'closer_user_position_id'),
+           where field_to_update = 'closer_user_position_id'
+           and dvfc.process_step_event_id is null),
           (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER'),
           'closer_name',
           5,
@@ -918,7 +919,8 @@ insert into flow.data_view_child_field_config(data_view_field_config_id, unique_
 insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
   (select (select dvfc.id
            from flow.data_view_field_config dvfc
-           where field_to_update = 'closer_user_position_id'),
+           where field_to_update = 'closer_user_position_id'
+           and dvfc.process_step_event_id is null),
           (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_ID_TRIGGER'),
           'closer_user_id',
           6,
@@ -1231,3 +1233,15 @@ CREATE UNIQUE INDEX dvm_data_view_field_config_id_uidx ON flow.data_view_mainten
 
 
 alter table flow.data_view_child_field_config add column if not exists display_name character varying(63);
+
+update flow.data_view_field_config
+set update_first_value_only_id = null,
+    update_first_value_only = false
+where update_first_value_only_id in ('permit_pack_submittal_end_time_ppscfv_id','site_survey_verified_date_ppscfv_id');
+
+update flow.data_view_field_config set update_first_value_only_id = null,update_first_value_only = false
+where field_to_update in ('permit_pack_submittal_resource') and process_step_event_id in (3,60);
+
+
+drop index if exists flow.dvfc_update_first_value_only_id_uidx;
+CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null;

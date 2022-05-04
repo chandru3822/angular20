@@ -30,7 +30,7 @@ BEGIN
               company_process_id = any(z.company_process_ids);
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-        for x in select *
+        for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                  from flow.get_data_view_field_configs(z.id,
                                                        'CONTACT',
                                                        null) a
@@ -123,7 +123,7 @@ BEGIN
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select *
+      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      'PROJECT',
                                                      null) a
@@ -196,13 +196,20 @@ declare
   v_company_process_id integer;
 BEGIN
 
-  select pps.project_id, c.company_id,p.company_process_id
-  into v_project_id,v_company_id,v_company_process_id
+  select pps.project_id, c.company_id
+  into v_project_id,v_company_id
   from flow.project_process_step pps
          inner join flow.project p on pps.project_id = p.id
          inner join flow.contact c on p.contact_id = c.id
   where pps.id = new.project_process_step_id
     and pps.main is true;
+
+  select p.company_process_id
+  into v_company_process_id
+  from flow.project_process_step pps
+         inner join flow.project p on pps.project_id = p.id
+         inner join flow.contact c on p.contact_id = c.id
+  where pps.id = new.project_process_step_id;
 
   select pps.project_id, ps.company_id
   into v_project_id1,v_company_id
@@ -222,10 +229,10 @@ BEGIN
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select *
+      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
-                                                     new.custom_field_group_assignment_id)
+                                                     new.custom_field_group_assignment_id) a
         loop
           select *
           into v_sql
@@ -295,14 +302,22 @@ declare
   v_company_process_id integer;
 BEGIN
 
-  select pps.project_id, c.company_id,p.company_process_id
-  into v_project_id,v_company_id,v_company_process_id
+  select pps.project_id, c.company_id
+  into v_project_id,v_company_id
   from flow.project_process_step_event ppse
          inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
          inner join flow.project p on pps.project_id = p.id
          inner join flow.contact c on p.contact_id = c.id
   where ppse.id = new.project_process_step_event_id
     and pps.main is true;
+
+  select p.company_process_id
+  into v_company_process_id
+  from flow.project_process_step_event ppse
+         inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+         inner join flow.project p on pps.project_id = p.id
+         inner join flow.contact c on p.contact_id = c.id
+  where ppse.id = new.project_process_step_event_id;
 
   select pps.project_id, c.company_id
   into v_project_id1,v_company_id
@@ -326,7 +341,7 @@ BEGIN
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select *
+      for x in select dvfc.*,lead(dvfc.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) dvfc
@@ -459,16 +474,16 @@ BEGIN
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select *
+      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      'EVENT',
-                                                     null)
+                                                     null) a
                where process_step_event_id = new.process_step_event_id
 
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
-          --raise notice 'v_value %',v_value;
+          raise notice 'v_value123123123 %',v_value;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -483,6 +498,7 @@ BEGIN
                                                     x.data_type_id);
 
         end loop;
+
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
                                                    v_value::text, null::text, null::text,
                                                    x.update_first_value_only,
@@ -491,6 +507,7 @@ BEGIN
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       -- begin
+      raise notice 'v_sql %',v_sql;
       execute v_sql;
       -- exception
       -- when others then
@@ -601,10 +618,10 @@ BEGIN
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select *
+      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
-                                                     new.custom_field_group_assignment_id)
+                                                     new.custom_field_group_assignment_id) a
         loop
           select *
           into v_sql
@@ -708,10 +725,10 @@ BEGIN
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select *
+      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
-                                                     new.custom_field_group_assignment_id)
+                                                     new.custom_field_group_assignment_id) a
         loop
           select *
           into v_sql
@@ -912,10 +929,10 @@ BEGIN
       loop
           v_sql = NULL;
           v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-        for x in select *
+        for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                  from flow.get_data_view_field_configs(z.data_view_id,
                                                        null,
-                                                       z.custom_field_group_assignment_id)
+                                                       z.custom_field_group_assignment_id) a
           loop
             v_count = 1;
             select *

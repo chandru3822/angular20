@@ -21,8 +21,15 @@ declare
   v_in_event_details         integer = 0;
   v_in_event                 integer = 0;
   v_alias_value              varchar;
+  v_schema_name              varchar;
+  v_table_name     varchar;
 BEGIN
   v_sql = null;
+  select dv.view_name,c.schema_name
+  into v_table_name,v_schema_name
+  from flow.data_view dv
+  inner join flow.company c on dv.company_id = c.id
+  where dv.id = p_data_view_id;
   --CONTACT UPDATE
   for z in
     select c.schema_name,
@@ -230,6 +237,7 @@ BEGIN
                                         v_text_array_columns);
 
     end loop;
+
   for z in
     select c.schema_name,
            dv.view_name,
@@ -269,8 +277,6 @@ BEGIN
                                       v_text_array_columns);
 
     end loop;
-
-
 
   for z in
     select c.schema_name,
@@ -354,7 +360,7 @@ BEGIN
       v_sql = v_sql || $$ , $$ || v_columns;
     END LOOP;
 
-  v_sql = v_sql || $$ from  $$ || z.schema_name || $$.$$ || z.view_name || $$ o $$;
+  v_sql = v_sql || $$ from  $$ || v_schema_name || $$.$$ ||v_table_name || $$ o $$;
 
   FOREACH v_table IN ARRAY v_text_array_tables
     LOOP
@@ -364,7 +370,7 @@ BEGIN
     END LOOP;
   v_sql = v_sql || $$)$$;
 
-  v_sql = v_sql || $$ update $$ || z.schema_name || $$.$$ || z.view_name || $$ foo set $$;
+  v_sql = v_sql || $$ update $$ || v_schema_name || $$.$$ || v_table_name || $$ foo set $$;
   if array_length(v_text_array_columns, 1) > 0 then
 
     FOREACH v_second_value IN ARRAY v_text_array_columns
@@ -372,9 +378,9 @@ BEGIN
         v_sql = v_sql || $$  $$ || v_second_value || $$ = ud.$$ || v_second_value || $$,$$;
       END LOOP;
   end if;
+
   v_sql = trim(trailing ' ,' from v_sql);
-  v_sql = v_sql || $$ from update_data ud where ud.project_id = foo.id;$$;
-  raise notice 'v_sql = %',v_sql;
+  v_sql = v_sql || $$ from update_data ud where ud.project_id = foo.project_id;$$;
   return v_sql;
 
 END

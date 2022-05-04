@@ -54,6 +54,10 @@ BEGIN
       EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||
               $$_cfv_id);$$;
 
+      update flow.data_view_field_config
+      set update_first_value_only_id = v_field_to_update || $$_cfv_id $$
+      where id = p_data_view_field_config_id;
+
     end if;
     insert into flow.data_view_maintenance(data_view_field_config_id,date_created)
     values(p_data_view_field_config_id,now());

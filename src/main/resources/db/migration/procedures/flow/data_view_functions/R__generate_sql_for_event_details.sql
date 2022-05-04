@@ -83,7 +83,7 @@ BEGIN
                       inner join flow.project_process_step_event_custom_field_value ppsecfv on ppse.id = ppsecfv.project_process_step_event_id
                         and ppsecfv.custom_field_group_assignment_id = $$ || z.custom_field_group_assignment_id || $$
                         where p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
-                        order by ppse.id $$||  v_order ||$$ ), $$;
+                        order by p.id $$||  v_order ||$$ ), $$;
 
 
 

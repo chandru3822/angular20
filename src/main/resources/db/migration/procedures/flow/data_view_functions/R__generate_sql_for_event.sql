@@ -65,7 +65,7 @@ BEGIN
                             inner join flow.project p on p.id = pps.project_id
                         where ppse.process_step_event_id = $$ || z.process_step_event_id || $$
                         and p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
-                            order by ppse.id $$||v_order||$$ ), $$;
+                            order by pps.project_id $$||v_order||$$ ), $$;
 
 
 

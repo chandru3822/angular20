@@ -78,7 +78,7 @@ BEGIN
                           and ppscfv.custom_field_group_assignment_id =  $$ || z.custom_field_group_assignment_id || $$
                           inner join flow.project p on p.id = pps.project_id
                           where p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
-                          order by pps.id $$||v_order||$$ ), $$;
+                          order by pps.project_id $$||v_order||$$ ), $$;
 
 END
 $BODY$

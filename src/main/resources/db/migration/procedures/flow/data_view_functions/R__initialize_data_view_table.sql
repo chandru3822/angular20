@@ -1,4 +1,4 @@
-CREATE OR REPLACE function flow.initialize_data_view_table(p_company_id integer,p_table_name character varying)
+CREATE OR REPLACE function flow.initialize_data_view_table(p_company_id integer,p_table_name character varying,p_company_process_ids integer[])
   returns void
 AS $BODY$
 declare
@@ -17,7 +17,10 @@ BEGIN
 
   execute $$insert into $$||v_schema_name||$$.$$||p_table_name||$$(project_id, contact_id, date_modified)
 (select p.id,p.contact_id,now()
- from flow.project p); $$;
+ from flow.project p
+ where p.company_process_id = any('$$||p_company_process_ids::text||$$')); $$;
+
+
 
 END
 $BODY$
