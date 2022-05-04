@@ -237,8 +237,8 @@ public class ProposalTemplateService {
     template.process(Map.of("template", blocks, "theme",theme ), stringWriter);
     final String processedTemplate = stringWriter.toString();
 
-    log.info("Duration of template processing:  {}", Duration.between(start, Instant.now()));
-    log.info(processedTemplate);
+    log.debug("Duration of template processing:  {}", Duration.between(start, Instant.now()));
+    log.debug(processedTemplate);
     return processedTemplate;
   }
 

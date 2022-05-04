@@ -56,7 +56,7 @@ func (chromium Chromium) Convert(content string, result *[]byte) error {
 			buf, _, err := page.PrintToPDF().
 				WithPreferCSSPageSize(true).
 				WithPrintBackground(false).
-				WithDisplayHeaderFooter(true).
+				WithDisplayHeaderFooter(false).
 				WithHeaderTemplate("").
 				WithFooterTemplate("").
 				Do(ctx)
@@ -109,7 +109,7 @@ func do(action Action) error {
 	ctx, cancel := chromedp.NewContext(allocatorCtx, chromedp.WithDebugf(logger.Debugf))
 	defer cancel()
 
-	logger.Print("Starting conversion...")
+	logger.Debug("Starting conversion...")
 
 	activeInstancesCountMu.Lock()
 	activeInstancesCount += 1
@@ -123,7 +123,7 @@ func do(action Action) error {
 	activeInstancesCount -= 1
 	activeInstancesCountMu.Unlock()
 
-	logger.Print("Finished conversion...")
+	logger.Debug("Finished conversion...")
 
 	// Always remove the user profile directory created by Chromium.
 	go func() {
@@ -144,12 +144,12 @@ func setDynamicContent(content string, logger *log.Logger) chromedp.Tasks {
 		runtime.Enable(),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 
-			logger.Print("Navigate to page...")
+			logger.Debug("Navigate to page...")
 			_, _, _, err := page.Navigate(`about:blank`).Do(ctx)
 			if err != nil {
 				return fmt.Errorf("navigate to '%s' : %w", "url", err)
 			}
-			logger.Print("Finished navigating to page...")
+			logger.Debug("Finished navigating to page...")
 
 			frameTree, err := page.GetFrameTree().Do(ctx)
 			if err != nil {
@@ -184,14 +184,14 @@ func setDynamicContent(content string, logger *log.Logger) chromedp.Tasks {
 			// https://github.com/puppeteer/puppeteer/issues/2685
 			// https://github.com/chromedp/chromedp/issues/520
 			script := `
-(() => {
-	const css = 'html { -webkit-print-color-adjust: exact !important; }';
-	const style = document.createElement('style');
-	style.type = 'text/css';
-	style.appendChild(document.createTextNode(css));
-	document.head.appendChild(style);
-})();
-`
+		(() => {
+			const css = 'html { -webkit-print-color-adjust: exact !important; }';
+			const style = document.createElement('style');
+			style.type = 'text/css';
+			style.appendChild(document.createTextNode(css));
+			document.head.appendChild(style);
+		})();
+		`
 			evaluate := chromedp.Evaluate(script, nil)
 			err := evaluate.Do(ctx)
 

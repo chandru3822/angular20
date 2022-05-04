@@ -114,11 +114,11 @@
 
 <#macro paragraph node>
 <@compress single_line=true>
+  <#if node.content?has_content>
   <p <@inlineStyle styles=node.attrs/>>
-    <#if node.content?has_content>
-      <#list node.content as content><@.vars[content.type] content/></#list>
-    </#if>
+    <#list node.content as content><@.vars[content.type] content/></#list>
   </p>
+  </#if>
 </@compress>
 </#macro>
 
