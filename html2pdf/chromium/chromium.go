@@ -58,7 +58,7 @@ func (chromium Chromium) Convert(content string, result *[]byte) error {
 				WithPrintBackground(false).
 				WithDisplayHeaderFooter(true).
 				WithHeaderTemplate("").
-				WithFooterTemplate(`<span style="font-size: 10px"><span class="pageNumber"></span>/<span class="totalPages"></span></span>`).
+				WithFooterTemplate("").
 				Do(ctx)
 			if err != nil {
 				return err
