@@ -49,6 +49,7 @@ create table  if not exists flow.data_view_field_config
   default_field_id                 integer,
   custom_field_group_assignment_id integer,
   process_step_event_id            integer,
+  process_step_id                  integer,
   field_to_update                  varchar(100)                              not null,
   display_name                     varchar(100),
   update_first_value_only          boolean                     default false not null,
@@ -77,8 +78,10 @@ create table  if not exists flow.data_view_field_config
     ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT dvfc_process_step_event_id_fk FOREIGN KEY (process_step_event_id)
     REFERENCES flow.process_step_event (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvfc_process_step_id_fk FOREIGN KEY (process_step_id)
+    REFERENCES flow.process_step (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION
-
 );
 
 create index if not exists dvfc_data_view_id_idx
@@ -1190,10 +1193,27 @@ drop index if exists flow.dvfc_field_to_update_cfg_uidx;
 drop index if exists flow.dvfc_field_to_update_cfg1_uidx;
 drop index if exists flow.dvfc_field_to_update_ps_uidx;
 drop index if exists flow.dvfc_field_to_update_df_uidx;
+drop index if exists flow.dvfc_update_first_value_only_id_uidx;
+drop index if exists flow.dvfc_process_step_id_df_uidx;
+drop index if exists flow.dvfc_reset_on_new_uidx;
+drop index if exists flow.dvfc_update_first_only_uidx;
+
+drop index if exists flow.dvfc_1_uidx;
+drop index if exists flow.dvfc_2_uidx;
+
 CREATE UNIQUE INDEX dvfc_field_to_update_cfg_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id,process_step_event_id);
-CREATE UNIQUE INDEX dvfc_field_to_update_cfg1_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id) where process_step_event_id is null;
-CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config (data_view_id,field_to_update,process_step_event_id,default_field_id);
-CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null;
+CREATE UNIQUE INDEX dvfc_field_to_update_cfg1_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id) where process_step_event_id is null and process_step_id is null and default_field_id is null;
+CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config (data_view_id,field_to_update,process_step_event_id,default_field_id) where process_step_id is null and custom_field_group_assignment_id is null;
+CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null and custom_field_group_assignment_id is null and process_step_id is null;
+CREATE UNIQUE INDEX dvfc_process_step_id_df_uidx ON flow.data_view_field_config (data_view_id,default_field_id,process_step_id)where process_step_event_id is null and custom_field_group_assignment_id is null;
+CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null and process_step_id is null;
+
+CREATE UNIQUE INDEX dvfc_reset_on_new_uidx ON flow.data_view_field_config (data_view_id,reset_on_new,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+CREATE UNIQUE INDEX dvfc_update_first_only_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+
+CREATE UNIQUE INDEX dvfc_1_uidx ON flow.data_view_field_config (data_view_id,reset_on_new,process_step_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+CREATE UNIQUE INDEX dvfc_2_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only,process_step_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+
 
 
 drop index if exists flow.dv_view_name_uidx;
@@ -1243,5 +1263,81 @@ update flow.data_view_field_config set update_first_value_only_id = null,update_
 where field_to_update in ('permit_pack_submittal_resource') and process_step_event_id in (3,60);
 
 
-drop index if exists flow.dvfc_update_first_value_only_id_uidx;
-CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null;
+alter table brs.project_details add column  if not exists permit_pack_submittal_end_time_cfv_id integer;
+create index if not exists pd_permit_pack_submittal_end_time_cfv_id_idx
+  on brs.project_details (permit_pack_submittal_end_time_cfv_id);
+
+alter table brs.project_details add column  if not exists permit_pack_submittal_resource_cfv_id integer;
+create index if not exists pd_permit_pack_submittal_resource_cfv_id_idx
+  on brs.project_details (permit_pack_submittal_resource_cfv_id);
+
+ALTER TABLE brs.project_details
+  RENAME COLUMN permit_pack_submittal_ppse_id TO permit_pack_submittal_start_time_cfv_id;
+
+update flow.data_view_field_config
+set update_first_value_only_id = 'permit_pack_submittal_start_time_cfv_id',
+    update_first_value_only = true
+where field_to_update = 'permit_pack_submittal_start_time';
+
+update flow.data_view_field_config
+set update_first_value_only_id = 'permit_pack_submittal_end_time_cfv_id',
+    update_first_value_only = true
+where field_to_update = 'permit_pack_submittal_end_time';
+
+update flow.data_view_field_config
+set update_first_value_only_id = 'permit_pack_submittal_resource_cfv_id',
+    update_first_value_only = true
+where field_to_update = 'permit_pack_submittal_resource';
+
+with update_data as (
+  select project_id,permit_pack_submittal_start_time_cfv_id
+  from brs.project_details
+  where permit_pack_submittal_start_time_cfv_id is not null
+)
+update brs.project_details pd1
+set permit_pack_submittal_end_time_cfv_id = ud.permit_pack_submittal_start_time_cfv_id,
+    permit_pack_submittal_resource_cfv_id =  ud.permit_pack_submittal_start_time_cfv_id
+from update_data ud
+where ud.project_id = pd1.project_id;
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step','process_step_id','processStepID',6,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step User Position','user_position_id','userPositionID',6,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Company Process Step Status','company_process_step_status_type_id','companyProcessStepStatusTyeId',6,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step Complete Date','process_step_complete_date','processStepCompleteDate',2,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step Complete Date','process_step_complete_date','processStepCompleteDate',2,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step Cancelled Date','cancelled_date','cancelledDAte',2,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+
+drop trigger if exists pps_update_project_details_trg on flow.project_process_step;
+drop FUNCTION flow.pps_update_project_details();
+
