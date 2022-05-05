@@ -12,6 +12,7 @@
                     :loading="postalCodeZonesLoading"
                     hide-details
                     return-object
+                    @input="zoneValueChanged = true"
                     item-text="zoneName"
                     @blur="getPostalCodeZoneUsers(selectedPostalCodeZones)"
                     item-value="id"
@@ -227,6 +228,8 @@
         postalCodeZoneValuesChanged: false,
         selectedPostalCodeZones: [],
         postalCodeZonesLoading: true,
+        zoneValueChanged: false,
+        initialLoad: true,
         postalCodeZoneUsers: [],
         postalCodeZoneUserValuesChanged: false,
         countSelected: 0,
@@ -366,7 +369,7 @@
       async getPostalCodeZones () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/postalCode/zones`)
+          const {data, status} = await getRequest(`/postalCode/zonesForUser`)
           this.postalCodeZones = data
           this.postalCodeZonesLoading = false
           handleHidingGlobalLoader(this, status)
@@ -378,21 +381,25 @@
         }
       },
       async getPostalCodeZoneUsers (zones) {
-        this.postalCodeZoneUsers = []
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            zoneIds: zones?.length > 0 ? zones.map(z => z.id) : null
+        if(this.zoneValueChanged || this.initialLoad) {
+          this.zoneValueChanged = false
+          this.initialLoad = false
+          this.postalCodeZoneUsers = []
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            let params = {
+              zoneIds: zones?.length > 0 ? zones.map(z => z.id) : null
+            }
+            const {data, status} = await postRequest(`/postalCode/zone/usersByDownline`, params, null, [])
+            this.postalCodeZoneUsers = data
+            this.postalCodeZoneUsersLoading = false
+            handleHidingGlobalLoader(this, status)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          const {data, status} = await postRequest(`/postalCode/zone/users`, params, null, [])
-          this.postalCodeZoneUsers = data
-          this.postalCodeZoneUsersLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getAvailability() {

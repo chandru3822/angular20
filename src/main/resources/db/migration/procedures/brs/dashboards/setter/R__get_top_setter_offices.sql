@@ -1,6 +1,6 @@
 -- SELECT * FROM brs.get_top_setter_offices(10, 30);
 
-CREATE OR REPLACE FUNCTION brs.get_top_setter_offices(p_limit integer, p_days integer DEFAULT 30)
+CREATE OR REPLACE FUNCTION brs.get_top_setter_offices(p_limit integer, p_time_interval character varying, p_days integer DEFAULT 30)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS $function$
@@ -33,7 +33,7 @@ BEGIN
                             then pd.first_appointment_missed
                         else pd.closer_appointment_start
                       --end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
-                        end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_days = 1 then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
+                        end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
             and (case when pd.first_appointment_pitched is not null
                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                       when pd.first_appointment_pitched is null

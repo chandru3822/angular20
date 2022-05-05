@@ -5,9 +5,6 @@ import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.Maps;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -36,7 +33,6 @@ public class CommunicationService {
   private final UserService userService;
   private final MailService mailService;
   private final SMSService smsService;
-  private final FirebaseMessaging firebaseMessaging;
 
   @Async
   public Future<Void> sendEmails(
@@ -150,8 +146,15 @@ public class CommunicationService {
                                       "%s?emailAddress=%s", emailUnsubscribeURL, user.getEmail()),
                                   "user",
                                   user));
-                      return
-                          new EmailMessage(user.getEmail(), sentByEmail, sentByName, subject, message, sentByUserId, true, null);
+                      return new EmailMessage(
+                          user.getEmail(),
+                          sentByEmail,
+                          sentByName,
+                          subject,
+                          message,
+                          sentByUserId,
+                          true,
+                          null);
                     } catch (Exception e) {
                       log.error(
                           "EMAIL: ERROR: Generating template. template={}, address={}",
@@ -263,13 +266,13 @@ public class CommunicationService {
     }
   }
 
-  public void sendPushNotificationToTopic(String title, String body)
-      throws FirebaseMessagingException {
-    Message message = Message.builder().putData("score", "854").setTopic("test").build();
-
-    //    FirebaseMessaging.getInstance(app).subscribeToTopic(List.of("123"), "test");
-    String response = firebaseMessaging.send(message);
-
-    log.debug("SENT MESSAGE: {}", response);
-  }
+  //  public void sendPushNotificationToTopic(String title, String body)
+  //      throws FirebaseMessagingException {
+  //    Message message = Message.builder().putData("score", "854").setTopic("test").build();
+  //
+  //    //    FirebaseMessaging.getInstance(app).subscribeToTopic(List.of("123"), "test");
+  //    String response = firebaseMessaging.send(message);
+  //
+  //    log.debug("SENT MESSAGE: {}", response);
+  //  }
 }

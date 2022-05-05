@@ -2,7 +2,7 @@
 
 -- SELECT * FROM brs.get_setter_office_ranking(13, 30);
 
-CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit integer, p_days integer DEFAULT 30)
+CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit integer,  p_time_interval character varying, p_days integer DEFAULT 30)
     RETURNS SETOF JSON AS
 $BODY$
 BEGIN
@@ -41,7 +41,8 @@ BEGIN
                          then ((pd2.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between up2.start_date and up2.end_date
                          else ((pd2.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date >= up2.start_date
                          end
-                          and ((ppse2.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_days = 1 then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
+                                                                                                                                      --if yesterday then we dont include today
+                          and ((ppse2.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
 
 --                      and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date))
                      and o2.id = o.id
@@ -63,14 +64,14 @@ BEGIN
                     then ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
                     else ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
                     end
-                and ((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_days = 1 then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
+                and ((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
                 and (((case when pd.first_appointment_pitched is not null
                                 then pd.first_appointment_pitched
                             when pd.first_appointment_pitched is null
                                 and pd.first_appointment_missed is not null
                                 then pd.first_appointment_missed
                             else pd.closer_appointment_start
-                               end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_days = 1 then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
+                               end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and (case when p_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - p_days else (now() at time zone 'US/Mountain')::date end)
                 and (case when pd.first_appointment_pitched is not null
                               then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                           when pd.first_appointment_pitched is null
