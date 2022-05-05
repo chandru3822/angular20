@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.config.AppProperties;
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.convert.JsonObjectDeserializer;
 import com.albatross.api.exception.NotFoundException;
@@ -50,15 +51,18 @@ import java.util.stream.Collectors;
 public class ProposalTemplateService {
   private final SqlCache sqlCache;
   private final ObjectMapper objectMapper;
+  private final AppProperties appProperties;
   private final freemarker.template.Configuration freemarkerConfiguration;
   private final com.jayway.jsonpath.Configuration jsonPathConfiguration;
 
   public ProposalTemplateService(
       @Autowired SqlCache sqlCache,
       @Autowired ObjectMapper objectMapper,
+      @Autowired AppProperties appProperties,
       @Autowired freemarker.template.Configuration freemarkerConfiguration ) {
     this.sqlCache = sqlCache;
     this.objectMapper = objectMapper;
+    this.appProperties = appProperties;
     this.freemarkerConfiguration = freemarkerConfiguration;
 
     this.jsonPathConfiguration =
@@ -81,7 +85,7 @@ public class ProposalTemplateService {
     final List<ProposalTemplateBlock> mergedBlocks =
         template.getBlocks().stream()
             .map(block -> replaceVarFromContext(block, context))
-            .sorted()
+            .map(block -> replaceImagePlaceholderFromContext(block, context))
             .toList();
 
     template.setBlocks(mergedBlocks);
@@ -99,7 +103,9 @@ public class ProposalTemplateService {
     final DocumentContext documentContext =
         JsonPath.using(this.jsonPathConfiguration).parse(block.getBlockValue());
 
-    documentContext.map("$..content[?(@.type=='mention')]",
+    final String replacementPath = "$..content[?(@.type=='mention')]";
+
+    documentContext.map(replacementPath,
       (val, configuration) -> {
         if (val instanceof Map current){
           final Object id = getNestedValue(current, "attrs", "id");
@@ -109,11 +115,28 @@ public class ProposalTemplateService {
               current.put("type", "text");
               current.put("text", replacementText.toString());
               current.remove("attrs");
+            }else {
+              log.debug("No replacement found for key={} in provided context", id);
             }
           }
         }
         return val;
-      });
+      })
+      .delete(replacementPath); //remove any variables not replaced
+
+    return block;
+  }
+
+  private ProposalTemplateBlock replaceImagePlaceholderFromContext(ProposalTemplateBlock block, Map<String, Object> context){
+    if (block.getBlockKind() == null){
+      return block;
+    }
+
+    final Object actualImageUrl = context.getOrDefault(block.getBlockKind(), null);
+    if (actualImageUrl != null){
+      block.setBlockType("ImageBlock");
+      block.setBlockValue(Map.of("url", actualImageUrl));
+    }
     return block;
   }
 
@@ -156,6 +179,7 @@ public class ProposalTemplateService {
                   map.put("version", block.getVersion());
                   map.put("themeValueId", block.getThemeKeyId());
                   map.put("blockTypeId", block.getBlockTypeId());
+                  map.put("blockKindId", block.getBlockKindId());
                   map.put("blockStyle", getPGobject(block.getBlockStyle()));
                   map.put("blockValue", getPGobject(block.getBlockValue()));
                   map.put("blockOrder", block.getBlockOrder());
@@ -190,6 +214,22 @@ public class ProposalTemplateService {
   }
 
   public void generatePdf(List<ProposalTemplateBlock> blocks, Object theme, OutputStream outputStream) throws IOException, TemplateException {
+
+    final String generatedHtml = generateHtml(blocks, theme);
+
+    final Flux<DataBuffer> pdf = WebClient.create()
+      .post()
+      .uri(appProperties.getHtmlToPdfApi())
+      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+      .accept(MediaType.APPLICATION_PDF)
+      .body(BodyInserters.fromFormData("html", generatedHtml))
+      .retrieve()
+      .bodyToFlux(DataBuffer.class);
+
+    DataBufferUtils.write(pdf, outputStream).blockLast();
+  }
+
+  public String generateHtml(List<ProposalTemplateBlock> blocks, Object theme) throws TemplateException, IOException {
     final Instant start = Instant.now();
 
     final StringWriter stringWriter = new StringWriter();
@@ -197,20 +237,9 @@ public class ProposalTemplateService {
     template.process(Map.of("template", blocks, "theme",theme ), stringWriter);
     final String processedTemplate = stringWriter.toString();
 
-    log.info("Duration of template processing:  {}", Duration.between(start, Instant.now()));
-    log.info(processedTemplate);
-
-    final String uri = "http://localhost:1323/api/convert";
-    final Flux<DataBuffer> pdf = WebClient.create()
-      .post()
-      .uri(uri)
-      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-      .accept(MediaType.APPLICATION_PDF)
-      .body(BodyInserters.fromFormData("html", processedTemplate))
-      .retrieve()
-      .bodyToFlux(DataBuffer.class);
-
-    DataBufferUtils.write(pdf, outputStream).blockLast();
+    log.debug("Duration of template processing:  {}", Duration.between(start, Instant.now()));
+    log.debug(processedTemplate);
+    return processedTemplate;
   }
 
   private List<ProposalTemplateBlock> getTemplateBlocks(Set<Integer> ids) {

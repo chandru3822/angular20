@@ -3,8 +3,8 @@ module github.com/7oaksgroup/html2pdf/v1
 go 1.18
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20220408044303-8559a4e76b35
-	github.com/chromedp/chromedp v0.8.0
+	github.com/chromedp/cdproto v0.0.0-20220502031443-5b35e6c7c793
+	github.com/chromedp/chromedp v0.8.1
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo-contrib v0.12.0
 	github.com/labstack/echo/v4 v4.7.2
@@ -34,7 +34,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
+	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
