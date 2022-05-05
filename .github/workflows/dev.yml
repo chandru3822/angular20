@@ -89,6 +89,59 @@ jobs:
           service: albatross-dev-cron-service
           cluster: albatross-dev-cluster
 
+  html2pdf-build:
+    name: Package Html2Pdf API and Deploy to ECS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: set env
+        id: vars
+        run: |
+          echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
+          echo ::set-output name=github_branch::$(echo ${GITHUB_REF##*/})
+
+      - name: Build & Push Image
+        id: build-image
+        env:
+          DOCKER_BUILDKIT: 1
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: albatross-html2pdf-repo
+          IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
+          GH_BRANCH: ${{ steps.vars.outputs.github_branch }}
+        run: |
+          cd html2pdf
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Fill in the new image ID for html2pdf definition
+        id: html2pdf-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/html2pdf-dev-definition.json
+          container-name: albatross-html2pdf-container
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Html2Pdf Fargate Task
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.html2pdf-task-def.outputs.task-definition }}
+          service: albatross-html2pdf-service
+          cluster: albatross-dev-cluster
+
   frontend-build:
     name: Build Front End
     runs-on: ubuntu-latest

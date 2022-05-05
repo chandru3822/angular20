@@ -31,6 +31,65 @@
     order by zone_name
   ]]></postalCode.getZones>
 
+  <postalCode.getZonesForUser><![CDATA[
+    with positions as (
+        select up.org_id as parent_org_id,up.user_id as user_id
+        from flow.user_position up
+        where (up.end_date is null or up.end_date > now())
+          -- judson had me change this: up.primary_flag is true
+          and up.archived is not true
+          and user_id = :userId
+      )
+      select pcz.id,
+             pcz.company_id,
+             pcz.zone_name,
+             pcz.remote,
+             pcz.company_timezone_id,
+             pcz.distribution_time_frame_days,
+             pcz.schedulable_future_days,
+             pcz.archived
+      from flow.postal_code_zone pcz
+      where pcz.company_id = :companyId
+        and pcz.archived is not true
+        and case when :viewAll::boolean is true
+        then true
+          when :viewDownline::boolean is true
+          then
+          exists (
+              with positions as (
+                select up.org_id as parent_org_id,up.user_id as user_id
+                from flow.user_position up
+                where (up.end_date is null or up.end_date > now())
+                  -- judson had me change this: up.primary_flag is true
+                  and up.archived is not true
+                  and user_id = :userId
+              ), org_ids as (
+                select t.id
+                from positions p
+                       join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
+                            on true)
+              select distinct pczu.postal_code_zone_id
+              from org_ids o
+                     inner join flow.user_position up on up.org_id = o.id and (up.end_date is null or up.end_date > now()) and up.archived is false
+                     inner join flow.postal_code_zone_user pczu on pczu.user_id = up.user_id
+                                                                     and pczu.postal_code_zone_user_type_id = 1
+                                                                     and pczu.archived is false
+                                                                     and pczu.postal_code_zone_id = pcz.id
+            )
+        else
+          -- check that the user is in the zone as a schedule to
+          exists (
+            select pczu.postal_code_zone_id
+            from flow.postal_code_zone_user pczu
+            where pczu.postal_code_zone_user_type_id = 1
+            and pczu.archived is false
+            and pczu.postal_code_zone_id = pcz.id
+            and pczu.user_id = :userId
+            )
+        end
+      order by zone_name
+  ]]></postalCode.getZonesForUser>
+
   <postalCode.getZoneByPostalCode><![CDATA[
     select pcz.id,
        company_id,
@@ -327,6 +386,81 @@
     order by full_name
 
   ]]></postalCode.getAllZoneUsers>
+
+  <postalCode.getZoneUsersByDownline><![CDATA[
+    select pczu.id,
+           pczu.user_id,
+           u.first_name,
+           u.last_name,
+           pcz.zone_name,
+           pczu.archived,
+           pcz.id as postal_code_zone_id,
+           pczu.postal_code_zone_user_type_id,
+           concat(u.first_name, ' ', u.last_name) AS full_name,
+           concat(u.first_name, ' ', u.last_name, ' - ', pcz.zone_name) AS title,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(positions)))
+                      FROM (
+                             SELECT up.id,
+                                    up.user_id as "userId",
+                                    up.id as "userPositionId",
+                                    p.position,
+                                    p.schedulable,
+                                    p.scheduler,
+                                    up.position_id as "positionId",
+                                    up.org_id as "orgId",
+                                    o.company_state_id as "companyStateId",
+                                    up.start_date as "startDate",
+                                    up.end_date as "endDate",
+                                    up.primary_flag as "primaryFlag",
+                                    up.archived,
+                                    (select json_agg(json_build_object(
+                                                         'orgId', h.org_id,
+                                                         'orgName', h.org_name,
+                                                         'positionLevel', h.position_level,
+                                                         'orgLevelId', h.org_level_id
+                                                       ) order by h.org_level_id)::jsonb
+                                     from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
+                             FROM flow.user_position up
+                                    inner join flow.position p on p.id = up.position_id
+                                    inner join flow.org o on o.id = up.org_id
+                             WHERE up.user_id = pczu.user_id
+                               and up.archived is not true) positions), '[]') AS "userPositions"
+    from flow.postal_code_zone_user pczu
+           inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
+           inner join flow."user" u on u.id = pczu.user_id
+    where pczu.archived is not true
+      and pcz.archived is not true
+      and pcz.company_id = :companyId
+      and pczu.postal_code_zone_user_type_id = 1
+      and ((cast(:zoneIds as int[]) is null) OR pczu.postal_code_zone_id = any (:zoneIds))
+      and case when :viewAll::boolean is true then true
+      when :viewDownline::boolean is true
+      then
+        exists (
+            with positions as (
+              select up.org_id as parent_org_id,up.user_id as user_id
+              from flow.user_position up
+              where (up.end_date is null or up.end_date > now())
+                -- judson had me change this: up.primary_flag is true
+                and up.archived is not true
+                and user_id = :userId
+            ), org_ids as (
+              select t.id
+              from positions p
+                     join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
+                          on true)
+            select distinct pczu2.postal_code_zone_id
+            from org_ids o
+                   inner join flow.user_position up on up.org_id = o.id and (up.end_date is null or up.end_date > now()) and up.archived is false
+                   inner join flow.postal_code_zone_user pczu2 on pczu2.user_id = up.user_id
+              and pczu2.postal_code_zone_user_type_id = 1
+              and pczu2.archived is false
+              and pczu2.id = pczu.id
+          )
+      else pczu.user_id = :userId end
+    order by full_name
+  ]]></postalCode.getZoneUsersByDownline>
 
   <postalCode.checkForExisting><![CDATA[
     select pc.id,

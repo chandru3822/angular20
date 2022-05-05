@@ -33,6 +33,11 @@ public class PostalCodeController {
     return postalCodeService.getZones(searchQuery);
   }
 
+  @GetMapping(value = "/zonesForUser", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeZone> getZonesForUser() {
+    return postalCodeService.getZonesForUser();
+  }
+
   @GetMapping(value = "/zone/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public PostalCodeZone getZoneDetails(@PathVariable Long id) {
     return postalCodeService.getZone(id);
@@ -142,5 +147,10 @@ public class PostalCodeController {
   @PostMapping(value = "/zone/users", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<PostalCodeZoneUser> getAllZoneUsers(@RequestBody ZoneUserRequest request) throws SQLException {
     return postalCodeService.getAllZoneUsers(request.getZoneIds());
+  }
+
+  @PostMapping(value = "/zone/usersByDownline", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeZoneUser> getZoneUsersByDownline(@RequestBody ZoneUserRequest request) throws SQLException {
+    return postalCodeService.getZoneUsersByDownline(request.getZoneIds());
   }
 }

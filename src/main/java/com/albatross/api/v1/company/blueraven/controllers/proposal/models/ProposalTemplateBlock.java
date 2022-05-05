@@ -9,7 +9,7 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 @Accessors(chain = true)
-public class ProposalTemplateBlock implements Serializable, Comparable<ProposalTemplateBlock> {
+public class ProposalTemplateBlock implements Serializable {
   private Integer id;
 
   private Integer themeKeyId;
@@ -20,6 +20,10 @@ public class ProposalTemplateBlock implements Serializable, Comparable<ProposalT
 
   private String blockType;
 
+  private Integer blockKindId;
+
+  private String blockKind;
+
   private Object blockStyle;
 
   private Object blockValue;
@@ -29,18 +33,4 @@ public class ProposalTemplateBlock implements Serializable, Comparable<ProposalT
   private Integer version;
 
   private Integer parentId;
-
-  @Override
-  public int compareTo(ProposalTemplateBlock o) {
-    if (this.parentId == null || o.parentId == null) {
-      return this.blockOrder.compareTo(o.getBlockOrder());
-    }
-
-    final int parentIdCmp = parentId.compareTo(o.getParentId());
-    if (parentIdCmp == 0) {
-      return this.blockOrder.compareTo(o.getBlockOrder());
-    }
-
-    return parentIdCmp;
-  }
 }

@@ -290,7 +290,7 @@ public class AppService {
 
     // insert records for android
     insertAppAttachmentRecordsFromS3(
-        true,
+        false,
         "blueraven/app/android/com.myblueraven.albatross/",
         "application/vnd.android.package-archive",
         ".apk",
