@@ -1046,11 +1046,17 @@
 <!-- Once albatross has a json data type, this query can be removed in favor of using the new json convention -->
 <customFieldValue.upsertAuroraDesign><![CDATA[
   insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, created_by_id, date_modified, json_value)
-  values (:sourceId, :customFieldGroupAssignmentId, :userId, now(), :jsonValue::jsonb)
+  select :sourceId, (
+    select cfga.id
+    from flow.custom_field_group_assignment cfga
+           inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and (cfg.process_step_id = (select process_step_id from flow.project_process_step where id = :sourceId))
+    where cfga.id = :customFieldGroupAssignmentId
+      and cfga.archived is not true
+  ), :userId, now(), :jsonValue::jsonb
   on conflict (project_process_step_id, custom_field_group_assignment_id)
-  do update
-  set json_value = :jsonValue::jsonb,
-      modified_by_id = :userId,
-      date_modified = now()
+    do update
+    set json_value = :jsonValue::jsonb,
+        modified_by_id = :userId,
+        date_modified = now()
 ]]></customFieldValue.upsertAuroraDesign>
 </sql>
