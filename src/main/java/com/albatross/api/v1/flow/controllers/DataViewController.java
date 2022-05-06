@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEvent;
 import com.albatross.api.v1.flow.services.DataViewService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +34,7 @@ public class DataViewController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<DataView> saveDataView(@RequestBody DataView dataView) {
+  public Optional<DataView> saveDataView(@RequestBody DataView dataView) throws SQLException {
     return dataViewService.saveDataView(dataView);
   }
 
@@ -63,6 +65,12 @@ public class DataViewController {
   public List<ProcessStepEvent> getAvailablePsEventsForDefaultField(@PathVariable Long viewId,
                                                                     @PathVariable Long defaultFieldId) {
     return dataViewService.getAvailablePsEventsForDefaultField(viewId, defaultFieldId);
+  }
+
+  @GetMapping(value = "/{viewId}/defaultFieldPs/{defaultFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStep> getAvailablePsForDefaultField(@PathVariable Long viewId,
+                                                         @PathVariable Long defaultFieldId) {
+    return dataViewService.getAvailablePsForDefaultField(viewId, defaultFieldId);
   }
 
   @GetMapping(value = "/getUniqueBehaviorTypes", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -4,17 +4,17 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEvent;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
@@ -24,6 +24,7 @@ import java.util.*;
 public class DataViewService {
 
   private final SqlCache sqlCache;
+  private final SqlArrayService sqlArrayService;
   private final SecurityService securityService;
   private final ObjectMapper om;
 
@@ -31,7 +32,8 @@ public class DataViewService {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("dataView.getAllForCompany", params, DataView.class);
+    List<DataView> results = sqlCache.query("dataView.getAllForCompany", params, new DataViewMapper<>(DataView.class, om));
+    return results;
   }
 
   public Optional<DataView> getDataView(Long companyId, String tableName) {
@@ -39,20 +41,23 @@ public class DataViewService {
     Map<String, Object> params = new HashMap<>();
     params.put("tableName", tableName);
     params.put("companyId", companyId);
-    return sqlCache.get("dataView.getDataView", params, DataView.class);
+    return sqlCache.get("dataView.getDataView", params, new DataViewMapper<>(DataView.class, om));
   }
 
-  public Optional<DataView> saveDataView(DataView dataView) {
+  public Optional<DataView> saveDataView(DataView dataView) throws SQLException {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    params.put("companyProcessIds", sqlArrayService.createSqlArrayOfType("int", dataView.getCompanyProcessIds()));
     params.put("displayName", dataView.getDisplayName());
     params.put("userId", user.trueUserId());
     Long id;
     if(null != dataView.getId()) {
       id= dataView.getId();
       params.put("id", id);
+
       sqlCache.update("dataView.update", params);
+      //if this is an update then the "companyProcessIds" will only include any changes that need to be saved
     } else {
       params.put("viewName", dataView.getViewName());
 
@@ -80,26 +85,27 @@ public class DataViewService {
     Map<String, Object> params = new HashMap<>();
     params.put("viewId", viewId);
     params.put("fieldId", fieldId);
+    params.put("displayName", childField.getDisplayName());
     params.put("fieldToUpdate", childField.getFieldToUpdate());
     params.put("uniqueBehaviorTypeId", childField.getUniqueBehaviorTypeId());
     params.put("dataTypeId", childField.getDataTypeId());
     params.put("userId", user.trueUserId());
 
-    //todo validate that fieldToUpdate is not one of the default fields to update
-    Boolean invalid = fieldConflictWithDefault(childField.getFieldToUpdate());
+    //we cant remember why we put this in. but leaving here in case we remember
+    //Boolean invalid = fieldConflictWithDefault(childField.getFieldToUpdate());
 
-    if(!invalid) {
+//    if(!invalid) {
       Long id = sqlCache.updateReturningId("dataView.addChildFieldConfig", params, "id").longValue();
 
       params.put("id", id);
       sqlCache.query("dataView.addChildColumnToTable", params, String.class);
       return getDataViewChildFieldConfig(id);
-    } else {
-      throw new ResponseStatusException(
-        HttpStatus.BAD_REQUEST,
-        "ERROR: This Field to Update is Reserved by a Default Field",
-        new Exception());
-    }
+//    } else {
+//      throw new ResponseStatusException(
+//        HttpStatus.BAD_REQUEST,
+//        "ERROR: This Field to Update is Reserved by a Default Field",
+//        new Exception());
+//    }
 
 
   }
@@ -124,11 +130,13 @@ public class DataViewService {
       params.put("id", id);
       sqlCache.update("dataView.updateFieldConfig", params);
     } else {
-      Boolean invalid = fieldConflictWithDefault(field.getFieldToUpdate());
+      //we cant remember why we put this in. but leaving here in case we remember
+      //Boolean invalid = fieldConflictWithDefault(field.getFieldToUpdate());
 
-      if(!invalid) {
+//      if(!invalid) {
         params.put("defaultFieldId", field.getDefaultFieldId());
         params.put("processStepEventId", field.getProcessStepEventId());
+        params.put("processStepId", field.getProcessStepId());
         params.put("customFieldGroupAssignmentId", field.getCustomFieldGroupAssignmentId());
         params.put("fieldToUpdate", field.getFieldToUpdate());
         params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
@@ -139,12 +147,12 @@ public class DataViewService {
         HashMap<String, Object> params2 = new HashMap<>();
         params2.put("id", id);
         sqlCache.query("dataView.addColumnToTable", params2, String.class);
-      } else {
-        throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "ERROR: This Field to Update is Reserved by a Default Field",
-          new Exception());
-      }
+//      } else {
+//        throw new ResponseStatusException(
+//          HttpStatus.BAD_REQUEST,
+//          "ERROR: This Field to Update is Reserved by a Default Field",
+//          new Exception());
+//      }
     }
 
     return getDataViewFieldConfig(id);
@@ -186,10 +194,22 @@ public class DataViewService {
   }
 
   public List<ProcessStepEvent> getAvailablePsEventsForDefaultField(Long viewId, Long defaultFieldId) {
+    User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("viewId", viewId);
+    params.put("companyId", user.getCompanyId());
     params.put("defaultFieldId", defaultFieldId);
     List<ProcessStepEvent> result = sqlCache.query("dataView.getAvailablePsEventsForDefaultField", params, ProcessStepEvent.class);
+    return result;
+  }
+
+  public List<ProcessStep> getAvailablePsForDefaultField(Long viewId, Long defaultFieldId) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("viewId", viewId);
+    params.put("companyId", user.getCompanyId());
+    params.put("defaultFieldId", defaultFieldId);
+    List<ProcessStep> result = sqlCache.query("dataView.getAvailablePsForDefaultField", params, ProcessStep.class);
     return result;
   }
 
@@ -213,6 +233,18 @@ public class DataViewService {
         List.class,
         "dataViewFieldConfigs",
         new JsonCollectionDeserializer(fieldConfigsRef, objectMapper));
+
+      TypeReference<List<Long>> companyProcessIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "companyProcessIds",
+        new JsonCollectionDeserializer(companyProcessIdsRef, objectMapper));
+
+      TypeReference<List<CompanyProcess>> companyProcessesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "companyProcesses",
+        new JsonCollectionDeserializer(companyProcessesRef, objectMapper));
     }
   }
 

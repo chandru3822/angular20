@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newDataView = {}]" v-if="is7oaksAdmin">
+            <v-btn text @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]" v-if="is7oaksAdmin">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -22,12 +22,20 @@
             <v-text-field text v-model="newDataView.viewName"
                           :rules="tableNameRule"
                           label="Table Name (all lower case, underscores instead of spaces)" />
+              <v-select label="Company Processes"
+                        v-model="selectedCompanyProcesses"
+                        :items="companyProcesses"
+                        item-text="processName"
+                        placeholder="Select"
+                        multiple
+                        return-object>
+              </v-select>
             </v-form>
           </div>
           <div class="mb-3 error--text" v-if="saveError">
             {{saveErrorMsg}}
           </div>
-          <v-btn :disabled="!newDataView.displayName || !newDataView.viewName"
+          <v-btn :disabled="!newDataView.displayName || !newDataView.viewName || selectedCompanyProcesses.length === 0"
                  color="primaryCustom" class="white--text mr-2"
                  @click="validateForm(newDataView, true)">
             Save
@@ -87,6 +95,8 @@
         saveError: false,
         saveErrorMsg: '',
         dataViews: [],
+        companyProcesses: [],
+        selectedCompanyProcesses: [],
         requiredRules: constants.BASIC_REQUIRED_RULE,
         is7oaksAdmin: this.$store.getters.isFullAdmin,
         tableNameRule: [
@@ -95,7 +105,7 @@
           v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
           v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
           v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
-          v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start and end with a letter"
+          v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Table Name must be all lowercase, no symbols except '_' and must start and end with a letter"
         ],
         newDataView: {},
         userId: this.$store.state.user.details.id,
@@ -111,6 +121,19 @@
       this.getDataViews()
     },
     methods: {
+      async getCompanyProcesses() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/processes`)
+          this.companyProcesses = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error loading processes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       validateForm(view, isNew) {
         this.saveError = false
         let match = this.dataViews?.find(dv => dv.viewName === view.viewName)
@@ -127,10 +150,12 @@
       async saveDataView(dv, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          dv.companyProcessIds = this.selectedCompanyProcesses.map(cp => cp.id)
           const {data, status} = await postRequest(`/dataView`, dv)
           if(isNew){
             this.dataViews.push(data)
             this.addNew = false
+            this.selectedCompanyProcesses = []
             this.newDataView = {}
             this.snackbar = getSnackbar('SUCCESS', 'Data View Added')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

@@ -17,6 +17,10 @@ public class DataView {
   private String viewName, displayName;
   private Boolean archived;
   private List<DataViewFieldConfig> dataViewFieldConfigs;
+  private List<Long> companyProcessIds;
+  private List<CompanyProcess> companyProcesses;
 
+  //only used for saving differences
+  private List<Long> editedCompanyProcessIds;
 }
 

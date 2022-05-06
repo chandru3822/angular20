@@ -14,8 +14,8 @@ import java.util.List;
 public class DataViewFieldConfig {
 
   private Long id, fieldConfigId, defaultFieldId, customFieldGroupAssignmentId,
-    updateFirstValueOnlyId, processStepEventId, dataTypeId, objectTypeId;
-  private String fieldToUpdate, fieldName, displayName, columnName, propertyName, parentObjectName, processStepEventName;
+    updateFirstValueOnlyId, processStepEventId, processStepId, dataTypeId, objectTypeId;
+  private String fieldToUpdate, fieldName, displayName, columnName, propertyName, parentObjectName, processStepName, processStepEventName;
   private Boolean archived, watchedByTrigger, updateFirstValueOnly, resetOnNew;
   private List<DataViewChildFieldConfig> childFieldConfigs;
 

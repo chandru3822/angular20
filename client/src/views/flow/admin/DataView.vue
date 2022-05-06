@@ -4,23 +4,46 @@
       <v-col class="shrink" cols="12">
         <div class="flex-display pt-3 px-3 mb-4 one-hunned">
           <div class="one-hunned pl-3">
-            <span class="page-title" v-if="!editName">{{ dataView.displayName }}</span>
+            <span class="page-title" v-if="!edit">{{ dataView.displayName }}</span>
             <v-text-field v-else color="primaryCustom"
                           v-model="dataView.displayName"
                           label="Display Name"></v-text-field>
             <div>
               <label class="mt-4">Table Name: {{ dataView.viewName }}</label>
+              <div>
+                <label class="mt-4">Company Processes:</label>
+                <span v-if="!edit">
+                  <span v-for="(cp, idx) in dataView.companyProcesses">
+                    {{ cp.processName }}
+                    <span v-if="idx !== dataView.companyProcesses.length - 1">,</span>
+                  </span>
+                </span>
+                <div v-else>
+                  <v-autocomplete
+                    v-model="dataView.companyProcesses"
+                    :items="companyProcesses"
+                    label="Company Processes"
+                    attach
+                    multiple
+                    item-text="processName"
+                    return-object
+                  ></v-autocomplete>
+                  <br>{{this.oldCompanyProcessIds}}
+                  <br>{{this.oldCompanyProcesses}}
+                </div>
+              </div>
             </div>
           </div>
           <div class="text-right">
-            <v-btn text v-if="!editName" class=""
-                   @click="[oldName = dataView.displayName, editName = !editName]">
+            <v-btn text v-if="!edit" class=""
+                   @click="[oldName = dataView.displayName, edit = !edit, getCompanyProcesses()]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else @click="[editName = false, saveDataView()]">
+            <v-btn text class="" v-else :disabled="dataView.companyProcesses.length === 0"
+                   @click="[edit = false, saveDataView()]">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text v-if="editName" class="" @click="[dataView.displayName = oldName, editName = !editName]">
+            <v-btn text v-if="edit" class="" @click="[dataView.displayName = oldName, edit = !edit, fixData()]">
               cancel
             </v-btn>
           </div>
@@ -37,7 +60,7 @@
             hide-details
           ></v-text-field>
           <v-btn text class="d-inline-block" v-if="!addNew"
-                 @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">
+                 @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">
             <v-icon v-if="constants.IS_MOBILE">add</v-icon>
             <span v-else>{{ addNew ? 'Cancel' : 'Add New Field' }}</span>
           </v-btn>
@@ -65,20 +88,29 @@
                 :items="defaultFields"
                 label="Default Field"
                 attach
-                @change="[getProcessStepEventData(), setObjectTypeId(selectedDefaultField)]"
+                @change="[getProcessStepEventData(), getProcessStepData(), setObjectTypeId(selectedDefaultField)]"
                 item-text="fieldName"
                 return-object></v-autocomplete>
               <v-autocomplete
-                    v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
-                    v-model="newField.processStepEventId"
-                    :items="processStepEvents"
-                    label="Process Step Event"
-                    attach
-                    item-text="eventName"
-                    item-value="id">
+                v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
+                v-model="newField.processStepEventId"
+                :items="processStepEvents"
+                label="Process Step Event"
+                attach
+                item-text="eventName"
+                item-value="id">
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.processStepName }} - {{ item.eventName }}
                 </template>
+              </v-autocomplete>
+              <v-autocomplete
+                v-else-if="selectedDefaultField && selectedDefaultField.objectTypeId === 4"
+                v-model="newField.processStepId"
+                :items="processSteps"
+                label="Process Step Here FACE"
+                attach
+                item-text="processStepName"
+                item-value="id">
               </v-autocomplete>
               <v-autocomplete v-if="fieldType === 2"
                               v-model="cfgaParentObject"
@@ -124,7 +156,8 @@
                 />
 
                 <br/>
-                <span class="mr-3">Reset on New {{ selectedObjectTypeId === 4 ? 'Main Process Step?' : 'Event?'}}</span>
+                <span
+                  class="mr-3">Reset on New {{ selectedObjectTypeId === 4 ? 'Main Process Step?' : 'Event?' }}</span>
                 <input
                   :disabled="newField.updateFirstValueOnly"
                   type="checkbox"
@@ -132,14 +165,16 @@
                 />
               </div>
             </v-form>
+            ot: {{selectedDefaultField.objectTypeId}}
+            psId: {{newField.processStepId}}
             <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
-                              || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId)"
+                              || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
                    color="primaryCustom" class="white--text mr-2"
                    @click="validateFields(newField, true)">
               Save
             </v-btn>
             <v-btn
-              @click="[addNew = !addNew, newField = { processStepEventId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]">
+              @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]">
               Cancel
             </v-btn>
           </div>
@@ -181,19 +216,26 @@
               <v-text-field text v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
               <v-text-field v-if="item.defaultFieldId"
-                label="Default Field"
-                disabled readonly
-                v-model="item.fieldName"
+                            label="Default Field"
+                            disabled readonly
+                            v-model="item.fieldName"
               ></v-text-field>
               <v-text-field v-if="item.customFieldGroupAssignmentId"
                             label="Parent Object"
                             disabled readonly
                             v-model="item.parentObjectName"
               ></v-text-field>
-              <v-text-field v-if="item.processStepEventId || (item.customFieldGroupAssignmentId && item.objectTypeId === 6)"
-                            label="Process Step Event"
-                            disabled readonly
-                            v-model="item.processStepEventName"
+              <v-text-field
+                v-if="item.processStepId || (item.customFieldGroupAssignmentId && item.objectTypeId === 4)"
+                label="Process Step"
+                disabled readonly
+                v-model="item.processStepName"
+              ></v-text-field>
+              <v-text-field
+                v-if="item.processStepEventId || (item.customFieldGroupAssignmentId && item.objectTypeId === 6)"
+                label="Process Step Event"
+                disabled readonly
+                v-model="item.processStepEventName"
               ></v-text-field>
               <v-text-field v-if="item.customFieldGroupAssignmentId"
                             label="Custom Field"
@@ -210,7 +252,10 @@
                 />
 
                 <br/>
-                <span class="mr-3 disabled-label">Reset on New {{ item.objectTypeId === 4 ? 'Main Process Step?' : 'Event?'}}</span>
+                <span
+                  class="mr-3 disabled-label">Reset on New {{
+                    item.objectTypeId === 4 ? 'Main Process Step?' : 'Event?'
+                  }}</span>
                 <input
                   disabled readonly
                   type="checkbox"
@@ -231,6 +276,9 @@
 
                 <div v-if="addChild">
                   <v-form ref="childFieldForm">
+                    <v-text-field text v-model="childField.displayName"
+                                  :rules="requiredRules"
+                                  label="Display Name"/>
                     <v-text-field text v-model="childField.fieldToUpdate"
                                   :rules="fieldToUpdateRule"
                                   label="Child Field to Update"/>
@@ -275,6 +323,7 @@
                 >
                   <template #item="{ item: childField }">
                     <tr class="text-left" :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
+                      <td class="text-left">{{ childField.displayName }}</td>
                       <td class="text-left">{{ childField.fieldToUpdate }}</td>
                       <td class="text-left">{{ childField.dataType }}</td>
                       <td class="text-left">
@@ -314,6 +363,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import cloneDeep from 'lodash.clonedeep'
 
 export default {
   name: 'DataView',
@@ -326,6 +376,7 @@ export default {
       selectedObjectTypeId: null,
       addChild: false,
       childFieldHeaders: [
+        {text: 'Field Name', value: 'displayName', show: true},
         {text: 'Field To Update', value: 'fieldToUpdate', show: true},
         {text: 'Data Type', value: 'dataType', show: true},
         {text: 'Unique Behavior Type', value: 'uniqueBehaviorType', show: true},
@@ -345,15 +396,19 @@ export default {
       uniqueBehaviorTypes: [],
       dataTypes: [],
       expanded: [],
-      editName: false,
+      edit: false,
       oldName: null,
       defaultFields: [],
       processStepEvents: [],
+      processSteps: [],
       cfgaParentObject: {},
       parentObjects: [],
       parentProcessStepEvent: {},
       parentProcessStepEvents: [],
       customFields: [],
+      companyProcesses: [],
+      oldCompanyProcessIds: [],
+      oldCompanyProcesses: [],
       constants,
       search: '',
       addNew: false,
@@ -376,14 +431,29 @@ export default {
     this.getParentObjects()
   },
   methods: {
+    async getCompanyProcesses() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/processes`)
+        this.companyProcesses = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error loading processes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     setObjectTypeId(field) {
       this.selectedObjectTypeId = field.objectTypeId
     },
     async saveDataView() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.dataView.companyProcessIds = this.dataView.companyProcesses.map(cp => cp.id)
         const {data, status} = await postRequest(`/dataView`, this.dataView)
-
+        this.oldCompanyProcessIds = cloneDeep(this.dataView.companyProcessIds)
+        this.oldCompanyProcesses = cloneDeep(this.dataView.companyProcesses)
         this.snackbar = getSnackbar('SUCCESS', 'Data View Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -403,12 +473,13 @@ export default {
       this.newField.updateFirstValueOnly = false
       this.cfgaParentObject = {}
       this.newField.processStepEventId = null
+      this.newField.processStepId = null
     },
     validateFields(field, isNew) {
       let valid = this.$refs.fieldConfigForm?.validate()
 
       //if they had set one of these as true but then changed the field type to a different type then reset the values here
-      if(![4,6].includes(this.selectedObjectTypeId)) {
+      if (![4, 6].includes(this.selectedObjectTypeId)) {
         this.newField.updateFirstValueOnly = false
         this.newField.resetOnNew = false
       }
@@ -476,15 +547,15 @@ export default {
     },
     async loadProcessStepEvents() {
       //only load this data if the parent was a process step
-      if(this.cfgaParentObject?.isProcessStep) {
+      if (this.cfgaParentObject?.isProcessStep) {
         this.parentProcessStepEvent = {}
         this.parentProcessStepEvents = []
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-            const {data, status} = await getRequest(`/processStep/${this.cfgaParentObject?.id}/event`)
-            this.parentProcessStepEvents = data
-          console.log('randaLogger',data)
-            handleHidingGlobalLoader(this, status)
+          const {data, status} = await getRequest(`/processStep/${this.cfgaParentObject?.id}/event`)
+          this.parentProcessStepEvents = data
+          console.log('randaLogger', data)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -498,8 +569,11 @@ export default {
       this.customFields = []
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        if(isEvent) {
-          const {data, status} = await getRequest(`/customField/getByProcessStepEvent/${this.parentProcessStepEvent?.id}`)
+        if (isEvent) {
+          const {
+            data,
+            status
+          } = await getRequest(`/customField/getByProcessStepEvent/${this.parentProcessStepEvent?.id}`)
           this.customFields = data
           handleHidingGlobalLoader(this, status)
         } else if (this.cfgaParentObject?.isProcessStep) {
@@ -537,6 +611,7 @@ export default {
     },
     async getProcessStepEventData() {
       this.newField.processStepEventId = null
+      this.newField.processStepId = null
       this.processStepEvents = []
       if (this.selectedDefaultField?.objectTypeId === 6) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -546,6 +621,26 @@ export default {
             status
           } = await getRequest(`/dataView/${this.viewId}/defaultFieldPsEvents/${this.selectedDefaultField.id}`)
           this.processStepEvents = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async getProcessStepData() {
+      this.newField.processStepId = null
+      this.processSteps = []
+      if (this.selectedDefaultField?.objectTypeId === 4) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {
+            data,
+            status
+          } = await getRequest(`/dataView/${this.viewId}/defaultFieldPs/${this.selectedDefaultField.id}`)
+          this.processSteps = data
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -570,11 +665,17 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    fixData() {
+      this.dataView.companyProcesses = cloneDeep(this.oldCompanyProcesses)
+      this.dataView.companyProcessIds = cloneDeep(this.oldCompanyProcessIds)
+    },
     async getDataView() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/dataView/${this.viewId}`)
         this.dataView = data
+        this.oldCompanyProcessIds = cloneDeep(data?.companyProcessIds)
+        this.oldCompanyProcesses = cloneDeep(data?.companyProcesses)
         this.viewLoaded = true
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -591,7 +692,7 @@ export default {
         field.defaultFieldId = this.selectedDefaultField.id
 
         //if it was a cfga id for a pse we need to add this here
-        if(this.parentProcessStepEvent && this.parentProcessStepEvent.id) {
+        if (this.parentProcessStepEvent && this.parentProcessStepEvent.id) {
           field.processStepEventId = this.parentProcessStepEvent.id
         }
 
@@ -600,7 +701,7 @@ export default {
           this.dataView.dataViewFieldConfigs.push(data)
           this.addNew = false
           this.selectedDefaultField = {}
-          this.newField = {processStepEventId: null, customFieldGroupAssignmentId: null}
+          this.newField = {processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}
           this.defaultFields = []
           this.snackbar = getSnackbar('SUCCESS', 'New Field Config Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
