@@ -84,6 +84,7 @@ export default {
       const { data } = await getRequestWithParams(`/proposal/${proposalId}/template`, {}, 'blueraven', {})
       commit('setTemplate', { template: data?.blocks, theme: data?.theme?.themeStyle })
     },
+    //TODO: handle errors better
     [ProposalActions.SAVE_TEMPLATE]: async ({ commit, state, getters }) => {
       const modifiedBlocks = getters.modifiedBlocks
       if (modifiedBlocks.length > 0) {

@@ -59,18 +59,18 @@ public class SetterDashboardController {
   }
 
   @GetMapping(value = "/topReps")
-  public String topReps(@RequestParam int limit, @RequestParam int days) {
-    return setterDashboardService.topReps(limit, days);
+  public String topReps(@RequestParam int limit, @RequestParam int days, @RequestParam String interval) {
+    return setterDashboardService.topReps(limit, days, interval);
   }
 
   @GetMapping(value = "/topOffices")
-  public String topOffices(@RequestParam int limit, @RequestParam int days) {
-    return setterDashboardService.topOffices(limit, days);
+  public String topOffices(@RequestParam int limit, @RequestParam int days, @RequestParam String interval) {
+    return setterDashboardService.topOffices(limit, days, interval);
   }
 
   @GetMapping(value = "/officeRanking")
-  public String officeRanking(@RequestParam int limit, @RequestParam int days) {
-    return setterDashboardService.officeRanking(limit, days);
+  public String officeRanking(@RequestParam int limit, @RequestParam int days, @RequestParam String interval) {
+    return setterDashboardService.officeRanking(limit, days, interval);
   }
 
   @PostMapping(value = "/getAreas")

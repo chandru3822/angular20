@@ -309,5 +309,14 @@ where pr.id = :proposalId
   and pr.archived is false
   ]]></proposal.getCalculatedProposalValues>
 
+  <proposal.getAttachments><![CDATA[
+select a.id as id, a.attachment_type_id, a.uuid
+from flow.project_process_step_attachment ppsa
+         inner join flow.attachment a on a.id = ppsa.attachment_id
+         inner join brs.proposal p on p.project_process_step_id = ppsa.project_process_step_id
+where p.id = :proposalId
+  and ppsa.archived is false
+  ]]></proposal.getAttachments>
+
 
 </sql>

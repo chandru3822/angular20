@@ -1,6 +1,8 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +47,7 @@ public class BlueravenProposalService {
   private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
   private final AttachmentService attachmentService;
+  private final PropertiesConfiguration propertiesConfiguration;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
     HashMap<String, Object> params = new HashMap<>();
@@ -166,12 +170,48 @@ public class BlueravenProposalService {
   public Map<String, Object> getCalculatedProposalValues(
       @NonNull Long proposalId, boolean insertPropLogHistory) {
 
+    final Optional<Proposal> proposal = getProposal(proposalId);
+    if (proposal.isEmpty()) {
+      throw new NotFoundException("Proposal id=%s does not exist".formatted(proposalId));
+    }
 
-    final Map<String, Object> context = sqlCache.queryForMap(
-      "proposal.getCalculatedProposalValues",
-      Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
+    final Map<String, Object> context =
+        sqlCache.queryForMap(
+            "proposal.getCalculatedProposalValues",
+            Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
+
+    final Map<String, Object> proposalAttachments =
+        getProposalAttachments(proposalId).stream()
+            .collect(
+                Collectors.toMap(
+                    this::mapAttachmentTypeToProposalType,
+                    attachment ->
+                        "%s/public/attachment/%s/%s"
+                            .formatted(
+                                propertiesConfiguration.getApplicationHostUrl(),
+                                attachment.getId(),
+                                attachment.getUuid())));
+
+    context.putAll(proposalAttachments);
 
     return context;
+  }
+
+  private String mapAttachmentTypeToProposalType(Attachment attachment) {
+    if (attachment.getAttachmentTypeId() == 936) {
+      return "2D_PROPOSAL_IMAGE";
+    }
+
+    if (attachment.getAttachmentTypeId() == 937) {
+      return "3D_PROPOSAL_IMAGE";
+    }
+
+    return "UNKNOWN";
+  }
+
+  private List<Attachment> getProposalAttachments(@NonNull Long proposalId) {
+    return sqlCache.query(
+        "proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class);
   }
 
   public static class ProposalDesignMapper<T> extends BeanPropertyRowMapper<T> {

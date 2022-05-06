@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PropertiesConfiguration {
 
+  @Value("${app.host}")
+  private String applicationHostUrl;
+
   @Value("${application.name}")
   String applicationName;
 
