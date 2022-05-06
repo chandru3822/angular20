@@ -28,8 +28,6 @@
                     item-text="processName"
                     return-object
                   ></v-autocomplete>
-                  <br>{{this.oldCompanyProcessIds}}
-                  <br>{{this.oldCompanyProcesses}}
                 </div>
               </div>
             </div>

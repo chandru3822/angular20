@@ -57,7 +57,6 @@ public class DataViewService {
       params.put("id", id);
 
       sqlCache.update("dataView.update", params);
-      //if this is an update then the "companyProcessIds" will only include any changes that need to be saved
     } else {
       params.put("viewName", dataView.getViewName());
 
