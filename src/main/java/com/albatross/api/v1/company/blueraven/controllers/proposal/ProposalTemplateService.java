@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 import com.albatross.api.config.AppProperties;
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.convert.JsonObjectDeserializer;
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
@@ -224,7 +225,10 @@ public class ProposalTemplateService {
       .accept(MediaType.APPLICATION_PDF)
       .body(BodyInserters.fromFormData("html", generatedHtml))
       .retrieve()
-      .bodyToFlux(DataBuffer.class);
+      .bodyToFlux(DataBuffer.class)
+        .doOnError((e)->{
+          throw new ApiException("Error processing PDF");
+        });
 
     DataBufferUtils.write(pdf, outputStream).blockLast();
   }
@@ -300,9 +304,7 @@ public class ProposalTemplateService {
       super.initBeanWrapper(bw);
 
       final TypeReference<ProposalTheme> proposalThemeTypeReference = new TypeReference<>() {};
-      final TypeReference<List<ProposalTemplateBlock>> blockTypeReference =
-          new TypeReference<>() {};
-
+      final TypeReference<List<ProposalTemplateBlock>> blockTypeReference = new TypeReference<>() {};
       bw.registerCustomEditor(
           ProposalTheme.class,
           "theme",
