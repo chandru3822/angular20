@@ -27,15 +27,7 @@ BEGIN
       if p_in_ppscfv > 1 then
         v_value = $$ps_$$||p_in_ppscfv||$$.$$;
       end if;
-      p_sql = p_sql ||$$ppscfv.$$|| case
-                         when z.data_type_id = 1 then 'date_value'
-                         when z.data_type_id = 2 then 'timestamp_value'
-                         when z.data_type_id = 3 then 'boolean_value'
-                         when z.data_type_id = 4 then 'numeric_value'
-                         when z.data_type_id = 5 then 'text_value'
-                         when z.data_type_id = 6 then 'int_value'
-                         when z.data_type_id = 7 then 'int_array_value'
-                         when z.data_type_id in (8, 9) then 'int_value' end || $$ as $$ || z.field_to_update || $$,$$;
+      p_sql = p_sql ||$$ppscfv.$$|| flow.get_value_based_on_data_type(z.data_type_id) || $$ as $$ || z.field_to_update || $$,$$;
 
       p_text_array_alias_columns =
         array_append(p_text_array_alias_columns, (v_value || z.field_to_update)::character varying);
@@ -60,14 +52,7 @@ BEGIN
           p_text_array_columns  = array_append(p_text_array_columns , x.field_to_update);
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
-          p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,$$ || case when z.data_type_id = 1 then 'date_value'
-                                                                         when z.data_type_id = 2 then 'timestamp_value'
-                                                                         when z.data_type_id = 3 then 'boolean_value'
-                                                                         when z.data_type_id = 4 then 'numeric_value'
-                                                                         when z.data_type_id = 5 then 'text_value'
-                                                                         when z.data_type_id = 6 then 'int_value'
-                                                                         when z.data_type_id = 7 then 'int_array_value'
-                                                                         when z.data_type_id in (8, 9) then 'int_value' end ||
+          p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,$$ || flow.get_value_based_on_data_type(z.data_type_id) ||
                                                                           $$, ppscfv.id)::$$ || x.data_type ||
                                                                           $$ as $$ || x.field_to_update || $$,$$;
         end loop;
@@ -77,7 +62,10 @@ BEGIN
                         inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id
                           and ppscfv.custom_field_group_assignment_id =  $$ || z.custom_field_group_assignment_id || $$
                           inner join flow.project p on p.id = pps.project_id
-                          where p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
+                          where case when $$||z.reset_on_new||$$ is false and
+                                $$||z.update_first_value_only||$$  is false then ppscfv.$$||flow.get_value_based_on_data_type(z.data_type_id)||
+                                $$ is not null else 1=1 end and
+                                p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
                           order by pps.project_id $$||v_order||$$ ), $$;
 
 END

@@ -1325,11 +1325,6 @@ insert into flow.default_field(field_name, column_name, property_name, data_type
 values('Process Step Complete Date','process_step_complete_date','processStepCompleteDate',2,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
        now(),2350555,true);
 
-insert into flow.default_field(field_name, column_name, property_name, data_type_id,
-                               object_type_id, date_created, created_by_id,
-                               watched_by_trigger)
-values('Process Step Complete Date','process_step_complete_date','processStepCompleteDate',2,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
-       now(),2350555,true);
 
 insert into flow.default_field(field_name, column_name, property_name, data_type_id,
                                object_type_id, date_created, created_by_id,
