@@ -454,8 +454,6 @@
               }}, null, [])
             data?.forEach(sched => {
               sched?.resourceScheduleAvailability?.forEach(day => {
-                console.log('randaLogger S',day.startTime)
-                console.log('randaLogger E',day.endTime)
                 //if the day was saved during DST, but now is NOT DST, then subtract an hour
                 if(day.daylightSavings && !this.currentlyInDST) {
                   day.startTime = day.startTime == null ? null : moment.utc(day.startTime, 'HH:mm:ss').add(1, 'h').format('HH:mm:ss')
@@ -465,8 +463,6 @@
                   day.startTime = day.startTime == null ? null : moment.utc(day.startTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
                   day.endTime = day.endTime == null ? null : moment.utc(day.endTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
                 }
-                console.log('randaLogger S',day.startTime)
-                console.log('randaLogger E',day.endTime)
               })
             })
             this.schedules = data
