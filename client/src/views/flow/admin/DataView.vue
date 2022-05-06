@@ -105,7 +105,7 @@
                 v-else-if="selectedDefaultField && selectedDefaultField.objectTypeId === 4"
                 v-model="newField.processStepId"
                 :items="processSteps"
-                label="Process Step Here FACE"
+                label="Process Step"
                 attach
                 item-text="processStepName"
                 item-value="id">
@@ -163,8 +163,6 @@
                 />
               </div>
             </v-form>
-            ot: {{selectedDefaultField.objectTypeId}}
-            psId: {{newField.processStepId}}
             <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
                               || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
                    color="primaryCustom" class="white--text mr-2"
