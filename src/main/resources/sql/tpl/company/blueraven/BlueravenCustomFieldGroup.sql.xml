@@ -98,8 +98,6 @@
     where cfg.id = :id
   ]]></blueravenCustomFieldGroup.assignment.getOne>
 
-
-
   <blueravenCustomFieldGroup.assignment.deleteFieldFromGroup><![CDATA[
     update brs.custom_field_group_assignment
       set archived = true,
