@@ -63,7 +63,7 @@ BEGIN
                          and pd.closer_user_id = p_user_id
                          and pd.final_design_complete_date between p_start_date and p_end_date
                          and (ccfv.boolean_value is true
-                         or pd.source = 523)
+                         or pd.source in  (523,20016))
                          AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
                              '2022-03-01'::date) * 5))) as cnt;
       when p_tournament_formula_id = 2 then
