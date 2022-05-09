@@ -74,8 +74,8 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
+    User currentUser = securityService.getCurrentUser();
     try {
-      User currentUser = securityService.getCurrentUser();
       for (CustomFieldValue cfv : values) {
         //if the field came here it was dirty and should always be saved
         HashMap<String, Object> params = new HashMap<>();
@@ -98,7 +98,7 @@ public class CustomFieldValueService {
       }
       return getCustomFieldGroupsAndValues(objectType, sourceId);
     } catch (Exception e) {
-      log.error("CFV: error saving value");
+      log.error("CFV: error saving value: {}, save by: {}, for sourceId: {}, for objectType: {}", e.getMessage(), currentUser.getId(), sourceId, objectType);
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
   }
