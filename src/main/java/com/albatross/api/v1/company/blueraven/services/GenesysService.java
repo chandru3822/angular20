@@ -238,6 +238,7 @@ public class GenesysService {
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
     contactMap.put("date_created", formatter.format(calendar.getTime()));
     contactMap.put("priority", "true");
+    contactMap.put("doNotQueue", "false");
 
     addTextelParameters(contactMap, false);
 
@@ -345,6 +346,7 @@ public class GenesysService {
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
     contactMap.put("date_created", formatter.format(calendar.getTime()));
     contactMap.put("priority", "true");
+    contactMap.put("doNotQueue", "false");
 
     addTextelParameters(contactMap, true);
 
