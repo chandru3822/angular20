@@ -152,57 +152,78 @@ alter table flow.default_field
 alter table flow.unique_behavior_type add column if not exists description text;
 
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-(select 'EVENT_RESOURCE_TRIGGER','Returns an Org Name or User Name for the Resource of an Event',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+(select 'EVENT_RESOURCE_TRIGGER','Returns an Org Name or User Name for the Resource of an Event',now(),2350555,true
   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'STATE_FIELD_TRIGGER','Returns the name of the State',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'STATE_FIELD_TRIGGER','Returns the name of the State',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'STATE_FIELD_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'COUNTRY_FIELD_TRIGGER','Returns the name of the Country',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'COUNTRY_FIELD_TRIGGER','Returns the name of the Country',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'COUNTRY_FIELD_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'STATE_ABBREV_FIELD_TRIGGER','Returns the abbreviation for a State',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'STATE_ABBREV_FIELD_TRIGGER','Returns the abbreviation for a State',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'STATE_ABBREV_FIELD_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'USER_POSITION_NAME_BY_ID_TRIGGER','Returns the first and last name for a user position record',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_POSITION_NAME_BY_ID_TRIGGER','Returns the first and last name for a user position record',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'USER_POSITION_ID_TRIGGER','Returns the user ID for a user position record',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_POSITION_ID_TRIGGER','Returns the user ID for a user position record',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_ID_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'CONTACT_TYPE_TRIGGER','Returns the contact type record for a contact',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'CONTACT_TYPE_TRIGGER','Returns the contact type record for a contact',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'CONTACT_TYPE_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'PROJECT_STATUS_TRIGGER','Returns the company project status for a project',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROJECT_STATUS_TRIGGER','Returns the company project status for a project',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROJECT_STATUS_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'PROCESS_FIELD_TRIGGER','Returns the process name associated with the project',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROCESS_FIELD_TRIGGER','Returns the process name associated with the project',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROCESS_FIELD_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'USER_NAME_BY_ID_TRIGGER','Returns the first name and last name for a user',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_NAME_BY_ID_TRIGGER','Returns the first name and last name for a user',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_NAME_BY_ID_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'USER_ID_TRIGGER','Return the ID for a user based on a user',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_ID_TRIGGER','Return the ID for a user based on a user',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_ID_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'DEFAULT_CFGA_TRIGGER','Returns default value based on the custom field ID',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'DEFAULT_CFGA_TRIGGER','Returns default value based on the custom field ID',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'DEFAULT_CFGA_TRIGGER'));
 
-insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id)
-  (select 'CONTACT_NAME_BY_ID_TRIGGER','Returns first name and last name for a Contact',now(),2350555
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'CONTACT_NAME_BY_ID_TRIGGER','Returns first name and last name for a Contact',now(),2350555,true
    where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'CONTACT_NAME_BY_ID_TRIGGER'));
+
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROCESS_STEP_STATUS_TRIGGER','Returns process step status for a given project process step',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROCESS_STEP_STATUS_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROCESS_STEP_NAME_TRIGGER','Returns process step name for a given project process step',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROCESS_STEP_NAME_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'EVENT_STATUS_TRIGGER','Returns event status for a given event',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_STATUS_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'EVENT_PROCESS_STEP_TRIGGER','Returns process step name for a given event',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_PROCESS_STEP_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'EVENT_TRIGGER','Returns event name for a given event',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_TRIGGER'));
 
 insert into flow.default_field(field_name, column_name, property_name, data_type_id,
                                object_type_id, date_created, created_by_id,
@@ -1335,4 +1356,7 @@ values('Process Step Cancelled Date','cancelled_date','cancelledDAte',2,(select 
 
 drop trigger if exists pps_update_project_details_trg on flow.project_process_step;
 drop FUNCTION flow.pps_update_project_details();
+
+update flow.custom_field set custom_field_sql_column = 'name'
+where id =392;
 

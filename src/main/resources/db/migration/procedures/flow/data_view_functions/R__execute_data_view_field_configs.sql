@@ -14,15 +14,30 @@ $BODY$
 declare
   v_secondary_records record;
   v_convert_date      boolean default false;
+  v_object_code       varchar;
 BEGIN
   if p_contains_children then
+    select ot.object_code
+    from flow.data_view_field_config dvfc
+           inner join flow.default_field df on dvfc.default_field_id = df.id
+           inner join flow.object_type ot on df.object_type_id = ot.id
+    where dvfc.id = p_dvfc_id
+    union
+    select ot.object_code
+    from flow.data_view_field_config dvfc
+           inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+           inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+           inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+           inner join flow.object_type ot on cot.object_type_id = ot.id
+    where dvfc.id = p_dvfc_id
+    into v_object_code;
 --     raise notice 'p_id = %',p_id;
     for v_secondary_records in
       select dvcvc.field_to_update,
              dvcvc.data_type_id,
              flow.get_prepared_value(dvcvc.data_type_id,
                                      flow.get_unique_behavior_value(ubt.unique_behavior_type,
-                                                                    p_value::integer, p_id)) as value
+                                                                    p_value::integer, p_id,v_object_code)) as value
       from flow.data_view_child_field_config dvcvc
              inner join flow.unique_behavior_type ubt on dvcvc.unique_behavior_type_id = ubt.id
       where data_view_field_config_id = p_dvfc_id

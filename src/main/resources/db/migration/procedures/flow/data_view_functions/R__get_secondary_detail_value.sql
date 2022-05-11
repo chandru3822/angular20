@@ -14,7 +14,7 @@ BEGIN
     from flow.list_of_value
     where id = p_value;
   elsif p_company_system_list_id is not null then
-    select flow.get_system_list_option_value(p_company_system_list_id,p_value)
+    select name from flow.get_system_list_option_value(p_company_system_list_id,p_value)
     into v_value;
   elsif p_custom_field_sql_column is not null then
     execute $$select $$||p_custom_field_sql_column||

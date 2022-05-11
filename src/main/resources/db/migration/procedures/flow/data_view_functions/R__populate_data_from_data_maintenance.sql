@@ -84,7 +84,7 @@ BEGIN
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$uc.$$ || x.field_to_update)::character varying);
           v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,
-                                                              $$ || z.column_name || $$, c.id)::$$ || x.data_type ||
+                                                              $$ || z.column_name || $$, c.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -151,7 +151,7 @@ BEGIN
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$up.$$ || x.field_to_update)::character varying);
           v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,
-                                                              $$ || z.column_name || $$, p.id)::$$ || x.data_type ||
+                                                              $$ || z.column_name || $$, p.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -389,7 +389,7 @@ BEGIN
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
     loop
-    raise notice '5555555';
+
       v_in_pps = v_in_pps + 1;
       call flow.generate_sql_for_pps(z,
                                      v_in_pps,
@@ -410,9 +410,9 @@ BEGIN
 
   FOREACH v_table IN ARRAY v_text_array_tables
     LOOP
-      select left(v_table, 1) || substring(v_table, position('_' in v_table) + 1, 1)
+      select substring(v_table, position(' ' in v_table) + 1)
       into v_alias_value;
-      v_sql = v_sql || $$ inner join $$ || v_table || $$ on o.project_id = $$ || v_alias_value || $$.id$$;
+      v_sql = v_sql || $$ left join $$ || v_table || $$ on o.project_id = $$ || v_alias_value || $$.id$$;
     END LOOP;
   v_sql = v_sql || $$)$$;
 

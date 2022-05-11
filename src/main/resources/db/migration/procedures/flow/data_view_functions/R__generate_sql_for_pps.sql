@@ -13,20 +13,20 @@ declare
 BEGIN
 
       if p_in_event_details > 1 then
-        p_sql = p_sql || $$ update_pps_$$||p_in_event_details||$$ as (select distinct on (pps.project_id) pps.project_id as id,$$;
-        p_text_array_tables = array_append(p_text_array_tables, ($$update_pps_$$||p_in_event_details|| $$ up_$$||p_in_event_details)::character varying);
+        p_sql = p_sql || $$ update_upps_$$||p_in_event_details||$$ as (select distinct on (pps.project_id) pps.project_id as id,$$;
+        p_text_array_tables = array_append(p_text_array_tables, ($$update_upps_$$||p_in_event_details|| $$ uu_$$||p_in_event_details)::character varying);
       elsif z.object_type = 'process_step' and z.process_step_id is not null and (p_sql = '') IS NOT FALSE then
-        p_sql = $$with update_pps as (select distinct on (pps.project_id) pps.project_id as id,$$;
-        p_text_array_tables = array_append(p_text_array_tables, ('update_pps up')::character varying);
+        p_sql = $$with update_upps as (select distinct on (pps.project_id) pps.project_id as id,$$;
+        p_text_array_tables = array_append(p_text_array_tables, ('update_upps uu')::character varying);
       elsif z.object_type = 'process_step' and z.process_step_id is not null and (p_sql = '') IS FALSE and
-            position('update_pps' in p_sql) < 1 then
-        p_sql = p_sql || $$ update_pps as (select distinct on (pps.project_id) pps.project_id as id,$$;
-        p_text_array_tables = array_append(p_text_array_tables, ('update_pps up')::character varying);
+            position('update_upps' in p_sql) < 1 then
+        p_sql = p_sql || $$ update_upps as (select distinct on (pps.project_id) pps.project_id as id,$$;
+        p_text_array_tables = array_append(p_text_array_tables, ('update_upps uu')::character varying);
       end if;
 
-        v_value = $$up.$$;
+        v_value = $$uu.$$;
         if p_in_event_details > 1 then
-          v_value = $$up_$$||p_in_event_details||$$.$$;
+          v_value = $$uu_$$||p_in_event_details||$$.$$;
         end if;
 
       p_sql = p_sql ||$$pps.$$ || z.column_name || $$ as $$ || z.field_to_update || $$,$$;
@@ -56,7 +56,7 @@ BEGIN
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
           p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,
-                                                              $$ || z.column_name || $$, pps.id)::$$ || x.data_type ||
+                                                              pps.$$ || z.column_name || $$, pps.id,$$|| quote_literal('PROCESS_STEP')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -67,7 +67,7 @@ BEGIN
                                 $$||z.update_first_value_only||$$ is false then pps.$$||z.column_name||
             $$ is not null else 1=1 end and pps.process_step_id = $$ || z.process_step_id || $$
                         and p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
-                            order by pps.project_id $$||v_order||$$ ), $$;
+                            order by pps.project_id,pps.date_created $$||v_order||$$ ), $$;
 
 
 

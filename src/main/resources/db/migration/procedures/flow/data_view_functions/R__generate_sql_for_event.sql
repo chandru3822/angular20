@@ -55,7 +55,7 @@ BEGIN
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
           p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,
-                                                              $$ || z.column_name || $$, ppse.id)::$$ || x.data_type ||
+                                                              $$ || z.column_name || $$, ppse.id,$$|| quote_literal('EVENT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -68,7 +68,7 @@ BEGIN
             $$ is not null else 1=1 end and
             ppse.process_step_event_id = $$ || z.process_step_event_id || $$
                         and p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
-                            order by pps.project_id $$||v_order||$$ ), $$;
+                            order by pps.project_id, ppse.date_created $$||v_order||$$ ), $$;
 
 
 
