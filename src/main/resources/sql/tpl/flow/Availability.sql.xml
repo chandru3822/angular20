@@ -270,7 +270,8 @@
 
   <availability.saveUserAppointmentLength><![CDATA[
     update flow.user_company
-      set default_appointment_length = :appointmentLength
+      set default_appointment_length = :appointmentLength,
+          date_modified = now()
     where user_id = :userId
       and company_id = :companyId
   ]]></availability.saveUserAppointmentLength>

@@ -73,7 +73,7 @@ BEGIN
 
   -- set the end_date for selected users on the original_plan, this has to be done first before creating new records
   UPDATE brs.commission_plan_user
-  SET end_date = p_start_date - INTERVAL '1 day'
+  SET end_date = p_start_date - INTERVAL '1 day', date_modified = now()
   WHERE id = ANY(_assignedUserIds);
 
   -- copy over assigned users

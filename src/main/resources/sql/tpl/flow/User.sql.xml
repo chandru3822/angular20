@@ -127,7 +127,8 @@
           date_modified = now()
       where id = :id;
       update flow.user_company uc
-          set home_page_company_feature_id = :homePageCompanyFeatureId
+          set home_page_company_feature_id = :homePageCompanyFeatureId,
+              date_modified = now()
       where uc.company_id = :companyId
         and uc.user_id = :id
     ]]>
@@ -136,7 +137,8 @@
   <user.saveUserHomePage>
     <![CDATA[
       update flow.user_company uc
-          set home_page_company_feature_id = :homePageCompanyFeatureId
+          set home_page_company_feature_id = :homePageCompanyFeatureId,
+              date_modified = now()
       where uc.company_id = :companyId
         and uc.user_id = :userId
     ]]>
@@ -668,10 +670,12 @@
 
   <user.updateDefault><![CDATA[
       update flow.user_company
-        set is_default = false
+        set is_default = false,
+            date_modified = now()
       where user_id = :userId;
       update flow.user_company
-      set is_default = true
+      set is_default = true,
+          date_modified = now()
       where company_id = :companyId
         and user_id = :userId;
   ]]></user.updateDefault>
@@ -689,7 +693,8 @@
 
   <user.deleteUserCompany><![CDATA[
       update flow.user_company
-        set archived = true
+        set archived = true,
+            date_modified = now()
       where user_id = :userId
         and company_id = :companyId
   ]]></user.deleteUserCompany>
