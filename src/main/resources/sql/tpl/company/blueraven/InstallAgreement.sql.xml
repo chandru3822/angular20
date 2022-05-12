@@ -142,7 +142,7 @@
     <installAgreement.setSunlightHashId>
       <![CDATA[
             UPDATE brs.proposal_log_history
-            SET sunlight_hash_id = :sunlightHashId
+            SET sunlight_hash_id = :sunlightHashId, date_modified = now()
             WHERE project_id = :projectId and proposal_nbr = :proposalNbr
               ]]>
     </installAgreement.setSunlightHashId>
@@ -165,7 +165,7 @@
     <installAgreement.setSunpowerUrl>
       <![CDATA[
               UPDATE brs.proposal_log_history
-              SET sunpower_url = :url
+              SET sunpower_url = :url, date_modified = now()
               WHERE project_id = :projectId and proposal_nbr = :proposalNbr
                 ]]>
     </installAgreement.setSunpowerUrl>

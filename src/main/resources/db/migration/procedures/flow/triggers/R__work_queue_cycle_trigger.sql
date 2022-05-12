@@ -127,14 +127,16 @@ BEGIN
           update flow.work_queue_cycle
           set company_process_step_status_type_id                      = new.company_process_step_status_type_id,
               process_step_work_queue_type_process_step_status_type_id = v_pswqtpsst_id,
-              modified_by_id                                           = new.modified_by_id
+              modified_by_id                                           = new.modified_by_id,
+              date_modified = now()
           where id = v_old.id;
         else
           /*update the old records that have left the queue that aren't associated with a new work queue based
             on the new status change.*/
           update flow.work_queue_cycle
           set date_exited_queue = now(),
-              modified_by_id    = new.modified_by_id
+              modified_by_id    = new.modified_by_id,
+              date_modified = now()
           where id = v_old.id;
         end if;
       end loop;
@@ -191,7 +193,8 @@ BEGIN
   if new.archived is true then
     update flow.work_queue_cycle wqc
     set date_exited_queue = now(),
-        modified_by_id    = new.modified_by_id
+        modified_by_id    = new.modified_by_id,
+        date_modified = now()
     where (exists(select wqc2.id
                   from flow.work_queue_cycle wqc2
                          inner join flow.project_process_step pps on wqc2.project_process_step_id = pps.id
@@ -332,7 +335,8 @@ BEGIN
 
         update flow.work_queue_cycle
         set date_exited_queue = now(),
-            modified_by_id    = new.modified_by_id
+            modified_by_id    = new.modified_by_id,
+            date_modified = now()
         where project_process_step_id = x.id
           and company_process_step_status_type_id = x.company_process_status_type_id
           and not exists

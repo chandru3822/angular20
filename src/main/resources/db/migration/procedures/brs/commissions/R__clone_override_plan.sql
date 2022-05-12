@@ -40,7 +40,7 @@ BEGIN
   -- set the end_date for selected users on the original_plan, this has to be done first before creating new records
   IF p_assigned_users IS NOT NULL THEN
   UPDATE brs.override_plan_assigned_user
-  SET end_date = p_start_date - INTERVAL '1 day'
+  SET end_date = p_start_date - INTERVAL '1 day', date_modified = now()
   WHERE override_plan_id = p_override_plan
         AND user_id = ANY (p_assigned_users)
         AND end_date IS NULL;
