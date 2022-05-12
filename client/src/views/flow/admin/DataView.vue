@@ -691,6 +691,10 @@ export default {
         if (this.parentProcessStepEvent && this.parentProcessStepEvent.id) {
           field.processStepEventId = this.parentProcessStepEvent.id
         }
+        //if it was a cfga for a ps add it here
+        if(this.cfgaParentObject?.id) {
+          field.processStepId = this.cfgaParentObject?.id
+        }
 
         const {data, status} = await postRequest(`/dataView/${this.viewId}/field`, field)
         if (isNew) {
