@@ -176,7 +176,8 @@ BEGIN
            lower(ot.object_code) as object_type,
            dvfc2.id              as data_view_field_config_id,
            dt.id                 as data_type_id,
-           dvfc2.reset_on_new
+           dvfc2.reset_on_new,
+           dvfc2.process_step_id
     from flow.data_view_maintenance dvfcd
            inner join flow.data_view_field_config dvfc2 on dvfcd.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id

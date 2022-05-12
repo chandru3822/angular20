@@ -203,7 +203,6 @@ declare
   x             record;
   v_company_process_id integer;
 BEGIN
-
   select pps.project_id, c.company_id
   into v_project_id,v_company_id
   from flow.project_process_step pps
@@ -245,7 +244,15 @@ BEGIN
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
-                                                    flow.get_value_based_on_data_type(x.data_type_id),
+                                                    case
+                                                      when x.data_type_id = 1 then new.date_value::text
+                                                      when x.data_type_id = 2 then new.timestamp_value::text
+                                                      when x.data_type_id = 3 then new.boolean_value::text
+                                                      when x.data_type_id = 4 then new.numeric_value::text
+                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id = 6 then new.int_value::text
+                                                      when x.data_type_id = 7 then new.int_array_value::text
+                                                      when x.data_type_id in (8, 9) then new.int_value::text end,
                                                     x.dvfc_id,
                                                     new.id,
                                                     v_sql,
@@ -358,7 +365,15 @@ BEGIN
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
-                                                    flow.get_value_based_on_data_type(x.data_type_id),
+                                                    case
+                                                      when x.data_type_id = 1 then new.date_value::text
+                                                      when x.data_type_id = 2 then new.timestamp_value::text
+                                                      when x.data_type_id = 3 then new.boolean_value::text
+                                                      when x.data_type_id = 4 then new.numeric_value::text
+                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id = 6 then new.int_value::text
+                                                      when x.data_type_id = 7 then new.int_array_value::text
+                                                      when x.data_type_id in (8, 9) then new.int_value::text end,
                                                     x.dvfc_id,
                                                     new.id,
                                                     v_sql,
@@ -713,7 +728,15 @@ BEGIN
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
-                                                    flow.get_value_based_on_data_type(x.data_type_id),
+                                                    case
+                                                      when x.data_type_id = 1 then new.date_value::text
+                                                      when x.data_type_id = 2 then new.timestamp_value::text
+                                                      when x.data_type_id = 3 then new.boolean_value::text
+                                                      when x.data_type_id = 4 then new.numeric_value::text
+                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id = 6 then new.int_value::text
+                                                      when x.data_type_id = 7 then new.int_array_value::text
+                                                      when x.data_type_id in (8, 9) then new.int_value::text end,
                                                     x.dvfc_id,
                                                     new.id,
                                                     v_sql,
@@ -810,7 +833,15 @@ BEGIN
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
-                                                    flow.get_value_based_on_data_type(x.data_type_id),
+                                                    case
+                                                      when x.data_type_id = 1 then new.date_value::text
+                                                      when x.data_type_id = 2 then new.timestamp_value::text
+                                                      when x.data_type_id = 3 then new.boolean_value::text
+                                                      when x.data_type_id = 4 then new.numeric_value::text
+                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id = 6 then new.int_value::text
+                                                      when x.data_type_id = 7 then new.int_array_value::text
+                                                      when x.data_type_id in (8, 9) then new.int_value::text end,
                                                     x.dvfc_id,
                                                     new.id,
                                                     v_sql,
@@ -987,7 +1018,15 @@ BEGIN
                     dvfc.field_to_update,
                     dvfc.id,
                     cfga.id                                                           as custom_field_group_assignment_id,
-                    flow.get_value_based_on_data_type(cdt.data_type_id) as value
+                    case
+                      when cdt.data_type_id = 1 then ppscfv.date_value::text
+                      when cdt.data_type_id = 2 then ppscfv.timestamp_value::text
+                      when cdt.data_type_id = 3 then ppscfv.boolean_value::text
+                      when cdt.data_type_id = 4 then ppscfv.numeric_value::text
+                      when cdt.data_type_id = 5 then ppscfv.text_value::text
+                      when cdt.data_type_id = 6 then ppscfv.int_value::text
+                      when cdt.data_type_id = 7 then ppscfv.int_array_value::text
+                      when cdt.data_type_id in (8, 9) then ppscfv.int_value::text end as value
              from flow.get_schema_by_company(v_company_id) dv
                     inner join flow.data_view_field_config dvfc on dvfc.data_view_id = dv.id
                     inner join flow.custom_field_group_assignment cfga
