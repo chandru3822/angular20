@@ -33,7 +33,7 @@
   <birdeye.addCustomerId>
     <![CDATA[
       UPDATE brs.birdeye_invitations
-      SET birdeye_customer_id = :custId
+      SET birdeye_customer_id = :custId, date_modified = now()
       WHERE id = :id
     ]]>
   </birdeye.addCustomerId>

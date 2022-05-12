@@ -259,15 +259,28 @@ public class BrsProcessStepActionFunctionService {
         try {
 
             Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
-            //This is hardcoded to the specific custom field group assignment ID of the used custom field. Not ideal
-            Long designCfgaId = 22560L;
+            String designCfgaId = func.getActionParamDynamicValues().stream()
+                                      .filter(p -> p.getParameterName().contains("Aurora Design ID"))
+                                      .map(ActionParamDynamicValue::getDynamicValue)
+                                      .findFirst()
+                                      .orElse(null);
 
-            String designId = auroraService.getDesignId(ppsId, designCfgaId);
-            if (designId == null) {
-                throw new RuntimeException("Unable to fetch design ID");
+            if (designCfgaId == null) {
+                throw new RuntimeException("Unable to locate Aurora Design ID custom field");
             }
 
-            AuroraProxy.DesignSummary designResponse = auroraService.getDesignSummary(designId);
+            String designId = auroraService.getDesignId(ppsId, Long.parseLong(designCfgaId));
+            if (designId == null) {
+                throw new RuntimeException("Unable to fetch design ID from Aurora");
+            }
+
+            AuroraProxy.DesignSummary designResponse;
+
+            try {
+                designResponse = auroraService.getDesignSummary(designId);
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to fetch design summary from Aurora");
+            }
 
             var design = designResponse.getFields().get("design");
             int productionEstimate = (int) Double.parseDouble(design.get("energy_production").get("annual").toString());
