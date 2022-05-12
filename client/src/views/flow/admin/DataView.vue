@@ -339,7 +339,7 @@
               <td class="text-left">{{ item.fieldToUpdate }}</td>
               <td>
                 <v-btn small text v-if="!expanded.includes(item)"
-                       @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getDataTypes(), getUniqueBehaviorTypes()]">
+                       @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getDataTypes(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
