@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 CREATE TABLE if NOT EXISTS flow.sms_team
 (
     id        serial                NOT NULL,
