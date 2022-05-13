@@ -1028,11 +1028,12 @@ declare
   v_value           character varying;
   v_record          record;
   v_count           bigint;
+  v_second_field_to_update character varying;
 BEGIN
 
 
-  select pdc.id, field_to_update, data_type_id
-  into v_config_id,v_field_to_update,v_data_type_id
+  select pdc.id, field_to_update, data_type_id, second_field_to_update
+  into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update
   from brs.project_details_config pdc
   where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id;
 
@@ -1063,6 +1064,42 @@ BEGIN
            where project_id = $$ || v_record.id;
         -- raise notice 'in if %',v_sql;
         execute v_sql;
+
+        if v_second_field_to_update is not null then
+          if v_field_to_update = 'ahj' and new.int_value is not null then
+            select quote_literal(ahj.name)
+            into v_value
+            from brs.ahj ahj
+            where ahj.id = new.int_value
+            limit 1;
+          elsif v_field_to_update = 'utility_company' and new.int_value is not null then
+            select quote_literal(au.name)
+            into v_value
+            from brs.ahj_utility au
+            where au.id = new.int_value
+            limit 1;
+          elsif v_field_to_update = 'sales_dev_representative_id' or v_field_to_update = 'inside_sales_consultant_id' then
+            case when new.int_value is null then select 'null' into v_value;
+                 else
+                   select quote_literal(coalesce(u.first_name, ' ') || ' ' || coalesce(u.last_name, ' '))
+                   into v_value
+                   from flow.user_position up
+                          inner join flow.user u on up.user_id = u.id
+                   where up.id = new.int_value;
+              end case;
+          else
+            case when new.int_value is null then select 'null' into v_value;
+                 else
+                   select quote_literal(name)
+                   into v_value
+                   from flow.list_of_value
+                   where id = new.int_value;
+              end case;
+          end if;
+          v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
+           where project_id = $$ || v_record.id;
+          execute v_sql;
+        end if;
       end loop;
 
 
