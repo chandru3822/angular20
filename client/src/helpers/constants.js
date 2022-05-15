@@ -25,7 +25,8 @@ constants.MAX_FILE_UPLOADS = 10
 //TODO: rules likely need to be adjusted
 constants.EMAIL_RULES = [
   v => !!v || "E-mail is required",
-  v => /.+@.+.[.].+/.test(v) || "E-mail must be valid"
+  v => /.+@.+[.].+/.test(v) || "E-mail must be valid" //br request to allow 1 char domain
+  // v => /.+@.+.[.].+/.test(v) || "E-mail must be valid"
 ]
 
 constants.POSTAL_CODE_RULES = [
