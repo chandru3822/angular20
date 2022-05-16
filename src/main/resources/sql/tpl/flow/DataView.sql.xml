@@ -185,7 +185,7 @@
         inner join flow.default_field df2 on dvfc.default_field_id = df2.id
       where dvfc.archived is false
         and dvfc.data_view_id = :viewId
-      and df2.object_type_id in (1,2,4)
+      and df2.object_type_id in (1,2)
       and df.id = dvfc.default_field_id
       )
     and df.object_type_id in (1,2,4,6)
