@@ -1039,30 +1039,30 @@ BEGIN
 
 
   if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6) then
-    if v_data_type_id = 1 then
-      case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
-      v_value = v_value || '::date';
-    elsif v_data_type_id = 2 then
-      case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
-      v_value = v_value || '::timestamp';
-    elsif v_data_type_id = 4 then
-      case when new.numeric_value is null then select 'null' into v_value; else select quote_literal(new.numeric_value) into v_value; end case;
-      v_value = v_value || '::numeric';
-    elsif v_data_type_id = 6 then
-      case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
-      v_value = v_value || '::integer';
-    elsif v_data_type_id = 3 then
-      case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
-      v_value = v_value || '::boolean';
-    end if;
 
     for v_record in select id
                     from flow.project
                     where contact_id = new.contact_id
       loop
+        if v_data_type_id = 1 then
+          case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
+          v_value = v_value || '::date';
+        elsif v_data_type_id = 2 then
+          case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
+          v_value = v_value || '::timestamp';
+        elsif v_data_type_id = 4 then
+          case when new.numeric_value is null then select 'null' into v_value; else select quote_literal(new.numeric_value) into v_value; end case;
+          v_value = v_value || '::numeric';
+        elsif v_data_type_id = 6 then
+          case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
+          v_value = v_value || '::integer';
+        elsif v_data_type_id = 3 then
+          case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
+          v_value = v_value || '::boolean';
+        end if;
         v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_record.id;
-        -- raise notice 'in if %',v_sql;
+         raise notice 'in if %',v_sql;
         execute v_sql;
 
         if v_second_field_to_update is not null then
@@ -1098,6 +1098,7 @@ BEGIN
           end if;
           v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_record.id;
+          raise notice 'in second field %',v_sql;
           execute v_sql;
         end if;
       end loop;
