@@ -12,6 +12,7 @@ declare
   v_order    text;
   v_join     text;
   v_order_by text;
+  v_field_required boolean default false;
 BEGIN
 
   if p_in_ppscfv > 1 then
@@ -68,7 +69,12 @@ BEGIN
     v_join = $$ left $$;
     v_order_by = $$ pps.date_created $$;
   end if;
+  v_field_required = false;
+  if (z.reset_on_new is false and z.update_first_value_only is false) or
+     (z.reset_on_new is false and z.update_first_value_only is true) then
+    v_field_required = true;
 
+  end if;
   p_sql = trim(trailing ' ,' from p_sql);
   p_sql = p_sql || $$ from flow.project_process_step pps
                           $$ || v_join || $$ join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id
@@ -76,8 +82,7 @@ BEGIN
                           inner join flow.project p on p.id = pps.project_id
                           inner join flow.process_step ps on ps.id = pps.process_step_id and ps.id = $$ ||
           z.process_step_id || $$
-                          where case when $$ || z.reset_on_new || $$ is false and
-                                $$ || z.update_first_value_only || $$  is false then ppscfv.$$ ||
+                          where case when $$ || v_field_required || $$ is true then ppscfv.$$ ||
           flow.get_value_based_on_data_type(z.data_type_id) ||
           $$ is not null else 1=1 end and
                                 p.company_process_id = any('$$ || z.company_process_ids::text || $$'::integer[])

@@ -12,6 +12,7 @@ declare
   v_order text;
   v_join text;
   v_order_by text;
+  v_field_required boolean default false;
 BEGIN
       if p_in_event_details > 1 then
         p_sql = p_sql || $$ event_details_$$||p_in_event_details||$$ as (select distinct on (p.id) p.id,$$;
@@ -67,6 +68,12 @@ BEGIN
         v_join = $$ left $$;
         v_order_by = $$ ppse.date_created $$;
       end if;
+      v_field_required = false;
+      if (z.reset_on_new is false and z.update_first_value_only is false) or
+         (z.reset_on_new is false and z.update_first_value_only is true) then
+        v_field_required = true;
+
+      end if;
     p_sql = trim(trailing ' ,' from p_sql);
     p_sql = p_sql || $$ from flow.project p
                       inner join flow.project_process_step pps on pps.project_id = p.id
@@ -74,8 +81,7 @@ BEGIN
                                               ppse.process_step_event_id = $$ || z.process_step_event_id || $$
                       $$||v_join||$$ inner join flow.project_process_step_event_custom_field_value ppsecfv on ppse.id = ppsecfv.project_process_step_event_id
                         and ppsecfv.custom_field_group_assignment_id = $$ || z.custom_field_group_assignment_id || $$
-                        where case when $$||z.reset_on_new||$$ is false and
-                                $$||z.update_first_value_only||$$  is false then ppsecfv.$$||flow.get_value_based_on_data_type(z.data_type_id)||
+                        where case when $$||v_field_required||$$ is true then ppsecfv.$$||flow.get_value_based_on_data_type(z.data_type_id)||
             $$ is not null else 1=1 end and
             p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
                         order by p.id, $$||v_order_by|| v_order ||$$ ), $$;

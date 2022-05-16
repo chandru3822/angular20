@@ -343,7 +343,9 @@ BEGIN
            where exists(select ao.dvfc_id
                         from flow.get_data_view_field_configs(dv.id,
                                                               null,
-                                                              new.custom_field_group_assignment_id) ao) and
+                                                              new.custom_field_group_assignment_id) ao
+                               inner join flow.project_process_step_event ppse on id = new.project_process_step_event_id
+                          and ao.process_step_event_id = ppse.process_step_event_id) and
                v_company_process_id = any(dv.company_process_ids)
     loop
       v_sql = NULL;
@@ -476,7 +478,8 @@ BEGIN
            where exists(select ao.dvfc_id
                         from flow.get_data_view_field_configs(dv.id,
                                                               'EVENT',
-                                                              null) ao) and
+                                                              null) ao
+                        where ao.process_step_event_id = new.process_step_event_id) and
                v_company_process_id = any(dv.company_process_ids)
     loop
       v_sql = NULL;
@@ -491,6 +494,7 @@ BEGIN
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
+
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -533,6 +537,7 @@ BEGIN
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
         -- begin
+        raise notice 'v_sql %',v_sql;
         execute v_sql;
         -- exception
         -- when others then
@@ -604,7 +609,8 @@ BEGIN
            where exists(select ao.dvfc_id
                         from flow.get_data_view_field_configs(dv.id,
                                                               'PROCESS_STEP',
-                                                              null) ao) and
+                                                              null) ao
+                        where ao.process_step_id = new.process_step_id) and
                v_company_process_id = any(dv.company_process_ids)
     loop
       v_sql = NULL;
@@ -642,7 +648,9 @@ BEGIN
                                                          x.is_last_row, true, v_project_ids)
             into v_sql;
             -- begin
+
             execute v_sql;
+
             -- exception
             -- when others then
             -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
@@ -662,6 +670,7 @@ BEGIN
         into v_sql;
         -- begin
         execute v_sql;
+
         -- exception
         -- when others then
         -- insert into flow.trigger_error(project_process_step_custom_value_id, error)

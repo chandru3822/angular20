@@ -6,7 +6,7 @@ $BODY$
 DECLARE
   v_value text;
 BEGIN
-  if p_value is null then
+  if p_value is null or p_value = 0 then
     v_value = null;
   elsif p_unique_behavior_type = 'EVENT_RESOURCE_TRIGGER' then
 

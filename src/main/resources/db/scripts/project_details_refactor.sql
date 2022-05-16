@@ -1227,7 +1227,7 @@ CREATE UNIQUE INDEX dvfc_field_to_update_cfg1_uidx ON flow.data_view_field_confi
 CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config (data_view_id,field_to_update,process_step_event_id,default_field_id) where process_step_id is null and custom_field_group_assignment_id is null;
 CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null and custom_field_group_assignment_id is null and process_step_id is null;
 CREATE UNIQUE INDEX dvfc_process_step_id_df_uidx ON flow.data_view_field_config (data_view_id,default_field_id,process_step_id)where process_step_event_id is null and custom_field_group_assignment_id is null;
-CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null and process_step_id is null;
+CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null and process_step_id is null;
 
 CREATE UNIQUE INDEX dvfc_reset_on_new_uidx ON flow.data_view_field_config (data_view_id,reset_on_new,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
 CREATE UNIQUE INDEX dvfc_update_first_only_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
@@ -1359,4 +1359,7 @@ drop FUNCTION flow.pps_update_project_details();
 
 update flow.custom_field set custom_field_sql_column = 'name'
 where id =392;
+
+update flow.data_view_child_field_config set unique_behavior_type_id = null
+where field_to_update = 'site_survey_date';
 

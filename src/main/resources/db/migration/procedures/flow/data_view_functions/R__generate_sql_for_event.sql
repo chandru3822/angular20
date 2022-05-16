@@ -10,6 +10,7 @@ declare
   x record;
   v_value character varying;
   v_order text;
+  v_field_required boolean default false;
 BEGIN
       if p_in_event_details > 1 then
         p_sql = p_sql || $$ update_event_$$||p_in_event_details||$$ as (select distinct on (pps.project_id) pps.project_id as id,$$;
@@ -58,13 +59,19 @@ BEGIN
                                                               $$ || z.column_name || $$, ppse.id,$$|| quote_literal('EVENT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
+      v_field_required = false;
+    if (z.reset_on_new is false and z.update_first_value_only is false) or
+       (z.reset_on_new is false and z.update_first_value_only is true) then
+      v_field_required = true;
+
+    end if;
+
 
     p_sql = trim(trailing ' ,' from p_sql);
     p_sql = p_sql || $$ from flow.project_process_step_event ppse
                             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
                             inner join flow.project p on p.id = pps.project_id
-                        where case when $$||z.reset_on_new||$$ is false and
-                                $$||z.update_first_value_only||$$ is false then ppse.$$||z.column_name||
+                        where case when $$||v_field_required||$$ is true then ppse.$$||z.column_name||
             $$ is not null else 1=1 end and
             ppse.process_step_event_id = $$ || z.process_step_event_id || $$
                         and p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
