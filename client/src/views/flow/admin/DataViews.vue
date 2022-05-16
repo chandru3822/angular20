@@ -105,7 +105,8 @@
           v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
           v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
           v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
-          v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Table Name must be all lowercase, no symbols except '_' and must start and end with a letter"
+          v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Table Name must be all lowercase, no symbols except '_' and must start and end with a letter",
+          v => (!v || (v && (!constants.RESERVED_SQL_WORDS.includes(v)))) || "Cannot use reserved words",
         ],
         newDataView: {},
         userId: this.$store.state.user.details.id,
@@ -118,7 +119,7 @@
       }
     },
     async created () {
-      this.getDataViews()
+      await this.getDataViews()
     },
     methods: {
       async getCompanyProcesses() {
