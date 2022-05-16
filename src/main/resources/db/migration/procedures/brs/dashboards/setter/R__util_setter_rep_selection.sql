@@ -67,8 +67,8 @@ BEGIN
       from (
              select distinct user_id, name, active, user_position_id
              from (
-                    select u.id                                                         user_id,
-                           concat(u.first_name, ' ', u.last_name, ' - ', o.org_name) as name,
+                    select upv.user_id                                                         user_id,
+                           concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
                            (case
                               when upv.start_date is not null and
                                    upv.start_date <= (now() at time zone 'US/Mountain')::date and
@@ -79,8 +79,7 @@ BEGIN
                              end)                                                  as active,
                            upv.user_position_id
                     from flow.user_positions_vw upv
-                           inner join flow.user u on u.id = upv.user_id
-                           inner join flow.user_position up on u.id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                           inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
                                           and up.archived is not true and up.id = upv.user_position_id
@@ -95,9 +94,9 @@ BEGIN
             from (
                      select distinct user_id, name, active, user_position_id
                      from (
-                              select u.id                                      user_id,
+                              select upv.user_id                                      user_id,
                                      user_position_id,
-                                     concat(u.first_name, ' ', u.last_name) as name,
+                                     concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
                                      (case
                                           when upv.start_date is not null and (upv.end_date is null or
                                                 upv.end_date >= (now() at time zone 'US/Mountain')::date)
@@ -105,8 +104,11 @@ BEGIN
                                           else false
                                          end)                               as active
                               from flow.user_positions_vw upv
-                                       inner join flow.user u on u.id = upv.user_id
---                                        inner join flow.org o on upv.org_id = o.id
+                                     inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                                         from flow.company_configuration_value
+                                                                                                                         where code = 'SETTER_POSITION_IDS')
+                                                                            and up.archived is not true and up.id = upv.user_position_id
+                                     inner join flow.org o on o.id = up.org_id
                               where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                 and upv.archived is not true
                                 and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
@@ -121,7 +123,7 @@ BEGIN
                          from (
                                   select distinct upv.user_id,
                                                   user_position_id,
-                                                  concat(u.first_name, ' ', u.last_name) as name,
+                                                  concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
                                                   (case
                                                        when upv.start_date is not null and (upv.end_date is null or
                                                              upv.end_date >= (now() at time zone 'US/Mountain')::date)
@@ -129,11 +131,14 @@ BEGIN
                                                        else false
                                                       end)                               as active
                                   from flow.user_positions_vw upv
-                                           inner join flow.user u on u.id = upv.user_id
---                                            inner join flow.org o on upv.org_id = o.id
+                                         inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                                             from flow.company_configuration_value
+                                                                                                                             where code = 'SETTER_POSITION_IDS')
+                                                                                        and up.archived is not true and up.id = upv.user_position_id
+                                         inner join flow.org o on o.id = up.org_id
                                   where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                     and upv.archived is not true
-                                    and u.id = p_platform_user_id
+                                    and upv.user_id = p_platform_user_id
                                     and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
                               ) as users
                          order by active desc, name

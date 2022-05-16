@@ -99,7 +99,6 @@
                             autocomplete="off"
                             :loading="searchProjectsLoading"
                             item-value="projectId"
-                            item-key="projectId"
                             return-object
                             attach
                             >

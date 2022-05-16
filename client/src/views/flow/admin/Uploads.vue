@@ -12,7 +12,6 @@
                           label="Attachment Type"
                           item-text="attachmentType"
                           item-value="id"
-                          item-key="id"
           />
           <!--          <br/>-->
           <!--          <span>Auto Create Generic Join Record?</span>-->
