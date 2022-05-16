@@ -202,22 +202,21 @@
                 </v-list-item-content>
               </template>
             </v-autocomplete>
-
             <v-autocomplete class="pipeline-dropdown"
                             v-model="repModel"
                             :items="repData"
-                            ref="repSelect"
                             item-text="name"
-                            item-value="user_id"
+                            item-value="user_position_id"
                             label="Rep"
                             no-data-text="No reps available"
                             outlined
                             multiple
                             dense
+                            :disabled="repsLoading"
                             hide-details
                             return-object
-                            :disabled="repsLoading"
-                            @input="repValuesChanged = true">
+                            @input="repValuesChanged = true"
+                            ref="repSelect">
 
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text text-caption">
