@@ -55,7 +55,7 @@ public class WorkQueueService {
     params.put("filterFutureEvents", null != filterFutureEvents && filterFutureEvents);
     params.put("unassigned", null != unassigned && unassigned);
 
-    return sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
+    return sqlCacheRO.query("workQueue.getWorkQueues", params, WorkQueue.class);
   }
 
   public SmartlistResult getWorkQueueDetails(
