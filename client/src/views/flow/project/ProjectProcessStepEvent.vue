@@ -90,6 +90,14 @@
         </v-toolbar-items>
       </v-toolbar>
       <div class="pb-4 px-6">
+        <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
+          <v-card flat class="square-card banner-card" :class="{'mt-2': idx !== 0}"
+                  v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
+            <v-card-text :style="{'color': b.color}">
+              <pre class="app-pre-wrapper">{{b.content}}</pre>
+            </v-card-text>
+          </v-card>
+        </div>
       <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
         <div class="action-subheader albatross-header-3">
           Actions
@@ -368,7 +376,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import {getStatusClass} from '@/services/eventStatusTypeService'
-
+import Vue2Filters from 'vue2-filters'
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -379,6 +387,7 @@ export default {
     SpinnerInline,
     UploadDocumentModal
   },
+  mixins: [Vue2Filters.mixin],
   props: {
     project: Object,
     splitValueColumns: Boolean
@@ -1108,6 +1117,10 @@ export default {
 .action-button-subtitle {
   display: block;
   font-size: 10px;
+}
+
+.banner-card {
+  border: solid 1px #C4C4C4;
 }
 
 .action-button-subtitle-date {

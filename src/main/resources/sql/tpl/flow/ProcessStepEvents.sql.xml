@@ -12,6 +12,10 @@
                   SELECT array_to_json(array_agg(row_to_json(psea)))
                   FROM (
                          SELECT psea.id,
+                                psea.content,
+                                psea.color,
+                                at.action_type as "actionType",
+                                psea.action_type_id as "actionTypeId",
                                 psea.action_name as "actionName",
                                 psea.require_start_time as "requireStartTime",
                                 psea.require_end_time as "requireEndTime",
@@ -28,6 +32,7 @@
                                 psea.archived,
                                 psea.display_order as "displayOrder"
                          FROM flow.process_step_event_action psea
+                            inner join flow.action_type at on at.id = psea.action_type_id
                                 left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
                                 left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
                          WHERE psea.process_step_event_id = pse.id
@@ -85,6 +90,10 @@ where pse.process_step_id = :processStepId
                       SELECT array_to_json(array_agg(row_to_json(psea)))
                       FROM (
                              SELECT psea.id,
+                                    psea.action_type_id as "actionTypeId",
+                                    psea.content,
+                                    psea.color,
+                                    at.action_type as "actionType",
                                     psea.action_name as "actionName",
                                     psea.require_start_time as "requireStartTime",
                                     psea.require_end_time as "requireEndTime",
@@ -183,6 +192,7 @@ where pse.process_step_id = :processStepId
                                                         and cfg.event_id = e.id
                                                       order by cfg.group_order, cfga.field_order ) fields), '[]') AS "customFields"
                              FROM flow.process_step_event_action psea
+                             inner join flow.action_type at on at.id = psea.action_type_id
                                     left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
                                     left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
                              WHERE psea.process_step_event_id = pse.id
@@ -296,16 +306,18 @@ where pse.process_step_id = :processStepId
   ]]></processStepEvent.deleteEventFromStep>
 
   <processStepEvent.addStepEventAction><![CDATA[
-    insert into flow.process_step_event_action(process_step_event_id, company_event_status_type_id, company_process_step_status_type_id, action_name, created_by_id, display_order)
+    insert into flow.process_step_event_action(process_step_event_id, company_event_status_type_id, company_process_step_status_type_id, action_name, created_by_id, display_order, content, color, action_type_id)
     values(:processStepEventId, :companyEventStatusTypeId, :companyProcessStepStatusTypeId, :actionName, :userId,
            (select coalesce(max(display_order) + 1, 0) from flow.process_step_event_action psea
-            where process_step_event_id = :processStepEventId and archived is false))
+            where process_step_event_id = :processStepEventId and archived is false), :content, :color, :actionTypeId)
   ]]></processStepEvent.addStepEventAction>
 
   <processStepEvent.updateStepEventAction><![CDATA[
     update flow.process_step_event_action
       set company_event_status_type_id = :companyEventStatusTypeId,
           action_name = :actionName,
+          content = :content,
+          color = :color,
           require_start_time = :requireStartTime,
           require_end_time = :requireEndTime,
           require_resource = :requireResource,
@@ -329,6 +341,7 @@ where pse.process_step_id = :processStepId
 
   <processStepEvent.getStepEventAction><![CDATA[
     select  psea.*,
+            at.action_type as "actionType",
             cpsst.process_step_status_type as "processStepStatusType",
             cest.event_status_type as "eventStatusType",
             coalesce((
@@ -374,6 +387,7 @@ where pse.process_step_id = :processStepId
                                                     and cfg.event_id = pse.event_id
                                                   order by cfg.group_order, cfga.field_order ) fields), '[]') AS "customFields"
     from flow.process_step_event_action psea
+    inner join flow.action_type at on at.id = psea.action_type_id
       inner join flow.process_step_event pse on psea.process_step_event_id = pse.id
       left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
       left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id

@@ -42,92 +42,92 @@
   ]]></projectProcessStepEvent.getBasic>
 
   <projectProcessStepEvent.get><![CDATA[
-    select ppse.*,
-           concat(creator.first_name, ' ', creator.last_name) as created_by,
-           cest.event_status_type,
-           cest.event_status_type_id,
-           cpsst2.process_step_status_type_id as root_project_process_step_status_type_id,
-           case when sl.system_list_type_id = 1 then o.org_name when u.first_name is null and u.last_name is null then null else concat(u.first_name, ' ', u.last_name) end as resource,
-           e.event_name,
-           pps.project_id,
-           pps.process_step_id,
-           ps.process_step_name,
-           e.resource_custom_field_id,
-           e.start_time_read_only,
-           e.end_time_read_only,
-           e.resource_read_only,
-           pse.event_id,
-           pps.company_process_step_status_type_id,
-           cpsst.process_step_status_type_id,
-           pse.unique_behavior_type_id,
-           coalesce((
-                      SELECT array_to_json(array_agg(row_to_json(availableResources)))
-                      FROM (
-                             select *
-                             from flow.get_system_list_options(e.company_id::integer,
-                                                               (select company_system_list_id from flow.custom_field cf where cf.id = e.resource_custom_field_id)::integer,
-                                                               true,
-                                                               (select system_list_option_ids from flow.custom_field cf where cf.id = e.resource_custom_field_id)::integer[], ppse.resource_id::integer)) availableResources), '[]') AS "availableResources",
-           coalesce((
-                      SELECT array_to_json(array_agg(row_to_json(psea)))
-                      FROM (
-                             SELECT psea.id,
-                                    psea.action_name as "actionName",
-                                    psea.require_start_time as "requireStartTime",
-                                    psea.require_end_time as "requireEndTime",
-                                    psea.require_resource as "requireResource",
-                                    psea.process_step_event_id as "processStepEventId",
-                                    psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
-                                    psea.company_event_status_type_id as "companyEventStatusTypeId",
-                                    cest.event_status_type_id as "rootEventStatusTypeId",
-                                    psea.created_by_id as "createdById",
-                                    psea.modified_by_id as "modifiedById",
-                                    cpsst.process_step_status_type as "processStepStatusType",
-                                    cpsst.process_step_status_type_id as "rootProcessStepStatusTypeId",
-                                    cest.event_status_type as "eventStatusType",
-                                    psea.archived,
-                                    psea.always_enabled as "alwaysEnabled",
-                                    psea.multiple_uses as "multipleUses",
-                                    psea.hide_from_web as "hideFromWeb",
-                                    psea.hide_from_mobile as "hideFromMobile",
-                                   (select ppsea.date_created
-                                    from flow.project_process_step_event_action ppsea
-                                    where ppsea.project_process_step_event_id = ppse.id
-                                      and ppsea.process_step_event_action_id = psea.id
-                                    order by ppsea.date_created desc limit 1) as "actionRunDate",
-                                   (select concat(u.first_name, ' ', left(u.last_name, 1))
-                                    from flow.project_process_step_event_action ppsea
-                                      inner join flow."user" u on ppsea.created_by_id = u.id
-                                    where ppsea.project_process_step_event_id = ppse.id
-                                      and ppsea.process_step_event_action_id = psea.id
-                                    order by ppsea.date_created desc limit 1) as "actionRunBy",
-                                    case when
-                                           (select id
-                                            from flow.project_process_step_event_action ppsea
-                                            where ppsea.project_process_step_event_id = ppse.id
-                                              and ppsea.process_step_event_action_id = psea.id limit 1) is null
-                                           then false else true end as "alreadyTriggered",
-                                    coalesce((
-                                               SELECT array_to_json(array_agg(row_to_json(logic)))
-                                               FROM (
-                                                      SELECT psl.id,
-                                                             psl.archived,
-                                                             psl.process_step_event_requirement_id as "processStepEventRequirementId",
-                                                             psl.operation_type_id as "operationTypeId",
-                                                             ot.operation_type as "operationType",
-                                                             ot.operation_code as "operationCode",
-                                                             psl.created_by_id as "createdById",
-                                                             psl.modified_by_id as "modifiedById",
-                                                             psr.requirement_nbr as "requirementNbr",
-                                                             psr.immutable as "processStepRequirementImmutable",
-                                                             psl.sql_order as "sqlOrder"
-                                                      FROM flow.process_step_event_logic psl
-                                                             left join flow.operation_type ot on ot.id = psl.operation_type_id
-                                                             left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
-                                                      WHERE psl.process_step_event_action_id = psea.id
-                                                        and psl.archived is not true
-                                                      ORDER BY psl.sql_order ) logic), '[]') AS "processStepEventLogicList",
-                                    coalesce((
+select ppse.*,
+       concat(creator.first_name, ' ', creator.last_name) as created_by,
+       cest.event_status_type,
+       cest.event_status_type_id,
+       cpsst2.process_step_status_type_id as root_project_process_step_status_type_id,
+       case when sl.system_list_type_id = 1 then o.org_name when u.first_name is null and u.last_name is null then null else concat(u.first_name, ' ', u.last_name) end as resource,
+       e.event_name,
+       pps.project_id,
+       pps.process_step_id,
+       ps.process_step_name,
+       e.resource_custom_field_id,
+       e.start_time_read_only,
+       e.end_time_read_only,
+       e.resource_read_only,
+       pse.event_id,
+       pps.company_process_step_status_type_id,
+       cpsst.process_step_status_type_id,
+       pse.unique_behavior_type_id,
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(availableResources)))
+                  FROM (
+                         select *
+                         from flow.get_system_list_options(e.company_id::integer,
+                                                           (select company_system_list_id from flow.custom_field cf where cf.id = e.resource_custom_field_id)::integer,
+                                                           true,
+                                                           (select system_list_option_ids from flow.custom_field cf where cf.id = e.resource_custom_field_id)::integer[], ppse.resource_id::integer)) availableResources), '[]') AS "availableResources",
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(psea)))
+                  FROM (
+                         SELECT psea.id,
+                                psea.action_name as "actionName",
+                                psea.require_start_time as "requireStartTime",
+                                psea.require_end_time as "requireEndTime",
+                                psea.require_resource as "requireResource",
+                                psea.process_step_event_id as "processStepEventId",
+                                psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                psea.company_event_status_type_id as "companyEventStatusTypeId",
+                                cest.event_status_type_id as "rootEventStatusTypeId",
+                                psea.created_by_id as "createdById",
+                                psea.modified_by_id as "modifiedById",
+                                cpsst.process_step_status_type as "processStepStatusType",
+                                cpsst.process_step_status_type_id as "rootProcessStepStatusTypeId",
+                                cest.event_status_type as "eventStatusType",
+                                psea.archived,
+                                psea.always_enabled as "alwaysEnabled",
+                                psea.multiple_uses as "multipleUses",
+                                psea.hide_from_web as "hideFromWeb",
+                                psea.hide_from_mobile as "hideFromMobile",
+                                (select ppsea.date_created
+                                 from flow.project_process_step_event_action ppsea
+                                 where ppsea.project_process_step_event_id = ppse.id
+                                   and ppsea.process_step_event_action_id = psea.id
+                                 order by ppsea.date_created desc limit 1) as "actionRunDate",
+                                (select concat(u.first_name, ' ', left(u.last_name, 1))
+                                 from flow.project_process_step_event_action ppsea
+                                        inner join flow."user" u on ppsea.created_by_id = u.id
+                                 where ppsea.project_process_step_event_id = ppse.id
+                                   and ppsea.process_step_event_action_id = psea.id
+                                 order by ppsea.date_created desc limit 1) as "actionRunBy",
+                                case when
+                                       (select id
+                                        from flow.project_process_step_event_action ppsea
+                                        where ppsea.project_process_step_event_id = ppse.id
+                                          and ppsea.process_step_event_action_id = psea.id limit 1) is null
+                                       then false else true end as "alreadyTriggered",
+                                coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(logic)))
+                                           FROM (
+                                                  SELECT psl.id,
+                                                         psl.archived,
+                                                         psl.process_step_event_requirement_id as "processStepEventRequirementId",
+                                                         psl.operation_type_id as "operationTypeId",
+                                                         ot.operation_type as "operationType",
+                                                         ot.operation_code as "operationCode",
+                                                         psl.created_by_id as "createdById",
+                                                         psl.modified_by_id as "modifiedById",
+                                                         psr.requirement_nbr as "requirementNbr",
+                                                         psr.immutable as "processStepRequirementImmutable",
+                                                         psl.sql_order as "sqlOrder"
+                                                  FROM flow.process_step_event_logic psl
+                                                         left join flow.operation_type ot on ot.id = psl.operation_type_id
+                                                         left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
+                                                  WHERE psl.process_step_event_action_id = psea.id
+                                                    and psl.archived is not true
+                                                  ORDER BY psl.sql_order ) logic), '[]') AS "processStepEventLogicList",
+                                coalesce((
                                            SELECT array_to_json(array_agg(row_to_json(psearf)))
                                            FROM (
                                                   select psearf.id,
@@ -139,7 +139,7 @@
                                                   where psearf.archived is false
                                                     and psearf.required is true
                                                     and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "requiredFields",
-                                                    coalesce((
+                                coalesce((
                                            SELECT array_to_json(array_agg(row_to_json(psearf)))
                                            FROM (
                                                   select psearf.id,
@@ -151,66 +151,102 @@
                                                   where psearf.archived is false
                                                     and psearf.required is false
                                                     and psearf.process_step_event_action_id = psea.id) psearf), '[]') AS "optionalFields"
-                             FROM flow.process_step_event_action psea
-                                    left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
-                                    left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
-                             WHERE psea.process_step_event_id = pse.id
-                               AND psea.archived is not true
-                             order by psea.display_order) psea), '[]') AS "eventActions",
-                   coalesce((
-                              SELECT array_to_json(array_agg(row_to_json(wlp)))
-                              FROM (
-                                     SELECT wlp.id,
-                                            wlp.position_id as "positionId",
-                                            wlp.created_by_id as "createdById",
-                                            wlp.modified_by_id as "modifiedById",
-                                            wlp.archived
-                                     FROM flow.white_listed_position wlp
-                                     WHERE wlp.white_list_type_id = 6
-                                       and wlp.event_id = e.id
-                                       AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
-                   coalesce((
-                              SELECT array_to_json(array_agg(row_to_json(wlp)))
-                              FROM (
-                                     SELECT wlp.id,
-                                            wlp.position_id as "positionId",
-                                            wlp.created_by_id as "createdById",
-                                            wlp.modified_by_id as "modifiedById",
-                                            wlp.archived
-                                     FROM flow.white_listed_position wlp
-                                     WHERE wlp.white_list_type_id = 7
-                                       and wlp.event_id = e.id
-                                       AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
-                   coalesce((
-                              SELECT array_to_json(array_agg(row_to_json(wlp)))
-                              FROM (
-                                     SELECT wlp.id,
-                                            wlp.position_id as "positionId",
-                                            wlp.created_by_id as "createdById",
-                                            wlp.modified_by_id as "modifiedById",
-                                            wlp.archived
-                                     FROM flow.white_listed_position wlp
-                                     WHERE wlp.white_list_type_id = 8
-                                       and wlp.event_id = e.id
-                                       AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
-    from flow.project_process_step_event ppse
-           inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
-           inner join flow.process_step ps on pps.process_step_id = ps.id
-           inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-           inner join flow.company_process_step_status_type cpsst2 on pps.company_process_step_status_type_id = cpsst2.id
-           inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
-           inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
-           inner join flow.event e on pse.event_id = e.id
-           inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-           left join flow.user_position up on up.id = ppse.resource_id
-           left join flow.user u on u.id = up.user_id
-           left join flow.org o on o.id = ppse.resource_id
-           left join flow.user creator on creator.id = ppse.created_by_id
-           inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
-           inner join flow.system_list sl on sl.id = csl.system_list_id
-    where ppse.id = :id
-      and ppse.project_process_step_id = :ppsId
-      and ppse.archived is false
+                         FROM flow.process_step_event_action psea
+                                left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+                                left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+                         WHERE psea.process_step_event_id = pse.id
+                           AND psea.archived is not true
+                           and psea.action_type_id != 3
+                         order by psea.display_order) psea), '[]') AS "eventActions",
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(psea)))
+                  FROM (
+                         SELECT psea.id,
+                                psea.action_name as "actionName",
+                                psea.archived,
+                                psea.content,
+                                psea.color,
+                                psea.always_enabled as "alwaysEnabled",
+                                false as "alreadyTriggered",
+                                coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(logic)))
+                                           FROM (
+                                                  SELECT psl.id,
+                                                         psl.archived,
+                                                         psl.process_step_event_requirement_id as "processStepEventRequirementId",
+                                                         psl.operation_type_id as "operationTypeId",
+                                                         ot.operation_type as "operationType",
+                                                         ot.operation_code as "operationCode",
+                                                         psl.created_by_id as "createdById",
+                                                         psl.modified_by_id as "modifiedById",
+                                                         psr.requirement_nbr as "requirementNbr",
+                                                         psr.immutable as "processStepRequirementImmutable",
+                                                         psl.sql_order as "sqlOrder"
+                                                  FROM flow.process_step_event_logic psl
+                                                         left join flow.operation_type ot on ot.id = psl.operation_type_id
+                                                         left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
+                                                  WHERE psl.process_step_event_action_id = psea.id
+                                                    and psl.archived is not true
+                                                  ORDER BY psl.sql_order ) logic), '[]') AS "processStepEventLogicList"
+                         FROM flow.process_step_event_action psea
+                         WHERE psea.process_step_event_id = pse.id
+                           AND psea.archived is not true
+                           and psea.action_type_id = 3
+                         order by psea.display_order) psea), '[]') AS "eventBanners",
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 6
+                           and wlp.event_id = e.id
+                           AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 7
+                           and wlp.event_id = e.id
+                           AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 8
+                           and wlp.event_id = e.id
+                           AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
+from flow.project_process_step_event ppse
+       inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+       inner join flow.process_step ps on pps.process_step_id = ps.id
+       inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+       inner join flow.company_process_step_status_type cpsst2 on pps.company_process_step_status_type_id = cpsst2.id
+       inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+       inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+       inner join flow.event e on pse.event_id = e.id
+       inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+       left join flow.user_position up on up.id = ppse.resource_id
+       left join flow.user u on u.id = up.user_id
+       left join flow.org o on o.id = ppse.resource_id
+       left join flow.user creator on creator.id = ppse.created_by_id
+       inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+       inner join flow.system_list sl on sl.id = csl.system_list_id
+where ppse.id = :id
+  and ppse.project_process_step_id = :ppsId
+  and ppse.archived is false
   ]]></projectProcessStepEvent.get>
 
   <projectProcessStepEvent.savePpsEventDetails><![CDATA[
@@ -339,6 +375,8 @@
            psea.company_event_status_type_id as "companyEventStatusTypeId",
            psea.created_by_id as "createdById",
            psea.modified_by_id as "modifiedById",
+           psea.content,
+           psea.color,
            cpsst.process_step_status_type as "processStepStatusType",
            cpsst.process_step_status_type_id as "rootProcessStepStatusTypeId",
            cest.event_status_type as "eventStatusType",

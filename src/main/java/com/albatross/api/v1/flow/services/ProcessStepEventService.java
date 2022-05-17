@@ -33,40 +33,30 @@ public class ProcessStepEventService {
   public List<ProcessStepEvent> getStepEvents(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    return sqlCache.query(
-        "processStepEvent.getStepEvents",
-        params,
-        new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    return sqlCache.query("processStepEvent.getStepEvents", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
   public List<ProcessStepEvent> getAvailableEventsForStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    return sqlCache.query(
-        "processStepEvent.getAvailableEventsForStep",
-        params,
-        new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    return sqlCache.query("processStepEvent.getAvailableEventsForStep", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
   public Optional<ProcessStepEvent> getProcessStepEvent(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get(
-        "processStepEvent.get", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    return sqlCache.get("processStepEvent.get", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
-  public Optional<ProcessStepEvent> addEventToStep(
-      Long processStepId, ProcessStepEvent processStepEvent) {
+  public Optional<ProcessStepEvent> addEventToStep(Long processStepId, ProcessStepEvent processStepEvent) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
     params.put("createdById", currentUser.trueUserId());
     params.put("eventId", processStepEvent.getEventId());
-    params.put(
-        "initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
-    Long id =
-        sqlCache.updateReturningId("processStepEvent.addEventToStep", params, "id").longValue();
+    params.put("initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
+    Long id = sqlCache.updateReturningId("processStepEvent.addEventToStep", params, "id").longValue();
     return getProcessStepEvent(id);
   }
 
@@ -75,8 +65,7 @@ public class ProcessStepEventService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    params.put(
-        "initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
+    params.put("initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
     params.put("userId", currentUser.trueUserId());
     params.put("eventId", eventId);
     sqlCache.update("processStepEvent.updateStepEvent", params);
@@ -100,14 +89,9 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepEventId", processStepEventId);
 
-    List<Long> whiteListedPositionIds =
-        sqlCache.query(
-            "processStepEvent.getStartTimeWhitelistedPositionIds",
-            params,
-            new SingleColumnRowMapper<>(Long.class));
+    List<Long> whiteListedPositionIds = sqlCache.query("processStepEvent.getStartTimeWhitelistedPositionIds", params, new SingleColumnRowMapper<>(Long.class));
 
-    return securityService.userHasPosition(
-        currentUser.getHighestCompanyId(), whiteListedPositionIds, currentUser.getUserPositions());
+    return securityService.userHasPosition(currentUser.getHighestCompanyId(), whiteListedPositionIds, currentUser.getUserPositions());
   }
 
   public void deleteEventFromStep(Long id) {
@@ -121,55 +105,26 @@ public class ProcessStepEventService {
   public Optional<ProcessStepEventAction> getStepEventAction(Long processStepEventActionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", processStepEventActionId);
-    return sqlCache.get(
-        "processStepEvent.getStepEventAction",
-        params,
-        new ProcessStepEventActionMapper<>(ProcessStepEventAction.class, om));
+    return sqlCache.get("processStepEvent.getStepEventAction", params, new ProcessStepEventActionMapper<>(ProcessStepEventAction.class, om));
   }
 
-  public Optional<ProcessStepEventAction> saveStepEventAction(
-      Long processStepId, Long eventId, ProcessStepEventAction processStepEventAction) {
+  public Optional<ProcessStepEventAction> saveStepEventAction(Long processStepId, Long eventId, ProcessStepEventAction processStepEventAction) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
-    params.put(
-        "companyProcessStepStatusTypeId",
-        processStepEventAction.getCompanyProcessStepStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", processStepEventAction.getCompanyProcessStepStatusTypeId());
     params.put("actionName", processStepEventAction.getActionName());
-    params.put("requireStartTime", null != processStepEventAction.getRequireStartTime()
-                                     ? processStepEventAction.getRequireStartTime()
-                                     : false); // we have changed to ALWAYS require start time
-    params.put(
-        "requireEndTime",
-        null != processStepEventAction.getRequireEndTime()
-            ? processStepEventAction.getRequireEndTime()
-            : false);
-    params.put(
-        "requireResource",
-        null != processStepEventAction.getRequireResource()
-            ? processStepEventAction.getRequireResource()
-            : false);
-    params.put(
-        "alwaysEnabled",
-        null != processStepEventAction.getAlwaysEnabled()
-            ? processStepEventAction.getAlwaysEnabled()
-            : false);
-    params.put(
-        "multipleUses",
-        null != processStepEventAction.getMultipleUses()
-            ? processStepEventAction.getMultipleUses()
-            : false);
-    params.put(
-        "hideFromWeb",
-        null != processStepEventAction.getHideFromWeb()
-            ? processStepEventAction.getHideFromWeb()
-            : false);
-    params.put(
-        "hideFromMobile",
-        null != processStepEventAction.getHideFromMobile()
-            ? processStepEventAction.getHideFromMobile()
-            : false);
+    params.put("actionTypeId", processStepEventAction.getActionTypeId());
+    params.put("content", processStepEventAction.getContent());
+    params.put("color", processStepEventAction.getColor());
+    params.put("requireStartTime", null != processStepEventAction.getRequireStartTime() ? processStepEventAction.getRequireStartTime() : false); // we have changed to ALWAYS require start time
+    params.put("requireEndTime", null != processStepEventAction.getRequireEndTime() ? processStepEventAction.getRequireEndTime() : false);
+    params.put("requireResource", null != processStepEventAction.getRequireResource() ? processStepEventAction.getRequireResource() : false);
+    params.put("alwaysEnabled", null != processStepEventAction.getAlwaysEnabled() ? processStepEventAction.getAlwaysEnabled() : false);
+    params.put("multipleUses", null != processStepEventAction.getMultipleUses() ? processStepEventAction.getMultipleUses() : false);
+    params.put("hideFromWeb", null != processStepEventAction.getHideFromWeb() ? processStepEventAction.getHideFromWeb() : false);
+    params.put("hideFromMobile", null != processStepEventAction.getHideFromMobile() ? processStepEventAction.getHideFromMobile() : false);
     params.put("userId", currentUser.trueUserId());
     params.put("processStepEventId", eventId);
 
@@ -180,8 +135,7 @@ public class ProcessStepEventService {
       params.put("id", id);
       sqlCache.update("processStepEvent.updateStepEventAction", params);
 
-      if (null != processStepEventAction.getLogicListChanged()
-          && processStepEventAction.getLogicListChanged()) {
+      if (null != processStepEventAction.getLogicListChanged() && processStepEventAction.getLogicListChanged()) {
         // archive all old logic before saving new logic
         sqlCache.update("processStepEvent.archiveOldLogic", params);
 
@@ -189,11 +143,8 @@ public class ProcessStepEventService {
           // handle saving logic items.
           // insert the new ones
           int count = 0;
-          for (ProcessStepEventLogic logic :
-              processStepEventAction.getProcessStepEventLogicList()) {
-            if (null != logic.getProcessStepEventRequirementId()
-                && (null == logic.getProcessStepRequirementImmutable()
-                    || !logic.getProcessStepRequirementImmutable())) {
+          for (ProcessStepEventLogic logic : processStepEventAction.getProcessStepEventLogicList()) {
+            if (null != logic.getProcessStepEventRequirementId() && (null == logic.getProcessStepRequirementImmutable() || !logic.getProcessStepRequirementImmutable())) {
               // update psr.immutable, if it is not already true. (don't have to do this for updates
               // because it should already be true by now)
               HashMap<String, Object> psrParams = new HashMap<>();
@@ -203,8 +154,7 @@ public class ProcessStepEventService {
 
             HashMap<String, Object> logicParams = new HashMap<>();
             logicParams.put("id", processStepEventAction.getId());
-            logicParams.put(
-                "processStepEventRequirementId", logic.getProcessStepEventRequirementId());
+            logicParams.put("processStepEventRequirementId", logic.getProcessStepEventRequirementId());
             logicParams.put("operationTypeId", logic.getOperationTypeId());
             logicParams.put("sqlOrder", count);
             logicParams.put("createdById", currentUser.trueUserId());
@@ -214,10 +164,7 @@ public class ProcessStepEventService {
         }
       }
     } else {
-      id =
-          sqlCache
-              .updateReturningId("processStepEvent.addStepEventAction", params, "id")
-              .longValue();
+      id = sqlCache.updateReturningId("processStepEvent.addStepEventAction", params, "id").longValue();
     }
 
     return getStepEventAction(id);
@@ -309,22 +256,15 @@ public class ProcessStepEventService {
 
     Long id = null;
     // if there is already a record then update it IF required or optional is true
-    if (null != processStepEventActionField.getId()
-        && (processStepEventActionField.getOptional()
-            || processStepEventActionField.getRequired())) {
+    if (null != processStepEventActionField.getId() && (processStepEventActionField.getOptional() || processStepEventActionField.getRequired())) {
       id = processStepEventActionField.getId();
       sqlCache.update("processStepEvent.updateRequiredFieldStatus", params);
-    } else if (null != processStepEventActionField.getId()
-        && !processStepEventActionField.getRequired()
-        && !processStepEventActionField.getOptional()) {
+    } else if (null != processStepEventActionField.getId() && !processStepEventActionField.getRequired() && !processStepEventActionField.getOptional()) {
       // if there is already a record and not optional or required, then archive it
       sqlCache.update("processStepEvent.archiveRequiredFieldStatus", params);
     } else {
       // otherwise add a new row
-      id =
-          sqlCache
-              .updateReturningId("processStepEvent.addRequiredFieldStatus", params, "id")
-              .longValue();
+      id = sqlCache.updateReturningId("processStepEvent.addRequiredFieldStatus", params, "id").longValue();
     }
 
     return id;
@@ -340,26 +280,17 @@ public class ProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<CompanyEventStatusType>> companyEventStatusTypeRef =
-          new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "companyEventStatusTypes",
-          new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
+      TypeReference<List<CompanyEventStatusType>> companyEventStatusTypeRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "companyEventStatusTypes", new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
 
-      TypeReference<List<ProcessStepEventAction>> processStepEventActionRef =
-          new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "processStepEventActions",
-          new JsonCollectionDeserializer(processStepEventActionRef, objectMapper));
+      TypeReference<List<ProcessStepEventAction>> processStepEventActionRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "processStepEventActions", new JsonCollectionDeserializer(processStepEventActionRef, objectMapper));
 
-      TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef =
-          new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "workQueueTypes",
-          new JsonCollectionDeserializer(processStepEventWqtRef, objectMapper));
+      TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "workQueueTypes", new JsonCollectionDeserializer(processStepEventWqtRef, objectMapper));
     }
   }
 
@@ -373,18 +304,13 @@ public class ProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepEventLogic>> processStepEventLogicTypeRef =
-          new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "processStepEventLogicList",
-          new JsonCollectionDeserializer(processStepEventLogicTypeRef, objectMapper));
+      TypeReference<List<ProcessStepEventLogic>> processStepEventLogicTypeRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "processStepEventLogicList", new JsonCollectionDeserializer(processStepEventLogicTypeRef, objectMapper));
 
-      TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "customFields",
-          new JsonCollectionDeserializer(customFieldsRef, objectMapper));
+      TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "customFields", new JsonCollectionDeserializer(customFieldsRef, objectMapper));
     }
   }
 
@@ -398,11 +324,12 @@ public class ProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ActionParamDynamicValue>> actionParamDynamicValuesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "actionParamDynamicValues",
-        new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
+      TypeReference<List<ActionParamDynamicValue>> actionParamDynamicValuesRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "actionParamDynamicValues", new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
 
-      TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {};
+      TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "companyFunctionParams", new JsonCollectionDeserializer<>(companyFunctionParamsRef, objectMapper));
     }
   }

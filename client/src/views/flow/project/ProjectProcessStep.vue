@@ -163,7 +163,15 @@
           />
         </div>
       </v-col>
-      <v-col cols="12" class="text-left pt-4">
+      <v-col cols="12" class="text-left pt-0">
+        <div v-if="processStep && processStep.banners && processStep.banners.length > 0">
+          <v-card flat class="square-card banner-card" :class="{'mt-2': idx !== 0}"
+                  v-for="(b, idx) in filterBy(processStep.banners, true, 'canPerform')">
+            <v-card-text :style="{'color': b.color}">
+              <pre class="app-pre-wrapper">{{b.content}}</pre>
+            </v-card-text>
+          </v-card>
+        </div>
         <div class="pps-subheader albatross-header-3" v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
           <v-btn
@@ -326,6 +334,7 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
+import Vue2Filters from 'vue2-filters'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -334,6 +343,7 @@ export default {
   props: {
     project: Object
   },
+  mixins: [Vue2Filters.mixin],
   components: {
     ActionButton,
     EventButton,
@@ -806,6 +816,10 @@ owner-toolbar-tools {
 
 .owner-position {
   color: #9E9C9C;
+}
+
+.banner-card {
+  border: solid 1px #C4C4C4;
 }
 
 .pps-subheader {
