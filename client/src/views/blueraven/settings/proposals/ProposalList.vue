@@ -2,7 +2,7 @@
   <v-container>
     <v-toolbar flat class="app-toolbar">
       <v-toolbar-title class="app-title">Proposal Versions</v-toolbar-title>
-      <v-spacer/>
+      <v-spacer />
       <v-toolbar-items>
         <v-btn text :to="'/settings/proposalDesigner'">
           <span>Designer</span>
@@ -12,7 +12,7 @@
         <v-btn text color="primaryButton" @click="create">Create New Version</v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <v-divider/>
+    <v-divider />
     <v-container>
       <div v-if="!loading && !versions.length">
         No proposals available.
@@ -20,8 +20,9 @@
       <v-card v-if="versions.length" class="square-card">
         <v-data-table :headers="headers"
                       :items="versions"
-                      :sort-by="['id']"
-                      :sort-desc="true"
+                      :options.sync="options"
+                      :server-items-length="totalVersions"
+                      :footer-props="footerProps"
                       class="elevation-1"
                       @click:row="handleClick">
           <template #item.version="{item}">Version {{ item.version }}</template>
@@ -49,20 +50,27 @@
 
 </template>
 <script>
-// TODO: show status / primary version needs to be part of that
-import {getRequestWithParams, postRequest} from "@/helpers/helpers"
+import { getRequestWithParams, postRequest } from '@/helpers/helpers'
 
 export default {
   name: 'ProposalSettings',
   data() {
     return {
       loading: true,
+      options: {
+        sortBy: ['version'],
+        sortDesc: [true]
+      },
       headers: [
-        {text: '', value: 'status', sortable: false},
-        {text: 'version', value: 'version', sortable: false},
-        {text: 'modified', value: 'dateModified', sortable: false},
-        {text: 'modified by', value: 'modifiedBy', sortable: false}
+        { text: '', value: 'status', sortable: false },
+        { text: 'version', value: 'version', sortable: false },
+        { text: 'modified', value: 'dateModified', sortable: false },
+        { text: 'modified by', value: 'modifiedBy', sortable: false }
       ],
+      footerProps: {
+        'items-per-page-options': [5, 10, 20, 50, 100]
+      },
+      totalVersions: -1,
       versions: []
     }
   },
@@ -89,18 +97,28 @@ export default {
       return !this.loading && !this.versions.some(v => v.status === 'DRAFT')
     }
   },
+  watch: {
+    options: {
+      handler() {
+        this.getProposalFields()
+      },
+      deep: true
+    }
+  },
   methods: {
     async create() {
-      const {data} = await postRequest('/proposal/versions', {}, 'blueraven')
-      this.versions.push({...data})
-      await this.$router.push({name: 'proposalDetail', params: {id: data.id}})
+      const { data } = await postRequest('/proposal/versions', {}, 'blueraven')
+      this.versions.push({ ...data })
+      await this.$router.push({ name: 'proposalDetail', params: { id: data.id } })
     },
     handleClick(item) {
-      this.$router.push({name: 'proposalDetail', params: {id: item.id}})
+      this.$router.push({ name: 'proposalDetail', params: { id: item.id } })
     },
     async getProposalFields() {
+      const { itemsPerPage, page } = this.options
       this.loading = true
-      const {data} = await getRequestWithParams('/proposal/versions', {}, 'blueraven')
+      const { data } = await getRequestWithParams(`/proposal/versions?size=${itemsPerPage}&page=${page - 1}`, {}, 'blueraven')
+      this.totalVersions = data.totalElements ?? -1
       this.versions = [...data.content]
       this.loading = false
     }
@@ -114,6 +132,7 @@ export default {
   .v-data-table__wrapper {
     height: calc(100vh - 290px);
     min-height: 300px;
+    overflow: auto;
   }
 }
 
