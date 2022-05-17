@@ -26,7 +26,7 @@ public class ProjectProcessStepEvent {
   private Timestamp startTime, endTime;
   private List<CustomFieldGroup> customFieldGroups;
   private List<Resource> availableResources;
-  private List<ProcessStepEventAction> eventActions;
+  private List<ProcessStepEventAction> eventActions, eventBanners;
   private Boolean archived, startTimeReadOnly, endTimeReadOnly, resourceReadOnly;
   private List<WhiteListedPosition> startTimeWhiteListedPositions, endTimeWhiteListedPositions, resourceWhiteListedPositions;
 
