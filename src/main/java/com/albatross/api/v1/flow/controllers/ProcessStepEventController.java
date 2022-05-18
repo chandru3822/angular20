@@ -76,6 +76,11 @@ public class ProcessStepEventController {
     return processStepEventService.saveStepEventAction(stepId, eventId, processStepEventAction);
   }
 
+  @GetMapping(value = "/{eventId}/action/{actionId}/logicString", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getActionLogicString (@PathVariable Long actionId) {
+    return processStepEventService.getActionLogicString(actionId);
+  }
+
   @PutMapping(value = "/{eventId}/action/order", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateEventActionOrder(@RequestBody List<ProcessStepEventAction> actions) {
     processStepEventService.updateEventActionOrder(actions);
