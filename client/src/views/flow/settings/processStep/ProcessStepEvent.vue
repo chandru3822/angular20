@@ -435,7 +435,43 @@
               </div>
               <v-divider></v-divider>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
+                <v-toolbar-title class="app-title">
+                  Current Logic
+                  <v-dialog
+                    v-if="action.processStepEventLogicList && action.processStepEventLogicList.length > 0 && !action.logicListChanged"
+                    v-model="showActionLogicString"
+                    width="500">
+                    <template #activator="{ on }">
+                      <v-btn text class="d-inline-block" @click="getActionLogicString(action.id)" v-on="on">
+                        <v-icon>mdi-information</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="text-h5 grey lighten-2"
+                        primary-title>
+                        Action Logic String
+                      </v-card-title>
+
+                      <v-card-text class="pt-4">
+                        {{actionLogicString}}
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-btn @click="copyToClipBoard()">
+                          Copy
+                        </v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="showActionLogicString = false">
+                          OK
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items
                   v-if="((action.processStepEventLogicList && action.processStepEventLogicList.length > 0) || action.alwaysEnabled) && userCanEdit">
@@ -660,6 +696,8 @@ export default {
       addChildFunction: false,
       selectedChildFunction: {},
       childFunctions: [],
+      showActionLogicString: false,
+      actionLogicString: null,
       selectedChildRequirementParamDynamicValues: [],
       selectedActionIndex: null,
       selectedEvent: {
@@ -739,6 +777,21 @@ export default {
     //populate requirements so that events can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.selectedEvent.requirements = reqs
+    },
+    copyToClipBoard(){
+      navigator.clipboard.writeText(this.actionLogicString);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    async getActionLogicString(actionId) {
+      try {
+        const {data} = await getRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action/${actionId}/logicString`)
+        this.actionLogicString = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching logic string')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
     },
     async getEventDetails() {
       try {

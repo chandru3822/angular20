@@ -420,4 +420,62 @@ order by
   psacf.display_order,
   cf.company_function_name
 ]]></processStepAction.getChildFunctionsByProjectProcessStepId>
+
+  <processStepAction.actionLogicString><![CDATA[
+    with logic as (
+      select case
+               when ot.operation_type is not null then ot.operation_type
+               when obt.id in (1, 2, 3, 4) then
+                 concat(upper(obt.object_type), ': ',
+                        case when ps.process_step_name is not null then concat(ps.process_step_name, ': ') end,
+                        cfg.group_name, ' - ', cf.field_name, ' ', opt.operator_type, ' ',
+                        coalesce(psr.requirement_value, dtr.data_type_value), case
+                                                                                when psr.secondary_requirement_value is not null
+                                                                                  then concat('(', psr.secondary_requirement_value, ')') end,
+                        case
+                          when custom_sql_option_id is not null then concat('<', cf.custom_field_sql_key, '> Option: ',
+                                                                            custom_sql_option_id) end)
+               when psr.company_function_id is not null then
+                 concat('FUNCTION: ', company_function_name, ' ', opt.operator_type, ' ',
+                        coalesce(psr.requirement_value, dtr.data_type_value))
+               when process_step_requirement_type_id = 7 then
+                 concat('Company PS Status of ', ref_ps.process_step_name, ' in (', array_to_string(
+                     array(select process_step_status_type
+                           from flow.company_process_step_status_type cpst
+                           where cpst.id = any (list_of_value_ids)), ','), ')')
+               when process_step_requirement_type_id = 8 then
+                 concat('ROOT PS Status of ', ref_ps.process_step_name, ' in (', array_to_string(
+                     array(select process_step_status_type
+                           from flow.process_step_status_type cpst
+                           where cpst.id = any (list_of_value_ids)), ','), ')')
+               when process_step_requirement_type_id = 9 then
+                 concat('Company Project Status in (', array_to_string(array(select project_status_type
+                                                                             from flow.company_project_status_type cpst
+                                                                             where cpst.id = any (list_of_value_ids)), ','),
+                        ')')
+               when process_step_requirement_type_id = 10 then
+                 concat('ROOT Project Status in (', array_to_string(array(select project_status_type
+                                                                          from flow.project_status_type cpst
+                                                                          where cpst.id = any (list_of_value_ids)), ','),
+                        ')')
+               end as value
+      from flow.process_step_logic psl
+             left join flow.operation_type ot on psl.operation_type_id = ot.id
+             left join flow.process_step_requirement psr on psl.process_step_requirement_id = psr.id
+             left join flow.operator_type opt on psr.operator_type_id = opt.id
+             left join flow.data_type_requirement dtr on psr.data_type_requirement_id = dtr.id
+             left join flow.custom_field_group_assignment cfga on psr.custom_field_group_assignment_id = cfga.id
+             left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+             left join flow.process_step ps on cfg.process_step_id = ps.id
+             left join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+             left join flow.object_type obt on cot.object_type_id = obt.id
+             left join flow.custom_field cf on cfga.custom_field_id = cf.id
+             left join flow.company_function cfn on psr.company_function_id = cfn.id
+             left join flow.process_step ref_ps on ref_ps.id = psr.reference_process_step_id
+      where psl.process_step_action_id = :actionId
+        and psl.archived is false
+      order by psl.sql_order
+    )
+    select array_to_string(array(select value from logic), ' ')
+  ]]></processStepAction.actionLogicString>
 </sql>

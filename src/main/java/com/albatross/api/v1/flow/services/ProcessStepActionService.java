@@ -41,6 +41,13 @@ public class ProcessStepActionService {
         new ProcessStepActionMapper<>(ProcessStepAction.class, om));
   }
 
+  public String getActionLogicString(Long actionId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("actionId", actionId);
+    Optional<String> logicString = sqlCache.queryForObjectOptional("processStepAction.actionLogicString", params, String.class);
+    return logicString.orElse("");
+  }
+
   public void deleteAction(Long actionId) {
     User currentUser = securityService.getCurrentUser();
 

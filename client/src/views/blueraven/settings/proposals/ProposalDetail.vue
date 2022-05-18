@@ -151,6 +151,9 @@
               :options.sync="options"
               :search="search"
               :custom-filter="filterItems"
+              :footer-props="footerProps"
+              @update:sort-by="sortValues"
+              @update:sort-desc="sortValues"
               class="elevation-1"
             >
               <template #top>
@@ -208,67 +211,67 @@
   </div>
 </template>
 <script>
-import { deleteRequestWithPayload, getRequestWithParams, getSnackbar, postRequest } from "@/helpers/helpers";
-import NewProposalValueDialog from "./NewProposalValueDialog.vue";
-import { AppMutations } from "@/stores/AppStore";
+import { deleteRequestWithPayload, getRequestWithParams, getSnackbar, postRequest } from '@/helpers/helpers'
+import NewProposalValueDialog from './NewProposalValueDialog.vue'
+import { AppMutations } from '@/stores/AppStore'
 
-const defaultActionColumn = { txt: "Actions", value: "actions", sortable: false };
+const defaultActionColumn = { txt: 'Actions', value: 'actions', sortable: false }
 
-const sorterFn = (fieldCode) => {
+const sorterFn = (fieldCode, sortDesc = false) => {
   return (a, b) => {
     if (a[fieldCode]?.value < b[fieldCode]?.value) {
-      return -1;
+      return sortDesc ?  -1 : 1
     }
 
     if (a[fieldCode]?.value > b[fieldCode]?.value) {
-      return 1;
+      return sortDesc ? 1 : -1
     }
-    return 0;
-  };
-};
+    return 0
+  }
+}
 
 let headerSort = (a, b) => {
   if (a?.value < b?.value) {
-    return -1;
+    return -1
   }
 
   if (a?.value > b?.value) {
-    return 1;
+    return 1
   }
 
-  return 0;
-};
+  return 0
+}
 
 export default {
-  name: "ProposalDetail",
+  name: 'ProposalDetail',
   components: { NewProposalValueDialog },
-  props: ["id"],
+  props: ['id'],
   filters: {
     capitalize: (value) => {
-      if (!value) return;
-      return value[0].toUpperCase() + value?.slice(1).toLowerCase();
+      if (!value) return
+      return value[0].toUpperCase() + value?.slice(1).toLowerCase()
     },
     customValueFormatter: ({ value, type }) => {
       if (Array.isArray(value)) {
-        return value?.join(", ");
+        return value?.join(', ')
       }
 
-      if (type === "timestamp") {
-        return new Intl.DateTimeFormat("default", {
-          dateStyle: "short",
-          timeStyle: "short"
-        }).format(new Date(value));
+      if (type === 'timestamp') {
+        return new Intl.DateTimeFormat('default', {
+          dateStyle: 'short',
+          timeStyle: 'short'
+        }).format(new Date(value))
       }
-      return value;
+      return value
     }
   },
   created() {
-    this.getProposalDetail(this.id);
-    this.getProposalObjectTypes();
+    this.getProposalDetail(this.id)
+    this.getProposalObjectTypes()
   },
   data() {
     return {
-      search: "",
+      search: '',
       options: {},
       detail: {},
       tab: null,
@@ -280,29 +283,32 @@ export default {
       editedItem: undefined,
       modifiedOnlyFilter: false,
       deleteGroupConfirmation: false,
-      undoDraftChanges: false
-    };
+      undoDraftChanges: false,
+      footerProps: {
+        'items-per-page-options': [1, 5, 10, 20, 50, -1]
+      }
+    }
   },
   computed: {
-    rows(){
-      return !this.modifiedOnlyFilter ? this.values : this.values?.filter(v=>v.versionId == this.id)
+    rows() {
+      return !this.modifiedOnlyFilter ? this.values : this.values?.filter(v => v.versionId == this.id)
     },
-    hasChanges(){
-      return this.values?.filter(v=>v.versionId == this.id).length > 0
+    hasChanges() {
+      return this.values?.filter(v => v.versionId == this.id).length > 0
     },
     propType() {
-      return this.types[this.tab] ?? {};
+      return this.types[this.tab] ?? {}
     }
   },
   methods: {
     async changer() {
-      const requests = [];
-      const { code } = this.propType;
+      const requests = []
+      const { code } = this.propType
 
       if (code) {
-        requests.push(this.getProposalObjectTypeFields(code));
-        requests.push(this.getProposalObjectTypeFieldValues(this.id, code));
-        await Promise.all(requests);
+        requests.push(this.getProposalObjectTypeFields(code))
+        requests.push(this.getProposalObjectTypeFieldValues(this.id, code))
+        await Promise.all(requests)
       }
     },
 
@@ -311,25 +317,25 @@ export default {
         .filter(v => v.value !== undefined)
         .some(v => {
           if (Array.isArray(v.value)) {
-            const needle = search?.toLowerCase();
-            return v.value?.some(f => f.toLowerCase().indexOf(needle) > -1);
+            const needle = search?.toLowerCase()
+            return v.value?.some(f => f.toLowerCase().indexOf(needle) > -1)
           }
-          if (v.type === "text" || v.type === "system" || v.type === 'System List') {
-            const needle = search?.toLowerCase();
-            return v?.value?.toLowerCase().indexOf(needle) > -1;
+          if (v.type === 'text' || v.type === 'system' || v.type === 'System List') {
+            const needle = search?.toLowerCase()
+            return v?.value?.toLowerCase().indexOf(needle) > -1
           }
 
-          if (v.type === 'numeric'){
+          if (v.type === 'numeric') {
             return v?.value == search
           }
 
-          return false;
-        });
+          return false
+        })
     },
 
     editItem(item) {
-      this.visible = true;
-      this.editedItem = { ...item };
+      this.visible = true
+      this.editedItem = { ...item }
     },
 
     async archiveItemConfirm(item) {
@@ -338,14 +344,14 @@ export default {
     },
 
     async archiveItem(item) {
-      const { data } = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}/archive`, undefined, 'blueraven');
-      const pk = data?.pk || item.pk;
-      const values = this.values?.filter(v => v.pk !== pk) ?? [];
+      const { data } = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}/archive`, undefined, 'blueraven')
+      const pk = data?.pk || item.pk
+      const values = this.values?.filter(v => v.pk !== pk) ?? []
 
-      const sortHeader = this.headers.find(h => h.fieldOrder === 1);
-      values.sort(sorterFn(sortHeader?.value));
+      const sortHeader = this.headers.find(h => h.fieldOrder === 1)
+      values.sort(sorterFn(sortHeader?.value))
 
-      this.values = values;
+      this.values = values
       this.selectedDeleteItem = undefined
       this.deleteGroupConfirmation = false
 
@@ -354,31 +360,31 @@ export default {
     },
 
     async deleteItem(item) {
-      const { data } = await deleteRequestWithPayload(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}`, "blueraven");
-      const pk = data?.pk || item.pk;
-      const values = this.values?.filter(v => v.pk !== pk) ?? [];
+      const { data } = await deleteRequestWithPayload(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}`, 'blueraven')
+      const pk = data?.pk || item.pk
+      const values = this.values?.filter(v => v.pk !== pk) ?? []
 
       if (data) {
-        const { versionId, row } = data;
-        values.push({ pk, versionId, ...row });
+        const { versionId, row } = data
+        values.push({ pk, versionId, ...row })
       }
 
-      const sortHeader = this.headers.find(h => h.fieldOrder === 1);
-      values.sort(sorterFn(sortHeader?.value));
+      const sortHeader = this.headers.find(h => h.fieldOrder === 1)
+      values.sort(sorterFn(sortHeader?.value))
 
-      this.values = values;
+      this.values = values
 
       const snackbar = getSnackbar('SUCCESS', `Row was reverted to previous version!`)
       this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
     },
 
-    async undoAllChanges(){
-      const { data } = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/reset`, {}, "blueraven");
+    async undoAllChanges() {
+      const { data } = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/reset`, {}, 'blueraven')
 
-      let values = data.map(({ pk, versionId, row }) => ({ pk, versionId, ...row }));
-      const sortHeader = this.headers.find(h => h.fieldOrder === 1);
-      values.sort(sorterFn(sortHeader?.value));
-      this.values = values;
+      let values = data.map(({ pk, versionId, row }) => ({ pk, versionId, ...row }))
+      const sortHeader = this.headers.find(h => h.fieldOrder === 1)
+      values.sort(sorterFn(sortHeader?.value))
+      this.values = values
       this.undoDraftChanges = false
 
       const snackbar = getSnackbar('SUCCESS', `All changes to "${this.propType.name}" successfully reverted!`)
@@ -386,17 +392,17 @@ export default {
     },
 
     async getProposalDetail(proposalVersionId) {
-      const { data } = await getRequestWithParams(`/proposal/versions/${proposalVersionId}`, {}, "blueraven");
-      this.detail = data ? { ...data } : null;
+      const { data } = await getRequestWithParams(`/proposal/versions/${proposalVersionId}`, {}, 'blueraven')
+      this.detail = data ? { ...data } : null
     },
 
     async getProposalObjectTypes() {
-      const { data } = await getRequestWithParams("/proposal/versions/types", {}, "blueraven");
-      this.types = [...data];
+      const { data } = await getRequestWithParams('/proposal/versions/types', {}, 'blueraven')
+      this.types = [...data]
     },
 
     async getProposalObjectTypeFields(objectType) {
-      const { data } = await getRequestWithParams(`/proposal/versions/fields/${objectType}`, {}, "blueraven");
+      const { data } = await getRequestWithParams(`/proposal/versions/fields/${objectType}`, {}, 'blueraven')
 
       let headers = data?.length > 0
         ? data.map(r => ({
@@ -406,59 +412,64 @@ export default {
           sort: headerSort,
           value: r.id
         }))
-        : [];
+        : []
 
-      headers.sort((a, b) => a.fieldOrder - b.fieldOrder);
+      headers.sort((a, b) => a.fieldOrder - b.fieldOrder)
 
-      if (this.detail.status === "DRAFT") {
-        headers.push(defaultActionColumn);
+      if (this.detail.status === 'DRAFT') {
+        headers.push(defaultActionColumn)
       }
-      this.headers = headers;
+      this.headers = headers
     },
 
     async getProposalObjectTypeFieldValues(proposalVersionId, objectType) {
-      const { data } = await getRequestWithParams(`/proposal/versions/${proposalVersionId}/values/${objectType}`, {}, "blueraven");
-      let values = data.map(({ pk, versionId, row }) => ({ pk, versionId, ...row }));
-      const sortHeader = this.headers.find(h => h.fieldOrder === 1);
-      values.sort(sorterFn(sortHeader?.value));
-      this.values = values;
+      const { data } = await getRequestWithParams(`/proposal/versions/${proposalVersionId}/values/${objectType}`, {}, 'blueraven')
+      let values = data.map(({ pk, versionId, row }) => ({ pk, versionId, ...row }))
+      const sortHeader = this.headers.find(h => h.fieldOrder === 1)
+      values.sort(sorterFn(sortHeader?.value))
+      this.values = values
     },
 
     async publish(proposalVersionId) {
-      const { data } = await postRequest(`/proposal/versions/${proposalVersionId}/publish`, {}, "blueraven");
-      this.detail = { ...data };
+      const { data } = await postRequest(`/proposal/versions/${proposalVersionId}/publish`, {}, 'blueraven')
+      this.detail = { ...data }
       //hide the action column
-      this.headers =  this.headers.slice(0, this.headers.length - 1)
+      this.headers = this.headers.slice(0, this.headers.length - 1)
 
       const snackbar = getSnackbar('SUCCESS', `Proposal Version #${proposalVersionId} Successfully Published`)
       this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
     },
 
     async doInput(val) {
-      this.visible = val;
+      this.visible = val
       if (!val) {
-        this.editedItem = undefined;
+        this.editedItem = undefined
       }
     },
 
     async doSaveValues(group) {
       try {
-        const { data = {} } = await postRequest(`/proposal/versions/${this.detail.id}/values/${this.propType.code}`, group, "blueraven");
-        const { pk, versionId, row } = data;
-        const sortHeader = this.headers.find(h => h.fieldOrder === 1);
-        const values = this.values?.filter(v => v.pk !== pk) ?? [];
-        values.push({ pk, versionId, ...row });
-        values.sort(sorterFn(sortHeader?.value));
-        this.values = values;
+        const { data = {} } = await postRequest(`/proposal/versions/${this.detail.id}/values/${this.propType.code}`, group, 'blueraven')
+        const { pk, versionId, row } = data
+        const sortHeader = this.headers.find(h => h.fieldOrder === 1)
+        const values = this.values?.filter(v => v.pk !== pk) ?? []
+        values.push({ pk, versionId, ...row })
+        values.sort(sorterFn(sortHeader?.value))
+        this.values = values
         const snackbar = getSnackbar('SUCCESS', 'Row updated successfully!')
         this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
       } catch (e) {
-        const snackbar = getSnackbar("ERROR", "Error Updating Proposal Version Fields");
-        this.$store.commit(AppMutations.SHOW_SNACK, snackbar);
+        const snackbar = getSnackbar('ERROR', 'Error Updating Proposal Version Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
       }
+    },
+
+    sortValues(sortHeader) {
+      const { sortBy, sortDesc } = this.options
+      this.values.sort(sorterFn(sortBy[0], sortDesc[0]))
     }
   }
-};
+}
 </script>
 <style scoped lang="scss">
 @import "@/styles/main.scss";
@@ -482,6 +493,7 @@ export default {
   .v-data-table__wrapper {
     height: calc(100vh - 380px);
     min-height: 300px;
+    overflow: auto;
   }
 }
 

@@ -170,6 +170,13 @@ public class ProcessStepEventService {
     return getStepEventAction(id);
   }
 
+  public String getActionLogicString(Long actionId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("actionId", actionId);
+    Optional<String> logicString = sqlCache.queryForObjectOptional("processStepEvent.actionLogicString", params, String.class);
+    return logicString.orElse("");
+  }
+
   public void updateEventActionOrder(List<ProcessStepEventAction> actions) {
     User currentUser = securityService.getCurrentUser();
 

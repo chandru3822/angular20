@@ -707,7 +707,43 @@
                 </v-row>
                 <v-divider class="mt-2"></v-divider>
                 <v-toolbar flat dense color="transparent">
-                  <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
+                  <v-toolbar-title class="app-title">
+                    Current Logic
+                    <v-dialog
+                      v-if="item.processStepLogicList && item.processStepLogicList.length > 0 && !item.logicListChanged"
+                      v-model="showActionLogicString"
+                      width="500">
+                      <template #activator="{ on }">
+                        <v-btn text class="d-inline-block" @click="getActionLogicString(item.id)" v-on="on">
+                          <v-icon>mdi-information</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="text-h5 grey lighten-2"
+                          primary-title>
+                          Action Logic String
+                        </v-card-title>
+
+                        <v-card-text class="pt-4">
+                          {{actionLogicString}}
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-btn @click="copyToClipBoard()">
+                            Copy
+                          </v-btn>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="showActionLogicString = false">
+                            OK
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items
                     v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
@@ -943,6 +979,8 @@ export default {
       selectedListOfValues: [],
       selectedListValue: {},
       selectedFunction: {},
+      showActionLogicString: false,
+      actionLogicString: null,
       selectedRequirementIndex: null,
       selectedActionIndex: null,
       availableRequirementTypes: [],
@@ -1039,6 +1077,21 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    copyToClipBoard(){
+      navigator.clipboard.writeText(this.actionLogicString);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    async getActionLogicString(actionId) {
+      try {
+        const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/logicString`)
+        this.actionLogicString = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching logic string')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
@@ -1144,6 +1197,7 @@ export default {
         const {data, status} = await putRequest(`/processStep/${this.processStepId}/action`, action)
         // this forces the list to update the values displayed ... using action = data did not work
         action.actionType = data.actionType
+        action.logicListChanged = false
         action.processStepStatusType = data.processStepStatusType
         action.processStepActionChildProcesses = data.processStepActionChildProcesses
         action.processStepActionLinks = data.processStepActionLinks
