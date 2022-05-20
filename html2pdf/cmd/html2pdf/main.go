@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 )
 
@@ -23,6 +24,9 @@ func main() {
 
 			var ret []byte
 			_ = d.Convert(html, &ret)
+
+			contentLength := len(ret)
+			c.Response().Header().Set("Content-Length", strconv.Itoa(contentLength))
 			return c.Blob(http.StatusOK, "application/pdf", ret)
 		},
 	})
