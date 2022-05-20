@@ -14,7 +14,7 @@ import java.util.List;
 public class ProcessStepAction {
 
   private Long id, processStepId, companyProcessStepStatusTypeId, companyProjectStatusTypeId, projectStatusTypeId, actionTypeId, processStepStatusTypeId, displayOrder;
-  private String actionName, actionType, processStepStatusType, projectStatusType, color, content;
+  private String actionName, actionType, processStepStatusType, projectStatusType, color, bgColor, content;
   private List<ProcessStepLogic> processStepLogicList;
   private List<ProcessStepActionChildProcess> processStepActionChildProcesses;
   private List<ProcessStepActionChildFunction> processStepActionChildFunctions;

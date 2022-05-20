@@ -94,6 +94,7 @@ public class ProcessStepActionService {
     params.put("alwaysEnabled", action.getAlwaysEnabled());
     params.put("content", action.getContent());
     params.put("color", action.getColor());
+    params.put("bgColor", action.getBgColor());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put("modifiedById", currentUser.trueUserId());
@@ -167,6 +168,7 @@ public class ProcessStepActionService {
     params.put("processStepId", action.getProcessStepId());
     params.put("content", action.getContent());
     params.put("color", action.getColor());
+    params.put("bgColor", action.getBgColor());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put(

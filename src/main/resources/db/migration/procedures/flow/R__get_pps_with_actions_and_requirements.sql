@@ -247,6 +247,7 @@ BEGIN
                       psa.remove_process_step_owner as "removeProcessStepOwner",
                       psa.action_name as "actionName",
                       psa.content,
+                      psa.bg_color as "bgColor",
                       psa.color,
                       false as "alreadyTriggered",
                       coalesce((

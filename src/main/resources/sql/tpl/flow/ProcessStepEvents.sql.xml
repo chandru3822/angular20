@@ -13,6 +13,7 @@
                   FROM (
                          SELECT psea.id,
                                 psea.content,
+                                psea.bg_color as "bgColor",
                                 psea.color,
                                 at.action_type as "actionType",
                                 psea.action_type_id as "actionTypeId",
@@ -92,6 +93,7 @@ where pse.process_step_id = :processStepId
                              SELECT psea.id,
                                     psea.action_type_id as "actionTypeId",
                                     psea.content,
+                                    psea.bg_color as "bgColor",
                                     psea.color,
                                     at.action_type as "actionType",
                                     psea.action_name as "actionName",
@@ -306,10 +308,10 @@ where pse.process_step_id = :processStepId
   ]]></processStepEvent.deleteEventFromStep>
 
   <processStepEvent.addStepEventAction><![CDATA[
-    insert into flow.process_step_event_action(process_step_event_id, company_event_status_type_id, company_process_step_status_type_id, action_name, created_by_id, display_order, content, color, action_type_id)
+    insert into flow.process_step_event_action(process_step_event_id, company_event_status_type_id, company_process_step_status_type_id, action_name, created_by_id, display_order, content, color, bg_color, action_type_id)
     values(:processStepEventId, :companyEventStatusTypeId, :companyProcessStepStatusTypeId, :actionName, :userId,
            (select coalesce(max(display_order) + 1, 0) from flow.process_step_event_action psea
-            where process_step_event_id = :processStepEventId and archived is false), :content, :color, :actionTypeId)
+            where process_step_event_id = :processStepEventId and archived is false), :content, :color, :bgColor, :actionTypeId)
   ]]></processStepEvent.addStepEventAction>
 
   <processStepEvent.updateStepEventAction><![CDATA[
@@ -317,6 +319,7 @@ where pse.process_step_id = :processStepId
       set company_event_status_type_id = :companyEventStatusTypeId,
           action_name = :actionName,
           content = :content,
+          bg_color = :bgColor,
           color = :color,
           require_start_time = :requireStartTime,
           require_end_time = :requireEndTime,

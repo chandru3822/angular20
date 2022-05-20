@@ -45,7 +45,8 @@ public class ProcessStepEventService {
   public Optional<ProcessStepEvent> getProcessStepEvent(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("processStepEvent.get", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    Optional<ProcessStepEvent> result = sqlCache.get("processStepEvent.get", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    return result;
   }
 
   public Optional<ProcessStepEvent> addEventToStep(Long processStepId, ProcessStepEvent processStepEvent) {
@@ -118,6 +119,7 @@ public class ProcessStepEventService {
     params.put("actionTypeId", processStepEventAction.getActionTypeId());
     params.put("content", processStepEventAction.getContent());
     params.put("color", processStepEventAction.getColor());
+    params.put("bgColor", processStepEventAction.getBgColor());
     params.put("requireStartTime", null != processStepEventAction.getRequireStartTime() ? processStepEventAction.getRequireStartTime() : false); // we have changed to ALWAYS require start time
     params.put("requireEndTime", null != processStepEventAction.getRequireEndTime() ? processStepEventAction.getRequireEndTime() : false);
     params.put("requireResource", null != processStepEventAction.getRequireResource() ? processStepEventAction.getRequireResource() : false);

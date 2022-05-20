@@ -8,7 +8,7 @@
           <v-toolbar-title class="app-title">Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73']" text v-if="userCanAdd">
+            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
               {{ addNewAction ? 'Cancel' : 'Add Action' }}
             </v-btn>
@@ -97,6 +97,16 @@
               <label>Banner Text Color:</label>
               <v-color-picker class="my-3"
                               v-model="newAction.color"
+                              :canvas-height="colorOptions.height"
+                              :width="colorOptions.width"
+                              :mode="colorOptions.mode"
+                              :hide-mode-switch="colorOptions.hideModeSwitch">
+              </v-color-picker>
+            </div>
+            <div>
+              <label>Banner Background Color:</label>
+              <v-color-picker class="my-3"
+                              v-model="newAction.bgColor"
                               :canvas-height="colorOptions.height"
                               :width="colorOptions.width"
                               :mode="colorOptions.mode"
@@ -259,6 +269,16 @@
                       <label>Banner Text Color:</label>
                       <v-color-picker class="my-3"
                                       v-model="item.color"
+                                      :canvas-height="colorOptions.height"
+                                      :width="colorOptions.width"
+                                      :mode="colorOptions.mode"
+                                      :hide-mode-switch="colorOptions.hideModeSwitch">
+                      </v-color-picker>
+                    </div>
+                    <div>
+                      <label>Banner Text Color:</label>
+                      <v-color-picker class="my-3"
+                                      v-model="item.bgColor"
                                       :canvas-height="colorOptions.height"
                                       :width="colorOptions.width"
                                       :mode="colorOptions.mode"
@@ -1162,6 +1182,7 @@ export default {
           //otherwise null out the banner fields
           this.newAction.content = null
           this.newAction.color = null
+          this.newAction.bgColor = null
         }
         this.newAction.processStepId = this.processStepId
         const {data, status} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
