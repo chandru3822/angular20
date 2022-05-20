@@ -79,7 +79,7 @@ BEGIN
                       inner join flow.project_process_step pps on pps.project_id = p.id
                       inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id and
                                               ppse.process_step_event_id = $$ || z.process_step_event_id || $$
-                      $$||v_join||$$ inner join flow.project_process_step_event_custom_field_value ppsecfv on ppse.id = ppsecfv.project_process_step_event_id
+                      $$||v_join||$$ join flow.project_process_step_event_custom_field_value ppsecfv on ppse.id = ppsecfv.project_process_step_event_id
                         and ppsecfv.custom_field_group_assignment_id = $$ || z.custom_field_group_assignment_id || $$
                         where case when $$||v_field_required||$$ is true then ppsecfv.$$||flow.get_value_based_on_data_type(z.data_type_id)||
             $$ is not null else 1=1 end and

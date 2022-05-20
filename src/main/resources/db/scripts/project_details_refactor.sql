@@ -1363,3 +1363,18 @@ where id =392;
 update flow.data_view_child_field_config set unique_behavior_type_id = null
 where field_to_update = 'site_survey_date';
 
+
+
+INSERT INTO flow.data_view_field_config (data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, field_to_update, display_name, update_first_value_only, update_first_value_only_id, reset_on_new, date_created, date_modified, created_by_id, modified_by_id, archived, process_step_id) VALUES
+(1, 61, null, null, 'complete_date_booking', 'Booking Complete Date', true, 'complete_date_booking_cfv_id ', false, '2022-05-20 14:37:57.003571', '2022-05-20 14:37:57.003571', 2417164, null, false, 4);
+
+alter table brs.project_details add column if not exists complete_date_booking_cfv_id integer;
+create index if not exists pd_complete_date_booking_cfv_id_idx
+on brs.project_details (complete_date_booking_cfv_id);
+
+INSERT INTO flow.data_view_field_config (data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, field_to_update, display_name, update_first_value_only, update_first_value_only_id, reset_on_new, date_created, date_modified, created_by_id, modified_by_id, archived, process_step_id) VALUES
+  (1, 61, null, null, 'complete_date_final_design_completion', 'Final Design Complete Date', true, 'complete_date_final_design_completion_cfv_id ', false, '2022-05-20 14:37:57.003571', '2022-05-20 14:37:57.003571', 2417164, null, false, 175);
+
+alter table brs.project_details add column if not exists complete_date_final_design_completion_cfv_id integer;
+create index if not exists pd_complete_date_final_design_completion_cfv_id_idx
+  on brs.project_details (complete_date_final_design_completion_cfv_id);
