@@ -2,6 +2,10 @@
   <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
+        <v-btn text class="pl-1 pr-2" :to="'/admin/dataViews'">
+          <v-icon>arrow_left</v-icon>
+          <span>Back</span>
+        </v-btn>
         <div class="flex-display pt-3 px-3 mb-4 one-hunned">
           <div class="one-hunned pl-3">
             <span class="page-title" v-if="!edit">{{ dataView.displayName }}</span>
