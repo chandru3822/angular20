@@ -1,22 +1,26 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.company.blueraven.models.Proposal;
 import com.albatross.api.v1.company.blueraven.models.ProposalDesign;
 import com.albatross.api.v1.company.blueraven.models.ProposalProject;
 import com.albatross.api.v1.flow.model.Attachment;
-import com.google.common.net.HttpHeaders;
 import freemarker.template.TemplateException;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -79,21 +83,38 @@ public class BlueravenProposalController {
     return proposalTemplateService.getTemplateById(templateId, context);
   }
 
-  @GetMapping(value = "/{proposalId}/pdf")
-  public void getProposalTemplatePdf(
+  @Timed
+  @GetMapping(value = "/{proposalId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+  public ResponseEntity<StreamingResponseBody> getProposalTemplatePdf(
       @PathVariable Long proposalId,
       @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1")
           Long templateId,
       @RequestParam(value = "inline", defaultValue = "false") boolean inline,
-      HttpServletResponse response)
-      throws IOException, TemplateException {
+      HttpServletResponse response) {
 
-    response.addHeader(
-        HttpHeaders.CONTENT_DISPOSITION,
-        String.format("%s; filename=\"preview.pdf\"", inline ? "inline" : "attachment"));
+    final String contentDisposition =
+        String.format("%s; filename=\"proposal.pdf\"", inline ? "inline" : "attachment");
 
-    final var context = proposalService.getCalculatedProposalValues(proposalId, false);
-    proposalTemplateService.generatePdf(templateId, context, response.getOutputStream());
+    response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
+    response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+
+    final StreamingResponseBody responseBody =
+        outputStream -> {
+          final var context = proposalService.getCalculatedProposalValues(proposalId, false);
+          try {
+            proposalTemplateService.generatePdf(
+                templateId,
+                context,
+                outputStream,
+                contentLength ->
+                    response.addHeader(HttpHeaders.CONTENT_LENGTH, contentLength.toString()));
+          } catch (TemplateException e) {
+            log.error("[Proposal] Error generating PDF", e);
+            throw new ApiException("Error generating PDF");
+          }
+        };
+
+    return ResponseEntity.ok(responseBody);
   }
 
   @PostMapping(value = "")
