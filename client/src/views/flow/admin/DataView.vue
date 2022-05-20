@@ -152,7 +152,6 @@
                   :disabled="newField.resetOnNew"
                   v-model="newField.updateFirstValueOnly"
                 />
-
                 <br/>
                 <span
                   class="mr-3">Reset on New {{ selectedObjectTypeId === 4 ? 'Main Process Step?' : 'Event?' }}</span>
@@ -465,8 +464,8 @@ export default {
       this.selectedDefaultField = {}
       this.selectedObjectTypeId = null
       this.newField.customFieldGroupAssignmentId = null
-      this.newField.resetOnNew = false
-      this.newField.updateFirstValueOnly = false
+      this.$set(this.newField, 'updateFirstValueOnly', false)
+      this.$set(this.newField, 'resetOnNew', false)
       this.cfgaParentObject = {}
       this.newField.processStepEventId = null
       this.newField.processStepId = null
@@ -550,7 +549,6 @@ export default {
         try {
           const {data, status} = await getRequest(`/processStep/${this.cfgaParentObject?.id}/event`)
           this.parentProcessStepEvents = data
-          console.log('randaLogger', data)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
