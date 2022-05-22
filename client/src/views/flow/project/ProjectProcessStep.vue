@@ -138,7 +138,7 @@
       </v-col>
       <v-col cols="12" class="text-left py-0" v-if="processStep && processStep.banners && processStep.banners.length > 0">
         <div>
-          <v-card flat class="square-card banner-card" :class="{'mt-2': idx !== 0}"
+          <v-card flat class="square-card" :class="{'mt-2': idx !== 0}"
                   v-for="(b, idx) in filterBy(processStep.banners, true, 'canPerform')">
             <v-card-text class="flex-display pa-0" :style="{'color': b.color}">
               <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
@@ -821,10 +821,6 @@ owner-toolbar-tools {
 
 .owner-position {
   color: #9E9C9C;
-}
-
-.banner-card {
-  border: solid 1px #C4C4C4;
 }
 
 .banner-card-swatch {
