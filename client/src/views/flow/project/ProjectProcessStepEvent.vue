@@ -91,7 +91,7 @@
       </v-toolbar>
       <div class="pb-4 px-6">
         <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
-          <v-card flat class="square-card banner-card" :class="{'mt-2': idx !== 0}"
+          <v-card class="square-card" :class="{'mt-2': idx !== 0}"
                   v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
             <v-card-text class="flex-display pa-0"  :style="{'color': b.color}">
               <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
@@ -1124,10 +1124,6 @@ export default {
 .action-button-subtitle {
   display: block;
   font-size: 10px;
-}
-
-.banner-card {
-  border: solid 1px #C4C4C4;
 }
 
 .banner-card-swatch {
