@@ -276,7 +276,7 @@
                       </v-color-picker>
                     </div>
                     <div>
-                      <label>Banner Text Color:</label>
+                      <label>Banner Background Color:</label>
                       <v-color-picker class="my-3"
                                       v-model="item.bgColor"
                                       :canvas-height="colorOptions.height"
