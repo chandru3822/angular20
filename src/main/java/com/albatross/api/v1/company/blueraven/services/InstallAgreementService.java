@@ -42,9 +42,6 @@ public class InstallAgreementService {
 
   private final GoodleapService goodleapService;
 
-  @Value(value = "${loanpal.api.baseUrl}")
-  private String loanPalBaseUrl;
-
   @Value(value = "${sunlight.api.portal}")
   private String sunlightPortalUrl;
 
@@ -141,7 +138,7 @@ public class InstallAgreementService {
           }
 
           if (loanApplication.getString("status").equals("Approved")) {
-            log.debug("LOANPAL: sending LoanPal Docs");
+            log.debug("IARQ: sending LoanPal Docs");
             try {
               goodleapService.sendDocs(loanPalId);
             } catch (Exception e) {
