@@ -1,4 +1,3 @@
---TODO create function for data_view insert to add the new table and  add project_id and contact_id and date_modified as the first columns in the table.
 delete from brs.project_details_config
   where id = 5290;
 alter table flow.company
@@ -41,7 +40,7 @@ create index if not exists dv_view_name_idx
 insert into flow.data_view(company_id, view_name, date_created, created_by_id,display_name,company_process_ids)
   (select 3, 'project_details', now(), 2350555,'Project Details','{1,18}'
    where not exists(select id from flow.data_view where view_name = 'project_details'));
---TODO add constraint that doesn't allow them to have the same field_to_update in the same object.
+
 create table  if not exists flow.data_view_field_config
 (
   id              serial  not null,
@@ -151,7 +150,8 @@ alter table flow.default_field
 
 alter table flow.unique_behavior_type add column if not exists description text;
 
-
+alter table flow.unique_behavior_type
+  add column if not exists data_view boolean not null default false;
 insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
 (select 'EVENT_RESOURCE_TRIGGER','Returns an Org Name or User Name for the Resource of an Event',now(),2350555,true
   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER'));
@@ -1204,8 +1204,7 @@ delete from brs.project_details_config where id in (
 
 
 alter table flow.default_field drop column if exists allow_child_fields;
-alter table flow.unique_behavior_type
-  add column if not exists data_view boolean not null default false;
+
 update flow.unique_behavior_type
 set data_view = true
 where id > 3;
@@ -1227,7 +1226,6 @@ CREATE UNIQUE INDEX dvfc_field_to_update_cfg1_uidx ON flow.data_view_field_confi
 CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config (data_view_id,field_to_update,process_step_event_id,default_field_id) where process_step_id is null and custom_field_group_assignment_id is null;
 CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null and custom_field_group_assignment_id is null and process_step_id is null;
 CREATE UNIQUE INDEX dvfc_process_step_id_df_uidx ON flow.data_view_field_config (data_view_id,default_field_id,process_step_id)where process_step_event_id is null and custom_field_group_assignment_id is null;
-CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null and process_step_id is null;
 
 CREATE UNIQUE INDEX dvfc_reset_on_new_uidx ON flow.data_view_field_config (data_view_id,reset_on_new,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
 CREATE UNIQUE INDEX dvfc_update_first_only_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
@@ -1378,3 +1376,67 @@ INSERT INTO flow.data_view_field_config (data_view_id, default_field_id, custom_
 alter table brs.project_details add column if not exists complete_date_final_design_completion_cfv_id integer;
 create index if not exists pd_complete_date_final_design_completion_cfv_id_idx
   on brs.project_details (complete_date_final_design_completion_cfv_id);
+CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null and process_step_id is null;
+
+
+with update_data as (
+  select dvfc.id,pse.id as process_step_event_id
+  from flow.data_view_field_config dvfc
+         inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id and cfga.archived is false
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
+         inner join flow.process_step_event pse on pse.event_id = cfg.event_id and pse.archived is false
+         inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
+  where data_view_id = 1 and cfg.event_id is not null
+    and dvfc.custom_field_group_assignment_id not in (1006,1050,22694))
+update flow.data_view_field_config dvfc2
+set process_step_event_id = ud.process_step_event_id
+from update_data ud
+where ud.id = dvfc2.id;
+
+delete from flow.data_view_child_field_config where data_view_field_config_id in (
+  select id from flow.data_view_field_config where custom_field_group_assignment_id = 1050
+);
+delete from flow.data_view_field_config where custom_field_group_assignment_id = 1050;
+
+update flow.data_view_field_config
+set process_step_event_id = 4
+where field_to_update = 'resurvey_brs_no_show'
+  and custom_field_group_assignment_id = 1006;
+
+update flow.data_view_field_config
+set process_step_event_id = 79
+where field_to_update = 'site_survey_brs_no_show'
+  and custom_field_group_assignment_id = 1006;
+
+update flow.data_view_field_config
+set process_step_event_id = 79
+where field_to_update = 'site_survey_verified_date'
+  and custom_field_group_assignment_id = 22694;
+
+
+delete from flow.data_view_field_config
+where custom_field_group_assignment_id = 202
+  and field_to_update = 'Energized_date';
+
+
+with update_data as (
+  select dvfc.id,ps.id as process_step_id
+  from flow.data_view_field_config dvfc
+         inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id and cfga.archived is false
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false and cfg.event_id is null
+         inner join flow.process_step ps on cfg.process_step_id = ps.id)
+update flow.data_view_field_config dvfc2
+set process_step_id = ud.process_step_id
+from update_data ud
+where ud.id = dvfc2.id;
+
+delete from flow.data_view_field_config
+where id in (
+  select dvfc.id
+  from flow.data_view_field_config dvfc
+         inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+         inner join flow.process_step ps on cfg.process_step_id = ps.id
+  where dvfc.custom_field_group_assignment_id is not null and
+    (cfga.archived is true or cfg.archived is true or cf.archived is true or ps.archived is true));

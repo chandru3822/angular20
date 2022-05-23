@@ -216,11 +216,15 @@ BEGIN
              inner join flow.company c on dv2.company_id = c.id
              where new.company_process_id = any (dv2.company_process_ids)
       loop
-        v_insert_sql = $$insert into $$||y.schema_name||$$.$$||y.view_name||$$(project_id, company_id, contact_id) values ($$
-        ||new.id||$$,$$||v_company_id||$$,$$||new.contact_id||$$);$$;
+        v_insert_sql = $$insert into $$||y.schema_name||$$.$$||y.view_name||$$(project_id, company_id, contact_id,date_modified) values ($$
+        ||new.id||$$,$$||v_company_id||$$,$$||new.contact_id||$$,$$||quote_literal(now())||$$);$$;
         execute v_insert_sql;
         update flow.contact set id = id where id = new.contact_id;
       end loop;
+
+      update flow.contact
+      set date_modified = now()
+    where id = new.contact_id;
   end if;
 
   select quote_literal(array_agg(new.id)::text)
