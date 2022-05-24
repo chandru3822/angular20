@@ -14,7 +14,8 @@ BEGIN
       and wqc.date_exited_queue is null
   )
   update flow.work_queue_cycle wqc
-  set date_exited_queue = now()
+  set date_exited_queue = now(),
+      date_modified = now()
   from my_data md
   where md.id = wqc.id
     and not exists(select ppse.id

@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
@@ -169,6 +170,11 @@ public class BlueravenProposalService {
   public Map<String, Object> getCalculatedProposalValues(
       @NonNull Long proposalId, boolean insertPropLogHistory) {
 
+    final Optional<Proposal> proposal = getProposal(proposalId);
+    if (proposal.isEmpty()) {
+      throw new NotFoundException("Proposal id=%s does not exist".formatted(proposalId));
+    }
+
     final Map<String, Object> context =
         sqlCache.queryForMap(
             "proposal.getCalculatedProposalValues",
@@ -178,17 +184,7 @@ public class BlueravenProposalService {
         getProposalAttachments(proposalId).stream()
             .collect(
                 Collectors.toMap(
-                    attachment -> {
-                      if (attachment.getAttachmentTypeId() == 936) {
-                        return "2D_PROPOSAL_IMAGE";
-                      }
-
-                      if (attachment.getAttachmentTypeId() == 937) {
-                        return "3D_PROPOSAL_IMAGE";
-                      }
-
-                      return "UNKNOWN";
-                    },
+                    this::mapAttachmentTypeToProposalType,
                     attachment ->
                         "%s/public/attachment/%s/%s"
                             .formatted(
@@ -199,6 +195,18 @@ public class BlueravenProposalService {
     context.putAll(proposalAttachments);
 
     return context;
+  }
+
+  private String mapAttachmentTypeToProposalType(Attachment attachment) {
+    if (attachment.getAttachmentTypeId() == 936) {
+      return "2D_PROPOSAL_IMAGE";
+    }
+
+    if (attachment.getAttachmentTypeId() == 937) {
+      return "3D_PROPOSAL_IMAGE";
+    }
+
+    return "UNKNOWN";
   }
 
   private List<Attachment> getProposalAttachments(@NonNull Long proposalId) {

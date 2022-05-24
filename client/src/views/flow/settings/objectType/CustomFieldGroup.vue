@@ -394,9 +394,8 @@
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                           </div>
                           <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && !isProject">
-                            <div>
+                            <div v-if="parseInt(typeId) === 3">
                               <input type="checkbox" v-model="cf.showOnUserProfile" :readonly="!userCanEdit"
-                                     v-if="parseInt(typeId) === 3"
                                      :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
                               Show On User Profile
                             </div>

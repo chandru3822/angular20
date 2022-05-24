@@ -98,14 +98,16 @@ BEGIN
           update flow.work_queue_cycle
           set company_event_status_type_id                      = new.company_event_status_type_id,
               process_step_event_work_queue_type_event_status_type_id = v_psewqtest_id,
-              modified_by_id                                           = new.modified_by_id
+              modified_by_id                                           = new.modified_by_id,
+              date_modified = now()
           where id = v_old.id;
         else
           /*update the old records that have left the queue that aren't associated with a new work queue based
             on the new status change.*/
           update flow.work_queue_cycle
           set date_exited_queue = now(),
-              modified_by_id    = new.modified_by_id
+              modified_by_id    = new.modified_by_id,
+              date_modified = now()
           where id = v_old.id;
         end if;
       end loop;

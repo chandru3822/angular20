@@ -31,7 +31,8 @@
   <email.markProcessed><![CDATA[
     update flow.email_queue
     set processed = true,
-        date_processed = now()
+        date_processed = now(),
+        date_modified = now()
     where id = :id
   ]]></email.markProcessed>
 

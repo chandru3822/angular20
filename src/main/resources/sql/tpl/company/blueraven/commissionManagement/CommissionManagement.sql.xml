@@ -557,14 +557,16 @@ FROM (SELECT cp.id,
     <commissionPlan.updatePlanUser><![CDATA[
        UPDATE brs.commission_plan_user
          SET note = :note,
-         end_date = :endDate
+         end_date = :endDate,
+         date_modified = now()
        WHERE commission_plan_id = :planId
         AND user_id = :userId
     ]]></commissionPlan.updatePlanUser>
 
     <commissionPlan.appendNote><![CDATA[
        UPDATE brs.commission_plan_user
-         SET note = CONCAT_WS('; ', note, :note)
+         SET note = CONCAT_WS('; ', note, :note),
+              date_modified = now()
        WHERE commission_plan_id = :planId
          AND user_id = :userId
          AND start_date = :startDate
@@ -581,13 +583,13 @@ FROM (SELECT cp.id,
     <!--TODO: FIX-->
     <overridePlan.editAssignedNote><![CDATA[
        UPDATE brs.override_plan_assigned_user
-         SET note = :note
+         SET note = :note, date_modified = now()
        WHERE override_plan_id = :planId AND user_id = :userId
     ]]></overridePlan.editAssignedNote>
 
     <overridePlan.appendAssignedNote><![CDATA[
        UPDATE brs.override_plan_assigned_user
-         SET note = CONCAT_WS('; ', note, :note)
+         SET note = CONCAT_WS('; ', note, :note), date_modified = now()
        WHERE override_plan_id = :planId
          AND user_id = :userId
          AND start_date = :startDate
@@ -596,7 +598,7 @@ FROM (SELECT cp.id,
 
     <overridePlan.editReceivingNote><![CDATA[
        UPDATE brs.override_plan_receiving_user
-         SET note = :note
+         SET note = :note, date_modified = now()
        WHERE override_plan_id = :planId AND user_id = :userId
     ]]></overridePlan.editReceivingNote>
 
@@ -638,7 +640,8 @@ FROM (SELECT cp.id,
     <commissionManagement.updateUser><![CDATA[
         UPDATE brs.commission_plan_user
         SET start_date = :startDate,
-          end_date     = :endDate
+          end_date     = :endDate,
+          date_modified = now()
         WHERE id = :id
     ]]></commissionManagement.updateUser>
 
@@ -656,7 +659,8 @@ FROM (SELECT cp.id,
                                            AND cpu.start_date <= :startDate
                                            AND cpu.user_id = :userId)
         UPDATE brs.commission_plan_user cpu
-        SET end_date = :startDate :: DATE - INTERVAL  '1 day'
+        SET end_date = :startDate :: DATE - INTERVAL  '1 day',
+            date_modified = now()
         FROM active_commission_plans p
         WHERE cpu.id = p.id
     ]]></commissionManagement.insertEndDate>

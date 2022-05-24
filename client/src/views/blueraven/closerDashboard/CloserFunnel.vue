@@ -344,7 +344,7 @@
                             v-model="repModel"
                             :items="repData"
                             item-text="name"
-                            item-key="user_position_id"
+                            item-value="user_position_id"
                             label="Rep"
                             no-data-text="No reps available"
                             outlined

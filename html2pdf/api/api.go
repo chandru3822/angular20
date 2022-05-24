@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"net/http"
 )
@@ -29,9 +28,9 @@ func (api *Api) Start() error {
 	api.srv = echo.New()
 	api.srv.HideBanner = true
 	api.srv.Logger.SetLevel(log.INFO)
-	api.srv.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Level: 8,
-	}))
+	//api.srv.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+	//	Level: 9,
+	//}))
 
 	//TODO: inject the metrics from the api into prometheus
 	p := prometheus.NewPrometheus("echo", nil)

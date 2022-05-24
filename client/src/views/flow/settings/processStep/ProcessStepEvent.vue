@@ -39,7 +39,8 @@
           <v-toolbar-title class="app-title">Event Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNewEventAction = !addNewEventAction]" v-if="userCanAdd">
+            <v-btn text @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
+                   v-if="userCanAdd">
               <v-icon v-if="!addNewEventAction">add</v-icon>
               {{ addNewEventAction ? 'Cancel' : 'Add Action' }}
             </v-btn>
@@ -50,31 +51,65 @@
                         label="Action Name"
                         v-model="newEventAction.actionName">
           </v-text-field>
-          <v-autocomplete
-            v-model="newEventAction.companyEventStatusTypeId"
-            :items="companyEventStatuses"
-            label="Change Event Status To"
-            item-text="eventStatusType"
-            item-value="id"
-            clearable
-          ></v-autocomplete>
-          <v-autocomplete
-            v-model="newEventAction.companyProcessStepStatusTypeId"
-            :items="processStepStatuses"
-            label="Change Process Step Status To"
-            item-text="processStepStatusType"
-            item-value="id"
-            clearable
-          >
-            <template slot="item" slot-scope="data">
-              <!-- HTML that describes how select should render items when the select is open -->
-              {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
-            </template>
-          </v-autocomplete>
+          <v-select attach v-model="newEventAction.actionTypeId"
+                    :items="actionTypes"
+                    label="Action Type"
+                    item-text="actionType"
+                    item-value="id"
+          ></v-select>
+          <div v-if="newEventAction.actionTypeId && newEventAction.actionTypeId !== 3">
+            <v-autocomplete
+              v-model="newEventAction.companyEventStatusTypeId"
+              :items="companyEventStatuses"
+              label="Change Event Status To"
+              item-text="eventStatusType"
+              item-value="id"
+              clearable
+            ></v-autocomplete>
+            <v-autocomplete
+              v-model="newEventAction.companyProcessStepStatusTypeId"
+              :items="processStepStatuses"
+              label="Change Process Step Status To"
+              item-text="processStepStatusType"
+              item-value="id"
+              clearable
+            >
+              <template slot="item" slot-scope="data">
+                <!-- HTML that describes how select should render items when the select is open -->
+                {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+              </template>
+            </v-autocomplete>
+          </div>
+          <div v-else-if="newEventAction.actionTypeId">
+            <v-textarea required label="Banner Content" auto-grow filled
+                        style="margin: 15px 0 -15px 0"
+                        v-model="newEventAction.content">
+            </v-textarea>
+            <div>
+              <label>Banner Text Color:</label>
+              <v-color-picker class="my-3"
+                              v-model="newEventAction.color"
+                              :canvas-height="colorOptions.height"
+                              :width="colorOptions.width"
+                              :mode="colorOptions.mode"
+                              :hide-mode-switch="colorOptions.hideModeSwitch">
+              </v-color-picker>
+            </div>
+            <div>
+              <label>Banner Background Color:</label>
+              <v-color-picker class="my-3"
+                              v-model="newEventAction.bgColor"
+                              :canvas-height="colorOptions.height"
+                              :width="colorOptions.width"
+                              :mode="colorOptions.mode"
+                              :hide-mode-switch="colorOptions.hideModeSwitch">
+              </v-color-picker>
+            </div>
+          </div>
           <v-btn class="white--text"
                  color="primaryButton"
                  @click="saveEventAction(newEventAction)"
-                 :disabled="!newEventAction.actionName"
+                 :disabled="!newEventAction.actionName || !newEventAction.actionTypeId"
           >Add Action
           </v-btn>
         </v-card>
@@ -106,285 +141,357 @@
                             label="Action Name"
                             v-model="action.actionName">
               </v-text-field>
-              <v-autocomplete
-                v-model="action.companyEventStatusTypeId"
-                :items="companyEventStatuses"
-                label="Change Event Status To"
-                item-text="eventStatusType"
-                item-value="id"
-                clearable
-              ></v-autocomplete>
-              <v-autocomplete
-                v-model="action.companyProcessStepStatusTypeId"
-                :items="processStepStatuses"
-                label="Change Process Step Status To"
-                item-text="processStepStatusType"
-                item-value="id"
-                clearable
-              >
-                <template slot="item" slot-scope="data">
-                  <!-- HTML that describes how select should render items when the select is open -->
-                  {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
-                </template>
-              </v-autocomplete>
+              <v-select attach v-model="action.actionTypeId"
+                        :items="actionTypes"
+                        :readonly="true"
+                        :disabled="true"
+                        label="Action Type"
+                        item-text="actionType"
+                        item-value="id"
+              ></v-select>
+              <div v-if="action.actionTypeId !== 3">
+                <v-autocomplete
+                  v-model="action.companyEventStatusTypeId"
+                  :items="companyEventStatuses"
+                  label="Change Event Status To"
+                  item-text="eventStatusType"
+                  item-value="id"
+                  clearable
+                ></v-autocomplete>
+                <v-autocomplete
+                  v-model="action.companyProcessStepStatusTypeId"
+                  :items="processStepStatuses"
+                  label="Change Process Step Status To"
+                  item-text="processStepStatusType"
+                  item-value="id"
+                  clearable
+                >
+                  <template slot="item" slot-scope="data">
+                    <!-- HTML that describes how select should render items when the select is open -->
+                    {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+                  </template>
+                </v-autocomplete>
 
-              <v-card flat class="pb-5">
-                <table>
-                  <tr>
-                    <td>Require Start Time</td>
-                    <td><input type="checkbox" class="ml-2" v-model="action.requireStartTime"></td>
-                  </tr>
-                  <tr>
-                    <td>Require End Time</td>
-                    <td><input type="checkbox" class="ml-2" v-model="action.requireEndTime"></td>
-                  </tr>
-                  <tr>
-                    <td>Require Resource</td>
-                    <td><input type="checkbox" class="ml-2" v-model="action.requireResource"></td>
-                  </tr>
-                  <tr>
-                    <td class="pt-3">Allow Multiple Uses</td>
-                    <td class="pt-3"><input type="checkbox" class="ml-2" v-model="action.multipleUses"></td>
-                  </tr>
-                  <tr>
-                    <td>Hide From Web</td>
-                    <td><input type="checkbox" class="ml-2" v-model="action.hideFromWeb"></td>
-                  </tr>
-                  <tr>
-                    <td>Hide From Mobile</td>
-                    <td><input type="checkbox" class="ml-2" v-model="action.hideFromMobile"></td>
-                  </tr>
-                </table>
-              </v-card>
-
-              <!--              <v-btn class="white&#45;&#45;text"-->
-              <!--                     color="primaryButton"-->
-              <!--                     @click="saveEventAction(action)"-->
-              <!--              >Save Action</v-btn>-->
-
-              <div>
-                <v-divider></v-divider>
-                <v-toolbar flat color="transparent">
-                  <v-toolbar-title class="app-title">
-                    Child Functions
-                  </v-toolbar-title>
-                  <v-spacer></v-spacer>
-                  <v-toolbar-items>
-                    <v-btn text v-if="!addChildFunction && userCanAdd"
-                           @click="[addChildFunction = true, loadChildFunctions(action.id)]">
-                      <v-icon>add</v-icon>
-                    </v-btn>
-                  </v-toolbar-items>
-                </v-toolbar>
-                <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
-                        v-if="addChildFunction">
-                  <h3>Add Child Function</h3>
-                  <v-autocomplete v-model="selectedChildFunction"
-                                  :items="childFunctions"
-                                  label="Function"
-                                  item-text="companyFunctionName"
-                                  return-object
-                                  attach
-                                  @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
-                  ></v-autocomplete>
-                  <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
-                    <h5 class="text-left">Dynamic Function Parameters</h5>
-                    <v-card flat color="transparent">
-                      <div v-for="(fp, index) in selectedChildRequirementParamDynamicValues">
-                        <v-tooltip
-                          v-if="fp.description != null"
-                          content-class="full-opacity-tooltip"
-                          :max-width="300"
-                          top
-                        >
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-btn
-                              text
-                              class="d-inline-block"
-                              v-bind="attrs"
-                              v-on="on"
-                            >
-                              <v-icon>
-                                mdi-information
-                              </v-icon>
-                            </v-btn>
-                          </template>
-                          <span>{{ fp.description }}</span>
-                        </v-tooltip>
-                        <div class="dynamic-field-container">
-                          <v-text-field
-                            v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
-                            type="number"
-                            :key="index"
-                            placeholder="Enter a dynamic value (number)"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
-                          <v-text-field
-                            v-else
-                            :key="index"
-                            placeholder="Enter a dynamic value"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
-                        </div>
-                      </div>
-                    </v-card>
-                  </div>
-                  <div class="mt-3">
-                    <v-btn :disabled="!selectedChildFunction.id"
-                           @click="saveFunctionToAction(action)">
-                      <v-icon>save</v-icon>
-                      Save
-                    </v-btn>
-                    <v-btn class="ml-3" @click="addChildFunction = false">
-                      <v-icon>remove</v-icon>
-                      Cancel
-                    </v-btn>
-                  </div>
+                <v-card flat class="pb-5">
+                  <table>
+                    <tr>
+                      <td>Require Start Time</td>
+                      <td><input type="checkbox" class="ml-2" v-model="action.requireStartTime"></td>
+                    </tr>
+                    <tr>
+                      <td>Require End Time</td>
+                      <td><input type="checkbox" class="ml-2" v-model="action.requireEndTime"></td>
+                    </tr>
+                    <tr>
+                      <td>Require Resource</td>
+                      <td><input type="checkbox" class="ml-2" v-model="action.requireResource"></td>
+                    </tr>
+                    <tr>
+                      <td class="pt-3">Allow Multiple Uses</td>
+                      <td class="pt-3"><input type="checkbox" class="ml-2" v-model="action.multipleUses"></td>
+                    </tr>
+                    <tr>
+                      <td>Hide From Web</td>
+                      <td><input type="checkbox" class="ml-2" v-model="action.hideFromWeb"></td>
+                    </tr>
+                    <tr>
+                      <td>Hide From Mobile</td>
+                      <td><input type="checkbox" class="ml-2" v-model="action.hideFromMobile"></td>
+                    </tr>
+                  </table>
                 </v-card>
-              </div>
-              <v-row justify="center" class="pl-3 pr-3"
-                     v-if="action.childFunctions && action.childFunctions.length > 0">
-                <v-col cols="12" class="pt-0">
-                  <v-list v-for="(cp, index) in filterBy(action.childFunctions, false, 'archived')"
-                          :key="index"
-                          :class="{ 'shaded-row': index % 2 }">
-                    <v-list-item>
-                      <v-list-item-content class="text-left">
-                        <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
-                        <div class="mt-2"
-                             v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
-                          <h5 class="text-left">Dynamic Function Parameters</h5>
-                          <v-card flat color="transparent">
-                            <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
-                              <v-tooltip
-                                v-if="fp.description != null"
-                                content-class="full-opacity-tooltip"
-                                :max-width="300"
-                                top
-                              >
-                                <template v-slot:activator="{ on, attrs }">
-                                  <v-btn
-                                    text
-                                    class="d-inline-block"
-                                    v-bind="attrs"
-                                    v-on="on"
-                                  >
-                                    <v-icon>
-                                      mdi-information
-                                    </v-icon>
-                                  </v-btn>
-                                </template>
-                                <span>{{ fp.description }}</span>
-                              </v-tooltip>
-                              <div class="dynamic-field-container">
-                                <v-text-field
-                                  v-if="fp.dataTypeId === 1"
-                                  placeholder="Enter a date"
-                                  type="date"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-else-if="fp.dataTypeId === 2"
-                                  placeholder="Enter a timestamp"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-else-if="fp.dataTypeId === 3"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter a boolean"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-else-if="fp.dataTypeId === 4"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter a number"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-else-if="fp.dataTypeId === 6"
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter an integer"
-                                  type="number"
-                                  step="1"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                                <v-text-field
-                                  v-else
-                                  :readonly="!cp.edit || !userCanEdit"
-                                  :disabled="!cp.edit || !userCanEdit"
-                                  placeholder="Enter a dynamic value"
-                                  v-model="fp.dynamicValue"
-                                  :label="fp.parameterName"></v-text-field>
-                              </div>
-                            </div>
-                          </v-card>
-                        </div>
-                        <v-list-item-subtitle>
-                          <v-btn color="primaryCustom" class="white--text" v-if="cp.edit && userCanEdit"
-                                 @click="updateChildFunction(action.id, cp)">
-                            Save
-                          </v-btn>
-                        </v-list-item-subtitle>
-                      </v-list-item-content>
-                      <v-btn text color="primaryCustom" class="white--text" v-if="userCanEdit"
-                             @click="cp.edit = !cp.edit">
-                        <v-icon v-if="cp.edit">remove</v-icon>
-                        <v-icon v-else>edit</v-icon>
+
+                <!--              <v-btn class="white&#45;&#45;text"-->
+                <!--                     color="primaryButton"-->
+                <!--                     @click="saveEventAction(action)"-->
+                <!--              >Save Action</v-btn>-->
+
+                <div>
+                  <v-divider></v-divider>
+                  <v-toolbar flat color="transparent">
+                    <v-toolbar-title class="app-title">
+                      Child Functions
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                      <v-btn text v-if="!addChildFunction && userCanAdd"
+                             @click="[addChildFunction = true, loadChildFunctions(action.id)]">
+                        <v-icon>add</v-icon>
                       </v-btn>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="cp.deleteConfirm"
-                        width="500">
-                        <template v-slot:activator="{ on }">
-                          <v-list-item-action class="clickable" v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-list-item-action>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title
+                    </v-toolbar-items>
+                  </v-toolbar>
+                  <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
+                          v-if="addChildFunction">
+                    <h3>Add Child Function</h3>
+                    <v-autocomplete v-model="selectedChildFunction"
+                                    :items="childFunctions"
+                                    label="Function"
+                                    item-text="companyFunctionName"
+                                    return-object
+                                    attach
+                                    @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
+                    ></v-autocomplete>
+                    <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
+                      <h5 class="text-left">Dynamic Function Parameters</h5>
+                      <v-card flat color="transparent">
+                        <div v-for="(fp, index) in selectedChildRequirementParamDynamicValues">
+                          <v-tooltip
+                            v-if="fp.description != null"
+                            content-class="full-opacity-tooltip"
+                            :max-width="300"
+                            top
                           >
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text>
-                            Are you sure you want to delete <strong>{{ cp.functionName }}</strong> from <strong>{{
-                              action.actionName
-                            }}</strong>?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="cp.deleteConfirm = false">
-                              No
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-btn
+                                text
+                                class="d-inline-block"
+                                v-bind="attrs"
+                                v-on="on"
+                              >
+                                <v-icon>
+                                  mdi-information
+                                </v-icon>
+                              </v-btn>
+                            </template>
+                            <span>{{ fp.description }}</span>
+                          </v-tooltip>
+                          <div class="dynamic-field-container">
+                            <v-text-field
+                              v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
+                              type="number"
+                              :key="index"
+                              placeholder="Enter a dynamic value (number)"
+                              v-model="fp.dynamicValue"
+                              :label="fp.parameterName"></v-text-field>
+                            <v-text-field
+                              v-else
+                              :key="index"
+                              placeholder="Enter a dynamic value"
+                              v-model="fp.dynamicValue"
+                              :label="fp.parameterName"></v-text-field>
+                          </div>
+                        </div>
+                      </v-card>
+                    </div>
+                    <div class="mt-3">
+                      <v-btn :disabled="!selectedChildFunction.id"
+                             @click="saveFunctionToAction(action)">
+                        <v-icon>save</v-icon>
+                        Save
+                      </v-btn>
+                      <v-btn class="ml-3" @click="addChildFunction = false">
+                        <v-icon>remove</v-icon>
+                        Cancel
+                      </v-btn>
+                    </div>
+                  </v-card>
+                </div>
+                <v-row justify="center" class="pl-3 pr-3"
+                       v-if="action.childFunctions && action.childFunctions.length > 0">
+                  <v-col cols="12" class="pt-0">
+                    <v-list v-for="(cp, index) in filterBy(action.childFunctions, false, 'archived')"
+                            :key="index"
+                            :class="{ 'shaded-row': index % 2 }">
+                      <v-list-item>
+                        <v-list-item-content class="text-left">
+                          <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
+                          <div class="mt-2"
+                               v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
+                            <h5 class="text-left">Dynamic Function Parameters</h5>
+                            <v-card flat color="transparent">
+                              <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
+                                <v-tooltip
+                                  v-if="fp.description != null"
+                                  content-class="full-opacity-tooltip"
+                                  :max-width="300"
+                                  top
+                                >
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-btn
+                                      text
+                                      class="d-inline-block"
+                                      v-bind="attrs"
+                                      v-on="on"
+                                    >
+                                      <v-icon>
+                                        mdi-information
+                                      </v-icon>
+                                    </v-btn>
+                                  </template>
+                                  <span>{{ fp.description }}</span>
+                                </v-tooltip>
+                                <div class="dynamic-field-container">
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 1"
+                                    placeholder="Enter a date"
+                                    type="date"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-else-if="fp.dataTypeId === 2"
+                                    placeholder="Enter a timestamp"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-else-if="fp.dataTypeId === 3"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter a boolean"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-else-if="fp.dataTypeId === 4"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter a number"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-else-if="fp.dataTypeId === 6"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter an integer"
+                                    type="number"
+                                    step="1"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-else
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
+                                    placeholder="Enter a dynamic value"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                </div>
+                              </div>
+                            </v-card>
+                          </div>
+                          <v-list-item-subtitle>
+                            <v-btn color="primaryCustom" class="white--text" v-if="cp.edit && userCanEdit"
+                                   @click="updateChildFunction(action.id, cp)">
+                              Save
                             </v-btn>
-                            <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="[cp.archived = true, deleteChildFunctionFromAction(action.id, cp.id)]">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
-                    </v-list-item>
-                  </v-list>
-                </v-col>
-              </v-row>
+                          </v-list-item-subtitle>
+                        </v-list-item-content>
+                        <v-btn text color="primaryCustom" class="white--text" v-if="userCanEdit"
+                               @click="cp.edit = !cp.edit">
+                          <v-icon v-if="cp.edit">remove</v-icon>
+                          <v-icon v-else>edit</v-icon>
+                        </v-btn>
+                        <v-dialog
+                          v-if="userCanEdit"
+                          v-model="cp.deleteConfirm"
+                          width="500">
+                          <template v-slot:activator="{ on }">
+                            <v-list-item-action class="clickable" v-on="on">
+                              <v-icon>delete</v-icon>
+                            </v-list-item-action>
+                          </template>
+                          <v-card>
+                            <v-card-title
+                              class="text-h5 grey lighten-2"
+                              primary-title
+                            >
+                              Confirm
+                            </v-card-title>
+
+                            <v-card-text>
+                              Are you sure you want to delete <strong>{{ cp.functionName }}</strong> from <strong>{{
+                                action.actionName
+                              }}</strong>?
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                @click="cp.deleteConfirm = false">
+                                No
+                              </v-btn>
+                              <v-btn
+                                color="primaryCustom"
+                                text
+                                @click="[cp.archived = true, deleteChildFunctionFromAction(action.id, cp.id)]">
+                                Yes
+                              </v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </v-list-item>
+                    </v-list>
+                  </v-col>
+                </v-row>
+              </div>
+              <div v-else>
+                <v-textarea required label="Banner Content" auto-grow filled
+                            style="margin: 15px 0 -15px 0"
+                            v-model="action.content">
+                </v-textarea>
+                <div>
+                  <label>Banner Text Color:</label>
+                  <v-color-picker class="my-3"
+                                  v-model="action.color"
+                                  :canvas-height="colorOptions.height"
+                                  :width="colorOptions.width"
+                                  :mode="colorOptions.mode"
+                                  :hide-mode-switch="colorOptions.hideModeSwitch">
+                  </v-color-picker>
+                </div>
+                <div>
+                  <label>Banner Background Color:</label>
+                  <v-color-picker class="my-3"
+                                  v-model="action.bgColor"
+                                  :canvas-height="colorOptions.height"
+                                  :width="colorOptions.width"
+                                  :mode="colorOptions.mode"
+                                  :hide-mode-switch="colorOptions.hideModeSwitch">
+                  </v-color-picker>
+                </div>
+              </div>
               <v-divider></v-divider>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
+                <v-toolbar-title class="app-title">
+                  Current Logic
+                  <v-dialog
+                    v-if="action.processStepEventLogicList && action.processStepEventLogicList.length > 0 && !action.logicListChanged"
+                    v-model="showActionLogicString"
+                    width="500">
+                    <template #activator="{ on }">
+                      <v-btn text class="d-inline-block" @click="getActionLogicString(action.id)" v-on="on">
+                        <v-icon>mdi-information</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="text-h5 grey lighten-2"
+                        primary-title>
+                        Action Logic String
+                      </v-card-title>
+
+                      <v-card-text class="pt-4">
+                        {{actionLogicString}}
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-btn @click="copyToClipBoard()">
+                          Copy
+                        </v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="showActionLogicString = false">
+                          OK
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items
                   v-if="((action.processStepEventLogicList && action.processStepEventLogicList.length > 0) || action.alwaysEnabled) && userCanEdit">
@@ -491,6 +598,7 @@
                 </v-btn>
               </td>
               <td class="text-left">{{ action.actionName }}</td>
+              <td class="text-left">{{ action.actionType }}</td>
               <td class="text-left">{{ action.eventStatusType || 'N/A' }}</td>
               <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
               <td>
@@ -608,10 +716,22 @@ export default {
       addChildFunction: false,
       selectedChildFunction: {},
       childFunctions: [],
+      showActionLogicString: false,
+      actionLogicString: null,
       selectedChildRequirementParamDynamicValues: [],
       selectedActionIndex: null,
       selectedEvent: {
         processStepEventActions: []
+      },
+      actionTypes: [
+        {id: 2, actionType: 'Button'},
+        {id: 3, actionType: 'Banner'}
+      ],
+      colorOptions: {
+        canvasHeight: 75,
+        width: 200,
+        mode: 'hexa',
+        hideModeSwitch: true
       },
       expanded: [],
       eventLoading: true,
@@ -627,6 +747,7 @@ export default {
       actionHeaders: [
         {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Action Name', value: 'actionName', show: true},
+        {text: 'Action Type', value: 'actionType', show: true},
         {text: 'Change Event Status To', value: 'companyEventStatusType', show: true},
         {text: 'Change Process Step Status To', value: 'companyProcessStepStatusType', show: true},
         {text: null, value: 'icons', show: true}
@@ -676,6 +797,21 @@ export default {
     //populate requirements so that events can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.selectedEvent.requirements = reqs
+    },
+    copyToClipBoard(){
+      navigator.clipboard.writeText(this.actionLogicString);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    async getActionLogicString(actionId) {
+      try {
+        const {data} = await getRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action/${actionId}/logicString`)
+        this.actionLogicString = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching logic string')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
     },
     async getEventDetails() {
       try {
@@ -753,6 +889,16 @@ export default {
     async saveEventAction(action) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        //if action is a banner then null out all the regular action fields (in case they changed type a bunch)
+        if (this.newEventAction.actionTypeId === 3) {
+          this.newEventAction.companyEventStatusTypeId = null
+          this.newEventAction.companyProcessStepStatusTypeId = null
+        } else {
+          //otherwise null out the banner fields
+          this.newEventAction.content = null
+          this.newEventAction.color = null
+          this.newEventAction.bgColor = null
+        }
         const {data} = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action`, action)
         if (!action.id) {
           this.addNewEventAction = false

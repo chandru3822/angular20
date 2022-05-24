@@ -1047,7 +1047,7 @@ public class SmartlistService {
         query.append(" inner join flow.org on flow.org.id = flow.user_position.org_id and flow.org.archived is not true ");
         query.append(" inner join flow.org_type on flow.org_type.id = flow.org.org_type_id and flow.org_type.archived is not true ");
         query.append(" inner join flow.org_level on flow.org_level.id = flow.org_type.org_level_id ");
-        query.append(" inner join flow.user_position_hierarchy_vw on flow.user_position_hierarchy_vw.user_id = flow.user.id and flow.user_position_hierarchy_vw.org_id = flow.org.id and flow.user_position_hierarchy_vw.position_id = flow.position.id ");
+        query.append(" inner join flow.user_position_hierarchy_vw on flow.user_position_hierarchy_vw.user_position_id = flow.user_position.id ");
         // TODO: Level = 5 for Region is BlueRaven specific, make generic at some point to support other companies
         query.append(" left join lateral jsonb_array_elements(user_position_hierarchy_vw.hierarchy) obj(val) ON obj.val->>'level' = '5' ");
 
@@ -1080,7 +1080,7 @@ public class SmartlistService {
           query.append(" inner join flow.position on flow.position.id = flow.user_position.position_id and flow.position.archived is not true ");
           query.append(" inner join flow.company_user_status on flow.company_user_status.user_id = flow.user.id and flow.company_user_status.archived is not true ");
           query.append(" inner join flow.user_status_type on flow.user_status_type.id = flow.company_user_status.user_status_type_id and flow.user_status_type.archived is not true ");
-          query.append(" inner join flow.user_position_hierarchy_vw on flow.user_position_hierarchy_vw.user_id = flow.user.id and flow.user_position_hierarchy_vw.org_id = flow.org.id and flow.user_position_hierarchy_vw.position_id = flow.position.id ");
+          query.append(" inner join flow.user_position_hierarchy_vw on flow.user_position_hierarchy_vw.user_position_id = flow.user_position.id ");
           // TODO: Level = 5 for Region is BlueRaven specific, make generic at some point to support other companies
           query.append(" left join lateral jsonb_array_elements(user_position_hierarchy_vw.hierarchy) obj(val) ON obj.val->>'level' = '5' ");
 

@@ -121,6 +121,12 @@ BEGIN
           values(v_closer_user_id,
                  concat('Hi ', v_closer_first_name, ',  The installation for ', v_contact_name, ', ', p_project_id, ' has been scheduled for ', v_installation_start_time, '.  Address: ', v_contact_street, ', ', v_contact_city, ', ', v_contact_state, '.  Size (kW): ', v_system_size),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 13 then
+          -- do the message for id 13 = proposals follow up
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('Hi ', v_closer_first_name, ', your follow-up is needed from the proposals team on project: ', v_contact_name,', ', p_project_id, '. Access the open "Follow-up" process step on this account to see the needed information.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;
 

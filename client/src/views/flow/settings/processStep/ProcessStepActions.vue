@@ -8,7 +8,7 @@
           <v-toolbar-title class="app-title">Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="addNewAction = !addNewAction" text v-if="userCanAdd">
+            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
               {{ addNewAction ? 'Cancel' : 'Add Action' }}
             </v-btn>
@@ -18,7 +18,8 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat class="mb-3 mx-3" v-if="addNewAction">
+        <v-card flat color="rowShadeCustom" class="square-card my-3 pa-3" v-if="addNewAction">
+          <h3>Add New Action</h3>
           <v-text-field v-model="newAction.actionName"
                         placeholder="Enter a name"
                         label="Action Name">
@@ -29,62 +30,90 @@
                     item-text="actionType"
                     item-value="id"
           ></v-select>
-          <v-select attach v-model="newAction.companyProcessStepStatusTypeId"
-                    :items="statusTypes"
-                    :clearable="true"
-                    label="Action changes status of parent process step to"
-                    item-text="processStepStatusType"
-                    item-value="id"
-          ></v-select>
-          <v-select attach v-model="newAction.companyProjectStatusTypeId"
-                    :items="companyProjectStatusTypes"
-                    :clearable="true"
-                    label="Action changes project status to"
-                    item-text="projectStatusType"
-                    item-value="id"
-          ></v-select>
-          <v-checkbox
-            dense
-            hide-details
-            :readonly="!userCanEdit"
-            :disabled="!userCanEdit"
-            v-model="newAction.removeProcessStepOwner"
-            label="Clear Process Step Owner"
-          />
-          <v-checkbox
-            dense
-            hide-details
-            v-model="newAction.multipleUses"
-            @change="newAction.triggerAutomatically = false"
-            label="Allow Multiple Uses"
-          />
-          <v-checkbox
-            dense
-            hide-details
-            v-model="newAction.hideFromMobile"
-            label="Hide From Mobile"
-          />
-          <v-checkbox
-            dense
-            hide-details
-            v-model="newAction.hideFromWeb"
-            label="Hide From Web"
-          />
-          <v-checkbox
-            dense
-            hide-details
-            v-model="newAction.triggerAutomatically"
-            @change="newAction.multipleUses = false"
-            label="Trigger Automatically"
-          />
-          <v-checkbox
-            class="pl-3 pt-0"
-            dense
-            v-if="newAction.triggerAutomatically"
-            hide-details
-            v-model="newAction.timeBasedTrigger"
-            label="Time Based"
-          />
+          <div v-if="newAction.actionTypeId && newAction.actionTypeId !== 3">
+            <v-select attach v-model="newAction.companyProcessStepStatusTypeId"
+                      :items="statusTypes"
+                      :clearable="true"
+                      label="Action changes status of parent process step to"
+                      item-text="processStepStatusType"
+                      item-value="id"
+            ></v-select>
+            <v-select attach v-model="newAction.companyProjectStatusTypeId"
+                      :items="companyProjectStatusTypes"
+                      :clearable="true"
+                      label="Action changes project status to"
+                      item-text="projectStatusType"
+                      item-value="id"
+            ></v-select>
+            <v-checkbox
+              dense
+              hide-details
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
+              v-model="newAction.removeProcessStepOwner"
+              label="Clear Process Step Owner"
+            />
+            <v-checkbox
+              dense
+              hide-details
+              v-model="newAction.multipleUses"
+              @change="newAction.triggerAutomatically = false"
+              label="Allow Multiple Uses"
+            />
+            <v-checkbox
+              dense
+              hide-details
+              v-model="newAction.hideFromMobile"
+              label="Hide From Mobile"
+            />
+            <v-checkbox
+              dense
+              hide-details
+              v-model="newAction.hideFromWeb"
+              label="Hide From Web"
+            />
+            <v-checkbox
+              dense
+              hide-details
+              v-model="newAction.triggerAutomatically"
+              @change="newAction.multipleUses = false"
+              label="Trigger Automatically"
+            />
+            <v-checkbox
+              class="pl-3 pt-0"
+              dense
+              v-if="newAction.triggerAutomatically"
+              hide-details
+              v-model="newAction.timeBasedTrigger"
+              label="Time Based"
+            />
+          </div>
+          <div v-else-if="newAction.actionTypeId">
+            <v-textarea required label="Banner Content" auto-grow filled
+                        style="margin: 15px 0 -15px 0"
+                        v-model="newAction.content">
+            </v-textarea>
+            <div>
+              <label>Banner Text Color:</label>
+              <v-color-picker class="my-3"
+                              v-model="newAction.color"
+                              :canvas-height="colorOptions.height"
+                              :width="colorOptions.width"
+                              :mode="colorOptions.mode"
+                              :hide-mode-switch="colorOptions.hideModeSwitch">
+              </v-color-picker>
+            </div>
+            <div>
+              <label>Banner Background Color:</label>
+              <v-color-picker class="my-3"
+                              v-model="newAction.bgColor"
+                              :canvas-height="colorOptions.height"
+                              :width="colorOptions.width"
+                              :mode="colorOptions.mode"
+                              :hide-mode-switch="colorOptions.hideModeSwitch">
+              </v-color-picker>
+            </div>
+          </div>
           <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                  @click="saveNewAction">
             <v-icon>save</v-icon>
@@ -123,111 +152,139 @@
                   </v-text-field>
                   <v-select attach v-model="item.actionTypeId"
                             :items="actionTypes"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
+                            :readonly="true"
+                            :disabled="true"
                             label="Action Type"
                             item-text="actionType"
                             item-value="id"
                   ></v-select>
-                  <v-select attach v-model="item.companyProcessStepStatusTypeId"
-                            :items="statusTypes"
-                            :clearable="userCanEdit"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Action changes status of parent process step to"
-                            item-text="processStepStatusType"
-                            item-value="id"
-                  ></v-select>
-                  <v-select attach v-model="item.companyProjectStatusTypeId"
-                            :items="companyProjectStatusTypes"
-                            :clearable="true"
-                            label="Action changes project status to"
-                            item-text="projectStatusType"
-                            item-value="id"
-                  ></v-select>
-                  <v-checkbox
-                    dense
-                    hide-details
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    v-model="item.removeProcessStepOwner"
-                    label="Clear Process Step Owner"
-                  />
-                  <v-checkbox
-                    dense
-                    hide-details
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    v-model="item.multipleUses"
-                    @change="item.triggerAutomatically = false"
-                    label="Allow Multiple Uses"
-                  />
-                  <v-checkbox
-                    dense
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    hide-details
-                    v-model="item.hideFromMobile"
-                    label="Hide From Mobile"
-                  />
-                  <v-checkbox
-                    dense
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    hide-details
-                    v-model="item.hideFromWeb"
-                    label="Hide From Web"
-                  />
-                  <v-checkbox
-                    dense
-                    hide-details
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    v-model="item.triggerAutomatically"
-                    @change="item.multipleUses = false"
-                    label="Trigger Automatically"
-                  />
-                  <v-checkbox
-                    class="pl-3 pt-0 pb-3"
-                    dense
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    v-if="item.triggerAutomatically"
-                    hide-details
-                    v-model="item.timeBasedTrigger"
-                    label="Time Based"
-                  />
+                  <div v-if="item.actionTypeId !== 3">
+                    <v-select attach v-model="item.companyProcessStepStatusTypeId"
+                              :items="statusTypes"
+                              :clearable="userCanEdit"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              label="Action changes status of parent process step to"
+                              item-text="processStepStatusType"
+                              item-value="id"
+                    ></v-select>
+                    <v-select attach v-model="item.companyProjectStatusTypeId"
+                              :items="companyProjectStatusTypes"
+                              :clearable="true"
+                              label="Action changes project status to"
+                              item-text="projectStatusType"
+                              item-value="id"
+                    ></v-select>
+                    <v-checkbox
+                      dense
+                      hide-details
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-model="item.removeProcessStepOwner"
+                      label="Clear Process Step Owner"
+                    />
+                    <v-checkbox
+                      dense
+                      hide-details
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-model="item.multipleUses"
+                      @change="item.triggerAutomatically = false"
+                      label="Allow Multiple Uses"
+                    />
+                    <v-checkbox
+                      dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      hide-details
+                      v-model="item.hideFromMobile"
+                      label="Hide From Mobile"
+                    />
+                    <v-checkbox
+                      dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      hide-details
+                      v-model="item.hideFromWeb"
+                      label="Hide From Web"
+                    />
+                    <v-checkbox
+                      dense
+                      hide-details
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-model="item.triggerAutomatically"
+                      @change="item.multipleUses = false"
+                      label="Trigger Automatically"
+                    />
+                    <v-checkbox
+                      class="pl-3 pt-0 pb-3"
+                      dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-if="item.triggerAutomatically"
+                      hide-details
+                      v-model="item.timeBasedTrigger"
+                      label="Time Based"
+                    />
 
-                  <!-- LINK -->
-                  <div v-if="item.actionTypeId === 1">
-                    <v-divider></v-divider>
-                    <v-toolbar flat color="transparent">
-                      <v-toolbar-title class="app-title">
-                        Child Links
-                      </v-toolbar-title>
-                      <v-spacer></v-spacer>
-                      <v-toolbar-items>
-                        <v-btn v-if="!addChildLink && userCanEdit"
-                               @click="[addChildLink = true, loadLinks(item.id)]">
-                          <v-icon>add</v-icon>
+                    <!-- LINK -->
+                    <div v-if="item.actionTypeId === 1">
+                      <v-divider></v-divider>
+                      <v-toolbar flat color="transparent">
+                        <v-toolbar-title class="app-title">
+                          Child Links
+                        </v-toolbar-title>
+                        <v-spacer></v-spacer>
+                        <v-toolbar-items>
+                          <v-btn v-if="!addChildLink && userCanEdit"
+                                 @click="[addChildLink = true, loadLinks(item.id)]">
+                            <v-icon>add</v-icon>
+                          </v-btn>
+                        </v-toolbar-items>
+                      </v-toolbar>
+                      <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
+                              v-if="addChildLink">
+                        <h3>Add Child Link</h3>
+                        <v-select attach v-model="selectedLink"
+                                  :items="availableLinks"
+                                  label="Available Links"
+                                  item-text="link"
+                                  return-object
+                                  @input="saveLinkToAction(item)"
+                        ></v-select>
+                        <v-btn @click="addChildLink = false">
+                          <v-icon>remove</v-icon>
+                          Cancel
                         </v-btn>
-                      </v-toolbar-items>
-                    </v-toolbar>
-                    <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
-                            v-if="addChildLink">
-                      <h3>Add Child Link</h3>
-                      <v-select attach v-model="selectedLink"
-                                :items="availableLinks"
-                                label="Available Links"
-                                item-text="link"
-                                return-object
-                                @input="saveLinkToAction(item)"
-                      ></v-select>
-                      <v-btn @click="addChildLink = false">
-                        <v-icon>remove</v-icon>
-                        Cancel
-                      </v-btn>
-                    </v-card>
+                      </v-card>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <v-textarea required label="Banner Content" auto-grow filled
+                                style="margin: 15px 0 -15px 0"
+                                v-model="item.content">
+                    </v-textarea>
+                    <div>
+                      <label>Banner Text Color:</label>
+                      <v-color-picker class="my-3"
+                                      v-model="item.color"
+                                      :canvas-height="colorOptions.height"
+                                      :width="colorOptions.width"
+                                      :mode="colorOptions.mode"
+                                      :hide-mode-switch="colorOptions.hideModeSwitch">
+                      </v-color-picker>
+                    </div>
+                    <div>
+                      <label>Banner Background Color:</label>
+                      <v-color-picker class="my-3"
+                                      v-model="item.bgColor"
+                                      :canvas-height="colorOptions.height"
+                                      :width="colorOptions.width"
+                                      :mode="colorOptions.mode"
+                                      :hide-mode-switch="colorOptions.hideModeSwitch">
+                      </v-color-picker>
+                    </div>
                   </div>
                 </v-card>
                 <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
@@ -670,7 +727,43 @@
                 </v-row>
                 <v-divider class="mt-2"></v-divider>
                 <v-toolbar flat dense color="transparent">
-                  <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
+                  <v-toolbar-title class="app-title">
+                    Current Logic
+                    <v-dialog
+                      v-if="item.processStepLogicList && item.processStepLogicList.length > 0 && !item.logicListChanged"
+                      v-model="showActionLogicString"
+                      width="500">
+                      <template #activator="{ on }">
+                        <v-btn text class="d-inline-block" @click="getActionLogicString(item.id)" v-on="on">
+                          <v-icon>mdi-information</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="text-h5 grey lighten-2"
+                          primary-title>
+                          Action Logic String
+                        </v-card-title>
+
+                        <v-card-text class="pt-4">
+                          {{actionLogicString}}
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-btn @click="copyToClipBoard()">
+                            Copy
+                          </v-btn>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="showActionLogicString = false">
+                            OK
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items
                     v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
@@ -893,6 +986,12 @@ export default {
         requirementParamDynamicValues: [],
         customValue: false
       },
+      colorOptions: {
+        canvasHeight: 75,
+        width: 200,
+        mode: 'hexa',
+        hideModeSwitch: true
+      },
       dataTypeRequirements: [],
       selectedDataTypeRequirement: {},
       selectedCustomField: {},
@@ -900,6 +999,8 @@ export default {
       selectedListOfValues: [],
       selectedListValue: {},
       selectedFunction: {},
+      showActionLogicString: false,
+      actionLogicString: null,
       selectedRequirementIndex: null,
       selectedActionIndex: null,
       availableRequirementTypes: [],
@@ -928,7 +1029,8 @@ export default {
       //todo: get these from endpoint but i am lazy right now
       actionTypes: [
         {id: 1, actionType: 'Link'},
-        {id: 2, actionType: 'Button'}
+        {id: 2, actionType: 'Button'},
+        {id: 3, actionType: 'Banner'}
       ],
       addChildProcess: false,
       addChildFunction: false,
@@ -998,6 +1100,21 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
+    copyToClipBoard(){
+      navigator.clipboard.writeText(this.actionLogicString);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    async getActionLogicString(actionId) {
+      try {
+        const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/logicString`)
+        this.actionLogicString = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching logic string')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     async getCancelledStatuses(item) {
       this.cancelledCompanyStatuses = []
       try {
@@ -1050,6 +1167,23 @@ export default {
           //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
           this.newAction.timeBasedTrigger = false
         }
+        //if action is a banner then null out all the regular action fields (in case they changed type a bunch)
+        if (this.newAction.actionTypeId === 3) {
+          this.newAction.companyProcessStepStatusTypeId = null
+          this.newAction.companyProjectStatusTypeId = null
+          this.newAction.companyProjectStatusTypeId = null
+          this.newAction.removeProcessStepOwner = null
+          this.newAction.triggerAutomatically = null
+          this.newAction.hideFromMobile = null
+          this.newAction.hideFromWeb = null
+          this.newAction.triggerAutomatically = null
+          this.newAction.timeBasedTrigger = null
+        } else {
+          //otherwise null out the banner fields
+          this.newAction.content = null
+          this.newAction.color = null
+          this.newAction.bgColor = null
+        }
         this.newAction.processStepId = this.processStepId
         const {data, status} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
         this.actions.push(data)
@@ -1084,6 +1218,7 @@ export default {
         const {data, status} = await putRequest(`/processStep/${this.processStepId}/action`, action)
         // this forces the list to update the values displayed ... using action = data did not work
         action.actionType = data.actionType
+        action.logicListChanged = false
         action.processStepStatusType = data.processStepStatusType
         action.processStepActionChildProcesses = data.processStepActionChildProcesses
         action.processStepActionLinks = data.processStepActionLinks

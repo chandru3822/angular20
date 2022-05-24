@@ -139,8 +139,8 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.html2pdf-task-def.outputs.task-definition }}
-          service: albatross-html2pdf-service
-          cluster: albatross-dev-cluster
+          service: albatross-non-prod-html2pdf
+          cluster: albatross-html2pdf-cluster
 
   frontend-build:
     name: Build Front End
