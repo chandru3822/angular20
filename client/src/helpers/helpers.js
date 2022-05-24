@@ -61,11 +61,15 @@ export function followLink(url, projectId) {
   window.open(adjustedUrl, JSON.stringify(new Date()))
 }
 
-export function getUrlForLink(url, projectId) {
-  //currently project_id is the only param this would work for
+export function getUrlForLink(url, projectId, orgId) {
+  //currently project_id and org_id are the only params this would work for
   if (url.includes('ALB_PROJECT_ID') && null !== projectId && undefined !== projectId) {
     //this part would not work globally but I am just trying to hack up a POC
     url = url.replace('ALB_PROJECT_ID', projectId)
+  }
+  if (url.includes('ALB_ORG_ID') && null !== orgId && undefined !== orgId) {
+    //this part would not work globally but I am just trying to hack up a POC
+    url = url.replace('ALB_ORG_ID', orgId)
   }
   if (url.includes('ALB_HOST')) {
     url = url.replace('ALB_HOST', (constants.VUE_APP_ENV === 'local' ? 'http://' : 'https://') + location.host)
