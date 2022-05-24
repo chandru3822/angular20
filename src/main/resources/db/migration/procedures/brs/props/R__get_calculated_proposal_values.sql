@@ -114,7 +114,65 @@ create type brs.calculated_proposal_value as
   panel_quantity                                   integer,
   inverter_brand_id                                integer,
   inverter_brand                                   varchar,
-  aurora_design_id                                 text
+  aurora_design_id                                 text,
+  product_name                                     varchar
+);
+
+drop type brs.excluded_proposal_value;
+create type brs.excluded_proposal_value as
+(
+  version_id                              integer,
+  project_process_step_id                 integer,
+  friends_and_family                      boolean,
+  production_factor                       numeric,
+  funding_range                           numeric,
+  production_factor_range                 numeric,
+  points_off_south_production_factor      numeric,
+  price_change_per_production_point       numeric,
+  calculated_price_adjustment             numeric,
+  max_price_adjustment                    numeric,
+  adjusted_price_per_wat                  numeric,
+  initial_system_cost                     numeric,
+  promotion_cost                          numeric,
+  equipment_inverter_adder                numeric,
+  equipment_panel_adder                   numeric,
+  equipment_storage_adder                 numeric,
+  misc_adders                             numeric,
+  panel_brand_id                          integer,
+  panel_watts                             integer,
+  above_line_rebate                       numeric,
+  state_id                                integer,
+  utility_company_id                      integer,
+  dealer_fee                              numeric,
+  eto_rebate_unit_type_id                 integer,
+  federal_unit_type_id                    integer,
+  inverter_efficiency                     numeric,
+  initial_payment_factor                  numeric,
+  reamortization_factor                   numeric,
+  product_id                              numeric,
+  smart_thermostat_value                  numeric,
+  smart_thermostat_adder                  numeric,
+  led_light_bulbs_value                   numeric,
+  led_light_bulbs_adder                   numeric,
+  energy_efficiency_reduction_light_bulbs numeric,
+  energy_efficiency_reduction_thermostat  numeric,
+  adjusted_annual_consumption             numeric,
+  instantly_used                          numeric,
+  sent_to_grid                            numeric,
+  after_net_metering                      numeric,
+  adjusted_annual_production              numeric,
+  instant_use_assumption                  numeric,
+  net_metring_rate                        numeric,
+  cost_of_solar  numeric,
+  monthly_cost_30_year_average_with_solar numeric,
+  reamortized_payment_factor_without_itc_paydown numeric,
+  proposal_id integer,
+  project_id integer,
+  proposal_archived boolean,
+  panel_brand character varying,
+  inverter_brand_id integer,
+  inverter_brand varchar,
+  aurora_design_id text
 );
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
@@ -244,6 +302,7 @@ declare
   v_inverter_brand                                   varchar;
   v_inverter_brand_id                                integer;
   v_aurora_design_id                                 text;
+  v_product_name                                     character varying;
 BEGIN
 
   select prop.id        as proposal_id,
@@ -252,6 +311,7 @@ BEGIN
          coalesce(pcfv3.boolean_value, false),
          coalesce(pcfv4.numeric_value, 0),
          pcfv5.int_value,
+         lov.name,
          p.id           as project_id,
          prop.archived,
          c.first_name,
@@ -265,7 +325,7 @@ BEGIN
          s.abbreviation as state_abbreviation,
          c.mobile,
          c.email
-  into v_proposal_id,v_version_id,v_project_process_step_id,v_friends_and_family,v_down_payment_amount,v_product_id,
+  into v_proposal_id,v_version_id,v_project_process_step_id,v_friends_and_family,v_down_payment_amount,v_product_id,v_product_name,
     v_project_id,v_proposal_archived,v_contact_first_name,v_contact_last_name,v_project_name,v_project_street1,
     v_project_street2,v_city,v_postal_code,v_project_state,v_project_state_abbrev,v_contact_phone,v_contact_email
   from brs.proposal prop
@@ -280,6 +340,7 @@ BEGIN
                                                             pcfv4.custom_field_group_assignment_id = 134
          left join brs.proposal_custom_field_value pcfv5 on prop.id = pcfv5.proposal_id and
                                                             pcfv5.custom_field_group_assignment_id = 147
+         left join flow.list_of_value lov on lov.id = pcfv5.int_value
   where prop.id = p_proposal_id;
 
 
@@ -1769,7 +1830,8 @@ BEGIN
            v_panel_quantity,
            v_inverter_brand_id,
            v_inverter_brand,
-           v_aurora_design_id;
+           v_aurora_design_id,
+           v_product_name;
   drop table proposal_value;
 
 END
