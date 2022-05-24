@@ -259,7 +259,7 @@
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
 
-  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getUrlForLink, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -844,8 +844,18 @@
           this.callback(this.mapResourceEvents)
         }
 
-        renderInfo.el.querySelector('.fc-cell-text')
-          .prepend(checkbox)
+        //if this is an org (first char === 1) then make it a hyperlink to the org screen
+        let isOrg = false
+        let anchorHref = ''
+        if(renderInfo?.resource?.id?.charAt(0) === '1') {
+          isOrg = true
+          let orgId = renderInfo?.resource?.id?.substring(1)
+          anchorHref = getUrlForLink('ALB_HOST/org/ALB_ORG_ID', null, orgId)
+        }
+        renderInfo.el.querySelector('.fc-cell-text').innerHTML = isOrg ?
+          "<a target='_blank' href=" + anchorHref + ">" + renderInfo.resource.title + "</a>" :
+          "<span>" + renderInfo.resource.title + "</span>"
+        renderInfo.el.querySelector('.fc-cell-text').prepend(checkbox)
 
       },
       filterOrgsAndUsers() {
