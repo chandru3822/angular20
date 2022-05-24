@@ -53,6 +53,12 @@ public class ProjectProcessStepController {
         pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), a, pps));
         index++;
       }
+      //do the same thing for banners which are technically just actions of actionTypeId = 3
+      int bannerIndex = 0;
+      for (ProjectProcessStepAction a : pps.getBanners()) {
+        pps.getBanners().set(bannerIndex, projectProcessStepService.getActionResult(a.getId(), a, pps));
+        bannerIndex++;
+      }
 
       return new ResponseEntity<>(pps, HttpStatus.OK);
     } catch (Exception e) {

@@ -1,16 +1,18 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplateBlock;
-import com.google.common.net.HttpHeaders;
 import freemarker.template.TemplateException;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -23,18 +25,32 @@ public class ProposalPreviewController {
 
   @Timed
   @PostMapping(value = "", produces = MediaType.APPLICATION_PDF_VALUE)
-  public void getProposalPreview(
+  public ResponseEntity<StreamingResponseBody> getProposalPreview(
       @RequestBody PreviewPayload payload,
       @RequestParam(value = "inline", defaultValue = "false") boolean inline,
-      HttpServletResponse response)
-      throws IOException, TemplateException {
+      final HttpServletResponse response) {
 
-    response.addHeader(
-        HttpHeaders.CONTENT_DISPOSITION,
-        String.format("%s; filename=\"preview.pdf\"", inline ? "inline" : "attachment"));
+    final String contentDisposition =
+        String.format("%s; filename=\"preview.pdf\"", inline ? "inline" : "attachment");
 
-    proposalTemplateService.generatePdf(
-        payload.template, payload.theme, response.getOutputStream());
+    response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
+    response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+
+    final StreamingResponseBody responseBody =
+        outputStream -> {
+          try {
+            proposalTemplateService.generatePdf(
+                payload.template,
+                payload.theme,
+                outputStream,
+                contentLength ->
+                    response.addHeader(HttpHeaders.CONTENT_LENGTH, contentLength.toString()));
+          } catch (TemplateException e) {
+            log.error("[Proposal] Error generating preview PDF", e);
+            throw new ApiException("Error generating preview");
+          }
+        };
+    return ResponseEntity.ok(responseBody);
   }
 
   public record PreviewPayload(List<ProposalTemplateBlock> template, Map<String, Object> theme) {}

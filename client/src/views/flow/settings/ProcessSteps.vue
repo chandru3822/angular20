@@ -78,9 +78,13 @@
             >
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left clickable" @click="goToProcessStep(item.id)">{{item.processStepName}}</td>
-                  <td class="text-right">
-                    <v-btn small text @click="goToProcessStep(item.id)">
+                  <td class="text-left pr-0">
+                    <v-btn small text :to="`/settings/processStep/${item.id}/components`" class="one-hunned process-step-button">
+                      {{item.processStepName}}
+                    </v-btn>
+                  </td>
+                  <td class="text-right pl-0">
+                    <v-btn small text :to="`/settings/processStep/${item.id}/components`">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
@@ -152,9 +156,6 @@
       debounceGetSteps: debounce( function () {
         this.getProcessSteps()
       }, 500),
-      goToProcessStep(stepId) {
-        this.$router.push({path: `/settings/processStep/${stepId}/components`})
-      },
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -223,4 +224,12 @@
     min-height: 300px;
   }
 
+  .process-step-button::before {
+    background-color: transparent;
+  }
+
+  .process-step-button .v-btn__content {
+    text-transform: none;
+    justify-content: flex-start;
+  }
 </style>

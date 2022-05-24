@@ -1028,41 +1028,79 @@ declare
   v_value           character varying;
   v_record          record;
   v_count           bigint;
+  v_second_field_to_update character varying;
 BEGIN
 
 
-  select pdc.id, field_to_update, data_type_id
-  into v_config_id,v_field_to_update,v_data_type_id
+  select pdc.id, field_to_update, data_type_id, second_field_to_update
+  into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update
   from brs.project_details_config pdc
   where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id;
 
 
   if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6) then
-    if v_data_type_id = 1 then
-      case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
-      v_value = v_value || '::date';
-    elsif v_data_type_id = 2 then
-      case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
-      v_value = v_value || '::timestamp';
-    elsif v_data_type_id = 4 then
-      case when new.numeric_value is null then select 'null' into v_value; else select quote_literal(new.numeric_value) into v_value; end case;
-      v_value = v_value || '::numeric';
-    elsif v_data_type_id = 6 then
-      case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
-      v_value = v_value || '::integer';
-    elsif v_data_type_id = 3 then
-      case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
-      v_value = v_value || '::boolean';
-    end if;
 
     for v_record in select id
                     from flow.project
                     where contact_id = new.contact_id
       loop
+        if v_data_type_id = 1 then
+          case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
+          v_value = v_value || '::date';
+        elsif v_data_type_id = 2 then
+          case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
+          v_value = v_value || '::timestamp';
+        elsif v_data_type_id = 4 then
+          case when new.numeric_value is null then select 'null' into v_value; else select quote_literal(new.numeric_value) into v_value; end case;
+          v_value = v_value || '::numeric';
+        elsif v_data_type_id = 6 then
+          case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
+          v_value = v_value || '::integer';
+        elsif v_data_type_id = 3 then
+          case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
+          v_value = v_value || '::boolean';
+        end if;
         v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_record.id;
-        -- raise notice 'in if %',v_sql;
+         raise notice 'in if %',v_sql;
         execute v_sql;
+
+        if v_second_field_to_update is not null then
+          if v_field_to_update = 'ahj' and new.int_value is not null then
+            select quote_literal(ahj.name)
+            into v_value
+            from brs.ahj ahj
+            where ahj.id = new.int_value
+            limit 1;
+          elsif v_field_to_update = 'utility_company' and new.int_value is not null then
+            select quote_literal(au.name)
+            into v_value
+            from brs.ahj_utility au
+            where au.id = new.int_value
+            limit 1;
+          elsif v_field_to_update = 'sales_dev_representative_id' or v_field_to_update = 'inside_sales_consultant_id' then
+            case when new.int_value is null then select 'null' into v_value;
+                 else
+                   select quote_literal(coalesce(u.first_name, ' ') || ' ' || coalesce(u.last_name, ' '))
+                   into v_value
+                   from flow.user_position up
+                          inner join flow.user u on up.user_id = u.id
+                   where up.id = new.int_value;
+              end case;
+          else
+            case when new.int_value is null then select 'null' into v_value;
+                 else
+                   select quote_literal(name)
+                   into v_value
+                   from flow.list_of_value
+                   where id = new.int_value;
+              end case;
+          end if;
+          v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
+           where project_id = $$ || v_record.id;
+          raise notice 'in second field %',v_sql;
+          execute v_sql;
+        end if;
       end loop;
 
 

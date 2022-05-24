@@ -12,13 +12,15 @@
       <v-col cols="12" sm="12">
         <font-size-widget :value="cssStyle.fontSize" @input="doUpdateStyles($event)" />
       </v-col>
-      <!--      <v-col cols="12" sm="12">-->
-      <!--        <color-widget :value="cssStyle.color" @input="doUpdateStyles($event)">-->
-      <!--          <template #title>-->
-      <!--            Font Color-->
-      <!--          </template>-->
-      <!--        </color-widget>-->
-      <!--      </v-col>-->
+      <v-col cols="12" sm="12">
+        <color-widget :value="cssStyle.color" @input="doUpdateStyles($event)">
+          <template #title>
+            <span class="flex-grow-1">
+            Font Color
+            </span>
+          </template>
+        </color-widget>
+      </v-col>
 
     </fragment>
     <!--    TODO: text transform-->

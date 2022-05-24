@@ -154,6 +154,23 @@ public class ProjectProcessStepEventService {
           action.setCanPerform(canPerformEventAction(event, action, requirements));
         }
       }
+      if (null != event.getEventBanners() && !event.getEventBanners().isEmpty()) {
+        // if there are event banners, do the checks
+        for (ProcessStepEventAction action : event.getEventBanners()) {
+          // get the requirements here - sames as humes, pass to canPermform
+          List<Long> requirementIds =
+            Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
+                   .filter(step -> step.getProcessStepEventRequirementId() != null)
+                   .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+                   .collect(Collectors.toList());
+
+          List<ProjectProcessStepRequirement> requirements =
+            projectProcessStepRequirementService.getByProjectProcessStepId(
+              event.getProjectProcessStepId(), requirementIds, true);
+
+          action.setCanPerform(canPerformEventAction(event, action, requirements));
+        }
+      }
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event Not Found", new Exception());
     }
@@ -607,6 +624,10 @@ public class ProjectProcessStepEventService {
           List.class,
           "eventActions",
           new JsonCollectionDeserializer(eventActionsRef, objectMapper));
+      bw.registerCustomEditor(
+        List.class,
+        "eventBanners",
+        new JsonCollectionDeserializer(eventActionsRef, objectMapper));
 
       TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef =
           new TypeReference<>() {};

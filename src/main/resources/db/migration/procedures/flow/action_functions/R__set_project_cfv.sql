@@ -65,7 +65,7 @@ BEGIN
             elsif v_data_type_id = 5 then
                 insert into flow.project_custom_field_value(project_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
                 values (p_project_id, p_cfga, null, null, null, p_value_to_save::text, null,null, null, p_user_id, now(), p_user_id, now());
-            elsif v_data_type_id = 6 then
+            elsif v_data_type_id = 6 or v_data_type_id = 9 then
                 insert into flow.project_custom_field_value(project_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
                 values (p_project_id, p_cfga, null, null, null, null, null, p_value_to_save::int, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 7 then
@@ -103,7 +103,7 @@ BEGIN
                     modified_by_id = p_user_id,
                     date_modified = now()
                 where id = v_existing_id;
-            elsif v_data_type_id = 6 then
+            elsif v_data_type_id = 6 or v_data_type_id = 9 then
                 update flow.project_custom_field_value
                 set int_value = p_value_to_save::int,
                     modified_by_id = p_user_id,

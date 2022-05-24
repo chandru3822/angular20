@@ -44,7 +44,7 @@
           <div class="scheduled-time" v-if="selectedEvent.scheduledDate">
             Scheduled {{ selectedEvent.scheduledDate | formatDate('timestamp', 'M/D/YYYY [at] h:mm a') }}
             <br>
-            Created by {{selectedEvent.createdBy}}
+            Created by {{ selectedEvent.createdBy }}
           </div>
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -90,37 +90,52 @@
         </v-toolbar-items>
       </v-toolbar>
       <div class="pb-4 px-6">
-      <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
-        <div class="action-subheader albatross-header-3">
-          Actions
-          <v-btn
-            class="back-btn show-unperformable-actions-btn"
-            text
-            :ripple="false"
-            @click="showUnperformableActions = !showUnperformableActions"
-          >
-            {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
+        <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
+          <v-card class="square-card" :class="{'mt-2': idx !== 0}"
+                  v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
+            <v-card-text class="flex-display pa-0"  :style="{'color': b.color}">
+              <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
+              <div :style="{'background-color': b.bgColor + 20}" class="one-hunned">
+                <pre class="app-pre-wrapper px-3 py-2">{{b.content}}</pre>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
+        <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
+          <div class="action-subheader albatross-header-3">
+            Actions
+            <v-btn
+              class="back-btn show-unperformable-actions-btn"
+              text
+              :ripple="false"
+              @click="showUnperformableActions = !showUnperformableActions"
+            >
+              {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
+            </v-btn>
+          </div>
+        </div>
+        <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
+          <v-btn class="action-button white--text text-capitalize"
+                 color="primaryCustom"
+                 v-if="!action.hideFromWeb"
+                 :disabled="!action.canPerform"
+                 @click="[attemptedAction = action, validateActionRequirements(action)]">
+            <div>
+              <div class="action-button-name">
+                {{ action.actionName }}
+              </div>
+              <div class="action-button-subtitle">
+                <span class="action-button-subtitle-date">{{
+                    action.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a')
+                  }}</span>
+                {{ action.actionRunBy }}
+              </div>
+            </div>
+            <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">
+              check
+            </v-icon>
           </v-btn>
         </div>
-      </div>
-      <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
-        <v-btn class="action-button white--text text-capitalize"
-               color="primaryCustom"
-               v-if="!action.hideFromWeb"
-               :disabled="!action.canPerform"
-               @click="[attemptedAction = action, validateActionRequirements(action)]">
-          <div>
-            <div class="action-button-name">
-              {{ action.actionName }}
-            </div>
-            <div class="action-button-subtitle">
-              <span class="action-button-subtitle-date">{{ action.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
-              {{ action.actionRunBy}}
-            </div>
-          </div>
-          <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">check</v-icon>
-        </v-btn>
-      </div>
       </div>
       <div class="fixed-toolbar padding-left-1">
         <v-toolbar flat color="secondary" class="cfg-name-toolbar px-6">
@@ -174,49 +189,49 @@
           </v-btn>
         </div>
         <v-card class="square-card px-4 pt-4 mt-4">
-        <v-autocomplete
-          v-model="selectedEvent.companyEventStatusTypeId"
-          :items="companyEventStatuses"
-          label="Event Status"
-          :disabled="!userCanManage"
-          item-text="eventStatusType"
-          item-value="id"
-          @input="[statusChanged = true, defaultValuesChanged = true]"
-        ></v-autocomplete>
-        <DatetimePickerInput
-          v-model="selectedEvent.startTime"
-          :timezone="this.timezone"
-          :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-          :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-          :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
-          :type="'timestamp'"
-          :format="'MMMM DD, YYYY, h:mm A'"
-          label="Start Time"
-          :change-callback="startTimeChanged"
-        />
-        <DatetimePickerInput
-          v-model="selectedEvent.endTime"
-          :timezone="this.timezone"
-          :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-          :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-          :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
-          :type="'timestamp'"
-          :format="'MMMM DD, YYYY, h:mm A'"
-          label="End Time"
-          :change-callback="() => { this.defaultValuesChanged = true}"
-        />
-        <v-autocomplete
-          v-if="selectedEvent && selectedEvent.availableResources"
-          v-model="selectedEvent.resourceId"
-          :items="selectedEvent.availableResources"
-          :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
-          :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
-          :rules="getResourceRequirement()"
-          label="Resource"
-          item-text="name"
-          item-value="id"
-          @input="defaultValuesChanged = true"
-        ></v-autocomplete>
+          <v-autocomplete
+            v-model="selectedEvent.companyEventStatusTypeId"
+            :items="companyEventStatuses"
+            label="Event Status"
+            :disabled="!userCanManage"
+            item-text="eventStatusType"
+            item-value="id"
+            @input="[statusChanged = true, defaultValuesChanged = true]"
+          ></v-autocomplete>
+          <DatetimePickerInput
+            v-model="selectedEvent.startTime"
+            :timezone="this.timezone"
+            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+            :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
+            :type="'timestamp'"
+            :format="'MMMM DD, YYYY, h:mm A'"
+            label="Start Time"
+            :change-callback="startTimeChanged"
+          />
+          <DatetimePickerInput
+            v-model="selectedEvent.endTime"
+            :timezone="this.timezone"
+            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+            :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
+            :type="'timestamp'"
+            :format="'MMMM DD, YYYY, h:mm A'"
+            label="End Time"
+            :change-callback="() => { this.defaultValuesChanged = true}"
+          />
+          <v-autocomplete
+            v-if="selectedEvent && selectedEvent.availableResources"
+            v-model="selectedEvent.resourceId"
+            :items="selectedEvent.availableResources"
+            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+            :rules="getResourceRequirement()"
+            label="Resource"
+            item-text="name"
+            item-value="id"
+            @input="defaultValuesChanged = true"
+          ></v-autocomplete>
 
           <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
                  class="white--text mb-4"
@@ -368,7 +383,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import {getStatusClass} from '@/services/eventStatusTypeService'
-
+import Vue2Filters from 'vue2-filters'
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -379,6 +394,7 @@ export default {
     SpinnerInline,
     UploadDocumentModal
   },
+  mixins: [Vue2Filters.mixin],
   props: {
     project: Object,
     splitValueColumns: Boolean
@@ -714,7 +730,7 @@ export default {
     startTimeChanged() {
       this.defaultValuesChanged = true
       //if it is the closer event then auto populate the end time with (start time + 1 hour)
-      if(this.selectedEvent?.uniqueBehaviorTypeId === 1 && this.selectedEvent?.startTime != null) {
+      if (this.selectedEvent?.uniqueBehaviorTypeId === 1 && this.selectedEvent?.startTime != null) {
         console.log('STARTER TOWN', this.selectedEvent.startTime)
         this.selectedEvent.endTime = moment.utc(this.selectedEvent.startTime).add(90, 'm').format('YYYY-MM-DDTHH:mm:ssZ')
         console.log('END TOWN', this.selectedEvent.endTime)
@@ -762,7 +778,7 @@ export default {
           data,
           status
         } = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
-        if(data && data.projectId && data.projectId !== this.projectId) {
+        if (data && data.projectId && data.projectId !== this.projectId) {
           this.projectMismatch = true
           this.eventDetailsLoading = false
           this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
@@ -1108,6 +1124,11 @@ export default {
 .action-button-subtitle {
   display: block;
   font-size: 10px;
+}
+
+.banner-card-swatch {
+  min-height: 100%;
+  width: 30px;
 }
 
 .action-button-subtitle-date {

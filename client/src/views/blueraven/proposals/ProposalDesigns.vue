@@ -233,7 +233,7 @@ export default {
     async getProposalProject() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/project/${this.projectId}/details`)
+        const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {

@@ -84,7 +84,8 @@
        UPDATE brs.override_plan_receiving_user
          SET note = :note,
          m1_allocation = :m1,
-         m2_allocation = :m2
+         m2_allocation = :m2,
+         date_modified = now()
        WHERE override_plan_id = :planId
         AND user_id = :userId
     ]]></overridePlan.updateReceivingUser>
@@ -116,7 +117,7 @@
                                  AND opau.end_date IS NULL
                                  AND opau.start_date <= :startDate)
     UPDATE brs.override_plan_assigned_user u
-    SET end_date = :startDate :: DATE - INTERVAL '1 day'
+    SET end_date = :startDate :: DATE - INTERVAL '1 day', date_modified = now()
     FROM active_user_plans p
     where u.id = p.id
     ]]></overridePlan.setEndDateAssignedUser>
@@ -137,7 +138,8 @@
   <overridePlan.updateAssignedUser><![CDATA[
     WITH update_assigned_user AS (UPDATE brs.override_plan_assigned_user
     SET start_date = :startDate,
-      end_date     = :endDate
+      end_date     = :endDate,
+      date_modified = now()
     WHERE id = :id)
     UPDATE brs.override_plan
     SET updated    = now(),
@@ -399,7 +401,8 @@ FROM (SELECT u.id                                                             AS
   <overridePlan.updatePlanUser><![CDATA[
        UPDATE brs.override_plan_assigned_user
          SET note = :note,
-         end_date = :endDate
+         end_date = :endDate,
+         date_modified = now()
        WHERE id = :id
         AND user_id = :userId
     ]]></overridePlan.updatePlanUser>

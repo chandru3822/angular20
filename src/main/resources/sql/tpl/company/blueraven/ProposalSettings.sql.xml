@@ -18,6 +18,7 @@ from brs.proposal_version v
          left join brs.primary_company_proposal_version pcpv
                    on v.id = pcpv.proposal_version_id and v.company_id = pcpv.company_id
 where v.company_id = :companyId
+order by v.id desc
 limit :limit
 offset :offset
   ]]></propTool.findAllByCompany>
@@ -33,7 +34,7 @@ from brs.proposal_version v
          left join brs.primary_company_proposal_version pcpv
                    on v.id = pcpv.proposal_version_id and v.company_id = pcpv.company_id
 where v.id = :id
-  ]]></propTool.findById>
+]]></propTool.findById>
 
   <propTool.findObjectTypes><![CDATA[
 select ot.id, ot.object_type as name, ot.object_code as code

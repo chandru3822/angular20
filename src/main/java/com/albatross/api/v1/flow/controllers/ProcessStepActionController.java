@@ -43,6 +43,11 @@ public class ProcessStepActionController {
     return processStepActionService.insertAction(action);
   }
 
+  @GetMapping(value = "/{actionId}/logicString", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getActionLogicString (@PathVariable Long actionId) {
+    return processStepActionService.getActionLogicString(actionId);
+  }
+
   // child process steps
 
   @GetMapping(value = "/{actionId}/childProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
