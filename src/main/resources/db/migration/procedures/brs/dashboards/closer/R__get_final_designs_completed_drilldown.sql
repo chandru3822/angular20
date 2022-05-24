@@ -36,7 +36,7 @@ BEGIN
                     -- -- Referral = True
                     -- -- Referred By = False
                     -- -- Referral Generation Representative = False
-             case when pd.source in (523, 530) AND
+             case when pd.source in (523, 524, 530, 20016) AND
                        ccfv_referral.boolean_value is true AND
                        coalesce(ccfv_referred_by.text_value, '') = '' AND
                        ccfv_ref_gen_rep.int_value is null
