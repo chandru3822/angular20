@@ -31,7 +31,7 @@ BEGIN
              from flow.user_positions_vw upv
                     inner join flow.org o on o.id = upv.org_id and o.org_type_id = 4
 --                     inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 4
-                    left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
+                    left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
              where upv.org_id is not null
                and upv.archived is not true
@@ -54,7 +54,7 @@ BEGIN
                from flow.user_positions_vw upv
                       inner join flow.org o on o.id = upv.org_id and o.org_type_id = 4
 --                       inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 4
-                      left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
+                      left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
                       left join flow.list_of_value lov ON ocfv.int_value = lov.id
                where upv.org_id is not null
                  and upv.archived is not true
