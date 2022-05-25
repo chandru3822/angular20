@@ -12,30 +12,6 @@
   margin-bottom: 0 !important;
 }
 
-.theme--light,
-.theme--light.application,
-.theme--light.application .text--primary,
-.theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
-.theme--light.v-input:not(.v-input--is-disabled) input,
-.theme--light.v-input:not(.fix-switch-color) .v-input--switch__thumb,
-.theme--light.v-input:not(.fix-switch-color) .v-input--switch__track,
-.theme--light.v-select .v-select__selections {
-  color: var(--v-primaryText-base) !important;
-  /*color: #1F3C73 !important;*/
-}
-//v-input--switch__thumb theme--light
-//v-input--switch__track theme--light
-.theme--light.v-input--is-disabled i,
-.theme--light.fix-switch-color:not(.v-input--is-label-active) .v-input--switch__thumb,
-.theme--light.fix-switch-color:not(.v-input--is-label-active) .v-input--switch__track,
-.theme--light.v-input--switch input,
-.v-list-item--disabled .v-list-item__content .v-list-item__title,
-.theme--light.v-input--is-disabled label{
-  color: #9E9E9E !important;
-}
-
-//.theme--light.error--text i,
-//.theme--light.error--text label,
 .theme--light.error--text div .v-messages__message {
   color: red !important;
 }
@@ -95,7 +71,6 @@ body {
 }
 
 #app {
-  font-family: 'Lato', sans-serif;
   letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
