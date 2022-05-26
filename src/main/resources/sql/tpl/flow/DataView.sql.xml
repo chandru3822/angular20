@@ -244,6 +244,14 @@
     values (:displayName, :fieldId, :uniqueBehaviorTypeId, :fieldToUpdate, :dataTypeId, :userId)
   ]]></dataView.addChildFieldConfig>
 
+  <dataView.updateChildFieldConfig><![CDATA[
+    update flow.data_view_child_field_config
+    set display_name = :displayName,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></dataView.updateChildFieldConfig>
+
   <dataView.addChildColumnToTable><![CDATA[
     select from flow.add_column_to_data_view(:fieldId::int, :id::int)
   ]]></dataView.addChildColumnToTable>

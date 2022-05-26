@@ -79,7 +79,7 @@ public class DataViewService {
     return result;
   }
 
-  public Optional<DataViewChildFieldConfig> addChildFieldConfig(Long viewId, Long fieldId, DataViewChildFieldConfig childField) {
+  public Optional<DataViewChildFieldConfig> saveChildFieldConfig(Long viewId, Long fieldId, DataViewChildFieldConfig childField) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("viewId", viewId);
@@ -94,10 +94,19 @@ public class DataViewService {
     //Boolean invalid = fieldConflictWithDefault(childField.getFieldToUpdate());
 
 //    if(!invalid) {
-      Long id = sqlCache.updateReturningId("dataView.addChildFieldConfig", params, "id").longValue();
+    Long id;
+      if(childField.getId() != null) {
+        id = childField.getId();
+        params.put("id", id);
+        //user can currently only change the display name
+        sqlCache.update("dataView.updateChildFieldConfig", params);
+      } else {
+        id = sqlCache.updateReturningId("dataView.addChildFieldConfig", params, "id").longValue();
+        params.put("id", id);
+        //only on insert add child column to table
+        sqlCache.query("dataView.addChildColumnToTable", params, String.class);
+      }
 
-      params.put("id", id);
-      sqlCache.query("dataView.addChildColumnToTable", params, String.class);
       return getDataViewChildFieldConfig(id);
 //    } else {
 //      throw new ResponseStatusException(

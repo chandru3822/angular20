@@ -203,7 +203,7 @@
             <td :colspan="headers.length" class="pa-4"
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <h3>Edit Field Configs</h3>
-              <div>
+              <div class="flex-display">
                 <v-text-field text v-model="item.displayName" class="d-inline-block display-name-field"
                               label="Display Name"/>
                 <v-btn text :disabled="!item.displayName"
@@ -322,9 +322,27 @@
                   :class="{'mt-4': addChild}"
                   class="elevation-1"
                 >
-                  <template #expanded-item="{ headers, item }">
-                    <t></t>
-                    <h3>Edit Child Field Config</h3>
+
+                  <template #expanded-item="{ headers, item: childField }">
+                    <tr :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
+                      <td :colspan="childFieldHeaders.length">
+                        <v-card flat color="transparent">
+                          <v-card-title class="pb-0">Edit Child Field Config</v-card-title>
+                          <v-card-text class="pt-0">
+                            <div class="flex-display">
+                              <v-text-field text v-model="childField.displayName"
+                                            :rules="requiredRules"
+                                            label="Display Name"/>
+                              <v-btn text :disabled="!childField.displayName"
+                                     color="primaryCustom" class="white--text mr-2 d-inline-block"
+                                     @click="saveChildFieldConfig(item, childField, false)">
+                                <v-icon>save</v-icon>
+                              </v-btn>
+                            </div>
+                          </v-card-text>
+                        </v-card>
+                      </td>
+                    </tr>
                   </template>
 
                   <template #item="{ item: childField }">
@@ -737,22 +755,25 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveChildFieldConfig(primaryField, childField) {
+    async saveChildFieldConfig(primaryField, childField, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {
           data,
           status
         } = await postRequest(`/dataView/${this.viewId}/field/${primaryField.id}/childField`, childField)
-        primaryField.childFieldConfigs.push(data)
+        if(isNew) {
+          primaryField.childFieldConfigs.push(data)
+        }
         this.addChild = false
         this.childField = {}
-        this.snackbar = getSnackbar('SUCCESS', 'New Child Field Config Added')
+        this.childFieldExpanded = []
+        this.snackbar = getSnackbar('SUCCESS', 'Child Field Config Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        let msg = null != e.data?.message ? e.data?.message : 'Error Adding Field'
+        let msg = null != e.data?.message ? e.data?.message : 'Error Saving Field'
         this.snackbar = getSnackbar('ERROR', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)

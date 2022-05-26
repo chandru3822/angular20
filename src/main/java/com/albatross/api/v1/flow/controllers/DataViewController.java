@@ -50,10 +50,10 @@ public class DataViewController {
   }
 
   @PostMapping(value = "/{viewId}/field/{fieldId}/childField", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<DataViewChildFieldConfig> addChildFieldConfig(@PathVariable Long viewId,
+  public Optional<DataViewChildFieldConfig> saveChildFieldConfig(@PathVariable Long viewId,
                                                                 @PathVariable Long fieldId,
                                                                 @RequestBody DataViewChildFieldConfig childField) {
-    return dataViewService.addChildFieldConfig(viewId, fieldId, childField);
+    return dataViewService.saveChildFieldConfig(viewId, fieldId, childField);
   }
 
   @GetMapping(value = "/{viewId}/getAvailableDefaultFields", produces = MediaType.APPLICATION_JSON_VALUE)
