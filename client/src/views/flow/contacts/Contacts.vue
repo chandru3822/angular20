@@ -16,7 +16,7 @@
               attach
             />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
-                   to="/newContact" color="primary">
+                   to="/newContact" color="primary" >
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Contact</span>
             </v-btn>
@@ -28,7 +28,7 @@
                     class="account-menu"
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
-                <v-btn text v-on="on">
+                <v-btn text v-on="on" color="primary">
                   <v-icon>add</v-icon>
                   <span v-if="!constants.IS_MOBILE">Add Contact</span>
                 </v-btn>
