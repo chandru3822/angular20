@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableMap;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -76,18 +77,15 @@ public class ProjectService {
   public Long getProjectIdByProjectProcessStepId(Long projectProcessStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    Long projectId =
-        sqlCache.queryForObject("project.getProjectIdByProjectProcessStepId", params, Long.class);
-    return projectId;
+    return sqlCache.queryForObject(
+        "project.getProjectIdByProjectProcessStepId", params, Long.class);
   }
 
   public Long getProjectIdByProjectProcessStepEventId(Long projectProcessStepEventId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
-    Long projectId =
-        sqlCache.queryForObject(
-            "project.getProjectIdByProjectProcessStepEventId", params, Long.class);
-    return projectId;
+    return sqlCache.queryForObject(
+        "project.getProjectIdByProjectProcessStepEventId", params, Long.class);
   }
 
   public List<ProjectDensityResult> getProjectsInGeoArea(DensitySearch search) {
@@ -112,15 +110,11 @@ public class ProjectService {
       // if no search type is sent in then return "all projects" //1 = all project, 2 = my projects,
       // 3 = downline projects
       if (null != search.getSearchTypeId() && search.getSearchTypeId() == 3L) {
-        List<ProjectDensityResult> results =
-            sqlCache.query(
-                "project.getProjectsInGeoAreaDownline", params, ProjectDensityResult.class);
-        return results;
+        return sqlCache.query(
+            "project.getProjectsInGeoAreaDownline", params, ProjectDensityResult.class);
       } else {
         params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
-        List<ProjectDensityResult> results =
-            sqlCache.query("project.getProjectsInGeoArea", params, ProjectDensityResult.class);
-        return results;
+        return sqlCache.query("project.getProjectsInGeoArea", params, ProjectDensityResult.class);
       }
     } else {
       throw new ResponseStatusException(
@@ -256,33 +250,30 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    Optional<Project> project =
-        sqlCache.get(
-            "project.get",
-            ImmutableMap.of(
-                "projectId",
-                projectId,
-                "companyId",
-                user.getCompanyId(),
-                "isParent",
-                isParent,
-                "parentCompanyId",
-                user.getHighestParentCompanyId()),
-            new ProjectMapper<>(Project.class, om));
+    // pretty sure we don't show the user's image anywhere anymore and s3 stuff is slow. taking out
+    // for now.
+    //    if (project.isPresent()
+    //        && null != project.get().getOwner()
+    //        && null != project.get().getOwner().getUserId()) {
+    //      String presignedUrl =
+    //          attachmentService.getAttachmentPresignedUrl(
+    //              project.get().getOwner().getUserId(),
+    //              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
+    //      project.get().getOwner().setPresignedUrl(presignedUrl);
+    //    }
 
-
-    //pretty sure we don't show the user's image anywhere anymore and s3 stuff is slow. taking out for now.
-//    if (project.isPresent()
-//        && null != project.get().getOwner()
-//        && null != project.get().getOwner().getUserId()) {
-//      String presignedUrl =
-//          attachmentService.getAttachmentPresignedUrl(
-//              project.get().getOwner().getUserId(),
-//              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
-//      project.get().getOwner().setPresignedUrl(presignedUrl);
-//    }
-
-    return project;
+    return sqlCache.get(
+        "project.get",
+        ImmutableMap.of(
+            "projectId",
+            projectId,
+            "companyId",
+            user.getCompanyId(),
+            "isParent",
+            isParent,
+            "parentCompanyId",
+            user.getHighestParentCompanyId()),
+        new ProjectMapper<>(Project.class, om));
   }
 
   public void deleteProject(Long projectId) {
@@ -427,10 +418,9 @@ public class ProjectService {
       //      params.put("timezone", timezone);
 
       Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
-      Optional<Project> project = getProject(id);
       // load coordinates when new project added
       //      project.ifPresent(value -> getProjectCoordinates(value, id));
-      return project;
+      return getProject(id);
     } else {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST,
@@ -558,8 +548,7 @@ public class ProjectService {
   public Optional<Project> getStatus(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    Optional<Project> result = sqlCache.get("project.getStatusDetails", params, Project.class);
-    return result;
+    return sqlCache.get("project.getStatusDetails", params, Project.class);
   }
 
   private CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
@@ -598,9 +587,7 @@ public class ProjectService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<WorkQueueTypeProjectStatus> results =
-        sqlCache.query("project.getStatusesForWqt", params, WorkQueueTypeProjectStatus.class);
-    return results;
+    return sqlCache.query("project.getStatusesForWqt", params, WorkQueueTypeProjectStatus.class);
   }
 
   public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId) {
@@ -695,10 +682,7 @@ public class ProjectService {
   }
 
   public List<ProjectStatusType> getProjectStatuses() {
-    List<ProjectStatusType> results =
-        sqlCache.query("project.getStatuses", Collections.emptyMap(), ProjectStatusType.class);
-
-    return results;
+    return sqlCache.query("project.getStatuses", Collections.emptyMap(), ProjectStatusType.class);
   }
 
   public String generateReport(String query) {

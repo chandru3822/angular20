@@ -48,7 +48,7 @@ BEGIN
                         --the list of reps is filtered to only show users in these statuses so we have to filter the funnel data the same way
                              inner join flow.company_user_status cus
                                         on cus.user_id = up.user_id and cus.user_status_type_id in (9, 11, 14)
-                             left join flow.project_process_step_event ppse on ppse.id = coalesce(pd.first_appointment_pitched_ppse_id, pd.first_appointment_not_pitched_or_missed_ppse_id)
+                             left join flow.project_process_step_event ppse on ppse.id = coalesce(pd.first_appointment_ppse_id, pd.first_appointment_pitched_ppse_id, pd.first_appointment_not_pitched_or_missed_ppse_id)
                              left join flow.project_process_step_event_action ppsea
                                        on ppse.id = ppsea.project_process_step_event_id and
                                           ppsea.process_step_event_action_id = 408 --408 = check in action on event
@@ -73,7 +73,7 @@ BEGIN
                               pd.closer_appointment_start is not null))
                         and case
                               when p_funnel_id = 27 then -- old = 3
-                                ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                                ((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                               when p_funnel_id = 28 then --old = 1
                                   (((coalesce(pd.prioritized_closer_appointment_outcome_date,
                                               pd.closer_appointment_start)) at time zone 'UTC') at time zone

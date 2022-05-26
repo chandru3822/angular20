@@ -1,20 +1,24 @@
 <template>
   <div>
-    <v-subheader class="pl-0">
-      <slot name="title">Color</slot>
+    <v-subheader class="pl-0 d-flex">
+      <slot name="title" class="flex-grow-1">Color</slot>
+      <span v-if="editing">
+        <v-btn v-if="editing" text @click="editing = false">Cancel</v-btn>
+        <v-btn v-if="editing" text @click="onDone">Done</v-btn>
+      </span>
+
+      <div v-else class="color-brick" @click="editing = true" :style="{'background-color' : color }" >
+        <span v-if="color === undefined">NA</span>
+      </div>
     </v-subheader>
-    <!--    TODO: don't automatically set color -->
-    <v-color-picker v-model="color" @update:color="onChange" />
+    <v-color-picker v-if="editing" v-model="color" />
   </div>
 </template>
 <script>
-import debounce from 'lodash.debounce'
-
 export default {
   props: {
     value: {
-      type: String,
-      default: '#000000'
+      type: String
     },
     attr: {
       type: String,
@@ -23,27 +27,34 @@ export default {
   },
   data() {
     return {
-      color: ''
+      editing: false,
+      color: undefined
     }
   },
   watch: {
     value: {
-      immediate: false,
-      handler: function(newVal, oldVal) {
+      handler: function(newVal) {
         this.color = newVal
       }
     }
   },
   methods: {
-    _emitter: debounce(function(val) {
-      if (val) {
-        const color = (typeof val === 'object') ? val?.hexa : val
-        this.$emit('input', { [this.attr]: color })
-      }
-    }, 250),
-    onChange(val) {
-      this._emitter(val)
+    onDone() {
+      this.editing = false
+      const color = (typeof this.color === 'object') ? this.color?.hexa : this.color
+      this.$emit('input', { [this.attr]: color })
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.color-brick {
+  height: 25px;
+  width: 50px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+</style>

@@ -41,6 +41,13 @@ public class ProcessStepActionService {
         new ProcessStepActionMapper<>(ProcessStepAction.class, om));
   }
 
+  public String getActionLogicString(Long actionId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("actionId", actionId);
+    Optional<String> logicString = sqlCache.queryForObjectOptional("processStepAction.actionLogicString", params, String.class);
+    return logicString.orElse("");
+  }
+
   public void deleteAction(Long actionId) {
     User currentUser = securityService.getCurrentUser();
 
@@ -85,6 +92,9 @@ public class ProcessStepActionService {
     params.put("actionName", action.getActionName());
     params.put("actionTypeId", action.getActionTypeId());
     params.put("alwaysEnabled", action.getAlwaysEnabled());
+    params.put("content", action.getContent());
+    params.put("color", action.getColor());
+    params.put("bgColor", action.getBgColor());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put("modifiedById", currentUser.trueUserId());
@@ -156,6 +166,9 @@ public class ProcessStepActionService {
     params.put("actionTypeId", action.getActionTypeId());
     params.put("createdById", currentUser.trueUserId());
     params.put("processStepId", action.getProcessStepId());
+    params.put("content", action.getContent());
+    params.put("color", action.getColor());
+    params.put("bgColor", action.getBgColor());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put(

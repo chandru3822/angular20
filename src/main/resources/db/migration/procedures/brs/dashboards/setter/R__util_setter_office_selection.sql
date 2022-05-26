@@ -42,7 +42,7 @@ BEGIN
 --                     inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 2 --region
 --                     inner join flow.org o3 on o3.id = o2.parent_org_id  -- district
 --                     inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 21 --district
-                    left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
+                    left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
              where upv.org_id is not null
                and upv.archived is not true
@@ -85,7 +85,7 @@ BEGIN
 --                     inner join flow.org_type ot1 on ot1.id = o2.org_type_id and ot1.id = 2 --region
 --                     inner join flow.org o3 on o3.id = o2.parent_org_id  -- district
 --                     inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 21 --district
-                      left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
+                      left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
                       left join flow.list_of_value lov ON ocfv.int_value = lov.id
                where upv.org_id is not null
                  and upv.archived is not true

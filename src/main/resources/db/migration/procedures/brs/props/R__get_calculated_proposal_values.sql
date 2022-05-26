@@ -1,4 +1,180 @@
 drop function if exists brs.get_calculated_proposal_values(integer, boolean);
+drop type if exists brs.calculated_proposal_value;
+
+create type brs.calculated_proposal_value as
+(
+  proposal_id                                      integer,
+  project_id                                       integer,
+  proposal_archived                                boolean,
+  contact_first_name                               varchar,
+  contact_last_name                                varchar,
+  contact_phone                                    varchar,
+  contact_email                                    varchar,
+  project_name                                     varchar,
+  project_street1                                  varchar,
+  project_street2                                  varchar,
+  city                                             varchar,
+  postal_code                                      varchar,
+  project_state                                    varchar,
+  project_state_abbrev                             varchar,
+  monthly_cost_25_year_average_without_solar       numeric,
+  monthly_cost_30_year_average_without_solar       numeric,
+  monthly_cost_25_year_average_with_solar          numeric,
+  remaining_monthly_electric_bill_25_year_average  numeric,
+  remaining_monthly_electric_bill_30_year_average  numeric,
+  total_cost_25_years                              numeric,
+  total_cost_30_years                              numeric,
+  total_savings_25_years                           numeric,
+  total_savings_30_years                           numeric,
+  monthly_solar_payment                            numeric,
+  monthly_cost_today_without_solar                 numeric,
+  monthly_cost_today_with_solar                    numeric,
+  monthly_cost_today_avg_remaining_electrical_bill numeric,
+  initial_monthly_payment_all_credits_to_loan      numeric,
+  initial_monthly_payment_no_credits_to_loan       numeric,
+  reamortized_monthly_payment_all_credits_to_loan  numeric,
+  reamortized_monthly_payment_no_credits_to_loan   numeric,
+  monthly_payment_all_credits_to_loan_after_term   numeric,
+  monthly_payment_no_credits_to_loan_after_term    numeric,
+  system_size                                      numeric,
+  first_year_production_estimate                   integer,
+  total_system_cost                                numeric,
+  referral_promotion                               numeric,
+  total_loan_amount                                numeric,
+  federal_tax_incentive_amount                     numeric,
+  federal_tax_incentive_rate                       numeric,
+  net_system_cost                                  numeric,
+  utility_company                                  text,
+  estimated_annual_energy_consumption_kwh          integer,
+  current_estimated_annual_utility_bill            numeric,
+  current_estimated_cost_per_kwh                   numeric,
+  utility_cost_escalator                           numeric,
+  state_rebate_amount                              numeric,
+  eto_rebate                                       numeric,
+  csu_rebate                                       numeric,
+  apr                                              numeric,
+  loan_term                                        numeric,
+  assumed_payment_by_month_18                      numeric,
+  panel_degradation_factor                         numeric,
+  system_production_25_year                        numeric,
+  estimated_offset                                 numeric,
+  led_light_bulbs                                  integer,
+  smart_thermostat                                 integer,
+  total_ee_reduction                               numeric,
+  panel_warranty                                   integer,
+  inverter_warranty                                integer,
+  down_payment_amount                              numeric,
+  version_id                                       integer,
+  project_process_step_id                          integer,
+  friends_and_family                               boolean,
+  production_factor                                numeric,
+  funding_range                                    numeric,
+  production_factor_range                          numeric,
+  points_off_south_production_factor               numeric,
+  price_change_per_production_point                numeric,
+  calculated_price_adjustment                      numeric,
+  max_price_adjustment                             numeric,
+  adjusted_price_per_wat                           numeric,
+  initial_system_cost                              numeric,
+  promotion_cost                                   numeric,
+  equipment_inverter_adder                         numeric,
+  equipment_panel_adder                            numeric,
+  equipment_storage_adder                          numeric,
+  misc_adders                                      numeric,
+  panel_brand_id                                   integer,
+  panel_watts                                      integer,
+  above_line_rebate                                numeric,
+  state_id                                         integer,
+  utility_company_id                               integer,
+  dealer_fee                                       numeric,
+  eto_rebate_unit_type_id                          integer,
+  federal_unit_type_id                             integer,
+  inverter_efficiency                              numeric,
+  initial_payment_factor                           numeric,
+  reamortization_factor                            numeric,
+  product_id                                       numeric,
+  smart_thermostat_value                           numeric,
+  smart_thermostat_adder                           numeric,
+  led_light_bulbs_value                            numeric,
+  led_light_bulbs_adder                            numeric,
+  energy_efficiency_reduction_light_bulbs          numeric,
+  energy_efficiency_reduction_thermostat           numeric,
+  adjusted_annual_consumption                      numeric,
+  instantly_used                                   numeric,
+  sent_to_grid                                     numeric,
+  after_net_metering                               numeric,
+  adjusted_annual_production                       numeric,
+  instant_use_assumption                           numeric,
+  net_metring_rate                                 numeric,
+  cost_of_solar                                    numeric,
+  monthly_cost_30_year_average_with_solar          numeric,
+  reamortized_payment_factor_without_itc_paydown   numeric,
+  secondary_monthly_payment_no_credits_to_loan     numeric,
+  panel_brand                                      varchar,
+  panel_quantity                                   integer,
+  inverter_brand_id                                integer,
+  inverter_brand                                   varchar,
+  aurora_design_id                                 text,
+  product_name                                     varchar
+);
+
+drop type brs.excluded_proposal_value;
+create type brs.excluded_proposal_value as
+(
+  version_id                              integer,
+  project_process_step_id                 integer,
+  friends_and_family                      boolean,
+  production_factor                       numeric,
+  funding_range                           numeric,
+  production_factor_range                 numeric,
+  points_off_south_production_factor      numeric,
+  price_change_per_production_point       numeric,
+  calculated_price_adjustment             numeric,
+  max_price_adjustment                    numeric,
+  adjusted_price_per_wat                  numeric,
+  initial_system_cost                     numeric,
+  promotion_cost                          numeric,
+  equipment_inverter_adder                numeric,
+  equipment_panel_adder                   numeric,
+  equipment_storage_adder                 numeric,
+  misc_adders                             numeric,
+  panel_brand_id                          integer,
+  panel_watts                             integer,
+  above_line_rebate                       numeric,
+  state_id                                integer,
+  utility_company_id                      integer,
+  dealer_fee                              numeric,
+  eto_rebate_unit_type_id                 integer,
+  federal_unit_type_id                    integer,
+  inverter_efficiency                     numeric,
+  initial_payment_factor                  numeric,
+  reamortization_factor                   numeric,
+  product_id                              numeric,
+  smart_thermostat_value                  numeric,
+  smart_thermostat_adder                  numeric,
+  led_light_bulbs_value                   numeric,
+  led_light_bulbs_adder                   numeric,
+  energy_efficiency_reduction_light_bulbs numeric,
+  energy_efficiency_reduction_thermostat  numeric,
+  adjusted_annual_consumption             numeric,
+  instantly_used                          numeric,
+  sent_to_grid                            numeric,
+  after_net_metering                      numeric,
+  adjusted_annual_production              numeric,
+  instant_use_assumption                  numeric,
+  net_metring_rate                        numeric,
+  cost_of_solar  numeric,
+  monthly_cost_30_year_average_with_solar numeric,
+  reamortized_payment_factor_without_itc_paydown numeric,
+  proposal_id integer,
+  project_id integer,
+  proposal_archived boolean,
+  panel_brand character varying,
+  inverter_brand_id integer,
+  inverter_brand varchar,
+  aurora_design_id text
+);
+
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
   p_proposal_id integer,
   p_insert_prop_log_history boolean default false)
@@ -106,21 +282,65 @@ declare
   v_monthly_cost_30_year_average_with_solar          numeric;
   v_reamortized_payment_factor_without_itc_paydown   numeric;
   v_unit_type_state_rebate                           integer;
-  v_secondary_monthly_payment_no_credits_to_loan numeric;
+  v_secondary_monthly_payment_no_credits_to_loan     numeric;
+  v_proposal_id                                      integer;
+  v_project_id                                       integer;
+  v_proposal_archived                                boolean;
+  v_contact_first_name                               character varying;
+  v_contact_last_name                                character varying;
+  v_contact_phone                                    character varying;
+  v_contact_email                                    character varying;
+  v_project_name                                     character varying;
+  v_project_street1                                  character varying;
+  v_project_street2                                  character varying;
+  v_city                                             character varying;
+  v_postal_code                                      character varying;
+  v_project_state                                    character varying;
+  v_project_state_abbrev                             character varying;
+  v_panel_brand                                      character varying;
+  v_panel_quantity                                   integer;
+  v_inverter_brand                                   varchar;
+  v_inverter_brand_id                                integer;
+  v_aurora_design_id                                 text;
+  v_product_name                                     character varying;
 BEGIN
-  select proposal_version_id,
+
+  select prop.id        as proposal_id,
+         proposal_version_id,
          prop.project_process_step_id,
          coalesce(pcfv3.boolean_value, false),
          coalesce(pcfv4.numeric_value, 0),
-         pcfv5.int_value
-  into v_version_id,v_project_process_step_id,v_friends_and_family,v_down_payment_amount,v_product_id
+         pcfv5.int_value,
+         lov.name,
+         p.id           as project_id,
+         prop.archived,
+         c.first_name,
+         c.last_name,
+         p.project_name,
+         p.street1,
+         p.street2,
+         p.city,
+         p.postal_code,
+         s.state,
+         s.abbreviation as state_abbreviation,
+         c.mobile,
+         c.email
+  into v_proposal_id,v_version_id,v_project_process_step_id,v_friends_and_family,v_down_payment_amount,v_product_id,v_product_name,
+    v_project_id,v_proposal_archived,v_contact_first_name,v_contact_last_name,v_project_name,v_project_street1,
+    v_project_street2,v_city,v_postal_code,v_project_state,v_project_state_abbrev,v_contact_phone,v_contact_email
   from brs.proposal prop
+         inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
+         inner join flow.project p on pps.project_id = p.id
+         inner join flow.contact c on p.contact_id = c.id
+         inner join flow.company_state cs on p.company_state_id = cs.id
+         inner join flow.state s on cs.state_id = s.id
          left join brs.proposal_custom_field_value pcfv3 on prop.id = pcfv3.proposal_id and
                                                             pcfv3.custom_field_group_assignment_id = 169
          left join brs.proposal_custom_field_value pcfv4 on prop.id = pcfv4.proposal_id and
                                                             pcfv4.custom_field_group_assignment_id = 134
          left join brs.proposal_custom_field_value pcfv5 on prop.id = pcfv5.proposal_id and
                                                             pcfv5.custom_field_group_assignment_id = 147
+         left join flow.list_of_value lov on lov.id = pcfv5.int_value
   where prop.id = p_proposal_id;
 
 
@@ -129,24 +349,34 @@ BEGIN
          ppscfv3.numeric_value,
          ppscfv4.int_value,
          ppscfv5.int_value,
+         lov.name,
          cs.state_id,
          pd.utility_company,
          pd.utility_company_name,
          ppscfv6.json_value,
          ppscfv7.int_value,
-         ppscfv8.int_value
+         ppscfv8.int_value,
+         ppscfv9.int_value,
+         ppscfv10.int_value,
+         lov1.name,
+         ppscfv11.text_value
   into
     v_estimated_annual_energy_consumption_kwh,
     v_first_year_production_estimate,
     v_system_size,
     v_panel_watts,
     v_panel_brand_id,
+    v_panel_brand,
     v_state_id,
     v_utility_company_id,
     v_utility_company,
     v_aurora_design_summary,
     v_led_light_bulbs,
-    v_smart_thermostat
+    v_smart_thermostat,
+    v_panel_quantity,
+    v_inverter_brand_id,
+    v_inverter_brand,
+    v_aurora_design_id
   from flow.project_process_step pps
          inner join flow.project p on pps.project_id = p.id
          inner join flow.company_state cs on p.company_state_id = cs.id
@@ -166,6 +396,7 @@ BEGIN
          left join flow.project_process_step_custom_field_value ppscfv5 on ppscfv5.project_process_step_id = pps.id and
                                                                            ppscfv5.custom_field_group_assignment_id =
                                                                            22564
+         left join flow.list_of_value lov on lov.id = ppscfv5.int_value
          left join flow.project_process_step_custom_field_value ppscfv6 on ppscfv6.project_process_step_id = pps.id and
                                                                            ppscfv6.custom_field_group_assignment_id =
                                                                            22682
@@ -175,6 +406,18 @@ BEGIN
          left join flow.project_process_step_custom_field_value ppscfv8 on ppscfv8.project_process_step_id = pps.id and
                                                                            ppscfv8.custom_field_group_assignment_id =
                                                                            22567
+         left join flow.project_process_step_custom_field_value ppscfv9 on ppscfv9.project_process_step_id = pps.id and
+                                                                           ppscfv9.custom_field_group_assignment_id =
+                                                                           22562
+         left join flow.project_process_step_custom_field_value ppscfv10
+                   on ppscfv10.project_process_step_id = pps.id and
+                      ppscfv10.custom_field_group_assignment_id =
+                      22565
+         left join flow.list_of_value lov1 on lov1.id = ppscfv10.int_value
+         left join flow.project_process_step_custom_field_value ppscfv11
+                   on ppscfv11.project_process_step_id = pps.id and
+                      ppscfv11.custom_field_group_assignment_id =
+                      22560
   where pps.id = v_project_process_step_id;
 
   raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
@@ -865,7 +1108,7 @@ BEGIN
   raise notice 'v_panel_brand_id = % ',v_panel_brand_id;
   raise notice 'v_state_id = % ',v_state_id;
 
-  select value::numeric/100
+  select value::numeric / 100
   into v_apr
   from proposal_value pv
   where field_id = 111
@@ -1212,7 +1455,7 @@ BEGIN
   elsif v_unit_type_state_rebate = 459 then
     v_state_rebate_amount = v_state_rebate_amount;
   elsif v_unit_type_state_rebate = 539 then
-    v_state_rebate_amount = v_state_rebate_amount* v_first_year_production_estimate;
+    v_state_rebate_amount = v_state_rebate_amount * v_first_year_production_estimate;
   end if;
 
   raise notice 'v_state_rebate_amount = % ',v_state_rebate_amount;
@@ -1307,7 +1550,9 @@ BEGIN
   if v_product_id = 19424 then
     select *
     into v_reamortized_monthly_payment_all_credits_to_loan
-    from flow.get_reamortized_monthly_payment((v_apr/12)::numeric, ((v_loan_term*12)-18)::smallint, (v_total_loan_amount - v_federal_tax_incentive_amount - v_state_rebate_amount - v_above_line_rebate)::numeric);
+    from flow.get_reamortized_monthly_payment((v_apr / 12)::numeric, ((v_loan_term * 12) - 18)::smallint,
+                                              (v_total_loan_amount - v_federal_tax_incentive_amount -
+                                               v_state_rebate_amount - v_above_line_rebate)::numeric);
   else
     v_reamortized_monthly_payment_all_credits_to_loan =
         (v_total_loan_amount - v_federal_tax_incentive_amount - v_state_rebate_amount) * v_reamortization_factor;
@@ -1375,7 +1620,8 @@ BEGIN
   if v_product_id = 19424 then
     select *
     into v_reamortized_monthly_payment_no_credits_to_loan
-    from flow.get_reamortized_monthly_payment((v_apr/12)::numeric, ((v_loan_term*12)-18)::smallint, v_total_loan_amount::numeric);
+    from flow.get_reamortized_monthly_payment((v_apr / 12)::numeric, ((v_loan_term * 12) - 18)::smallint,
+                                              v_total_loan_amount::numeric);
   else
     v_reamortized_monthly_payment_no_credits_to_loan = v_total_loan_amount * v_reamortization_factor;
   end if;
@@ -1415,82 +1661,79 @@ BEGIN
   raise notice 'v_smart_thermostat = %',v_smart_thermostat;
 
   v_secondary_monthly_payment_no_credits_to_loan =
-    v_reamortized_monthly_payment_no_credits_to_loan - (v_reamortized_monthly_payment_all_credits_to_loan - v_initial_monthly_payment_all_credits_to_loan);
+      v_reamortized_monthly_payment_no_credits_to_loan -
+      (v_reamortized_monthly_payment_all_credits_to_loan - v_initial_monthly_payment_all_credits_to_loan);
   raise notice 'v_secondary_monthly_payment_no_credits_to_loan = %',v_secondary_monthly_payment_no_credits_to_loan;
 
   v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount;
   raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
 
-  --   if p_insert_prop_log_history is true then
---     insert into brs.proposal_log_history(filename, project_id, fullname, address, city, state, zip, phone,
---                                          email, loan_type, loan_term, interest_rate, optional_down_payment,
---                                          number_of_leds, number_of_ecobees, cost_per_kwh_before_solar, cost_per_kwh_after_solar,
---                                          bp_plus_promotion, velocity_marketing, military_discount, show_graph, year_1_kwh_output,
---                                          panel_number, panel_wattage, system_size, panel, number_of_inverters, inverter_mfg,
---                                          inverter_default_model, inverter_custom_getting, number_of_monitors, monitor,
---                                          utility_name, rate_structure, total_yearly_usage_pre_solar, tile_roof_adder,
---                                          hidden_conduit_adder, flat_roof_adder, upsize_inverter, extra_adder, option_3_adder,
---                                          extra_promotion_cost, plane_1_number_of_panels, plane_1_tsrf, plane_2_number_of_panels,
---                                          plane_2_tsrf, plane_3_number_of_panels, plane_3_tsrf, plane_4_number_of_panels,
---                                          plane_4_tsrf, plane_5_number_of_panels, plane_5_tsrf, plane_6_number_of_panels,
---                                          plane_6_tsrf, plane_7_number_of_panels, plane_7_tsrf, automatic_adder,
---                                          automatic_adder_cost, tile_roof_adder_cost, three_kw_adder, three_kw_adder_cost,
---                                          four_kw_adder, four_kw_adder_cost, upsize_inverter_adder_cost, panel_adder,
---                                          panel_adder_cost, flat_roof_adder_cost, hidden_conduit_adder_cost, total_adder_costs,
---                                          ee_cost_per_watt, funding_amount, loan_fundingw, loan_cost_to_customer,
+  --     if p_insert_prop_log_history is true then
+--     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
+--                                          email, loan_term, interest_rate, optional_down_payment,
+--                                          number_of_leds, number_of_ecobees, cost_per_kwh_before_solar,
+--                                          bp_plus_promotion,year_1_kwh_output,panel_number,
+--                                          panel_wattage, system_size,panel,  number_of_inverters, inverter_mfg,
+--                                          inverter_custom_getting,
+--                                          utility_name, total_yearly_usage_pre_solar,
+--                                          panel_adder,
+--                                          panel_adder_cost, total_adder_costs,
+--                                          loan_fundingw, loan_cost_to_customer,
 --                                          total_cost_to_customer, offset_percent, dealer_fee, utility_escalator,
---                                          solar_degradation, home_appreciationw, funding_cap, production_factor,
---                                          south_production, south_production_dollarw, eastwest_production, eastwest_production_dollarw,
+--                                          solar_degradation, production_factor,
 --                                          total_cost, down_payment_above_line_incentive, referral_promotion,
---                                          loan_funding_amount, loan_amount, itc, state_tax_credit, customer_oop_itc_only_applied,
---                                          customer_oop_all_rebates_applied, average_monthly_usage_before_solar,
---                                          average_monthly_power_costs_before_solar, average_monthly_usage_after_solar,
---                                          average_monthly_solar_production, monthly_solar_costs, average_monthly_leftover_utility_power_kwh,
---                                          average_leftover_utility_rate, average_monthly_utility_cost_after_solar,
---                                          average_monthly_power_cost_after_solar, total_monthly_savings,
+--                                          loan_funding_amount, loan_amount, itc, state_tax_credit,
+--                                          average_monthly_power_costs_before_solar,  monthly_solar_costs, average_monthly_leftover_utility_power_kwh,
+--                                          average_monthly_power_cost_after_solar,
 --                                          current_monthly_consumption, consumption_after_ee, kwh_savings_from_ee,
---                                          percent_saving_from_ee, current_yearly_consumption, yearly_consumption_after_ee,
---                                          total_added_home_value_estimate, twenty_five_year_cost_of_power_before_solar,
+--                                          current_yearly_consumption, yearly_consumption_after_ee,
+--                                          twenty_five_year_cost_of_power_before_solar,
 --                                          twenty_five_energy_cost, lifetime_savings, twenty_five_year_remaining_utility_bill,
---                                          twenty_five_year_production, thirty_five_year_production, thirty_five_year_solar_cost,
---                                          thirty_five_year_solar_cost_per_kwh, thirty_five_year_utility_usage,
---                                          thirty_five_year_cost_before_solar, thirty_five_year_cost_per_kw_before_solar,
---                                          current_utility_oet_rebate_per_watt, current_max_oet_rebate, current_oet_rebate,
---                                          max_or_tax_credit, current_or_tax_credit, choice_pf, choice_payment,
---                                          month_eighteen_payment, eighteen_plus_payment, month_eighteen_payment_itc_only,
 --                                          eighteen_plus_payment_itc_only, month_eighteen_payment_all_incentives,
 --                                          eighteen_plus_payments_all_incentives, date_created,
---                                          promotion_eighteen_months_free, secondary_loan_amount, salal_primary_loan_monthly_payment,
---                                          salal_prmiary_loan_total_payment, salal_primary_loan_finance_charge,
---                                          salal_primary_loan_total_sales_price, salal_secondary_loan_monthly_payment,
---                                          salal_secondary_loan_total_payments, salal_secondary_loan_finance_charge,
---                                          lead_source, non_standard_work, proposal_date, proposal_nbr, source, proposal_log_id,
---                                          non_standard_work_2, zip_code_zone, proposal_owner, non_standard_work_1, non_standard_work_1_cost,
---                                          non_standard_work_2_cost, non_standard_work_3, non_standard_work_3_cost,
---                                          extra_adders_dollar_per_watt, bp_plus_amount, project_owner, cost_per_watt_adder,
---                                          eto_eligible_kw, nv_energy_system_size_for_rebate, above_line_item_type,
---                                          state_incentive_type, gallons_of_gasoline, home_electricity_use_for_one_year,
---                                          trees_growing_for_ten_years, tons_of_waste_sent_to_landfill, is_epc, epc_price,
---                                          aurora_design_id, five_year_payoff, six_year_payoff, seven_year_payoff, eight_year_payoff,
---                                          nine_year_payoff, ten_year_payoff, eleven_year_payoff, twelve_year_payoff, thirteen_year_payoff,
---                                          fourteen_year_payoff, fifteen_year_payoff, twenty_year_payoff, sunlight_hash_id,
---                                          monthly_cost_today_after_solar, monthly_cost_5_years_after_solar, monthly_cost_5_years_before_solar,
---                                          twenty_five_year_cost_before_solar, twenty_five_year_savings_after_solar,
---                                          monthly_payment_first_5_years_tax_to_loan, monthly_payment_first_5_years_tax_and_savings_to_loan,
---                                          monthly_payment_6_to_24_years_tax_to_loan, monthly_payment_6_to_24_years_tax_and_savings_to_loan,
---                                          monthly_payment_first_5_years_no_incentive, monthly_payment_6_to_24_years_no_incentive,
---                                          smart_start_months_19_to_60_monthly_rebate, month_19_required_payment, month_0_to_18_loan_payment,
---                                          month_0_to_18_net_payment, month_19_to_60_net_payment, month_60_plus_net_payment,
---                                          total_ancillary_cost, loan_product, number_of_promotion_payments, promotion_payment_amount,
---                                          proposal_tool_version, storage_brand, storage_size_kwh, financed_ancillary_cost_with_fees,
---                                          financed_system_cost_with_fees, discount, manual_adjustment, total_promotion_amount,
---                                          storage_cost_with_fees, site_survey_resource_type, site_survey_time_estimate, site_survey_items,
---                                          sunpower_url)
---         values ()
+--                                          promotion_eighteen_months_free,
+--                                         proposal_date, proposal_nbr, source, proposal_log_id,
+--                                       bp_plus_amount, project_owner,aurora_design_id)
+--         values (v_project_id,v_project_name,v_project_street1,v_city,v_project_state_abbrev,
+--                 v_postal_code,v_contact_phone,v_contact_email,v_loan_term,v_apr,v_down_payment_amount,
+--                 v_led_light_bulbs,v_smart_thermostat,v_current_estimated_cost_per_kwh,v_promotion_cost,v_first_year_production_estimate,
+--                 v_panel_quantity,
+--                 v_panel_watts,v_system_size,v_panel_brand,v_no_clue,v_inverter_brand,v_inverter_brand,v_utility_company,
+--                 v_estimated_annual_energy_consumption_kwh,v_equipment_panel_adder,v_equipment_panel_adder*(v_system_size*1000),
+--                 ( v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
+--                   v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder),v_adjusted_price_per_wat,v_total_loan_amount,
+--                 v_total_system_cost,v_estimated_offset,v_dealer_fee,v_utility_cost_escalator,v_panel_degradation_factor,v_production_factor,
+--                 v_total_system_cost,(v_down_payment_amount + v_above_line_rebate),v_referral_promotion,v_initial_system_cost,v_total_loan_amount,
+--                 v_federal_tax_incentive_amount,v_state_rebate_amount,v_monthly_cost_today_without_solar,v_monthly_solar_payment,
+--                 v_monthly_cost_today_avg_remaining_electrical_bill,v_monthly_cost_today_with_solar,(v_estimated_annual_energy_consumption_kwh/12),
+--                 (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),v_total_ee_reduction,v_estimated_annual_energy_consumption_kwh,
+--                 (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),v_monthly_cost_25_year_average_without_solar,
+--                 v_total_cost_25_years,v_total_savings_25_years,v_remaining_monthly_electric_bill_25_year_average,v_reamortized_monthly_payment_all_credits_to_loan,
+--                 v_initial_monthly_payment_all_credits_to_loan,v_reamortized_monthly_payment_all_credits_to_loan,v_promotion_cost,v_promotion_cost,
+--                 v_project_owner,v_aurora_design_id);
 --   end if;
 
+--   plane_1_number_of_panels, plane_1_tsrf, plane_2_number_of_panels,
+--     plane_2_tsrf, plane_3_number_of_panels, plane_3_tsrf, plane_4_number_of_panels,
+--     plane_4_tsrf, plane_5_number_of_panels, plane_5_tsrf, plane_6_number_of_panels,
+--     plane_6_tsrf, plane_7_number_of_panels, plane_7_tsrf,
+
   return query
-    select v_monthly_cost_25_year_average_without_solar,
+    select v_proposal_id,
+           v_project_id,
+           v_proposal_archived,
+           v_contact_first_name,
+           v_contact_last_name,
+           v_contact_phone,
+           v_contact_email,
+           v_project_name,
+           v_project_street1,
+           v_project_street2,
+           v_city,
+           v_postal_code,
+           v_project_state,
+           v_project_state_abbrev,
+           v_monthly_cost_25_year_average_without_solar,
            v_monthly_cost_30_year_average_without_solar,
            v_monthly_cost_25_year_average_with_solar,
            v_remaining_monthly_electric_bill_25_year_average,
@@ -1582,7 +1825,13 @@ BEGIN
            v_cost_of_solar,
            v_monthly_cost_30_year_average_with_solar,
            v_reamortized_payment_factor_without_itc_paydown,
-           v_secondary_monthly_payment_no_credits_to_loan;
+           v_secondary_monthly_payment_no_credits_to_loan,
+           v_panel_brand,
+           v_panel_quantity,
+           v_inverter_brand_id,
+           v_inverter_brand,
+           v_aurora_design_id,
+           v_product_name;
   drop table proposal_value;
 
 END
@@ -1590,4 +1839,5 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
                    COST 100;
 --ROWS 1000;
+
 

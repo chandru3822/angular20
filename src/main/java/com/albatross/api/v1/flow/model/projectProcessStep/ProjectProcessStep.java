@@ -24,7 +24,7 @@ public class ProjectProcessStep {
 
   private Boolean main;
 
-  private List<ProjectProcessStepAction> actions;
+  private List<ProjectProcessStepAction> actions, banners;
 
   private Owner owner;
 

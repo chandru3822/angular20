@@ -237,9 +237,47 @@ BEGIN
                          left join flow.company_project_status_type cpst on cpst.id = psa.company_project_status_type_id
                          inner join flow.action_type at on at.id = psa.action_type_id
                 where psa.process_step_id = ps.id and
-                    psa.archived is not true
+                    psa.archived is not true and
+                      psa.action_type_id != 3 -- 3 = banners
                  order by psa.display_order
             ) a), '[]') as "actions",
+             coalesce((select array_to_json(array_agg(row_to_json(a))) from (
+                    select
+                      psa.id,
+                      psa.remove_process_step_owner as "removeProcessStepOwner",
+                      psa.action_name as "actionName",
+                      psa.content,
+                      psa.bg_color as "bgColor",
+                      psa.color,
+                      false as "alreadyTriggered",
+                      coalesce((
+                                 SELECT array_to_json(array_agg(row_to_json(logic)))
+                                 FROM (
+                                        SELECT psl.id,
+                                               psl.archived,
+                                               psl.process_step_requirement_id as "processStepRequirementId",
+                                               psl.operation_type_id as "operationTypeId",
+                                               ot.operation_type as "operationType",
+                                               ot.operation_code as "operationCode",
+                                               psl.created_by_id as "createdById",
+                                               psl.modified_by_id as "modifiedById",
+                                               psr.requirement_nbr as "requirementNbr",
+                                               psr.immutable as "processStepRequirementImmutable",
+                                               psl.sql_order as "sqlOrder"
+                                        FROM flow.process_step_logic psl
+                                               left join flow.operation_type ot on ot.id = psl.operation_type_id
+                                               left join flow.process_step_requirement psr on psr.id = psl.process_step_requirement_id
+                                        WHERE psl.process_step_action_id = psa.id
+                                          and psl.archived is not true
+                                        ORDER BY psl.sql_order ) logic), '[]') AS "processStepLogicList",
+                      psa.always_enabled as "alwaysEnabled",
+                      psa.display_order as "displayOrder"
+                    from flow.process_step_action psa
+                    where psa.process_step_id = ps.id and
+                      psa.archived is not true and
+                        psa.action_type_id = 3 -- 3 = banners
+                    order by psa.display_order
+                  ) a), '[]') as "banners",
              coalesce((
                         SELECT array_to_json(array_agg(row_to_json(events)))
                         FROM (

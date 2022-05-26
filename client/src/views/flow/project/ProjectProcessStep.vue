@@ -4,7 +4,7 @@
       No Matching Process Step Found
     </div>
   </v-main>
-  <v-main v-else-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
+  <v-main ref="ppsFieldsContainer" v-else-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -40,7 +40,7 @@
         </v-dialog>
       </v-col>
 
-      <v-col cols="12" class="pb-4 pt-6">
+      <v-col cols="12" class="pb-1 pt-6">
         <v-toolbar color="transparent" height="auto"
                    id="pps-toolbar"
                    class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
@@ -136,6 +136,19 @@
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
+      <v-col cols="12" class="text-left py-0" v-if="processStep && processStep.banners && processStep.banners.length > 0">
+        <div>
+          <v-card flat class="square-card" :class="{'mt-2': idx !== 0}"
+                  v-for="(b, idx) in filterBy(processStep.banners, true, 'canPerform')">
+            <v-card-text class="flex-display pa-0" :style="{'color': b.color}">
+              <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
+              <div :style="{'background-color': b.bgColor + 20}" class="one-hunned">
+                <pre class="app-pre-wrapper px-3 py-2">{{b.content}}</pre>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
+      </v-col>
       <v-col cols="12" class="text-left pt-2 pb-4" v-if="userHasEventsFeature && (
         (processStepEvents && processStepEvents.length > 0) ||
         (processStep && processStep.projectProcessStepEvents && processStep.projectProcessStepEvents.length > 0)
@@ -163,7 +176,7 @@
           />
         </div>
       </v-col>
-      <v-col cols="12" class="text-left pt-4">
+      <v-col cols="12" class="text-left pt-0">
         <div class="pps-subheader albatross-header-3" v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
           <v-btn
@@ -326,6 +339,7 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
+import Vue2Filters from 'vue2-filters'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -334,6 +348,7 @@ export default {
   props: {
     project: Object
   },
+  mixins: [Vue2Filters.mixin],
   components: {
     ActionButton,
     EventButton,
@@ -593,6 +608,8 @@ export default {
         this.customFieldGroups = data
         this.$emit('refresh-upcoming-pps')
         await this.getProcessStep(false)
+        //not sure why this.$refs.ppsFieldsContainer.scrollTop = 0 works everywhere else in the app but not here
+        this.$refs.ppsFieldsContainer.$el.scrollTop = 0
         this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -806,6 +823,11 @@ owner-toolbar-tools {
 
 .owner-position {
   color: #9E9C9C;
+}
+
+.banner-card-swatch {
+  min-height: 100%;
+  width: 30px;
 }
 
 .pps-subheader {

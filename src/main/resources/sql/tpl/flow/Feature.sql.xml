@@ -261,7 +261,7 @@
     insert into flow.user_feature_access_control(company_feature_id, access_control_id, user_id, enabled)
     values (:companyFeatureId, :accessControlId, :userId, true)
     ON CONFLICT (user_id, company_feature_id, access_control_id)
-      DO UPDATE SET enabled = :enabled
+      DO UPDATE SET enabled = :enabled, date_modified = now()
   ]]></feature.upsertUserFeatureAccessControl>
 
   <feature.getOneCompanyFeature><![CDATA[

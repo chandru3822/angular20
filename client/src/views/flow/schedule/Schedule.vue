@@ -99,7 +99,6 @@
                             autocomplete="off"
                             :loading="searchProjectsLoading"
                             item-value="projectId"
-                            item-key="projectId"
                             return-object
                             attach
                             >
@@ -554,7 +553,7 @@
           // 'event types' is just schedulable process steps
           const {data} = await getEventTypes()
           this.eventTypes = data
-          if(this.eventTypes) {
+          if(this.eventTypes?.length > 0) {
             this.selectedEventTypes = this.selectedEventTypes.filter(set => {
               return this.eventTypes.some(et => et.id === set.id)
             })

@@ -151,7 +151,7 @@ values (:companyId, :position, :orgTypeId, :schedulable, :availableToChildren, :
 
   <position.updatePositionFeatureAccessControl><![CDATA[
     update flow.position_feature_access_control
-    set enabled = :enabled
+    set enabled = :enabled, date_modified = now()
     where id = :id
   ]]></position.updatePositionFeatureAccessControl>
 

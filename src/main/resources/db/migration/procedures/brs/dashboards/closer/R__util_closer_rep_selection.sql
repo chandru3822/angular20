@@ -70,8 +70,8 @@ BEGIN
         from (
                  select distinct user_id, name, active, user_position_id
                  from (
-                          select u.id                                                         user_id,
-                                 concat(u.first_name, ' ', u.last_name, ' - ', o.org_name) as name,
+                          select upv.user_id                                                         user_id,
+                                 concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
                                  (case
                                       when upv.start_date is not null and
                                            upv.start_date <= (now() at time zone 'US/Mountain')::date and
@@ -82,14 +82,12 @@ BEGIN
                                      end)                                                  as active,
                                  upv.user_position_id
                           from flow.user_positions_vw upv
-                                   inner join flow.user u on u.id = upv.user_id
-                                   inner join flow.user_position up on u.id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                   inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
                                                                                                                 from flow.company_configuration_value
                                                                                                                 where code = 'CLOSER_POSITION_IDS')
                                                                  and up.archived is not true and up.id = upv.user_position_id
                                    inner join flow.org o on o.id = up.org_id
-                                   inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-                            where ust.user_status_type = 'Active'
+                            where upv.user_status_type_id != 13 --not expired
                       ) as sub_rows  order by active desc, name) as sub_rows;
         else
             case when (v_org_level_id < 7) OR (326 = any (v_current_position_ids)) OR
@@ -100,7 +98,7 @@ BEGIN
                              select user_id, name, active, user_position_id
                              from (
                                       select upv.user_id                                                         user_id,
-                                             concat(upv.first_name, ' ', upv.last_name, ' - ', upv.org_name) as name,
+                                             concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
                                              (case
                                                   when upv.start_date is not null and
                                                        upv.start_date <= (now() at time zone 'US/Mountain')::date and
@@ -111,11 +109,14 @@ BEGIN
                                                  end)                                                  as active,
                                              upv.user_position_id
                                       from flow.user_positions_vw upv
---                                         inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
+                                             inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                                                 from flow.company_configuration_value
+                                                                                                                                 where code = 'CLOSER_POSITION_IDS')
+                                                                                                    and up.archived is not true and up.id = upv.user_position_id
+                                             inner join flow.org o on o.id = up.org_id
                                       where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                         and upv.archived is not true
-                                        and upv.user_status_type_id != 13
---                                         and ust.user_status_type != 'Expired'
+                                        and upv.user_status_type_id != 13 --not expired
                                   ) as users
                              order by active desc, name
                          ) as sub_rows;
@@ -126,7 +127,7 @@ BEGIN
                                  select user_id, name, active, users.user_position_id
                                  from (
                                           select upv.user_id                                                         user_id,
-                                                 concat(upv.first_name, ' ', upv.last_name, ' - ', upv.org_name) as name,
+                                                 concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
 
                                                  (case
                                                       when upv.start_date is not null and
@@ -138,12 +139,15 @@ BEGIN
                                                      end)                                                  as active,
                                                  upv.user_position_id
                                           from flow.user_positions_vw upv
---                                             inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
+                                                 inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                                                                                                     from flow.company_configuration_value
+                                                                                                                                     where code = 'CLOSER_POSITION_IDS')
+                                                                                                                    and up.archived is not true and up.id = upv.user_position_id
+                                                 inner join flow.org o on o.id = up.org_id
                                           where upv.org_id is not null and upv.org_id = any(v_org_ids)
                                             and upv.archived is not true
                                              and upv.user_id = p_platform_user_id
-                                             and upv.user_status_type_id != 13
---                                              and ust.user_status_type != 'Expired'
+                                            and upv.user_status_type_id != 13 --not expired
                                     ) as users
                                  order by active desc, name
                              ) as sub_rows;

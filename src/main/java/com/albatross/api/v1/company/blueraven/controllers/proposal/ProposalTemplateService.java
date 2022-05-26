@@ -26,6 +26,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -201,20 +203,15 @@ public class ProposalTemplateService {
   @Cacheable(value = CachingConfig.PROPOSAL_TEMPLATE)
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<String> getAvailableTags(){
-    final List<String> tags = sqlCache.queryForList("proposalTemplate.availableTags", Map.of(), String.class);
-    tags.addAll(List.of("first_name", "last_name", "project_name", "street1", "street2", "city", "state", "state_abbreviation", "postal_code"));
-
-    Collections.sort(tags);
-
-    return tags;
+    return sqlCache.queryForList("proposalTemplate.availableTags", Map.of(), String.class);
   }
 
-  public void generatePdf(Long templateId, Map<String, Object> context, OutputStream outputStream) throws IOException, TemplateException {
+  public void generatePdf(Long templateId, Map<String, Object> context, OutputStream outputStream, HandleContentLength func) throws IOException, TemplateException {
     final ProposalTemplate proposalTemplate = getTemplateById(templateId, context);
-    generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle(), outputStream);
+    generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle(), outputStream, func);
   }
 
-  public void generatePdf(List<ProposalTemplateBlock> blocks, Object theme, OutputStream outputStream) throws IOException, TemplateException {
+  public void generatePdf(List<ProposalTemplateBlock> blocks, Object theme, OutputStream outputStream, HandleContentLength func) throws IOException, TemplateException {
 
     final String generatedHtml = generateHtml(blocks, theme);
 
@@ -224,16 +221,24 @@ public class ProposalTemplateService {
       .contentType(MediaType.APPLICATION_FORM_URLENCODED)
       .accept(MediaType.APPLICATION_PDF)
       .body(BodyInserters.fromFormData("html", generatedHtml))
-      .retrieve()
-      .bodyToFlux(DataBuffer.class)
-        .doOnError((e)->{
-          throw new ApiException("Error processing PDF");
-        });
+      .exchangeToFlux(response -> {
+        response.headers().header(HttpHeaders.CONTENT_LENGTH).stream()
+          .findFirst()
+          .ifPresent(val -> func.handle(Long.parseLong(val)));
+
+        if (response.statusCode() == HttpStatus.OK) {
+          return response.bodyToFlux(DataBuffer.class);
+        }
+        return Flux.empty();
+      })
+      .doOnError((e) -> {
+        throw new ApiException("Error processing PDF");
+      });
 
     DataBufferUtils.write(pdf, outputStream).blockLast();
   }
 
-  public String generateHtml(List<ProposalTemplateBlock> blocks, Object theme) throws TemplateException, IOException {
+  private String generateHtml(List<ProposalTemplateBlock> blocks, Object theme) throws TemplateException, IOException {
     final Instant start = Instant.now();
 
     final StringWriter stringWriter = new StringWriter();
@@ -268,6 +273,11 @@ public class ProposalTemplateService {
       log.warn("Error creating PGObject for obj={}, msg={}", original, e.getMessage());
       throw new RuntimeException("Error creating object");
     }
+  }
+
+  @FunctionalInterface
+  public interface HandleContentLength {
+    void handle(Long contentLength);
   }
 
   private static class ProposalTemplateBlockMapper

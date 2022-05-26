@@ -9,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +20,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +34,7 @@ public class BlueravenCustomFieldGroupService {
   private final SecurityService securityService;
   private final ObjectMapper om;
   private final SystemListService systemListService;
+  private final CustomFieldService customFieldService;
 
   public List<CustomFieldGroup> getCustomFieldGroupAssignmentsByObjectTypeId(
       Long sourceId, Long objectTypeId) {
@@ -72,8 +73,7 @@ public class BlueravenCustomFieldGroupService {
         cv.setHasListValues(true);
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
-        List<ListOfValue> listOfValues =
-            sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+        List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
         cv.setListOfValues(listOfValues);
       }
     } else if (null != cv.getCompanySystemListId()) {
@@ -87,6 +87,11 @@ public class BlueravenCustomFieldGroupService {
               cv.getSystemListOptionIds(),
               cv.getIntValue(),
               companyId);
+      cv.setListOfValues(listOfValues);
+    } else if (cv.getFlowCustomFieldId() != null) {
+      final List<ListOfValue> listOfValues =
+          customFieldService.getCustomFieldListOfValues(cv.getFlowCustomFieldId());
+      cv.setHasListValues(true);
       cv.setListOfValues(listOfValues);
     }
   }
