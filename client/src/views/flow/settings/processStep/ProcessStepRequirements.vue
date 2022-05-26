@@ -23,7 +23,7 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"
@@ -576,7 +576,7 @@
                               No
                             </v-btn>
                             <v-btn
-                              color="primaryCustom"
+                              color="primary"
                               text
                               @click="deleteRequirement(item)">
                               Yes

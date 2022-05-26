@@ -331,7 +331,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
                                 Yes
@@ -438,7 +438,7 @@
                                             item-value="id"
                                             attach
                             ></v-autocomplete>
-                            <v-btn color="primaryCustom" class="white--text"
+                            <v-btn color="primary" class="white--text"
                                    :disabled="!cp.existingCompanyProcessStepStatusTypeId || !cp.initialCompanyProcessStepStatusTypeId"
                                    @click="saveChildProcessCancelledStatus(item, cp)">Save Changes
                             </v-btn>
@@ -487,7 +487,7 @@
                                     No
                                   </v-btn>
                                   <v-btn
-                                    color="primaryCustom"
+                                    color="primary"
                                     text
                                     @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
                                     Yes
@@ -670,13 +670,13 @@
                             </v-card>
                           </div>
                           <v-list-item-subtitle>
-                            <v-btn color="primaryCustom" class="white--text" v-if="cp.edit && userCanEdit"
+                            <v-btn color="primary" class="white--text" v-if="cp.edit && userCanEdit"
                                    @click="updateChildFunction(item.id, cp)">
                               Save
                             </v-btn>
                           </v-list-item-subtitle>
                         </v-list-item-content>
-                        <v-btn text color="primaryCustom" class="white--text" v-if="userCanEdit"
+                        <v-btn text color="primary" class="white--text" v-if="userCanEdit"
                                @click="cp.edit = !cp.edit">
                           <v-icon v-if="cp.edit">remove</v-icon>
                           <v-icon v-else>edit</v-icon>
@@ -713,7 +713,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="[cp.archived = true, deleteChildFunctionFromAction(item.id, cp.id)]">
                                 Yes
@@ -873,7 +873,7 @@
                             No
                           </v-btn>
                           <v-btn
-                            color="primaryCustom"
+                            color="primary"
                             text
                             @click="[item.archived = true, deleteAction(item)]">
                             Yes

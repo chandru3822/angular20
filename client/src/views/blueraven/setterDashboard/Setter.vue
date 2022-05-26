@@ -91,7 +91,7 @@
         }
 
         .v-btn-toggle .v-btn {
-          border: 1px solid var(--v-primaryCustom-base) !important;
+          border: 1px solid var(--v-primary-base) !important;
           font-size: 11px;
           letter-spacing: 0.02em !important;
           height: 25px;
@@ -101,13 +101,13 @@
           }
 
           &:hover {
-            background-color: var(--v-primaryCustom-base);
+            background-color: var(--v-primary-base);
             color: #fff !important;
           }
         }
 
         .v-btn--active {
-          background-color: var(--v-primaryCustom-base);
+          background-color: var(--v-primary-base);
           color: #fff !important;
         }
       }
@@ -128,7 +128,7 @@
       }
 
       .tab-separator {
-        border-right: 1px solid var(--v-primaryCustom-base);
+        border-right: 1px solid var(--v-primary-base);
       }
     }
   }

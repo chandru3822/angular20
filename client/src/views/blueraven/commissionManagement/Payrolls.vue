@@ -43,7 +43,7 @@
 <!--                          label="Sales Rep"-->
 <!--                          v-model="payrollSearch.salesRep"></v-text-field>-->
             <div class="text-left">
-              <v-btn color="primaryCustom" dark @click="getPayrollData">Search</v-btn>
+              <v-btn color="primary" dark @click="getPayrollData">Search</v-btn>
               <v-btn class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
             </div>
           </v-col>

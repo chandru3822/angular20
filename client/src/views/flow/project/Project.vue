@@ -96,7 +96,7 @@
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             class="white--text text-capitalize font-weight-bold"
             :disabled="!project.projectName"
             @click="validateForm()">
@@ -145,7 +145,7 @@
           </v-btn>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
-          <v-toolbar flat>
+          <v-toolbar flat class="white-bg">
             <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -544,7 +544,7 @@ export default {
 }
 
 .white-bg {
-  background-color: #fff;
+  background-color: #fff !important;
 }
 
 .collapse-left {

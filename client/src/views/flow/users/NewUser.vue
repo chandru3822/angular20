@@ -5,7 +5,7 @@
         Add User
         <v-spacer></v-spacer>
         <v-btn text class="mr-3" to="/users">Cancel</v-btn>
-        <v-btn color="primaryCustom white--text" @click="validate"
+        <v-btn color="primary white--text" @click="validate"
                :disabled="loadingUserInsertFields || (newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)">
           Save
         </v-btn>
@@ -43,7 +43,7 @@
             </v-col>
           </v-row>
         </v-container>
-        <SpinnerInline v-if="loadingUserInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <SpinnerInline v-if="loadingUserInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
           <h3>{{cfg.groupName}}</h3>
           <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"

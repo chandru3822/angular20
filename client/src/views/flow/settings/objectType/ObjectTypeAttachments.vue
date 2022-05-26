@@ -68,7 +68,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="[a.archived = true, deleteTypeFromObject(a.id)]">
                         Yes

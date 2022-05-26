@@ -23,7 +23,7 @@
     </div>
     <div id="personal-performance-boxes-container" class="mb-6">
       <div v-if="performanceDataLoading" class="section-spinner">
-        <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+        <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
       </div>
       <div class="personal-performance-box">
         <span class="personal-performance-box-title">Total Appointments</span>
@@ -109,7 +109,7 @@
         <!-- TOP OFFICES -->
         <div id="setter-ranking-top-offices-table" class="ranking-table">
           <div v-if="topOfficesLoading" class="section-spinner">
-            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+            <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
           </div>
           <div class="ranking-table-header">
             <v-icon class="ranking-table-icon mr-2">mdi-flag-variant</v-icon>
@@ -140,7 +140,7 @@
         <!-- TOP REPS -->
         <div class="ranking-table">
           <div v-if="topRepsLoading" class="section-spinner">
-            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+            <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
           </div>
           <div class="ranking-table-header">
             <v-icon class="mr-2 ranking-table-icon">mdi-account-multiple</v-icon>
@@ -181,7 +181,7 @@
         <!-- OFFICE RANKING -->
         <div class="ranking-table">
           <div v-if="officeRankingLoading" class="section-spinner">
-            <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+            <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
           </div>
           <div class="ranking-table-header">
             <v-icon class="mr-2 ranking-table-icon">mdi-office-building</v-icon>
@@ -653,7 +653,7 @@
         }
 
         .v-btn-toggle .v-btn {
-          border: 1px solid var(--v-primaryCustom-base) !important;
+          border: 1px solid var(--v-primary-base) !important;
           font-size: 11px;
           letter-spacing: 0.02em !important;
           height: 25px;
@@ -663,14 +663,14 @@
           }
 
           &:hover {
-            background-color: var(--v-primaryCustom-base);
+            background-color: var(--v-primary-base);
             color: #fff !important;
             opacity: .75;
           }
         }
 
         .v-btn--active {
-          background-color: var(--v-primaryCustom-base);
+          background-color: var(--v-primary-base);
           color: #fff !important;
         }
       }
@@ -691,7 +691,7 @@
       }
 
       .tab-separator {
-        border-right: 1px solid var(--v-primaryCustom-base);
+        border-right: 1px solid var(--v-primary-base);
       }
     }
   }
@@ -1052,7 +1052,7 @@
       flex-flow: column nowrap;
       justify-content: center;
       background-color: #fff;
-      color: var(--v-primaryCustom-base);
+      color: var(--v-primary-base);
       box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
       border-radius: 4px;
       padding: 5px 10px;
@@ -1077,7 +1077,7 @@
       display: flex;
       flex-flow: row nowrap;
       background-color: #fff;
-      color: var(--v-primaryCustom-base);
+      color: var(--v-primary-base);
       box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
       border-radius: 4px;
       padding: 5px 10px;
@@ -1137,12 +1137,12 @@
   }
 
   .ranking-tables-section-header {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
     text-align: left;
     font-family: "Roboto", sans-serif;
     font-weight: bold;
     font-size: 20px;
-    border-bottom: 2px solid var(--v-primaryCustom-base);
+    border-bottom: 2px solid var(--v-primary-base);
     margin: 0 auto 12px auto;
     padding-bottom: 3px;
     width: 100%;
@@ -1218,7 +1218,7 @@
   .ranking-table-header {
     display: flex;
     flex-flow: row nowrap;
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
     font-weight: bold;
     font-size: 16px;
     text-align: left;
@@ -1259,7 +1259,7 @@
 
   .ranking-table th {
     border-bottom: 1px solid #e6eeff;
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
     font-size: 11px;
     height: 55px;
   }
@@ -1289,7 +1289,7 @@
   }
 
   .highlight-user-row {
-    background-color: var(--v-primaryCustom-base);
+    background-color: var(--v-primary-base);
     color: #fff;
   }
 
@@ -1318,14 +1318,14 @@
     .pipeline-header-container {
       display: flex;
       flex-flow: column nowrap;
-      border-bottom: 1px solid var(--v-primaryCustom-base);
+      border-bottom: 1px solid var(--v-primary-base);
       width: 100%;
 
       #pipeline-header-top {
         display: flex;
         flex-flow: row nowrap;
         text-align: left;
-        border-bottom: 1px solid var(--v-primaryCustom-base);
+        border-bottom: 1px solid var(--v-primary-base);
         padding: 5px;
 
         .pipeline-icon {
@@ -1336,7 +1336,7 @@
         .pipeline-title {
           font-size: 18px;
           font-weight: bold;
-          color: var(--v-primaryCustom-base);
+          color: var(--v-primary-base);
           margin-left: 8px;
         }
       }
@@ -1491,7 +1491,7 @@
         }
 
         .funnel-th {
-          color: var(--v-primaryCustom-base);
+          color: var(--v-primary-base);
           font-size: 8px;
           font-weight: normal;
           text-align: center;
@@ -2042,10 +2042,10 @@
       max-width: calc(100% - 50px);
 
       .pipeline-header-container {
-        border-bottom: 2px solid var(--v-primaryCustom-base);
+        border-bottom: 2px solid var(--v-primary-base);
 
         #pipeline-header-top {
-          border-bottom: 2px solid var(--v-primaryCustom-base);
+          border-bottom: 2px solid var(--v-primary-base);
           padding: 10px;
 
           .pipeline-icon {

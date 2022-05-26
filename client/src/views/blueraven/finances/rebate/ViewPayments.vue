@@ -49,7 +49,7 @@
         </template>
 
         <template v-slot:header.data-table-select="{ on, props }">
-          <v-checkbox :disabled="!userCanEdit"  color="primaryCustom" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
+          <v-checkbox :disabled="!userCanEdit"  color="primary" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
         </template>
 
         <template #body="{ items }">
@@ -59,7 +59,7 @@
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
             <td v-if="status === 'approval'">
-              <v-checkbox color="primaryCustom" :readonly="!userCanEdit"
+              <v-checkbox color="primary" :readonly="!userCanEdit"
                           :disabled="!userCanEdit" v-model="it.selected"></v-checkbox>
             </td>
             <td class="text-left" v-if="status === 'invalid' || status === 'approval'"><a v href="" @click="goToDetails(it)"> {{ it.projectName ? it.projectName : '' }}</a></td>
@@ -144,7 +144,7 @@
       <label><b>Approved By:</b></label>
       {{ userName }}
       <br/>
-      <v-btn color="primaryCustom" dark @click="approveDialog = true">Approve and Create Batch</v-btn>
+      <v-btn color="primary" dark @click="approveDialog = true">Approve and Create Batch</v-btn>
     </div>
 
     <v-dialog v-model="approveDialog" max-width="600px">

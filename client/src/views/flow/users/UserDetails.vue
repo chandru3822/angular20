@@ -76,7 +76,7 @@
                             v-model="user.newPassword"></v-text-field>
               <v-card color="#ffcac7" class="pa-4" v-if="user.loginAttempts >= 9">
                 <label>Too Many Attempts, User Account Locked</label><br/>
-                <v-btn v-if="userIsAdmin" @click="unlockUserAccount" color="primaryCustom" class="white--text mt-2">
+                <v-btn v-if="userIsAdmin" @click="unlockUserAccount" color="primary" class="white--text mt-2">
                   Unlock
                 </v-btn>
               </v-card>
@@ -110,7 +110,7 @@
                   ></v-select>
                   <v-btn
                     v-if="userIsAdmin"
-                    color="primaryCustom"
+                    color="primary"
                     class="white--text mb-2"
                     :disabled="!newCompany.id || !newCompany.companyUserStatusTypeId"
                     text
@@ -149,7 +149,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="removeUserCompany(uc)">
                           Yes

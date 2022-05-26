@@ -8,7 +8,7 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primaryCustom" class="white--text mr-2"
+          <v-btn color="primary" class="white--text mr-2"
                  :disabled="!override.name || !override.positionId || !override.total"
                  v-if="userCanEdit"
                  @click="saveOverride()">
@@ -48,7 +48,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   text
                   @click="[deleteConfirm = true, deleteOverride()]">
                   Yes
@@ -111,7 +111,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   text
                   @click="[inactivateConfirm = true, inactivateOverride()]">
                   Yes
@@ -124,7 +124,7 @@
                     width="600"
           >
             <template v-slot:activator="{ on }">
-              <v-btn color="primaryCustom" dark v-on="on">
+              <v-btn color="primary" dark v-on="on">
                 Clone
               </v-btn>
             </template>
@@ -182,7 +182,7 @@
                   Cancel
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   class="white--text"
                   :disabled="(override.assignedUsers.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                              (override.assignedUsers.filter(u => u.selected).length === 0 && cloneStartDate != null)"
@@ -315,7 +315,7 @@
                         label="M2 Allocation"
                         v-model="newReceivingUser.m2Allocation">
           </v-text-field>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="addReceivingUserToOverride()"
+            <v-btn color="primary" class="mr-3 white--text" @click="addReceivingUserToOverride()"
                    :disabled="!newReceivingUser.userId">
               Add
             </v-btn>
@@ -404,7 +404,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteReceivingUser(item.userId)">
                         Yes
@@ -499,7 +499,7 @@
             <div class="mb-2" v-else-if="newAssignedUser.showNote">
               {{newAssignedUser.noteMsg}}
             </div>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="addAssignedUserToOverride()"
+            <v-btn color="primary" class="mr-3 white--text" @click="addAssignedUserToOverride()"
                    :disabled="newAssignedUser.dateError || !newAssignedUser.userId || !newAssignedUser.startDate || errorLoadingUserHistory">
               Add
             </v-btn>
@@ -562,7 +562,7 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primaryCustom" class="mr-3 white--text" @click="updateAssignedUser(item)"
+              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
                      :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
                 Save
               </v-btn>
@@ -613,7 +613,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteAssignedUser(item.id)">
                         Yes

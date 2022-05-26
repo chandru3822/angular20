@@ -32,7 +32,7 @@
       <!-- ROUND ROBIN LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
         <div v-if="roundRobinRanksLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header user-office-ranking-table-header">
           <div class="user-office-ranking-table-header-left-side">
@@ -96,7 +96,7 @@
       <!-- OFFICE FDC RANK START -->
       <div class="ranking-table">
         <div v-if="officeFdcRankLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header user-office-ranking-table-header">
           <div class="user-office-ranking-table-header-left-side">
@@ -171,7 +171,7 @@
       <!-- OFFICE RANKING START -->
       <div class="ranking-table">
         <div v-if="companyOfficeRankLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header">
           <v-icon class="ranking-table-icon mr-2">mdi-office-building</v-icon>
@@ -209,7 +209,7 @@
       <!-- TOP REPS START -->
       <div id="top-reps-table" class="ranking-table">
         <div v-if="topRepsLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header" id="top-reps-table-header">
           <div>
@@ -657,7 +657,7 @@
         }
 
         .v-btn-toggle .v-btn {
-          border: 1px solid var(--v-primaryCustom-base) !important;
+          border: 1px solid var(--v-primary-base) !important;
           font-size: 11px;
           letter-spacing: 0.02em !important;
           height: 25px;
@@ -667,13 +667,13 @@
           }
 
           &:hover {
-            background-color: var(--v-primaryCustom-base);
+            background-color: var(--v-primary-base);
             color: #fff !important;
           }
         }
 
         .v-btn--active {
-          background-color: var(--v-primaryCustom-base);
+          background-color: var(--v-primary-base);
           color: #fff !important;
         }
       }
@@ -682,12 +682,12 @@
 
   .ranking-tables-section-header {
     position: relative;
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
     text-align: left;
     font-family: "Roboto", sans-serif;
     font-weight: bold;
     font-size: 20px;
-    border-bottom: 2px solid var(--v-primaryCustom-base);
+    border-bottom: 2px solid var(--v-primary-base);
     margin: 0 auto 12px auto;
     padding-bottom: 3px;
     width: 100%;
@@ -732,7 +732,7 @@
   .ranking-table-header {
     display: flex;
     flex-flow: row nowrap;
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
     font-weight: bold;
     font-size: 16px;
     text-align: left;
@@ -811,7 +811,7 @@
 
   .ranking-table th {
     border-bottom: 1px solid #e6eeff;
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
     font-size: 11px;
     height: 55px;
   }
@@ -841,7 +841,7 @@
   }
 
   .highlight-user-row {
-    background-color: var(--v-primaryCustom-base);
+    background-color: var(--v-primary-base);
     color: #fff;
   }
 

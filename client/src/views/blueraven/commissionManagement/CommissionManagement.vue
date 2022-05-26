@@ -20,9 +20,9 @@
               ></v-select>
             </div>
           </v-toolbar-items>
-          <v-tabs :optional="false" color="primaryCustom"
+          <v-tabs :optional="false" color="primary"
                   slot="extension"
-                  background-color="white" v-model="model" slider-color="primaryCustom">
+                  background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
             </v-tab>

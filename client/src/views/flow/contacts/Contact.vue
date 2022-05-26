@@ -23,7 +23,7 @@
             No
           </v-btn>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             @click="[navigationOverride = true, goToPath(toPath)]">
             Yes
@@ -47,7 +47,7 @@
                 <template v-slot:activator="{ on: tooltip }">
                   <div v-on="{ ...tooltip }" class="d-inline-block">
                     <v-btn v-on="{ ...menu }"
-                           color="primaryCustom"
+                           color="primary"
                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
                            class="white--text"
                            id="qa-create-project-button"
@@ -266,7 +266,7 @@
               v-model="deleteContactConfirm"
               width="500">
               <template #activator="{ on }">
-                <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on" id="qa-delete-contact">
+                <v-btn color="primary" dark class="mr-2 white--text" v-on="on" id="qa-delete-contact">
                   Delete Contact
                 </v-btn>
               </template>
@@ -290,7 +290,7 @@
                     No
                   </v-btn>
                   <v-btn
-                    color="primaryCustom"
+                    color="primary"
                     text
                     @click="deleteContact"
                     id="qa-delete-contact-yes">

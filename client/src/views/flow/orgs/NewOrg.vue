@@ -5,7 +5,7 @@
         Add Organization
         <v-spacer></v-spacer>
         <v-btn text class="mr-3" to="/orgs">Cancel</v-btn>
-        <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
+        <v-btn color="primary white--text" :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
                @click="validate">Save</v-btn>
       </v-card-title>
 
@@ -62,7 +62,7 @@
             </v-col>
           </v-row>
         </v-container>
-        <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
           <h3>{{cfg.groupName}}</h3>
           <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"

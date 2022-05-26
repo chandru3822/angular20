@@ -31,7 +31,7 @@
                 <label>Has Access:</label>
                 <input class="ml-3" type="checkbox" v-model="item.hasAccess">
               </div>
-              <v-btn color="primaryCustom" class="white--text mr-2"
+              <v-btn color="primary" class="white--text mr-2"
                      @click="saveCompanyUserStatusType(item)">
                 Save
               </v-btn>

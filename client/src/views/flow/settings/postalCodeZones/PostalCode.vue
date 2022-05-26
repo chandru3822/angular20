@@ -65,7 +65,7 @@
                 ></v-autocomplete>
               </td>
               <td class="pl-5 pb-3">
-                <v-btn color="primaryCustom" :disabled="!zone.zoneName || !zone.companyTimezoneId"
+                <v-btn color="primary" :disabled="!zone.zoneName || !zone.companyTimezoneId"
                        class="white--text" @click="saveZoneInfo()">
                   Save
                 </v-btn>
@@ -77,11 +77,11 @@
     </div>
     <v-divider></v-divider>
     <!--    <v-toolbar dense color="white" tabs flat class="elevation-1">-->
-    <v-tabs :optional="false" color="primaryCustom"
+    <v-tabs :optional="false" color="primary"
             slot="extension"
             class="hello"
             dense
-            background-color="white" v-model="model" slider-color="primaryCustom">
+            background-color="white" v-model="model" slider-color="primary">
       <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path">
         {{ tab.label }}
       </v-tab>

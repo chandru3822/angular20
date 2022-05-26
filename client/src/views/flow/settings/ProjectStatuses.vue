@@ -83,7 +83,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="setAsInitial(item)">
                         Yes
@@ -125,7 +125,7 @@
                                 :hide-mode-switch="colorOptions.hideModeSwitch">
                 </v-color-picker>
               </div>
-              <v-btn color="primaryCustom" dark class="white--text"
+              <v-btn color="primary" dark class="white--text"
                      :disabled="!item.projectStatusType || !item.projectStatusTypeId"
                      @click="saveType(item, false)">Save</v-btn>
             </td>

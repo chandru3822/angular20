@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-contacts">
   <v-card class="pb-2 mb-3">
-    <v-toolbar class="primaryCustom mb-2">
+    <v-toolbar class="primary mb-2">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{ title }}
       </v-toolbar-title>

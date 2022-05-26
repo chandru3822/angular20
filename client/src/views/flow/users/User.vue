@@ -23,7 +23,7 @@
             No
           </v-btn>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             @click="[navigationOverride = true, goToPath(toPath)]">
             Yes
@@ -75,7 +75,7 @@
 
           <v-btn class="ml-3 elevation-2" dark small fab
                  v-if="userCanMasquerade && !userIsMasquerading && userId !== loggedInUserId"
-                 color="primaryCustom"
+                 color="primary"
                  @click="masquerade()">
             <v-icon>mdi-account-switch</v-icon>
           </v-btn>

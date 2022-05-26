@@ -41,7 +41,7 @@
             </v-btn>
             <v-btn @click="overrideMatchUser"
                    :disabled="!overrideUser.id"
-                   color="primaryCustom" class="white--text">
+                   color="primary" class="white--text">
               Save
             </v-btn>
           </v-card-actions>
@@ -100,7 +100,7 @@
                       No
                     </v-btn>
                     <v-btn
-                      color="primaryCustom"
+                      color="primary"
                       text
                       @click="[r.advanceConfirm = true, advanceWinners(r)]">
                       Yes

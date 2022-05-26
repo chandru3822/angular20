@@ -35,7 +35,7 @@
                     'left': $store.state.project.rightSideSplit ? '0px' : '15px',}">
         <v-row
           :value="selectedOption"
-          color="primaryButton"
+
           :style="{'flex-direction': $store.state.project.rightSideSplit ? 'column' : 'row',
                       'width': $store.state.project.rightSideSplit ? 'calc(100% - 45px)' : '100%'}"
           class="section-footer ma-0"
@@ -168,7 +168,7 @@ export default {
 }
 
 .section-selected {
-  background-color: var(--v-primaryCustom-base) !important;
+  background-color: var(--v-primary-base) !important;
 }
 
 .section-not-selected {

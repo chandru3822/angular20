@@ -103,7 +103,7 @@
     <v-row>
       <v-col cols="12" md="6">
         <h3>Custom Fields</h3>
-        <SpinnerInline v-if="loadingUserProfileCustomFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <SpinnerInline v-if="loadingUserProfileCustomFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <CustomValueInput v-for="(cf, idx) in userProfileCustomFields"
                         :key="idx"
                         :callback="populateDirtyCfvs"

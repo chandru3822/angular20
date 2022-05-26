@@ -24,7 +24,7 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"
@@ -85,7 +85,7 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+        <v-btn color="primary" dark class="d-inline-block white--text"
                @click="saveOwnerReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save
@@ -319,7 +319,7 @@
                                         </template>
                                       </v-autocomplete>
                                       <br/>
-                                      <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                                      <v-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveReadOnlyAndWhiteList(cf)">
                                         <v-icon class="mr-2">save</v-icon>
                                         Save Read Only
@@ -379,7 +379,7 @@
                                         </template>
                                       </v-autocomplete>
                                       <br/>
-                                      <v-btn color="primaryCustom" dark class="white--text d-inline-block"
+                                      <v-btn color="primary" dark class="white--text d-inline-block"
                                              @click="saveHiddenAndWhiteList(cf)">
                                         <v-icon class="mr-2">save</v-icon>
                                         Save Hidden

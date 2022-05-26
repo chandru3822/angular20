@@ -26,7 +26,7 @@
                           autocomplete="off"
                           attach>
           </v-autocomplete>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
+          <v-btn color="primary" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
                  :disabled="!selectedScheduler.id">
             Add
           </v-btn>
@@ -89,7 +89,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteUserFromZone(item)">
                         Yes

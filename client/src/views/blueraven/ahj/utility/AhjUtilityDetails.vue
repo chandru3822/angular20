@@ -55,7 +55,7 @@
 
               <!-- UTILITY RATES -->
               <v-card class="mb-3">
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   Utility Rates
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -152,7 +152,7 @@
 
               <!-- DESIGN UTILITY REQUIREMENTS -->
               <v-card class="mb-3">
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   Design Utility Requirements
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -213,7 +213,7 @@
 
               <!-- NOTES -->
               <v-card>
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   Notes
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -233,7 +233,7 @@
             <v-col cols="12" md="4" class="px-1 mb-3">
               <!-- OVERVIEW -->
               <v-card class="mb-3">
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   Overview
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -269,7 +269,7 @@
 
               <!-- CUSTOMER SIGNATURES -->
               <v-card class="mb-3">
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   Customer Signatures
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -314,7 +314,7 @@
 
               <!-- SUBMISSION DETAILS -->
               <v-card>
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   Submission Details
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -388,7 +388,7 @@
             <v-col cols="12" md="4" class="px-1 mb-3">
               <!-- APPROVAL DETAILS -->
               <v-card class="mb-3">
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   Approval Details
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -436,7 +436,7 @@
                                :isNested="true"
                   ></AhjDocument>
                   <v-card>
-                    <v-card-title class="primaryCustom white--text font-weight-bold">
+                    <v-card-title class="primary white--text font-weight-bold">
                       Rejections
                     </v-card-title>
                     <v-card-text class="mt-4">
@@ -473,7 +473,7 @@
 
               <!-- PTO DETAILS -->
               <v-card class="mb-3">
-                <v-card-title class="primaryCustom white--text font-weight-bold">
+                <v-card-title class="primary white--text font-weight-bold">
                   PTO Details
                 </v-card-title>
                 <v-card-text class="mt-4">
@@ -527,7 +527,7 @@
                                 class="mb-4"
                   ></AhjChecklist>
                   <v-card class="mb-4">
-                    <v-card-title class="primaryCustom white--text font-weight-bold">
+                    <v-card-title class="primary white--text font-weight-bold">
                       Pending PTO Followup
                     </v-card-title>
                     <v-card-text class="mt-4">
@@ -559,7 +559,7 @@
                     </v-card-text>
                   </v-card>
                   <v-card class="mb-sm-3">
-                    <v-card-title class="primaryCustom white--text font-weight-bold">
+                    <v-card-title class="primary white--text font-weight-bold">
                       Final Completion Submission
                     </v-card-title>
                     <v-card-text class="mt-4">
@@ -796,7 +796,7 @@ export default {
   border-bottom: 1px solid #E6E6E6;
 
   .v-tab:hover {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 }
 

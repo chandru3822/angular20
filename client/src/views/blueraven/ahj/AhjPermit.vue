@@ -19,7 +19,7 @@
       <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
         <!-- SUBMISSION DETAILS -->
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
+          <v-card-title class="primary white--text font-weight-bold title-with-icon">
             Submission Details
             <router-link :to="'/schedule'" title="Go to Scheduling Tool">
               <v-icon class="white--text">launch</v-icon>
@@ -220,7 +220,7 @@
       <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- REVISION SUBMISSION DETAILS -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Revision Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
@@ -281,7 +281,7 @@
           </v-card-text>
         </v-card>
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Cancellation and Refund Details
           </v-card-title>
           <v-card-text class="mt-4">
@@ -338,7 +338,7 @@
       <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- AS-BUILT SUBMISSION DETAILS -->
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             As-Built Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
@@ -400,7 +400,7 @@
         </v-card>
 
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Non Standard Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
@@ -458,7 +458,7 @@
       <v-col cols="12" md="3" class="pl-sm-0 pl-md-1 mb-3">
         <!-- FOLLOW-UP / APPROVAL DETAILS -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Follow-up / Approval Details
           </v-card-title>
           <v-card-text class="mt-4">
@@ -525,7 +525,7 @@
 
         <!-- DELIVERY DETAILS -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Delivery Details
           </v-card-title>
           <v-card-text class="mt-4">

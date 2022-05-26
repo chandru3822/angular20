@@ -8,7 +8,7 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primaryCustom" class="white--text mr-2"
+          <v-btn color="primary" class="white--text mr-2"
                  :disabled="!commission.name || !commission.positionId"
                  v-if="userCanEdit"
                  @click="savePlan()">
@@ -48,7 +48,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   text
                   @click="[deleteConfirm = true, deletePlan()]">
                   Yes
@@ -112,7 +112,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   text
                   @click="[inactivateConfirm = true, inactivatePlan()]">
                   Yes
@@ -129,7 +129,7 @@
             width="600"
           >
             <template v-slot:activator="{ on }">
-              <v-btn color="primaryCustom" dark v-on="on" class="mr-2">
+              <v-btn color="primary" dark v-on="on" class="mr-2">
                 Clone
               </v-btn>
             </template>
@@ -180,7 +180,7 @@
                   Cancel
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   :disabled="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                             (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
                   class="white--text"
@@ -306,7 +306,7 @@
           <div class="error-text mb-3" v-if="milestoneError">
             {{milestoneErrorMsg}}
           </div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addMilestoneToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addMilestoneToPlan()"
                  :disabled="!selectedMilestone.id || (!selectedMilestone.allocation && !selectedMilestone.min) || milestoneError">
             Add
           </v-btn>
@@ -421,7 +421,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteMilestone(item.commissionPlanAllocationId)">
                         Yes
@@ -477,7 +477,7 @@
                       item-text="milestoneType"
                       item-value="milestoneId"
             ></v-select>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="addSourceToPlan()"
+            <v-btn color="primary" class="mr-3 white--text" @click="addSourceToPlan()"
                    :disabled="!selectedSource.id || !selectedSource.feeTypeId || !selectedSource.feeAmount">
               Add
             </v-btn>
@@ -570,7 +570,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteSource(item.id)">
                         Yes
@@ -663,7 +663,7 @@
           <div class="mb-2" v-else-if="newUser.showNote">
             {{newUser.noteMsg}}
           </div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addUserToPlan()"
                  :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory">
             Add
           </v-btn>
@@ -725,7 +725,7 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primaryCustom" class="mr-3 white--text" @click="updateAssignedUser(item)"
+              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
                      :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
                 Save
               </v-btn>
@@ -778,7 +778,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteUserFromPlan(item)">
                         Yes

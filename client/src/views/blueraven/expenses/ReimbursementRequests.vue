@@ -70,7 +70,7 @@
                       background-color="#F2F6F8"
                       v-model="newReimbursementRequest.notes">
           </v-textarea>
-          <v-btn color="primaryCustom" class="white--text"
+          <v-btn color="primary" class="white--text"
                  :disabled="!newReimbursementRequest.userId || !newReimbursementRequest.expenseDate || !newReimbursementRequest.glCodeId
                             || !newReimbursementRequest.expenseBudgetUserId || !newReimbursementRequest.expenseBudgetId || !newReimbursementRequest.expenseAmount"
                  @click="saveReimbursementRequest(newReimbursementRequest, true)">
@@ -138,7 +138,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="deleteReimbursementRequest(item)">
                           Yes
@@ -164,7 +164,7 @@
             <div class="pt-3">
               <v-btn @click="approveRequest"
                      :disabled="selectedRequest.expenses.length < 1"
-                     color="primaryCustom"
+                     color="primary"
                      class="white--text">
                 Approve & Submit
               </v-btn>
@@ -330,7 +330,7 @@
                       </v-text-field>
                     </td>
                     <td class="text-left px-0">
-                      <v-btn x-small v-if="!item.id" fab color="primaryCustom" dark
+                      <v-btn x-small v-if="!item.id" fab color="primary" dark
                              @click="removeExpenseItem(item.tempId)">
                         <v-icon>close</v-icon>
                       </v-btn>

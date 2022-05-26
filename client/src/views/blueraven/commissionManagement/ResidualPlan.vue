@@ -8,7 +8,7 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primaryCustom" class="white--text mr-2"
+          <v-btn color="primary" class="white--text mr-2"
                  :disabled="!residualPlan.name"
                  @click="savePlan()">
             Save
@@ -47,7 +47,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   text
                   @click="[deleteConfirm = true, deletePlan()]">
                   Yes
@@ -111,7 +111,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   text
                   @click="[inactivateConfirm = true, inactivatePlan()]">
                   Yes
@@ -126,7 +126,7 @@
             width="600"
           >
             <template v-slot:activator="{ on }">
-              <v-btn color="primaryCustom" dark v-on="on" class="mr-2">
+              <v-btn color="primary" dark v-on="on" class="mr-2">
                 Clone
               </v-btn>
             </template>
@@ -177,7 +177,7 @@
                   Cancel
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   :disabled="(residualPlan.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                             (residualPlan.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
                   class="white--text"
@@ -290,7 +290,7 @@
                         label="Total"
                         v-model="selectedLevel.total">
           </v-text-field>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addLevelToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addLevelToPlan()"
                  :disabled="!selectedLevel.name || !selectedLevel.level || !selectedLevel.nbrFdcLower || !selectedLevel.nbrFdcUpper || !selectedLevel.total">
             Add
           </v-btn>
@@ -390,7 +390,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteLevel(item.id)">
                         Yes
@@ -482,7 +482,7 @@
           <div class="mb-2" v-else-if="newUser.showNote">
             {{newUser.noteMsg}}
           </div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addUserToPlan()"
                  :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory">
             Add
           </v-btn>
@@ -544,7 +544,7 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primaryCustom" class="mr-3 white--text" @click="updateAssignedUser(item)"
+              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
                      :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
                 Save
               </v-btn>
@@ -597,7 +597,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteUserFromPlan(item)">
                         Yes

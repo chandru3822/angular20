@@ -9,7 +9,7 @@
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
             <span class="page-title" v-if="!editName">{{ processStep.processStepName }}</span>
-            <v-text-field v-else color="primaryCustom"
+            <v-text-field v-else color="primary"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
@@ -160,7 +160,7 @@
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
   .v-tab:hover {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 }
 </style>

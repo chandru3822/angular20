@@ -37,7 +37,7 @@
         </table>
       </v-col>
       <v-col cols="6" class="text-right">
-        <v-btn color="primaryCustom" @click="exportPayrollReview" class="white--text">Export</v-btn>
+        <v-btn color="primary" @click="exportPayrollReview" class="white--text">Export</v-btn>
       </v-col>
     </v-row>
     <v-divider></v-divider>
@@ -204,7 +204,7 @@
         switch(this.payroll.status) {
           case 'PENDING':
             this.payrollStatus.message = 'This payroll is pending.'
-            this.payrollStatus.color = 'primaryCustom'
+            this.payrollStatus.color = 'primary'
             this.payrollStatus.textColor = 'white'
             break
           case 'APPROVED':

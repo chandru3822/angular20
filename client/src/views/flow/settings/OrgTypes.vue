@@ -35,7 +35,7 @@
           </div>
 
           <v-btn :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="saveOrgType(newOrgType, true)">
             Save
           </v-btn>
@@ -83,7 +83,7 @@
                 <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
               </div>
               <v-btn :disabled="!item.orgType || !item.orgLevelId"
-                     color="primaryCustom" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
+                     color="primary" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
             </td>
           </template>
 

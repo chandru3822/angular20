@@ -24,7 +24,7 @@
                         v-model="newNumber">
           </v-text-field>
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addNumberToGroup()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addNumberToGroup()"
                  :disabled="!newNumber">
             Add
           </v-btn>

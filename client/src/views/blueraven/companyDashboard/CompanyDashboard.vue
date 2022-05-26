@@ -38,7 +38,7 @@
                                      :dense="'dense'"
                                      :outlined="'outlined'"
                 ></DatetimePickerInput>
-                <v-btn color="primaryCustom" dark class="white--text dash-btn"
+                <v-btn color="primary" dark class="white--text dash-btn"
                   @click="getDashboardValues(true)">
                   Go
                 </v-btn>
@@ -459,7 +459,7 @@
       }
 
       th {
-        border-top: 3px solid var(--v-primaryCustom-base);
+        border-top: 3px solid var(--v-primary-base);
         border-bottom: none;
         color: var(--v-primaryText-base);
         font-size: 12px !important;
@@ -503,7 +503,7 @@
       }
 
       .total-col-th, .total-col-td {
-        border-left: 2px solid var(--v-primaryCustom-base) !important;
+        border-left: 2px solid var(--v-primary-base) !important;
       }
 
       .data-col-th, .data-col-td {

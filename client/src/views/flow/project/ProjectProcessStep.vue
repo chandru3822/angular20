@@ -30,7 +30,7 @@
                 No
               </v-btn>
               <v-btn
-                color="primaryCustom"
+                color="primary"
                 text
                 @click="[navigationOverride = true, goToPath(toPath, query)]">
                 Yes
@@ -87,7 +87,7 @@
                     No
                   </v-btn>
                   <v-btn
-                    color="primaryCustom"
+                    color="primary"
                     text
                     @click="[processStep.changeActiveConfirm = false, processStep.main = true, showMainDialog = true]">
                     Yes
@@ -235,7 +235,7 @@
           </v-dialog>
           <div>
             <v-btn
-              color="primaryCustom"
+              color="primary"
               class="white--text mt-3 ml-2"
               :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
@@ -311,7 +311,7 @@
     />
   </v-main>
   <v-main v-else>
-    <SpinnerInline centered :size="50" color="primaryCustom"/>
+    <SpinnerInline centered :size="50" color="primary"/>
   </v-main>
 </template>
 

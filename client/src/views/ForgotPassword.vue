@@ -4,7 +4,7 @@
       <v-row>
         <v-col cols="12">
           <v-card color="secondaryMaster" class="elevation-12">
-            <v-toolbar dark color="primaryCustom">
+            <v-toolbar dark color="primary">
               <v-toolbar-title>Password Assistance</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
@@ -12,7 +12,7 @@
               <h3 class="mb-3">A link will be sent to your email. Please click on the link in the email to change your password.</h3>
               <h3 class="mb-5">The link to reset your password will expire in 24 hours!</h3>
               <v-form ref="resetForm">
-                <v-text-field color="primaryCustom"
+                <v-text-field color="primary"
                               v-model="email"
                               required
                               :rules="requiredRules"

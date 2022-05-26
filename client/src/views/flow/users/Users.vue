@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newUser" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
+            <v-btn text to="/newUser" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
               <v-icon>add</v-icon>
               Add User
             </v-btn>
@@ -255,7 +255,7 @@
             Send Bulk Emails/Texts
         </v-card-title>
           <v-toolbar-items>
-        <v-tabs color="secondaryCustom" background-color="primaryCustom" slot="extension" dark slider-color="secondaryCustom">
+        <v-tabs color="secondary" background-color="primary" slot="extension" dark slider-color="secondary">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>
@@ -340,13 +340,13 @@
                 Close
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text mr-2 "
+                color="primary" class="white--text mr-2 "
                 :disabled="this.disableSendEmail"
                 @click="sendMessage(true, false)">
                 Send Emails Only
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text"
+                color="primary" class="white--text"
                 :disabled="this.disableSendEmail || this.disableSendText"
                 @click="sendMessage(true, true)">
                 Send Both
@@ -418,13 +418,13 @@
                 Close
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text mr-2"
+                color="primary" class="white--text mr-2"
                 :disabled="this.disableSendText"
                 @click="sendMessage(false, true)">
                 Send Text Only
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text"
+                color="primary" class="white--text"
                 :disabled="this.disableSendEmail || this.disableSendText"
                 @click="sendMessage(true, true)">
                 Send Both

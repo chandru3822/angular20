@@ -6,7 +6,7 @@
           <v-app-bar class="elevation-1" fixed style="top: 48px">
             <v-toolbar-title>Company Dashboard Targets</v-toolbar-title>
             <div id="toolbar-right-side">
-              <v-btn id="update-btn" color="primaryCustom" class="white--text text-capitalize"
+              <v-btn id="update-btn" color="primary" class="white--text text-capitalize"
                      @click="updateTargets">Update</v-btn>
             </div>
           </v-app-bar>

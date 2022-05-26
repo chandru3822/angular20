@@ -20,23 +20,8 @@ export default new Vuetify({
     themes: {
       light: {
         primary: '#1F3C73',
-        primaryCustom: '#1F3C73',
         secondary: '#F6F7F8',
-        secondaryCustom: '#F6F7F8',
-        rowShade: '#EAEAF4',
-        rowShadeCustom: '#EAEAF4',
-        rowHover: '#ADD8E6',
-        rowHoverCustom: '#ADD8E6',
-        brGreen: '#2fc466',
-        brYellow: '#edd33e',
-        brRed: '#d4443f',
-        brBlue: '#2292cc',
-        activeBlue: '#0075FF',
-        primaryButton: '#1F3C73',
-        secondaryButton: '#878787',
-        calendarBorder: '#f2f5f8',
-        primaryText: '#1F3C73',
-        blackText: '#30363c',
+
       },
       // dark: {
       //   primary: '#1F3C73',

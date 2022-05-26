@@ -20,7 +20,7 @@
                         label="Budget Type"
                         v-model="newBudgetType.name">
           </v-text-field>
-          <v-btn color="primaryCustom" dark class="white--text"
+          <v-btn color="primary" dark class="white--text"
                  :disabled="!newBudgetType.name"
                  @click="saveBudgetType(newBudgetType, true)">
             Save
@@ -95,7 +95,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="deleteBudgetType(item)">
                           Yes

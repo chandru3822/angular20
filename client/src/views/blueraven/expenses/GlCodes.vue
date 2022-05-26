@@ -25,7 +25,7 @@
                         label="Description"
                         v-model="newGlCode.description">
           </v-text-field>
-          <v-btn color="primaryCustom" dark class="white--text"
+          <v-btn color="primary" dark class="white--text"
                  :disabled="!newGlCode.code || !newGlCode.description"
                  @click="saveGlCode(newGlCode, true)">
             Save
@@ -111,7 +111,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="deleteGlCode(item)">
                           Yes

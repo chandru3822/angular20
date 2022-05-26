@@ -55,7 +55,7 @@
                       background-color="#F2F6F8"
                       v-model="newBudget.notes">
           </v-textarea>
-          <v-btn color="primaryCustom" class="white--text"
+          <v-btn color="primary" class="white--text"
                  :disabled="!newBudget.userId || !newBudget.budgetTypeId
                     || !newBudget.amount || !newBudget.startDate || !newBudget.endDate"
                  @click="saveBudget(newBudget, true)">
@@ -122,7 +122,7 @@
                             v-model="item.notes">
                 </v-textarea>
                 <v-btn :disabled="false"
-                       color="primaryCustom" class="white--text mr-2"
+                       color="primary" class="white--text mr-2"
                        @click="saveBudget(item, false)">
                   Save
                 </v-btn>

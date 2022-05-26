@@ -27,7 +27,7 @@
             No
           </v-btn>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             @click="[navigationOverride = true, goToPath(toPath, query)]">
             Yes
@@ -79,7 +79,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   text
                   @click="[selectedEvent.archived = true, deleteEvent(selectedEvent.id)]">
                   Yes
@@ -116,7 +116,7 @@
         </div>
         <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
           <v-btn class="action-button white--text text-capitalize"
-                 color="primaryCustom"
+                 color="primary"
                  v-if="!action.hideFromWeb"
                  :disabled="!action.canPerform"
                  @click="[attemptedAction = action, validateActionRequirements(action)]">
@@ -233,7 +233,7 @@
             @input="defaultValuesChanged = true"
           ></v-autocomplete>
 
-          <v-btn color="primaryCustom" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
+          <v-btn color="primary" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
                  class="white--text mb-4"
                  :disabled="uniqueAlreadyHasValue"
                  id="qa-round-robin-button"
@@ -255,7 +255,7 @@
                   :field="availabilityDateField"
                 />
                 <div class="text-right" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primaryCustom" class="white--text"
+                  <v-btn color="primary" class="white--text"
                          :loading="remoteSearchLoading"
                          :disabled="inPersonSearchLoading"
                          v-if="showRemoteSearch || userIsAdmin"
@@ -263,7 +263,7 @@
                          @click="getAvailableTimeSlots(true)">
                     Search Remote Appt. Slots
                   </v-btn>
-                  <v-btn color="primaryCustom" class="white--text ml-3"
+                  <v-btn color="primary" class="white--text ml-3"
                          :loading="inPersonSearchLoading"
                          v-if="schedulerCanEdit || userIsAdmin"
                          :disabled="remoteSearchLoading"
@@ -292,7 +292,7 @@
                   Selected Date
                 </div>
                 <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
-                  <v-btn color="primaryCustom" class="white--text"
+                  <v-btn color="primary" class="white--text"
                          @click="saveCloserAppointment" id="qa-round-robin-save">
                     Save Appointment
                   </v-btn>
@@ -355,7 +355,7 @@
     </div>
   </v-main>
   <v-main v-else>
-    <SpinnerInline centered :size="50" color="primaryCustom"/>
+    <SpinnerInline centered :size="50" color="primary"/>
   </v-main>
 </template>
 

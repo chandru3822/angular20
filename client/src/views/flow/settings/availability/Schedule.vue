@@ -127,7 +127,7 @@
           <v-card-actions>
             <v-card-actions>
               <v-btn color="secondary" @click="[newSchedule = {}, addNew = false]">Cancel</v-btn>
-              <v-btn color="primaryCustom"  @click="saveSchedule(newSchedule, true)" class="white--text"
+              <v-btn color="primary"  @click="saveSchedule(newSchedule, true)" class="white--text"
                      :disabled="!newSchedule.startDate">
                 Save
               </v-btn>
@@ -296,7 +296,7 @@
                 </div>
                 <v-card-actions>
                   <v-card-actions>
-                    <v-btn color="primaryCustom"  @click="saveSchedule(schedule, false)" class="white--text"
+                    <v-btn color="primary"  @click="saveSchedule(schedule, false)" class="white--text"
                            v-if="userCanEdit || userCanAdd"
                            :disabled="!schedule.startDate">
                       Save

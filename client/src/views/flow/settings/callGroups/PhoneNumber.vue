@@ -9,7 +9,7 @@
                       label="Name"
                       v-model="group.callGroupName">
           </v-text-field>
-          <v-btn text color="primaryCustom" @click="saveGroupInfo()">
+          <v-btn text color="primary" @click="saveGroupInfo()">
             <v-icon>save</v-icon>
           </v-btn>
         </div>
@@ -23,11 +23,11 @@
           <v-icon>edit</v-icon>
         </v-btn>
       </v-toolbar-items>
-      <v-tabs :optional="false" color="primaryCustom"
+      <v-tabs :optional="false" color="primary"
               slot="extension"
               class="hello"
               dense
-              background-color="white" v-model="model" slider-color="primaryCustom">
+              background-color="white" v-model="model" slider-color="primary">
         <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path">
           {{tab.label}}
         </v-tab>

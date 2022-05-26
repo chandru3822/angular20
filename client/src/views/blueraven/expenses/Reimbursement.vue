@@ -62,7 +62,7 @@
           <div class="receipt-image-background mb-5" v-else>
             <img class="receipt-image" :src="receiptLogo.presignedUrl">
           </div>
-          <v-btn color="primaryCustom" class="white--text"
+          <v-btn color="primary" class="white--text"
                  :disabled="!newReimbursement.expenseDate || !newReimbursement.expenseBudgetId || !newReimbursement.amount
                             || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
                  @click="submitReimbursementRequest()">
@@ -98,7 +98,7 @@
                         item-text="name"
                         item-value="id"
               ></v-select>
-              <v-btn color="primaryCustom" class="white--text ml-3"
+              <v-btn color="primary" class="white--text ml-3"
                      @click="setDataForMonth">
                 Load
               </v-btn>
@@ -195,7 +195,7 @@
                               background-color="#F2F6F8"
                               v-model="needsApprovalRequest.notes">
                   </v-textarea>
-                  <v-btn color="primaryCustom"
+                  <v-btn color="primary"
                          @click="setRequestStatusWithNotes(needsApprovalRequest, 3)"
                          class="white--text">Approve</v-btn>
                   <v-btn color="red"

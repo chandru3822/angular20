@@ -220,7 +220,7 @@
                       No
                     </v-btn>
                     <v-btn
-                      color="primaryCustom"
+                      color="primary"
                       text
                       @click="deletePayment()">
                       Yes

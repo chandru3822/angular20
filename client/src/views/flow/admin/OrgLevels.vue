@@ -21,7 +21,7 @@
                           label="Level" />
           </div>
           <v-btn :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="saveOrgLevel(newOrgLevel, true)">
             Save
           </v-btn>
@@ -56,7 +56,7 @@
                               label="Rank" />
               </div>
               <v-btn :disabled="!item.levelName || !item.level"
-                     color="primaryCustom" class="white--text mr-2"
+                     color="primary" class="white--text mr-2"
                      @click="saveOrgLevel(item, false)">
                 Save
               </v-btn>
@@ -103,7 +103,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="deleteOrgLevel(item)">
                         Yes

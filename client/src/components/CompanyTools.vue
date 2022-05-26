@@ -34,7 +34,7 @@
 
             <v-list-item v-if="tourneysLoading">
               <v-list-item-title>
-                <SpinnerInline :size="20" color="primaryCustom"/>
+                <SpinnerInline :size="20" color="primary"/>
               </v-list-item-title>
             </v-list-item>
 

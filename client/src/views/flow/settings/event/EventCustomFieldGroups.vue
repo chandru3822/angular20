@@ -221,7 +221,7 @@
             ></v-text-field>
           </div>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             class="white--text mr-2"
             :disabled="!newGroup.groupName"
             @click="saveFieldGroup()">
@@ -413,7 +413,7 @@
                                         </template>
                                       </v-autocomplete>
                                       <br/>
-                                      <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                                      <v-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveReadOnlyAndWhiteList(cf)">
                                         <v-icon class="mr-2">save</v-icon>
                                         Save Read Only
@@ -484,7 +484,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                  color="primaryCustom"
+                                  color="primary"
                                   text
                                   @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
                                   Yes

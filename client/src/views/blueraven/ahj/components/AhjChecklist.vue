@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-checklist">
   <v-card>
-    <v-toolbar class="primaryCustom">
+    <v-toolbar class="primary">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{title}}
       </v-toolbar-title>

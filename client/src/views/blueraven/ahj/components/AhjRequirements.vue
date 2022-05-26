@@ -111,7 +111,7 @@
     </div>
 
     <v-card v-if="!transparent">
-      <v-toolbar class="primaryCustom">
+      <v-toolbar class="primary">
         <v-toolbar-title class="white--text font-weight-bold" :title="title">
           {{title}}
         </v-toolbar-title>

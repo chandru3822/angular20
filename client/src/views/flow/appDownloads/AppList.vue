@@ -66,7 +66,7 @@
                     v-model.number="newApp.buildNumber">
       </v-text-field>
 
-      <v-btn color="primaryCustom"
+      <v-btn color="primary"
              class="white--text"
              :disabled="!newApp.versionNumber || !newApp.buildNumber
                         || (!newApp.attachment || !newApp.attachment.name)
@@ -95,12 +95,12 @@
       <template #item="{ item, index }">
         <tr :class="{'default-row': item.show, 'shaded-row': index % 2}">
           <td>
-            <v-btn text color="primaryCustom" small
+            <v-btn text color="primary" small
                    v-if="isIos"
                    :href="`itms-services://?action=download-manifest&url=https://7oaks-albatross.s3.amazonaws.com/${item.s3Key}`">
               <v-icon>download</v-icon>
             </v-btn>
-            <v-btn text color="primaryCustom" small
+            <v-btn text color="primary" small
                    v-else
                    :href="item.presignedUrl">
               <v-icon>download</v-icon>
@@ -121,7 +121,7 @@
                 v-model="item.deleteConfirm"
                 width="500">
               <template #activator="{ on }">
-                <v-btn small text color="primaryCustom"
+                <v-btn small text color="primary"
                        v-on="on">
                   <v-icon>delete</v-icon>
                 </v-btn>
@@ -141,7 +141,7 @@
                     No
                   </v-btn>
                   <v-btn
-                      color="primaryCustom"
+                      color="primary"
                       text
                       @click="deleteApp(item)">
                     Yes
@@ -154,7 +154,7 @@
                 v-model="item.showConfirm"
                 width="500">
               <template #activator="{ on }">
-                <v-btn small text color="primaryCustom"
+                <v-btn small text color="primary"
                        v-on="on">
                   {{ item.show ? 'hide' : 'show'}}
                 </v-btn>
@@ -174,7 +174,7 @@
                     No
                   </v-btn>
                   <v-btn
-                      color="primaryCustom"
+                      color="primary"
                       text
                       @click="showHideApp(item)">
                     Yes

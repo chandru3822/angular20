@@ -11,7 +11,7 @@
           </v-toolbar>
 
           <v-col cols="12" v-if="activeEventsLoading">
-            <SpinnerInline :size="20" color="primaryCustom"/>
+            <SpinnerInline :size="20" color="primary"/>
           </v-col>
 
           <v-col cols="12" v-else class="pt-0">
@@ -56,7 +56,7 @@
             </v-col>
 
             <v-col cols="12" v-if="activeEventsLoading">
-              <SpinnerInline :size="20" color="primaryCustom"/>
+              <SpinnerInline :size="20" color="primary"/>
             </v-col>
 
             <v-col cols="12" class="pt-0" v-else>

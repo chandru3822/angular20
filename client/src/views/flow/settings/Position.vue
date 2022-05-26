@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primaryCustom" v-if="userCanEdit || userCanEditAccessControl">
+            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary" v-if="userCanEdit || userCanEditAccessControl">
               <v-icon>save</v-icon>
               Save
             </v-btn>

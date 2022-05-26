@@ -19,7 +19,7 @@
       <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
         <!-- SCHEDULING WITH AHJ -->
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
+          <v-card-title class="primary white--text font-weight-bold title-with-icon">
             Scheduling with AHJ
             <router-link :to="'/schedule'" title="Go to Scheduling Tool" v-if="this.$store.getters.userHasFeature('SCHEDULE')">
               <v-icon class="white--text">launch</v-icon>
@@ -86,7 +86,7 @@
       <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- SCHEDULING WITH BRS TECHNICIAN -->
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Scheduling with BRS Technician
           </v-card-title>
           <v-card-text class="mt-4">
@@ -160,7 +160,7 @@
       <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- SCHEDULING WITH CUSTOMER -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Scheduling with Customer
           </v-card-title>
           <v-card-text class="mt-4">
@@ -219,7 +219,7 @@
 
         <!-- OBTAINING RESULTS -->
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Obtaining Results
           </v-card-title>
           <v-card-text class="mt-4">
@@ -283,7 +283,7 @@
       <v-col cols="12" md="3" class="pl-sm-0 pl-md-1 mb-3">
         <!-- RE-INSPECTIONS -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Re-inspections
           </v-card-title>
           <v-card-text class="mt-4">
@@ -360,7 +360,7 @@
 
         <!-- IN-HOUSE MPUS -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             In-House MPUs
           </v-card-title>
           <v-card-text class="mt-4 pb-1">

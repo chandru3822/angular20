@@ -18,7 +18,7 @@
       <v-col cols="12" md="4" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
         <!-- CODES -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Codes
           </v-card-title>
           <v-card-text class="mt-4">
@@ -51,7 +51,7 @@
 
         <!-- ENGINEERING -->
         <v-card class="mb-3">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Engineering
           </v-card-title>
           <v-card-text class="mt-4">
@@ -72,7 +72,7 @@
       <v-col cols="12" md="8" class="pl-sm-0 pl-md-1 mb-sm-2 mb-md-3">
         <!-- DESIGN REQUIREMENTS -->
         <v-card class="mb-3 pb-10">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Design Requirements
           </v-card-title>
           <v-card-text class="mt-2">
@@ -112,7 +112,7 @@
 
         <!-- ELECTRICAL REQUIREMENTS -->
         <v-card class="mb-3 pb-10">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Electrical Requirements
           </v-card-title>
           <v-card-text class="mt-2">
@@ -152,7 +152,7 @@
 
         <!-- STRUCTURAL REQUIREMENTS -->
         <v-card class="pb-10">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primary white--text font-weight-bold">
             Structural Requirements
           </v-card-title>
           <v-card-text class="mt-2">

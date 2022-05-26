@@ -34,7 +34,7 @@
                           item-value="id"
                           attach
           ></v-autocomplete>
-          <v-btn color="primaryCustom" class="mr-3 mt-5 white--text" @click="addUserToZone(selectedUser)"
+          <v-btn color="primary" class="mr-3 mt-5 white--text" @click="addUserToZone(selectedUser)"
                  :disabled="!selectedUser.id">
             Add
           </v-btn>
@@ -165,7 +165,7 @@
 
                 <div v-if="header.value === 'icons'">
                   <v-btn @click="saveAllocationChanges"
-                         color="primaryCustom"
+                         color="primary"
                          :class="{'white--text': userCanEdit && totalManualAllocation <= 100 && valuesUpdated}"
                          :disabled="!userCanEdit || totalManualAllocation > 100 || !valuesUpdated">
                     Save Changes

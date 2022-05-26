@@ -7,7 +7,7 @@
           <v-spacer></v-spacer>
           <div v-if="changesMade">
             <v-btn class="mr-2" :to="{ path: `/settings/processes`}">cancel</v-btn>
-            <v-btn color="primaryCustom white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
+            <v-btn color="primary white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
           </div>
         </v-toolbar>
         <v-toolbar flat class="app-toolbar">

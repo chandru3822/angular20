@@ -109,7 +109,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primaryCustom"
+                              color="primary"
                               text
                               @click="[item.archived = true, deleteCategory(item.id)]">
                             Yes

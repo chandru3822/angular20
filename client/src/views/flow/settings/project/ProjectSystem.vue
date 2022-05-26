@@ -50,7 +50,7 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+        <v-btn color="primary" dark class="d-inline-block white--text"
                @click="saveReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save
@@ -107,7 +107,7 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+        <v-btn color="primary" dark class="d-inline-block white--text"
                @click="saveOwnerReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save

@@ -51,7 +51,7 @@
             </div>
             <v-btn color="secondary" class="mr-2"
                    @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
-            <v-btn color="primaryCustom" class="white--text mr-2"
+            <v-btn color="primary" class="white--text mr-2"
                    :disabled="!newPosition.positionId ||
                               (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) ||
                               (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
@@ -143,7 +143,7 @@
               <div v-if="item.startDate >= item.endDate" class="error-text mb-2">
                 End date must be null or after the start date
               </div>
-              <v-btn color="primaryCustom" class="white--text mr-2"
+              <v-btn color="primary" class="white--text mr-2"
                      :disabled="item.startDate >= item.endDate || validatePositionFields(item)"
                      v-if="userCanEdit"
                      @click="savePosition(item)">Save</v-btn>

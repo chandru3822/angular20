@@ -67,7 +67,7 @@
                     item-text="processStepStatusType"
                     attach></v-autocomplete>
 
-                  <v-btn color="primaryCustom" dark class="white--text mr-4"
+                  <v-btn color="primary" dark class="white--text mr-4"
                          :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
                          @click="saveType(item, false)">Save</v-btn>
                 </td>

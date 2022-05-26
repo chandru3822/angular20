@@ -19,7 +19,7 @@
       <!-- FUNNEL -->
       <div class="funnel-container">
         <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
              :style="{'margin-top': showApptsCreatedPipelineCustomDates && windowInnerWidth < 1135 ? '77px' :
@@ -158,7 +158,7 @@
     <!-- APPOINTMENTS TO FDC PIPELINE START -->
     <div class="funnel-relative">
       <div v-if="dropdownValuesLoading || apptsToFdcPipelineDataLoading" class="funnel-spinner">
-        <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+        <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
       </div>
       <div id="appts-to-fdc-pipeline-container" :class="{'mb-8': apptsToFdcPipelineData.length > 0}">
         <div class="pipeline-header-container">
@@ -443,12 +443,12 @@
                 <div class="view-btns-container">
                   <v-btn class="funnel-btn" @click="viewSelected('standard')"
                          :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
-                         :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
+                         :color="viewSelect === 'standard' ? 'primary' : 'secondary'">
                     Standard View
                   </v-btn>
                   <v-btn class="funnel-btn" @click="viewSelected('apptDateCohort')"
                          :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
-                         :color="viewSelect === 'apptDateCohort' ? 'primaryCustom' : 'secondaryCustom'">
+                         :color="viewSelect === 'apptDateCohort' ? 'primary' : 'secondary'">
                     Appt Date Cohort
                   </v-btn>
                 </div>
@@ -2340,7 +2340,7 @@ export default {
       }
 
       .v-btn-toggle .v-btn {
-        border: 1px solid var(--v-primaryCustom-base) !important;
+        border: 1px solid var(--v-primary-base) !important;
         font-size: 11px;
         letter-spacing: 0.02em !important;
         height: 25px;
@@ -2350,13 +2350,13 @@ export default {
         }
 
         &:hover {
-          background-color: var(--v-primaryCustom-base);
+          background-color: var(--v-primary-base);
           color: #fff !important;
         }
       }
 
       .v-btn--active {
-        background-color: var(--v-primaryCustom-base);
+        background-color: var(--v-primary-base);
         color: #fff !important;
       }
     }
@@ -2377,7 +2377,7 @@ export default {
     }
 
     .tab-separator {
-      border-right: 1px solid var(--v-primaryCustom-base);
+      border-right: 1px solid var(--v-primary-base);
     }
   }
 }
@@ -2501,7 +2501,7 @@ export default {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
-    border-bottom: 1px solid var(--v-primaryCustom-base);
+    border-bottom: 1px solid var(--v-primary-base);
     padding: 5px;
     width: 100%;
 
@@ -2513,7 +2513,7 @@ export default {
     .pipeline-title {
       font-size: 18px;
       font-weight: bold;
-      color: var(--v-primaryCustom-base);
+      color: var(--v-primary-base);
       margin-left: 8px;
     }
   }
@@ -2600,7 +2600,7 @@ export default {
 
       .funnel-th {
         padding: 2px;
-        color: var(--v-primaryCustom-base);
+        color: var(--v-primary-base);
         font-size: 8px;
         font-weight: normal;
         text-align: center;
@@ -2660,7 +2660,7 @@ export default {
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--v-primaryCustom-base);
+    border-bottom: 1px solid var(--v-primary-base);
     padding: 5px 5px 0 5px;
     width: 100%;
 
@@ -2672,7 +2672,7 @@ export default {
     .pipeline-title {
       font-size: 18px;
       font-weight: bold;
-      color: var(--v-primaryCustom-base);
+      color: var(--v-primary-base);
       margin-left: 8px;
     }
 
@@ -2761,7 +2761,7 @@ export default {
           height: 20px;
         }
 
-        .funnel-btn.primaryCustom {
+        .funnel-btn.primary {
           box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3) inset;
         }
       }
@@ -2804,7 +2804,7 @@ export default {
       }
 
       .funnel-th {
-        color: var(--v-primaryCustom-base);
+        color: var(--v-primary-base);
         font-size: 8px;
         font-weight: normal;
         text-align: center;
@@ -3194,7 +3194,7 @@ export default {
     max-width: calc(100% - 50px);
 
     .pipeline-header-container {
-      border-bottom: 2px solid var(--v-primaryCustom-base);
+      border-bottom: 2px solid var(--v-primary-base);
       padding: 10px;
 
       .pipeline-icon {
@@ -3346,7 +3346,7 @@ export default {
     max-width: calc(100% - 50px);
 
     .pipeline-header-container {
-      border-bottom: 2px solid var(--v-primaryCustom-base);
+      border-bottom: 2px solid var(--v-primary-base);
       padding: 10px 10px 5px 10px;
 
       .pipeline-icon {

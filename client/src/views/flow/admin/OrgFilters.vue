@@ -33,7 +33,7 @@
             <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
           </div>
           <v-btn :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="saveOrgFilter(newOrgFilter, true)">
             Save
           </v-btn>
@@ -79,7 +79,7 @@
                 <input type="checkbox" v-model="item.showType">
               </div>
               <v-btn :disabled="!item.orgLevelId || !item.rank"
-                     color="primaryCustom" class="white--text mr-2"
+                     color="primary" class="white--text mr-2"
                      @click="saveOrgFilter(item, false)">
                 Save
               </v-btn>
@@ -129,7 +129,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="deleteOrgFilter(item)">
                         Yes

@@ -25,7 +25,7 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"
@@ -58,7 +58,7 @@
             ></v-text-field>
           </div>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             class="white--text mr-2"
             :disabled="!newGroup.groupName"
             @click="saveFieldGroup()">
@@ -160,7 +160,7 @@
                               No
                             </v-btn>
                             <v-btn
-                              color="primaryCustom"
+                              color="primary"
                               text
                               @click="deleteWithChecks(item, item.id, null)">
                               Yes
@@ -307,7 +307,7 @@
                                           </template>
                                         </v-autocomplete>
                                         <br/>
-                                        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                                        <v-btn color="primary" dark class="d-inline-block white--text"
                                                @click="saveReadOnlyAndWhiteList(cf)">
                                           <v-icon class="mr-2">save</v-icon>
                                           Save Read Only
@@ -367,7 +367,7 @@
                                           </template>
                                         </v-autocomplete>
                                         <br/>
-                                        <v-btn color="primaryCustom" dark class="white--text d-inline-block"
+                                        <v-btn color="primary" dark class="white--text d-inline-block"
                                                @click="saveHiddenAndWhiteList(cf)">
                                           <v-icon class="mr-2">save</v-icon>
                                           Save Hidden
@@ -448,7 +448,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                  color="primaryCustom"
+                                  color="primary"
                                   text
                                   @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
                                   Yes

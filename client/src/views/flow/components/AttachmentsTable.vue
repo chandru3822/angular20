@@ -56,7 +56,7 @@
               </v-btn>
               <v-spacer></v-spacer>
               <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   dark
                   class="elevation-0 text-capitalize"
                   @click="[item.archived = true, deleteAttachment(item.id)]">

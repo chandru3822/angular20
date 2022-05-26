@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newSchedule = {}]" color="primaryCustom">
+            <v-btn text @click="[addNew = !addNew, newSchedule = {}]" color="primary">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -81,7 +81,7 @@
               <div class="error-text mb-2" v-if="saveError">
                 {{saveErrorMsg}}
               </div>
-              <v-btn color="primaryCustom" class="white--text mr-2"
+              <v-btn color="primary" class="white--text mr-2"
                      @click="saveSchedule(item)">
                 Save
               </v-btn>

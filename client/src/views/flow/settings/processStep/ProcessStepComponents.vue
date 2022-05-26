@@ -40,7 +40,7 @@
             <v-spacer></v-spacer>
 
             <v-btn
-              color="primaryCustom"
+              color="primary"
               dark
               class="white--text"
               @click="deleteError = false"

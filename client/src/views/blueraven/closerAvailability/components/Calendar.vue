@@ -94,7 +94,7 @@
         <v-progress-circular
           indeterminate
           :size="80"
-          :color="'primaryCustom'"
+          :color="'primary'"
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar"

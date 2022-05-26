@@ -12,7 +12,7 @@
                       bottom offset-y min-width="350"
                       :close-on-content-click="false">
                 <template #activator="{on}">
-                  <v-btn v-on="on" dark color="primaryCustom" class="ml-3">Mark as Paid</v-btn>
+                  <v-btn v-on="on" dark color="primary" class="ml-3">Mark as Paid</v-btn>
                 </template>
                 <v-card class="pa-5">
                   <v-card-title>
@@ -26,7 +26,7 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="secondaryButton" text @click="paymentDropdown = false">Cancel</v-btn>
-                    <v-btn color="primaryCustom" class="white--text" raised
+                    <v-btn color="primary" class="white--text" raised
                            :disabled="paymentConfirmLoading"
                            @click="confirmPayment()">Yes</v-btn>
                   </v-card-actions>
@@ -37,7 +37,7 @@
                       bottom offset-y min-width="350"
                       :close-on-content-click="false">
                 <template #activator="{on}">
-                  <v-btn v-on="on" dark color="primaryCustom" class="ml-3">Approve</v-btn>
+                  <v-btn v-on="on" dark color="primary" class="ml-3">Approve</v-btn>
                 </template>
                 <v-card class="pa-5">
                   <v-card-title>
@@ -51,7 +51,7 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="secondaryButton" text @click="approveDropdown = false">Cancel</v-btn>
-                    <v-btn color="primaryCustom" class="white--text" raised
+                    <v-btn color="primary" class="white--text" raised
                            :disabled="approveConfirmLoading"
                            @click="confirmApproval()">Yes</v-btn>
                   </v-card-actions>
@@ -79,7 +79,7 @@
                   </v-btn>
                 </v-card>
               </v-menu>
-              <v-btn color="primaryCustom"
+              <v-btn color="primary"
                      @click="exportExpenses"
                      :disabled="selectedExpenses.length === 0"
                      class="white--text ml-5">
@@ -107,15 +107,15 @@
                                    hide-details
                                    custom-class="expense-range-selector ml-5"
               ></DatetimePickerInput>
-              <v-btn color="primaryCustom" class="white--text ml-5"
+              <v-btn color="primary" class="white--text ml-5"
                      @click="[showAll = !showAll, getSubmittedExpenses()]">
                 {{ showButtonText }}
               </v-btn>
-              <v-btn color="primaryCustom" class="white--text ml-5"
+              <v-btn color="primary" class="white--text ml-5"
                      @click="exportExpenses(5)">
                 Export Paid
               </v-btn>
-              <v-btn color="primaryCustom" class="white--text ml-5"
+              <v-btn color="primary" class="white--text ml-5"
                      @click="exportExpenses(-1)">
                 Export All
               </v-btn>
@@ -198,7 +198,7 @@
                             No
                           </v-btn>
                           <v-btn
-                            color="primaryCustom"
+                            color="primary"
                             text
                             @click="deleteSubmittedExpense(item)">
                             Yes
@@ -313,7 +313,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="secondaryButton" text @click="selectedExpense = {}">Cancel</v-btn>
-            <v-btn color="primaryCustom" class="white--text" raised
+            <v-btn color="primary" class="white--text" raised
                    :disabled="selectedExpense.approvalDate !== null || !selectedExpense.expenseDate || !selectedExpense.glCodeId
                             || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.expenseAmount"
                    @click="saveSubmittedExpense(selectedExpense)">Save Changes</v-btn>

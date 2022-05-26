@@ -24,7 +24,7 @@
                         v-model="newCode">
           </v-text-field>
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addCodeToZone()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addCodeToZone()"
                  :disabled="!newCode">
             Add
           </v-btn>
@@ -86,7 +86,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="deleteCodeFromZone(item)">
                         Yes

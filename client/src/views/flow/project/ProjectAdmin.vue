@@ -10,7 +10,7 @@
         v-model="deleteProjectConfirm"
         width="500">
         <template #activator="{ on }">
-          <v-btn color="primaryCustom" dark class=" float-right white--text" v-on="on">
+          <v-btn color="primary" dark class=" float-right white--text" v-on="on">
             Delete Project
           </v-btn>
         </template>
@@ -35,7 +35,7 @@
               No
             </v-btn>
             <v-btn
-              color="primaryCustom"
+              color="primary"
               text
               @click="deleteProject">
               Yes
@@ -104,7 +104,7 @@
                     {{ projectProcessStep.processStepStatusType }}
                     <v-btn
                       text
-                      color="primaryCustom"
+                      color="primary"
                       @click="[showStatusDialog = true, showMainDialog = false, alteringPrimaryFlag = false, selectedPps = projectProcessStep, getAvailableStatuses(projectProcessStep)]"
                     >
                       <v-icon>edit</v-icon>
@@ -145,7 +145,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="[showSelectedPps = false, showMainDialog = true, alteringPrimaryFlag = true, projectProcessStep.changeActiveConfirm = false, showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(selectedPps)]"
                         >

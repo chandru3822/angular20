@@ -59,8 +59,8 @@
         <v-divider class="mb-2"></v-divider>
         <v-card class="mt-3 elevation-4" v-if="(userId || orgId) && !usersLoading">
           <v-app-bar dense tabs class="elevation-1">
-            <v-tabs :optional="false" color="primaryCustom"
-                    background-color="white" v-model="model" slider-color="primaryCustom">
+            <v-tabs :optional="false" color="primary"
+                    background-color="white" v-model="model" slider-color="primary">
               <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
                 {{tab.label}}
               </v-tab>

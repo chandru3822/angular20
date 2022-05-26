@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-links">
   <v-card class="mb-3">
-    <v-toolbar class="primaryCustom">
+    <v-toolbar class="primary">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{ title }}
       </v-toolbar-title>
@@ -240,7 +240,7 @@
     font-size: 0.95em !important;
   }
   .v-list {
-    border-bottom: 1px solid var(--v-primaryCustom-base) !important;
+    border-bottom: 1px solid var(--v-primary-base) !important;
     border-radius: 0;
   }
   .v-list__item__title {
@@ -250,7 +250,7 @@
     margin: 0 10px 0 0 !important;
     max-width: 30px;
     height: 30px;
-    border: 1px solid var(--v-primaryCustom-base) !important;
+    border: 1px solid var(--v-primary-base) !important;
     border-radius: 3px;
     display: flex;
     justify-content: center;

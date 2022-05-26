@@ -200,7 +200,7 @@
         :company-object-types="filteredCompanyObjectTypes"
       />
 
-      <v-btn color="primaryCustom" class="white--text build-sql" @click="buildSql"
+      <v-btn color="primary" class="white--text build-sql" @click="buildSql"
              v-if="is7oaksAdmin || userId === 2350555">
         <div>BUILD SQL</div>
         <div>(only 7oaks and Judson)</div>

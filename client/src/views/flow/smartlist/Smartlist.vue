@@ -14,7 +14,7 @@
                 text
                 small
                 class="mr-3"
-                color="primaryCustom"
+                color="primary"
                 @click="$router.go(-1)"
               >
                 <v-icon>mdi-arrow-left</v-icon>
@@ -86,7 +86,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="[showDeleteDialog = false, deleteSmartlist()]">
                         Yes
@@ -150,7 +150,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="[showObjectTypeDialog = false, toggleSmartlistObjectType()]">
                           Yes
@@ -228,7 +228,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="[showToggleDialog = false, toggleProjectDetails()]">
                           Yes
@@ -339,7 +339,7 @@
 <!--        Save Logic Changes-->
 <!--      </v-btn>-->
 <!--    </v-col>-->
-    <v-btn color="primaryCustom" dark class="white--text build-sql" @click="buildSql"
+    <v-btn color="primary" dark class="white--text build-sql" @click="buildSql"
            v-if="is7oaksAdmin || userId === 2350555">
       <div>BUILD SQL</div>
       <div>(only 7oaks and Judson)</div>

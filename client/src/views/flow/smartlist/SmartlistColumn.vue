@@ -94,7 +94,7 @@
 
       <v-btn
         text
-        color="primaryCustom"
+        color="primary"
         class="text-left"
         :disabled="isNewFieldButtonDisabled"
         @click="addNewField"

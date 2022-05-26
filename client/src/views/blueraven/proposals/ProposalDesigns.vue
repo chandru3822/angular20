@@ -48,7 +48,7 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
-        <v-btn color="primaryCustom" dark class="mt-4 one-hunned text-capitalize font-weight-bold" @click="addProposal(d)">
+        <v-btn color="primary" dark class="mt-4 one-hunned text-capitalize font-weight-bold" @click="addProposal(d)">
           Create new proposal
         </v-btn>
         <v-list v-if="d.proposals.length > 0">
@@ -145,7 +145,7 @@
         <v-card-actions class="pa-0">
           <v-spacer></v-spacer>
           <v-btn
-              color="primaryCustom"
+              color="primary"
               class="white--text text-capitalize font-weight-bold"
               :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
               @click="requestNewDesign()">

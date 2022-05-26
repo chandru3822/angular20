@@ -57,7 +57,7 @@
             />
           </div>
           <v-btn :disabled="!newFunction || !newFunction.functionName || !newFunction.displayName || !newFunction.dbFunctionTypeId || (newFunction.dbFunctionTypeId === 1 && !newFunction.returnDataTypeId)"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="addFunction()">
             Save
           </v-btn>
@@ -104,7 +104,7 @@
                   v-model="item.deleteConfirm"
                   width="500">
                   <template #activator="{ on }">
-                    <v-btn small text color="primaryCustom"
+                    <v-btn small text color="primary"
                            v-on="on">
                       <v-icon>delete</v-icon>
                     </v-btn>
@@ -124,7 +124,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="[item.deleteConfirm = false, deleteFunction(item)]">
                         Yes

@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-btn text small :to="`/workQueue`" class="mr-3" color="primaryCustom">
+          <v-btn text small :to="`/workQueue`" class="mr-3" color="primary">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
           <v-toolbar-title class="app-title" v-if="workQueue && workQueue.workQueueType">{{ workQueue.workQueueType }}
@@ -149,7 +149,7 @@
                       <v-spacer></v-spacer>
 
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         class="white--text mr-2 mb-3"
                         @click="[ytfDoWeNeedThis++, closeNotesModal()]"
                       >

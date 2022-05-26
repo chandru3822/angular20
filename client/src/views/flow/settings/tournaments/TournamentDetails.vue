@@ -67,7 +67,7 @@
                      v-model="tournament.active"
               />
             </div>
-            <v-btn color="primaryCustom"
+            <v-btn color="primary"
                    class="white--text mb-4"
                    v-if="!edit"
                    @click="edit = !edit">

@@ -72,7 +72,7 @@
           </div>
           <v-btn :disabled="!newParam || !newParam.parameterName || !newParam.dataTypeId
                     || !newParam.parameterTypeId || (newParam.parameterTypeId === 1 && !newParam.systemValueId)"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="[addNew = false, addParam()]">
             Save
           </v-btn>
@@ -156,7 +156,7 @@
             </template>
           </v-select>
           <v-btn :disabled="selectedCompanies.length === 0"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="pushToCompanies()">
             Push to Companies
           </v-btn>

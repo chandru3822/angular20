@@ -67,7 +67,7 @@
                   :disabled="!userCanEdit"
                   label="Select a Category"
                   item-text="eventStatusType"></v-autocomplete>
-                <v-btn color="primaryCustom" dark class="white--text"
+                <v-btn color="primary" dark class="white--text"
                        :disabled="!item.eventStatusType || !item.eventStatusTypeId"
                        @click="saveType(item, false)">Save
                 </v-btn>

@@ -8,7 +8,7 @@
         </v-btn>
         <v-toolbar flat class="app-toolbar">
           <span class="page-title" v-if="!editName">{{ event.eventName }}</span>
-          <v-text-field v-else color="primaryCustom"
+          <v-text-field v-else color="primary"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         v-model="event.eventName"
@@ -120,7 +120,7 @@ export default {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
   .v-tab:hover {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 }
 </style>

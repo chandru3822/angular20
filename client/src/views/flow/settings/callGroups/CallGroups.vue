@@ -17,7 +17,7 @@
                             tabindex=1
                             v-model="daysPerPeriod">
               </v-text-field>
-              <v-btn :disabled="!maxCallCount || !daysPerPeriod" text color="primaryCustom" @click="saveGroupInfo()">
+              <v-btn :disabled="!maxCallCount || !daysPerPeriod" text color="primary" @click="saveGroupInfo()">
                 <v-icon>save</v-icon>
               </v-btn>
             </div>

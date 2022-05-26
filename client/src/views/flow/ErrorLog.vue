@@ -59,7 +59,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="[item.archived = true, deleteError(item.id)]">
                         Yes

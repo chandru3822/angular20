@@ -48,7 +48,7 @@
           />
         </div>
         <div class="text-left mb-2 mt-5">
-          <v-btn color="primaryCustom" class="white--text"
+          <v-btn color="primary" class="white--text"
                  :disabled="!note.note || savingNote"
                  @click="saveNote(note)">Save
           </v-btn>
@@ -124,7 +124,7 @@
                 />
               </div>
               <div class="text-left mb-2">
-                <v-btn color="primaryCustom" class="white--text"
+                <v-btn color="primary" class="white--text"
                        :disabled="!item.note"
                        @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save
                 </v-btn>
@@ -199,7 +199,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primaryCustom"
+                            color="primary"
                             text
                             @click="deleteNote(item, false)">
                           Yes
@@ -245,7 +245,7 @@
                 </template>
               </Mentionable>
               <div class="text-left py-2">
-                <v-btn color="primaryCustom white--text" @click="saveNote(item)"
+                <v-btn color="primary white--text" @click="saveNote(item)"
                        :disabled="!item.reply"
                 >
                   Save
@@ -287,7 +287,7 @@
                 </Mentionable>
 
                 <div class="text-left mb-2">
-                  <v-btn color="primaryCustom" class="white--text"
+                  <v-btn color="primary" class="white--text"
                          :disabled="!cn.note"
                          @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save
                   </v-btn>
@@ -352,7 +352,7 @@
                               No
                             </v-btn>
                             <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="deleteNote(cn, true, item)">
                               Yes
@@ -557,13 +557,13 @@ export default {
 }
 
 .reply-note-creator {
-  color: var(--v-primaryCustom-base) !important;
+  color: var(--v-primary-base) !important;
   font-weight: 600;
   font-size: 12px;
 }
 
 .reply-note {
-  color: var(--v-primaryCustom-base) !important;
+  color: var(--v-primary-base) !important;
   font-size: 12px;
   font-style: italic;
 }

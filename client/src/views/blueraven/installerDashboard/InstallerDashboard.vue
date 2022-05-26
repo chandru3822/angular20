@@ -119,7 +119,7 @@
               ></DatetimePickerInput>
             </v-col>
             <v-col cols="3" md="2">
-              <v-btn color="primaryCustom" class="white--text"
+              <v-btn color="primary" class="white--text"
                      :disabled="selectedInstallationCrews.length < 1"
                      @click="getDashboardValues()">Go</v-btn>
             </v-col>
@@ -201,7 +201,7 @@
         </v-col>
         <v-col cols="3" md="2">
             <v-btn
-              color="primaryCustom"
+              color="primary"
               class="white--text mr-2 mb-3"
               @click="getPerformanceMetrics"
             >
@@ -327,7 +327,7 @@
               </v-col>
             </v-row>
             <v-col cols="5" md="2">
-              <v-btn color="primaryCustom" class="white--text"
+              <v-btn color="primary" class="white--text"
                      :disabled="selectedInstallationCrews.length < 1"
                      @click="getDashboardValues()">Go</v-btn>
             </v-col>
@@ -414,7 +414,7 @@
       </v-row>
       <v-col cols="5" md="2">
         <v-btn
-          color="primaryCustom"
+          color="primary"
           class="white--text mr-2 mb-3"
           @click="getPerformanceMetrics"
         >

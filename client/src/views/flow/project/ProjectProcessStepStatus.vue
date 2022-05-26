@@ -54,7 +54,7 @@
         :disabled="(!newStatusOptional && (!projectProcessStep.newStatusToUse || !projectProcessStep.newStatusToUse.id)) ||
                   (projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3 &&
                       !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
-        color="primaryCustom"
+        color="primary"
         text
         @click="$emit('updateStatus', projectProcessStep)">
         Save

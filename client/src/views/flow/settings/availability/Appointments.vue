@@ -64,7 +64,7 @@
           <v-card-actions>
             <v-card-actions>
               <v-btn color="secondary" @click="[newAppt = {}, addNew = false]">Cancel</v-btn>
-              <v-btn color="primaryCustom"  @click="saveAppt(newAppt)" class="white--text"
+              <v-btn color="primary"  @click="saveAppt(newAppt)" class="white--text"
                      :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50">
                 Save
               </v-btn>
@@ -163,7 +163,7 @@
 
                 <v-card-actions>
                   <v-card-actions>
-                    <v-btn color="primaryCustom"  @click="saveAppt(appt)" class="white--text"
+                    <v-btn color="primary"  @click="saveAppt(appt)" class="white--text"
                            :disabled="saveError || !appt.startTime || !appt.endTime || !appt.title || appt.title.length > 50">
                       Save
                     </v-btn>
@@ -208,7 +208,7 @@
                       <v-spacer></v-spacer>
                       <v-btn color="secondaryButton mr-3" text @click="item.deleteConfirm = false">Cancel</v-btn>
                       <div v-if="item.recurringEventId">
-                        <v-btn color="primaryCustom" class="white--text mr-2"
+                        <v-btn color="primary" class="white--text mr-2"
                                @click="deleteAppointment(item, false)">One Only</v-btn>
                         <v-btn color="brRed" class="white--text"
                                @click="deleteAppointment(item, true)">All Occurrences</v-btn>

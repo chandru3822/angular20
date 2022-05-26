@@ -29,7 +29,7 @@
             <div>
               <v-btn
                 v-if="userCanEdit"
-                color="primaryCustom"
+                color="primary"
                 class="white--text mt-3"
                 :disabled="fieldsSaving"
                 @click="[fieldsSaving = true, updateFieldGroups()]">Save Fields
@@ -40,7 +40,7 @@
       </div>
       <div class="project-fields-container px-3" ref="projectFieldsContainer">
         <v-col v-if="isFieldsLoading">
-          <SpinnerInline :size="20" color="primaryCustom"/>
+          <SpinnerInline :size="20" color="primary"/>
         </v-col>
 
         <div v-else>

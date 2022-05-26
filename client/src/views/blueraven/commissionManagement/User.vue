@@ -64,11 +64,11 @@
             {{planErrorObj.noteMsg}}
           </div>
           <div>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
+            <v-btn color="primary" class="mr-3 white--text" @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
                    :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate">
               Save
             </v-btn>
-            <v-btn color="secondaryCustom" @click="addNewCommissionPlan = !addNewCommissionPlan">
+            <v-btn color="secondary" @click="addNewCommissionPlan = !addNewCommissionPlan">
               Cancel
             </v-btn>
           </div>
@@ -186,12 +186,12 @@
           <div class="mb-2" v-if="overrideErrorObj.showNote">
             {{overrideErrorObj.noteMsg}}
           </div>
-          <v-btn color="primaryCustom" class="mr-3 white--text"
+          <v-btn color="primary" class="mr-3 white--text"
                  @click="[addNewOverridePlan = false, savePlan(newOverridePlan, 1, true)]"
                  :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate">
             Save
           </v-btn>
-          <v-btn color="secondaryCustom" @click="addNewOverridePlan = !addNewOverridePlan">
+          <v-btn color="secondary" @click="addNewOverridePlan = !addNewOverridePlan">
             Cancel
           </v-btn>
         </v-card>
@@ -310,7 +310,7 @@
               {{ru.name}}
             </div>
           </v-card>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="clonePlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="clonePlan()"
                  :disabled="!cloneOverridePlan.id">
             Clone
           </v-btn>

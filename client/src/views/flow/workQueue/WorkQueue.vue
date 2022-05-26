@@ -15,7 +15,7 @@
                               hide-details
                               :loading="categoriesLoading"
                               dark
-                              background-color="primaryCustom"
+                              background-color="primary"
                               class="white--text work-queue-selector d-inline-block clickable"
                               @input="getWorkQueues()"
               ></v-autocomplete>
@@ -30,7 +30,7 @@
                   <v-radio class="d-inline-block mx-4 wq-radio-label"
                            label="Projects Completed"
                            :value="1"
-                           :color="selectedViewType === 1 ? 'primaryCustom' : '#808588'"
+                           :color="selectedViewType === 1 ? 'primary' : '#808588'"
                            :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
                   <v-radio class="d-inline-block mx-4 wq-radio-label"
                            label="Change in WIP"
@@ -46,7 +46,7 @@
                 <v-switch
                   dense
                   hide-details
-                  color="primaryCustom"
+                  color="primary"
                   v-model="hideFutureFollowUps"
                   class="wq-follow-up-switch d-inline-block fix-switch-color"
                   @change="getWorkQueues()"
@@ -57,7 +57,7 @@
                 <v-switch
                   dense
                   hide-details
-                  color="primaryCustom"
+                  color="primary"
                   v-model="hideFutureEvents"
                   class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
                   @change="getWorkQueues()"
@@ -73,7 +73,7 @@
               Please select a Work Queue Category
             </v-card>
             <div v-if="cardsLoading" class="one-hunned text-center">
-              <SpinnerInline :size="60" color="primaryCustom"/>
+              <SpinnerInline :size="60" color="primary"/>
             </div>
             <v-card v-else flat tile v-for="wq in workQueues" class="flex-display card-main"
                     :class="{'clickable': wq.workQueueCount > 0,
@@ -588,7 +588,7 @@ export default {
 }
 
 .learn-span {
-  color: var(--v-primaryCustom-base);
+  color: var(--v-primary-base);
   font-weight: bold;
   margin-top: 20px;
   cursor: pointer;
