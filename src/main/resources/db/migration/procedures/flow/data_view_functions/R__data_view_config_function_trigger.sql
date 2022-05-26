@@ -2,14 +2,14 @@ CREATE OR REPLACE FUNCTION flow.contact_details()
   RETURNS TRIGGER AS
 $body$
 declare
-  v_project_ids text;
-  x             record;
-  v_sql         text;
-  z             record;
-  v_value       text;
+  v_project_ids         text;
+  x                     record;
+  v_sql                 text;
+  z                     record;
+  v_value               text;
   v_company_process_ids integer[];
 BEGIN
-  select quote_literal(array_agg(id)::text),array_agg(distinct company_process_id)
+  select quote_literal(array_agg(id)::text), array_agg(distinct company_process_id)
   into v_project_ids,v_company_process_ids
   from flow.project
   where contact_id = new.id;
@@ -21,16 +21,16 @@ BEGIN
                           from flow.get_data_view_field_configs(dv.id,
                                                                 'CONTACT',
                                                                 null) ao)
-              and v_company_process_ids && dv.company_process_ids
+               and v_company_process_ids && dv.company_process_ids
       loop
         select quote_literal(array_agg(id)::text)
         into v_project_ids
         from flow.project
-        where contact_id = new.id and
-              company_process_id = any(z.company_process_ids);
+        where contact_id = new.id
+          and company_process_id = any (z.company_process_ids);
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-        for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
+        for x in select a.*, lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                  from flow.get_data_view_field_configs(z.id,
                                                        'CONTACT',
                                                        null) a
@@ -62,13 +62,13 @@ BEGIN
                                                      false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
-        -- begin
-        execute v_sql;
-        -- exception
-        --   when others then
-        --    insert into flow.trigger_error(project_process_step_custom_value_id, error)
-        --    values (new.id, SQLERRM);
-        --end;
+        begin
+          execute v_sql;
+        exception
+          when others then
+            insert into flow.trigger_error(contact_id, error)
+            values (new.id, SQLERRM);
+        end;
       end loop;
 
   end if;
@@ -154,13 +154,13 @@ BEGIN
                                                    false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
-      -- begin
-      execute v_sql;
-      -- exception
-      -- when others then
-      -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-      -- values (new.id, SQLERRM);
-      --end;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(contact_custom_field_value_id, error)
+          values (new.id, SQLERRM);
+      end;
     end loop;
 
 --TODO what to do here
@@ -273,13 +273,13 @@ BEGIN
                                                    false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
-      --- begin
-      execute v_sql;
-      -- exception
-      --  when others then
-      --   insert into flow.trigger_error(project_process_step_custom_value_id, error)
-      --  values (new.id, SQLERRM);
-      --end;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_id, error)
+          values (new.id, SQLERRM);
+      end;
     end loop;
   perform flow.company_project_specific_tasks(v_company_id, new.company_project_status_type_id,
                                               old.company_project_status_type_id,
@@ -366,13 +366,13 @@ BEGIN
                                                    false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
-      -- begin
-      execute v_sql;
-      -- exception
-      -- when others then
-      -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-      -- values (new.id, SQLERRM);
-      --end;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_custom_field_value_id, error)
+          values (new.id, SQLERRM);
+      end;
     end loop;
 
   --TODO what to do here
@@ -468,15 +468,13 @@ BEGIN
                                                          false,
                                                          x.is_last_row, true, v_project_ids)
             into v_sql;
-            -- begin
-
-            execute v_sql;
-
-            -- exception
-            -- when others then
-            -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-            -- values (new.id, SQLERRM);
-            --end;
+            begin
+              execute v_sql;
+            exception
+              when others then
+                insert into flow.trigger_error(project_process_step_id, error)
+                values (new.id, SQLERRM);
+            end;
             v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           end if;
 
@@ -489,14 +487,13 @@ BEGIN
                                                      false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
-        -- begin
-        execute v_sql;
-
-        -- exception
-        -- when others then
-        -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-        -- values (new.id, SQLERRM);
-        --end;
+        begin
+          execute v_sql;
+        exception
+          when others then
+            insert into flow.trigger_error(project_process_step_id, error)
+            values (new.id, SQLERRM);
+        end;
       end if;
 
     end loop;
@@ -597,13 +594,13 @@ BEGIN
                                                    false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
-      -- begin
-      execute v_sql;
-      -- exception
-      -- when others then
-      -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-      -- values (new.id, SQLERRM);
-      --end;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_custom_value_id, error)
+          values (new.id, SQLERRM);
+      end;
     end loop;
   RETURN NULL;
 END
@@ -714,14 +711,13 @@ BEGIN
                                                          false,
                                                          x.is_last_row, true, v_project_ids)
             into v_sql;
-            -- begin
-            raise notice 'v_sql1111 % ',v_sql;
-            execute v_sql;
-            -- exception
-            -- when others then
-            -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-            -- values (new.id, SQLERRM);
-            --end;
+            begin
+              execute v_sql;
+            exception
+              when others then
+                insert into flow.trigger_error(project_process_step_event_id, error)
+                values (new.id, SQLERRM);
+            end;
             v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           end if;
 
@@ -734,21 +730,19 @@ BEGIN
                                                      false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
-        -- begin
-        raise notice 'v_sql222 % ',v_sql;
-        execute v_sql;
-        -- exception
-        -- when others then
-        -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-        -- values (new.id, SQLERRM);
-        --end;
+        begin
+          execute v_sql;
+        exception
+          when others then
+            insert into flow.trigger_error(project_process_step_event_id, error)
+            values (new.id, SQLERRM);
+        end;
       end if;
 
     end loop;
 
   if new.process_step_event_id = 14 then
     if new.start_time is not null then
-      raise notice '666 %',new.id;
       perform flow.company_event_specific_tasks(v_company_id,
                                                 new.resource_id,
                                                 new.id,
@@ -875,13 +869,13 @@ BEGIN
                                                    false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
-      -- begin
-      execute v_sql;
-      -- exception
-      -- when others then
-      -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-      -- values (new.id, SQLERRM);
-      --end;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
+          values (new.id, SQLERRM);
+      end;
     end loop;
 
   if new.custom_field_group_assignment_id in (4, 21506) then
@@ -1011,7 +1005,13 @@ BEGIN
     v_sql = trim(trailing ' ,' from v_sql);
     v_sql = v_sql || ' where project_id = ' || v_project_id || ';';
     if v_count > 0 then
-      execute v_sql;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_id, error)
+          values (new.id, SQLERRM);
+      end;
     end if;
   end if;
 
@@ -1092,15 +1092,17 @@ BEGIN
                                                      false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
-        -- begin
+
         if v_count > 0 then
-          execute v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_id, error)
+              values (new.id, SQLERRM);
+          end;
         end if;
-        -- exception
-        -- when others then
-        -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-        -- values (new.id, SQLERRM);
-        --end;
+
       end loop;
 
     for z in select dv.id as data_view_id,
@@ -1159,15 +1161,16 @@ BEGIN
                                                      false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
-        -- begin
+
         if v_count > 0 then
-          execute v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_id, error)
+              values (new.id, SQLERRM);
+          end;
         end if;
-        -- exception
-        -- when others then
-        -- insert into flow.trigger_error(project_process_step_custom_value_id, error)
-        -- values (new.id, SQLERRM);
-        --end;
       end loop;
 
   end if;
@@ -1293,7 +1296,13 @@ BEGIN
     v_sql = trim(trailing ' ,' from v_sql);
     v_sql = v_sql || ' where project_id = ' || v_project_id || ';';
     if v_count > 0 then
-      execute v_sql;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_event_id, error)
+          values (new.id, SQLERRM);
+      end;
     end if;
   end if;
   RETURN NULL;

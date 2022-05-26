@@ -1450,3 +1450,24 @@ where not exists( select id from flow.feature where feature_code = 'DATA_VIEW');
 insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
 select 'Data View', 3, (select id from flow.feature where feature_code = 'DATA_VIEW'), false
 where not exists( select id from flow.company_feature where feature_name = 'Data View' and company_id = 3);
+
+
+drop table if exists flow.trigger_error;
+
+create table if not exists flow.trigger_error
+(
+  id                                   serial
+    constraint trigger_error_pk
+      primary key,
+  contact_id integer,
+  contact_custom_field_value_id integer,
+  project_id integer,
+  project_custom_field_value_id integer,
+  project_process_step_id integer,
+  project_process_step_custom_value_id integer,
+  project_process_step_event_id integer,
+  project_process_step_event_custom_field_value_id integer,
+  error                                text
+);
+
+
