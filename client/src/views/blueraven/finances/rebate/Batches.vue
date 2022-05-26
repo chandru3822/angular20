@@ -28,7 +28,7 @@
 
         <v-dialog
           v-model="showVoidDialog"
-          v-if="batchLoaded && batchId === maxBatchId"
+          v-if="batchLoaded && batchId === maxBatchId && userIsAdmin && !voidedBatch"
           width="500">
           <template #activator="{ on }">
             <v-btn color="red" class="white--text ml-3" v-on="on"
@@ -167,6 +167,7 @@ export default {
       batches: [],
       payments: [],
       batchId: '',
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADMIN'),
       batchLoaded: false,
       paymentSearchFilters: {
         projectName: [],
@@ -227,18 +228,20 @@ export default {
       return this.batchId !== this.maxBatchId || this.payments.some(p => p.checkNumber != null)
     },
     async voidBatch() {
-      console.log('going to void batch #: ', this.batchId)
-      // this.$store.commit(AppMutations.SET_LOADING, true)
-      // try {
-      //   const {status} = await postRequest('/rebate/voidBacth/' + batchId, 'blueraven')
-      //   this.voidedBatch = true
-      //   handleHidingGlobalLoader(this, status)
-      // } catch (e) {
-      //   console.error('*** ERROR ***', e)
-      //   this.snackbar = getSnackbar('ERROR', 'Error Voiding Batch')
-      //   this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      //   this.$store.commit(AppMutations.SET_LOADING, false)
-      // }
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await postRequest('/rebate/voidBatch/' + this.batchId, {},'blueraven')
+        this.voidedBatch = true
+        this.showVoidDialog = false
+        handleHidingGlobalLoader(this, status)
+        this.snackbar = getSnackbar('SUCCESS', 'Batch Voided')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Voiding Batch')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async getBatchDetails(batchId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
