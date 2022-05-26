@@ -1440,3 +1440,13 @@ where id in (
          inner join flow.process_step ps on cfg.process_step_id = ps.id
   where dvfc.custom_field_group_assignment_id is not null and
     (cfga.archived is true or cfg.archived is true or cf.archived is true or ps.archived is true));
+
+
+insert into flow.feature(feature_name, feature_code, feature_path)
+select 'Data View', 'DATA_VIEW', null
+where not exists( select id from flow.feature where feature_code = 'DATA_VIEW');
+;
+
+insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
+select 'Data View', 3, (select id from flow.feature where feature_code = 'DATA_VIEW'), false
+where not exists( select id from flow.company_feature where feature_name = 'Data View' and company_id = 3);
