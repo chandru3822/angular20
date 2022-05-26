@@ -38,7 +38,7 @@
       </div>
     </v-card>
 
-    <v-col cols="12" class="px-0">
+    <v-col cols="12" class="px-0 pt-0">
       <v-data-table
         :headers="visibleHeaders"
         :items="filteredPayments"
@@ -547,7 +547,7 @@ export default {
 }
 
 .v-data-table ::v-deep .v-data-table__wrapper {
-  max-height: calc(100vh - 325px);
+  max-height: calc(100vh - 390px);
 }
 
 .v-data-table ::v-deep .v-data-table-header th {
