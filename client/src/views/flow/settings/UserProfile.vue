@@ -107,7 +107,7 @@
         <CustomValueInput v-for="(cf, idx) in userProfileCustomFields"
                         :key="idx"
                         :callback="populateDirtyCfvs"
-                        :required="cf.requireOnInsert"
+                        :required="cf.required"
                         :field="cf"></CustomValueInput>
       </v-col>
     </v-row>

@@ -23,7 +23,8 @@
                                     cfot.id as "customFieldObjectTypeId",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
-                                    cfga.require_on_insert as "requireOnInsert"
+                                    cfga.required,
+                                    cfga.required as "requireOnInsert"
                              FROM flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg.company_object_type_id
@@ -59,7 +60,8 @@
                                     cfot.id as "customFieldObjectTypeId",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
-                                    cfga.require_on_insert as "requireOnInsert",
+                                    cfga.required,
+                                    cfga.required as "requireOnInsert",
                                     null as "processStepName",
                                     null as "groupName",
                                     coalesce((
@@ -110,7 +112,8 @@
                                     cfot.id as "customFieldObjectTypeId",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
-                                    cfga.require_on_insert as "requireOnInsert",
+                                    cfga.required,
+                                    cfga.required as "requireOnInsert",
                                     ps.process_step_name as "processStepName",
                                     cfg2.group_name as "groupName",
                                     '[]' as whiteListedPositions,
