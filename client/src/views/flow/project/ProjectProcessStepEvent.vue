@@ -203,7 +203,7 @@
             :timezone="this.timezone"
             :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
             :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-            :required="!selectedEvent.startTime && !eventSaveOverrideRequired"
+            :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
@@ -578,7 +578,7 @@ export default {
       this.saveErrorMsg = 'Additional fields are required to perform the selected action.'
 
       let cfHasMissing = this.needsRequiredField(action.requiredFields)
-      if ((!this.selectedEvent.startTime) ||
+      if ((this.actionRequiresStart && !this.selectedEvent.startTime) ||
         (this.actionRequiresEnd && !this.selectedEvent.endTime) ||
         (this.actionRequiresResource && !this.selectedEvent.resourceId) || cfHasMissing) {
 
@@ -602,7 +602,7 @@ export default {
               (cf.dataTypeId === 2 && null == cf.timestampValue) ||
               (cf.dataTypeId === 3 && null == cf.booleanValue) ||
               (cf.dataTypeId === 4 && null == cf.numericValue) ||
-              (cf.dataTypeId === 5 && null == cf.textValue) ||
+              ((cf.dataTypeId === 5 || cf.dataTypeId === 13) && null == cf.textValue) ||
               (cf.dataTypeId === 6 && null == cf.intValue) ||
               (cf.dataTypeId === 7 && (null == cf.intArrayValue || cf.intArrayValue.length === 0)) ||
               (cf.dataTypeId === 8 && null == cf.intValue) ||

@@ -1540,9 +1540,9 @@ public class SmartlistService {
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
-            if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+            if ((r.getDataTypeId() == 5 || r.getDataTypeId() == 13) && r.getDataTypeRequirementId() != null) {
               //treat empty strings as null
-              whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+              whereClause.append(String.format (" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
             } else {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             }
@@ -1900,7 +1900,7 @@ public class SmartlistService {
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
-        if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+        if ((r.getDataTypeId() == 5 || r.getDataTypeId() == 13) && r.getDataTypeRequirementId() != null) {
           //treat empty strings as null
           projectsWhereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
         } else {
@@ -2312,7 +2312,7 @@ public class SmartlistService {
           }
         } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
           //if this is a text requirement using null/not null requirement
-          if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+          if ((r.getDataTypeId() == 5 || r.getDataTypeId() == 13) && r.getDataTypeRequirementId() != null) {
             //treat empty strings as null
             whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
           } else {
@@ -2685,7 +2685,7 @@ public class SmartlistService {
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
-        if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+        if ((r.getDataTypeId() == 5 || r.getDataTypeId() == 13) && r.getDataTypeRequirementId() != null) {
           //treat empty strings as null
           projectsWhereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
         } else {
@@ -3220,7 +3220,7 @@ public class SmartlistService {
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
-            if (r.getDataTypeId() == 5 && r.getDataTypeRequirementId() != null) {
+            if ((r.getDataTypeId() == 5 || r.getDataTypeId() == 13) && r.getDataTypeRequirementId() != null) {
               //treat empty strings as null
               whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
             } else {
@@ -3941,6 +3941,7 @@ public class SmartlistService {
             case 4:
                 return "numeric_value";
             case 5:
+            case 13:
                 return "text_value";
             case 6:
             case 9:
@@ -4018,6 +4019,7 @@ public class SmartlistService {
 
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 5:
+            case 13:
                 if (r.getSmartlistSystemListId() != null) {
                   return String.format("sort(array[%s]::int[])", r.getListOfValueId());
                 }
@@ -4838,7 +4840,7 @@ public class SmartlistService {
         }
       } else if (i.getDataTypeId() == 3 || i.getDataTypeId() == 4 || (i.getDataTypeRequirementId() != null && i.getSecondaryRequirementValue() == null && i.getDataTypeId() != 1 && i.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
-        if (i.getDataTypeId() == 5 && i.getDataTypeRequirementId() != null) {
+        if ((i.getDataTypeId() == 5 || i.getDataTypeId() == 13) && i.getDataTypeRequirementId() != null) {
           //treat empty strings as null
           clause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
         } else {
