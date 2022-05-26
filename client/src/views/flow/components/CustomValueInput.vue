@@ -239,20 +239,23 @@
         </v-autocomplete>
 
         <div v-if="field.dataTypeId === 13">
+          <!-- this hidden text field makes the form's required fields validation work -->
+          <v-text-field style="display: none;" v-model="field.richTextValue" :required="required" :rules="getRequiredRule()">
+          </v-text-field>
           <div class="rich-text-label" v-if="!hideLabel && !showFieldName">
             {{ getFieldName() }}
           </div>
           <quill-editor
             :options="toolbarOptions"
             class="rich-text-editor"
-            :class="{'rich-text-editor-required': required,
+            :class="{'rich-text-editor-required': required && !field.richTextValue,
                      'rich-text-editor-readonly': readonly}"
             :readonly="readonly"
             :disabled="readonly"
             @change="(q) => doRichTextFieldCallback(field, q)"
             v-model="field.richTextValue"
           />
-          <div class="rich-text-label error--text" v-if="required">
+          <div class="rich-text-label error--text" v-if="required && !field.richTextValue">
             Field is required
           </div>
         </div>

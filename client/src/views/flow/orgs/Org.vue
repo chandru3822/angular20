@@ -38,13 +38,15 @@
     </v-row>
     <v-row>
       <v-col cols="12" md="6" class="text-left">
+        <v-form ref="orgForm">
         <div>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text :disabled="fieldsSaving || (org.schedulable && !org.companyTimezoneId)"
-                     @click="[fieldsSaving = true, saveOrg()]" v-if="userCanEdit">Save</v-btn>
+              <v-btn text :loading="fieldsLoading"
+                     :disabled="fieldsSaving || (org.schedulable && !org.companyTimezoneId)"
+                     @click="saveOrg()" v-if="userCanEdit">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -52,11 +54,13 @@
                           label="Organization Name"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
+                          :rules="requiredRules"
                           @change="dirtySystemFields = true"
                           v-model="org.orgName"></v-text-field>
             <v-select attach v-model="org.orgTypeId"
                       :items="orgTypes"
                       label="Organization Type"
+                        :rules="requiredRules"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       @change="dirtySystemFields = true"
@@ -119,11 +123,13 @@
           <v-card class="pa-4">
             <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
                               :key="cf.id"
+                              :required="cf.required"
                               :callback="populateDirtyCfvs"
                               :readonly="getReadOnly(cf)"
                               :field="cf"></CustomValueInput>
           </v-card>
         </div>
+        </v-form>
       </v-col>
       <v-col cols="12" md="6" class="text-left pa-0 mt-3">
         <Attachments :object-type-id="5" :org-id="orgId" />
@@ -142,6 +148,7 @@
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import Attachments from '@/views/flow/components/Attachments'
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'Org',
@@ -168,11 +175,13 @@
         toPath: null,
         navigationOverride: false,
         dirtySystemFields: false,
+        requiredRules: constants.BASIC_REQUIRED_RULE,
         parents: [],
         dirtyCfvs: [],
         companyTimezones: [],
         states: [],
         fieldsSaving: false,
+        fieldsLoading: true,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'ADMIN'),
         orgId: parseInt(this.$route.params.id),
@@ -181,14 +190,19 @@
       }
     },
     async created () {
-      this.getCustomFieldGroups()
-      this.getCompanyTimezones()
-      this.getOrgTypes()
-      await this.getOrg()
-      if(this.org.parentOrgTypeId) {
-        this.getOrgsByType(this.org.parentOrgTypeId)
-      }
-      this.getCompanyStates()
+      let requests = [
+        this.getCustomFieldGroups(),
+        this.getCompanyTimezones(),
+        this.getOrgTypes(),
+        this.getOrg(),
+        this.getCompanyStates()
+      ]
+      await Promise.all(requests).then(async () => {
+        this.fieldsLoading = false
+        if(this.org.parentOrgTypeId) {
+          this.getOrgsByType(this.org.parentOrgTypeId)
+        }
+      })
     },
     beforeRouteLeave (to, from, next) {
       // called when the route that renders this component is about to
@@ -207,26 +221,32 @@
         this.$router.push(path)
       },
       async saveOrg() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.org.customFieldGroups = this.customFieldGroups
-        try {
-          const {status} = await putRequest(`/org`, this.org)
-          // update dirty field values
-          const {data} = await postRequest(`/customFieldValues/org/${this.orgId}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.dirtySystemFields = false
-          this.customFieldGroups = data
-          this.snackbar = getSnackbar('SUCCESS', 'Organization Saved')
+        if(this.$refs.orgForm.validate()) {
+          this.fieldsSaving = true
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          // this.org.customFieldGroups = this.customFieldGroups
+          try {
+            const {status} = await putRequest(`/org`, this.org)
+            // update dirty field values
+            const {data} = await postRequest(`/customFieldValues/org/${this.orgId}`, this.dirtyCfvs)
+            this.dirtyCfvs = []
+            this.dirtySystemFields = false
+            this.customFieldGroups = data
+            this.snackbar = getSnackbar('SUCCESS', 'Organization Saved')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            handleHidingGlobalLoader(this, status)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            let msg = this.org.id ? 'Error Saving Organization' : 'Error Adding Organization'
+            this.snackbar = getSnackbar('ERROR', msg)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = this.org.id ? 'Error Saving Organization' : 'Error Adding Organization'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       populateDirtyCfvs(field) {
@@ -289,11 +309,9 @@
         }
       },
       async getOrgsByType (orgTypeId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getOrgsByType(orgTypeId)
           this.parents = data
-          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
