@@ -92,7 +92,7 @@ BEGIN
                      limit 1) is not null then true
                else false end
       into v_function_result;
-    elsif v_data_type_id = 5 then
+    elsif v_data_type_id = 5 or v_data_type_id = 13 then
       select case
                when (select ppsecfv.id
                      from flow.project_process_step_event_custom_field_value ppsecfv
