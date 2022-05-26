@@ -74,11 +74,11 @@
             class="elevation-1 fix-column-width-bug contact-table"
         >
           <template #no-data>
-            No available contacts
+            <div class="black--text">No available contacts</div>
           </template>
 
           <template #no-results>
-            No available contacts
+            <div class="black--text">No available contacts</div>
           </template>
 
           <template #item="{ item, index }">
