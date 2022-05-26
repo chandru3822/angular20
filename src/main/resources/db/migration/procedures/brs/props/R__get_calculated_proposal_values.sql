@@ -1697,13 +1697,13 @@ BEGIN
                                          eighteen_plus_payment_itc_only, month_eighteen_payment_all_incentives,
                                          eighteen_plus_payments_all_incentives, date_created,
                                          promotion_eighteen_months_free,
-                                        proposal_date, proposal_nbr, source, proposal_log_id,
-                                      bp_plus_amount, project_owner,aurora_design_id)
+                                        proposal_date, proposal_nbr, proposal_log_id,
+                                      bp_plus_amount,aurora_design_id)
         values (v_project_id,v_project_name,v_project_street1,v_city,v_project_state_abbrev,
                 v_postal_code,v_contact_phone,v_contact_email,v_loan_term,v_apr,v_down_payment_amount,
                 v_led_light_bulbs,v_smart_thermostat,v_current_estimated_cost_per_kwh,v_promotion_cost,v_first_year_production_estimate,
                 v_panel_quantity,
-                v_panel_watts,v_system_size,v_panel_brand,v_no_clue,v_inverter_brand,v_inverter_brand,v_utility_company,
+                v_panel_watts,v_system_size,v_panel_brand,v_panel_quantity,v_inverter_brand,v_inverter_brand,v_utility_company,
                 v_estimated_annual_energy_consumption_kwh,v_equipment_panel_adder,v_equipment_panel_adder*(v_system_size*1000),
                 ( v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
                   v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder),v_adjusted_price_per_wat,v_total_loan_amount,
@@ -1715,14 +1715,9 @@ BEGIN
                 (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),v_monthly_cost_25_year_average_without_solar,
                 v_total_cost_25_years,v_total_savings_25_years,v_remaining_monthly_electric_bill_25_year_average,v_reamortized_monthly_payment_all_credits_to_loan,
                 v_initial_monthly_payment_all_credits_to_loan,v_reamortized_monthly_payment_all_credits_to_loan,now(),v_promotion_cost,
-                now(),v_proposal_nbr,v_source,v_proposal_id,v_promotion_cost,
-                v_project_owner,v_aurora_design_id);
+                now(),v_proposal_nbr,v_proposal_id,v_promotion_cost,
+                v_aurora_design_id);
   end if;
-
---   plane_1_number_of_panels, plane_1_tsrf, plane_2_number_of_panels,
---     plane_2_tsrf, plane_3_number_of_panels, plane_3_tsrf, plane_4_number_of_panels,
---     plane_4_tsrf, plane_5_number_of_panels, plane_5_tsrf, plane_6_number_of_panels,
---     plane_6_tsrf, plane_7_number_of_panels, plane_7_tsrf,
 
   return query
     select v_proposal_id,
