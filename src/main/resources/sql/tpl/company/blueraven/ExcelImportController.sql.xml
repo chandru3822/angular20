@@ -1,11 +1,6 @@
 <sql>
     <excel.import.sqlId>
-        select
-        case
-        when seq.last_value >= 9999 then setval('brs.proposal_excel_id_seq', 1000)
-        else nextval('brs.proposal_excel_id_seq')
-        end as prop_id
-        from brs.proposal_excel_id_seq seq
+        select nextval('brs.proposal_excel_id_seq') as prop_id
     </excel.import.sqlId>
 
     <excel.import.validateProjectId>
