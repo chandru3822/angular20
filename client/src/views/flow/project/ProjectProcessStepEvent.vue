@@ -4,7 +4,7 @@
       No Matching Event Found
     </div>
   </v-main>
-  <v-main class="pa-0 relative height-one-hunned overflow-y-auto" v-else-if="!eventDetailsLoading">
+  <v-main ref="ppseFieldsContainer" class="pa-0 relative height-one-hunned overflow-y-auto" v-else-if="!eventDetailsLoading">
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
@@ -849,6 +849,7 @@ export default {
         const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
         this.statusChanged = false
         this.dirtyCfvs = []
+        this.$refs.ppseFieldsContainer.$el.scrollTop = 0
         this.selectedEvent = data
         this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
