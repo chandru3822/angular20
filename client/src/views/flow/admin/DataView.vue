@@ -317,9 +317,16 @@
                   :items-per-page="-1"
                   :mobile-breakpoint="0"
                   hide-default-footer
+                  single-expand
+                  :expanded.sync="childFieldExpanded"
                   :class="{'mt-4': addChild}"
                   class="elevation-1"
                 >
+                  <template #expanded-item="{ headers, item }">
+                    <t></t>
+                    <h3>Edit Child Field Config</h3>
+                  </template>
+
                   <template #item="{ item: childField }">
                     <tr class="text-left" :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
                       <td class="text-left">{{ childField.displayName }}</td>
@@ -328,6 +335,14 @@
                       <td class="text-left">
                         {{ childField.uniqueBehaviorType }} <br/>
                         {{ childField.uniqueBehaviorTypeDescription }}
+                      </td>
+                      <td>
+                        <v-btn small text v-if="!childFieldExpanded.includes(childField)"
+                               @click="[addChild = false, childFieldExpanded = [childField] ]">
+                          <v-icon>edit</v-icon>
+                        </v-btn>
+                        <v-btn small text v-if="childFieldExpanded.includes(childField)" @click="childFieldExpanded = []">cancel</v-btn>
+
                       </td>
                     </tr>
                   </template>
@@ -379,6 +394,7 @@ export default {
         {text: 'Field To Update', value: 'fieldToUpdate', show: true},
         {text: 'Data Type', value: 'dataType', show: true},
         {text: 'Unique Behavior Type', value: 'uniqueBehaviorType', show: true},
+        {text: null, value: 'icons', show: true, sortable: false}
       ],
       fieldType: 1,
       requiredRules: constants.BASIC_REQUIRED_RULE,
@@ -395,6 +411,7 @@ export default {
       uniqueBehaviorTypes: [],
       dataTypes: [],
       expanded: [],
+      childFieldExpanded: [],
       edit: false,
       oldName: null,
       defaultFields: [],
