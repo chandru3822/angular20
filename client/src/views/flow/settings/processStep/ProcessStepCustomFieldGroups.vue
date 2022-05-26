@@ -49,7 +49,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
-                color="rowShadeCustom">
+                color="primary lighten-6">
           <div>
             <v-text-field
               label="Group Name"
@@ -250,7 +250,7 @@
                               <div class="text-left mt-3" v-if="cf.edit">
                                 <v-row>
                                   <v-col cols="6">
-                                    <v-card flat color="rowShadeCustom" class="square-card">
+                                    <v-card flat color="primary lighten-6" class="square-card">
                                       <v-card-title style="height: 40px" class="py-0">
                                         Read Only
                                         <v-checkbox type="checkbox" class="ml-3" v-if="cf.systemReadonly"
@@ -316,7 +316,7 @@
                                     </v-card>
                                   </v-col>
                                   <v-col cols="6">
-                                    <v-card flat color="rowShadeCustom" class="square-card">
+                                    <v-card flat color="primary lighten-6" class="square-card">
                                       <v-card-title style="height: 40px" class="py-0">
                                         Hidden
                                         <v-checkbox type="checkbox" class="ml-2"
@@ -917,11 +917,11 @@
 
 <style scoped lang="scss">
   .custom-field-group {
-    border: solid 1px var(--v-rowShadeCustom-base) !important;
+    border: solid 1px var(--v-primary-lighten6) !important;
   }
 
   .custom-field-group-border {
-    border-bottom: solid 1px var(--v-rowShadeCustom-base) !important;
+    border-bottom: solid 1px var(--v-primary-lighten6) !important;
   }
 
   .item-icons {

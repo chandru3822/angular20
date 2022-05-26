@@ -13,7 +13,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="rowShadeCustom">
+          <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-6">
             <v-text-field v-if="addNew"
                           v-model="newType.processStepStatusType"
                           placeholder="Enter a type"

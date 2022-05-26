@@ -12,7 +12,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewType">
+        <v-card class="square-card pa-2" color="primary lighten-6" v-if="addNewType">
           <v-autocomplete v-model="newType.attachmentTypeId"
                           :items="availableAttachmentTypes"
                           label="Select Attachment Type"

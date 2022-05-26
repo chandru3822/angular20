@@ -12,7 +12,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="rowShadeCustom">
+        <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-6">
           <h3>Add Project Status</h3>
           <v-text-field label="Project Status" v-model="newType.projectStatusType">
           </v-text-field>

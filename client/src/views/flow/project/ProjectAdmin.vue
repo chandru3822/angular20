@@ -497,7 +497,7 @@ tr:nth-of-type(even) {
   @extend .shaded-row;
 
   ::v-deep .v-input__slot {
-    background-color: var(--v-rowShadeCustom-base) !important;
+    background-color: var(--v-primary-lighten6) !important;
   }
 }
 

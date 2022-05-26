@@ -35,7 +35,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-card flat color="rowShadeCustom" class="square-card" v-if="parseInt(typeId) === 2">
+    <v-card flat color="primary lighten-6" class="square-card" v-if="parseInt(typeId) === 2">
       <v-card-title style="height: 40px" class="py-0">
         Contact Owner Read Only
         <v-checkbox type="checkbox" class="ml-3"
@@ -262,7 +262,7 @@
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
                                 <v-col cols="6">
-                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'rowShadeCustom'" class="square-card">
+                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-6'" class="square-card">
                                     <v-card-title style="height: 40px" class="py-0">
                                       Read Only
                                       <v-checkbox type="checkbox" class="ml-3" v-if="cf.systemReadonly"
@@ -328,7 +328,7 @@
                                   </v-card>
                                 </v-col>
                                 <v-col cols="6">
-                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'rowShadeCustom'" class="square-card">
+                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-6'" class="square-card">
                                     <v-card-title style="height: 40px" class="py-0">
                                       Hidden
                                       <v-checkbox type="checkbox" class="ml-2"

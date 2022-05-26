@@ -17,7 +17,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <div class="mb-4">
-          <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewEventStatusType">
+          <v-card flat class="square-card mb-3 pa-3" color="primary lighten-6" v-if="addNewEventStatusType">
             <h3>Assign a Status Type</h3>
             <v-autocomplete label="Event Status Type"
                             :items="availableCompanyEventStatusTypes"

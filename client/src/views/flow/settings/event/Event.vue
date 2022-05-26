@@ -106,7 +106,7 @@ export default {
 
 <style scoped lang="scss">
 .name-container {
-  background-color: var(--v-rowShadeCustom-base) !important;
+  background-color: var(--v-primary-lighten6) !important;
   border-radius: 5px;
 }
 

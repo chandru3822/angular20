@@ -105,7 +105,7 @@
               <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': selectedIndex % 2}">
                 <v-col class="flex-display pl-3 pr-3 justify" :class="{'shaded-row': selectedIndex % 2}">
                   <v-card text class="text-center field-card one-hunned" flat
-                          :color="selectedIndex % 2 ? 'rowShadeCustom' : 'white'">
+                          :color="selectedIndex % 2 ? 'primary lighten-6' : 'white'">
                     <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
                     <v-text-field
                       label="Field Name"
