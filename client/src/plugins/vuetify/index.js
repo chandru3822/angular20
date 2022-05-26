@@ -33,7 +33,7 @@ export default new Vuetify({
             darken4:'#00001a'
         },
         secondary: '#F6F7F8',
-
+        error:'#B4221F'
       },
       // dark: {
       //   primary: '#1F3C73',
