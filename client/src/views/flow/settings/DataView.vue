@@ -2,7 +2,7 @@
   <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/admin/dataViews'">
+        <v-btn text class="pl-1 pr-2" :to="'/settings/dataViews'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>

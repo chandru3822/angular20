@@ -6,7 +6,8 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]" v-if="is7oaksAdmin">
+            <v-btn text v-if="is7oaksAdmin"
+                   @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -146,7 +147,7 @@
         }
       },
       async goToView(id) {
-        this.$router.push(`/admin/dataView/${id}`)
+        this.$router.push(`/settings/dataView/${id}`)
       },
       async saveDataView(dv, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
