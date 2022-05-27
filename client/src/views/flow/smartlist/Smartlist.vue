@@ -25,6 +25,7 @@
                 <v-btn
                   v-if="smartlist.id"
                   text
+                  color="primary"
                   @click="runReport"
                 >
                   <v-icon>mdi-cloud-download</v-icon>
@@ -34,6 +35,7 @@
                 <v-btn
                   v-if="smartlist.id"
                   text
+                  color="primary"
                   @click="copy"
                 >
                   <v-icon>mdi-content-copy</v-icon>
@@ -43,6 +45,7 @@
                 <v-btn
                   v-if="canEdit"
                   text
+                  color="primary"
                   @click="validateForm"
                 >
                   <v-icon>save</v-icon>
@@ -57,7 +60,7 @@
                   <template #activator="{on}">
                     <v-btn
                       text
-                      color="brRed"
+                      color="primary"
                       v-on="on"
                     >
                       <v-icon>delete</v-icon>
