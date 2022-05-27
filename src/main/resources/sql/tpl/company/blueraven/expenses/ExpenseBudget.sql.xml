@@ -1,4 +1,15 @@
 <sql>
+
+  <expenseBudget.delete>
+    <![CDATA[
+            UPDATE brs.expense_budget
+              SET archived = true,
+                  date_modified = now(),
+                  modified_by_id = :userId
+            WHERE id = :id
+        ]]>
+  </expenseBudget.delete>
+
   <expenseBudget.budgetType.getAll>
     <![CDATA[
             SELECT
@@ -124,6 +135,7 @@
               eb.start_date,
               eb.end_date,
               eb.notes,
+              eb.archived,
               eb.amount,
               eb.user_id,
               u.first_name || ' ' || u.last_name as user_full_name,
@@ -155,6 +167,7 @@
           eb.budget_type_id,
           eb.start_date,
           eb.end_date,
+          eb.archived,
           eb.notes,
           eb.amount,
           eb.user_id,
@@ -339,10 +352,10 @@
         ]]>
   </expenseBudget.getMonthlyBudgetReport>
 
-  <expenseBudget.getMonthlyBudgetReportDrillDown>
+  <expenseBudget.getExpenseDrilldown>
     <![CDATA[
-            select * from brs.get_monthly_expense_budget_report_drill_down(:userId::integer, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetTypeId::integer, :individual::boolean)
+            select * from brs.get_expense_drilldown(:userId::integer, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetId::integer)
         ]]>
-  </expenseBudget.getMonthlyBudgetReportDrillDown>
+  </expenseBudget.getExpenseDrilldown>
 
 </sql>

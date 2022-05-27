@@ -215,15 +215,29 @@
             <v-card-text class="pt-4">
               <table class="detail-table">
                 <tr>
-                  <td class="detail-column">Pending Approval:</td>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = 'Submitted Reimbursements - Pending Review',
+                               loadDrilldown('PENDING_REVIEW')]">
+                    Pending Review:
+                  </td>
+                  <td class="detail-column text-right">{{ submittedReport.pending_review || 0 | currency('$', 2) }}</td>
+                </tr>
+                <tr>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = 'Submitted Reimbursements - Pending Approval',
+                               loadDrilldown('PENDING_APPROVAL')]">Pending Approval:</td>
                   <td class="detail-column text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column">Pending Payment:</td>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = 'Submitted Reimbursements - Pending Payment',
+                               loadDrilldown('PENDING_PAYMENT')]">Pending Payment:</td>
                   <td class="detail-column text-right">{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column">Paid:</td>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = 'Submitted Reimbursements - Paid',
+                               loadDrilldown('PAID')]">Paid:</td>
                   <td class="detail-column text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr class="total-row">
@@ -236,33 +250,50 @@
 
           <v-card class="mt-3">
             <v-card-title class="grey lighten-2" primary-title>
-              Recruiting Budget
+              Budgets
             </v-card-title>
             <v-card-text class="pt-4">
-              <table class="detail-table">
+              <table class="detail-table" v-for="br in budgetReport">
+                <tr>
+                  <td class="detail-column detail-column-header" colspan="2">
+                    {{br.budget_name}} {{br.start_date | formatDate('date')}} - {{br.end_date | formatDate('date')}}
+                  </td>
+                </tr>
                 <tr>
                   <td class="detail-column">Monthly Budget:</td>
-                  <td class="detail-column text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column text-right">{{ br.amount || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column">Pending Approval:</td>
-                  <td class="detail-column text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = `${br.budget_name} Budget - Pending Review`,
+                               loadDrilldown('PENDING_REVIEW', br.budget_id)]">Pending Review:</td>
+                  <td class="detail-column text-right">{{ br.pending_review || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column">Pending Payment:</td>
-                  <td class="detail-column text-right">{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = `${br.budget_name} Budget - Pending Approval`,
+                               loadDrilldown('PENDING_APPROVAL', br.budget_id)]">Pending Approval:</td>
+                  <td class="detail-column text-right">{{ br.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column">Paid:</td>
-                  <td class="detail-column text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = `${br.budget_name} Budget - Pending Payment`,
+                               loadDrilldown('PENDING_PAYMENT', br.budget_id)]">Pending Payment:</td>
+                  <td class="detail-column text-right">{{ br.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column">Other:</td>
-                  <td class="detail-column text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column clickable"
+                      @click="[drilldownTitle = `${br.budget_name} Budget - Paid`,
+                               loadDrilldown('PAID', br.budget_id)]">Paid:</td>
+                  <td class="detail-column text-right">{{ br.paid || 0 | currency('$', 2) }}</td>
                 </tr>
+<!--                <tr>-->
+<!--                  <td class="detail-column">Other:</td>-->
+<!--                  <td class="detail-column text-right">{{ br.paid || 0 | currency('$', 2) }}</td>-->
+<!--                </tr>-->
                 <tr>
                   <td class="detail-column">Remaining Budget:</td>
-                  <td class="detail-column text-right">{{ submittedReport.total || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column text-right">{{ br.remaining_budget || 0 | currency('$', 2) }}</td>
                 </tr>
               </table>
             </v-card-text>
@@ -270,6 +301,42 @@
         </v-sheet>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="showDrilldown">
+      <v-card id="funnel-drilldown">
+        <v-card-title class="mb-1">
+          {{drilldownTitle}}
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text>
+          <v-data-table
+            :headers="headers"
+            fixed-header
+            :items="drilldownData"
+          >
+            <template #no-data>
+                No data available
+            </template>
+
+            <template #no-results>
+              No data available
+            </template>
+
+            <template #item="{ item, index }">
+              <tr :class="{'shaded-row': !(index % 2)}">
+                <td>{{ item.purchaser }}</td>
+                <td>{{ item.budget }}</td>
+                <td>{{ item.expense_date  | formatDate('date')}}</td>
+                <td>{{ item.expense_amount | currency('$', 2)}}</td>
+                <td>{{ item.approval_date  | formatDate('date')}}</td>
+                <td>{{ item.paid_date  | formatDate('date')}}</td>
+              </tr>
+            </template>
+
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
 
   </v-container>
 </template>
@@ -295,6 +362,17 @@ export default {
       createNew: true,
       savingReceiptImage: false,
       attachmentTypeId: 4,
+      showDrilldown: false,
+      drilldownTitle: '',
+      headers: [
+        { text: 'User', value: 'purchaser', show: true},
+        { text: 'Budget', value: 'budget', show: true},
+        { text: 'Expense Date', value: 'expense_date', show: true},
+        { text: 'Expense Amount', value: 'expense_amount', show: true},
+        { text: 'Approval Date', value: 'approval_date', show: true},
+        { text: 'Paid Date', value: 'paid_date', show: true},
+      ],
+      drilldownData: [],
       timezone: this.$store.state.user.details.timezone.value,
       userId: this.$store.state.user.details.id,
       receiptLogo: {},
@@ -302,11 +380,7 @@ export default {
       newReimbursement: {},
       renderApprovalRequestImage: false,
       needsApprovalRequest: {},
-      availableBudgets: [{
-        fullBudgetName: 'N/A',
-        id: -1,
-        sortOrder: 0
-      }],
+      availableBudgets: [],
       acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
       submittedReport: {},
       rejectedRequests: [],
@@ -427,11 +501,6 @@ export default {
         }
       }, 'blueraven')
       this.availableBudgets = data || []
-      this.availableBudgets.push({
-        fullBudgetName: 'N/A',
-        id: -1,
-        sortOrder: 0
-      })
     },
     async getMonthlySubmittedReport() {
       const {data} = await getRequestWithParams(`/reimbursement/getMonthlySubmittedReport`, {
@@ -450,8 +519,8 @@ export default {
             endDate: this.endDate
           }
         }, 'blueraven'
-      )
-      this.budgetReport = data && data[0] ? data[0] : {}
+      , [])
+      this.budgetReport = data
     },
     async getRejectedRequests(statusId) {
       const {data} = await getRequestWithParams(`/reimbursement/requests/byStatus`, {
@@ -474,6 +543,29 @@ export default {
         }, 'blueraven'
       )
       this.requestsNeedingApproval = data
+    },
+    async loadDrilldown(statusText, budgetId) {
+      this.showDrilldown = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.drilldownData = []
+      try {
+        let params = {
+          startDate: this.startDate,
+          endDate: this.endDate,
+          budgetId: budgetId,
+          status: statusText //not sure about this yet
+        }
+        const {data, status} = await getRequestWithParams(`/expenseBudgets/getExpenseDrilldown`, {params}, 'blueraven')
+        this.drilldownData = data
+        this.showDrilldown = true
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.paymentConfirmLoading = false
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async confirmPayment() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -524,9 +616,9 @@ export default {
       //the the monthly submitted report
       this.getMonthlySubmittedReport()
 
-      if (this.$store.getters.userHasAnyPosition([3, 6])) {
+      // if (this.$store.getters.userHasAnyPosition([3, 6])) {
         this.getMonthlyBudgetReport()
-      }
+      // }
     },
     getMonthDateRange(month, year) {
       let startDate = moment([year, month - 1]).format("YYYY-MM-DD")
@@ -568,11 +660,17 @@ export default {
 
 .detail-table {
   width: 100%;
+  margin-top: 10px;
   border-collapse: collapse;
 }
 
 .detail-column {
   width: 50%;
+}
+
+.detail-column-header {
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .total-row {
