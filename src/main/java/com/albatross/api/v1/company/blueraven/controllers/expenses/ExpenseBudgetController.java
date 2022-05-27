@@ -23,6 +23,11 @@ public class ExpenseBudgetController {
 
   private final ExpenseBudgetService expenseBudgetService;
 
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteBudget(@PathVariable Long id) {
+    expenseBudgetService.deleteBudget(id);
+  }
+
   //budget types here
   @GetMapping(value = "/budgetTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<BudgetType> getBudgetTypes() {

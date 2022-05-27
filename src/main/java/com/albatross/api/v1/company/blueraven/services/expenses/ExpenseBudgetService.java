@@ -22,6 +22,17 @@ public class ExpenseBudgetService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
 
+  public void deleteBudget(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+
+    sqlCache.update("expenseBudget.delete", params);
+  }
+
   // budget types here
   public List<BudgetType> getBudgetTypes() {
     return sqlCache.query(

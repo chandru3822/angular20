@@ -143,6 +143,43 @@
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                  <v-dialog
+                    v-model="item.deleteConfirm"
+                    width="500">
+                    <template #activator="{ on }">
+                      <v-btn small text v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="text-h5 grey lighten-2"
+                        primary-title>
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text class="pt-4">
+                        There may already be expenses assigned to this budget. Are you sure you want to delete?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="[]">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="[item.archived = true, deleteBudget(item.id)]"
+                        >
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </div>
               </td>
             </tr>
@@ -156,7 +193,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
 import {getBudgetTypes} from './expenseService'
 import moment from 'moment'
 import constants from "@/helpers/constants"
@@ -201,10 +238,10 @@ export default {
   methods: {
     filterBudgets() {
       if(this.showPastBudgets) {
-        return this.budgets
+        return this.budgets.filter(b => !b.archived)
       } else {
         return this.budgets.filter(b => {
-          return moment(b.endDate).isSameOrAfter(moment().startOf('day'))
+          return moment(b.endDate).isSameOrAfter(moment().startOf('day')) && !b.archived
         })
       }
     },
@@ -234,6 +271,19 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      }
+    },
+    async deleteBudget (id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+
+      try {
+        const {status} = await deleteRequest(`/expenseBudgets/${id}`, 'blueraven')
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Error Deleting Budget')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getBudgetTypes() {
