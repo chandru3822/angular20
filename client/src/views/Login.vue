@@ -8,7 +8,7 @@
               <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
-              <h2 class="error" v-if="$store.state.user.loginError">{{ $store.state.user.loginError }}</h2>
+              <h2 class="error--text" v-if="$store.state.user.loginError">{{ $store.state.user.loginError }}</h2>
               <v-form ref="login" v-model="validForm" @submit.prevent="onSubmit()">
                 <v-text-field required color="primary"
                               :rules="requiredRules"
@@ -24,7 +24,7 @@
                   </router-link>
                   <v-spacer></v-spacer>
                   <v-btn :loading="loginLoading" type="submit"
-                         color="primaryButton" class="white--text">Login
+                         color="primary" class="white--text">Login
                   </v-btn>
                 </v-card-actions>
               </v-form>
