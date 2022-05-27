@@ -352,10 +352,10 @@
         ]]>
   </expenseBudget.getMonthlyBudgetReport>
 
-  <expenseBudget.getMonthlyBudgetReportDrillDown>
+  <expenseBudget.getExpenseDrilldown>
     <![CDATA[
-            select * from brs.get_monthly_expense_budget_report_drill_down(:userId::integer, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetTypeId::integer, :individual::boolean)
+            select * from brs.get_expense_drilldown(:userId::integer, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetId::integer)
         ]]>
-  </expenseBudget.getMonthlyBudgetReportDrillDown>
+  </expenseBudget.getExpenseDrilldown>
 
 </sql>

@@ -97,11 +97,12 @@ public class ExpenseService {
 
 
   public void addDefaultLineItem(Expense expense) {
+    User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("expenseDate", expense.getExpenseDate());
     params.put("reimbursementRequestId", expense.getReimbursementRequestId());
-    params.put("userId", expense.getUserId());
+    params.put("userId", currentUser.getId());
     params.put("expenseAmount", expense.getExpenseAmount());
     params.put("expenseBudgetId", expense.getExpenseBudgetId());
 

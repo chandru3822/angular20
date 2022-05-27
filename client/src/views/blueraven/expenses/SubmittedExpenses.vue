@@ -8,6 +8,14 @@
               <v-toolbar-title class="app-title">
                 Submitted Expenses - {{ showAll ? 'In Range' : 'All Unpaid' }}
               </v-toolbar-title>
+              <v-text-field
+                v-model="userSearchText"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                class="mt-5"
+                hide-details
+              ></v-text-field>
               <div>
                 <v-btn color="primaryCustom"
                        @click="exportExpenses"
@@ -143,6 +151,7 @@
           <v-data-table
             :headers="headers"
             :items="filterSubmittedExpenses()"
+            :search="userSearchText"
             :items-per-page="100"
             :mobile-breakpoint="0"
             disable-sort
@@ -391,7 +400,7 @@ export default {
       users: [],
       userId: this.$store.state.user.details.id,
       usersLoading: false,
-      userSearchText: null,
+      userSearchText: '',
       budgetTypesForUser: [],
       selectedExpenses: [],
       selectAllExpenses: false,

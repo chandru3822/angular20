@@ -305,24 +305,19 @@ public class ExpenseBudgetService {
         .orElse("{}");
   }
 
-  public String getMonthlyBudgetReportDrilldown(
-      Long userId,
-      String startDate,
-      String endDate,
-      String status,
-      Long budgetTypeId,
-      Boolean individual) {
+  public String getExpenseDrilldown(String startDate, String endDate, String status, Long budgetId) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
+    params.put("userId", currentUser.getId());
     params.put("startDate", startDate);
     params.put("endDate", endDate);
     params.put("status", status);
-    params.put("budgetTypeId", budgetTypeId);
-    params.put("individual", individual);
+    params.put("budgetId", budgetId);
 
     return sqlCache
         .get(
-            "expenseBudget.getMonthlyBudgetReportDrillDown",
+            "expenseBudget.getExpenseDrilldown",
             params,
             new SingleColumnRowMapper<>(String.class))
         .orElse("{}");
