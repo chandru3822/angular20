@@ -125,7 +125,7 @@
                   >
                   </v-autocomplete>
                 </div>
-                <v-btn text x-small class="change-owner-button" v-if="userCanEdit && !contactOwnerIsReadOnly()"
+                <v-btn text x-small color="primary" class="change-owner-button" v-if="userCanEdit && !contactOwnerIsReadOnly()"
                        @click="changeOwner = !changeOwner">
                   <span v-if="changeOwner">cancel</span>
                   <span v-else-if="contact.owner && contact.owner.userId">change</span>
@@ -153,7 +153,7 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text v-if="userCanEdit"
+              <v-btn text v-if="userCanEdit" color="primary"
                      :disabled="fieldsSaving"
                      @click="validate(true)">Save
               </v-btn>

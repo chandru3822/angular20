@@ -52,7 +52,7 @@
                  :disabled="!note.note || savingNote"
                  @click="saveNote(note)">Save
           </v-btn>
-          <v-btn text v-if="note.note" @click="[note={}, dirtyNote = false]">
+          <v-btn text color="primary" v-if="note.note" @click="[note={}, dirtyNote = false]">
             <span>cancel</span>
           </v-btn>
         </div>
