@@ -15,7 +15,7 @@ BEGIN
   elsif p_data_type_id = 4 then
 
     v_value = 'numeric_value';
-  elsif p_data_type_id = 5 then
+  elsif p_data_type_id in  (5,13) then
 
     v_value = 'text_value';
   elsif p_data_type_id in (6,8,9) then

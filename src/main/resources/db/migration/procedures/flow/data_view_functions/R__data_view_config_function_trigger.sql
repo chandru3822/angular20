@@ -132,7 +132,7 @@ BEGIN
                                                       when x.data_type_id = 2 then new.timestamp_value::text
                                                       when x.data_type_id = 3 then new.boolean_value::text
                                                       when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id in (5,13) then new.text_value::text
                                                       when x.data_type_id = 6 then new.int_value::text
                                                       when x.data_type_id = 7 then new.int_array_value::text
                                                       when x.data_type_id in (8, 9) then new.int_value::text end,
@@ -344,7 +344,7 @@ BEGIN
                                                       when x.data_type_id = 2 then new.timestamp_value::text
                                                       when x.data_type_id = 3 then new.boolean_value::text
                                                       when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id in (5,13) then new.text_value::text
                                                       when x.data_type_id = 6 then new.int_value::text
                                                       when x.data_type_id = 7 then new.int_array_value::text
                                                       when x.data_type_id in (8, 9) then new.int_value::text end,
@@ -572,7 +572,7 @@ BEGIN
                                                       when x.data_type_id = 2 then new.timestamp_value::text
                                                       when x.data_type_id = 3 then new.boolean_value::text
                                                       when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id in (5,13) then new.text_value::text
                                                       when x.data_type_id = 6 then new.int_value::text
                                                       when x.data_type_id = 7 then new.int_array_value::text
                                                       when x.data_type_id in (8, 9) then new.int_value::text end,
@@ -847,7 +847,7 @@ BEGIN
                                                       when x.data_type_id = 2 then new.timestamp_value::text
                                                       when x.data_type_id = 3 then new.boolean_value::text
                                                       when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id = 5 then new.text_value::text
+                                                      when x.data_type_id in (5,13) then new.text_value::text
                                                       when x.data_type_id = 6 then new.int_value::text
                                                       when x.data_type_id = 7 then new.int_array_value::text
                                                       when x.data_type_id in (8, 9) then new.int_value::text end,
