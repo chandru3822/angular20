@@ -250,7 +250,7 @@ label[for="adminOriginatorSelect"] {
 }
 
 .status-complete {
-  color: #3671E3;
+  color:  var(--v-success-darken4);
   font-weight: normal;
   font-size: 0.75rem;
 }
