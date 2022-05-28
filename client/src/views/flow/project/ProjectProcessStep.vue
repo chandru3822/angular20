@@ -204,9 +204,10 @@
           </v-btn>
         </div>
 
-        <v-row>
+        <v-row v-if="!processStepLoading">
           <Links :projectProcessStepId="parseInt(projectProcessStepId)"
                  :project-id="parseInt(projectId)"
+                 :contact-id="processStep.contactId"
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
@@ -687,8 +688,13 @@ export default {
         || !this.userCanEdit
     },
     followMultipleLinks(action) {
+      let params = {
+        projectId: this.projectId,
+        ppsId: this.projectProcessStepId
+      }
+
       action?.processStepActionLinks?.forEach(link => {
-        followLink(link.url, this.projectId)
+        followLink(link.url, params)
       })
     },
     handleActionCompleted(data) {
