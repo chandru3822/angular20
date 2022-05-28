@@ -1358,7 +1358,9 @@ drop FUNCTION flow.pps_update_project_details();
 update flow.custom_field set custom_field_sql_column = 'name'
 where id =392;
 
-update flow.data_view_child_field_config set unique_behavior_type_id = null
+INSERT INTO flow.unique_behavior_type (id, unique_behavior_type, date_created, date_modified, created_by_id, modified_by_id, archived, description, data_view) VALUES
+  (0, 'Default do not use', now(), now(), 2350555, 2350555, false, null, true);
+update flow.data_view_child_field_config set unique_behavior_type_id = 0
 where field_to_update = 'site_survey_date';
 
 
@@ -1471,3 +1473,7 @@ create table if not exists flow.trigger_error
 );
 
 
+alter table brs.project_details add column  if not exists smart_thermostat_quantity integer;
+
+create index if not exists pd_smart_thermostat_quantity_idx
+  on brs.project_details (smart_thermostat_quantity);
