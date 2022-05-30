@@ -1316,3 +1316,51 @@ CREATE TRIGGER reset_data_view_columns_from_process_step_trg
   ON flow.project_process_step_event
   FOR EACH ROW
 EXECUTE PROCEDURE flow.reset_data_view_columns_from_process_step_event();
+
+
+
+CREATE OR REPLACE FUNCTION flow.insert_data_view_maintenance()
+  RETURNS TRIGGER AS
+$body$
+declare
+
+BEGIN
+
+  if old.company_process_ids <> new.company_process_ids then
+
+    insert into flow.data_view_maintenance(data_view_id, processed, date_created, company_process_ids,
+                                           company_process_ids_added)
+      (with deleted_company_process_ids as (select unnest(old.company_process_ids) company_process_ids
+                                            except
+                                            select unnest(new.company_process_ids) company_process_ids)
+       select new.id, false, now(), me, false
+       from (select array_agg(company_process_ids) me
+             from deleted_company_process_ids) as foo
+       where foo.me is not null
+          or foo.me != '{}'::integer[]);
+
+    insert into flow.data_view_maintenance(data_view_id, processed, date_created, company_process_ids,
+                                           company_process_ids_added)
+      (with deleted_company_process_ids as (select unnest(new.company_process_ids) company_process_ids
+                                            except
+                                            select unnest(old.company_process_ids) company_process_ids)
+       select new.id, false, now(), me, true
+       from (select array_agg(company_process_ids) as me
+             from deleted_company_process_ids) as foo
+       where foo.me is not null
+          or foo.me != '{}'::integer[]);
+  end if;
+
+  RETURN NULL;
+END
+$body$
+  LANGUAGE plpgsql;
+
+
+
+drop trigger if exists data_view_company_process_ids_trg on flow.data_view;
+CREATE TRIGGER data_view_company_process_ids_trg
+  after update
+  ON flow.data_view
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.insert_data_view_maintenance();

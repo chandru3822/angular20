@@ -1253,6 +1253,7 @@ create table  if not exists flow.data_view_maintenance
   data_view_field_config_id    integer,
   company_process_ids     integer[],
   data_view_id    integer,
+  company_process_ids_added boolean not null default false,
   processed                 boolean not null default false,
   date_created    timestamp without time zone DEFAULT now() not null,
   CONSTRAINT data_view_maintenance_pk primary key (id),

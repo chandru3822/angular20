@@ -1,5 +1,4 @@
---write code for adding and removing company_process_ids
-CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_id integer)
+CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_id integer,p_company_process_ids integer[] default null)
   RETURNS text
 AS
 $BODY$
@@ -35,7 +34,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
            dvfc2.update_first_value_only,
@@ -55,6 +54,9 @@ BEGIN
       and dvfc2.process_step_event_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+        else dvfcd.company_process_ids_added is false end
     loop
       v_in_contact = v_in_contact + 1;
       if z.object_type = 'contact' and (v_sql = '') IS NOT FALSE then
@@ -101,7 +103,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
            dvfc2.update_first_value_only,
@@ -122,6 +124,9 @@ BEGIN
       and dvfc2.process_step_event_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+               else dvfcd.company_process_ids_added is false end
     loop
       v_in_project = v_in_project + 1;
       if z.object_type = 'project' and (v_sql = '') IS NOT FALSE then
@@ -166,7 +171,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            cfga.id               as custom_field_group_assignment_id,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
@@ -194,6 +199,9 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+               else dvfcd.company_process_ids_added is false end
     loop
       v_in_ppscfv = v_in_ppscfv + 1;
       call flow.generate_sql_for_ppscfv(z,
@@ -207,7 +215,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            cfga.id               as custom_field_group_assignment_id,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
@@ -234,6 +242,9 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+               else dvfcd.company_process_ids_added is false end
     loop
       v_in_project_details = v_in_project_details + 1;
       call flow.generate_sql_for_pcfv(z,
@@ -248,7 +259,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            cfga.id               as custom_field_group_assignment_id,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
@@ -275,6 +286,9 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+               else dvfcd.company_process_ids_added is false end
     loop
       v_in_contact_details = v_in_contact_details + 1;
       call flow.generate_sql_for_ccfv(z,
@@ -289,7 +303,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            cfga.id               as custom_field_group_assignment_id,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
@@ -317,6 +331,9 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+               else dvfcd.company_process_ids_added is false end
     loop
       v_in_event_details = v_in_event_details + 1;
       call flow.generate_sql_for_event_details(z,
@@ -331,7 +348,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
            dvfc2.update_first_value_only,
@@ -353,6 +370,9 @@ BEGIN
       and dvfc2.process_step_event_id is not null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+               else dvfcd.company_process_ids_added is false end
     loop
       v_in_event = v_in_event + 1;
       call flow.generate_sql_for_event(z,
@@ -366,7 +386,7 @@ BEGIN
   for z in
     select c.schema_name,
            dv.view_name,
-           dv.company_process_ids,
+           coalesce(p_company_process_ids,dv.company_process_ids)as company_process_ids,
            dvfc2.default_field_id,
            dvfc2.field_to_update,
            dvfc2.update_first_value_only,
@@ -389,6 +409,9 @@ BEGIN
       and dvfc2.process_step_id is not null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
+      and case when p_company_process_ids is not null then
+                 dvfcd.company_process_ids_added is true
+               else dvfcd.company_process_ids_added is false end
     loop
 
       v_in_pps = v_in_pps + 1;
