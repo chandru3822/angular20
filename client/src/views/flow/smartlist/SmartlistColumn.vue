@@ -7,6 +7,7 @@
       <v-btn
         v-if="!showNewFieldForm && canEdit"
         text
+        color="primary"
         @click="showNewFieldForm = true"
       >
         <v-icon>add</v-icon>
@@ -16,6 +17,7 @@
       <v-btn
         v-if="showNewFieldForm"
         text
+        color="primary"
         @click="resetNewFieldForm"
       >
         Cancel

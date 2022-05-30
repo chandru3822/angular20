@@ -8,6 +8,7 @@
         v-if="!showNewRequirementForm && canEdit"
         @click="showNewRequirementForm = true"
         text
+        color="primary"
       >
         <v-icon>add</v-icon>
         <template v-if="!constants.IS_MOBILE">Add Requirement</template>
@@ -16,6 +17,7 @@
       <v-btn
         v-if="showNewRequirementForm"
         text
+        color="primary"
         @click="resetRequirementForm"
       >
         Cancel
@@ -180,6 +182,7 @@
 
       <v-btn
         text
+        color="primary"
         class="text-left"
         :disabled="isSaveNewRequirementDisabled"
         @click="addNewRequirement"

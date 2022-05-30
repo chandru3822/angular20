@@ -24,7 +24,7 @@
               label="Hide events with a start time in the future"
               @change="filterFutureFollowUps()"
             />
-            <v-btn text @click="exportCsv" v-if="results.length > 0">
+            <v-btn text color="primary" @click="exportCsv" v-if="results.length > 0">
               <v-icon class="mr-2">mdi-cloud-download</v-icon>
               Export
             </v-btn>
@@ -46,11 +46,11 @@
           id="wq-drilldown-table"
           @click:row="clickRow"
         >
-          <template #no-data>
+          <template class="black--text" #no-data>
             No available results
           </template>
 
-          <template #no-results>
+          <template class="black--text" #no-results>
             No available results
           </template>
 
@@ -72,7 +72,7 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left underline" v-if="useProcessStepHeaders">
-                <v-btn text small
+                <v-btn text small class="primary--text"
                        :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Project Name'] }}
                 </v-btn>
@@ -114,7 +114,7 @@
                   </pre>
                   <v-spacer></v-spacer>
                   {{ item.id }}
-                  <v-btn small fab text @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
+                  <v-btn small fab text color="primary" @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
                 </div>
@@ -602,7 +602,6 @@ export default {
 .card-accent {
   height: 100%;
   width: 5px;
-  /*border-radius: 4px 0 0 4px !important;*/
 }
 
 .card-count {
