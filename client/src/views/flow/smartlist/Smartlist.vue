@@ -51,52 +51,18 @@
                   <v-icon>save</v-icon>
                   <span v-if="!constants.IS_MOBILE">Save</span>
                 </v-btn>
-
-                <v-dialog
-                  v-model="showDeleteDialog"
-                  width="500"
-                  v-if="smartlist.id && canEdit"
+                <v-btn
+                    text
+                    color="primary"
+                    @click="showDeleteDialog=true"
                 >
-                  <template #activator="{on}">
-                    <v-btn
-                      text
-                      color="primary"
-                      v-on="on"
-                    >
-                      <v-icon>delete</v-icon>
-                      <span v-if="!constants.IS_MOBILE">Delete</span>
-                    </v-btn>
-                  </template>
-
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this smartlist?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="showDeleteDialog = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="[showDeleteDialog = false, deleteSmartlist()]">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                  <v-icon>delete</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Delete</span>
+                </v-btn>
+                <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="[showDeleteDialog = false, deleteSmartlist()]" @closeConfirmDeleteDialog="showDeleteDialog=false">
+                  <template v-slot:title>Confirm</template>
+                  Are you sure you want to delete this smartlist?
+                </ConfirmDeleteDialogImproved>
               </v-toolbar-items>
             </v-toolbar>
           </v-col>
@@ -365,10 +331,12 @@ import SmartlistRequirement from './SmartlistRequirement'
 import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
+import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
 export default {
   name: 'Smartlist',
   components: {
+    ConfirmDeleteDialogImproved,
     SmartlistRequirement,
     SmartlistColumn
   },
