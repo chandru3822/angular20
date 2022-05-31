@@ -393,21 +393,21 @@
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                           </div>
-                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && !isProject">
-                            <div v-if="parseInt(typeId) === 3">
-                              <input type="checkbox" v-model="cf.showOnUserProfile" :readonly="!userCanEdit"
-                                     :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
-                              Show On User Profile
-                            </div>
+                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null">
                             <div>
+                              <input type="checkbox" v-model="cf.required" :readonly="!userCanEdit"
+                                     :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
+                              Required
+                            </div>
+                            <div v-if="!isProject">
                               <input type="checkbox" v-model="cf.showOnInsert" :readonly="!userCanEdit"
                                      :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
                               Show On Insert
                             </div>
-                            <div v-if="cf.showOnInsert" class="pl-2 pt-1">
-                              <input type="checkbox" v-model="cf.requireOnInsert" :readonly="!userCanEdit"
+                            <div v-if="parseInt(typeId) === 3">
+                              <input type="checkbox" v-model="cf.showOnUserProfile" :readonly="!userCanEdit"
                                      :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
-                              Require On Insert
+                              Show On User Profile
                             </div>
                           </div>
                         </v-list-item-content>
@@ -427,7 +427,7 @@
 
                         </v-menu>
                         <v-btn text small v-else></v-btn>
-                        <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                        <v-btn text small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
                         <confirm-delete-dialog
@@ -882,7 +882,7 @@ export default {
           showOnUserProfile: cf.showOnUserProfile,
           showOnInsert: cf.showOnInsert,
           //can only set requireOnInsert true if showOnInsert is also true
-          requireOnInsert: cf.showOnInsert ? cf.requireOnInsert : false
+          required: cf.required || false
         }
         const {status} = await putRequest(`/customFieldGroup/updateFieldShowOrRequire`, objectType)
         this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
@@ -890,7 +890,7 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

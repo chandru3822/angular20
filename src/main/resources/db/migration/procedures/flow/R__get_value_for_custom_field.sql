@@ -20,7 +20,7 @@ BEGIN
                        when dt.id = 2 then pscfv.timestamp_value::text
                        when dt.id = 3 then pscfv.boolean_value::text
                        when dt.id = 4 then pscfv.numeric_value::text
-                       when dt.id = 5 then pscfv.text_value
+                       when dt.id = 5 or dt.id = 13 then pscfv.text_value
                        when dt.id = 6 then pscfv.int_value::text
                        when dt.id = 7 then pscfv.int_array_value::text
                        when dt.id = 8 then pscfv.int_value::text
@@ -49,7 +49,7 @@ BEGIN
                            when dt.id = 2 then pcfv.timestamp_value::text
                            when dt.id = 3 then pcfv.boolean_value::text
                            when dt.id = 4 then pcfv.numeric_value::text
-                           when dt.id = 5 then pcfv.text_value
+                           when dt.id = 5 or dt.id = 13 then pcfv.text_value
                            when dt.id = 6 then pcfv.int_value::text
                            when dt.id = 7 then pcfv.int_array_value::text
                            when dt.id = 8 then pcfv.int_value::text
@@ -75,7 +75,7 @@ BEGIN
                            when dt.id = 2 then ccfv.timestamp_value::text
                            when dt.id = 3 then ccfv.boolean_value::text
                            when dt.id = 4 then ccfv.numeric_value::text
-                           when dt.id = 5 then ccfv.text_value
+                           when dt.id = 5 or dt.id = 13 then ccfv.text_value
                            when dt.id = 6 then ccfv.int_value::text
                            when dt.id = 7 then ccfv.int_array_value::text
                            when dt.id = 8 then ccfv.int_value::text
@@ -101,7 +101,7 @@ BEGIN
                            when dt.id = 2 then ucfv.timestamp_value::text
                            when dt.id = 3 then ucfv.boolean_value::text
                            when dt.id = 4 then ucfv.numeric_value::text
-                           when dt.id = 5 then ucfv.text_value
+                           when dt.id = 5 or dt.id = 13 then ucfv.text_value
                            when dt.id = 6 then ucfv.int_value::text
                            when dt.id = 7 then ucfv.int_array_value::text
                            when dt.id = 8 then ucfv.int_value::text
@@ -127,7 +127,7 @@ BEGIN
                            when dt.id = 2 then ocfv.timestamp_value::text
                            when dt.id = 3 then ocfv.boolean_value::text
                            when dt.id = 4 then ocfv.numeric_value::text
-                           when dt.id = 5 then ocfv.text_value
+                           when dt.id = 5 or dt.id = 13 then ocfv.text_value
                            when dt.id = 6 then ocfv.int_value::text
                            when dt.id = 7 then ocfv.int_array_value::text
                            when dt.id = 8 then ocfv.int_value::text

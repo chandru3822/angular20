@@ -83,6 +83,7 @@ public class CustomFieldValueService {
         params.put("timestampValue", cfv.getTimestampValue());
         params.put("booleanValue", cfv.getBooleanValue());
         params.put("textValue", cfv.getTextValue());
+        params.put("richTextValue", cfv.getRichTextValue());
         params.put("numericValue", cfv.getNumericValue());
         params.put("intValue", cfv.getIntValue());
         params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);

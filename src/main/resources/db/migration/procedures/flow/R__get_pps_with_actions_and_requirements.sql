@@ -32,6 +32,7 @@ BEGIN
              pps.project_id as "projectId",
              pps.process_step_complete_date as "processStepCompleteDate",
              pps.main as "main",
+             p.contact_id as "contactId",
              coalesce(pps.date_modified, pps.date_created) as "lastUpdated",
              cpsst.process_step_status_type_id as "processStepStatusTypeId",
              cpsst.process_step_status_type as "processStepStatusType",

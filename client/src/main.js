@@ -121,7 +121,6 @@ axios.interceptors.response.use(
             : response.status === 403
             ? 'User Unauthorized'
             : 'Unknown Error'
-        console.log('randaLogger', response.data.maintenanceMode)
         if(response?.data?.maintenanceMode && status === 403) {
           //if we dont remove the store item then a logged in user who USED to have permission will still have permission later
           localStorage.removeItem('store')

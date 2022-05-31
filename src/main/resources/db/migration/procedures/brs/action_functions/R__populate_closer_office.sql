@@ -15,17 +15,17 @@ BEGIN
   --if they dont have one then leave blank
 
   select up.org_id::text, up.org_id, o.org_type_id
-    into v_value_to_save, v_org_id, v_org_type_id
+  into v_value_to_save, v_org_id, v_org_type_id
   from flow.project p
-    inner join flow.user_position up on up.id = p.user_position_id
-    inner join flow.org o on up.org_id = o.id
+         inner join flow.user_position up on up.id = p.user_position_id
+         inner join flow.org o on up.org_id = o.id
   where p.id = p_project_id;
 
   if(v_org_type_id != 3) then --closer sales office
     select int_value::text into v_value_to_save
     from flow.organization_custom_field_value ocfv
     where org_id = v_org_id
-    and custom_field_group_assignment_id = 23201
+      and custom_field_group_assignment_id = 23201
     ;
   end if;
 

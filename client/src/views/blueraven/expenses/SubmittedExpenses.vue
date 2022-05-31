@@ -2,11 +2,36 @@
   <v-container id="submitted-expense-container">
     <v-row v-if="!selectedExpense || !selectedExpense.id">
       <v-col cols="12">
-        <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Submitted Expenses</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <div class="pt-5">
+        <v-card flat color="white" class="pa-5">
+          <div class="flex-display">
+            <div class="left-header-bar">
+              <v-toolbar-title class="app-title">
+                Submitted Expenses - {{ showAll ? 'In Range' : 'All Unpaid' }}
+              </v-toolbar-title>
+              <v-text-field
+                v-model="userSearchText"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                class="mt-5"
+                hide-details
+              ></v-text-field>
+              <div>
+                <v-btn color="primaryCustom"
+                       @click="exportExpenses"
+                       :disabled="selectedExpenses.length === 0"
+                       class="white--text" small>
+                  Export Selected
+                </v-btn>
+                <v-btn color="primaryCustom" class="white--text ml-4" small
+                       :disabled="!showAll"
+                       @click="[rangeChanged = false, selectedExpenses = [], showAll = false, getSubmittedExpenses(false)]">
+                  {{ showAll ? 'Show Unpaid' : 'Showing Unpaid'}}
+                </v-btn>
+              </div>
+            </div>
+            <v-spacer></v-spacer>
+            <div class="middle-header-bar">
               <v-menu v-model="paymentDropdown"
                       v-if="selectedExpenses.length > 0 && canPay"
                       bottom offset-y min-width="350"
@@ -28,7 +53,8 @@
                     <v-btn color="secondaryButton" text @click="paymentDropdown = false">Cancel</v-btn>
                     <v-btn color="primary" class="white--text" raised
                            :disabled="paymentConfirmLoading"
-                           @click="confirmPayment()">Yes</v-btn>
+                           @click="confirmPayment()">Yes
+                    </v-btn>
                   </v-card-actions>
                 </v-card>
               </v-menu>
@@ -37,7 +63,7 @@
                       bottom offset-y min-width="350"
                       :close-on-content-click="false">
                 <template #activator="{on}">
-                  <v-btn v-on="on" dark color="primary" class="ml-3">Approve</v-btn>
+                  <v-btn v-on="on" dark small color="primary" class="ml-3">Approve</v-btn>
                 </template>
                 <v-card class="pa-5">
                   <v-card-title>
@@ -53,7 +79,8 @@
                     <v-btn color="secondaryButton" text @click="approveDropdown = false">Cancel</v-btn>
                     <v-btn color="primary" class="white--text" raised
                            :disabled="approveConfirmLoading"
-                           @click="confirmApproval()">Yes</v-btn>
+                           @click="confirmApproval()">Yes
+                    </v-btn>
                   </v-card-actions>
                 </v-card>
               </v-menu>
@@ -62,7 +89,7 @@
                       bottom offset-y min-width="350"
                       :close-on-content-click="false">
                 <template #activator="{on}">
-                  <v-btn v-on="on" dark color="red" class="ml-3">Reject</v-btn>
+                  <v-btn v-on="on" small dark color="red" class="ml-3">Reject</v-btn>
                 </template>
                 <v-card class="pa-5">
                   <label>Reason for Rejection: (required)</label>
@@ -79,67 +106,65 @@
                   </v-btn>
                 </v-card>
               </v-menu>
-              <v-btn color="primary"
-                     @click="exportExpenses"
-                     :disabled="selectedExpenses.length === 0"
-                     class="white--text ml-5">
-                Export Selected
-              </v-btn>
             </div>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-items>
-            <div class="flex-display pt-5">
-              <DatetimePickerInput v-model="startDate"
-                                   :timezone="timezone"
-                                   :maxDate="endDate"
-                                   :type="'date'"
-                                   label="From"
-                                   hide-details
-                                   custom-class="expense-range-selector"
-              ></DatetimePickerInput>
-              <DatetimePickerInput v-model="endDate"
-                                   :timezone="timezone"
-                                   :minDate="startDate"
-                                   :type="'date'"
-                                   label="To"
-                                   hide-details
-                                   custom-class="expense-range-selector ml-5"
-              ></DatetimePickerInput>
-              <v-btn color="primary" class="white--text ml-5"
-                     @click="[showAll = !showAll, getSubmittedExpenses()]">
-                {{ showButtonText }}
+            <v-spacer></v-spacer>
+            <div class="right-header-bar elevation-1">
+              <div class="flex-display">
+                <DatetimePickerInput v-model="startDate"
+                                     :timezone="timezone"
+                                     :maxDate="endDate"
+                                     :type="'date'"
+                                     label="From"
+                                     hide-details
+                                     @input="changeRange()"
+                                     custom-class="expense-range-selector mr-3"
+                ></DatetimePickerInput>
+                <DatetimePickerInput v-model="endDate"
+                                     :timezone="timezone"
+                                     :minDate="startDate"
+                                     :type="'date'"
+                                     label="To"
+                                     hide-details
+                                     @input="changeRange()"
+                                     custom-class="expense-range-selector ml-5"
+                ></DatetimePickerInput>
+              </div>
+              <v-btn color="primaryCustom" class="white--text mt-2" small
+                     :disabled="(showAll && !rangeChanged) || !startDate || !endDate"
+                     @click="[rangeChanged = false, selectedExpenses = [], showAll = true, getSubmittedExpenses(true)]">
+                {{ showAll && !rangeChanged ? 'Showing All in Range' : 'Show All in Range'}}
               </v-btn>
-              <v-btn color="primary" class="white--text ml-5"
+              <v-btn color="primary" class="white--text mt-2 small"
                      @click="exportExpenses(5)">
-                Export Paid
+                Export Paid in Range
               </v-btn>
-              <v-btn color="primary" class="white--text ml-5"
+              <v-btn color="primary" class="white--text mt-2" small
                      @click="exportExpenses(-1)">
-                Export All
+                Export All in Range
               </v-btn>
             </div>
-          </v-toolbar-items>
-        </v-toolbar>
+          </div>
+        </v-card>
         <v-divider></v-divider>
 
         <div class="submitted-expense-table-container">
           <v-data-table
             :headers="headers"
             :items="filterSubmittedExpenses()"
-            :items-per-page="-1"
+            :search="userSearchText"
+            :items-per-page="100"
             :mobile-breakpoint="0"
             disable-sort
+            :footer-props="footerProps"
             fixed-header
             class="elevation-1 fix-column-width-bug square-card submitted-expense-table"
           >
             <template #no-data>
-              No Submitted Expenses
+              No Matching Expenses Found
             </template>
 
             <template #no-results>
-              No Submitted Expenses
+              No Matching Expenses Found
             </template>
 
             <template #header.selectBox="{}">
@@ -148,7 +173,9 @@
 
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2}">
-                <td><v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox></td>
+                <td>
+                  <v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
+                </td>
                 <td class="text-left">{{ item.createdBy }}</td>
                 <td class="text-left">{{ item.positionName }}</td>
                 <td class="text-left">{{ item.expenseAmount | currency('$', 2) }}</td>
@@ -166,7 +193,8 @@
                 <td class="text-left">{{ item.paidBy }}</td>
                 <td>
                   <div style="display: flex; justify-content: flex-end">
-                    <v-btn small text @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getGlCodes(), getUsersWithBudget(), getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)]">
+                    <v-btn small text
+                           @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getGlCodes(), getUsersWithBudget(), getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)]">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-dialog
@@ -316,7 +344,8 @@
             <v-btn color="primary" class="white--text" raised
                    :disabled="selectedExpense.approvalDate !== null || !selectedExpense.expenseDate || !selectedExpense.glCodeId
                             || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.expenseAmount"
-                   @click="saveSubmittedExpense(selectedExpense)">Save Changes</v-btn>
+                   @click="saveSubmittedExpense(selectedExpense)">Save Changes
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -326,12 +355,19 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  deleteRequest,
+  getRequestWithParams,
+  postRequest,
+  putRequest,
+  getSnackbar
+} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import moment from 'moment'
-import { saveAs } from 'file-saver'
+import {saveAs} from 'file-saver'
 import cloneDeep from 'lodash.clonedeep'
 
 export default {
@@ -364,13 +400,13 @@ export default {
       users: [],
       userId: this.$store.state.user.details.id,
       usersLoading: false,
-      userSearchText: null,
+      userSearchText: '',
       budgetTypesForUser: [],
       selectedExpenses: [],
       selectAllExpenses: false,
       glCodes: [],
       headers: [
-        { text: '', value: 'selectBox', selectFilter:true, show: true, width: '50px' },
+        {text: '', value: 'selectBox', selectFilter: true, show: true, width: '50px'},
         {text: 'Rep', value: 'createdBy', show: true},
         {text: 'Position', value: 'positionName', show: true},
         {text: 'Amount', value: 'amount', show: true},
@@ -389,7 +425,7 @@ export default {
         {text: null, value: 'icons', show: true}
       ],
       showAll: false,
-      showButtonText: "Show Paid",
+      rangeChanged: false,
       startDate: moment().startOf('month').format('YYYY-MM-DD'),
       endDate: moment().endOf('month').format('YYYY-MM-DD'),
       canReject: true,
@@ -401,6 +437,10 @@ export default {
     this.getSubmittedExpenses()
   },
   methods: {
+    changeRange() {
+      console.log('got here')
+      this.rangeChanged = true
+    },
     toggleSelectAllExpenses() {
       //reset these values first
       this.canApprove = true
@@ -409,8 +449,7 @@ export default {
 
       if (this.selectAllExpenses) {
         this.selectedExpenses = cloneDeep(this.masterExpenses)
-      }
-      else {
+      } else {
         this.selectedExpenses = []
       }
 
@@ -466,17 +505,21 @@ export default {
         }
       })
     },
-    filterSubmittedExpenses () {
+    filterSubmittedExpenses() {
       return this.submittedExpenses.filter(glc => !glc.archived)
     },
-    async getSubmittedExpenses() {
+    async getSubmittedExpenses(showAll) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let date1 = moment(this.startDate).format('MM/DD/YYYY')
         let date2 = moment(this.endDate).format('MM/DD/YYYY')
-        let url = this.showAll ? `/expenses/list` : `/expenses/unpaid`
-        this.showButtonText = this.showAll ? 'Show Unpaid' : 'Show All'
-        const {data, status} = await getRequestWithParams(url, {params: {startDate: date1, endDate: date2}}, 'blueraven')
+        let url = showAll ? `/expenses/list` : `/expenses/unpaid`
+        const {data, status} = await getRequestWithParams(url, {
+          params: {
+            startDate: date1,
+            endDate: date2
+          }
+        }, 'blueraven')
         this.submittedExpenses = data
         this.masterExpenses = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
@@ -506,7 +549,7 @@ export default {
       try {
         let filename = 'selected-expenses.csv'
         let results = []
-        if(typeId != null) {
+        if (typeId != null) {
           filename = typeId === 5 ? 'paid-expenses.csv' : 'expenses.csv'
           let url = typeId === 5 ? '/expenses/paid' : '/expenses/list'
           let date1 = moment(this.startDate).format('MM/DD/YYYY')
@@ -537,22 +580,22 @@ export default {
           }
 
           csvData +=
-              r.createdBy + ',' +
-              r.positionName + ',' +
-              r.expenseAmount + ',' +
-              moment.utc(r.expenseDate).format('MM/DD/YYYY') + ',' +
-              r.glCode + ',' +
-              r.budgetType + ',' +
-              r.expenseBudgetUser + ',' +
-              moment.utc(r.dateCreated).format('MM/DD/YYYY') + ',' +
-              r.createdBy + ',' +
-              `${r.dateSubmitted ? moment.utc(r.dateSubmitted).format('MM/DD/YYYY') : null}` + ',' +
-              r.submittedBy + ',' +
-              approvedDate + ',' +
-              `${r.skipApproval ? 'Not Required' : r.approvedBy}` + ',' +
-              paidDate + ',' +
-              `${r.skipApproval ? 'Not Required' : r.paidBy}` + ',' +
-              '"' + r.reimbursementRequestDetails + '"'
+            r.createdBy + ',' +
+            r.positionName + ',' +
+            r.expenseAmount + ',' +
+            moment.utc(r.expenseDate).format('MM/DD/YYYY') + ',' +
+            r.glCode + ',' +
+            r.budgetType + ',' +
+            r.expenseBudgetUser + ',' +
+            moment.utc(r.dateCreated).format('MM/DD/YYYY') + ',' +
+            r.createdBy + ',' +
+            `${r.dateSubmitted ? moment.utc(r.dateSubmitted).format('MM/DD/YYYY') : null}` + ',' +
+            r.submittedBy + ',' +
+            approvedDate + ',' +
+            `${r.skipApproval ? 'Not Required' : r.approvedBy}` + ',' +
+            paidDate + ',' +
+            `${r.skipApproval ? 'Not Required' : r.paidBy}` + ',' +
+            '"' + r.reimbursementRequestDetails + '"'
 
           csvData += '\n'
 
@@ -654,7 +697,7 @@ export default {
     },
     async getBudgetTypesForUser(item, expenseDate, reloadForChange) {
       //reset the budget id if they change it but not if loading for the first time on this screen
-      if(reloadForChange) {
+      if (reloadForChange) {
         item.expenseBudgetId = null
       }
       if (null != item.expenseBudgetUserId && null != expenseDate) {
@@ -723,7 +766,7 @@ export default {
 
 <style lang="scss">
 #submitted-expense-container .v-data-table__wrapper {
-  height: calc(100vh - 375px);
+  height: calc(100vh - 450px);
   min-height: 300px;
 }
 
@@ -749,13 +792,13 @@ export default {
   height: auto
 }
 
-.submitted-expense-table-container {
-  max-width: 100% !important;
-}
+//.submitted-expense-table-container {
+//  max-width: 100% !important;
+//}
 
-.submitted-expense-table {
-  min-width: 1400px !important;
-}
+//.submitted-expense-table {
+//  min-width: 1400px !important;
+//}
 
 
 .receipt-image-background {
@@ -778,5 +821,25 @@ export default {
   max-height: calc(100vh - 200px);
   height: auto;
   width: auto;
+}
+
+.left-header-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.right-header-bar {
+  display: flex;
+  padding: 5px;
+  border: solid 1px #ccc;
+  text-align: right;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.middle-header-bar {
+  display: flex;
+  align-items: end;
 }
 </style>

@@ -17,7 +17,8 @@
             Project Details
           </v-tab>
         </v-tabs>
-        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6" v-if="displayedGroups && displayedGroups.length > 0">
+        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6"
+                   v-if="displayedGroups && displayedGroups.length > 0">
           <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -31,54 +32,59 @@
                 v-if="userCanEdit"
                 color="primary"
                 class="white--text mt-3"
+                :loading="isFieldsLoading"
                 :disabled="fieldsSaving"
-                @click="[fieldsSaving = true, updateFieldGroups()]">Save Fields
+                @click="updateFieldGroups()">Save Fields
               </v-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
       </div>
       <div class="project-fields-container px-3" ref="projectFieldsContainer">
-        <v-col v-if="isFieldsLoading">
-          <SpinnerInline :size="20" color="primary"/>
-        </v-col>
-
-        <div v-else>
-          <v-col
-            :class="{ 'mt-4': index !== 0 }"
-            class="py-0"
-            v-for="(group, index) in displayedGroups"
-            :key="index"
-          >
-            <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-              <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
-            </v-toolbar>
-            <v-card class="px-4 text-left square-card">
-              <v-row>
-                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                  <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
-                    :key="idx"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getReadOnly(field)"
-                    :showFieldName="false"
-                    :field="field"
-                  />
-                </v-col>
-                <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
-                  <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
-                    :key="idx"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getReadOnly(field)"
-                    :showFieldName="false"
-                    :field="field"
-                  />
-                </v-col>
-              </v-row>
-            </v-card>
+        <v-form ref="projectForm">
+          <v-col v-if="isFieldsLoading">
+            <SpinnerInline :size="20" color="primary"/>
           </v-col>
-        </div>
+
+          <div v-else>
+            <v-col
+              :class="{ 'mt-4': index !== 0 }"
+              class="py-0"
+              v-for="(group, index) in displayedGroups"
+              :key="index"
+            >
+              <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+                <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
+              </v-toolbar>
+              <v-card class="px-4 text-left square-card">
+                <v-row>
+                  <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                    <CustomValueInput
+                      v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
+                      :key="idx"
+                      :required="field.required"
+                      :callback="populateDirtyCfvs"
+                      :readonly="getReadOnly(field)"
+                      :showFieldName="false"
+                      :field="field"
+                    />
+                  </v-col>
+                  <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                    <CustomValueInput
+                      v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
+                      :key="idx"
+                      :required="field.required"
+                      :callback="populateDirtyCfvs"
+                      :readonly="getReadOnly(field)"
+                      :showFieldName="false"
+                      :field="field"
+                    />
+                  </v-col>
+                </v-row>
+              </v-card>
+            </v-col>
+          </div>
+        </v-form>
       </div>
     </div>
 
@@ -164,8 +170,8 @@ export default {
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if(this.$store.state.project.manualColumnSplit) {
-        return values.filter(function(element, index, values) {
+      if (this.$store.state.project.manualColumnSplit) {
+        return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
       } else {
@@ -216,24 +222,30 @@ export default {
       }
     },
     updateFieldGroups: async function () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs)
-        if (this.dirtyCfvs.length > 0) {
-          this.getProcessSteps()
+      if (this.$refs.projectForm.validate()) {
+        this.fieldsSaving = true
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data, status} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs)
+          if (this.dirtyCfvs.length > 0) {
+            this.getProcessSteps()
+          }
+          this.dirtyCfvs = []
+          this.customFieldGroups = data
+          this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Project Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } finally {
+          this.fieldsSaving = false
         }
-        this.dirtyCfvs = []
-        this.customFieldGroups = data
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+      } else {
+        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Project Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } finally {
-        this.fieldsSaving = false
       }
     },
     populateDirtyCfvs(field) {

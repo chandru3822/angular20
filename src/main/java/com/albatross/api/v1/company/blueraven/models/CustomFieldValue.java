@@ -27,7 +27,7 @@ public class CustomFieldValue {
   private Boolean valueWasChanged;
 
   // not sure on these types
-  private String fieldName, fieldValue, textValue, customFieldSqlKey, ancillaryCustomFieldHint;
+  private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, ancillaryCustomFieldHint;
   private Long intValue;
 
   private List<Integer> intArrayValue;

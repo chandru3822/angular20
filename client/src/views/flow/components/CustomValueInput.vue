@@ -238,6 +238,28 @@
           </template>
         </v-autocomplete>
 
+        <div v-if="field.dataTypeId === 13">
+          <!-- this hidden text field makes the form's required fields validation work -->
+          <v-text-field style="display: none;" v-model="field.richTextValue" :required="required" :rules="getRequiredRule()">
+          </v-text-field>
+          <div class="rich-text-label" v-if="!hideLabel && !showFieldName">
+            {{ getFieldName() }}
+          </div>
+          <quill-editor
+            :options="toolbarOptions"
+            class="rich-text-editor"
+            :class="{'rich-text-editor-required': required && !field.richTextValue,
+                     'rich-text-editor-readonly': readonly}"
+            :readonly="readonly"
+            :disabled="readonly"
+            @change="(q) => doRichTextFieldCallback(field, q)"
+            v-model="field.richTextValue"
+          />
+          <div class="rich-text-label error--text" v-if="required && !field.richTextValue">
+            Field is required
+          </div>
+        </div>
+
       </v-col>
     </v-row>
     <v-row v-if="field.lazyLoadValues && field.values">
@@ -253,6 +275,8 @@
 import debounce from "lodash.debounce"
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue"
 import constants from "@/helpers/constants"
+import 'quill/dist/quill.snow.css'
+import {quillEditor} from 'vue-quill-editor'
 import {getRequestWithParams} from "@/helpers/helpers"
 
 export default {
@@ -294,7 +318,8 @@ export default {
     callback: Function
   },
   components: {
-    DatetimePickerInput
+    DatetimePickerInput,
+    QuillEditor: quillEditor,
   },
   filters: {
     fieldValues: function (field) {
@@ -321,6 +346,16 @@ export default {
     return {
       search: null,
       isLoading: false,
+      toolbarOptions: {
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
+            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+            [{ 'size': ['small', 'normal', 'large', 'huge'] }],  // custom dropdown
+            ['clean']                                         // remove all formatting button
+          ],
+        }
+      },
       requiredRules: constants.BASIC_REQUIRED_RULE,
       arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value
@@ -341,6 +376,10 @@ export default {
   },
 
   methods: {
+    doRichTextFieldCallback(field, quill) {
+      field.textValue = quill?.text || null
+      this.callback(field)
+    },
     getFieldName() {
       return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
     },
@@ -366,6 +405,30 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+ .rich-text-editor .ql-container {
+   height: auto !important;
+ }
+
+ .rich-text-editor-readonly .ql-toolbar {
+   display: none;
+ }
+
+ .rich-text-editor-readonly .ql-container {
+   border-top: solid 1px #ccc !important;
+ }
+
+ .rich-text-editor-required {
+   border: solid 2px red !important;
+ }
+
+ .rich-text-label {
+   font-size: 11px;
+   font-family: Lato, sans-serif;
+ }
+
+</style>
 
 <style scoped lang="scss">
 .ancillary {

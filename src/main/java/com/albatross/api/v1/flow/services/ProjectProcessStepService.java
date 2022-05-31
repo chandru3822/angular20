@@ -669,6 +669,7 @@ public class ProjectProcessStepService {
               requirementMet = calculateNumericRequirement(r);
               break;
             case 5:
+            case 13:
               requirementMet = calculateTextRequirement(r);
               break;
             case 6:
@@ -961,7 +962,8 @@ public class ProjectProcessStepService {
 
         try {
           switch (r.getDataTypeRequirementId().intValue()) {
-            case 18:
+            case 18: //null for text
+            case 30: //null for rich text
               switch (r.getOperatorTypeId().intValue()) {
                 case 1:
                   passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
@@ -976,7 +978,8 @@ public class ProjectProcessStepService {
                   throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
               }
               break;
-            case 19:
+            case 19:  //not null for text
+            case 31:  //not null for rich text
               switch (r.getOperatorTypeId().intValue()) {
                 case 1:
                   passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
@@ -1163,6 +1166,7 @@ public class ProjectProcessStepService {
         typedValue = Double.parseDouble(startingValue);
         break;
       case 5:
+      case 13:
         typedValue = "'" + startingValue + "'";
         break;
       case 6:
@@ -1197,6 +1201,7 @@ public class ProjectProcessStepService {
           paramValue = param.getNumericValue();
           break;
         case 5:
+        case 13:
           paramValue = param.getTextValue();
           break;
         case 6:
@@ -1438,7 +1443,8 @@ public class ProjectProcessStepService {
       } else {
         // An empty string and null are treated as the same value during text comparison
         switch (r.getDataTypeRequirementId().intValue()) {
-          case 18:
+          case 18: //null for text
+          case 30: //null for rich text
             switch (r.getOperatorTypeId().intValue()) {
               case 1:
                 passed = fieldValue == null || fieldValue.isEmpty();
@@ -1453,7 +1459,8 @@ public class ProjectProcessStepService {
                 throw new Exception(String.format("Unable to parse text data type, operator ID: %s", r.getOperatorTypeId()));
             }
             break;
-          case 19:
+          case 19:  //not null for text
+          case 31:  //not null for rich text
             switch (r.getOperatorTypeId().intValue()) {
               case 1:
                 passed = fieldValue != null && !fieldValue.isEmpty();
