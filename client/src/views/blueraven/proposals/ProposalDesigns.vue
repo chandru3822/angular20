@@ -88,10 +88,10 @@
       <v-card width="355" height="535" class="proposal-card request-new"
               :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
         <v-btn :disabled="activeDesign && null != activeDesign.projectId"
-               text @click="showNewDesignRequestForm = true">
+               text color="primary" @click="showNewDesignRequestForm = true">
           <v-icon :size="60">add</v-icon>
         </v-btn>
-        <div class="mt-5">
+        <div class="mt-5 primary--text">
           Request New Design
         </div>
         <div class="request-new-details" v-if="activeDesign && null != activeDesign.projectId">
