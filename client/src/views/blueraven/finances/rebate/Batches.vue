@@ -3,7 +3,7 @@
     <v-divider></v-divider>
     <v-toolbar class="mt-3" flat color="white">
       <v-select attach v-model="batchId"
-                class="batches-select"
+                class="batches-select mt-5"
                 label="Select a Batch"
                 :items="batches"
                 no-data-text="No Batches Available"
@@ -29,8 +29,8 @@
       <span class="pl-4" v-show="batchLoaded">Payment Amount Total: <b>{{ paymentSum || 0 | currency('$', 2) }}</b></span>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn style="margin-right: 40px" v-show="batchLoaded" @click="exportChase">Download Chase CSV</v-btn>
-        <v-btn v-show="batchLoaded" @click="exportPayments">Export</v-btn>
+        <v-btn style="margin-right: 40px" text color="primary" v-show="batchLoaded" @click="exportChase">Download Chase CSV</v-btn>
+        <v-btn v-show="batchLoaded" @click="exportPayments" text color="primary">Export</v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
@@ -56,11 +56,11 @@
             :key="it.id"
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
-            <td class="text-left"><a href="" @click="goToDetails(it)"> {{ it.projectName ? it.projectName : '' }}</a></td>
-            <td class="text-left">{{ it.projectId ? it.projectId : '' }}</td>
-            <td class="text-left">{{ it.paymentNbr ? it.paymentNbr : '' }}</td>
-            <td class="text-left">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
-            <td class="text-left">{{ it.checkNumber ? it.checkNumber : '' }}</td>
+            <td class="text-left pl-4"><a href="" @click="goToDetails(it)"> {{ it.projectName ? it.projectName : '' }}</a></td>
+            <td class="text-left pl-4">{{ it.projectId ? it.projectId : '' }}</td>
+            <td class="text-left pl-4">{{ it.paymentNbr ? it.paymentNbr : '' }}</td>
+            <td class="text-left pl-4">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
+            <td class="text-left pl-4">{{ it.checkNumber ? it.checkNumber : '' }}</td>
           </tr>
         </template>
       </v-data-table>

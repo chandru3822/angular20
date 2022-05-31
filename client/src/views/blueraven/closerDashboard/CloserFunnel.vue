@@ -441,12 +441,12 @@
             <tr class="funnel-tr">
               <th class="funnel-th view-btns">
                 <div class="view-btns-container">
-                  <v-btn class="funnel-btn" @click="viewSelected('standard')"
+                  <v-btn class="funnel-btn black--text" @click="viewSelected('standard')"
                          :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
                          :color="viewSelect === 'standard' ? 'primary' : 'secondary'">
                     Standard View
                   </v-btn>
-                  <v-btn class="funnel-btn" @click="viewSelected('apptDateCohort')"
+                  <v-btn class="funnel-btn black--text" @click="viewSelected('apptDateCohort')"
                          :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
                          :color="viewSelect === 'apptDateCohort' ? 'primary' : 'secondary'">
                     Appt Date Cohort

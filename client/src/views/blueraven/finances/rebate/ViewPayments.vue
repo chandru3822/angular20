@@ -22,7 +22,7 @@
       <span v-if="status === 'approval'" class="pl-4">Payment Amount Total: <b>{{ paymentSum || 0 | currency('$', 2) }}</b></span>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn @click="exportPayments">Export</v-btn>
+        <v-btn text color="primary" @click="exportPayments">Export</v-btn>
       </v-toolbar-items>
     </v-toolbar>
 
@@ -72,8 +72,8 @@
             <td class="text-left">{{ it.product ? it.product : '' }}</td>
             <td class="text-center">{{ it.totalPromotionAmount || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'approval'" class="text-center">{{ it.numberOfPromotionPayments }}</td>
-            <td v-show="status === 'approval'" class="text-center">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
-            <td v-show="status === 'approval'" class="text-center">{{ it.totalPaid || 0 | currency('$', 2) }}</td>
+            <td v-show="status === 'approval'" class="text-center pl-5">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
+            <td v-show="status === 'approval'" class="text-left">{{ it.totalPaid || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'approval'" class="text-left">{{ it.lastPaymentDate | formatDate('date') }}</td>
             <td v-show="status === 'invalid' || status === 'approval'" class="text-left">{{ it.balanceOwed || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'pending'" class="text-left"><a v-if="userCanEdit" @click="enterPayment(it)" class="mr-3 pay-link">Enter Now</a></td>
@@ -539,6 +539,9 @@
   }
   .v-data-table ::v-deep .v-data-table__wrapper {
     max-height: calc(100vh - 240px);
+  }
+  td {
+    padding-left:16px;
   }
   .status-select {
     max-width: 200px;

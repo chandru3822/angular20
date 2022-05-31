@@ -7,7 +7,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[createNew = !createNew, newReimbursement = {}]">
+            <v-btn text color="primary" @click="[createNew = !createNew, newReimbursement = {}]">
               <v-icon>add</v-icon>
               New Reimbursement Request
             </v-btn>
