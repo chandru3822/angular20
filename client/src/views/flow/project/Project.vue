@@ -128,7 +128,7 @@
         <div>
           <v-btn color="#fff"
                  v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
-                 class="mt-3 no-text-transform"
+                 class="mt-3 no-text-transform primary--text"
                  :to="`/projectAdmin/${projectId}`"
           >
             Project Admin
@@ -140,7 +140,7 @@
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
         <div class="left-expander-button" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
-          <v-btn small text @click="collapseSide('left')">
+          <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
@@ -150,7 +150,7 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn
-                text x-small
+                text x-small color="primary"
                 @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
                 v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
                     || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">

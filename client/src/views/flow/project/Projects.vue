@@ -74,7 +74,7 @@
                   {{project.id}}
                 </router-link>
               </td>
-              <td class="text-left">
+              <td class="text-left text--black">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
                   {{project.projectName}}
                 </router-link>

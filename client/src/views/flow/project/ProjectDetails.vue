@@ -23,6 +23,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text
+                   color="primary"
                    @click="setSplitColumnValue()">
               <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
               <v-icon v-else>mdi-format-align-justify</v-icon>

@@ -17,25 +17,26 @@ export default new Vuetify({
     options: {
       customProperties: true
     },
-    themes: {
-      light: {
-        primary: {
-            base:'#1F3C73',
-            lighten1:'#3c538d',
-            lighten2:'#576ba7',
-            lighten3:'#7184c3',
-            lighten4:'#8c9edf',
-            lighten5:'#a8b9fc',
-            lighten6:'#EAEAF4',
-            darken1:'#00275a',
-            darken2:'#001342',
-            darken3:'#00002c',
-            darken4:'#00001a'
-        },
-        secondary: '#F6F7F8',
-        error:'#B4221F',
-          success:'#1B5E20'
-      },
+      themes: {
+          light: {
+              primary: {
+                  base:'#1F3C73',
+                  lighten1:'#3c538d',
+                  lighten2:'#576ba7',
+                  lighten3:'#7184c3',
+                  lighten4:'#8c9edf',
+                  lighten5:'#a8b9fc',
+                  lighten6:'#EAEAF4',
+                  darken1:'#00275a',
+                  darken2:'#001342',
+                  darken3:'#00002c',
+                  darken4:'#00001a'
+              },
+              secondary: '#F6F7F8',
+              error:'#B4221F',
+              success:'#1B5E20',
+              active:'#edf5fe'
+          },
       // dark: {
       //   primary: '#1F3C73',
       //   primaryCustom: '#1F3C73',

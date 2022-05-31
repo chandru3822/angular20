@@ -55,7 +55,7 @@ export default {
 }
 
 .active-ps {
-  background-color: #EEEEEE;
+  background-color: var(--v-active-base) ;
 }
 
 .active-ps-button {

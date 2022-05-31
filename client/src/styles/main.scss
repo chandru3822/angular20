@@ -279,7 +279,6 @@ label[for="adminOriginatorSelect"] {
 }
 .clickable {
   cursor: pointer !important;
-  color: var(--v-anchor-base);
 }
 .no-display {
   display: none !important;
@@ -337,6 +336,7 @@ label[for="adminOriginatorSelect"] {
   height: 100% !important;
   align-items: center;
   padding: 0 10px;
+  color: var(--v-shades-black) !important;
 }
 
 /* currently toolbar doesn't support multi line titles */

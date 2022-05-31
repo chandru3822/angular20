@@ -156,7 +156,7 @@
                   </v-dialog>
                 </td>
                 <td class="text-left">
-                  <v-btn small text @click="getPpsHistory(projectProcessStep)">
+                  <v-btn small text color="primary" @click="getPpsHistory(projectProcessStep)">
                     <v-icon>mdi-chart-timeline</v-icon>
                   </v-btn>
                 </td>

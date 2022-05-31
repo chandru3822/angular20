@@ -58,7 +58,7 @@ export default {
 }
 
 .active-event {
-  background-color: #EEEEEE !important;
+  background-color: var(--v-active-base) !important;
 }
 
 .event-button {

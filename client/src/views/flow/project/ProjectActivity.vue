@@ -16,7 +16,7 @@
            :class="{'title-collapse': $store.state.project.rightSideSplit,
                     'title-no-collapse': !$store.state.project.rightSideSplit}">
         <div v-if="!$store.state.project.rightSideSplit" class="d-inline-block">{{sidebarTitle}}</div>
-        <v-btn  class="d-inline-block" small text @click="collapseSide()">
+        <v-btn  class="d-inline-block" small text color="primary" @click="collapseSide()">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
       </div>
@@ -41,19 +41,19 @@
           class="section-footer ma-0"
         >
           <v-col cols="4" class="px-0">
-            <v-btn text block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
+            <v-btn text :color="selectedOption== 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
                    :class="{'section-selected': selectedOption===0}">
               <v-icon>mdi-forum-outline</v-icon>
             </v-btn>
           </v-col>
           <v-col cols="4" class="px-0">
-            <v-btn text block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
+            <v-btn text :color="selectedOption== 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
                    :class="{'section-selected': selectedOption===1}">
               <v-icon>mdi-text-long</v-icon>
             </v-btn>
           </v-col>
           <v-col cols="4" class="px-0">
-            <v-btn text block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
+            <v-btn text :color="selectedOption== 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
                    :class="{'section-selected': selectedOption===2}">
               <v-icon>mdi-folder-outline</v-icon>
             </v-btn>

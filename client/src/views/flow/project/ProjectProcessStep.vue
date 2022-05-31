@@ -182,6 +182,7 @@
           <v-btn
             class="back-btn show-unperformable-actions-btn"
             text
+            color="primary"
             :ripple="false"
             @click="showUnperformableActions = !showUnperformableActions"
           >
@@ -220,7 +221,7 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text @click="setSplitColumnValue()" class="px-0">
+          <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
             <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>

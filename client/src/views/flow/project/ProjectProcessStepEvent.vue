@@ -54,7 +54,7 @@
             v-model="selectedEvent.deleteConfirm"
             width="500">
             <template v-slot:activator="{ on }">
-              <v-btn text small class="clickable mt-1" v-on="on">
+              <v-btn text color="primary" small class="clickable mt-1" v-on="on">
                 <v-icon>delete</v-icon>
               </v-btn>
             </template>
@@ -107,6 +107,7 @@
             <v-btn
               class="back-btn show-unperformable-actions-btn"
               text
+              color="primary"
               :ripple="false"
               @click="showUnperformableActions = !showUnperformableActions"
             >
@@ -144,7 +145,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text small @click="setSplitColumnValue()" class="px-0">
+            <v-btn text color="primary" small @click="setSplitColumnValue()" class="px-0">
               <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
               <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
@@ -163,7 +164,7 @@
               <v-btn class="white--text mt-3 ml-2"
                      @click="checkFieldsForUnique()"
                      :disabled="!userCanEdit || getReadOnly()"
-                     color="primaryButton">
+                     color="primary">
                 Save Fields
               </v-btn>
             </div>
@@ -184,8 +185,8 @@
           <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
                  class="px-0 d-flex align-baseline" target="_blank"
                  :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
-            <span class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
-            <v-icon class="scheduler-button-icon">mdi-open-in-new</v-icon>
+            <span class="albatross-header-5 pl-2 scheduler-button-text primary--text">Open Scheduler</span>
+            <v-icon color="primary" class="scheduler-button-icon">mdi-open-in-new</v-icon>
           </v-btn>
         </div>
         <v-card class="square-card px-4 pt-4 mt-4">
