@@ -13,6 +13,15 @@ public enum NotificationTopic {
     this.name = name;
   }
 
+  public static NotificationTopic from(String topic) {
+    for (NotificationTopic value : values()) {
+      if (value.getName().equals(topic)) {
+        return value;
+      }
+    }
+    return UNKNOWN;
+  }
+
   @JsonValue
   public String getName() {
     return name;
