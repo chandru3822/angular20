@@ -1269,7 +1269,7 @@ create index if not exists dvfcd_data_view_field_config_id_idx
   on flow.data_view_maintenance (data_view_field_config_id);
 
 drop index if exists flow.dvm_data_view_field_config_id_uidx;
-CREATE UNIQUE INDEX dvm_data_view_field_config_id_uidx ON flow.data_view_maintenance (data_view_field_config_id) where data_view_field_config_id is not null;
+CREATE UNIQUE INDEX dvm_data_view_field_config_id_uidx ON flow.data_view_maintenance (data_view_field_config_id,company_process_ids_added) where data_view_field_config_id is not null and processed = false;
 
 
 alter table flow.data_view_child_field_config add column if not exists display_name character varying(63);
