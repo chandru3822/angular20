@@ -259,7 +259,7 @@
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
 
-  import {handleHidingGlobalLoader, getRequest, getUrlForLink, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -850,7 +850,7 @@
         if(renderInfo?.resource?.id?.charAt(0) === '1') {
           isOrg = true
           let orgId = renderInfo?.resource?.id?.substring(1)
-          anchorHref = getUrlForLink('ALB_HOST/org/ALB_ORG_ID', null, orgId)
+          anchorHref = getHostUrl() + '/org/' + orgId
         }
         renderInfo.el.querySelector('.fc-cell-text').innerHTML = isOrg ?
           "<a target='_blank' href=" + anchorHref + ">" + renderInfo.resource.title + "</a>" :

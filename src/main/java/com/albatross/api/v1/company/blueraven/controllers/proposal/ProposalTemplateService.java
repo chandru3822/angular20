@@ -124,8 +124,7 @@ public class ProposalTemplateService {
           }
         }
         return val;
-      })
-      .delete(replacementPath); //remove any variables not replaced
+      });
 
     return block;
   }

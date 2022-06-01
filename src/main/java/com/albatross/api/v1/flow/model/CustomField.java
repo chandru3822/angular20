@@ -44,7 +44,8 @@ public class CustomField {
     dataType;
   private Boolean archived,
     showOnInsert,
-    requireOnInsert,
+    requireOnInsert, //todo: this needs to go away and fully be replaced by "required" after mobile has matched our code
+    required,
     showOnUserProfile,
     hasListValues,
     allowMultiple,

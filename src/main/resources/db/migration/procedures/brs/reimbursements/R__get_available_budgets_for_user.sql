@@ -5,7 +5,7 @@ AS
 $function$
 declare
   v_position_ids   integer[];
-  v_budget_user_id integer;
+  v_budget_user_ids integer[];
 
 BEGIN
 
@@ -23,7 +23,7 @@ BEGIN
   case
     when (p_platform_user_id = 2354046) then
       -- if the user is Austin Thompson then use Dane Nielson's user id, yep, that's right
-      select 2353912 into v_budget_user_id;
+      select array[2353912] into v_budget_user_ids;
     when (v_position_ids && '{1,2}') then
       -- if the user is a closer, find the closer regional and use that user id
       with closers as (
@@ -33,8 +33,8 @@ BEGIN
           and u.org_level_id = 10 -- 10 = level 5 = region for company_id = 3
           and u.position_id in (1, 2)
       )
-      select user_id
-      into v_budget_user_id
+      select array[user_id, p_platform_user_id]
+      into v_budget_user_ids
       from flow.user_positions_vw u
              INNER JOIN closers c on c.region_id = u.org_id
       WHERE position_id = 3
@@ -50,8 +50,8 @@ BEGIN
           and u.org_level_id = 10 -- 10 = level 5 = region for company_id = 3
           and u.position_id in (4, 5)
       )
-      select user_id
-      into v_budget_user_id
+      select array[user_id, p_platform_user_id]
+      into v_budget_user_ids
       from flow.user_positions_vw u
              INNER JOIN setters s on s.region_id = u.org_id
       WHERE position_id = 6
@@ -59,7 +59,7 @@ BEGIN
         and u.start_date < now()
         and (u.end_date is null or u.end_date > now());
     else
-      select p_platform_user_id into v_budget_user_id;
+      select array[p_platform_user_id] into v_budget_user_ids;
     END case;
   RETURN QUERY
     select array_to_json(array_agg(row_to_json(sub_rows)))
@@ -89,7 +89,7 @@ BEGIN
                   INNER JOIN flow."user" u on u.id = eb.user_id
            where bt.archived is false
              and eb.archived is false
-             AND u.id = v_budget_user_id
+             AND u.id = any (v_budget_user_ids)
              AND eb.start_date <= p_expense_date
              AND eb.end_date >= p_expense_date
            ORDER BY bt.name

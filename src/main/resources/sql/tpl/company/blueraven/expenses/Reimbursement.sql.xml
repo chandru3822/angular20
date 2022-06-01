@@ -166,56 +166,72 @@ WHERE rr.reimbursement_request_status_id = 3
 
   <reimbursement.getMonthlySubmittedReport>
     <![CDATA[
-            select array_to_json(array_agg(row_to_json(results)))
-              from (
-                with pending_approval as (
-                  select e.user_id,
-                    sum(coalesce(e.expense_amount,0)) expense_amount
-                  from brs.expense e
-                  where e.rejected_date is null
-                    and e.archived is not true
-                    and e.paid_date is null
-                    and e.approval_date is null
-                    and e.skip_approval is not true
-                    and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-                  GROUP BY e.user_id
-              ), pending_payment as (
-                  select e.user_id,
-                    sum(coalesce(e.expense_amount,0)) expense_amount
-                  from brs.expense e
-                  where e.rejected_date is null
-                        and e.archived is not true
-                        and e.paid_date is null
-                        and e.approval_date is not null
-                        and e.skip_approval is not true
-                        and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-                  GROUP BY e.user_id
-              ), paid as (
-                  select e.user_id,
-                    sum(coalesce(e.expense_amount,0)) expense_amount
-                  from brs.expense e
-                  where e.rejected_date is null
-                        and e.archived is not true
-                        and e.paid_date is not null
-                        and e.approval_date is not null
-                        and e.skip_approval is not true
-                        and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-                  GROUP BY e.user_id
-              )
+           select array_to_json(array_agg(row_to_json(results)))
+from (
+       with pending_review as (
+         select e.user_id,
+                sum(coalesce(e.expense_amount,0)) expense_amount
+         from brs.expense e
+         where e.rejected_date is null
+           and e.archived is not true
+           and e.paid_date is null
+           and e.approval_date is null
+           and e.gl_code_id is null
+           and e.skip_approval is not true
+           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+         GROUP BY e.user_id
+       ), pending_approval as (
+         select e.user_id,
+                sum(coalesce(e.expense_amount,0)) expense_amount
+         from brs.expense e
+         where e.rejected_date is null
+           and e.archived is not true
+           and e.paid_date is null
+           and e.approval_date is null
+           and e.gl_code_id is not null
+           and e.skip_approval is not true
+           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+         GROUP BY e.user_id
+       ), pending_payment as (
+         select e.user_id,
+                sum(coalesce(e.expense_amount,0)) expense_amount
+         from brs.expense e
+         where e.rejected_date is null
+           and e.archived is not true
+           and e.paid_date is null
+           and e.approval_date is not null
+           and e.skip_approval is not true
+           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+         GROUP BY e.user_id
+       ), paid as (
+         select e.user_id,
+                sum(coalesce(e.expense_amount,0)) expense_amount
+         from brs.expense e
+         where e.rejected_date is null
+           and e.archived is not true
+           and e.paid_date is not null
+           and e.approval_date is not null
+           and e.skip_approval is not true
+           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+         GROUP BY e.user_id
+       )
 
-              select e.user_id,
-                coalesce(pa.expense_amount,0) pending_approval,
-                coalesce(pp.expense_amount,0) pending_payment,
-                coalesce(p.expense_amount,0) paid,
-                coalesce(pa.expense_amount,0) + coalesce(pp.expense_amount,0) + coalesce(p.expense_amount,0) total
-              from brs.expense e
+       select e.user_id,
+              coalesce(pr.expense_amount,0) pending_review,
+              coalesce(pa.expense_amount,0) pending_approval,
+              coalesce(pp.expense_amount,0) pending_payment,
+              coalesce(p.expense_amount,0) paid,
+              coalesce(pa.expense_amount,0) + coalesce(pp.expense_amount,0) + coalesce(p.expense_amount,0) total
+       from brs.expense e
+              left OUTER JOIN pending_review pr on pr.user_id = e.user_id
               left OUTER JOIN pending_approval pa on pa.user_id = e.user_id
               left OUTER JOIN pending_payment pp on pp.user_id = e.user_id
               left OUTER JOIN paid p on p.user_id = e.user_id
-              where e.user_id = :userId
-                and e.archived is not true
-               and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-              GROUP BY e.user_id, pending_approval, pending_payment, paid ) results;
+       where e.user_id = :userId
+         and e.archived is not true
+         and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+       GROUP BY e.user_id, pending_review, pending_approval, pending_payment, paid ) results;
+
         ]]>
   </reimbursement.getMonthlySubmittedReport>
 

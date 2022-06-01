@@ -11,6 +11,7 @@ import { VueRenderer } from '@tiptap/vue-2'
 import tippy from 'tippy.js'
 import { getRequest } from '@/helpers/helpers'
 import ReplacementList from './ReplacementList'
+import Fuse from 'fuse.js'
 
 const suggestion = {
   char: '{',
@@ -20,9 +21,13 @@ const suggestion = {
     //this is kind of janky but it loads the data only once
     getRequest('/proposal/template/tags', 'blueraven', [])
       .then(({ data }) => items = data)
+
     return ({ query }) => {
-      return items?.filter((item) => item.toLowerCase().startsWith(query.toLowerCase()))
-        .slice(0,10)
+      if (query === '') {
+        return items.slice(0, 10)
+      }
+      const fuse = new Fuse(items, { includeScore: true, threshold: 0.4, distance: 75 })
+      return fuse.search(query).map(({ item }) => item).slice(0, 10)
     }
   })(),
 
@@ -42,7 +47,8 @@ const suggestion = {
           showOnCreate: true,
           interactive: true,
           trigger: 'manual',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
+          maxWidth: 'none'
         })
       },
 
