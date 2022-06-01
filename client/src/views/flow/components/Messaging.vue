@@ -113,6 +113,11 @@ export default {
       }
     }.bind(this))
   },
+  beforeDestroy() {
+    if (this.evtSource){
+      this.evtSource.close()
+    }
+  },
   props: {
     userAssigned: Boolean,
   },

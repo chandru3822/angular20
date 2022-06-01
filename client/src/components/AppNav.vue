@@ -207,6 +207,11 @@ export default {
       }
     }.bind(this))
   },
+  beforeDestroy() {
+    if (this.evtSource){
+      this.evtSource.close()
+    }
+  },
   computed: {
     displayedTabs () {
       return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature) && tab.show)
