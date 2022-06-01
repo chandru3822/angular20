@@ -32,7 +32,7 @@ body {
 }
 
 .bold {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .fixed-toolbar {
@@ -397,10 +397,21 @@ label[for="adminOriginatorSelect"] {
 .albatross-header-3,
 .cfg-name-toolbar .v-toolbar__title.albatross-header-3,
 .v-toolbar__title.albatross-header-3
+.v-dialog > .v-card > .v-card__title.albatross-header-3
 {
   font-weight: bold;
   font-size: 1.125rem;
 }
+
+.albatross-header-4-new,
+.cfg-name-toolbar .v-toolbar__title.albatross-header-4-new,
+.v-toolbar__title.albatross-header-4-new,
+.v-dialog > .v-card > .v-card__title.albatross-header-4-new {
+  font-weight: normal;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
 .albatross-header-4,
 .cfg-name-toolbar .v-toolbar__title.albatross-header-4,
 .v-toolbar__title.albatross-header-4
@@ -408,13 +419,18 @@ label[for="adminOriginatorSelect"] {
   font-weight: normal;
   font-size: 1rem;
 
-}.albatross-header-5 {
+}.albatross-header-5,
+ .albatross-header-5 .v-label,
+ div.v-dialog__content.v-dialog__content--active > div > div > div.albatross-header-5,
+ {
   font-weight: bold;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 //eventually this should be our default body font size/weight, rendering this class unnecessary
-.albatross-body-1 {
+.albatross-body-1,
+.albatross-body-1 .v-label,
+div.v-card__title.albatross-body-1.lighten-2 {
   font-weight: normal;
   font-size: 1rem;
 }
@@ -422,14 +438,18 @@ label[for="adminOriginatorSelect"] {
 .albatross-body-2,
   .albatross-body-2.status-cancelled,
   .albatross-body-2.status-complete,
-  .albatross-body-2.status-active
+  .albatross-body-2.status-active,
+.albatross-body-2 .v-label,
+div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-controls.v-input--checkbox > div > div.v-input__slot > label,
   //ideally, the status classes would only change the color, but this is for
   // the intermediate time so we don't break things already using status classes
 {
   font-weight: normal;
   font-size: 0.875rem;
 }
-.albatross-body-3 {
+
+.albatross-body-3,
+.albatross-caption {
   font-weight: normal;
   font-size: 0.75rem;
 }

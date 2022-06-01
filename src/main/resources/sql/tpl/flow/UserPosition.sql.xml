@@ -109,4 +109,10 @@
     )
   ]]></userPosition.resetPrimaryFlags>
 
+  <userPosition.getPrimaryPosition><![CDATA[
+    select id, user_id, position_id, org_id, primary_flag
+        from flow.user_position
+    where primary_flag = true and user_id = :userId and archived = false
+  ]]></userPosition.getPrimaryPosition>
+
 </sql>

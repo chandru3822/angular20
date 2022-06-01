@@ -43,6 +43,8 @@ public class UserService {
   @Autowired private AttachmentService attachmentService;
   @Autowired private SqlCache sqlCache;
   @Autowired private SecurityService securityService;
+  @Autowired private SmsTeamService smsTeamService;
+  @Autowired private UserPositionService userPositionService;
   @Autowired private ObjectMapper om;
   @Autowired private AmazonS3 s3;
   @Autowired private JwtUtils jwtUtils;
@@ -288,7 +290,6 @@ public class UserService {
     params.put("id", id);
     // note: i had to change this query a bunch cuz if it was a 7oaks employee it was not returning
     // the company's api path or aws bucket even when in that context
-
     return sqlCache.get("user.findUserById", params, new UserMapper<>(User.class, om)).orElse(null);
   }
 
@@ -357,6 +358,22 @@ public class UserService {
       sqlCache.update("user.updateUserStatus", params);
     } else {
       sqlCache.update("user.insertUserStatus", params);
+    }
+
+    List<UserStatusType> userStatusTypes = getCompanyUserStatuses(user.getCompanyId());
+    Optional<UserStatusType> newUserStatusType = userStatusTypes.stream().filter(ust -> ust.getId().equals(userStatusTypeId)).findFirst();
+    if (newUserStatusType.isPresent()) {
+      // If no longer Active, remove User from SMS Teams and SMS Owners
+      if (!newUserStatusType.get().getUserStatusType().equals("Active")) {
+        UserPosition primaryPosition = userPositionService.getUserPrimaryPosition(userId);
+        if (primaryPosition != null) {
+          // If the user has a primary position, remove the user from any SMS teams associated to their position or org
+          smsTeamService.deleteUserByUserId(userId, primaryPosition.getOrgId(), primaryPosition.getPositionId());
+        }
+        else {
+          smsTeamService.deleteUserByUserId(userId, null, null);
+        }
+      }
     }
   }
 

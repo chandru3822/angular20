@@ -59,6 +59,10 @@
                 <label>Make available in children:</label>
                 <input type="checkbox" class="ml-3" v-model="org.availableToChildren">
               </div>
+              <div class="mb-3 mt-3" v-if="$store.getters.isParent(parentId)">
+                <label>Enable SMS:</label>
+                <input type="checkbox" class="ml-3" v-model="org.smsEnabled">
+              </div>
             </v-col>
           </v-row>
         </v-container>

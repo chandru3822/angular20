@@ -210,7 +210,7 @@
                      :project="project"
         ></router-view>
       </div>
-      <div class="white-bg project-section px-0"
+      <div class="project-section px-0 white-bg "
            :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
                     'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                     'collapse-right text-center': $store.state.project.rightSideSplit}">
