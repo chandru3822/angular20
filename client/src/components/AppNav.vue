@@ -73,13 +73,27 @@
             <v-list v-if="displayedTabs.length > 1">
               <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
                            @click="[tabMenuOpen = false, goToPath(tab.path)]">
-                <v-list-item-title>{{tab.label}}</v-list-item-title>
+                <v-list-item-title>{{tab.label}}
+                  <v-badge
+                    class="notif-badge"
+                    color="#F35858"
+                    v-if="tab.label == 'Inbox' && smsNotification.length > 0"
+                  >
+                  </v-badge>
+                </v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
           <v-tabs v-else :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
+              <v-badge
+                dot
+                class="notif-badge"
+                color="#F35858"
+                v-if="tab.label == 'Inbox' && smsNotification.length > 0"
+              >
+              </v-badge>
             </v-tab>
           </v-tabs>
           <v-spacer class="ml-5"></v-spacer>
@@ -165,8 +179,14 @@ export default {
         path: '/smartlist',
         feature: 'SMARTLIST',
         show: true
+      }, {
+        label: 'Inbox',
+        path: '/inbox',
+        feature: 'SMS_INBOX',
+        show: true
       }],
-      VUE_APP_ENV
+      VUE_APP_ENV,
+      smsNotification: []
     }
   },
   created () {
@@ -174,8 +194,19 @@ export default {
     if(this.$store.state.user?.details?.id) {
       this.getCompanies()
       this.getCompanyTools()
+      this.getSmsNotification()
     }
 	},
+  mounted() {
+    //notification stream
+    this.evtSource = new EventSource(`${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${this.$store.state.user.jwt}`)
+    this.evtSource.addEventListener('sms_reply', function(e) {
+      const data = JSON.parse(e.data)
+      if (data) {
+        this.getSmsNotification()
+      }
+    }.bind(this))
+  },
   computed: {
     displayedTabs () {
       return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature) && tab.show)
@@ -212,19 +243,19 @@ export default {
       }
     },
     async getCompanyTools () {
-          // get the company tools then filter the ones the user has access to
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-              const {data} = await getRequest(`/feature/companyTools`, null, [])
-              this.companyTools = data.filter(d => {
-                return this.$store.getters.userHasFeature(d.featureCode)
-              })
-              this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-              console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
-              this.$store.commit(AppMutations.SET_LOADING, false)
-          }
+        // get the company tools then filter the ones the user has access to
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+            const {data} = await getRequest(`/feature/companyTools`, null, [])
+            this.companyTools = data.filter(d => {
+              return this.$store.getters.userHasFeature(d.featureCode)
+            })
+            this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       goToPath(path) {
         this.$router.push({path: `${path}`})
@@ -249,6 +280,20 @@ export default {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+    async getSmsNotification() {
+      try {
+        const {data} = await getRequest(`/notifications/`)
+        if (data && data.length > 0) {
+          this.smsNotification = data.filter(n => n.topic == "sms_reply")
+        }
+        else {
+          this.smsNotification = []
+        }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching notifications')
+      }
+    }
   }
 }
 </script>
@@ -287,5 +332,9 @@ export default {
   #header {
     padding: 0 10px;
   }
+}
+
+.notif-badge {
+  margin-bottom: 16px;
 }
 </style>

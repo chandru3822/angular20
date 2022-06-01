@@ -275,6 +275,14 @@
         ]]>
     </sms.reply.save>
 
+  <sms.getProjects>
+    <![CDATA[
+        select p.id from flow.project p
+            LEFT JOIN flow.contact c ON :from ILIKE '%' || translate((case when length(c.phone) = 0 then 'NULL' else c.phone end), '() -', '')
+        where c.id is not null and p.archived is false
+        ]]>
+  </sms.getProjects>
+
     <sms.reply.fetch>
         <![CDATA[
         SELECT *

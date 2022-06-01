@@ -1,13 +1,12 @@
 package com.albatross.api.notification;
 
-import com.albatross.api.notification.model.CreateNotificationDto;
-import com.albatross.api.notification.model.Notification;
-import com.albatross.api.notification.model.NotificationEventMessage;
-import com.albatross.api.notification.model.NotificationMapper;
+import com.albatross.api.notification.model.*;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.Subscriber;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +41,7 @@ public class NotificationService {
   private final SqlArrayService sqlArrayService;
   private final NamedParameterJdbcTemplate jdbcTemplate;
   private final ObjectMapper objectMapper;
+  private final SecurityService securityService;
 
   /**
    * Creates a notification (i.e. stores a record in the database) and sends out a pubsub event in
@@ -172,7 +172,7 @@ public class NotificationService {
 
     final List<Notification> notifications =
         sqlCache.query(
-            "notification.getUnreadByUser", params, new NotificationMapper(this.objectMapper));
+            "notification.getUnreadByUserPagable", params, new NotificationMapper(this.objectMapper));
 
     final Long count =
         sqlCache
@@ -184,6 +184,17 @@ public class NotificationService {
 
     return new PageImpl<>(
         notifications, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+  }
+
+  public List<Notification> getUserNotifications(@NonNull Long userId) {
+    final Map<String, Object> params =
+      Map.of("userId", userId);
+
+    final List<Notification> notifications =
+      sqlCache.query(
+        "notification.getUnreadByUser", params, new NotificationMapper(this.objectMapper));
+
+    return notifications;
   }
 
   @Async
@@ -209,11 +220,59 @@ public class NotificationService {
     if (notificationIds == null || notificationIds.isEmpty()) {
       return;
     }
+
+    Notification notification = new Notification();
+    notification.setTopic(NotificationTopic.SMS_REPLY);
+    notification.setTitle("Notification read");
+    notification.setBody("");
+    notification.setPriority(1);
+    notification.setMetadata(null);
+    notification.setUserId(userId);
+    pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
+
     final Array ids = sqlArrayService.createSqlArrayOfType("bigint", notificationIds);
     final int updatedRecords =
         sqlCache.update(
             "notification.markAsRead",
             Map.of("userId", userId, "modifiedById", userId, "ids", ids));
+    log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
+  }
+
+  @Transactional
+  public void markSmsNotificationsAsRead(Long userId, Long projectId, Long smsTeamId)
+    throws SQLException {
+    User user = securityService.getCurrentUser();
+
+    int updatedRecords;
+    final Long SMS_REPLY_NOTIFICATION_TOPIC_ID = 2L;
+
+    if (userId != null) {
+      updatedRecords =
+        sqlCache.update(
+          "notification.markSmsAsReadForUser",
+          Map.of("userId", userId, "modifiedById", user.trueUserId(), "projectId", projectId, "smsTeamId", smsTeamId, "notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID));
+
+      Notification notification = new Notification();
+      notification.setTopic(NotificationTopic.SMS_REPLY);
+      notification.setTitle("Notification read");
+      notification.setBody("");
+      notification.setPriority(1);
+      notification.setMetadata(null);
+      notification.setUserId(userId);
+      pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
+    }
+    else if (smsTeamId != null) {
+      updatedRecords =
+        sqlCache.update(
+          "notification.markSmsAsReadForTeam",
+          Map.of( "modifiedById", user.trueUserId(), "projectId", projectId,"smsTeamId", smsTeamId, "notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID));
+    } else {
+      updatedRecords =
+        sqlCache.update(
+          "notification.markSmsAsReadForProject",
+          Map.of( "modifiedById", user.trueUserId(), "projectId", projectId,"notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID));
+    }
+
     log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
   }
 }

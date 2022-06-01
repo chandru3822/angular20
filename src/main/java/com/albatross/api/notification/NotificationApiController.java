@@ -34,12 +34,18 @@ public class NotificationApiController {
   private final PubSubService pubSubService;
 
   @GetMapping
-  public Page<Notification> getUserNotifications(
+  public Page<Notification> getUserNotificationsPagable(
       @AuthenticationPrincipal UserAccountDetails details, Pageable pageable) {
     return notificationService.getUserNotifications(details.getId(), pageable);
   }
 
-  @PostMapping
+  @GetMapping(value = "/")
+  public List<Notification>  getUserNotifications(
+    @AuthenticationPrincipal UserAccountDetails details) {
+    return notificationService.getUserNotifications(details.getId());
+  }
+
+  @PostMapping(value = "/markNotificationAsRead")
   public ResponseEntity<Object> markNotificationAsRead(
       @RequestBody @Valid NotificationUpdatePayload payload,
       @AuthenticationPrincipal UserAccountDetails details)

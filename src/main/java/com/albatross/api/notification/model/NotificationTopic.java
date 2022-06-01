@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum NotificationTopic {
   UNKNOWN("unknown"),
   PING("ping"),
-  SMS_REPLY("sms_reply");
+  SMS_REPLY("sms_reply"),
+  SMS_OWNERSHIP("sms_ownership");
 
   private final String name;
 

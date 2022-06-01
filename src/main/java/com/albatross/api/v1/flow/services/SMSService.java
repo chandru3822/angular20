@@ -5,12 +5,14 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.JodaDateTimeEditor;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.MessagingController;
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.smsQueue.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -409,9 +411,6 @@ public class SMSService {
 
   public void saveReply(TwilioMessageRequest sms) {
     log.debug("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
-
-    RecipientType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
-
     sqlCache.update("sms.reply.save", sms.toHashMap());
   }
 

@@ -1,0 +1,297 @@
+<sql>
+  <smsTeam.getAll><![CDATA[
+    select st.*,
+           (case when (select count(*) from flow.sms_team where archived = false and is_default is true
+                                                            and case when :isParent
+                                                                then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                                                else st.company_id = :companyId end
+               ) > 0 then true else false end) as defaultExists,
+           coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(tb)))
+                    FROM (
+                             SELECT stp.id,
+                                    stp.position_id as "positionId",
+                                    p.position as "name",
+                                    stp.sms_team_id as "smsTeamId",
+                                    stp.archived
+                             FROM flow.sms_team_position stp
+                                      inner join flow.position p on stp.position_id = p.id
+                             WHERE stp.sms_team_id = st.id
+                               AND stp.archived is not true) tb), '[]') AS "positions",
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(tb)))
+                        FROM (
+                                 SELECT stu.id,
+                                        stu.user_id as "userId",
+                                        concat(u.first_name, ' ', u.last_name) as "name",
+                                        stu.sms_team_id as "smsTeamId",
+                                        stu.archived
+                                 FROM flow.sms_team_user stu
+                                    inner join flow."user" u on stu.user_id = u.id
+                                 WHERE stu.sms_team_id = st.id
+                                   AND stu.archived is not true) tb), '[]') AS "users",
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(tb)))
+                        FROM (
+                                 SELECT sto.id,
+                                        sto.org_id as "orgId",
+                                        o.org_name as "name",
+                                        sto.sms_team_id as "smsTeamId",
+                                        sto.archived
+                                 FROM flow.sms_team_org sto
+                                    inner join flow."org" o on sto.org_id = o.id
+                                 WHERE sto.sms_team_id = st.id
+                                   AND sto.archived is not true) tb), '[]') AS "orgs"
+    from flow.sms_team st
+    where case when :isParent
+              then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+              else st.company_id = :companyId end
+      and st.archived = false
+    order by st.team_name asc
+  ]]></smsTeam.getAll>
+
+  <smsTeam.getAllTeamUsers><![CDATA[
+    select st.*,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(tb)))
+                    FROM (
+                             SELECT stu.id,
+                                    stu.user_id as "userId",
+                                    concat(u.first_name, ' ', u.last_name) as "name",
+                                    concat(u.first_name, ' ', u.last_name) as "userName",
+                                    stu.sms_team_id as "smsTeamId",
+                                    stu.archived
+                             FROM flow.sms_team_user stu
+                                      inner join flow."user" u on stu.user_id = u.id
+                             WHERE stu.sms_team_id = st.id
+                               AND stu.archived is not true
+                        union
+                             select null as id, upv.user_id,
+                                    concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
+                                    concat(upv.first_name, ' ', upv.last_name) as userName,
+                                    st.id  as "smsTeamId", false as archived
+                             from flow.user_positions_vw upv
+                                      inner join flow.org o on upv.org_id = o.id
+                                      inner join flow.user_status_type ust on ust.id = upv.user_status_type_id and ust.company_id = :companyId
+                             where upv.archived is not true and upv.primary_flag is true and upv.org_id = any( array [
+                                 (select array_agg(org_id) from flow.sms_team_org sto where sto.sms_team_id = st.id and sto.archived = false)
+                                 ]::integer[] )
+                                and ust.user_status_type = 'Active'
+                        union
+                             select null as id, upv.user_id,
+                                    concat(upv.first_name, ' ', upv.last_name, ' - ', p.position) as name,
+                                    concat(upv.first_name, ' ', upv.last_name) as userName,
+                                    st.id as "smsTeamId", false as archived
+                             from flow.user_positions_vw upv
+                                      inner join flow.position p on upv.position_id = p.id
+                                      inner join flow.user_status_type ust on ust.id = upv.user_status_type_id and ust.company_id = :companyId
+                             where upv.archived is not true and upv.primary_flag is true and p.id = any( array[
+                                 (select array_agg(position_id) from flow.sms_team_position stp where stp.sms_team_id = st.id and stp.archived = false)
+                                 ]::integer[] )
+                                and ust.user_status_type = 'Active'
+                        ) tb), '[]') AS "users"
+      from flow.sms_team st
+      where case when :isParent
+            then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else st.company_id = :companyId end
+        and st.archived = false;
+  ]]></smsTeam.getAllTeamUsers>
+
+  <smsTeam.getDetails><![CDATA[
+    select st.*,
+           coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(tb)))
+                    FROM (
+                             SELECT tpp.id,
+                                    tpp.position_id as "positionId",
+                                    p.position as "name",
+                                    tpp.sms_team_id as "smsTeamId",
+                                    tpp.archived
+                             FROM flow.sms_team_position tpp
+                                      inner join flow.position p on tpp.position_id = p.id
+                             WHERE tpp.sms_team_id = st.id
+                               AND tpp.archived is not true) tb), '[]') AS "positions",
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(tb)))
+                        FROM (
+                                 SELECT stu.id,
+                                        stu.user_id as "userId",
+                                        concat(u.first_name, ' ', u.last_name) as "name",
+                                        stu.sms_team_id as "smsTeamId",
+                                        stu.archived
+                                 FROM flow.sms_team_user stu
+                                    inner join flow."user" u on stu.user_id = u.id
+                                 WHERE stu.sms_team_id = st.id
+                                   AND stu.archived is not true) tb), '[]') AS "users",
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(tb)))
+                        FROM (
+                                 SELECT sto.id,
+                                        o.org_name as "name",
+                                        sto.sms_team_id as "smsTeamId",
+                                        sto.archived
+                                 FROM flow.sms_team_org sto
+                                    inner join flow."org" o on sto.org_id = o.id
+                                 WHERE sto.sms_team_id = st.id
+                                   AND sto.archived is not true) tb), '[]') AS "orgs"
+    from flow.sms_team st
+    where st.id = :id
+  ]]></smsTeam.getDetails>
+
+  <smsTeam.getTeamsForUser><![CDATA[
+    select st.*,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(tb)))
+                    FROM (
+                             SELECT stu.id,
+                                    stu.user_id as "userId",
+                                    concat(u.first_name, ' ', u.last_name) as "name",
+                                    concat(u.first_name, ' ', u.last_name) as "userName",
+                                    stu.sms_team_id as "smsTeamId",
+                                    stu.archived
+                             FROM flow.sms_team_user stu
+                                      inner join flow."user" u on stu.user_id = u.id
+                             WHERE stu.sms_team_id = st.id
+                               AND stu.archived is not true
+                               AND u.id = :userId
+                        union
+                             select null as id, upv.user_id,
+                                    concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
+                                    concat(upv.first_name, ' ', upv.last_name) as userName,
+                                    st.id  as "smsTeamId", false as archived
+                             from flow.user_positions_vw upv
+                                      inner join flow.org o on upv.org_id = o.id
+                                      inner join flow.user_status_type ust on ust.id = upv.user_status_type_id and ust.company_id = :companyId
+                             where upv.archived is not true and upv.primary_flag is true and upv.org_id = any( array [
+                                 (select array_agg(org_id) from flow.sms_team_org sto where sto.sms_team_id = st.id and sto.archived = false)
+                                 ]::integer[] )
+                                and ust.user_status_type = 'Active' and upv.user_id = :userId
+                        union
+                             select null as id, upv.user_id,
+                                    concat(upv.first_name, ' ', upv.last_name, ' - ', p.position) as name,
+                                    concat(upv.first_name, ' ', upv.last_name) as userName,
+                                    st.id as "smsTeamId", false as archived
+                             from flow.user_positions_vw upv
+                                      inner join flow.position p on upv.position_id = p.id
+                                      inner join flow.user_status_type ust on ust.id = upv.user_status_type_id and ust.company_id = :companyId
+                             where upv.archived is not true and upv.primary_flag is true and p.id = any( array[
+                                 (select array_agg(position_id) from flow.sms_team_position stp where stp.sms_team_id = st.id and stp.archived = false)
+                                 ]::integer[] )
+                                and ust.user_status_type = 'Active' and upv.user_id = :userId
+                        ) tb), '[]') AS "users"
+      from flow.sms_team st
+      where case when :isParent
+            then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else st.company_id = :companyId end
+        and st.archived = false;
+  ]]></smsTeam.getTeamsForUser>
+
+  <smsTeam.getDefaultTeamId><![CDATA[
+    select st.id
+      from flow.sms_team st
+      where case when :isParent
+            then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else st.company_id = :companyId end
+        and st.is_default is true;
+  ]]></smsTeam.getDefaultTeamId>
+
+  <smsTeam.insertTeam><![CDATA[
+      insert into flow.sms_team
+      (team_name, company_id, created_by_id, date_created, modified_by_id, date_modified)
+      values (:teamName, :companyId, :createdById, now(), :createdById, now())
+  ]]></smsTeam.insertTeam>
+
+  <smsTeam.updateTeam><![CDATA[
+    update flow.sms_team
+    set team_name = :teamName,
+        is_default = :isDefault,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></smsTeam.updateTeam>
+
+  <smsTeam.deleteTeam><![CDATA[
+    update flow.sms_team
+    set archived = true,
+        is_default = false,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></smsTeam.deleteTeam>
+
+  <smsTeam.getAssociatedProjectCountTeam><![CDATA[
+      select count(*) from flow.project_message_team where sms_team_id = :teamId
+  ]]></smsTeam.getAssociatedProjectCountTeam>
+
+  <smsTeam.getPosition><![CDATA[
+    select stp.*,
+           p.position as "name"
+    from flow.sms_team_position stp
+    inner join flow.position p on p.id = stp.position_id
+    where stp.id = :id
+  ]]></smsTeam.getPosition>
+
+  <smsTeam.addPosition><![CDATA[
+    insert into flow.sms_team_position(position_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:positionId, :id, :createdById,now(),:createdById, now())
+  ]]></smsTeam.addPosition>
+
+  <smsTeam.deletePosition><![CDATA[
+      update flow.sms_team_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      where position_id = :positionId and sms_team_id = :smsTeamId
+  ]]></smsTeam.deletePosition>
+
+  <smsTeam.getUser><![CDATA[
+    select stu.*,
+           concat(u.first_name, ' ', u.last_name) as name
+    from flow.sms_team_user stu
+    inner join flow.user u on u.id = stu.user_id
+    where stu.id = :id
+  ]]></smsTeam.getUser>
+
+  <smsTeam.addUser><![CDATA[
+    insert into flow.sms_team_user(user_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:userId, :id, :createdById, now(), :createdById, now())
+  ]]></smsTeam.addUser>
+
+  <smsTeam.deleteUser><![CDATA[
+      update flow.sms_team_user
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      where id = :teamUserId
+  ]]></smsTeam.deleteUser>
+
+  <smsTeam.deleteUserByUserId><![CDATA[
+      update flow.sms_team_user
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      where user_id = :userId
+  ]]></smsTeam.deleteUserByUserId>
+
+  <smsTeam.getOrg><![CDATA[
+    select sto.*,
+        o.org_name as "name"
+    from flow.sms_team_org sto
+    inner join flow.org o on o.id = sto.org_id
+    where sto.id = :id
+  ]]></smsTeam.getOrg>
+
+  <smsTeam.addOrg><![CDATA[
+    insert into flow.sms_team_org(org_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:orgId, :id, :createdById, now(), :createdById, now())
+  ]]></smsTeam.addOrg>
+
+  <smsTeam.deleteOrg><![CDATA[
+      update flow.sms_team_org
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      where org_id = :orgId and sms_team_id = :smsTeamId
+  ]]></smsTeam.deleteOrg>
+
+</sql>

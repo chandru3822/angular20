@@ -193,6 +193,10 @@ export default {
         title: 'Functions',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/messageTemplates',
+        title: 'Message Templates',
+        show: this.hasSettingsAccess
+      }, {
         header: 'Configurations',
         show: this.hasSettingsAccess
       }, {
@@ -210,6 +214,10 @@ export default {
       }, {
         path: '/settings/projectStatuses',
         title: 'Project Statuses',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/smsTeams',
+        title: 'SMS Teams',
         show: this.hasSettingsAccess
       }, {
         path: '/settings/workQueue/types',

@@ -5,13 +5,21 @@ from flow.notification
 where id = any (:ids::bigint[])
   ]]></notification.findByIds>
 
-  <notification.getUnreadByUser><![CDATA[
+  <notification.getUnreadByUserPagable><![CDATA[
 select id, user_id, notification_topic_id, title, body, priority, metadata, message_read_tsz
 from flow.notification
 where message_read_tsz is null
   and user_id = :userId
 order by priority desc, date_created desc
 limit :limit offset :offset
+  ]]></notification.getUnreadByUserPagable>
+
+  <notification.getUnreadByUser><![CDATA[
+select id, user_id, notification_topic_id, title, body, priority, metadata, message_read_tsz
+from flow.notification
+where message_read_tsz is null
+  and user_id = :userId
+order by priority desc, date_created desc
   ]]></notification.getUnreadByUser>
 
   <notification.getUnreadByUser.count><![CDATA[
@@ -35,4 +43,34 @@ set message_read_tsz   = now(),
 where id = any (:ids::bigint[])
   and user_id = :userId
   ]]></notification.markAsRead>
+
+  <notification.markSmsAsReadForUser><![CDATA[
+    update flow.notification
+    set message_read_tsz   = now(),
+        date_modified  = now(),
+        modified_by_id = :modifiedById
+    where notification_topic_id = :notificationTopicId
+      and user_id = :userId
+      and (metadata->>'projectId')::integer = :projectId
+      and (metadata->>'smsTeamId')::integer = :smsTeamId
+  ]]></notification.markSmsAsReadForUser>
+
+  <notification.markSmsAsReadForTeam><![CDATA[
+    update flow.notification
+    set message_read_tsz   = now(),
+        date_modified  = now(),
+        modified_by_id = :modifiedById
+    where notification_topic_id = :notificationTopicId
+      and (metadata->>'projectId')::integer = :projectId
+      and (metadata->>'smsTeamId')::integer = :smsTeamId
+  ]]></notification.markSmsAsReadForTeam>
+
+  <notification.markSmsAsReadForProject><![CDATA[
+    update flow.notification
+    set message_read_tsz   = now(),
+        date_modified  = now(),
+        modified_by_id = :modifiedById
+    where notification_topic_id = :notificationTopicId
+      and (metadata->>'projectId')::integer = :projectId
+  ]]></notification.markSmsAsReadForProject>
 </sql>
