@@ -282,7 +282,7 @@ public class MessagingService {
   public void addSmsOwnershipNotification(Long projectId) {
     ProjectMessageProperties pmp = getProject(projectId);
     for (SmsTeam smsTeam: pmp.getSmsTeamOwners()) {
-      SmsTeam smsTeamDetails = getTeamDetails(smsTeam.getId());
+      SmsTeam smsTeamDetails = getTeamUsers(smsTeam.getId());
       List<Long> smsTeamUserIds = smsTeamDetails.getUsers().stream()
         .map(SmsTeamUser::getUserId)
         .collect(Collectors.toList());
@@ -414,6 +414,15 @@ public class MessagingService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     Optional<SmsTeam> result = sqlCache.get("smsTeam.getDetails", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
+    return result.orElse(null);
+  }
+
+  public SmsTeam getTeamUsers(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+    Optional<SmsTeam> result = sqlCache.get("smsTeam.getTeamUsers", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
     return result.orElse(null);
   }
 
