@@ -183,6 +183,11 @@ export default {
       }
     }.bind(this))
   },
+  beforeDestroy() {
+    if (this.evtSource){
+      this.evtSource.close()
+    }
+  },
   computed: {
     sidebarTitle() {
       switch (this.selectedOption) {
