@@ -10,6 +10,7 @@ import com.albatross.api.v1.flow.model.project.ProjectStatusType;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
+import com.albatross.api.v1.flow.services.MessagingService;
 import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import java.util.Optional;
 public class ProjectController {
 
   private final ProjectService projectService;
+  private final MessagingService messagingService;
 
   @GetMapping
   public ResponseEntity<List<Project>> getProjectsForProcess(@PathVariable Long processId) {
@@ -69,6 +71,7 @@ public class ProjectController {
   @DeleteMapping(value = "/{projectId}")
   public void deleteProject(@PathVariable Long projectId) {
     projectService.deleteProject(projectId);
+    messagingService.deleteConversation(projectId);
   }
 
   @GetMapping(value = "/owners")

@@ -113,7 +113,6 @@ CREATE TABLE if NOT EXISTS flow.project_message_properties
     project_id              integer NOT NULL
     constraint pmp_project_id_fk
     references flow.project(id),
-    notification_user_ids integer[],
     last_sent timestamp without time zone,
     date_created            timestamp without time zone default now(),
     date_modified           timestamp without time zone default now(),
