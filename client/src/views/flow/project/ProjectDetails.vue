@@ -32,7 +32,7 @@
               <v-btn
                 v-if="userCanEdit"
                 color="primary"
-                class="white--text mt-3"
+                class="mt-3"
                 :loading="isFieldsLoading"
                 :disabled="fieldsSaving"
                 @click="updateFieldGroups()">Save Fields

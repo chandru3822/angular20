@@ -126,7 +126,7 @@
               </v-autocomplete>
             </div>
             <div>
-              <v-btn text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
+              <v-btn color="primary" text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
                      :class="{'mt-2': displayChangeOwner}"
                      @click="displayChangeOwner = !displayChangeOwner">
                 <span v-if="displayChangeOwner">cancel</span>
@@ -238,7 +238,7 @@
           <div>
             <v-btn
               color="primary"
-              class="white--text mt-3 ml-2"
+              class="mt-3 ml-2"
               :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
             >Save Fields
