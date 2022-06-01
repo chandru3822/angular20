@@ -18,14 +18,14 @@ public class CustomFieldValue {
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId, uniqueBehaviorTypeId,
       companySystemListId, projectProcessStepId, scheduleFieldTypeId, ancillaryCustomFieldGroupAssignmentId;
 
-  private String fieldName, fieldValue, textValue, customFieldSqlKey, ancillaryCustomFieldHint;
+  private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, ancillaryCustomFieldHint;
   private Long intValue;
 
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
   private Boolean booleanValue, hasListValues, readonly, systemReadonly, customFieldGroupAssignmentReadOnly, detailView,
-    customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, showOnUserProfile, useParentData, allowNow;
+    customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, required, showOnUserProfile, useParentData, allowNow;
 
   private Timestamp dateValue, timestampValue;
 

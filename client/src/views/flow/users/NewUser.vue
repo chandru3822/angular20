@@ -49,7 +49,7 @@
           <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
                             :key="idx"
                             :callback="populateDirtyCfvs"
-                            :required="cf.requireOnInsert"
+                            :required="cf.required"
                             :readonly="getReadOnly(cf)"
                             :field="cf"></CustomValueInput>
         </v-container>

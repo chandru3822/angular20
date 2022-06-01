@@ -15,12 +15,14 @@
               coalesce(pcv.timestamp_value, ppscfv.timestamp_value) as "timestampValue",
               coalesce(pcv.boolean_value, ppscfv.boolean_value) as "booleanValue",
               coalesce(pcv.text_value, ppscfv.text_value) as "textValue",
+              coalesce(pcv.rich_text_value, ppscfv.rich_text_value) as "richTextValue",
               coalesce(pcv.numeric_value, ppscfv.numeric_value) as "numericValue",
               coalesce(pcv.int_value, ppscfv.int_value) as "intValue",
               coalesce(pcv.int_array_value, ppscfv.int_array_value) as "intArrayValue",
             cfga.custom_field_group_id as "customFieldGroupId",
             cfga.id as "customFieldGroupAssignmentId",
             cfga.read_only as "customFieldGroupAssignmentReadOnly",
+            cfga.required,
             cfga.hidden as "customFieldGroupAssignmentHidden",
             coalesce(cfga.custom_field_id, cfga1.custom_field_id) as "customFieldId",
             cfga.field_order as "fieldOrder",
@@ -123,12 +125,14 @@
           ucv.timestamp_value as "timestampValue",
           ucv.boolean_value as "booleanValue",
           ucv.text_value as "textValue",
+          ucv.rich_text_value as "richTextValue",
           ucv.numeric_value as "numericValue",
           ucv.int_value as "intValue",
           ucv.int_array_value as "intArrayValue",
           cfga.custom_field_group_id as "customFieldGroupId",
           cfga.id as "customFieldGroupAssignmentId",
           cfga.read_only as "customFieldGroupAssignmentReadOnly",
+          cfga.required,
           cfga.hidden as "customFieldGroupAssignmentHidden",
           cfga.custom_field_id as "customFieldId",
           cfga.field_order as "fieldOrder",
@@ -193,12 +197,14 @@
                                     ccv.timestamp_value as "timestampValue",
                                     ccv.boolean_value as "booleanValue",
                                     ccv.text_value as "textValue",
+                                    ccv.rich_text_value as "richTextValue",
                                     ccv.numeric_value as "numericValue",
                                     ccv.int_value as "intValue",
                                     ccv.int_array_value as "intArrayValue",
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.id as "customFieldGroupAssignmentId",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.required,
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.field_order as "fieldOrder",
@@ -300,12 +306,14 @@
                                     ocv.timestamp_value as "timestampValue",
                                     ocv.boolean_value as "booleanValue",
                                     ocv.text_value as "textValue",
+                                    ocv.rich_text_value as "richTextValue",
                                     ocv.numeric_value as "numericValue",
                                     ocv.int_value as "intValue",
                                     ocv.int_array_value as "intArrayValue",
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.id as "customFieldGroupAssignmentId",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.required,
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.field_order as "fieldOrder",
@@ -441,6 +449,12 @@
                                                    case when cfga1.id is not null then pcv1.text_value else pcv.text_value end
                                           end as "textValue",
                                       case
+                                          when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.rich_text_value
+                                          when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.rich_text_value
+                                          when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
+                                                   case when cfga1.id is not null then pcv1.rich_text_value else pcv.rich_text_value end
+                                          end as "richTextValue",
+                                      case
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.numeric_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.numeric_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
@@ -461,6 +475,7 @@
                                       cfga.custom_field_group_id as "customFieldGroupId",
                                       cfga.id as "customFieldGroupAssignmentId",
                                       cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                      cfga.required,
                                       cfga.hidden as "customFieldGroupAssignmentHidden",
                                       cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                       cfga.custom_field_id as "customFieldId",
@@ -617,6 +632,12 @@
                                 when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is not null then pcv.text_value
                                 end as "textValue",
                               case
+                                when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.rich_text_value
+                                when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.rich_text_value
+                                when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is null     then ecfv.rich_text_value
+                                when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is not null then pcv.rich_text_value
+                                end as "richTextValue",
+                              case
                                 when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.numeric_value
                                 when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.numeric_value
                                 when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 6 and pcv.id is null     then ecfv.numeric_value
@@ -638,6 +659,7 @@
                               cfga.id as "customFieldGroupAssignmentId",
                               cfga.detail_view as "detailView",
                               cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                              cfga.required,
                               cfga.hidden as "customFieldGroupAssignmentHidden",
                               cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                               cfga.custom_field_id as "customFieldId",
@@ -766,12 +788,14 @@
                                     ucv.timestamp_value as "timestampValue",
                                     ucv.boolean_value as "booleanValue",
                                     ucv.text_value as "textValue",
+                                    ucv.rich_text_value as "richTextValue",
                                     ucv.numeric_value as "numericValue",
                                     ucv.int_value as "intValue",
                                     ucv.int_array_value as "intArrayValue",
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.id as "customFieldGroupAssignmentId",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.required,
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.field_order as "fieldOrder",
@@ -862,19 +886,20 @@
   ]]></customFieldValues.user.getCustomFieldGroupsAndValues>
 
   <customFieldValues.contact.upsertCustomFieldValue><![CDATA[
-    insert into flow.contact_custom_field_value(contact_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+    insert into flow.contact_custom_field_value(contact_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
     select :sourceId, :dateValue::date,
            (select cfga.id from flow.custom_field_group_assignment cfga
                                   inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                   inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 2
             where cfga.id = :customFieldGroupAssignmentId
-              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
     ON CONFLICT (contact_id, custom_field_group_assignment_id)
       DO UPDATE
       set date_value = :dateValue::date,
           timestamp_value = :timestampValue::timestamp,
           boolean_value = :booleanValue,
           text_value = :textValue,
+          rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
           int_array_value = :intArrayValue::int[],
@@ -883,20 +908,21 @@
   ]]></customFieldValues.contact.upsertCustomFieldValue>
 
   <customFieldValues.organization.upsertCustomFieldValue><![CDATA[
-    insert into flow.organization_custom_field_value(org_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+    insert into flow.organization_custom_field_value(org_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
     select :sourceId, :dateValue::date,
            (select cfga.id from flow.custom_field_group_assignment cfga
                                   inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                   inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 5
             where cfga.id = :customFieldGroupAssignmentId
               and cfga.archived is not true),
-           :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+           :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
     ON CONFLICT (org_id, custom_field_group_assignment_id)
       DO UPDATE
       set date_value = :dateValue::date,
           timestamp_value = :timestampValue::timestamp,
           boolean_value = :booleanValue,
           text_value = :textValue,
+          rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
           int_array_value = :intArrayValue::int[],
@@ -905,20 +931,21 @@
   ]]></customFieldValues.organization.upsertCustomFieldValue>
 
   <customFieldValues.user.upsertCustomFieldValue><![CDATA[
-    insert into flow.user_custom_field_value(user_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+    insert into flow.user_custom_field_value(user_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
     select :sourceId, :dateValue::date,
            (select cfga.id from flow.custom_field_group_assignment cfga
              inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
               inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 3
                where cfga.id = :customFieldGroupAssignmentId
              and cfga.archived is not true),
-           :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+           :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
     ON CONFLICT (user_id, custom_field_group_assignment_id)
       DO UPDATE
       set date_value = :dateValue::date,
           timestamp_value = :timestampValue::timestamp,
           boolean_value = :booleanValue,
           text_value = :textValue,
+          rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
           int_array_value = :intArrayValue::int[],
@@ -927,20 +954,21 @@
   ]]></customFieldValues.user.upsertCustomFieldValue>
 
    <customFieldValues.process_step.upsertCustomFieldValue><![CDATA[
-       insert into flow.project_process_step_custom_field_value(project_process_step_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+       insert into flow.project_process_step_custom_field_value(project_process_step_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
         select :sourceId, :dateValue::date, (
           select cfga.id
           from flow.custom_field_group_assignment cfga
             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and (cfg.process_step_id = (select process_step_id from flow.project_process_step where id = :sourceId))
           where cfga.id = :customFieldGroupAssignmentId
             and cfga.archived is not true
-          ), :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+          ), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
         ON CONFLICT (project_process_step_id, custom_field_group_assignment_id)
           DO UPDATE
           set date_value = :dateValue::date,
               timestamp_value = :timestampValue::timestamp,
               boolean_value = :booleanValue,
               text_value = :textValue,
+              rich_text_value = :richTextValue,
               numeric_value = :numericValue,
               int_value = :intValue,
               int_array_value = :intArrayValue::int[],
@@ -949,7 +977,7 @@
   ]]></customFieldValues.process_step.upsertCustomFieldValue>
 
   <customFieldValues.event.upsertCustomFieldValue><![CDATA[
-      insert into flow.project_process_step_event_custom_field_value(project_process_step_event_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
+      insert into flow.project_process_step_event_custom_field_value(project_process_step_event_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id)
       select :sourceId, :dateValue::date,
              (select cfga.id
               from flow.custom_field_group_assignment cfga
@@ -957,13 +985,14 @@
                                                                                                                                             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
                                                                                                                                               where ppse.id = :sourceId))
               where cfga.id = :customFieldGroupAssignmentId
-                and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId
+                and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId
       ON CONFLICT (project_process_step_event_id, custom_field_group_assignment_id)
         DO UPDATE
         set date_value = :dateValue::date,
             timestamp_value = :timestampValue::timestamp,
             boolean_value = :booleanValue,
             text_value = :textValue,
+            rich_text_value = :richTextValue,
             numeric_value = :numericValue,
             int_value = :intValue,
             int_array_value = :intArrayValue::int[],
@@ -972,19 +1001,20 @@
   ]]></customFieldValues.event.upsertCustomFieldValue>
 
   <customFieldValues.project.upsertCustomFieldValue><![CDATA[
-    insert into flow.project_custom_field_value (project_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+    insert into flow.project_custom_field_value (project_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
     select :sourceId, :dateValue::date,
            (select cfga.id from flow.custom_field_group_assignment cfga
                                   inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                   inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 1
             where cfga.id = :customFieldGroupAssignmentId
-              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
     ON CONFLICT (project_id, custom_field_group_assignment_id)
       do update
       set date_value = :dateValue::date,
           timestamp_value = :timestampValue::timestamp,
           boolean_value = :booleanValue,
           text_value = :textValue,
+          rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
           int_array_value = :intArrayValue::int[],

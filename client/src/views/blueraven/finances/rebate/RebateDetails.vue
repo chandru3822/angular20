@@ -52,14 +52,14 @@
                         label="City:"
                         v-model="rebateDetails.mailing_city">
           </v-text-field>
-          <v-select attach v-model="rebateDetails.mailing_state_id"
+          <v-autocomplete attach v-model="rebateDetails.mailing_state_id"
                     :readonly="!userCanEdit"
                     :disabled="!userCanEdit"
                     :items="states"
                     label="State"
                     item-text="state"
                     item-value="id"
-          ></v-select>
+          ></v-autocomplete>
           <v-text-field text
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"

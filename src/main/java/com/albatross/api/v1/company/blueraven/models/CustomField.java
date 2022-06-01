@@ -18,7 +18,7 @@ public class CustomField {
   private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById,
       customFieldGroupId, customFieldGroupAssignmentId, customFieldObjectTypeId, ancillaryCustomFieldGroupAssignmentId;
   private String fieldName, objectType, groupName, processStepName;
-  private Boolean archived, showOnInsert, requireOnInsert, showOnUserProfile, hasListValues, allowMultiple, useParentData;
+  private Boolean archived, showOnInsert, requireOnInsert, required, showOnUserProfile, hasListValues, allowMultiple, useParentData;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private Date dateCreated, dateModified;

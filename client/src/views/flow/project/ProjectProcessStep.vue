@@ -4,7 +4,7 @@
       No Matching Process Step Found
     </div>
   </v-main>
-  <v-main v-else-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
+  <v-main ref="ppsFieldsContainer" v-else-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -204,9 +204,10 @@
           </v-btn>
         </div>
 
-        <v-row>
+        <v-row v-if="!processStepLoading">
           <Links :projectProcessStepId="parseInt(projectProcessStepId)"
                  :project-id="parseInt(projectId)"
+                 :contact-id="processStep.contactId"
                  :processStepId="parseInt(processStepId)"/>
         </v-row>
       </v-col>
@@ -608,6 +609,8 @@ export default {
         this.customFieldGroups = data
         this.$emit('refresh-upcoming-pps')
         await this.getProcessStep(false)
+        //not sure why this.$refs.ppsFieldsContainer.scrollTop = 0 works everywhere else in the app but not here
+        this.$refs.ppsFieldsContainer.$el.scrollTop = 0
         this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -685,8 +688,13 @@ export default {
         || !this.userCanEdit
     },
     followMultipleLinks(action) {
+      let params = {
+        projectId: this.projectId,
+        ppsId: this.projectProcessStepId
+      }
+
       action?.processStepActionLinks?.forEach(link => {
-        followLink(link.url, this.projectId)
+        followLink(link.url, params)
       })
     },
     handleActionCompleted(data) {

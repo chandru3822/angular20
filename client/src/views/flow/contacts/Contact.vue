@@ -148,19 +148,20 @@
     </v-row>
     <v-row>
       <v-col cols="12" md="6" class="text-left">
-        <div>
-          <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>Summary</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn text v-if="userCanEdit"
-                     :disabled="fieldsSaving"
-                     @click="validate(true)">Save
-              </v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
-          <v-card class="pa-4">
-            <v-form ref="addressForm">
+        <v-form ref="contactForm">
+          <div>
+            <v-toolbar color="transparent" class="elevation-0">
+              <v-toolbar-title>Summary</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="validate(true)">Save
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card class="pa-4">
               <v-text-field text
                             label="First Name"
                             id="qa-first-name-field"
@@ -252,71 +253,73 @@
                             @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
                             v-model="contact.email"></v-text-field>
-            </v-form>
-            <DatetimePickerInput
-              v-model="contact.dateCreated"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Created Date"
-              :readonly="true"
-            />
-            <v-dialog
-              v-if="userIsAdmin"
-              v-model="deleteContactConfirm"
-              width="500">
-              <template #activator="{ on }">
-                <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on" id="qa-delete-contact">
-                  Delete Contact
-                </v-btn>
-              </template>
-              <v-card>
-                <v-card-title
-                  class="text-h5 grey lighten-2"
-                  primary-title>
-                  Confirm
-                </v-card-title>
-
-                <v-card-text class="pt-4">
-                  <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this contact?</span>
-                </v-card-text>
-
-                <v-divider></v-divider>
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    @click="deleteContactConfirm = false" id="qa-delete-contact-no">
-                    No
+              <DatetimePickerInput
+                v-model="contact.dateCreated"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Created Date"
+                :readonly="true"
+              />
+              <v-dialog
+                v-if="userIsAdmin"
+                v-model="deleteContactConfirm"
+                width="500">
+                <template #activator="{ on }">
+                  <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on" id="qa-delete-contact">
+                    Delete Contact
                   </v-btn>
-                  <v-btn
-                    color="primaryCustom"
-                    text
-                    @click="deleteContact"
-                    id="qa-delete-contact-yes">
-                    Yes
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </v-card>
-        </div>
-        <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
-          <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <!--              <v-btn text @click="saveContact">Save</v-btn>-->
-            </v-toolbar-items>
-          </v-toolbar>
-          <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
-                              :key="idx"
-                              :readonly="getReadOnly(cf)"
-                              :callback="populateDirtyCfvs"
-                              :field="cf"></CustomValueInput>
-          </v-card>
-        </div>
+                </template>
+                <v-card>
+                  <v-card-title
+                    class="text-h5 grey lighten-2"
+                    primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this contact?</span>
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="deleteContactConfirm = false" id="qa-delete-contact-no">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="deleteContact"
+                      id="qa-delete-contact-yes">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-card>
+          </div>
+          <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
+            <v-toolbar color="transparent" class="elevation-0">
+              <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <!--              <v-btn text @click="saveContact">Save</v-btn>-->
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card class="pa-4">
+              <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                                :key="idx"
+                                :required="cf.required"
+                                :readonly="getReadOnly(cf)"
+                                :callback="populateDirtyCfvs"
+                                :field="cf"></CustomValueInput>
+            </v-card>
+          </div>
+        </v-form>
+
       </v-col>
       <v-col cols="12" md="6" class="text-left pa-0">
         <v-toolbar color="transparent" class="elevation-0">
@@ -324,8 +327,8 @@
         </v-toolbar>
         <v-card class="square-card mx-4">
           <NotesAndActivityContent ref="notes" :showNotes="true" :showActivity="false"
-                            :notes="notes" :primaryId="parseInt(contactId)"
-                            type="Contact"
+                                   :notes="notes" :primaryId="parseInt(contactId)"
+                                   type="Contact"
           ></NotesAndActivityContent>
         </v-card>
 
@@ -382,15 +385,15 @@ export default {
     Attachments
   },
   watch: {
-    contact: {
-      // This will let Vue know to look inside the array
-      deep: true,
-
-      // We have to move our method to a handler field
-      handler() {
-        this.validate(false)
-      }
-    }
+    // contact: {
+    //   // This will let Vue know to look inside the array
+    //   deep: true,
+    //
+    //   // We have to move our method to a handler field
+    //   handler() {
+    //     this.validate(false)
+    //   }
+    // }
   },
   data() {
     return {
@@ -420,6 +423,7 @@ export default {
       navigationOverride: false,
       notes: [],
       fieldsSaving: false,
+      fieldsLoading: true,
       hasDirtyNotes: false,
       dirtyCfvs: [],
       dirtySystemFields: false,
@@ -447,21 +451,19 @@ export default {
       //this logic seems backwards but it is just the way rules work
       //if one address field is filled in then all of them are required
       return {
-        street: [ !(!this.contact.street1 && (Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
-        city: [ !(!this.contact.city && (Boolean(this.contact.street1) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
-        state: [ !(!this.contact.companyStateId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
-        country: [ !(!this.contact.companyCountryId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated" ],
-        zip: [ !(!this.contact.postalCode && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId))) || "Required when other address fields are populated" ]
+        street: [!(!this.contact.street1 && (Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
+        city: [!(!this.contact.city && (Boolean(this.contact.street1) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
+        state: [!(!this.contact.companyStateId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
+        country: [!(!this.contact.companyCountryId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
+        zip: [!(!this.contact.postalCode && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId))) || "Required when other address fields are populated"]
       }
     }
   },
-  created() {
-    this.getContact()
-    this.getCompanyStates()
-    this.getCountries()
-    this.getOwners()
-    this.getCustomFieldGroups()
-    this.getNotes()
+  async created() {
+    let requests = [this.getContact(), this.getCompanyStates(), this.getCountries(), this.getOwners(), this.getCustomFieldGroups(), this.getNotes()]
+    await Promise.all(requests).then(async () => {
+      this.fieldsLoading = false
+    })
   },
   beforeRouteLeave(to, from, next) {
     // called when the route that renders this component is about to
@@ -485,11 +487,14 @@ export default {
       this.$router.push(path)
     },
     async validate(saveContact) {
-      let valid = this.$refs.addressForm?.validate()
+      let valid = this.$refs.contactForm?.validate()
       if (valid && saveContact) {
-        this.fieldsSaving = false;
+        this.fieldsSaving = true
         await this.saveContact()
-        this.fieldsSaving = false;
+        this.fieldsSaving = false
+      }  else {
+        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     contactOwnerIsReadOnly() {

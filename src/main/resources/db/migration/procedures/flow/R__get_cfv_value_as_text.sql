@@ -25,7 +25,7 @@ BEGIN
                when v_cfga_data_type_id = 2 then timestamp_value::text
                when v_cfga_data_type_id = 3 then boolean_value::text
                when v_cfga_data_type_id = 4 then numeric_value::text
-               when v_cfga_data_type_id = 5 then text_value::text
+               when v_cfga_data_type_id = 5 or v_cfga_data_type_id = 13 then text_value::text
                when v_cfga_data_type_id = 6 then int_value::text
                when v_cfga_data_type_id = 7 then int_array_value::text end
       into v_cfga_value
@@ -39,7 +39,7 @@ BEGIN
                when v_cfga_data_type_id = 2 then timestamp_value::text
                when v_cfga_data_type_id = 3 then boolean_value::text
                when v_cfga_data_type_id = 4 then numeric_value::text
-               when v_cfga_data_type_id = 5 then text_value::text
+               when v_cfga_data_type_id = 5 or v_cfga_data_type_id = 13 then text_value::text
                when v_cfga_data_type_id = 6 then int_value::text
                when v_cfga_data_type_id = 7 then int_array_value::text end
       into v_cfga_value
@@ -54,7 +54,7 @@ BEGIN
                when v_cfga_data_type_id = 2 then timestamp_value::text
                when v_cfga_data_type_id = 3 then boolean_value::text
                when v_cfga_data_type_id = 4 then numeric_value::text
-               when v_cfga_data_type_id = 5 then text_value::text
+               when v_cfga_data_type_id = 5 or v_cfga_data_type_id = 13 then text_value::text
                when v_cfga_data_type_id = 6 then int_value::text
                when v_cfga_data_type_id = 7 then int_array_value::text end
       into v_cfga_value
@@ -69,7 +69,7 @@ BEGIN
                when v_cfga_data_type_id = 2 then timestamp_value::text
                when v_cfga_data_type_id = 3 then boolean_value::text
                when v_cfga_data_type_id = 4 then numeric_value::text
-               when v_cfga_data_type_id = 5 then text_value::text
+               when v_cfga_data_type_id = 5 or v_cfga_data_type_id = 13 then text_value::text
                when v_cfga_data_type_id = 6 then int_value::text
                when v_cfga_data_type_id = 7 then int_array_value::text end
       into v_cfga_value

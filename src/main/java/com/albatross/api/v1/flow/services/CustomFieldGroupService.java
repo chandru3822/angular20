@@ -428,8 +428,8 @@ public class CustomFieldGroupService {
         "showOnUserProfile",
         null != customField.getShowOnUserProfile() ? customField.getShowOnUserProfile() : false);
     params.put(
-        "requireOnInsert",
-        null != customField.getRequireOnInsert() ? customField.getRequireOnInsert() : false);
+        "required",
+        null != customField.getRequired() ? customField.getRequired() : false);
 
     sqlCache.update("customFieldGroup.updateFieldShowOrRequire", params);
   }

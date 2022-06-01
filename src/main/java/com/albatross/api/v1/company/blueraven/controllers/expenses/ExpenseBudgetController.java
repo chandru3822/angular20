@@ -23,6 +23,11 @@ public class ExpenseBudgetController {
 
   private final ExpenseBudgetService expenseBudgetService;
 
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteBudget(@PathVariable Long id) {
+    expenseBudgetService.deleteBudget(id);
+  }
+
   //budget types here
   @GetMapping(value = "/budgetTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<BudgetType> getBudgetTypes() {
@@ -95,14 +100,12 @@ public class ExpenseBudgetController {
     return expenseBudgetService.getMonthlyBudgetReport(startDate, endDate);
   }
 
-  @GetMapping(value = "/getMonthlyBudgetReportDrilldown/{userId}",  produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getMonthlyBudgetReportDrilldown(@PathVariable("userId") Long userId,
-                                                @RequestParam String startDate,
+  @GetMapping(value = "/getExpenseDrilldown",  produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getExpenseDrilldown(@RequestParam String startDate,
                                                 @RequestParam String endDate,
                                                 @RequestParam String status,
-                                                @RequestParam Long budgetTypeId,
-                                                @RequestParam Boolean individual) {
-    return expenseBudgetService.getMonthlyBudgetReportDrilldown(userId, startDate, endDate, status, budgetTypeId, individual);
+                                                @RequestParam(required = false) Long budgetId) {
+    return expenseBudgetService.getExpenseDrilldown(startDate, endDate, status, budgetId);
   }
 
   @GetMapping(value = "/budgetRemaining/{id}",  produces = MediaType.APPLICATION_JSON_VALUE)
