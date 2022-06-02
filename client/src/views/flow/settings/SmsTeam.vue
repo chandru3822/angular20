@@ -365,9 +365,11 @@ export default {
         if(confirmChangeDefault) {
           //if the edited team has been set as default, remove the isDefault state from the old default team
           const oldDefaultTeam = this.teams.filter(team => team.isDefault)[0]
-          oldDefaultTeam.isDefault = false
+          if (oldDefaultTeam) {
+            oldDefaultTeam.isDefault = false
+            const {removeData, removeStatus} = await putRequest(`/smsTeam/`, oldDefaultTeam) //removes the default state from
+          }
           team.isDefault = team.checked
-          const {removeData, removeStatus} = await putRequest(`/smsTeam/`, oldDefaultTeam) //removes the default state from
         }
         const {data, status} = await putRequest(`/smsTeam/`, team)
         if(isNew){
