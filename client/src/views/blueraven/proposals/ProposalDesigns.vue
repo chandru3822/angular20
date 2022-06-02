@@ -128,7 +128,7 @@
               ref="fileInput"
               hide-details
               label="Attach utility bill"
-              @change="uploadFiles($event.target.files, true)"
+              @change="uploadUtilityBillFiles"
           />
 
           <v-file-input
@@ -139,7 +139,7 @@
               ref="fileInput"
               hide-details
               label="Attach supporting files"
-              @change="uploadFiles($event.target.files, false)"
+              @change="uploadFiles"
           />
 
           <DatetimePickerInput
@@ -294,12 +294,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    uploadFiles: function (files, isUtilityBill) {
-      if(isUtilityBill) {
-        this.newDesignRequest.utilityBillAttachments = files
-      } else {
-        this.newDesignRequest.attachments = files
-      }
+    uploadFiles: function (files) {
+      this.newDesignRequest.attachments = files
+    },
+    //cuz i am dumb and can't figure out how to pass in "files"
+    uploadUtilityBillFiles: function (files) {
+      this.newDesignRequest.utilityBillAttachments = files
     },
   }
 }
