@@ -15,7 +15,7 @@
                       auto-grow
                       rows="4"
                       @change="dirtyNote = true"
-                      background-color="#F2F6F8"
+                      background-color="grey lighten-4"
                       filled v-model="note.note">
           </v-textarea>
 
@@ -92,7 +92,7 @@
                             auto-grow
                             rows="4"
                             @change="dirtyNote = true"
-                            background-color="#F2F6F8"
+                            background-color="transparent"
                             filled v-model="item.note"></v-textarea>
 
                 <template #no-result>
@@ -128,7 +128,7 @@
                        :disabled="!item.note"
                        @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save
                 </v-btn>
-                <v-btn text
+                <v-btn text color="primary"
                        @click="[dirtyNote = false, item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
                   <span>cancel</span>
                 </v-btn>
@@ -250,7 +250,7 @@
                 >
                   Save
                 </v-btn>
-                <v-btn class="ml-2" v-if="item.reply"
+                <v-btn text color="primary" class="ml-2" v-if="item.reply"
                        @click="[item.reply=null, item.showReply = false, !item.childNotes || item.childNotes.length === 0 ? expanded=[] : null]">
                   cancel
                 </v-btn>
@@ -268,7 +268,7 @@
                               auto-grow
                               @change="dirtyNote = true"
                               rows="4"
-                              background-color="#F2F6F8"
+                              background-color="grey lighten-4"
                               filled v-model="cn.note"></v-textarea>
 
                   <template #no-result>
@@ -291,14 +291,14 @@
                          :disabled="!cn.note"
                          @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save
                   </v-btn>
-                  <v-btn text @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
+                  <v-btn text color="primary" @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
                     <span>cancel</span>
                   </v-btn>
                 </div>
               </div>
               <v-row v-else class="px-0">
                 <v-col cols="11" class="pr-0">
-                  <v-card color="#F2F6F8" class="py-0">
+                  <v-card color="grey lighten-5" class="py-0">
                     <v-card-title class="reply-note-creator pt-1 pb-0">
                       {{ cn.createdBy }}
                       <v-spacer></v-spacer>
@@ -323,6 +323,7 @@
                                    @click="[cn.oldNote = cn.note, cn.edit = true]">
                         <v-list-item-title>Edit Comment</v-list-item-title>
                       </v-list-item>
+<!--                      todo: replace with delete dialog component-->
                       <v-dialog
                           v-if="cn.createdById === userId || $store.getters.isFullAdmin"
                           v-model="cn.deleteConfirm"
@@ -551,19 +552,17 @@ export default {
 }
 
 .reply-note-item {
-  background-color: #F2F6F8;
+  background-color: var(-v--primary-lighten9);
   padding: 5px 15px;
   border-radius: 10px;
 }
 
 .reply-note-creator {
-  color: var(--v-primary-base) !important;
   font-weight: 600;
   font-size: 12px;
 }
 
 .reply-note {
-  color: var(--v-primary-base) !important;
   font-size: 12px;
   font-style: italic;
 }
