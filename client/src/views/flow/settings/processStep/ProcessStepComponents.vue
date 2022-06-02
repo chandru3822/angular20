@@ -72,7 +72,7 @@
               </v-toolbar-items>
             </v-toolbar>
             <div class="mb-4">
-              <v-card flat class="square-card mb-3 pa-3" color="primary lighten-6" v-if="addNewProcessStepStatusType">
+              <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewProcessStepStatusType">
                 <h3>Assign a Status Type</h3>
                 <v-autocomplete label="Process Step Status Type"
                                 :items="availableCompanyProcessStepStatusTypes"
@@ -148,7 +148,7 @@
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <v-card class="square-card pa-2" color="primary lighten-6" v-if="addNewLink">
+            <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewLink">
               <v-select attach v-if="addNewLink"
                         v-model="newLink.linkId"
                         :items="availableLinks"
@@ -201,7 +201,7 @@
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <v-card class="square-card pa-2" color="primary lighten-6" v-if="addNewType">
+            <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewType">
               <v-autocomplete v-model="newType.attachmentTypeId"
                               :items="availableAttachmentTypes"
                               label="Select Attachment Type"
@@ -589,7 +589,7 @@ export default {
 
 <style scoped lang="scss">
 .name-container {
-  background-color: var(--v-primary-lighten6) !important;
+  background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
 }
 

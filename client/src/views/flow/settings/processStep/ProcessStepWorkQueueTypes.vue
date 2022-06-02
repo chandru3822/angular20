@@ -19,7 +19,7 @@
         </v-toolbar-items>
       </v-toolbar>
       <div>
-        <v-card flat class="square-card mb-3 pa-3" color="primary lighten-6" v-if="addNewWorkQueueType">
+        <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewWorkQueueType">
           <v-autocomplete v-model="newWorkQueueType.workQueueTypeId"
                           :items="workQueueTypes"
                           label="Select Work Queue Type"

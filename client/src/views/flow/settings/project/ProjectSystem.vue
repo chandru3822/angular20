@@ -1,6 +1,6 @@
 <template>
   <v-container class="custom-field-group-container">
-    <v-card flat color="primary lighten-6" class="square-card">
+    <v-card flat color="primary lighten-9" class="square-card">
       <v-card-title style="height: 40px" class="py-0">
         Status Read Only
         <v-checkbox type="checkbox" class="ml-3"
@@ -57,7 +57,7 @@
         </v-btn>
       </v-card-text>
     </v-card>
-    <v-card flat color="primary lighten-6" class="square-card mt-5">
+    <v-card flat color="primary lighten-9" class="square-card mt-5">
       <v-card-title style="height: 40px" class="py-0">
         Owner Read Only
         <v-checkbox type="checkbox" class="ml-3"

@@ -21,16 +21,15 @@ export default new Vuetify({
           light: {
               primary: {
                   base:'#1F3C73',
-                  lighten1:'#3c538d',
-                  lighten2:'#576ba7',
-                  lighten3:'#7184c3',
-                  lighten4:'#8c9edf',
-                  lighten5:'#a8b9fc',
-                  lighten6:'#EAEAF4',
-                  darken1:'#00275a',
-                  darken2:'#001342',
-                  darken3:'#00002c',
-                  darken4:'#00001a'
+                  lighten1:'#2c5893',
+                  lighten2:'#3368a5',
+                  lighten3:'#3c79b6',
+                  lighten4:'#4486c3',
+                  lighten5:'#5796cb',
+                  lighten6:'#6fa7d3',
+                  lighten7:'#94c0e0',
+                  lighten8:'#bbd8ec',
+                  lighten9:'#e3eff7'
               },
               secondary: '#F6F7F8',
               error:'#B4221F',

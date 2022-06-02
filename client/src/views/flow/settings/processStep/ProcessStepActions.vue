@@ -18,7 +18,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat color="primary lighten-6" class="square-card my-3 pa-3" v-if="addNewAction">
+        <v-card flat color="primary lighten-9" class="square-card my-3 pa-3" v-if="addNewAction">
           <h3>Add New Action</h3>
           <v-text-field v-model="newAction.actionName"
                         placeholder="Enter a name"

@@ -13,7 +13,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-6">
+        <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
           <h3>Add Event Status</h3>
           <v-text-field label="Event Status" v-model="newType.eventStatusType">
           </v-text-field>

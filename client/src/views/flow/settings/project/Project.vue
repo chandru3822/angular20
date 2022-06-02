@@ -69,7 +69,7 @@
 
 <style scoped lang="scss">
 .name-container {
-  background-color: var(--v-primary-lighten6) !important;
+  background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
 }
 </style>

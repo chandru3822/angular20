@@ -83,7 +83,7 @@
 
           <template #item="{ item, index }">
 
-            <tr class="clickable" :class="{'primary lighten-6': index % 2}" >
+            <tr class="clickable" :class="{'primary lighten-9': index % 2}" >
               <td class="text-left">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/contact/${item.id}`">
                   {{item.fullName}}
