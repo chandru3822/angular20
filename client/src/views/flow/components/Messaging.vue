@@ -231,16 +231,18 @@ export default {
             message: message.data.file.name,
             mediaURLs: mediaUrls
           }
-        } else {
+          await postRequest(`/communication/sendTextsForProject`, params)
+        }
+
+        if (message.data.text) {
           params = {
             userIDs: [this.contactId],
             message: message.data.text
           }
+          await postRequest(`/communication/sendTextsForProject`, params)
         }
 
-        await postRequest(`/communication/sendTextsForProject`, params)
         await putRequest(`/messaging/setLastSent/`+ this.projectId)
-
         const {data, status} = await postRequest(`/messaging/createNotification/${this.projectId}`)
 
         //dont add to the ui unless the message goes thru successfully
