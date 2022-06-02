@@ -87,7 +87,7 @@ public class BlueravenProposalService {
   }
 
   public List<ProposalDesign> requestNewDesign(
-      Long projectId, String description, String dueDate, List<MultipartFile> attachments)
+      Long projectId, String description, String dueDate, List<MultipartFile> attachments, List<MultipartFile> utilityBillAttachments)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -109,7 +109,13 @@ public class BlueravenProposalService {
     // upload attachments to the new step
     if (null != attachments && attachments.size() > 0) {
       for (MultipartFile a : attachments) {
-        projectProcessStepService.addAttachment(a, ppsId, 936L);
+        projectProcessStepService.addAttachment(a, ppsId, 946L); //Proposal Request Supporting Files
+      }
+    }
+    // upload utility bill attachments to the new step
+    if (null != utilityBillAttachments && utilityBillAttachments.size() > 0) {
+      for (MultipartFile a : utilityBillAttachments) {
+        projectProcessStepService.addAttachment(a, ppsId, 47L); //Utility Bill
       }
     }
 

@@ -122,13 +122,24 @@
 
           <v-file-input
               dense
+              class="mb-5"
+              multiple
+              :accept="acceptedFileTypes"
+              ref="fileInput"
+              hide-details
+              label="Attach utility bill"
+              @change="uploadFiles($event.target.files, true)"
+          />
+
+          <v-file-input
+              dense
               class="mb-3"
               multiple
               :accept="acceptedFileTypes"
               ref="fileInput"
               hide-details
-              label="Attach utility bill, notes/drawings for reference"
-              @change="uploadFiles"
+              label="Attach supporting files"
+              @change="uploadFiles($event.target.files, false)"
           />
 
           <DatetimePickerInput
@@ -210,6 +221,10 @@ export default {
           formData.append('attachments', a);
         });
 
+        this.newDesignRequest?.utilityBillAttachments?.forEach(a => {
+          formData.append('utilityBillAttachments', a);
+        });
+
         const {data, status} = await postRequest(`/proposal/design`, formData, 'blueraven')
         //this endpoint returns all of the designs because adding a new one could possible remove (cancel) an existing one
         this.designs = data
@@ -279,8 +294,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    uploadFiles: function (files) {
-      this.newDesignRequest.attachments = files
+    uploadFiles: function (files, isUtilityBill) {
+      if(isUtilityBill) {
+        this.newDesignRequest.utilityBillAttachments = files
+      } else {
+        this.newDesignRequest.attachments = files
+      }
     },
   }
 }
