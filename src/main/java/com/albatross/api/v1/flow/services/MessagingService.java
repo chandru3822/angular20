@@ -303,7 +303,7 @@ public class MessagingService {
   // Used for triggering a data refresh on the SMS Inbox screen for all owners of a Project
   private void addSmsOwnershipNotification(ProjectMessageProperties pmp) {
     for (SmsTeam smsTeam: pmp.getSmsTeamOwners()) {
-      SmsTeam smsTeamDetails = getTeamDetails(smsTeam.getId());
+      SmsTeam smsTeamDetails = getTeamUsers(smsTeam.getId());
       List<Long> smsTeamUserIds = smsTeamDetails.getUsers().stream()
         .map(SmsTeamUser::getUserId)
         .collect(Collectors.toList());
