@@ -17,7 +17,9 @@
         <v-spacer></v-spacer>
         <v-btn
             @click="no"
-            class="elevation-2 text-capitalize mr-2 mb-2"
+            text
+            color="primary"
+            class="text-capitalize mr-2 mb-2"
         >
           No
         </v-btn>
@@ -51,6 +53,7 @@ export default {
       this.$emit('update:openConfirmDeleteDialog', false)
     },
     no() {
+      console.log('here')
       this.$emit('update:openConfirmDeleteDialog', false)
       this.$emit('closeConfirmDeleteDialog')
     }
