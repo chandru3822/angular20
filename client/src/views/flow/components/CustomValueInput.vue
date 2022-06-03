@@ -53,7 +53,6 @@
           :filled="filledStyle"
           :disabled="readonly"
           :readonly="readonly"
-          :class="{'error--text': readonly}"
           :ripple="false"
           @change="callback(field)"
         />
