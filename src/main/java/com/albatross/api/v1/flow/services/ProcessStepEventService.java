@@ -200,6 +200,38 @@ public class ProcessStepEventService {
     sqlCache.update("processStepEvent.deleteActionFromEvent", params);
   }
 
+  // CHILD LINKS
+  public ProcessStepEventActionLink addLinkToAction(Long actionId, ProcessStepEventActionLink child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("linkId", child.getLinkId());
+    params.put("processStepEventActionId", actionId);
+    params.put("createdById", currentUser.trueUserId());
+
+    Long id =
+      sqlCache.updateReturningId("processStepEvent.addLinkToAction", params, "id").longValue();
+    return getActionChildLink(id);
+  }
+
+  public ProcessStepEventActionLink getActionChildLink(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    return sqlCache
+      .get("processStepEvent.getActionChildLink", params, ProcessStepEventActionLink.class)
+      .orElse(null);
+  }
+
+  public void deleteLinkFromAction(Long childLinkId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("id", childLinkId);
+    sqlCache.update("processStepEvent.deleteLinkFromAction", params);
+  }
+
+  //functions
   public ProcessStepEventActionChildFunction addChildFunctionToAction(Long actionId, ProcessStepEventActionChildFunction child) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
