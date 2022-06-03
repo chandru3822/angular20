@@ -44,7 +44,7 @@
                           @input="saveUserOrgCalendars"
                           attach
           />
-          <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -71,7 +71,7 @@
                   v-model="item.deleteConfirm"
                   width="500">
                   <template v-slot:activator="{ on }">
-                    <v-btn small text class="clickable" v-on="on">
+                    <v-btn small text color="primary" class="clickable" v-on="on">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </template>
@@ -92,6 +92,7 @@
                     <v-card-actions>
                       <v-spacer></v-spacer>
                       <v-btn
+                          text color="primary"
                         @click="item.deleteConfirm = false">
                         No
                       </v-btn>

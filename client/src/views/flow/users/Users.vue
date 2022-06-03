@@ -31,16 +31,16 @@
           <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="msgDialog = true">
+            <v-btn text color="primary" @click="msgDialog = true">
               <v-icon v-if="constants.IS_MOBILE">email</v-icon>
               <span v-else>Send Email/Text</span>
             </v-btn>
-            <v-btn text @click="handleOrgFilterChange(true)">
+            <v-btn text color="primary" @click="handleOrgFilterChange(true)">
               <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
               <span v-else>Reset Filters</span>
             </v-btn>
 
-            <v-btn text @click="exportCsv">
+            <v-btn text color="primary" @click="exportCsv">
               <v-icon v-if="constants.IS_MOBILE">mdi-cloud-download</v-icon>
               <span v-else>Export</span>
             </v-btn>

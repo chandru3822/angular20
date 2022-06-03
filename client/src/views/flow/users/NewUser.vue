@@ -4,7 +4,7 @@
       <v-card-title>
         Add User
         <v-spacer></v-spacer>
-        <v-btn text class="mr-3" to="/users">Cancel</v-btn>
+        <v-btn text color="primary" class="mr-3" to="/users">Cancel</v-btn>
         <v-btn color="primary white--text" @click="validate"
                :disabled="loadingUserInsertFields || (newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)">
           Save
@@ -108,7 +108,7 @@
                   </v-autocomplete>
                 </div>
               </div>
-              <v-btn color="secondary" class="mr-2"
+              <v-btn color="primary" class="mr-2"
                      @click="[userPositionPanel = undefined, newPosition = {}]">Clear
               </v-btn>
             </v-expansion-panel-content>

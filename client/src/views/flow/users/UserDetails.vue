@@ -9,7 +9,7 @@
                 <v-toolbar-title>Summary</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                  <v-btn text :disabled="fieldsSaving"
+                  <v-btn text color="primary" :disabled="fieldsSaving"
                          :loading="fieldsLoading"
                          @click="[fieldsSaving=true, saveUser()]" v-if="userCanEdit">Save
                   </v-btn>
@@ -95,7 +95,7 @@
                     <v-toolbar-items>
                       <v-btn
                         v-if="userIsAdmin"
-                        text
+                        text color="primary"
                         @click="addUserCompany = !addUserCompany">Add
                       </v-btn>
                     </v-toolbar-items>
@@ -135,7 +135,7 @@
                       v-model="uc.deleteConfirm"
                       width="500">
                       <template #activator="{ on }">
-                        <v-btn x-small text v-on="on">
+                        <v-btn x-small text color="primary" v-on="on">
                           <v-icon>delete</v-icon>
                         </v-btn>
                       </template>

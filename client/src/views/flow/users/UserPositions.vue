@@ -49,7 +49,7 @@
             <div v-if="newPosition.startDate >= newPosition.endDate" class="error-text mb-2">
               End date must be null or after the start date
             </div>
-            <v-btn color="secondary" class="mr-2"
+            <v-btn text color="primary" class="mr-2"
                    @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
             <v-btn color="primary" class="white--text mr-2"
                    :disabled="!newPosition.positionId ||
@@ -82,7 +82,7 @@
 
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text x-small @click="addNew = !addNew" v-if="userCanAdd">
+              <v-btn text color="primary" x-small @click="addNew = !addNew" v-if="userCanAdd">
                 <v-icon>add</v-icon>
               </v-btn>
             </div>
@@ -162,12 +162,12 @@
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
               <td width="150">
-                <v-btn class="d-inline-block" text
+                <v-btn class="d-inline-block" text color="primary"
                        v-if="!expanded.includes(item) && userCanEdit"
                        @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn class="d-inline-block" text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
+                <v-btn class="d-inline-block" text color="primary" v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
                 <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')"
                     label="this position: "
