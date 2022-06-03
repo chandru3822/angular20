@@ -26,13 +26,13 @@
       </v-col>
       <v-col cols="4" class="text-center px-1 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
       <v-col cols="2" class="text-right pa-0">
-        <v-btn v-if="!item.edit" dense small text class="px-0" @click="[item.edit = true, renderTicker++]">
+        <v-btn v-if="!item.edit" dense small text color="primary" class="px-0" @click="[item.edit = true, renderTicker++]">
           <v-icon>edit</v-icon>
         </v-btn>
-        <v-btn v-if="item.edit" dense text small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
+        <v-btn v-if="item.edit" dense text color="primary" small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
           cancel
         </v-btn>
-        <v-btn  v-if="item.edit" dense small text class="px-0" @click="saveFilename(item)">
+        <v-btn  v-if="item.edit" dense small text color="primary" class="px-0" @click="saveFilename(item)">
           <v-icon>save</v-icon>
         </v-btn>
         <v-dialog
@@ -40,7 +40,7 @@
             width="400"
         class="albatross-body-1">
           <template #activator="{ on }">
-            <v-btn small text v-on="on" class="px-0" v-if="!item.edit">
+            <v-btn small text color="primary" v-on="on" class="px-0" v-if="!item.edit">
               <v-icon>delete</v-icon>
             </v-btn>
           </template>
