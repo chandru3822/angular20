@@ -32,9 +32,10 @@ export default new Vuetify({
                   lighten9:'#e3eff7'
               },
               secondary: '#F6F7F8',
+              accent: '#3c79b6',
               error:'#B4221F',
               success:'#1B5E20',
-              active:'#edf5fe'
+              active:'#e3eff7'
           },
       // dark: {
       //   primary: '#1F3C73',
