@@ -106,7 +106,7 @@
                   <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
                 </div>
                 </div>
-                <v-btn v-if="userCanEdit" small icon class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
+                <v-btn v-if="userCanEdit" small icon color="primary" class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
               </div>
             </div>
             <div v-if="displayChangeOwner">
