@@ -141,4 +141,13 @@ public class LinkService {
 
     return sqlCache.query("link.getAvailableLinksForAction", params, Link.class);
   }
+
+  public List<Link> getAvailableLinksForEventAction(Long id) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+
+    return sqlCache.query("link.getAvailableLinksForEventAction", params, Link.class);
+  }
 }
