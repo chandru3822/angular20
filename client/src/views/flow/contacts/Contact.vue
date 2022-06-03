@@ -71,7 +71,7 @@
                         return-object
                         class="mt-2 qa-process-selector"
               ></v-select>
-              <v-btn text :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
+              <v-btn color="primary" :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
                 Add Project
               </v-btn>
             </v-card>
