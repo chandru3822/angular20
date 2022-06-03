@@ -24,7 +24,7 @@ public class CustomFieldValue {
       dataTypeId,
       companySystemListId,
       flowCustomFieldId;
-  private Boolean valueWasChanged;
+  private Boolean valueWasChanged, required;
 
   // not sure on these types
   private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, ancillaryCustomFieldHint;

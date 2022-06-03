@@ -4,7 +4,9 @@
       <v-col cols="12" class="shrink pt-0">
         <router-link :to="`/settings/companyObjectTypes`">Back</router-link>
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
+            {{objectType.objectType}} - Custom Field Groups
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
@@ -172,6 +174,30 @@
                                      :readonly="!userCanEdit" :disabled="!userCanEdit">
                             </div>
                           </div>
+                          <div v-if="objectType.allowRequired">
+                            <input type="checkbox" v-model="cf.required" :readonly="!userCanEdit"
+                                   :disabled="!userCanEdit" @change="updateRequired(cf)">
+                            Required
+                          </div>
+                          <div class="flex-display" v-if="objectType.allowMinMax && [4,6].includes(cf.dataTypeId) && !cf.hasListValues">
+                            <v-text-field text
+                                          type="number"
+                                          label="Minimum Value"
+                                          @change="changedMinMax(cf)"
+                                          :disabled="!userCanEdit"
+                                          v-model.number="cf.minValue"></v-text-field>
+                            <v-spacer></v-spacer>
+                            <v-text-field text
+                                          type="number"
+                                          label="Maximum Value"
+                                          @change="changedMinMax(cf)"
+                                          :disabled="!userCanEdit"
+                                          v-model.number="cf.maxValue"></v-text-field>
+                            <v-btn text color="primaryCustom" @click="saveMinMax(cf)"
+                                   :disabled="!cf.minMaxValueChanged">
+                              <v-icon>save</v-icon>
+                            </v-btn>
+                          </div>
                         </v-list-item-content>
                         <confirm-delete-dialog
                             v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
@@ -226,6 +252,7 @@ export default {
       deleteHeader: null,
       deleteText: null,
       fieldsInUse: [],
+      minMaxValueChanged: false,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       selectedIndex: null,
@@ -274,6 +301,9 @@ export default {
     this.getCustomFieldGroups()
   },
   methods: {
+    changedMinMax(cf) {
+      this.$set(cf, 'minMaxValueChanged', true)
+    },
     async getObjectType() {
       //we have to get the object type details to determine if it can use ancillary fields
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -328,6 +358,37 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateRequired(cf) {
+      try {
+        const field = {
+          customFieldGroupAssignmentId: cf.customFieldGroupAssignmentId,
+          required: cf.required || false
+        }
+        const {status} = await putRequest(`/customFieldGroup/updateRequired`, field, 'blueraven')
+        this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveMinMax(cf) {
+      try {
+        const {status} = await putRequest(`/customFieldGroup/saveMinMax`, cf, 'blueraven')
+        cf.minMaxValueChanged = false
+        this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

@@ -11,7 +11,7 @@ public class CompanyObjectType {
 
   private Long id, flowTypeId, companyId, objectTypeId, companyObjectTypeId;
   private String objectType;
-  private Boolean archived, statusReadOnly, ownerReadOnly;
+  private Boolean archived, statusReadOnly, ownerReadOnly, allowRequired;
   private List<WhiteListedPosition> statusReadOnlyWhiteListedPositions,
       ownerReadOnlyWhiteListedPositions;
 }
