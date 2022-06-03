@@ -102,13 +102,13 @@
                     </span>
                   </td>
                   <td class="text-right" v-if="(projectProcessStepId == null && item.projectProcessStepId == null) || projectProcessStepId != null">
-                    <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
+                    <v-btn small text color="primary" v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text v-if="item.edit" @click="saveFilename(item)">
+                    <v-btn small text color="primary" v-if="item.edit" @click="saveFilename(item)">
                       <v-icon>save</v-icon>
                     </v-btn>
-                    <v-btn small text v-if="item.edit" @click="[item.edit = false, renderTicker++]">
+                    <v-btn small text color="primary" v-if="item.edit" @click="[item.edit = false, renderTicker++]">
                       cancel
                     </v-btn>
                     <confirm-delete-dialog
