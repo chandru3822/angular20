@@ -296,7 +296,7 @@
                       {{ childSaveErrorMsg }}
                     </div>
                     <v-btn
-                      :disabled="!childField.fieldToUpdate || !childField.dataTypeId || !childField.uniqueBehaviorTypeId"
+                      :disabled="!childField.fieldToUpdate || !childField.uniqueBehaviorTypeId"
                       color="primaryCustom" class="white--text mr-2"
                       @click="validateChildField(item, childField, true)">
                       Add Child Field
@@ -368,7 +368,7 @@
               <td class="text-left">{{ item.fieldToUpdate }}</td>
               <td>
                 <v-btn small text v-if="!expanded.includes(item)"
-                       @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getDataTypes(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
+                       @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
