@@ -77,6 +77,7 @@ select ppse.*,
                                 psea.require_end_time as "requireEndTime",
                                 psea.require_resource as "requireResource",
                                 psea.process_step_event_id as "processStepEventId",
+                                psea.action_type_id as "actionTypeId",
                                 psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
                                 psea.company_event_status_type_id as "companyEventStatusTypeId",
                                 cest.event_status_type_id as "rootEventStatusTypeId",
@@ -90,6 +91,22 @@ select ppse.*,
                                 psea.multiple_uses as "multipleUses",
                                 psea.hide_from_web as "hideFromWeb",
                                 psea.hide_from_mobile as "hideFromMobile",
+                                coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(links)))
+                                           FROM (
+                                                  SELECT psal.id,
+                                                         psal.archived,
+                                                         psal.process_step_event_action_id as "processStepEventActionId",
+                                                         psal.created_by_id as "createdById",
+                                                         psal.modified_by_id as "modifiedById",
+                                                         l.link,
+                                                         l.url
+                                                  FROM flow.process_step_event_action_link psal
+                                                         inner join flow.link l on l.id = psal.link_id
+                                                  WHERE psal.process_step_event_action_id = psea.id
+                                                    and psal.archived is not true
+                                                  order by l.link
+                                                ) links), '[]') AS "childLinks",
                                 (select ppsea.date_created
                                  from flow.project_process_step_event_action ppsea
                                  where ppsea.project_process_step_event_id = ppse.id

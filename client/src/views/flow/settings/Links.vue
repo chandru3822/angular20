@@ -6,50 +6,74 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Links</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newLink = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newLink = { url: ''}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-text-field v-if="addNew"
-                        v-model="newLink.link"
-                        placeholder="Enter a link name"
-                        label="Link">
-          </v-text-field>
-          <v-text-field v-if="addNew"
-                        v-model="newLink.url"
-                        placeholder="Enter a URL"
-                        label="URL">
-          </v-text-field>
-          <v-btn v-if="addNew" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
-          <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
-                  :key="index"  class="pa-0">
-            <v-list-item :class="{'shaded-row': index % 2}">
-              <v-list-item-content class="text-left">
-                <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
-                              label="Link"
-                              v-model="a.link">
-                </v-text-field>
-                <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
-                              label="URL"
-                              v-model="a.url">
-                </v-text-field>
-                <div v-else>{{a.link}}</div>
-              </v-list-item-content>
-              <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                <v-icon v-if="selectedLinkId === a.id" @click="saveLink(a)">save</v-icon>
-                <v-icon v-else @click="selectedLinkId = a.id">edit</v-icon>
-              </v-list-item-action>
-              <confirm-delete-dialog
-                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                  label="this link: "
-                  :item-to-delete="a.link"
-                  @confirm-delete="[a.archived = true, deleteLink(a.id)]"
-              ></confirm-delete-dialog>
-            </v-list-item>
-          </v-list>
+          <v-card v-if="addNew" flat color="transparent">
+            <v-text-field v-model="newLink.link"
+                          placeholder="Enter a link name"
+                          label="Link">
+            </v-text-field>
+            <v-text-field v-model="newLink.url"
+                          clearable
+                          placeholder="Enter a URL"
+                          label="URL">
+            </v-text-field>
+            <div>
+              These parameters can be used to add some system values to a url. <br/>
+              Validation is not yet in place so be careful which screens you assign a url to. <br/>
+              For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
+              <v-btn v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
+                {{p.name}}
+              </v-btn>
+            </div>
+            <v-btn class="mt-4" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
+          </v-card>
+          <div v-else>
+            <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
+                    :key="index"  class="pa-0">
+              <v-list-item :class="{'shaded-row': index % 2}">
+                <v-list-item-content class="text-left">
+                  <div v-if="selectedLinkId === a.id">
+                    <v-text-field class="one-hunned"
+                                  label="Link"
+                                  v-model="a.link">
+                    </v-text-field>
+                    <v-text-field class="one-hunned"
+                                  label="URL"
+                                  clearable
+                                  v-model="a.url">
+                    </v-text-field>
+                    <div>
+                      These parameters can be used to add some system values to a url. <br/>
+                      Validation is not yet in place so be careful which screens you assign a url to. <br/>
+                      For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
+                      <v-btn v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
+                        {{p.name}}
+                      </v-btn>
+                    </div>
+                  </div>
+                  <div v-else>{{a.link}}</div>
+                </v-list-item-content>
+                <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                  <v-btn text :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id" @click="saveLink(a)">
+                    <v-icon>save</v-icon>
+                  </v-btn>
+                  <v-icon v-else @click="selectedLinkId = a.id">edit</v-icon>
+                </v-list-item-action>
+                <confirm-delete-dialog
+                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    label="this link: "
+                    :item-to-delete="a.link"
+                    @confirm-delete="[a.archived = true, deleteLink(a.id)]"
+                ></confirm-delete-dialog>
+              </v-list-item>
+            </v-list>
+          </div>
         </v-container>
       </v-col>
 
@@ -78,7 +102,15 @@
         constants,
         links: [],
         addNew: false,
-        newLink: {},
+        newLink: { url: '' },
+        //hard coding these for now till we figure out what we want to do
+        linkParams: [
+          { name: 'Albatross Base URL', code: 'ALB_HOST'},
+          { name: 'Contact ID', code: 'ALB_CONTACT_ID'},
+          { name: 'Project ID', code: 'ALB_PROJECT_ID'},
+          { name: 'Project Process Step ID', code: 'ALB_PPS_ID'},
+          { name: 'Project Process Step Event ID', code: 'ALB_PPSE_ID'},
+        ],
         selectedLinkId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId
@@ -87,6 +119,9 @@
     computed: {
     },
     methods: {
+      updateUrl(item, code) {
+        item.url == null ? item.url = code : item.url += code
+      },
       async getLinks () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -127,7 +162,7 @@
 
           // reset the new process fields
           this.addNew = false
-          this.newLink = {}
+          this.newLink = { url: ''}
           this.snackbar = getSnackbar('SUCCESS', 'Link Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)

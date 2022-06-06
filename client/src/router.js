@@ -686,6 +686,16 @@ const router = new Router({
                 }
               },
             }, {
+              path: 'messageTemplates',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/MessageTemplate.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'dataViews',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -955,6 +965,16 @@ const router = new Router({
                   component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventComponents.vue'),
                 }
               ]
+            }, {
+              path: 'smsTeams',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/SmsTeam.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
             }, {
               path: 'functions',
               meta: {title: 'Albatross - Settings'},
@@ -1533,7 +1553,21 @@ const router = new Router({
               return accessDenied()
             }
           }
-        }
+        },
+          {
+              path: 'inbox',
+              name: 'inbox',
+              meta: {title: 'Albatross - Inbox'},
+              component: () => import (/* webpackChunkName: "inbox" */ './views/flow/settings/inbox/MainInbox'),
+              children: [
+                  {
+                      path: 'inboxConversation/:projectId',
+                      name: 'inboxConversation',
+                      meta: {title: 'Albatross - Inbox Conversation'},
+                      component: () => import (/* webpackChunkName: "inboxConversation" */ './views/flow/settings/inbox/MainInbox')
+                  }
+              ]
+          },
       ]
     }
   ]

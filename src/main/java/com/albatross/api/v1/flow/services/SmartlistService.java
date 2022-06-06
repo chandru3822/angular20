@@ -4053,7 +4053,7 @@ public class SmartlistService {
   private String getSqlOperator(Long operatorTypeId, Long dataTypeId, DataTypeRequirement r) {
 
     // List of whether the dataTypeRequirementId is being compared to `null` or `not null`
-    List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L);
+    List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L, 30L, 31L);
 
     switch (operatorTypeId.intValue()) {
       case 1:

@@ -31,7 +31,9 @@ export default {
   props: {
     projectId: Number,
     processStepId: Number,
-    projectProcessStepId: Number
+    projectProcessStepId: Number,
+    ppseId: Number,
+    contactId: Number
   },
   created () {
     //leaving like this cuz i think they will add project links down the road
@@ -45,7 +47,13 @@ export default {
       this.links = data
     },
     getAdjustedUrl(url) {
-      return null !== this.projectId && undefined !== this.projectId ? getUrlForLink(url, this.projectId) : url
+      let params = {
+        projectId: this.projectId,
+        ppsId: this.projectProcessStepId,
+        contactId: this.contactId,
+        ppseId: this.ppseId
+      }
+      return getUrlForLink(url, params)
     }
   }
 }

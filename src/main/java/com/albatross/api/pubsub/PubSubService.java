@@ -10,6 +10,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +32,9 @@ public class PubSubService {
 
     subscribers.add(subscriber);
     log.debug("[PubSub] Subscriber count={}", subscribers.size());
+
+    // send an initial event so the front end knows to keep reconnecting
+    sendKeepAlive(subscriber);
 
     return subscriber;
   }
@@ -60,6 +66,17 @@ public class PubSubService {
     } catch (Exception exception) {
       log.debug("[PubSub] Unable to process message to subscriber. Removing from list");
       subscriber.completeWithError(exception);
+    }
+  }
+
+  private void sendKeepAlive(Subscriber subscriber) {
+    try {
+      final String message =
+          "keepalive event sent at %s"
+              .formatted(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
+      subscriber.send(SseEmitter.event().name("keepalive").data(message).reconnectTime(5000));
+    } catch (IOException e) {
+      log.warn("Error sending keepalive event");
     }
   }
 }

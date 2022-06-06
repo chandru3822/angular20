@@ -13,7 +13,12 @@
                                     cfga.use_parent_data as "useParentData",
                                     cfga.id as "customFieldGroupAssignmentId",
                                     cfga.field_order as "fieldOrder",
+                                    cfga.required as "required",
+                                    cfga.min_value as "minValue",
+                                    cfga.max_value as "maxValue",
                                     cfga.archived,
+                                    cdt.data_type_id as "dataTypeId",
+                                    cdt.has_list_values as "hasListValues",
                                     cf.field_name as "fieldName",
                                     cfot.id as "customFieldObjectTypeId",
                                     null as "processStepName",
@@ -21,6 +26,7 @@
                                     ot.object_type as "objectType"
                              FROM brs.custom_field_group_assignment cfga
                                inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                               inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
                                inner join brs.custom_field_object_type cfot on cfot.custom_field_id = cf.id
                                inner join brs.object_type ot on cfot.object_type_id = ot.id
                              WHERE cfga.custom_field_group_id = cfg.id
@@ -35,7 +41,12 @@
                                cfga.use_parent_data as "useParentData",
                                cfga.id as "customFieldGroupAssignmentId",
                                cfga.field_order as "fieldOrder",
+                               cfga.required as "required",
+                               cfga.min_value as "minValue",
+                               cfga.max_value as "maxValue",
                                cfga.archived,
+                               cdt.data_type_id as "dataTypeId",
+                               cdt.has_list_values as "hasListValues",
                                cf2.field_name as "fieldName",
                                cfot2.id as "customFieldObjectTypeId",
                                ps.process_step_name as "processStepName",
@@ -44,6 +55,7 @@
                              FROM brs.custom_field_group_assignment cfga
                                inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
                                inner join flow.custom_field cf2 on cf2.id = cfga2.custom_field_id
+                               inner join flow.company_data_type cdt on cf2.company_data_type_id = cdt.id
                                inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
                                inner join flow.custom_field_object_type cfot2 on cfot2.custom_field_id = cf2.id  and cfot2.company_object_type_id = cfg2.company_object_type_id
                                inner join flow.company_object_type cot2 on cfg2.company_object_type_id = cot2.id
@@ -86,6 +98,7 @@
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.field_order as "fieldOrder",
+                                    cfga.required as "required",
                                     cfga.archived,
                                     cf.field_name as "fieldName",
                                     cfot.id as "customFieldObjectTypeId"
@@ -142,6 +155,7 @@
            cfga.custom_field_id as "customFieldId",
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
            cfga.field_order as "fieldOrder",
+           cfga.required as "required",
            cfga.archived,
            cf.field_name,
            null as "processStepName",
@@ -159,6 +173,7 @@
            cf.id as "customFieldId",
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
            cfga.field_order as "fieldOrder",
+           cfga.required as "required",
            cfga.archived,
            cf.field_name as "fieldName",
            ps.process_step_name as "processStepName",
@@ -194,4 +209,21 @@
           modified_by_id = :userId
     where id = :cfgaId
   ]]></blueravenCustomFieldGroup.assignment.saveUseParentData>
+
+  <blueravenCustomFieldGroup.assignment.saveRequired><![CDATA[
+    update brs.custom_field_group_assignment
+      set required = :required,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :cfgaId
+  ]]></blueravenCustomFieldGroup.assignment.saveRequired>
+
+  <blueravenCustomFieldGroup.assignment.saveMinMax><![CDATA[
+    update brs.custom_field_group_assignment
+      set min_value = :minValue,
+          max_value = :maxValue,
+          date_modified = now(),
+          modified_by_id = :userId
+    where id = :cfgaId
+  ]]></blueravenCustomFieldGroup.assignment.saveMinMax>
 </sql>

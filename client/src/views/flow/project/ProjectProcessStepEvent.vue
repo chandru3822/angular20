@@ -117,7 +117,7 @@
         <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
           <v-btn class="action-button white--text text-capitalize"
                  color="primaryCustom"
-                 v-if="!action.hideFromWeb"
+                 v-if="!action.hideFromWeb && action.actionTypeId === 2"
                  :disabled="!action.canPerform"
                  @click="[attemptedAction = action, validateActionRequirements(action)]">
             <div>
@@ -134,6 +134,12 @@
             <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">
               check
             </v-icon>
+          </v-btn>
+          <v-btn
+            v-else-if="action.actionTypeId === 1 && !action.hideFromWeb"
+            @click="followMultipleLinks(action)"
+          >
+            {{ action.actionName }}
           </v-btn>
         </div>
       </div>
@@ -368,7 +374,7 @@ import {
   getRequestWithParams,
   putRequest,
   postRequest,
-  postRequestWithRequestParams, deleteRequest
+  postRequestWithRequestParams, deleteRequest, followLink
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getAssignedToEvent} from '@/services/eventStatusTypeService'
@@ -567,6 +573,17 @@ export default {
       if (this.actionRequiresResource && !this.selectedEvent.resourceId && !this.eventSaveOverrideRequired) {
         return this.requiredRules
       }
+    },
+    followMultipleLinks(action) {
+      let params = {
+        projectId: this.projectId,
+        ppsId: this.projectProcessStepId,
+        ppseId: this.ppseId
+      }
+
+      action?.childLinks?.forEach(link => {
+        followLink(link.url, params)
+      })
     },
     validateActionRequirements: async function (action) {
       this.eventActionMissingRequirements = false

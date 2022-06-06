@@ -75,7 +75,7 @@ constants.NAME_REQUIRED_RULES = [
 
 
 constants.BASIC_REQUIRED_RULE = [
-  v => !!v || 'Field is required'
+  v => (!!v || v === 0) || 'Field is required'
 ]
 constants.BASIC_ARRAY_REQUIRED_RULE = [
   v => !!v || 'Field is required',

@@ -1,42 +1,46 @@
 <template>
   <v-dialog persistent scrollable max-width="600px" :value="visible">
     <template v-slot:default="dialog">
-      <v-card>
-        <v-toolbar color="primary" dark>
-          <v-btn icon dark @click="closeDialog">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-          <v-toolbar-title>{{ title }}</v-toolbar-title>
-        </v-toolbar>
-        <v-card-text>
-          <v-container>
-            <CustomValueInput
-              v-for="field in fields"
-              :callback="updateFieldValue"
-              :key="field.id"
-              :field="field"
-              :hide-label="true"
-              :api-path="apiPath"
-            />
-          </v-container>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn text @click="closeDialog">Close</v-btn>
-          <v-btn
-            :disabled="!Object.keys(dirtyCfvs).length"
-            color="primaryButton"
-            @click="save"
-            dark
+      <v-form ref="newValueForm">
+        <v-card>
+          <v-toolbar color="primary" dark>
+            <v-btn icon dark @click="closeDialog">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+            <v-toolbar-title>{{ title }}</v-toolbar-title>
+          </v-toolbar>
+          <v-card-text>
+            <v-container>
+              <CustomValueInput
+                v-for="field in fields"
+                :required="field.required"
+                :callback="updateFieldValue"
+                :key="field.id"
+                :field="field"
+                :hide-label="true"
+                :api-path="apiPath"
+              />
+            </v-container>
+          </v-card-text>
+          <v-card-actions class="justify-end">
+            <v-btn text @click="closeDialog">Close</v-btn>
+            <v-btn
+              :disabled="!Object.keys(dirtyCfvs).length"
+              color="primaryButton"
+              class="white--text"
+              @click="validateForm()"
             >Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-form>
     </template>
   </v-dialog>
 </template>
 <script>
 import Vue from 'vue'
-import { getRequestWithParams } from '@/helpers/helpers'
+import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
 const DATA_TYPES = {
@@ -49,11 +53,11 @@ const DATA_TYPES = {
   'system multiselect': 'intArrayValue',
   'integer array': 'intArrayValue',
   'boolean': 'booleanValue',
-  'System List' : 'intValue'
+  'System List': 'intValue'
 }
 
 const extractFieldData = (field) => {
-  const objVal = { type: field.dataType }
+  const objVal = {type: field.dataType}
   if (field.hasListValues) {
     if (field.allowMultiple) {
       objVal.intArrayValue = field.intArrayValue
@@ -71,15 +75,16 @@ const extractFieldData = (field) => {
     objVal.value = field[DATA_TYPES[field.dataType]]
   }
 
-  return { id: field.id, value: objVal }
+  return {id: field.id, value: objVal}
 }
 
 export default {
   name: 'NewProposalValue',
   props: ['objectCode', 'editing', 'visible'],
-  components: { CustomValueInput },
+  components: {CustomValueInput},
   data() {
     return {
+      snackbar: {},
       apiPath: 'blueraven',
       fields: [],
       dirtyCfvs: {},
@@ -100,8 +105,16 @@ export default {
     },
   },
   methods: {
+    validateForm() {
+      if (this.$refs.newValueForm.validate()) {
+        this.save()
+      } else {
+        this.snackbar = getSnackbar('ERROR', 'ERROR: Check for missing fields or incorrect values')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     async fetchObjectFields(objectCode) {
-      const { data } = await getRequestWithParams(
+      const {data} = await getRequestWithParams(
         `/customField/${objectCode}`,
         {},
         this.apiPath
@@ -136,11 +149,11 @@ export default {
     },
 
     updateFieldValue(field) {
-      const { value, id } = extractFieldData(field)
+      const {value, id} = extractFieldData(field)
       if (value.value === undefined) {
         Vue.delete(this.dirtyCfvs, id)
       } else {
-        Vue.set(this.dirtyCfvs, id, { id, value })
+        Vue.set(this.dirtyCfvs, id, {id, value})
       }
     },
 

@@ -119,4 +119,19 @@ values (:linkId, :processStepId,(select coalesce(max(display_order) + 1, 0) from
         )
     order by l.link
   ]]></link.getAvailableLinksForAction>
+
+  <link.getAvailableLinksForEventAction><![CDATA[
+    select l.*
+    from flow.link l
+    where l.archived is not true
+      and l.company_id = :companyId
+      and not exists (
+        select psl.process_step_event_action_id
+        from flow.process_step_event_action_link psl
+        where psl.link_id = l.id
+          and psl.process_step_event_action_id = :id
+          and archived is not true
+      )
+    order by l.link
+  ]]></link.getAvailableLinksForEventAction>
 </sql>

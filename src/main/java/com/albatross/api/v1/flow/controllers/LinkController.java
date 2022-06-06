@@ -49,6 +49,11 @@ public class LinkController {
     return linkService.getAvailableLinksForAction(id);
   }
 
+  @GetMapping(value = "/eventAction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Link> getAvailableLinksForEventAction (@PathVariable Long id) {
+    return linkService.getAvailableLinksForEventAction(id);
+  }
+
   @DeleteMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteProcessStepLink(@PathVariable Long id) {
     linkService.deleteProcessStepLink(id);

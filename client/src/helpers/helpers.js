@@ -53,26 +53,32 @@ export function getFileIcon(file) {
   }
 }
 
-export function followLink(url, projectId) {
-  //currently project_id is the only param this would work for
-  let adjustedUrl = getUrlForLink(url, projectId)
+export function followLink(url, params) {
+  let adjustedUrl = getUrlForLink(url, params)
 
   //the date stringify guarantees a new tab opens every time
   window.open(adjustedUrl, JSON.stringify(new Date()))
 }
 
-export function getUrlForLink(url, projectId, orgId) {
-  //currently project_id and org_id are the only params this would work for
-  if (url.includes('ALB_PROJECT_ID') && null !== projectId && undefined !== projectId) {
-    //this part would not work globally but I am just trying to hack up a POC
-    url = url.replace('ALB_PROJECT_ID', projectId)
+export function getHostUrl() {
+  return (constants.VUE_APP_ENV === 'local' ? 'http://' : 'https://') + location.host
+}
+
+export function getUrlForLink(url, params) {
+  if (url.includes('ALB_PROJECT_ID') && params?.projectId) {
+    url = url.replace('ALB_PROJECT_ID', params?.projectId)
   }
-  if (url.includes('ALB_ORG_ID') && null !== orgId && undefined !== orgId) {
-    //this part would not work globally but I am just trying to hack up a POC
-    url = url.replace('ALB_ORG_ID', orgId)
+  if (url.includes('ALB_PPS_ID') && params?.ppsId) {
+    url = url.replace('ALB_PPS_ID', params?.ppsId)
+  }
+  if (url.includes('ALB_PPSE_ID') && params?.ppseId) {
+    url = url.replace('ALB_PPSE_ID', params?.ppseId)
+  }
+  if (url.includes('ALB_CONTACT_ID') && params?.contactId) {
+    url = url.replace('ALB_CONTACT_ID', params?.contactId)
   }
   if (url.includes('ALB_HOST')) {
-    url = url.replace('ALB_HOST', (constants.VUE_APP_ENV === 'local' ? 'http://' : 'https://') + location.host)
+    url = url.replace('ALB_HOST', getHostUrl())
   }
   return url
 }

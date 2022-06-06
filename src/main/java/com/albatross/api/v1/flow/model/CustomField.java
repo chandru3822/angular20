@@ -62,6 +62,7 @@ public class CustomField {
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
   private Date dateCreated, dateModified;
+  private Double minValue, maxValue;
 
   public boolean shouldHaveListOfValues() {
     if (this.listOfValues != null && !this.listOfValues.isEmpty()) {

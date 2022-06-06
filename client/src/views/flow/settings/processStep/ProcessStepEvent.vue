@@ -57,7 +57,7 @@
                     item-text="actionType"
                     item-value="id"
           ></v-select>
-          <div v-if="newEventAction.actionTypeId && newEventAction.actionTypeId !== 3">
+          <div v-if="newEventAction.actionTypeId && newEventAction.actionTypeId === 2">
             <v-autocomplete
               v-model="newEventAction.companyEventStatusTypeId"
               :items="companyEventStatuses"
@@ -80,7 +80,7 @@
               </template>
             </v-autocomplete>
           </div>
-          <div v-else-if="newEventAction.actionTypeId">
+          <div v-else-if="newEventAction.actionTypeId && newEventAction.actionTypeId === 3">
             <v-textarea required label="Banner Content" auto-grow filled
                         style="margin: 15px 0 -15px 0"
                         v-model="newEventAction.content">
@@ -149,7 +149,7 @@
                         item-text="actionType"
                         item-value="id"
               ></v-select>
-              <div v-if="action.actionTypeId !== 3">
+              <div>
                 <v-autocomplete
                   v-model="action.companyEventStatusTypeId"
                   :items="companyEventStatuses"
@@ -157,6 +157,7 @@
                   item-text="eventStatusType"
                   item-value="id"
                   clearable
+                  v-if="action.actionTypeId === 2"
                 ></v-autocomplete>
                 <v-autocomplete
                   v-model="action.companyProcessStepStatusTypeId"
@@ -165,6 +166,7 @@
                   item-text="processStepStatusType"
                   item-value="id"
                   clearable
+                  v-if="action.actionTypeId === 2"
                 >
                   <template slot="item" slot-scope="data">
                     <!-- HTML that describes how select should render items when the select is open -->
@@ -172,7 +174,7 @@
                   </template>
                 </v-autocomplete>
 
-                <v-card flat class="pb-5">
+                <v-card flat class="pb-5" v-if="[1,2].includes(action.actionTypeId)">
                   <table>
                     <tr>
                       <td>Require Start Time</td>
@@ -205,8 +207,93 @@
                 <!--                     color="primaryButton"-->
                 <!--                     @click="saveEventAction(action)"-->
                 <!--              >Save Action</v-btn>-->
+                <div v-if="action.actionTypeId === 1">
+                  <v-divider></v-divider>
+                  <v-toolbar flat color="transparent">
+                    <v-toolbar-title class="app-title">
+                      Child Links
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                      <v-btn v-if="!addChildLink && userCanEdit"
+                             @click="[addChildLink = true, loadLinks(action.id)]">
+                        <v-icon>add</v-icon>
+                      </v-btn>
+                    </v-toolbar-items>
+                  </v-toolbar>
+                  <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
+                          v-if="addChildLink">
+                    <h3>Add Child Link</h3>
+                    <v-select attach v-model="selectedLink"
+                              :items="availableLinks"
+                              label="Available Links"
+                              item-text="link"
+                              return-object
+                              @input="saveLinkToAction(action)"
+                    ></v-select>
+                    <v-btn @click="addChildLink = false">
+                      <v-icon>remove</v-icon>
+                      Cancel
+                    </v-btn>
+                  </v-card>
+                </div>
 
-                <div>
+                <v-row justify="center" class="pl-3 pr-3"
+                       v-if="action.actionTypeId === 1 && action.childLinks && action.childLinks.length > 0">
+                  <v-col cols="12">
+                    <v-list v-for="(al, index) in filterBy(action.childLinks, false, 'archived')"
+                            :key="index"
+                            :class="{ 'shaded-row': index % 2 }">
+                      <v-list-item>
+                        <v-list-item-content class="text-left">
+                          {{ al.link }}
+                        </v-list-item-content>
+                        <v-dialog
+                          v-if="userCanEdit"
+                          v-model="al.deleteConfirm"
+                          width="500">
+                          <template v-slot:activator="{ on }">
+                            <v-list-item-action class="clickable" v-on="on">
+                              <v-icon>delete</v-icon>
+                            </v-list-item-action>
+                          </template>
+                          <v-card>
+                            <v-card-title
+                              class="text-h5 grey lighten-2"
+                              primary-title
+                            >
+                              Confirm
+                            </v-card-title>
+
+                            <v-card-text>
+                              Are you sure you want to delete <strong>{{ al.link }}</strong> from <strong>{{
+                                action.actionName
+                              }}</strong>?
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                @click="al.deleteConfirm = false">
+                                No
+                              </v-btn>
+                              <v-btn
+                                color="primaryCustom"
+                                text
+                                @click="[al.archived = true, deleteLinkFromAction(action.id, al.id)]">
+                                Yes
+                              </v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </v-list-item>
+                    </v-list>
+                  </v-col>
+                </v-row>
+
+                <div v-if="action.actionTypeId === 2">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
                     <v-toolbar-title class="app-title">
@@ -427,7 +514,7 @@
                   </v-col>
                 </v-row>
               </div>
-              <div v-else>
+              <div v-if="action.actionTypeId === 3">
                 <v-textarea required label="Banner Content" auto-grow filled
                             style="margin: 15px 0 -15px 0"
                             v-model="action.content">
@@ -723,7 +810,9 @@ export default {
       selectedEvent: {
         processStepEventActions: []
       },
+      //todo: get these from endpoint but i am lazy right now
       actionTypes: [
+        {id: 1, actionType: 'Link'},
         {id: 2, actionType: 'Button'},
         {id: 3, actionType: 'Banner'}
       ],
@@ -761,6 +850,11 @@ export default {
         {text: 'Required', value: 'required', width: '75px', show: true},
         {text: 'Optional', value: 'groupName', width: '75px', show: true},
       ],
+      //link stuff
+      addChildLink: false,
+      selectedLink: {},
+      availableLinks: [],
+
       // actionLogic stuff
       operationTypes: [],
       actionLogicError: false,
@@ -889,8 +983,8 @@ export default {
     async saveEventAction(action) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        //if action is a banner then null out all the regular action fields (in case they changed type a bunch)
-        if (this.newEventAction.actionTypeId === 3) {
+        //if action is a banner or link then null out all the regular action fields (in case they changed type a bunch)
+        if (this.newEventAction.actionTypeId !== 2) {
           this.newEventAction.companyEventStatusTypeId = null
           this.newEventAction.companyProcessStepStatusTypeId = null
         } else {
@@ -1146,6 +1240,56 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    // child links
+    async loadLinks(actionId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/links/eventAction/${actionId}`)
+        this.availableLinks = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveLinkToAction(action) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {
+          data,
+          status
+        } = await postRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}/addLinkToAction`, {
+          linkId: this.selectedLink.id
+        })
+        action.childLinks.push(data)
+        this.selectedLink = {}
+        this.addChildLink = false
+        this.snackbar = getSnackbar('SUCCESS', 'Link Added to Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Link to Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteLinkFromAction(actionId, id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${actionId}/deleteLinkFromAction/${id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Link Deleted From Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link From Action')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

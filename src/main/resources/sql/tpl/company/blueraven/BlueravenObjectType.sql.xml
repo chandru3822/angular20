@@ -12,6 +12,9 @@
    select cot.id,
        cot.id company_object_type_id,
        cot.archived,
+       cot.allow_required,
+       cot.object_type,
+       cot.allow_min_max,
           case when (select count(1)
                      from brs.ancillary_object_type aot
                      where aot.object_type_id = cot.id
