@@ -87,7 +87,6 @@ public class DataViewService {
     params.put("displayName", childField.getDisplayName());
     params.put("fieldToUpdate", childField.getFieldToUpdate());
     params.put("uniqueBehaviorTypeId", childField.getUniqueBehaviorTypeId());
-    params.put("dataTypeId", childField.getDataTypeId());
     params.put("userId", user.trueUserId());
 
     //we cant remember why we put this in. but leaving here in case we remember

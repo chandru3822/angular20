@@ -282,13 +282,6 @@
                                   :rules="fieldToUpdateRule"
                                   label="Child Field to Update"/>
                     <v-autocomplete
-                      v-model="childField.dataTypeId"
-                      :items="dataTypes"
-                      label="Data Type"
-                      attach
-                      item-value="id"
-                      item-text="dataType"></v-autocomplete>
-                    <v-autocomplete
                       v-model="childField.uniqueBehaviorTypeId"
                       :items="uniqueBehaviorTypes"
                       label="Unique Behavior Types"
@@ -547,21 +540,6 @@ export default {
         //set project values if they hit save
         this.project = cloneDeep(this.tempProject)
         this.showEditProjectModal = false
-      }
-    },
-    async getDataTypes() {
-      if (this.dataTypes.length === 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/dataType/getSystem`)
-          this.dataTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Data Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
       }
     },
     async getUniqueBehaviorTypes() {

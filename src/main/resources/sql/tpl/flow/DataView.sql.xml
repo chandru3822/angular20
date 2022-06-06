@@ -62,12 +62,12 @@
                                                       ubt.unique_behavior_type as "uniqueBehaviorType",
                                                       ubt.description as "uniqueBehaviorTypeDescription",
                                                       dvcfc.field_to_update as "fieldToUpdate",
-                                                      dvcfc.data_type_id as "dataTypeId",
+                                                      ubt.return_data_type_id as "dataTypeId",
                                                       dt.data_type as "dataType",
                                                       dvcfc.archived
                                                from flow.data_view_child_field_config dvcfc
                                                       inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
-                                                      inner join flow.data_type dt on dvcfc.data_type_id = dt.id
+                                                      inner join flow.data_type dt on ubt.return_data_type_id = dt.id
                                                where dvcfc.archived is false
                                                  and dvcfc.data_view_field_config_id = dvfc.id
                                                order by dvcfc.field_to_update
@@ -148,12 +148,12 @@
                                     ubt.unique_behavior_type as "uniqueBehaviorType",
                                     ubt.description as "uniqueBehaviorTypeDescription",
                                     dvcfc.field_to_update as "fieldToUpdate",
-                                    dvcfc.data_type_id as "dataTypeId",
+                                    ubt.return_data_type_id as "dataTypeId",
                                     dt.data_type as "dataType",
                                     dvcfc.archived
                              from flow.data_view_child_field_config dvcfc
                                     inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
-                                    inner join flow.data_type dt on dvcfc.data_type_id = dt.id
+                                    inner join flow.data_type dt on ubt.return_data_type_id = dt.id
                              where dvcfc.archived is false
                                and dvcfc.data_view_field_config_id = dvfc.id
                              order by dvcfc.field_to_update
@@ -240,8 +240,8 @@
   ]]></dataView.getAvailablePsForDefaultField>
 
   <dataView.addChildFieldConfig><![CDATA[
-    insert into flow.data_view_child_field_config(display_name, data_view_field_config_id, unique_behavior_type_id, field_to_update, data_type_id, created_by_id)
-    values (:displayName, :fieldId, :uniqueBehaviorTypeId, :fieldToUpdate, :dataTypeId, :userId)
+    insert into flow.data_view_child_field_config(display_name, data_view_field_config_id, unique_behavior_type_id, field_to_update, created_by_id)
+    values (:displayName, :fieldId, :uniqueBehaviorTypeId, :fieldToUpdate, :userId)
   ]]></dataView.addChildFieldConfig>
 
   <dataView.updateChildFieldConfig><![CDATA[
@@ -262,10 +262,10 @@
            ubt.description as "uniqueBehaviorTypeDescription",
            dt.data_type as "dataType"
     from flow.data_view_child_field_config dvcfc
-      inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
-      inner join flow.data_type dt on dvcfc.data_type_id = dt.id
+           inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
+           inner join flow.data_type dt on ubt.return_data_type_id = dt.id
     where dvcfc.archived is false
-    and dvcfc.id = :id
+      and dvcfc.id = :id
   ]]></dataView.getChildFieldConfig>
 
   <dataView.add><![CDATA[
