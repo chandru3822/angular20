@@ -3457,6 +3457,7 @@ public class SmartlistService {
           }
         } else if (f.getObjectTypeId() == 6) {
 
+            //@TODO: Joining the PPS/PPSE tables should be avoided here when this field's processStepEventId is one of smartlist.getEventWorkQueueTypes() processStepEventId(s)
           //check if process step is already joined
           if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
             //if the PS is already joined, use it
@@ -3500,10 +3501,17 @@ public class SmartlistService {
               .append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".%s ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), companyStatusTable, f.getJoinColumn()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.org")) { //else if field is event resource
 
-            final String newValueTable = UUID.randomUUID().toString();
-            final long systemListNumber = (f.getEventResourceSystemListId() == 1 || f.getEventResourceSystemListId() == 2) ? 1 : f.getEventResourceSystemListId();
-            query.append(String.format(" left join \"systemList_%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListNumber, newValueTable, newValueTable, f.getPpsEventTable(), f.getJoinColumn()));
-            f.setValueReferenceTable(newValueTable);
+              final String newValueTable = UUID.randomUUID().toString();
+              final long systemListNumber = (f.getEventResourceSystemListId() == 1 || f.getEventResourceSystemListId() == 2) ? 1 : f.getEventResourceSystemListId();
+              final List<Long> processStepEventIds = smartlist.getEventWorkQueueTypes().stream()
+                                                              .map(ProcessStepEventWorkQueueType::getProcessStepEventId)
+                                                              .toList();
+              if (processStepEventIds.contains(f.getProcessStepEventId())) {
+                  query.append(String.format(" left join \"systemList_%s\" \"%s\" on \"%s\".id = flow.project_process_step_event.%s", systemListNumber, newValueTable, newValueTable, f.getJoinColumn()));
+              } else {
+                  query.append(String.format(" left join \"systemList_%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListNumber, newValueTable, newValueTable, f.getPpsEventTable(), f.getJoinColumn()));
+              }
+              f.setValueReferenceTable(newValueTable);
           }
         }
       } else {//else field is custom
