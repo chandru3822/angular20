@@ -181,7 +181,8 @@ BEGIN
                                          0
                                 else
                                              ((foo.lead_gen_num / foo.lead_gen_den::numeric * 10000) + foo.self_gen +
-                                             ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
+                                            -- ((foo.appointment_count + foo.avail) / 3) +
+                                              ((foo.lead_gen_num + foo.self_gen) * 15))
                                       end end as score,
                         case
                             when foo.lead_gen_den_fdc is null or foo.lead_gen_den_fdc = 0 then
