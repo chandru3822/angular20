@@ -217,7 +217,7 @@ BEGIN
                                                       else
                                                               ((foo.lead_gen_num / foo.lead_gen_den::numeric * 10000) +
                                                                foo.self_gen +
-                                                               ((foo.appointment_count + foo.avail) / 3) +
+                                                              -- ((foo.appointment_count + foo.avail) / 3) +
                                                                ((foo.lead_gen_num + foo.self_gen) * 15))
                                                                end end               as score,
                                           case
