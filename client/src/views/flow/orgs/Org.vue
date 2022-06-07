@@ -44,7 +44,7 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text :loading="fieldsLoading"
+              <v-btn text color="primary" :loading="fieldsLoading"
                      :disabled="fieldsSaving || (org.schedulable && !org.companyTimezoneId)"
                      @click="saveOrg()" v-if="userCanEdit">Save</v-btn>
             </v-toolbar-items>
@@ -98,19 +98,10 @@
                             attach
             ></v-autocomplete>
             <h6 class="mt-1 red-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
-            <div class="mb-3 mt-3">
-              <label>Active:</label>
-              <input type="checkbox" :disabled="!userIsAdmin" :readonly="!userIsAdmin" class="ml-2" v-model="org.activeFlag" @change="dirtySystemFields = true">
-            </div>
-            <div class="mb-3">
-              <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.schedulable" @change="dirtySystemFields = true">
-            </div>
-            <div class="mb-3" v-if="$store.getters.isParent(parentId)">
-              <label>Make available in children:</label>
-              <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit" @change="dirtySystemFields = true"
-                     class="ml-3" v-model="org.availableToChildren">
-            </div>
+            <v-checkbox class="mt-3" label="Active" :disabled="!userIsAdmin" :readonly="!userIsAdmin" v-model="org.activeFlag" @change="dirtySystemFields = true"></v-checkbox>
+            <v-checkbox class="mt-n3" label="Show in Scheduling Tool" type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit"  v-model="org.schedulable" @change="dirtySystemFields = true"></v-checkbox>
+            <v-checkbox class="mt-n3" v-if="$store.getters.isParent(parentId)" label="Make available in children" type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit" @change="dirtySystemFields = true"
+                    v-model="org.availableToChildren"></v-checkbox>
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">

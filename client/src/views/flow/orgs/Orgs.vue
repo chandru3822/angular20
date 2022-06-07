@@ -15,7 +15,7 @@
         <v-toolbar color="white" class="elevation-1 mt-3">
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="exportCsv">
+            <v-btn text color="primary" @click="exportCsv">
               <v-icon v-if="constants.IS_MOBILE">mdi-cloud-download</v-icon>
               <span v-else>Export</span>
             </v-btn>
