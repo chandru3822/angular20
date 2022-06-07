@@ -1359,9 +1359,9 @@ drop FUNCTION flow.pps_update_project_details();
 update flow.custom_field set custom_field_sql_column = 'name'
 where id =392;
 
-INSERT INTO flow.unique_behavior_type (id, unique_behavior_type, date_created, date_modified, created_by_id, modified_by_id, archived, description, data_view) VALUES
-  (0, 'Default do not use', now(), now(), 2350555, 2350555, false, null, true);
-update flow.data_view_child_field_config set unique_behavior_type_id = 0
+INSERT INTO flow.unique_behavior_type (unique_behavior_type, date_created, date_modified, created_by_id, modified_by_id, archived, description, data_view) VALUES
+  ('CONVERT_TIMESTAMP_TO_DATE_TRIGGER', now(), now(), 2350555, 2350555, false, null, true);
+update flow.data_view_child_field_config set unique_behavior_type_id = (select id from flow.unique_behavior_type where unique_behavior_type = 'CONVERT_TIMESTAMP_TO_DATE_TRIGGER')
 where field_to_update = 'site_survey_date';
 
 
@@ -1478,3 +1478,66 @@ alter table brs.project_details add column  if not exists smart_thermostat_quant
 
 create index if not exists pd_smart_thermostat_quantity_idx
   on brs.project_details (smart_thermostat_quantity);
+
+
+alter table flow.data_view_child_field_config drop column if exists data_type_id;
+alter table flow.unique_behavior_type
+  add column if not exists return_data_type_id integer references flow.data_type(id);
+
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'STATE_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'COUNTRY_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'STATE_ABBREV_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 6
+where unique_behavior_type = 'USER_POSITION_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'CONTACT_TYPE_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROJECT_STATUS_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROCESS_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'USER_NAME_BY_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 6
+where unique_behavior_type = 'USER_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'DEFAULT_CFGA_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'CONTACT_NAME_BY_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROCESS_STEP_STATUS_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROCESS_STEP_NAME_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_STATUS_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_PROCESS_STEP_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 1
+where unique_behavior_type = 'CONVERT_TIMESTAMP_TO_DATE_TRIGGER';

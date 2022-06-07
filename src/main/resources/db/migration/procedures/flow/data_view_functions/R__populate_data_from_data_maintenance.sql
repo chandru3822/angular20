@@ -75,18 +75,18 @@ BEGIN
       v_text_array_columns = array_append(v_text_array_columns, z.field_to_update);
       for x in select dvcfc.field_to_update,
                       quote_literal(ubt.unique_behavior_type) as unique_behavior_type,
-                      dvcfc.data_type_id,
+                      ubt.return_data_type_id as data_type_id,
                       dt.data_type
                from flow.data_view_child_field_config dvcfc
                       inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
-                      inner join flow.data_type dt on dvcfc.data_type_id = dt.id
+                      inner join flow.data_type dt on ubt.return_data_type_id = dt.id
                where dvcfc.data_view_field_config_id = z.data_view_field_config_id
         loop
           v_text_array_columns = array_append(v_text_array_columns, x.field_to_update);
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$uc.$$ || x.field_to_update)::character varying);
-          v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,
-                                                              $$ || z.column_name || $$, c.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
+          v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$, c.$$
+                    || z.column_name || $$, c.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -145,18 +145,18 @@ BEGIN
       v_text_array_columns = array_append(v_text_array_columns, z.field_to_update);
       for x in select dvcfc.field_to_update,
                       quote_literal(ubt.unique_behavior_type) as unique_behavior_type,
-                      dvcfc.data_type_id,
+                      ubt.return_data_type_id as data_type_id,
                       dt.data_type
                from flow.data_view_child_field_config dvcfc
                       inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
-                      inner join flow.data_type dt on dvcfc.data_type_id = dt.id
+                      inner join flow.data_type dt on ubt.return_data_type_id = dt.id
                where dvcfc.data_view_field_config_id = z.data_view_field_config_id
         loop
           v_text_array_columns = array_append(v_text_array_columns, x.field_to_update);
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$up.$$ || x.field_to_update)::character varying);
-          v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$,
-                                                              $$ || z.column_name || $$, p.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
+          v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$, p.$$ || z.column_name ||
+                  $$, p.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 

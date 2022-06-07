@@ -46,11 +46,11 @@ BEGIN
 
       for x in select dvcfc.field_to_update,
                       quote_literal(ubt.unique_behavior_type) as unique_behavior_type,
-                      dvcfc.data_type_id,
+                      ubt.return_data_type_id as data_type_id,
                       dt.data_type
                from flow.data_view_child_field_config dvcfc
                       inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
-                      inner join flow.data_type dt on dvcfc.data_type_id = dt.id
+                      inner join flow.data_type dt on ubt.return_data_type_id = dt.id
                where dvcfc.data_view_field_config_id = z.data_view_field_config_id
         loop
           p_text_array_columns  = array_append(p_text_array_columns , x.field_to_update);

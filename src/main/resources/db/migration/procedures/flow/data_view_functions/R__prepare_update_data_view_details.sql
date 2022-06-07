@@ -6,7 +6,6 @@ CREATE OR REPLACE FUNCTION flow.prepare_update_data_view_details(p_id integer,
                                                                  p_secondary_value text,
                                                                  p_update_first_value_only boolean,
                                                                  p_update_first_value_only_id character varying,
-                                                                 p_convert_date boolean default false,
                                                                  p_last_row boolean default false,
                                                                  p_add_where_clause boolean default false,
                                                                  p_where_clause_condition_ids text default null)
@@ -21,13 +20,6 @@ BEGIN
   into v_now;
   if p_add_where_clause is false then
     if p_secondary_field_to_update is not null then
-      if p_convert_date is true then
-        case
-          when p_value is null then select 'null' into v_value;
-          else select quote_literal(p_value) into v_value; end case;
-        p_secondary_value = '(' || v_value || '::timestamp at time zone ' || quote_literal('UTC') ||
-                            ' at time zone ' || quote_literal('US/Mountain') || ')::date';
-      end if;
       p_sql = p_sql || p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$ ,$$;
       return p_sql;
     end if;

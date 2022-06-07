@@ -60,14 +60,15 @@ BEGIN
 
     end if;
     insert into flow.data_view_maintenance(data_view_field_config_id,date_created)
-    values(p_data_view_field_config_id,now());
+    values(p_data_view_field_config_id,now()) on conflict  do nothing;
   else
     select dvcvw.field_to_update, dt2.data_type,
           c.schema_name,dv.view_name
     into v_field_to_update,v_data_type,
          v_schema_name,v_view_name
     from flow.data_view_child_field_config dvcvw
-           inner join flow.data_type dt2 on dvcvw.data_type_id = dt2.id
+           inner join flow.unique_behavior_type ubt on dvcvw.unique_behavior_type_id = ubt.id
+           inner join flow.data_type dt2 on ubt.return_data_type_id = dt2.id
            inner join flow.data_view_field_config dvfc2 on dvcvw.data_view_field_config_id = dvfc2.id
            inner join flow.data_view dv on dvfc2.data_view_id = dv.id
            inner join flow.company c on c.id = dv.company_id
@@ -76,6 +77,8 @@ BEGIN
     EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
             v_field_to_update || $$ $$ || v_data_type || $$;$$;
     EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
+    insert into flow.data_view_maintenance(data_view_field_config_id,date_created)
+    values(p_data_view_field_config_id,now()) on conflict  do nothing;
   end if;
 
 END

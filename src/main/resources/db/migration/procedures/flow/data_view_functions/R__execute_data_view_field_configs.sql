@@ -13,9 +13,7 @@ AS
 $BODY$
 declare
   v_secondary_records record;
-  v_convert_date      boolean default false;
   v_object_code       varchar;
-  v_value integer;
 BEGIN
   if p_contains_children then
     select ot.object_code
@@ -32,44 +30,38 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id
     where dvfc.id = p_dvfc_id
     into v_object_code;
-    begin
-      v_value = p_value::integer;
-    exception when others then
-      v_value = 0::integer;
-    end;
---     raise notice 'p_id = %',p_id;
+
+     raise notice 'p_id = %',p_id;
+    raise notice 'p_value = %',p_value;
+    raise notice 'v_object_code = %',v_object_code;
+    raise notice 'p_dvfc_id = %',p_dvfc_id;
     for v_secondary_records in
       select dvcvc.field_to_update,
-             dvcvc.data_type_id,
-             flow.get_prepared_value(dvcvc.data_type_id,
+             ubt.return_data_type_id,
+             flow.get_prepared_value(ubt.return_data_type_id,
                                      flow.get_unique_behavior_value(ubt.unique_behavior_type,
-                                                                    v_value, p_id,v_object_code))  as value
+                                                                    p_value, p_id,v_object_code))  as value
       from flow.data_view_child_field_config dvcvc
-             left join flow.unique_behavior_type ubt on dvcvc.unique_behavior_type_id = ubt.id
+             inner join flow.unique_behavior_type ubt on dvcvc.unique_behavior_type_id = ubt.id
       where data_view_field_config_id = p_dvfc_id
       loop
-        if v_secondary_records.data_type_id is not null and p_data_type_id is not null and
-           v_secondary_records.data_type_id = 1 and p_data_type_id = 2 then
-          v_convert_date = true;
-        end if;
+
         select flow.prepare_update_data_view_details(p_id, p_sql, p_field_to_update,
                                                      p_value, v_secondary_records.field_to_update::text,
-                                                     coalesce(v_secondary_records.value::text,p_value),
+                                                     v_secondary_records.value::text,
                                                      p_update_first_value_only,
                                                      p_update_first_value_only_id,
-                                                     v_convert_date,
                                                      p_is_last_row)
         into p_sql;
       end loop;
   end if;
-
+raise notice 'p_sql %',p_sql;
   select flow.get_prepared_value(p_data_type_id, p_value)
   into p_value;
   select flow.prepare_update_data_view_details(p_id, p_sql, p_field_to_update,
                                                p_value, null, null,
                                                p_update_first_value_only,
                                                p_update_first_value_only_id,
-                                               false,
                                                p_is_last_row)
   into p_sql;
   return p_sql;

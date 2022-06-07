@@ -59,7 +59,6 @@ BEGIN
                                                      v_value, null::text, null::text,
                                                      x.update_first_value_only,
                                                      x.update_first_value_only_id,
-                                                     false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
         begin
@@ -151,7 +150,6 @@ BEGIN
                                                    v_value, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
-                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       begin
@@ -270,7 +268,6 @@ BEGIN
                                                    v_value, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
-                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       begin
@@ -363,7 +360,6 @@ BEGIN
                                                    v_value, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
-                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       begin
@@ -465,7 +461,6 @@ BEGIN
                                                          v_value::text, null::text, null::text,
                                                          x.update_first_value_only,
                                                          x.update_first_value_only_id,
-                                                         false,
                                                          x.is_last_row, true, v_project_ids)
             into v_sql;
             begin
@@ -484,7 +479,6 @@ BEGIN
                                                      v_value::text, null::text, null::text,
                                                      x.update_first_value_only,
                                                      x.update_first_value_only_id,
-                                                     false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
         begin
@@ -591,7 +585,6 @@ BEGIN
                                                    v_value, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
-                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       begin
@@ -688,7 +681,7 @@ BEGIN
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
-
+raise notice 'v_value %',v_value;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -708,7 +701,6 @@ BEGIN
                                                          v_value::text, null::text, null::text,
                                                          x.update_first_value_only,
                                                          x.update_first_value_only_id,
-                                                         false,
                                                          x.is_last_row, true, v_project_ids)
             into v_sql;
             begin
@@ -727,7 +719,6 @@ BEGIN
                                                      v_value::text, null::text, null::text,
                                                      x.update_first_value_only,
                                                      x.update_first_value_only_id,
-                                                     false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
         begin
@@ -866,7 +857,6 @@ BEGIN
                                                    v_value, null::text, null::text,
                                                    x.update_first_value_only,
                                                    x.update_first_value_only_id,
-                                                   false,
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       begin
@@ -995,8 +985,9 @@ BEGIN
         v_sql = v_sql || z.field_to_update || $$ = $$ || z.value || $$ ,$$;
 
         for x in select dvcfc.field_to_update,
-                        flow.get_prepared_value(dvcfc.data_type_id, null) as value
+                        flow.get_prepared_value(ubt.return_data_type_id, null) as value
                  from flow.data_view_child_field_config dvcfc
+                 inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
                  where dvcfc.data_view_field_config_id = z.id
           loop
             v_sql = v_sql || x.field_to_update || $$ = $$ || z.value || $$ ,$$;
@@ -1089,7 +1080,6 @@ BEGIN
                                                      v_value, null::text, null::text,
                                                      x.update_first_value_only,
                                                      x.update_first_value_only_id,
-                                                     false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
 
@@ -1158,7 +1148,6 @@ BEGIN
                                                      v_value, null::text, null::text,
                                                      x.update_first_value_only,
                                                      x.update_first_value_only_id,
-                                                     false,
                                                      x.is_last_row, true, v_project_ids)
         into v_sql;
 
@@ -1286,8 +1275,9 @@ BEGIN
         v_sql = v_sql || z.field_to_update || $$ = $$ || z.value || $$ ,$$;
 
         for x in select dvcfc.field_to_update,
-                        flow.get_prepared_value(dvcfc.data_type_id, null) as value
+                        flow.get_prepared_value(ubt.return_data_type_id, null) as value
                  from flow.data_view_child_field_config dvcfc
+                 inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
                  where dvcfc.data_view_field_config_id = z.id
           loop
             v_sql = v_sql || x.field_to_update || $$ = $$ || z.value || $$ ,$$;
