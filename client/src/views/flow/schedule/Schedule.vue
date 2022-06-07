@@ -18,8 +18,11 @@
       <v-col cols="12" md="5" class="py-0 schedule-row-filter-container">
         <v-card color="white" class="text-left py-0 square-card height-one-hunned">
           <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
-            <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
-            <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
+            <v-tabs>
+              <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
+            <v-tab text @click="showFilters = true">Filters</v-tab>
+            <v-tab text @click="showFilters = false">Find Project</v-tab>
+            </v-tabs>
           </v-card-actions>
           <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)"
                        class="filter-text-card">

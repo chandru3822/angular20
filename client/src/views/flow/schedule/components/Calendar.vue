@@ -946,6 +946,10 @@
     padding-bottom: 0;
   }
 
+  #calendar-container .fc-button-primary {
+    background-color: var(--v-primary-base);
+  }
+
 </style>
 
 <style lang="scss" scoped>
