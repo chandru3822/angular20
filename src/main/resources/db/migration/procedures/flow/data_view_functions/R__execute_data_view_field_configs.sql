@@ -31,16 +31,16 @@ BEGIN
     where dvfc.id = p_dvfc_id
     into v_object_code;
 
-     raise notice 'p_id = %',p_id;
-    raise notice 'p_value = %',p_value;
-    raise notice 'v_object_code = %',v_object_code;
-    raise notice 'p_dvfc_id = %',p_dvfc_id;
+--      raise notice 'p_id = %',p_id;
+--     raise notice 'p_value = %',p_value;
+--     raise notice 'v_object_code = %',v_object_code;
+--     raise notice 'p_dvfc_id = %',p_dvfc_id;
     for v_secondary_records in
       select dvcvc.field_to_update,
              ubt.return_data_type_id,
              flow.get_prepared_value(ubt.return_data_type_id,
                                      flow.get_unique_behavior_value(ubt.unique_behavior_type,
-                                                                    p_value, p_id,v_object_code))  as value
+                                                                    p_value::text, p_id,v_object_code))  as value
       from flow.data_view_child_field_config dvcvc
              inner join flow.unique_behavior_type ubt on dvcvc.unique_behavior_type_id = ubt.id
       where data_view_field_config_id = p_dvfc_id
@@ -55,7 +55,7 @@ BEGIN
         into p_sql;
       end loop;
   end if;
-raise notice 'p_sql %',p_sql;
+
   select flow.get_prepared_value(p_data_type_id, p_value)
   into p_value;
   select flow.prepare_update_data_view_details(p_id, p_sql, p_field_to_update,
@@ -64,7 +64,9 @@ raise notice 'p_sql %',p_sql;
                                                p_update_first_value_only_id,
                                                p_is_last_row)
   into p_sql;
+
   return p_sql;
+
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE

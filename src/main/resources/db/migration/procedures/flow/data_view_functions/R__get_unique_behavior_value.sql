@@ -6,6 +6,7 @@ $BODY$
 DECLARE
   v_value text;
 BEGIN
+
   if p_value is null then
     v_value = null;
   elsif p_unique_behavior_type = 'EVENT_RESOURCE_TRIGGER' then
@@ -126,7 +127,7 @@ BEGIN
     select concat(c.first_name, ' ', c.last_name)
     into v_value
     from flow.contact c
-    where c.id = p_value;
+    where c.id = p_value::integer;
 
   elsif p_unique_behavior_type = 'DEFAULT_CFGA_TRIGGER' then
 
