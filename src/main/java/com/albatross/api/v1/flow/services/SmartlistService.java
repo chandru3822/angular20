@@ -2841,6 +2841,16 @@ public class SmartlistService {
             valueJoins.append(String.format(" left join flow.user_position \"%s\" on \"%s\".id = %s.%s ", joinUserPosition, joinUserPosition, joinTable, f.getJoinColumn()));
             valueJoins.append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), joinUserPosition));
             f.setUserPositionTable(joinUserPosition);
+          } else if (f.getReferenceTable().equals("flow.project_process_step") || Objects.equals(f.getReferenceTable(), "flow.process_step")) {
+              if (isAdditionalPs) {
+                  //see if this PPS table has already been joined
+                  // if so reuse the table, if not join it
+                  if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
+                      f.setPpsTable(getPpsTable(f, eventFields, null));
+                  } else {
+                      valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), true));
+                  }
+              }
           }
         } else {
           if (f.getCustomFieldSqlKey() != null) {
@@ -2956,7 +2966,6 @@ public class SmartlistService {
               //see if this PPS table has already been joined
               // if so reuse the table, if not join it
               if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
-                f.setPpsTable(getPpsTable(f, eventFields, null));
                 //if ref table if process step, join here and that becomes join table
                 if (Objects.equals(f.getReferenceTable(), "flow.process_step")) {
                   joinTable = UUID.randomUUID().toString();
