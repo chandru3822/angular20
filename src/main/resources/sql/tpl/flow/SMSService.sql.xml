@@ -35,7 +35,10 @@
          created,
          sms.from_phone,
          sms.recipient_type_id,
-         sms.message_sent_by_user_id as user_id,
+         sms.user_id,
+         sms.contact_id,
+         sms.project_id,
+         sms.message_sent_by_user_id,
          case when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text) else null end as full_name
        FROM flow.sms_queue sms
         left join flow.user u on sms.message_sent_by_user_id = u.id
@@ -62,6 +65,9 @@
               from_phone,
               1 as recipient_type_id,
               null::int as user_id,
+              null::int as contact_id,
+              null::int as project_id,
+              null::int as message_sent_by_user_id,
               null::text as full_name
       from flow.sms_reply
        WHERE
@@ -145,31 +151,34 @@
     <sms.queue.insert>
         <![CDATA[
             WITH sq AS (INSERT INTO flow.sms_queue (
-              message_group,user_id,message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id
+                                                  message_group,user_id,contact_id, project_id, message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id
             ) VALUES (
-              :messageGroup,:userId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId
-            )
-            RETURNING id,user_id,message,media_urls,
+                       :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId
+                     )
+            RETURNING id,user_id,contact_id, project_id,message,media_urls,
               message_group,message_sid,message_status,error_message,
               from_phone,to_phone,twilio_created,twilio_sent,twilio_delivered,
-              updated,created,recipient_type_id)
-            SELECT sq.id,
-                   sq.user_id,
-                   sq.message,
-                   array_to_json(sq.media_urls)       AS media_urls,
-                   sq.message_group,
-                   sq.message_sid,
-                   sq.message_status,
-                   sq.error_message,
-                   sq.from_phone,
-                   sq.to_phone,
-                   sq.twilio_created,
-                   sq.twilio_sent,
-                   sq.twilio_delivered,
-                   sq.updated,
-                   sq.created,
-                   sq.recipient_type_id
-            FROM sq
+              updated,created,recipient_type_id, message_sent_by_user_id)
+          SELECT sq.id,
+                 sq.user_id,
+                 sq.contact_id,
+                 sq.project_id,
+                 sq.message,
+                 array_to_json(sq.media_urls)       AS media_urls,
+                 sq.message_group,
+                 sq.message_sid,
+                 sq.message_status,
+                 sq.error_message,
+                 sq.from_phone,
+                 sq.to_phone,
+                 sq.twilio_created,
+                 sq.twilio_sent,
+                 sq.twilio_delivered,
+                 sq.updated,
+                 sq.created,
+                 sq.recipient_type_id,
+                 sq.message_sent_by_user_id
+          FROM sq
         ]]>
     </sms.queue.insert>
 
