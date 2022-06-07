@@ -12,8 +12,8 @@ import java.util.List;
 @Setter
 public class SMSQueueItem {
 
-    private Long id, userId, recipient_type_id, projectId, messageSentByUserId;
-    private String firstName, lastName, fullName, full_name, email, message;  //wtf why do i have to add full_name to get the value?
+    private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId;
+    private String firstName, lastName, fullName, email, message;
     private String messageGroup, messageSid, messageStatus, fromPhone, toPhone, errorMessage, projectStatus, sentByName;
     private List<String> mediaUrls;
     private boolean priority, messageRead;
@@ -24,11 +24,7 @@ public class SMSQueueItem {
     public boolean getPrioirty() {return priority;}
     public boolean getMessageRead() {return messageRead;}
 
-    public String getFullname() {
-        return String.format("%s %s", firstName, lastName);
-    }
-
     public RecipientType getRecipientType() {
-        return RecipientType.values()[recipient_type_id.intValue()];
+        return RecipientType.values()[recipientTypeId.intValue()];
     }
 }

@@ -231,7 +231,7 @@ export default {
             message: message.data.file.name,
             mediaURLs: mediaUrls
           }
-          await postRequest(`/communication/sendTextsForProject`, params)
+          await postRequest(`/communication/sendTextsForProject/${this.projectId}`, params)
         }
 
         if (message.data.text) {
@@ -239,7 +239,7 @@ export default {
             userIDs: [this.contactId],
             message: message.data.text
           }
-          await postRequest(`/communication/sendTextsForProject`, params)
+          await postRequest(`/communication/sendTextsForProject/${this.projectId}`, params)
         }
 
         await putRequest(`/messaging/setLastSent/`+ this.projectId)

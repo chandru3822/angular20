@@ -49,8 +49,9 @@ public class CommunicationController {
     return communicationService.getDefaultEmailTemplate();
   }
 
-  @PostMapping(value = "/sendTextsForProject")
-  public Map<String, Object> sendTextsForProject(@RequestBody SendTextsRequest sendTexts) {
+  @PostMapping(value = "/sendTextsForProject/{projectId}")
+  public Map<String, Object> sendTextsForProject(@PathVariable Long projectId,
+                                                 @RequestBody SendTextsRequest sendTexts) {
     User user = securityService.getCurrentUser();
     String groupId = UUID.randomUUID().toString();
     Long contactId = sendTexts.getUserIDs().get(0);
@@ -63,6 +64,7 @@ public class CommunicationController {
         communicationService.queueTextMessagesForProject(
             groupId,
             contact,
+            projectId,
             safePhone,
             sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
             sendTexts.getMediaURLs(),

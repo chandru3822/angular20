@@ -217,6 +217,8 @@ public class CommunicationService {
         smsService.queueMessage(
             messageGroupId,
             user.getId(),
+            null,
+          null,
             user.getPhoneNumber(),
             template,
             mediaURLs,
@@ -232,6 +234,7 @@ public class CommunicationService {
   public void queueTextMessagesForProject(
       String messageGroupId,
       Contact contact,
+      Long projectId,
       String toPhone,
       String templateContent,
       List<URI> mediaURLs,
@@ -240,7 +243,9 @@ public class CommunicationService {
       final String template = renderTemplate(templateContent, Map.of("contact", contact));
       smsService.queueMessage(
           messageGroupId,
+          null,
           contact.getId(),
+          projectId,
           toPhone,
           template,
           mediaURLs,
