@@ -1,10 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildProcess;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepCompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepStatusType;
+import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.Data;
@@ -58,8 +56,8 @@ public class ProcessStepStatusController {
   }
 
   @DeleteMapping(value = "/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteType(@PathVariable Long typeId) {
-    processStepStatusService.deleteType(typeId);
+  public ResponseEntity<ProcessStepStatusController.CannotDeleteProcessStepStatus> deleteType(@PathVariable Long typeId) {
+    return processStepStatusService.deleteType(typeId);
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -118,5 +116,7 @@ public class ProcessStepStatusController {
     private Boolean inUseByWqt, inUseByInitialStep;
     private List<ProcessStepAction> actions;
     private List<ProcessStepActionChildProcess> childProcesses;
+    private List<ProjectProcessStep> projectSteps;
+    private List<ProcessStep> steps;
   }
 }

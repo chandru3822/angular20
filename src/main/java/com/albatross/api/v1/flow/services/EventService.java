@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.EventController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.event.Event;
 import com.albatross.api.v1.flow.model.event.EventCompanyEventStatusType;
@@ -15,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
@@ -181,13 +183,27 @@ public class EventService {
     sqlCache.update("event.deleteStatusFromEvent", params);
   }
 
-  public void deleteCompanyEventStatus(Long id) {
+  public ResponseEntity<EventController.CannotDeleteEventStatus> deleteCompanyEventStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
-    sqlCache.update("event.deleteCompanyStatus", params);
+    EventController.CannotDeleteEventStatus cannotDelete = new EventController.CannotDeleteEventStatus();
+    List<EventCompanyEventStatusType> events = sqlCache.query("event.getEventsWithStatusInUse", Map.of("id", id), EventCompanyEventStatusType.class);
+    List<EventController.ProcessStepEventData> processStepEventActions = sqlCache.query("event.getPseaWithStatusInUse", Map.of("id", id), EventController.ProcessStepEventData.class);
+    List<EventController.ProcessStepEventData> processStepRequirement = sqlCache.query("event.getPsrWithStatusInUse", Map.of("id", id), EventController.ProcessStepEventData.class);
+    if (events.isEmpty() && processStepEventActions.isEmpty() && processStepRequirement.isEmpty()) {
+      sqlCache.update("event.deleteCompanyStatus", params);
+      return ResponseEntity.ok().build();
+    }
+    else {
+      cannotDelete.setEvents(events);
+      cannotDelete.setProcessStepEventActions(processStepEventActions);
+      cannotDelete.setProcessStepEventRequirements(processStepRequirement);
+      return ResponseEntity.badRequest().body(cannotDelete);
+    }
+
   }
 
   public Optional<EventCompanyEventStatusType> assignStatusToEvent(

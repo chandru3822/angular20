@@ -4,7 +4,9 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.project.ProjectDensityResult;
 import com.albatross.api.v1.flow.model.project.ProjectStatusCount;
@@ -24,7 +26,6 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableMap;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -34,6 +35,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
@@ -672,13 +674,29 @@ public class ProjectService {
     }
   }
 
-  public void deleteCompanyProjectStatus(Long id) {
+  public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
-    sqlCache.update("project.deleteCompanyStatus", params);
+    List<Project> projectsWithStatus = sqlCache.query("project.getProjectsWithStatusInUse", Map.of("companyProjectStatusTypeId", id), Project.class);
+    List<ProcessStepAction> processStepActions = sqlCache.query("project.psaWithStatusInUse", Map.of("companyProjectStatusTypeId", id), ProcessStepAction.class);
+    List<ProjectController.ProcessStepEventData> processStepEventRequirements = sqlCache.query("project.getPserWithStatusInUse", Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
+    List<ProjectController.ProcessStepEventData> processStepRequirements = sqlCache.query("project.getPsrWithStatusInUse", Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
+
+    if (projectsWithStatus.isEmpty() && processStepActions.isEmpty() && processStepRequirements.isEmpty()) {
+      sqlCache.update("project.deleteCompanyStatus", params);
+      return ResponseEntity.ok().build();
+    }
+    else {
+      ProjectController.CannotDeleteProjectStatus cannotDelete = new ProjectController.CannotDeleteProjectStatus();
+      cannotDelete.setProjectsWithStatus(projectsWithStatus);
+      cannotDelete.setProcessStepActions(processStepActions);
+      cannotDelete.setProcessStepEventRequirements(processStepEventRequirements);
+      cannotDelete.setProcessStepRequirements(processStepRequirements);
+      return ResponseEntity.badRequest().body(cannotDelete);
+    }
   }
 
   public List<ProjectStatusType> getProjectStatuses() {
