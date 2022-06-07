@@ -50,11 +50,10 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm-delete')
-      this.$emit('update:openConfirmDeleteDialog', false)
+      this.$emit('openConfirmDeleteDialog', false)
     },
     no() {
-      console.log('here')
-      this.$emit('update:openConfirmDeleteDialog', false)
+      this.$emit('openConfirmDeleteDialog', false)
       this.$emit('closeConfirmDeleteDialog')
     }
   }
