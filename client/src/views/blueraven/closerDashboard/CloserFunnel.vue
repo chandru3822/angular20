@@ -384,7 +384,7 @@
               </template>
             </v-autocomplete>
 
-            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps">
+            <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined color="primary" @click="funnelAllReps">
               All Reps
             </v-btn>
           </div>
@@ -2252,6 +2252,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .funnel-relative {
   position: relative;
 }
@@ -2552,13 +2553,13 @@ export default {
 
       .main-row {
         border-top: 1px solid #000;
-        background-color: #aed5ee;
+        background-color: var(--v-primary-lighten8);
         font-weight: bold;
         padding: 5px;
       }
 
       .blue-sub-row {
-        background-color: #e9f2ff;
+        background-color: var(--v-primary-lighten9);
       }
 
       .custom-dates-container {
@@ -2733,7 +2734,7 @@ export default {
 
       .main-row {
         border-top: 1px solid #000;
-        background-color: #aed5ee;
+        background-color: var(--v-primary-lighten8);
         font-weight: bold;
         padding: 5px;
 
@@ -2743,7 +2744,7 @@ export default {
       }
 
       .blue-sub-row {
-        background-color: #e9f2ff;
+        background-color: var(--v-primary-lighten9);
       }
 
       .view-btns-container {
@@ -2863,8 +2864,7 @@ export default {
       .checked-in-column-top,
       .checked-in-column-center,
       .checked-in-column-bottom {
-        background-color: rgba(100, 100, 100, 0.5);
-        color: #fff;
+        background-color: map-get($grey, 'lighten-1');
         border: 1px solid #fff;
         font-weight: normal;
         text-align: center;

@@ -44,7 +44,7 @@
 <!--                          v-model="payrollSearch.salesRep"></v-text-field>-->
             <div class="text-left">
               <v-btn color="primary" dark @click="getPayrollData">Search</v-btn>
-              <v-btn class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
+              <v-btn text color="primary" class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
             </div>
           </v-col>
         </v-row>
@@ -77,7 +77,7 @@
               <td class="text-left">{{item.description}}</td>
               <td class="text-left">{{item.currentPay || 0 | currency('$', 2)}}</td>
               <td class="text-left">
-                <v-btn class="clickable" small text @click="viewDetails(item)">
+                <v-btn class="clickable" small text color="primary" @click="viewDetails(item)">
                   <v-icon >mdi-dots-horizontal-circle</v-icon>
                 </v-btn>
               </td>
