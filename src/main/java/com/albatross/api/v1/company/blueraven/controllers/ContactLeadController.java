@@ -270,4 +270,8 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
+  @PostMapping(value = "/blueink", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactBlueink(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
