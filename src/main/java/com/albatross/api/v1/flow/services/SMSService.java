@@ -404,8 +404,8 @@ public class SMSService {
   public void updateSms(SMSQueueItem smsQueueItem) {
     Map<String, Object> params = new HashMap<>();
     params.put("smsId", smsQueueItem.getId());
-    params.put("priority", smsQueueItem.getPrioirty());
-    params.put("messageRead", smsQueueItem.getMessageRead());
+    params.put("priority", smsQueueItem.isPriority());
+    params.put("messageRead", smsQueueItem.isMessageRead());
     params.put(
         "ownerUserPositionId",
         smsQueueItem.getOwner() != null ? smsQueueItem.getOwner().getUserPositionId() : null);

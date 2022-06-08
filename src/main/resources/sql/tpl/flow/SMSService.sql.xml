@@ -29,56 +29,37 @@
     </sms.queue.fetch>
 
     <sms.queue.fetchByProjectId><![CDATA[
-      SELECT
-         sms.message,
-         array_to_json(sms.media_urls) AS media_urls,
-         created,
-         sms.from_phone,
-         sms.recipient_type_id,
-         sms.user_id,
-         sms.contact_id,
-         sms.project_id,
-         sms.message_sent_by_user_id,
-         case when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text) else null end as full_name
-       FROM flow.sms_queue sms
-        left join flow.user u on sms.message_sent_by_user_id = u.id
-       WHERE
-           sms.to_phone ILIKE '%' || translate((select case when length(c.phone) = 0 then 'NULL' else c.phone end from flow.project p
-                                                                                                                         inner join flow.contact c on c.id = p.contact_id
-                                                where p.id = :projectId), '() -', '')
-          OR
-             sms.to_phone ILIKE '%' || translate((select case when length(c.mobile) = 0 then 'NULL' else c.mobile end from flow.project p
-                                                                                                                             inner join flow.contact c on c.id = p.contact_id
-                                                  where p.id = :projectId), '() -', '')
-           AND (
-                 error_message IS NULL OR
-                 (LOWER(error_message) IN
-                  ('api.twilio.com:443 failed to respond') AND
-                   -- so we don't retry very very old texts
-                  created >= '2017-11-08'
-                   )
-               )
-       UNION ALL
-       SELECT body as message,
-              array_to_json(media_urls),
-              date_received as created,
-              from_phone,
-              1 as recipient_type_id,
-              null::int as user_id,
-              null::int as contact_id,
-              null::int as project_id,
-              null::int as message_sent_by_user_id,
-              null::text as full_name
-      from flow.sms_reply
-       WHERE
-           from_phone ILIKE '%' || translate((select case when length(c.phone) = 0 then 'NULL' else c.phone end from flow.project p
-                                                                                                                       inner join flow.contact c on c.id = p.contact_id
-                                              where p.id = :projectId), '() -', '')
-          OR
-           from_phone ILIKE '%' || translate((select case when length(c.mobile) = 0 then 'NULL' else c.mobile end from flow.project p
-                                                                                                                         inner join flow.contact c on c.id = p.contact_id
-                                              where p.id = :projectId), '() -', '')
-        ORDER BY created ASC
+SELECT sms.message,
+       array_to_json(sms.media_urls) AS media_urls,
+       created,
+       sms.from_phone,
+       sms.recipient_type_id,
+       sms.message_sent_by_user_id   as user_id,
+       case
+           when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text)
+           end                       as full_name
+FROM flow.sms_queue sms
+         inner join flow.user u on sms.message_sent_by_user_id = u.id
+         inner join flow.contact c on c.search_phones = sms.search_to_phone and c.archived is false
+         inner join flow.project p on c.id = p.contact_id and p.id = :project_id and p.archived is false
+    AND (error_message IS NULL OR
+         (LOWER(error_message) IN
+          ('api.twilio.com:443 failed to respond') AND
+             -- so we don't retry very very old texts
+          created >= '2017-11-08'
+             ))
+UNION ALL
+SELECT body          as message,
+       array_to_json(media_urls),
+       date_received as created,
+       from_phone,
+       1             as recipient_type_id,
+       null::int     as user_id,
+       null::text    as full_name
+from flow.sms_reply sr
+         inner join flow.contact c on c.search_phones = sr.search_from_phone and c.archived is false
+         inner join flow.project p on c.id = p.contact_id and p.id = :project_id and p.archived is false
+ORDER BY created ASC;
     ]]></sms.queue.fetchByProjectId>
 
     <sms.queue.exportAll>

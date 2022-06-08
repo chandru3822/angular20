@@ -12,19 +12,29 @@ import java.util.List;
 @Setter
 public class SMSQueueItem {
 
-    private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId;
-    private String firstName, lastName, fullName, email, message;
-    private String messageGroup, messageSid, messageStatus, fromPhone, toPhone, errorMessage, projectStatus, sentByName;
-    private List<String> mediaUrls;
-    private boolean priority, messageRead;
-    private Owner owner;
+  private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId;
+  private String firstName, lastName, fullName, email, message;
+  private String messageGroup,
+      messageSid,
+      messageStatus,
+      fromPhone,
+      toPhone,
+      errorMessage,
+      projectStatus,
+      sentByName;
+  private List<String> mediaUrls;
+  private boolean priority, messageRead;
+  private Owner owner;
 
-    private Date created, updated, twilioCreated, twilioSent, twilioDelivered, lastMessageSent, lastMessageReceived;
+  private Date created,
+      updated,
+      twilioCreated,
+      twilioSent,
+      twilioDelivered,
+      lastMessageSent,
+      lastMessageReceived;
 
-    public boolean getPrioirty() {return priority;}
-    public boolean getMessageRead() {return messageRead;}
-
-    public RecipientType getRecipientType() {
-        return RecipientType.values()[recipientTypeId.intValue()];
-    }
+  public RecipientType getRecipientType() {
+    return RecipientType.values()[recipientTypeId.intValue()];
+  }
 }
