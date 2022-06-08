@@ -1,31 +1,30 @@
 <template>
   <ThreeColumnLayout
-      :header-hidden="true"
-      :right-hidden="!$route.params.projectId"
-      :left-hidden="true"
-      @closeRight="$router.push({path: `/inbox`})"
+    :header-hidden="true"
+    :right-hidden="!$route.params.projectId"
+    :left-hidden="true"
+    @closeRight="$router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
-                               @joinConversation="joinConversation"
-      ></ConfirmAssignmentDialog>
+                               @joinConversation="joinConversation" />
       <v-toolbar prominent elevation="4" color="#F5F6F7" class="py-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
           <v-text-field
-              prepend-inner-icon="search"
-              text
-              label="Search by project or owner"
-              v-model="searchQuery"
-              class="albatross-body-2 mb-n4"
-              clearable
+            prepend-inner-icon="search"
+            text
+            label="Search by project or owner"
+            v-model="searchQuery"
+            class="albatross-body-2 mb-n4"
+            clearable
           />
           <v-row class="px-2 toolbar-row-2">
             <v-checkbox
-                v-model="showUnreadOnly"
-                label="Show unread only"
-                class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0"
-                :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
+              v-model="showUnreadOnly"
+              label="Show unread only"
+              class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0"
+              :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
             >
             </v-checkbox>
             <v-chip label class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
@@ -33,14 +32,14 @@
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
             </v-chip>
             <v-autocomplete v-model="selectedTeamFilters"
-                      :items="teamFilterOptions"
-                      prepend-icon="group"
-                      class="filter-control albatross-body-2 align-self-end flex-shrink-1"
-                      placeholder="Teams"
-                      :menu-props="{offsetY:true}"
-                      multiple
-                      clearable
-                      v-if="teamFilterOptions.length > 1">
+                            :items="teamFilterOptions"
+                            prepend-icon="group"
+                            class="filter-control albatross-body-2 align-self-end flex-shrink-1"
+                            placeholder="Teams"
+                            :menu-props="{offsetY:true}"
+                            multiple
+                            clearable
+                            v-if="teamFilterOptions.length > 1">
               <v-list-item
                 slot="prepend-item"
                 ripple
@@ -56,26 +55,27 @@
                 class="mt-2"
               ></v-divider>
               <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
+                slot="selection"
+                slot-scope="{ item, index }"
               >
-                <v-chip small v-if="index <= teamFilterChipLimit && selectedTeamFilters && selectedTeamFilters.length <= teamFilterChipLimit">
+                <v-chip small
+                        v-if="index <= teamFilterChipLimit && selectedTeamFilters && selectedTeamFilters.length <= teamFilterChipLimit">
                   <span>{{ item }}</span>
                 </v-chip>
                 <span
-                    v-if="index === 0 && selectedTeamFilters && selectedTeamFilters.length > teamFilterChipLimit"
-                    class="primary--text caption"
+                  v-if="index === 0 && selectedTeamFilters && selectedTeamFilters.length > teamFilterChipLimit"
+                  class="primary--text text-caption"
                 >{{ selectedTeamFilters.length }} selected</span>
               </template>
             </v-autocomplete>
             <v-autocomplete v-model="selectedOwnerFilters"
-                      :items="ownerFilterOptions"
-                      prepend-icon="person"
-                      class="filter-control albatross-body-2 align-self-end flex-shrink-1"
-                      placeholder="Owners"
-                      :menu-props="{offsetY:true}"
-                      multiple
-                      clearable>
+                            :items="ownerFilterOptions"
+                            prepend-icon="person"
+                            class="filter-control albatross-body-2 align-self-end flex-shrink-1"
+                            placeholder="Owners"
+                            :menu-props="{offsetY:true}"
+                            multiple
+                            clearable>
               <v-list-item
                 slot="prepend-item"
                 ripple
@@ -94,12 +94,13 @@
                 slot="selection"
                 slot-scope="{ item, index }"
               >
-                <v-chip small v-if="index <= ownerFilterChipLimit && selectedOwnerFilters && selectedOwnerFilters.length <= ownerFilterChipLimit">
+                <v-chip small
+                        v-if="index <= ownerFilterChipLimit && selectedOwnerFilters && selectedOwnerFilters.length <= ownerFilterChipLimit">
                   <span>{{ item }}</span>
                 </v-chip>
                 <span
                   v-if="index === 0 && selectedOwnerFilters && selectedOwnerFilters.length > ownerFilterChipLimit"
-                  class="primary--text caption"
+                  class="primary--text text-caption"
                 >{{ selectedOwnerFilters.length }} selected</span>
               </template>
             </v-autocomplete>
@@ -107,37 +108,44 @@
           </v-row>
         </v-toolbar-items>
       </v-toolbar>
-      <v-col v-if="!projectsFiltered || projectsFiltered.length === 0" class="text-center pt-6">No available conversations</v-col>
-      <v-col v-for="item in projectsFiltered" class="inbox-row pa-6 clickable" :class="{'selected': $route.params.projectId == item.projectId}" @click="$router.push({path: `/inbox/inboxConversation/${item.projectId}`}); clearNotification(item.projectId)">
-      <v-row class="justify-space-between flex-nowrap mx-0 pa-0" >
-        <v-col cols="11" class="text-ellipses pa-0">
-          <div class="d-flex align-baseline" :class="{'notif-div': (smsNotification && hasNotification(item.projectId))}">
-            <div>
-              <v-badge
-                dot
-                color="#F35858"
-                class="notif-badge"
-                v-if="smsNotification && hasNotification(item.projectId)"
-              >
-              </v-badge>
-              <b>{{item.projectName}}</b>
+      <v-col v-if="!projectsFiltered || projectsFiltered.length === 0" class="text-center pt-6">No available
+        conversations
+      </v-col>
+      <v-col v-for="item in projectsFiltered" class="inbox-row pa-6 clickable"
+             :class="{'selected': $route.params.projectId == item.projectId}"
+             @click="$router.push({path: `/inbox/inboxConversation/${item.projectId}`}); clearNotification(item.projectId)">
+        <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
+          <v-col cols="11" class="text-ellipses pa-0">
+            <div class="d-flex align-baseline"
+                 :class="{'notif-div': (hasNotification(item.projectId))}">
+              <div>
+                <v-badge
+                  dot
+                  color="#F35858"
+                  class="notif-badge"
+                  v-if="hasNotification(item.projectId)"
+                >
+                </v-badge>
+                <b>{{ item.projectName }}</b>
+              </div>
+              <span v-if="item.messageHistory.length > 0"
+                    class="albatross-body-2 px-2 text-ellipses">{{ getTime(item.messageHistory[0].lastMessageSent)
+                }}</span>
+              <span class="albatross-body-2 px-1 text-ellipses deemphasis">{{ item.state }}</span>
             </div>
-            <span v-if="item.messageHistory.length > 0" class="albatross-body-2 px-2 text-ellipses">{{ getTime(item.messageHistory[0].lastMessageSent)}}</span>
-            <span class="albatross-body-2 px-1 text-ellipses deemphasis">{{ item.state}}</span>
-          </div>
-            <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{item.messageHistory[0].message}}</div>
-        </v-col>
-      </v-row>
+            <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}</div>
+          </v-col>
+        </v-row>
         <TeamAssignmentChips
-            :sms-team-owners="item.smsTeamOwners"
-            :team-names-associated-to-user="teamNamesAssociatedToUser"
-            :reloading="reloadInProgress"
-            :show-assign-to-me-button="false"
-            :project-id="item.projectId"
-            :project="item"
-            show-selected-styles
-            @updateOwner="fetchProjects"
-            @joinConversation="[assignToMeProject = item, joinConversation()]"
+          :sms-team-owners="item.smsTeamOwners"
+          :team-names-associated-to-user="teamNamesAssociatedToUser"
+          :reloading="reloadInProgress"
+          :show-assign-to-me-button="false"
+          :project-id="item.projectId"
+          :project="item"
+          show-selected-styles
+          @updateOwner="fetchProjects"
+          @joinConversation="[assignToMeProject = item, joinConversation()]"
         />
       </v-col>
     </template>
@@ -145,33 +153,32 @@
 </template>
 
 <script>
-import {AppMutations} from '@/stores/AppStore'
+import { AppMutations } from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
-import {getRequest, getSnackbar, postRequest} from '@/helpers/helpers'
+import { getRequest, getSnackbar, postRequest } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'
-import ThreeColumnLayout from "@/views/ThreeColumnLayout";
-import TeamAssignmentChips from "@/views/flow/settings/inbox/TeamAssignmentChips";
-import ConfirmAssignmentDialog from "@/views/flow/settings/inbox/ConfirmAssignmentDialog";
-import cloneDeep from "lodash.clonedeep";
-
-const { VUE_APP_BASE_API } = process.env
+import ThreeColumnLayout from '@/views/ThreeColumnLayout'
+import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
+import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
+import cloneDeep from 'lodash.clonedeep'
+import { NotificationActions } from '@/plugins/notifications/NotificationStore'
+import debounce from 'lodash.debounce'
 
 export default {
   name: 'Inbox',
   components: {
     TeamAssignmentChips,
     ThreeColumnLayout,
-    ConfirmAssignmentDialog,
-    moment
+    ConfirmAssignmentDialog
   },
   mixins: [Vue2Filters.mixin],
   constants,
-  data () {
+  data() {
     return {
       userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL'),
       snackbar: {},
-      projects:[],
+      projects: [],
       searchQuery: '',
       constants,
       userId: this.$store.state.user.details.id,
@@ -186,7 +193,6 @@ export default {
       assignToMeProject: [],
       teamsAssociatedToUser: [],
       teamNamesAssociatedToUser: [],
-      smsNotification: [],
       evtSource: '',
       thingsLoading: 0,
       viewWidth: window.innerWidth,
@@ -195,73 +201,78 @@ export default {
     }
   },
   computed: {
+    smsOwnershipEvents() {
+      return this.$store.getters.getEventsByTopic('sms_ownership').length
+    },
+    smsNotification() {
+      return this.$store.getters.getNotificationsByTopic('sms_reply')
+    },
     projectsFiltered() {
       return this.projects.filter(p => {
-        let ownerExists = false;
-        let teamExists = false;
-        let searchTermExists = false;
-        let notificationExists = false;
+        let ownerExists = false
+        let teamExists = false
+        let searchTermExists = false
+        let notificationExists = false
 
         if (this.searchQuery && (p.projectName?.toLowerCase().includes(this.searchQuery.toLowerCase()) || ((p.projectId + '').indexOf(this.searchQuery) > -1))) {
-          searchTermExists = true;
+          searchTermExists = true
         }
 
         p.smsTeamOwners.forEach(team => {
           if (this.selectedTeamFilters.includes(team.teamName) || this.selectedTeamFilters.length === 0) {
-            teamExists = true;
+            teamExists = true
 
             team.users.forEach(owner => {
               if (this.selectedOwnerFilters.includes(owner.name)) {
-                ownerExists = true;
+                ownerExists = true
               }
 
-            if (this.searchQuery && owner.name?.toLowerCase().includes(this.searchQuery.toLowerCase())) {
-              searchTermExists = true;
-            }
-          })
+              if (this.searchQuery && owner.name?.toLowerCase().includes(this.searchQuery.toLowerCase())) {
+                searchTermExists = true
+              }
+            })
 
             if (team.users.length === 0 && this.selectedOwnerFilters.includes('Unassigned')) {
-              ownerExists = true;
+              ownerExists = true
             }
           }
 
         })
 
         if (this.selectedOwnerFilters.length === 0) {
-          ownerExists = true;
+          ownerExists = true
         }
 
         if (this.selectedTeamFilters.length === 0) {
-          teamExists = true;
+          teamExists = true
         }
 
         if (this.searchQuery == '' || this.searchQuery === null) {
-          searchTermExists = true;
+          searchTermExists = true
         }
 
         if (this.showUnreadOnly) {
-          if (this.smsNotification && this.hasNotification(p.projectId)) {
-            notificationExists = true;
+          if (this.hasNotification(p.projectId)) {
+            notificationExists = true
           }
-        }
-        else {
-          notificationExists = true;
+        } else {
+          notificationExists = true
         }
 
-        return ownerExists && teamExists && searchTermExists && notificationExists;
-      }).sort((a,b) => {
+        return ownerExists && teamExists && searchTermExists && notificationExists
+      }).sort((a, b) => {
         return this.sortOldToNew ?
           (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0) - (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) :
           (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) - (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0)
       })
     },
-    allTeamsSelected () {
+    allTeamsSelected() {
       return this.selectedTeamFilters.length === this.teamFilterOptions.length
     },
-    allOwnersSelected () {
+    allOwnersSelected() {
       return this.selectedOwnerFilters.length === this.ownerFilterOptions.length
     },
-    teamsIcon () {
+    teamsIcon() {
       if (this.selectedTeamFilters.length === this.teamFilterOptions.length) {
         return 'check_box'
       }
@@ -270,7 +281,7 @@ export default {
       }
       return 'check_box_outline_blank'
     },
-    ownersIcon () {
+    ownersIcon() {
       if (this.selectedOwnerFilters.length === this.ownerFilterOptions.length) {
         return 'check_box'
       }
@@ -280,78 +291,73 @@ export default {
       return 'check_box_outline_blank'
     },
     teamFilterChipLimit() {
-      if(this.viewWidth < 1264) {
+      if (this.viewWidth < 1264) {
         //smaller screen
         if (this.$route.path.includes('inboxConversation')) {
           //right panel open
-          return 0;
+          return 0
         }
         //right panel closed
-        return 2;
+        return 2
       }
       //larger screen
-        if(this.$route.path.includes('inboxConversation')) {
-          //right panel open
-          return 1;
-        }
-        //right panel closed
-        return 3;
+      if (this.$route.path.includes('inboxConversation')) {
+        //right panel open
+        return 1
+      }
+      //right panel closed
+      return 3
     },
     ownerFilterChipLimit() {
-      if(this.viewWidth < 1264) {
+      if (this.viewWidth < 1264) {
         //smaller screen
         if (this.$route.path.includes('inboxConversation')) {
           //right panel open
-          return 0;
+          return 0
         }
         //right panel closed
-        return 3;
+        return 3
       }
       //larger screen
-        if(this.$route.path.includes('inboxConversation')) {
-          //right panel open
-          return 2;
-        }
+      if (this.$route.path.includes('inboxConversation')) {
+        //right panel open
+        return 2
+      }
       //right panel closed
-      if(this.teamFilterOptions.length > 1){
+      if (this.teamFilterOptions.length > 1) {
         //teams filter is showing
-        return 4;
+        return 4
       }
       //teams filter not showing
-      return 6;
+      return 6
     }
   },
   methods: {
     showLoading(isLoading) {
-      if(isLoading) {
-        if(this.thingsLoading == 0){
+      if (isLoading) {
+        if (this.thingsLoading == 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
         this.thingsLoading++
       } else {
         this.thingsLoading--
-        if(this.thingsLoading == 0){
+        if (this.thingsLoading == 0) {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
     },
     async fetchProjects() {
-      this.showLoading(true)
       try {
-        const {data, status} = await getRequest(`/messaging/projects`)
+        this.showLoading(true)
+        const { data } = await getRequest(`/messaging/projects`)
         if (data) {
           this.projects = data
-          this.projects.forEach(p => {
-            p.showAssignToMeButton = false;
-
-            if (this.teamsAssociatedToUser.length > 0) {
-              p.showAssignToMeButton = true;
-            }
-
+          this.projects?.forEach(p => {
+            p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
             p.smsTeamOwners.forEach(team => {
               team.users.forEach(owner => {
-                if (owner.userId == this.userId) {
-                  p.showAssignToMeButton = false;
+                if (owner.userId === this.userId) {
+                  p.showAssignToMeButton = false
                 }
               })
             })
@@ -367,76 +373,54 @@ export default {
       }
     },
     async reloadProjects() {
-      this.showLoading(true)
-      let projectIds = []
       try {
-        const {data, status} = await getRequest(`/messaging/projects`)
-        // Sometimes the API call above returns without the data, calling it a 2nd time gets the data
-        if (!(data && Array.isArray(data))) {
-          this.showLoading(false)
-          await this.reloadProjects()
-          return;
-        }
-        else {
+        this.showLoading(true)
+        const { data } = await getRequest(`/messaging/projects`)
+        if (data) {
           this.projects = data
-        }
-
-        this.projects.forEach(p => {
-          projectIds.push(p.projectId)
-          p.showAssignToMeButton = false;
-          let showAssignToMe = false;
-
-          if (this.teamsAssociatedToUser.length > 0) {
-            showAssignToMe = true;
-          }
-
-          p.smsTeamOwners.forEach(team => {
-            team.users.forEach(owner => {
-              if (owner.userId == this.userId) {
-                showAssignToMe = false;
-              }
+          this.projects?.forEach(p => {
+            p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
+            p.smsTeamOwners.forEach(team => {
+              team.users.forEach(owner => {
+                if (owner.userId === this.userId) {
+                  p.showAssignToMeButton = false
+                }
+              })
             })
           })
+        }
 
-          if (showAssignToMe) {
-            p.showAssignToMeButton = true;
-          }
-          else {
-            p.showAssignToMeButton = false;
-          }
-        })
+        const projectIds = this.projects?.map(p => p.projectId)
 
-        let projectId = parseInt(this.$route.params.projectId) | null
+        let projectId = parseInt(this.$route.params.projectId) || null
         // If the Project opened in the right panel no longer is available, close the right panel
-        if (this.$route.path.includes('inboxConversation') && projectId != null && projectId != 0 && !projectIds.includes(projectId)) {
-          await this.$router.push({path: `/inbox`})
+        if (this.$route.path.includes('inboxConversation') && projectId != null && projectId !== 0 && !projectIds.includes(projectId)) {
+          await this.$router.push({ path: `/inbox` })
         }
         this.showLoading(false)
         this.reloadInProgress = false
       } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching projects')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.showLoading(false)
-          this.reloadInProgress = false
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching projects')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.showLoading(false)
+        this.reloadInProgress = false
       }
     },
     getTime(lastMessageSent) {
-      const now = moment();
-      const lastMessage = moment(lastMessageSent);
+      const now = moment()
+      const lastMessage = moment(lastMessageSent)
 
       // get the difference between the moments
-      const diff = now.diff(lastMessage);
-      const diffDuration = moment.duration(diff);
+      const diff = now.diff(lastMessage)
+      const diffDuration = moment.duration(diff)
 
-      if (diffDuration.years() > 0 ) {
+      if (diffDuration.years() > 0) {
         return moment(lastMessageSent).format('M/D/YYYY h:mm a')
-      }
-      else if (diffDuration.days() > 0 || diffDuration.hours() > 12) {
+      } else if (diffDuration.days() > 0 || diffDuration.hours() > 12) {
         return moment(lastMessageSent).format('M/D h:mm a')
-      }
-      else {
-        return moment(lastMessageSent).fromNow();
+      } else {
+        return moment(lastMessageSent).fromNow()
       }
     },
     async joinConversation(selectedTeam) {
@@ -447,20 +431,20 @@ export default {
         }
         // If the User has multiple teams available, have them select a team to join with first
         else if (this.teamsAssociatedToUser.length > 1 && !selectedTeam) {
-          this.showAssignToMeDialog = true;
-          return;
+          this.showAssignToMeDialog = true
+          return
         }
         this.showLoading(true)
-        const {data, status} = await postRequest(`/messaging/addTeam/${this.assignToMeProject.projectId}`, selectedTeam)
+        await postRequest(`/messaging/addTeam/${this.assignToMeProject.projectId}`, selectedTeam)
         this.selectedSmsTeam = ''
         this.snackbar = getSnackbar('SUCCESS', 'Successfully joined conversation')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        if(!this.$route.path.includes('inboxConversation')) {
+        if (!this.$route.path.includes('inboxConversation')) {
           //avoids redundant navigation console error
-          this.$router.push({path: `/inbox/inboxConversation/${this.assignToMeProject.projectId}`})
+          this.$router.push({ path: `/inbox/inboxConversation/${this.assignToMeProject.projectId}` })
         }
         this.showLoading(false)
-        this.showAssignToMeDialog = false;
+        this.showAssignToMeDialog = false
         await this.fetchProjects()
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -473,16 +457,12 @@ export default {
     async fetchTeamsForUser() {
       this.showLoading(true)
       try {
-        const {data, status} = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data } = await getRequest(`/smsTeam/getTeamsForUser/`)
         this.showLoading(false)
         if (data && Array.isArray(data)) {
-          this.teamsAssociatedToUser = data;
-          this.teamsAssociatedToUser.forEach(team => {
-            this.teamNamesAssociatedToUser.push(team.teamName)
-          })
+          this.teamsAssociatedToUser = data
+          this.teamNamesAssociatedToUser = data?.map(team => team.teamName)
         }
-
-        return;
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
@@ -491,82 +471,45 @@ export default {
       }
     },
     hasNotification(projectId) {
-      let projectNotifications = this.smsNotification.filter(n => n.metadata.projectId == projectId)
-      return projectNotifications && projectNotifications.length > 0;
+      return this.smsNotification?.filter(n => n.metadata.projectId === projectId)?.length > 0
     },
-    async clearNotification(projectId) {
-      let projectNotifications = this.smsNotification.filter(n => n.metadata.projectId == projectId)
-      let notificationIds = []
-      projectNotifications.forEach(notif => {
-        notificationIds.push(notif.id);
-      });
+    clearNotification(projectId) {
+      const notificationIds = this.smsNotification
+        .filter(n => n.metadata.projectId === projectId)
+        .map(notif => notif.id)
 
-      let params = {
-        notificationIds: notificationIds
-      }
-      this.showLoading(true)
-      try {
-        const {data, status} = await postRequest(`/notifications/markNotificationAsRead/`, params)
-        this.showLoading(false)
-
-        await this.getSmsNotification();
-
-        return;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error handling notifications')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.showLoading(false)
-      }
+      this.$store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
     },
-    async getSmsNotification() {
-      this.showLoading(true)
-
-      try {
-        const {data} = await getRequest(`/notifications/`)
-        if (data && data.length > 0) {
-          this.smsNotification = data.filter(n => n.topic == "sms_reply")
-        }
-        else {
-          this.smsNotification = []
-        }
-        this.showLoading(false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching notifications')
-        this.showLoading(false)
-      }
-    },
-    toggleSelectAllTeams () {
+    toggleSelectAllTeams() {
       if (this.allTeamsSelected) {
         this.selectedTeamFilters = []
       } else {
         this.selectedTeamFilters = cloneDeep(this.teamFilterOptions)
       }
     },
-    toggleSelectAllOwners () {
+    toggleSelectAllOwners() {
       if (this.allOwnersSelected) {
         this.selectedOwnerFilters = []
       } else {
         this.selectedOwnerFilters = cloneDeep(this.ownerFilterOptions)
       }
     },
-    onResize(){
-     this.viewWidth = window.innerWidth;
+    onResize() {
+      this.viewWidth = window.innerWidth
     },
     async getAvailableTeams() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/smsTeam/users`)
+        const { data } = await getRequest(`/smsTeam/users`)
         this.selectableTeams = data
         this.selectableTeams.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
             if (this.teamFilterOptions.indexOf(team.teamName) === -1) {
-              this.teamFilterOptions.push(team.teamName);
+              this.teamFilterOptions.push(team.teamName)
             }
 
             if (!this.selectedTeamFilters.includes(team.teamName)) {
-              this.selectedTeamFilters.push(team.teamName);
+              this.selectedTeamFilters.push(team.teamName)
             }
 
             team.users.forEach(owner => {
@@ -574,16 +517,15 @@ export default {
                 this.ownerFilterOptions.push(owner.userName)
               }
 
-              if (owner.userId == this.userId) {
+              if (owner.userId === this.userId) {
                 if (!this.selectedOwnerFilters.includes(owner.userName)) {
-                  this.selectedOwnerFilters.push(owner.userName);
+                  this.selectedOwnerFilters.push(owner.userName)
                 }
               }
             })
-          }
-          else if (this.userCanViewAll) {
+          } else if (this.userCanViewAll) {
             if (this.teamFilterOptions.indexOf(team.teamName) === -1) {
-              this.teamFilterOptions.push(team.teamName);
+              this.teamFilterOptions.push(team.teamName)
             }
 
             team.users.forEach(owner => {
@@ -595,12 +537,12 @@ export default {
         })
 
         // Sort the filter alphabetically
-        this.teamFilterOptions.sort();
-        this.ownerFilterOptions.sort();
+        this.teamFilterOptions.sort()
+        this.ownerFilterOptions.sort()
 
-        this.ownerFilterOptions.push("Unassigned")
+        this.ownerFilterOptions.push('Unassigned')
         if (!this.selectedOwnerFilters.includes('Unassigned')) {
-          this.selectedOwnerFilters.push('Unassigned');
+          this.selectedOwnerFilters.push('Unassigned')
         }
 
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -610,45 +552,29 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
-    },
+    }
   },
-  created () {
-    this.getSmsNotification()
+  watch: {
+    smsOwnershipEvents: debounce(function() {
+      this.fetchTeamsForUser()
+      this.reloadProjects()
+    }, 500)
+  },
+  created() {
     this.fetchTeamsForUser()
     this.getAvailableTeams()
     this.fetchProjects()
-    window.addEventListener("resize", this.onResize)
-  },
-  mounted() {
-    //notification stream
-    this.evtSource = new EventSource(`${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${this.$store.state.user.jwt}`)
-    this.evtSource.addEventListener('sms_ownership', function(e) {
-      const data = JSON.parse(e.data)
-      if (data && !this.reloadInProgress) {
-        this.reloadInProgress = true
-        this.getSmsNotification()
-        this.fetchTeamsForUser()
-        this.reloadProjects()
-      }
-    }.bind(this))
-  },
-  beforeDestroy() {
-    if (this.evtSource){
-      this.evtSource.close()
-    }
+    window.addEventListener('resize', this.onResize)
   }
 }
 </script>
-
-<style lang="scss">
-</style>
 
 <style scoped lang="scss">
 
 .sticky-toolbar {
   position: sticky;
-  top:0;
-  z-index: 1;//just to get it in front of the rest of the section
+  top: 0;
+  z-index: 1; //just to get it in front of the rest of the section
   @media (max-width: 1264px) {
     height: max-content !important;
   }
@@ -658,7 +584,7 @@ export default {
   display: flex;
   flex-wrap: nowrap;
   position: relative;
-  bottom:1rem;
+  bottom: 1rem;
 
   @media (max-width: 1264px) {
     flex-wrap: wrap;
@@ -673,7 +599,7 @@ export default {
   }
 }
 
-.inbox-row{
+.inbox-row {
   min-height: 94px;
   width: 100%;
   border-bottom: 1px solid #C7C7CC;
@@ -681,14 +607,7 @@ export default {
 }
 
 .selected {
-background-color: #EDF5FE;
-}
-
-.message-data {
-
-}
-.assign-button {
-
+  background-color: #EDF5FE;
 }
 
 a {
