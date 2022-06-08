@@ -34,7 +34,7 @@ public class NotificationApiController {
   private final PubSubService pubSubService;
 
   @GetMapping
-  public Page<Notification> getUserNotificationsPagable(
+  public Page<Notification> getUserNotificationsPageable(
       @AuthenticationPrincipal UserAccountDetails details, Pageable pageable) {
     return notificationService.getUserNotifications(details.getId(), pageable);
   }

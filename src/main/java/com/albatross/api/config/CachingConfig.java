@@ -14,17 +14,26 @@ import java.time.Duration;
 @EnableCaching
 public class CachingConfig {
   public static final String PROPOSAL_TEMPLATE = "proposalTemplate";
+  public static final String NOTIFICATION = "notification";
 
   @Bean
   public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
     return builder -> {
-      builder.withCacheConfiguration(
-          PROPOSAL_TEMPLATE,
-          RedisCacheConfiguration.defaultCacheConfig()
-              .serializeValuesWith(
-                  RedisSerializationContext.SerializationPair.fromSerializer(
-                      new GenericJackson2JsonRedisSerializer()))
-              .entryTtl(Duration.ofMinutes(5L)));
+      builder
+          .withCacheConfiguration(
+              PROPOSAL_TEMPLATE,
+              RedisCacheConfiguration.defaultCacheConfig()
+                  .serializeValuesWith(
+                      RedisSerializationContext.SerializationPair.fromSerializer(
+                          new GenericJackson2JsonRedisSerializer()))
+                  .entryTtl(Duration.ofMinutes(5L)))
+          .withCacheConfiguration(
+              NOTIFICATION,
+              RedisCacheConfiguration.defaultCacheConfig()
+                  .serializeValuesWith(
+                      RedisSerializationContext.SerializationPair.fromSerializer(
+                          new GenericJackson2JsonRedisSerializer()))
+                  .entryTtl(Duration.ofMinutes(5L)));
     };
   }
 }
