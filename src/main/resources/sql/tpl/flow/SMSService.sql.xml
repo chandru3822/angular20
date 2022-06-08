@@ -41,7 +41,7 @@ SELECT sms.message,
 FROM flow.sms_queue sms
          inner join flow.user u on sms.message_sent_by_user_id = u.id
          inner join flow.contact c on c.search_phones = sms.search_to_phone and c.archived is false
-         inner join flow.project p on c.id = p.contact_id and p.id = :project_id and p.archived is false
+         inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
     AND (error_message IS NULL OR
          (LOWER(error_message) IN
           ('api.twilio.com:443 failed to respond') AND
@@ -58,7 +58,7 @@ SELECT body          as message,
        null::text    as full_name
 from flow.sms_reply sr
          inner join flow.contact c on c.search_phones = sr.search_from_phone and c.archived is false
-         inner join flow.project p on c.id = p.contact_id and p.id = :project_id and p.archived is false
+         inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
 ORDER BY created ASC;
     ]]></sms.queue.fetchByProjectId>
 
