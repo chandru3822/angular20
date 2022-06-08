@@ -2419,7 +2419,7 @@
         width: 100%;
 
         .blue-sub-row {
-          background-color: #e9f2ff;
+          background-color: var(--v-primary-lighten9);
         }
 
         .custom-dates-container {

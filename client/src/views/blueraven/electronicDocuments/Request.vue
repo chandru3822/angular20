@@ -40,14 +40,14 @@
             :key="it.id"
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
-            <td class="text-left">
+            <td class="text-left pl-4">
               <a v-if="$store.getters.userHasFeatureAccessLevel('ELECTRONIC_DOCUMENTS', 'ADD')"
                  @click="openRequest(it)" class="mr-3 name-link">
                 {{ it.customer_name ? it.customer_name : '' }}
               </a>
               <span v-else>{{ it.customer_name ? it.customer_name : '' }}</span>
             </td>
-            <td class="text-left">{{ it.address ? it.address : '' }}</td>
+            <td class="text-left pl-4">{{ it.address ? it.address : '' }}</td>
           </tr>
         </template>
       </v-data-table>
@@ -89,8 +89,8 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="secondaryButton" text @click="close">Back</v-btn>
-            <v-btn color="primaryButton" raised @click="submitRequest" class="white--text">
+            <v-btn color="primary" text @click="close">Back</v-btn>
+            <v-btn color="primary" raised @click="submitRequest" class="white--text">
               Submit
             </v-btn>
           </v-card-actions>

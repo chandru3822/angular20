@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Reimbursement Requests</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[createNew = !createNew, newReimbursementRequest = {expenseBudgetId: null}]">
+            <v-btn text color="primary" @click="[createNew = !createNew, newReimbursementRequest = {expenseBudgetId: null}]">
               <v-icon v-if="!createNew">add</v-icon>
               {{ createNew ? 'cancel' : 'Add Reimbursement Request' }}
             </v-btn>
@@ -106,46 +106,18 @@
               <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text @click="[selectedRequest = item, getRequestAttachmentPresignedUrl(item)]">
+                  <v-btn small text color="primary" @click="[selectedRequest = item, getRequestAttachmentPresignedUrl(item)]">
                     <v-icon>edit</v-icon>
                   </v-btn>
-                  <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        Are you sure you want to delete this Reimbursement Request for <strong>{{ item.createdBy }}:
-                        {{ item.amount | currency('$', 2) }}</strong>?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primary"
-                          text
-                          @click="deleteReimbursementRequest(item)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                  <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
+                  <ConfirmDeleteDialogImproved
+                      :open-confirm-delete-dialog = deleteConfirm
+                      @confirm-delete=deleteReimbursementRequest(itemToDelete)
+                      @closeConfirmDeleteDialog="closeDeleteDialog">
+                    Are you sure you want to delete this Reimbursement Request for <strong>{{ item.createdBy }}:
+                    {{ item.amount | currency('$', 2) }}</strong>?</ConfirmDeleteDialogImproved>
                 </div>
               </td>
             </tr>
@@ -354,10 +326,12 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, getRequestWithParam
 import constants from "@/helpers/constants";
 import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
+import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
 export default {
   name: 'ReimbursementRequests',
   components: {
+    ConfirmDeleteDialogImproved,
     DatetimePickerInput
   },
   computed: {},
@@ -405,7 +379,9 @@ export default {
       glError: false,
       budgetError: false,
       amountError: false,
-      renderRequestImage: false
+      renderRequestImage: false,
+      deleteConfirm: false,
+      itemToDelete: null
     }
   },
   created() {
@@ -458,6 +434,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.closeDeleteDialog()
     },
     async saveReimbursementRequest(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -645,6 +622,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+
+    closeDeleteDialog() {
+      this.deleteConfirm = false
+      this.itemToDelete = null
+    }
   }
 }
 </script>
