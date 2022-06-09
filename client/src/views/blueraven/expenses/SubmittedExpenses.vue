@@ -17,13 +17,13 @@
                 hide-details
               ></v-text-field>
               <div>
-                <v-btn color="primaryCustom"
+                <v-btn color="primary"
                        @click="exportExpenses"
                        :disabled="selectedExpenses.length === 0"
                        class="white--text" small>
                   Export Selected
                 </v-btn>
-                <v-btn color="primaryCustom" class="white--text ml-4" small
+                <v-btn color="primary" class="white--text ml-4" small
                        :disabled="!showAll"
                        @click="[rangeChanged = false, selectedExpenses = [], showAll = false, getSubmittedExpenses(false)]">
                   {{ showAll ? 'Show Unpaid' : 'Showing Unpaid'}}
@@ -129,7 +129,7 @@
                                      custom-class="expense-range-selector ml-5"
                 ></DatetimePickerInput>
               </div>
-              <v-btn color="primaryCustom" class="white--text mt-2" small
+              <v-btn color="primary" class="white--text mt-2" small
                      :disabled="(showAll && !rangeChanged) || !startDate || !endDate"
                      @click="[rangeChanged = false, selectedExpenses = [], showAll = true, getSubmittedExpenses(true)]">
                 {{ showAll && !rangeChanged ? 'Showing All in Range' : 'Show All in Range'}}
@@ -146,7 +146,6 @@
           </div>
         </v-card>
         <v-divider></v-divider>
-
         <div class="submitted-expense-table-container">
           <v-data-table
             :headers="headers"
@@ -193,47 +192,13 @@
                 <td class="text-left">{{ item.paidBy }}</td>
                 <td>
                   <div style="display: flex; justify-content: flex-end">
-                    <v-btn small text
+                    <v-btn small text color="primary"
                            @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getGlCodes(), getUsersWithBudget(), getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)]">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template #activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text class="pt-4">
-                          Are you sure you want to delete this Submitted Expense for <strong>{{ item.createdBy }}:
-                          {{ item.amount | currency('$', 2) }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primary"
-                            text
-                            @click="deleteSubmittedExpense(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </div>
                 </td>
               </tr>
@@ -350,6 +315,13 @@
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmDeleteDialogImproved
+        :open-confirm-delete-dialog = deleteConfirm
+        @confirm-delete=deleteSubmittedExpense(itemToDelete)
+        @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete this Submitted Expense for <strong>{{ itemToDeleteCreatedBy }}:
+      {{ itemToDeleteAmount | currency('$', 2) }}</strong>?
+    </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -369,13 +341,14 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import moment from 'moment'
 import {saveAs} from 'file-saver'
 import cloneDeep from 'lodash.clonedeep'
+import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
 export default {
   name: 'SubmittedExpenses',
   components: {
+    ConfirmDeleteDialogImproved,
     DatetimePickerInput
   },
-  computed: {},
   data() {
     return {
       snackbar: {},
@@ -430,11 +403,21 @@ export default {
       endDate: moment().endOf('month').format('YYYY-MM-DD'),
       canReject: true,
       canApprove: true,
-      canPay: true
+      canPay: true,
+      deleteConfirm: false,
+      itemToDelete: {}
     }
   },
   created() {
     this.getSubmittedExpenses()
+  },
+  computed: {
+    itemToDeleteCreatedBy(){
+      return this.itemToDelete ? this.itemToDelete.createdBy : ''
+    },
+    itemToDeleteAmount(){
+      return this.itemToDelete ? this.itemToDelete.expenseAmount : ''
+    }
   },
   methods: {
     changeRange() {
@@ -542,6 +525,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.closeDeleteDialog()
     },
     async exportExpenses(typeId) {
       //not sure what these type Ids were, i just copied this over
@@ -760,6 +744,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    closeDeleteDialog() {
+      this.deleteConfirm = false
+      this.itemToDelete = null
+    }
   }
 }
 </script>
