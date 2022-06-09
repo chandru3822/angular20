@@ -116,7 +116,12 @@ create type brs.calculated_proposal_value as
   inverter_brand                                   varchar,
   aurora_design_id                                 text,
   product_name                                     varchar,
-  proposal_nbr                                     integer
+  proposal_nbr                                     integer,
+  other_adder_and_discount   text,
+  other_adder_and_discount_amount  numeric,
+  adder_name text,
+  non_solar_cap numeric,
+  required_down_payment numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -306,6 +311,11 @@ declare
   v_aurora_design_id                                 text;
   v_product_name                                     character varying;
   v_proposal_nbr         integer;
+  v_other_adder_and_discount text;
+  v_other_adder_and_discount_amount numeric;
+  v_adder text;
+  v_required_down_payment numeric;
+  v_non_solar_cap numeric;
 BEGIN
 
    select nextval('brs.proposal_excel_id_seq')
@@ -329,10 +339,13 @@ BEGIN
          s.state,
          s.abbreviation as state_abbreviation,
          c.mobile,
-         c.email
+         c.email,
+         pcfv7.numeric_value,
+         pcfv6.text_value
   into v_proposal_id,v_version_id,v_project_process_step_id,v_friends_and_family,v_down_payment_amount,v_product_id,v_product_name,
     v_project_id,v_proposal_archived,v_contact_first_name,v_contact_last_name,v_project_name,v_project_street1,
-    v_project_street2,v_city,v_postal_code,v_project_state,v_project_state_abbrev,v_contact_phone,v_contact_email
+    v_project_street2,v_city,v_postal_code,v_project_state,v_project_state_abbrev,v_contact_phone,v_contact_email,
+    v_other_adder_and_discount_amount,v_other_adder_and_discount
   from brs.proposal prop
          inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
          inner join flow.project p on pps.project_id = p.id
@@ -345,8 +358,22 @@ BEGIN
                                                             pcfv4.custom_field_group_assignment_id = 134
          left join brs.proposal_custom_field_value pcfv5 on prop.id = pcfv5.proposal_id and
                                                             pcfv5.custom_field_group_assignment_id = 147
+         left join brs.proposal_custom_field_value pcfv6 on prop.id = pcfv6.proposal_id and
+                                                            pcfv6.custom_field_group_assignment_id = 165
+         left join brs.proposal_custom_field_value pcfv7 on prop.id = pcfv7.proposal_id and
+                                                            pcfv7.custom_field_group_assignment_id = 167
+
          left join flow.list_of_value lov on lov.id = pcfv5.int_value
   where prop.id = p_proposal_id;
+
+   select string_agg(lov.name,',')
+   into v_adder
+   from brs.proposal prop
+          inner join brs.proposal_custom_field_value pcfv on prop.id = pcfv.proposal_id and
+                                                             pcfv.custom_field_group_assignment_id = 146
+          inner join brs.list_of_value lov on lov.id = any(pcfv.int_array_value)
+
+   where prop.id = p_proposal_id;
 
 
   select ppscfv.int_value,
@@ -1673,6 +1700,15 @@ BEGIN
   v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount;
   raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
 
+   select value::numeric
+   into v_non_solar_cap
+   from proposal_value
+   where field_id = 106
+     and object_code = 'PROPOSAL_FINANCIERS';
+   raise notice 'v_non_solar_cap = %',v_non_solar_cap;
+
+   v_required_down_payment = (v_misc_adders + v_other_adder_and_discount_amount) - (v_total_system_cost * v_non_solar_cap);
+
       if p_insert_prop_log_history is true then
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
                                          email, loan_term, interest_rate, optional_down_payment,
@@ -1833,7 +1869,12 @@ BEGIN
            v_inverter_brand,
            v_aurora_design_id,
            v_product_name,
-           v_proposal_nbr;
+           v_proposal_nbr,
+           v_other_adder_and_discount,
+           v_other_adder_and_discount_amount,
+           v_adder,
+           v_non_solar_cap,
+           v_required_down_payment;
   drop table proposal_value;
 
 END
