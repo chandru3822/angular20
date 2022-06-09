@@ -250,7 +250,8 @@ export default {
         this.newMessagesCount = this.isChatOpen ? this.newMessagesCount : this.newMessagesCount + 1
       } catch (e) {
         console.error('*** ERROR ***', e)
-        let message = e?.message ? 'Error Sending Message: ' + e.message : 'Error Sending Message'
+        let message = e?.message ? 'Error Sending Message: ' + e.message :
+          e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
         this.snackbar = getSnackbar('ERROR', message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
