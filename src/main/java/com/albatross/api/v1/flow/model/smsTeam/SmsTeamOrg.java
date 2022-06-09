@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model.smsTeam;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SmsTeamOrg {
 
   private Long id, smsTeamId, orgId;

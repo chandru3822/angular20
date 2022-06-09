@@ -11,31 +11,31 @@ import com.albatross.api.v1.flow.model.smsTeam.SmsTeamPosition;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamUser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SmsTeamService {
-
   private final SqlCache sqlCache;
   private final NamedParameterJdbcTemplate jdbc;
   private final SecurityService securityService;
   private final ObjectMapper om;
-
-  @Autowired
-  private MessagingService messagingService;
+  private final MessagingService messagingService;
 
   public List<Owner> getUsers() {
     User user = securityService.getCurrentUser();
@@ -58,8 +58,7 @@ public class SmsTeamService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    List<SmsTeam> results = sqlCache.query("smsTeam.getAll", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
-    return results;
+    return sqlCache.query("smsTeam.getAll", params, new SmsTeamMapper<>(SmsTeam.class, om));
   }
 
   public List<SmsTeam> getTeamsUsers() {
@@ -70,15 +69,17 @@ public class SmsTeamService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    List<SmsTeam> results = sqlCache.query("smsTeam.getAllTeamUsers", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
-    return results;
+    return sqlCache.query(
+        "smsTeam.getAllTeamUsers", params, new SmsTeamMapper<>(SmsTeam.class, om));
   }
 
-  public SmsTeam getTeamDetails(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    Optional<SmsTeam> result = sqlCache.get("smsTeam.getDetails", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
-    return result.orElse(null);
+  public SmsTeam getTeamDetails(@NonNull Long teamId) {
+    return sqlCache
+        .get(
+            "smsTeam.getDetails",
+            Map.of("id", teamId),
+            new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om))
+        .orElse(null);
   }
 
   public SmsTeam saveTeam(SmsTeam st) {
@@ -87,7 +88,7 @@ public class SmsTeamService {
     params.put("teamName", st.getTeamName());
 
     Long id;
-    if(st.getId() != null) {
+    if (st.getId() != null) {
       id = st.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
@@ -104,7 +105,11 @@ public class SmsTeamService {
 
   public void deleteTeam(Long smsTeamId) {
     // Get a list of Projects that have this team assigned to them
-    List<Long> projectIds = sqlCache.query("messaging.getProjectsBySmsTeam", Map.of("smsTeamId", smsTeamId), new SingleColumnRowMapper<>(Long.class));
+    List<Long> projectIds =
+        sqlCache.query(
+            "messaging.getProjectsBySmsTeam",
+            Map.of("smsTeamId", smsTeamId),
+            new SingleColumnRowMapper<>(Long.class));
 
     // Remote the team and team owners from any associated projects
     deleteTeamsAndOwnersFromProjects(smsTeamId, null, null, null);
@@ -115,15 +120,15 @@ public class SmsTeamService {
     SmsTeam smsTeam = getTeamDetails(smsTeamId);
     User user = securityService.getCurrentUser();
 
-    for (SmsTeamUser smsTeamUser: smsTeam.getUsers()) {
+    for (SmsTeamUser smsTeamUser : smsTeam.getUsers()) {
       deleteUser(smsTeamId, smsTeamUser.getId());
     }
 
-    for (SmsTeamPosition smsTeamPosition: smsTeam.getPositions()) {
+    for (SmsTeamPosition smsTeamPosition : smsTeam.getPositions()) {
       deletePosition(smsTeamId, smsTeamPosition.getId());
     }
 
-    for (SmsTeamOrg smsTeamOrg: smsTeam.getOrgs()) {
+    for (SmsTeamOrg smsTeamOrg : smsTeam.getOrgs()) {
       deleteOrg(smsTeamId, smsTeamOrg.getId());
     }
 
@@ -146,8 +151,7 @@ public class SmsTeamService {
   public Optional<SmsTeamPosition> getTeamPosition(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<SmsTeamPosition> result = sqlCache.get("smsTeam.getPosition", params, SmsTeamPosition.class);
-    return result;
+    return sqlCache.get("smsTeam.getPosition", params, SmsTeamPosition.class);
   }
 
   public void deletePosition(Long smsTeamId, Long positionId) {
@@ -174,15 +178,13 @@ public class SmsTeamService {
   public Optional<SmsTeamUser> getUser(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<SmsTeamUser> result = sqlCache.get("smsTeam.getUser", params, SmsTeamUser.class);
-    return result;
+    return sqlCache.get("smsTeam.getUser", params, SmsTeamUser.class);
   }
 
   public void deleteUser(Long smsTeamId, Long teamUserId) {
     Optional<SmsTeamUser> smsTeamUser = getUser(teamUserId);
-    if (smsTeamUser.isPresent()) {
-      deleteTeamsAndOwnersFromProjects(smsTeamId, null, null, smsTeamUser.get().getUserId());
-    }
+    smsTeamUser.ifPresent(
+        teamUser -> deleteTeamsAndOwnersFromProjects(smsTeamId, null, null, teamUser.getUserId()));
 
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -194,7 +196,7 @@ public class SmsTeamService {
   // Used to remove a User when the User is no longer Active
   public void deleteUserByUserId(Long userId, Long orgId, Long positionId) {
     List<SmsTeam> smsTeams = getTeamsForUser(userId);
-    for (SmsTeam smsTeam: smsTeams) {
+    for (SmsTeam smsTeam : smsTeams) {
       deleteTeamsAndOwnersFromProjects(smsTeam.getId(), orgId, positionId, userId);
     }
 
@@ -218,8 +220,7 @@ public class SmsTeamService {
   public Optional<SmsTeamOrg> getOrg(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<SmsTeamOrg> result = sqlCache.get("smsTeam.getOrg", params, SmsTeamOrg.class);
-    return result;
+    return sqlCache.get("smsTeam.getOrg", params, SmsTeamOrg.class);
   }
 
   public void deleteOrg(Long smsTeamId, Long orgId) {
@@ -234,17 +235,7 @@ public class SmsTeamService {
   }
 
   public List<SmsTeam> getTeamsForUser() {
-    User user = securityService.getCurrentUser();
-    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("isParent", isParent);
-    params.put("userId", user.getId());
-
-    List<SmsTeam> teamsAssociatedToUser = sqlCache.query("smsTeam.getTeamsForUser", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
-    teamsAssociatedToUser = teamsAssociatedToUser.stream().filter(t -> !t.getUsers().isEmpty()).collect(Collectors.toList());
-    return teamsAssociatedToUser;
+    return getTeamsForUser(null);
   }
 
   public List<SmsTeam> getTeamsForUser(Long userId) {
@@ -254,16 +245,24 @@ public class SmsTeamService {
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-    params.put("userId", userId);
+    if (userId == null) {
+      params.put("userId", user.getId());
+    } else {
+      params.put("userId", userId);
+    }
 
-    List<SmsTeam> teamsAssociatedToUser = sqlCache.query("smsTeam.getTeamsForUser", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
-    teamsAssociatedToUser = teamsAssociatedToUser.stream().filter(t -> !t.getUsers().isEmpty()).collect(Collectors.toList());
-    return teamsAssociatedToUser;
+    return sqlCache
+        .query("smsTeam.getTeamsForUser", params, new SmsTeamMapper<>(SmsTeam.class, om))
+        .stream()
+        .filter(t -> !t.getUsers().isEmpty())
+        .collect(Collectors.toList());
   }
 
-  private void deleteTeamsAndOwnersFromProjects(Long smsTeamId, Long orgId, Long positionId, Long userId) {
+  private void deleteTeamsAndOwnersFromProjects(
+      Long smsTeamId, Long orgId, Long positionId, Long userId) {
     User user = securityService.getCurrentUser();
-    String sqlQuery = "SELECT * FROM flow.remove_sms_team_project_owners(:smsTeamId::integer, :orgId::integer, :positionId::integer, :userId::integer, :modifiedById::integer)";
+    String sqlQuery =
+        "SELECT * FROM flow.remove_sms_team_project_owners(:smsTeamId::integer, :orgId::integer, :positionId::integer, :userId::integer, :modifiedById::integer)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("smsTeamId", smsTeamId);
@@ -285,15 +284,14 @@ public class SmsTeamService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<SmsTeamUser>> usersRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "users",
-        new JsonCollectionDeserializer(usersRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "users", new JsonCollectionDeserializer(usersRef, objectMapper));
       TypeReference<List<SmsTeamPosition>> positionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "positions",
-        new JsonCollectionDeserializer(positionsRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "positions", new JsonCollectionDeserializer(positionsRef, objectMapper));
       TypeReference<List<SmsTeamOrg>> orgsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "orgs",
-        new JsonCollectionDeserializer(orgsRef, objectMapper));
+      bw.registerCustomEditor(
+          List.class, "orgs", new JsonCollectionDeserializer(orgsRef, objectMapper));
     }
   }
-
 }

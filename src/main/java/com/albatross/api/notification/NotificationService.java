@@ -1,12 +1,11 @@
 package com.albatross.api.notification;
 
+import com.albatross.api.config.CachingConfig;
 import com.albatross.api.notification.model.*;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.Subscriber;
-import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +13,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +37,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@CacheConfig(cacheNames = CachingConfig.NOTIFICATION)
 @RequiredArgsConstructor
 public class NotificationService {
 
@@ -41,7 +46,7 @@ public class NotificationService {
   private final SqlArrayService sqlArrayService;
   private final NamedParameterJdbcTemplate jdbcTemplate;
   private final ObjectMapper objectMapper;
-  private final SecurityService securityService;
+  private final CacheManager cacheManager;
 
   /**
    * Creates a notification (i.e. stores a record in the database) and sends out a pubsub event in
@@ -158,6 +163,12 @@ public class NotificationService {
 
           return notifications;
         }
+
+        final Cache cache = cacheManager.getCache(CachingConfig.NOTIFICATION);
+        if (cache != null) {
+          userIds.forEach(cache::evictIfPresent);
+        }
+
       } catch (SQLException | JsonProcessingException e) {
         log.error("[Notifications] Error while doing a bulk insert", e);
       }
@@ -172,7 +183,9 @@ public class NotificationService {
 
     final List<Notification> notifications =
         sqlCache.query(
-            "notification.getUnreadByUserPagable", params, new NotificationMapper(this.objectMapper));
+            "notification.getUnreadByUserPageable",
+            params,
+            new NotificationMapper(this.objectMapper));
 
     final Long count =
         sqlCache
@@ -186,15 +199,11 @@ public class NotificationService {
         notifications, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
+  @Cacheable(key = "#userId")
   public List<Notification> getUserNotifications(@NonNull Long userId) {
-    final Map<String, Object> params =
-      Map.of("userId", userId);
-
-    final List<Notification> notifications =
-      sqlCache.query(
+    final Map<String, Object> params = Map.of("userId", userId);
+    return sqlCache.query(
         "notification.getUnreadByUser", params, new NotificationMapper(this.objectMapper));
-
-    return notifications;
   }
 
   @Async
@@ -215,19 +224,23 @@ public class NotificationService {
   }
 
   @Transactional
+  @CacheEvict(
+      key = "#userId",
+      condition = "#notificationIds != null and !#notificationIds.isEmpty()")
   public void markUserNotificationsAsRead(@NonNull Long userId, List<Long> notificationIds)
       throws SQLException {
     if (notificationIds == null || notificationIds.isEmpty()) {
       return;
     }
 
-    Notification notification = new Notification();
-    notification.setTopic(NotificationTopic.SMS_REPLY);
-    notification.setTitle("Notification read");
-    notification.setBody("");
-    notification.setPriority(1);
-    notification.setMetadata(null);
-    notification.setUserId(userId);
+    Notification notification =
+        new Notification()
+            .setTopic(NotificationTopic.SMS_REPLY)
+            .setTitle("Notification read")
+            .setBody("")
+            .setPriority(1)
+            .setMetadata(null)
+            .setUserId(userId);
     pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
 
     final Array ids = sqlArrayService.createSqlArrayOfType("bigint", notificationIds);
@@ -235,44 +248,6 @@ public class NotificationService {
         sqlCache.update(
             "notification.markAsRead",
             Map.of("userId", userId, "modifiedById", userId, "ids", ids));
-    log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
-  }
-
-  @Transactional
-  public void markSmsNotificationsAsRead(Long userId, Long projectId, Long smsTeamId)
-    throws SQLException {
-    User user = securityService.getCurrentUser();
-
-    int updatedRecords;
-    final Long SMS_REPLY_NOTIFICATION_TOPIC_ID = 2L;
-
-    if (userId != null) {
-      updatedRecords =
-        sqlCache.update(
-          "notification.markSmsAsReadForUser",
-          Map.of("userId", userId, "modifiedById", user.trueUserId(), "projectId", projectId, "smsTeamId", smsTeamId, "notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID));
-
-      Notification notification = new Notification();
-      notification.setTopic(NotificationTopic.SMS_REPLY);
-      notification.setTitle("Notification read");
-      notification.setBody("");
-      notification.setPriority(1);
-      notification.setMetadata(null);
-      notification.setUserId(userId);
-      pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
-    }
-    else if (smsTeamId != null) {
-      updatedRecords =
-        sqlCache.update(
-          "notification.markSmsAsReadForTeam",
-          Map.of( "modifiedById", user.trueUserId(), "projectId", projectId,"smsTeamId", smsTeamId, "notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID));
-    } else {
-      updatedRecords =
-        sqlCache.update(
-          "notification.markSmsAsReadForProject",
-          Map.of( "modifiedById", user.trueUserId(), "projectId", projectId,"notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID));
-    }
-
     log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
   }
 }

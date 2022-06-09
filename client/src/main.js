@@ -8,6 +8,7 @@ import store from './store'
 import axios from 'axios'
 import { UserMutations } from '@/stores/UserStore'
 import { AppMutations } from '@/stores/AppStore'
+import { NotificationPlugin } from '@/plugins/notifications/NotificationPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
 
@@ -21,17 +22,20 @@ const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
 
+Vue.use(NotificationPlugin, `${VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`, {
+  store
+})
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
 
 //this filter is only used for the zoneless time picker stuff
-Vue.filter('formatDateZoneless', function (value) {
+Vue.filter('formatDateZoneless', function(value) {
   if (value) {
     return moment.utc(String(value), 'HH:mm:ss').format('h:mm a')
   }
 })
 
-Vue.filter('formatDate', function (value, type, format, inputFormat) {
+Vue.filter('formatDate', function(value, type, format, inputFormat) {
   /*
   //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats
   //  i can probably handle more scenarios but for now these don't throw errors: .format('YYYY-MM-DD') OR .format('YYYY-MM-DDTHH:mm:ssZ')
@@ -60,9 +64,9 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
     return type === 'date'
       ? moment.utc(String(value), inputFormat ?? null).format(format)
       : moment
-          .utc(String(value), inputFormat ?? null)
-          .tz(timezone)
-          .format(format)
+        .utc(String(value), inputFormat ?? null)
+        .tz(timezone)
+        .format(format)
   }
 })
 
@@ -94,7 +98,7 @@ axios.interceptors.request.use((config) => {
 
   // Add to vuex to make cancellation available from anywhere
   // todo: investigate using parent/child route detection instead of a param that gets passed in and always skipsCancel even if leaving the route tree
-  if(!skipCancel) {
+  if (!skipCancel) {
     store.commit('ADD_CANCEL_TOKEN', source)
   }
   return config
@@ -119,9 +123,9 @@ axios.interceptors.response.use(
           response.status === 401
             ? 'Session Expired'
             : response.status === 403
-            ? 'User Unauthorized'
-            : 'Unknown Error'
-        if(response?.data?.maintenanceMode && status === 403) {
+              ? 'User Unauthorized'
+              : 'Unknown Error'
+        if (response?.data?.maintenanceMode && status === 403) {
           //if we dont remove the store item then a logged in user who USED to have permission will still have permission later
           localStorage.removeItem('store')
           router.push({ name: 'siteUnderMaintenance' })
@@ -151,7 +155,7 @@ axios.interceptors.response.use(
 Vue.use(
   VueGtag,
   {
-    config: { id: VUE_APP_GA_ID },
+    config: { id: VUE_APP_GA_ID }
   },
   router
 )
@@ -162,5 +166,5 @@ new Vue({
   router,
   store,
   vuetify: Vuetify,
-  render: (h) => h(App),
+  render: (h) => h(App)
 }).$mount('#app')

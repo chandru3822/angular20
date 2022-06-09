@@ -1,5 +1,62 @@
 <template>
   <v-container class="custom-field-group-container">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="text-h5 error--text">
+          Error Deleting Project Status
+        </v-card-title>
+
+        <v-card-text>
+          You cannot delete a project status that are currently in use.  Please remove from the following locations before deleting.
+          <v-list v-for="(item, index) in fieldsInUse.projectsWithStatus" :key="index">
+            <v-list-item-content>
+              Project
+              <div v-if="item.projectName">{{ item.projectName }}</div>
+            </v-list-item-content>
+          </v-list>
+
+          <v-list v-for="(item, index) in fieldsInUse.processStepActions" :key="index">
+            <v-list-item-content>
+              Process Step Actions
+              <div v-if="item.processStepName">Process Step: {{ item.processStepName }}</div>
+              <div v-if="item.actionName">Action: {{ item.actionName }}</div>
+            </v-list-item-content>
+          </v-list>
+
+          <v-list v-for="(item, index) in fieldsInUse.processStepRequirements" :key="index">
+            <v-list-item-content>
+              Process Step Requirement
+              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+          <v-list v-for="(item, index) in fieldsInUse.processStepEventRequirements" :key="index">
+            <v-list-item-content>
+              Process Step Event Requirement
+              <div v-if="item.eventName">Event: {{ item.eventName }}</div>
+              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -167,7 +224,7 @@
                     v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     label="this status type: "
                     :item-to-delete="item.projectStatusType"
-                    @confirm-delete="[item.archived = true, deleteType(item)]"
+                    @confirm-delete="deleteType(item)"
                 ></confirm-delete-dialog>
               </td>
 
@@ -234,6 +291,8 @@
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        fieldsInUse: [],
+        deleteError: false
       }
     },
     mounted() {
@@ -351,14 +410,24 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/project/companyStatus/${item.id}`)
+          item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          if (e.status === 400) {
+            this.deleteError = true;
+            this.fieldsInUse = e.data;
+            this.snackbar = getSnackbar("ERROR", "Error Deleting Status");
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+          else {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       async saveType (type, isNew) {
