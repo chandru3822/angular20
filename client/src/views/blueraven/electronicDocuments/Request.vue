@@ -1,103 +1,42 @@
 <template>
   <v-container class="pa-0">
-    <v-toolbar color="white" class="elevation-1 mt-3">
-      <v-text-field
-        class="mt-5 pay-search"
-        prepend-inner-icon="search"
-        text
-        label="Search projects..."
-        v-model="searchQuery"
-        @input="debounceFilterProjects"
-      ></v-text-field>
-    </v-toolbar>
+  <RequestTable :headers="headers" :projects="projects" :total-items="totalItems" :feature-code="'ELECTRONIC_DOCUMENTS'" :is-loading="dataLoading"
+  @openRequest="openRequest($event)" @searchInput="fetchProjects($event)" @submitRequest="submitRequest">
+    <template v-slot:dialogContent>
+        <v-card-title>
+          <span class="text-h5">Document generator</span>
+        </v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col>
+              <v-text-field label="Customer Name"
+                            v-model="customer_name"
+                            disabled
+              ></v-text-field>
+            </v-col>
+            <v-col>
+              <v-select label="Template type"
+                        v-model="selectedTempType"
+                        :items="templateTypes"
+                        @change="fetchTemplates"
+                        item-text="text"
+                        item-value="text"
+              ></v-select>
 
-    <v-col cols="12">
-      <v-data-table
-        :headers="headers"
-        :items="projects"
-        :fixed-header="true"
-        :search="projectsSearch"
-        :options.sync="options"
-        :footer-props="footerProps"
-        :items-per-page="50"
-        :server-items-length="totalItems"
-        :loading="dataLoading"
-        dense
-        class="elevation-1"
-      >
-
-        <template #no-data>
-          No requests found
-        </template>
-
-        <template #no-results>
-          No requests found
-        </template>
-
-        <template #body="{ items }">
-          <tr
-            v-for="(it, index) in items"
-            :key="it.id"
-            :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
-          >
-            <td class="text-left pl-4">
-              <a v-if="$store.getters.userHasFeatureAccessLevel('ELECTRONIC_DOCUMENTS', 'ADD')"
-                 @click="openRequest(it)" class="mr-3 name-link">
-                {{ it.customer_name ? it.customer_name : '' }}
-              </a>
-              <span v-else>{{ it.customer_name ? it.customer_name : '' }}</span>
-            </td>
-            <td class="text-left pl-4">{{ it.address ? it.address : '' }}</td>
-          </tr>
-        </template>
-      </v-data-table>
-
-      <v-dialog v-model="requestDialog" max-width="700px">
-        <v-card>
-          <v-card-title>
-            <span class="text-h5">Document generator</span>
-          </v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col>
-                <v-text-field label="Customer Name"
-                              v-model="customer_name"
-                              disabled
-                ></v-text-field>
-              </v-col>
-              <v-col>
-                <v-select label="Template type"
-                          v-model="selectedTempType"
-                          :items="templateTypes"
-                          @change="fetchTemplates"
-                          item-text="text"
-                          item-value="text"
-                ></v-select>
-
-                <v-autocomplete label="Documents"
-                                v-model="selectedDocIds"
-                                :items="documents"
-                                multiple
-                                autocomplete="off"
-                                no-data-text="No documents found"
-                                item-text="name"
-                                item-value="id"
-                ></v-autocomplete>
-              </v-col>
-            </v-row>
-          </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="close">Back</v-btn>
-            <v-btn color="primary" raised @click="submitRequest" class="white--text">
-              Submit
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
-    </v-col>
+              <v-autocomplete label="Documents"
+                              v-model="selectedDocIds"
+                              :items="documents"
+                              multiple
+                              autocomplete="off"
+                              no-data-text="No documents found"
+                              item-text="name"
+                              item-value="id"
+              ></v-autocomplete>
+            </v-col>
+          </v-row>
+        </v-card-text>
+    </template>
+  </RequestTable>
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
@@ -113,10 +52,12 @@ import {
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
 import debounce from "lodash.debounce";
+import RequestTable from "@/components/RequestTable";
 
 export default {
   name: 'DocumentRequests',
   components: {
+    RequestTable,
     Snackbar
   },
   data: () => ({
@@ -176,7 +117,10 @@ export default {
     })
   },
   methods: {
-    async fetchProjects() {
+    async fetchProjects(searchQuery) {
+      if(searchQuery != undefined){
+        this.searchQuery = searchQuery
+      }
       try {
         this.dataLoading = true
         const {page, itemsPerPage} = this.options
@@ -199,25 +143,11 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    debounceFilterProjects: debounce(function () {
-      this.fetchProjects()
-    }, 500),
     async openRequest(it) {
       this.project_id = it.project_id
       this.customer_name = it.customer_name
       await this.fetchTemplates();
       this.requestDialog = true;
-    },
-    close() {
-      this.requestDialog = false
-    },
-    changeSort(column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending
-      } else {
-        this.pagination.sortBy = column
-        this.pagination.descending = false
-      }
     },
     async fetchTemplates() {
       try {
