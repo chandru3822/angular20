@@ -3,11 +3,13 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.MessageTemplate;
 import com.albatross.api.v1.flow.model.ProjectMessageOwner;
 import com.albatross.api.v1.flow.model.ProjectMessageProperties;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.services.MessageTemplateService;
 import com.albatross.api.v1.flow.services.MessagingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,13 +44,21 @@ public class MessagingController {
   }
 
   @PostMapping(value = "/addTeam/{projectId}")
-  public void addTeam(@PathVariable Long projectId, @RequestBody SmsTeam request) {
-    messagingService.addTeam(projectId, request.getId(), request.getUsers(), false);
+  public void addTeam(
+      @PathVariable Long projectId,
+      @RequestBody SmsTeam request,
+      @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.addTeam(
+        projectId, request.getId(), request.getUsers(), false, details.getTrueUserId());
   }
 
   @PutMapping(value = "/removeTeam/{projectId}/{smsTeamId}")
-  public void removeTeam(@PathVariable Long projectId, @PathVariable Long smsTeamId) {
-    messagingService.removeTeam(projectId, smsTeamId);
+  public void removeTeam(
+      @PathVariable Long projectId,
+      @PathVariable Long smsTeamId,
+      @AuthenticationPrincipal UserAccountDetails details) {
+
+    messagingService.removeTeam(projectId, smsTeamId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/projects")
@@ -57,8 +67,9 @@ public class MessagingController {
   }
 
   @GetMapping(value = "/projects/{projectId}")
-  public ProjectMessageProperties getProject(@PathVariable Long projectId) {
-    return messagingService.getProject(projectId);
+  public ProjectMessageProperties getProject(
+      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
+    return messagingService.getProject(projectId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/history/{projectId}")
@@ -67,17 +78,22 @@ public class MessagingController {
   }
 
   @PutMapping(value = "/setLastSent/{projectId}")
-  public void setLastSent(@PathVariable Long projectId) {
-    messagingService.setLastSent(projectId);
+  public void setLastSent(
+      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.setLastSent(projectId, details.getTrueUserId());
   }
 
   @PutMapping(value = "/removeOwner/{projectId}")
-  public void removeOwner(@PathVariable Long projectId, @RequestBody ProjectMessageOwner owner) {
-    messagingService.removeOwner(projectId, owner);
+  public void removeOwner(
+      @PathVariable Long projectId,
+      @RequestBody ProjectMessageOwner owner,
+      @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.removeOwner(projectId, owner, details.getTrueUserId());
   }
 
   @PostMapping(value = "/createNotification/{projectId}")
-  public void createNotification(@PathVariable Long projectId) {
-    messagingService.addSmsOwnershipNotification(projectId);
+  public void createNotification(
+      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.addSmsOwnershipNotification(projectId, details.getTrueUserId());
   }
 }

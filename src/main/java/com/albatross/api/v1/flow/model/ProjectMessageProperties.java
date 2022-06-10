@@ -17,7 +17,7 @@ import java.util.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProjectMessageProperties {
 
-  private Long projectId, messageStatusId, ownerUserId;
+  private Long projectId, messageStatusId, ownerUserId, companyId;
   private String projectName, fullName, orgName, displayedOwner, state, createdBy;
   private Date lastMessageSentAt;
   private boolean closed, showAssignedToMeButton = false;

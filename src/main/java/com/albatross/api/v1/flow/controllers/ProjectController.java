@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.DensitySearch;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.project.ProjectDensityResult;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,9 +73,10 @@ public class ProjectController {
   }
 
   @DeleteMapping(value = "/{projectId}")
-  public void deleteProject(@PathVariable Long projectId) {
+  public void deleteProject(
+      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
     projectService.deleteProject(projectId);
-    messagingService.deleteConversation(projectId);
+    messagingService.deleteConversation(projectId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/owners")
@@ -167,7 +170,8 @@ public class ProjectController {
   }
 
   @DeleteMapping(value = "/companyStatus/{id}")
-  public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(@PathVariable Long id) {
+  public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(
+      @PathVariable Long id) {
     return projectService.deleteCompanyProjectStatus(id);
   }
 
