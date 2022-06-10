@@ -205,7 +205,7 @@ export default {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
     },
     smsNotification() {
-      return this.$store.getters.getAllNotifications
+      return this.$store.getters.getNotificationsByTopic('sms_reply')
     },
     projectsFiltered() {
       return this.projects.filter(p => {

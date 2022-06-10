@@ -161,6 +161,12 @@ public class MessagingService {
       }
     }
 
+    final HashSet<Long> userIdsToNotify = new HashSet<>(ownerUserIds);
+    //don't give a notification if the user added themselves to the group
+    userIdsToNotify.remove(modifiedByUserId);
+
+    addSmsReplyNotification(projectId, teamId, userIdsToNotify, modifiedByUserId);
+
     addSmsOwnershipNotification(projectId, modifiedByUserId);
 
     updateOwnerHistory(
@@ -361,15 +367,16 @@ public class MessagingService {
     // Add notification for the current user so their data gets refreshed
     userIds.add(modifiedByUserId);
 
-    notificationService.createNotification(
-        new CreateNotificationDto()
-            .setTopic(NotificationTopic.SMS_OWNERSHIP)
-            .setTitle("Ownership has changed for this project")
-            .setBody("")
-            .setPriority(1)
-            .setMetadata(Map.of("projectId", projectId, "smsTeamId", smsTeamId)),
-        userIds,
-        modifiedByUserId);
+    for (Long userId : userIds) {
+      pubSubService.publish(EventChannel.NOTIFICATION, new NotificationEventMessage()
+        .setUserId(userId)
+        .setTitle("Ownership has changed for this project")
+        .setNotificationTopic(NotificationTopic.SMS_OWNERSHIP)
+        .setBody("")
+        .setPriority(1)
+        .setMetadata(Map.of("projectId", projectId, "smsTeamId", smsTeamId))
+      );
+    }
   }
 
   public void addDefaultTeam(List<Long> projectIds, Long modifiedByUserId) {
