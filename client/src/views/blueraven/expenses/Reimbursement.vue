@@ -5,20 +5,13 @@
         <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-title class="app-title">Reimbursement Request
           </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text color="primary" @click="[createNew = !createNew, newReimbursement = {}]">
-              <v-icon>add</v-icon>
-              New Reimbursement Request
-            </v-btn>
-          </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="12" sm="6">
-        <v-card flat v-if="createNew" class="pa-4">
+        <v-card flat class="pa-4">
           <h3>New Reimbursement Request</h3>
           <v-text-field text
                         type="number"
@@ -40,7 +33,7 @@
                           item-value="id"
           ></v-autocomplete>
           <label>Details:</label>
-          <v-textarea class="py-2" hide-details
+          <v-textarea class="py-2 gray lighten-4" hide-details
                       auto-grow filled
                       rows="4"
                       background-color="#F2F6F8"
@@ -68,8 +61,8 @@
                  @click="submitReimbursementRequest()">
             Submit
           </v-btn>
-          <v-btn class="ml-3" @click="[newReimbursement = {}, createNew = false]">
-            Cancel
+          <v-btn text color="primary" class="ml-3" @click="newReimbursement = {}">
+            Clear
           </v-btn>
         </v-card>
       </v-col>
@@ -209,7 +202,7 @@
           </v-card>
 
           <v-card class="mt-3">
-            <v-card-title class="grey lighten-2" primary-title>
+            <v-card-title class="primary lighten-9" primary-title>
               Submitted Reimbursements
             </v-card-title>
             <v-card-text class="pt-4">
@@ -249,7 +242,7 @@
           </v-card>
 
           <v-card class="mt-3">
-            <v-card-title class="grey lighten-2" primary-title>
+            <v-card-title class="primary lighten-9" primary-title>
               Budgets
             </v-card-title>
             <v-card-text class="pt-4">
