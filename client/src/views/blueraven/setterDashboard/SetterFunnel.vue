@@ -247,7 +247,7 @@
               </template>
             </v-autocomplete>
 
-            <v-btn v-if="!isSetter && !isSetterMgr" id="all-reps-btn" outlined @click="funnelAllReps">
+            <v-btn v-if="!isSetter && !isSetterMgr" id="all-reps-btn" outlined color="primary" @click="funnelAllReps">
               All Reps
             </v-btn>
           </div>

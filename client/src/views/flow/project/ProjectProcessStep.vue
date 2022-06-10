@@ -225,7 +225,7 @@
             <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
-          <v-btn v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
+          <v-btn v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text color="primary" small @click="showUploadModal = true" class="px-0">
             <v-icon class="px-0">mdi-upload</v-icon>
           </v-btn>
           <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
