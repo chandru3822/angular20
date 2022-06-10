@@ -204,7 +204,7 @@ export default {
       return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature) && tab.show)
     },
     smsNotification() {
-      return this.$store.getters.getAllNotifications
+      return this.$store.getters.getNotificationsByTopic('sms_reply')
     }
   },
   methods: {

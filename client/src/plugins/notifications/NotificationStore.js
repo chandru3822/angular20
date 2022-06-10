@@ -54,8 +54,14 @@ export default {
       }
     },
     [NotificationActions.HANDLE_STREAM_EVENT]: async ({ dispatch, commit }, message) => {
-      commit('addMessage', message)
-      dispatch('_debouncedFetchNotifications')
+      if (message?.topic) {
+        commit('addMessage', message)
+
+        //only trigger a notification refresh on this topic
+        if (message?.topic === 'sms_reply'){
+          dispatch('_debouncedFetchNotifications')
+        }
+      }
     }
   },
   mutations: {
