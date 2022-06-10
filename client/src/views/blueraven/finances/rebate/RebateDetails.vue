@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <dl class="dl-horizontal row">
+  <div class="pt-6">
+    <dl class="dl-horizontal row pl-4">
       <dt class="left-align">Project Name:</dt>
       <dd>{{rebateDetails.project_name}}</dd>
 
@@ -10,19 +10,17 @@
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>
-        <br/>
       <dd>
         {{rebateDetails.street1}} {{rebateDetails.street2}}
       </dd>
       <dt class="left-align">&nbsp;</dt>
-      <dd>
+      <dd class="pb-1">
         {{rebateDetails.city}}, {{rebateDetails.state}} {{rebateDetails.postal_code}}
       </dd>
       <dt class="left-align">Mailing Address:</dt>
-      <br/>
       <!-- if all mailing address fields are null then show the add button -->
       <dd v-if="!editMailing && rebateDetails.mailing_street1 == null && rebateDetails.mailing_city == null && rebateDetails.mailing_state == null && rebateDetails.mailing_postal_code == null">
-        <v-btn text v-if="userCanEdit"  @click="editMailing = true">
+        <v-btn text color="primary" small v-if="userCanEdit"  @click="editMailing = true" class="mt-n1 px-1">
           <v-icon>add</v-icon>
           Add
         </v-btn>
@@ -67,18 +65,20 @@
                         label="Postal Code:"
                         v-model="rebateDetails.mailing_postal_code">
           </v-text-field>
-          <v-btn class="ma-2" @click="saveMailingAddress(false)"
-                 v-if="userCanEdit"
-                  :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code">
-            Save
-          </v-btn>
-          <v-btn class="ma-2" @click="saveMailingAddress(true)"
-                  v-if="mailingDetails.mailingStreet1 != null && userCanEdit">
-            Remove
-          </v-btn>
-          <v-btn class="ma-2" @click="cancelMailingEdit()">
+          <div class="d-flex justify-end">
+            <v-btn class="my-2" text color="primary" small @click="cancelMailingEdit()">
             Cancel
           </v-btn>
+            <v-btn class="my-2" text color="error" small @click="saveMailingAddress(true)"
+                   v-if="mailingDetails.mailingStreet1 != null && userCanEdit">
+              Remove
+            </v-btn>
+            <v-btn class="my-2 ml-2" color="primary" small @click="saveMailingAddress(false)"
+                   v-if="userCanEdit"
+                   :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code">
+              Save
+            </v-btn>
+          </div>
         </div>
       </dd>
 
@@ -99,7 +99,7 @@
       </div>
     </dl>
 
-    <table class="rebate-table left-align">
+    <table class="rebate-table left-align pl-4 pt-2">
       <thead>
       <tr>
         <th colspan="4">Customer Details</th>
@@ -127,14 +127,14 @@
         <td>
           <div v-if="editTotalPromotionAmount == false">
             {{rebateDetails.total_promotion_amount || 0 | currency('$', 2) }}
-            <v-icon small class="mr-3" @click="editTotalPromotionAmount = true">
+            <v-icon small color="primary" class="mr-3" @click="editTotalPromotionAmount = true">
               edit
             </v-icon>
           </div>
           <div v-if="editTotalPromotionAmount" class="flex-display" style="width: 100px">
             <v-text-field style="width: 80px" type="number" v-model="rebateDetails.total_promotion_amount">
             </v-text-field>
-            <v-icon @click="updateTotalPromotionAmount()">
+            <v-icon color="primary" @click="updateTotalPromotionAmount()">
                 save
             </v-icon>
           </div>
@@ -183,7 +183,7 @@
                 <td class="text-left">{{item.name}}</td>
                 <td class="text-left">{{item.check_number}}</td>
                 <td class="text-left">
-                  <a v-if="item.id != null && userCanEdit" @click="openNotesDialog(item)">+ Note</a><br/>
+                  <a v-if="item.id != null && userCanEdit" @click="openNotesDialog(item)"><v-icon x-small color="primary">{{item.void_note ? 'edit' : 'add'}}</v-icon> Note</a><br/>
                   {{item.void_note}}
                 </td>
                 <td class="text-left" style="color: red">
@@ -192,42 +192,15 @@
                 </td>
                   <td>
                       <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
-                          @click="openDeleteDialog(item)" text><v-icon>delete</v-icon></v-btn>
+                          @click="openDeleteDialog(item)" text color="primary"><v-icon>delete</v-icon></v-btn>
                   </td>
               </tr>
             </template>
           </v-data-table>
 
-          <v-dialog v-model="deleteConfirm" width="500">
-                <v-card>
-                  <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title
-                  >
-                    Confirm
-                  </v-card-title>
-
-                  <v-card-text>
-                    Are you sure you want to delete this payment?
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      @click="deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                      color="primary"
-                      text
-                      @click="deletePayment()">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
+          <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="deleteConfirm" @confirm-delete="deletePayment" @closeConfirmDeleteDialog="deleteConfirm=false">
+            Are you sure you want to delete this payment?
+          </ConfirmDeleteDialogImproved>
 
               <v-dialog v-model="notesDialog" max-width="600px">
                 <v-card class="pt-4 pb-2">
@@ -247,8 +220,8 @@
                   </template>
 
                   <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn v-if="userCanEdit" @click="updatePaymentNote()">Confirm</v-btn>
-                    <v-btn v-if="userCanEdit" @click="cancelNotesDialog()">Close</v-btn>
+                    <v-btn text color="primary" v-if="userCanEdit" @click="cancelNotesDialog()">Cancel</v-btn>
+                    <v-btn color="primary" v-if="userCanEdit" @click="updatePaymentNote()">Save</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -309,7 +282,7 @@
           <div>
           <tr>
             <td class="left-align">
-              <v-icon v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.total_promotion_amount"
+              <v-icon color="primary" v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.total_promotion_amount"
                       @click="addNewRow()">
                 add
               </v-icon>
@@ -322,7 +295,7 @@
               (Non-Canceled)
             </td>
             <td>
-              <v-icon v-if="userCanEdit" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount"
+              <v-icon v-if="userCanEdit" color="primary" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount"
                       @click="savePaymentHistoryChanges()">
                 save
               </v-icon>
@@ -341,9 +314,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
   import {getCompanyStates} from '@/services/stateService'
+  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
   export default {
     name: 'RebateDetails',
+    components: {ConfirmDeleteDialogImproved},
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
@@ -770,7 +745,7 @@
   }
 
   .error-message {
-    color: red;
+    color: var(--v-error-base);
     font-weight: 600;
   }
 </style>
