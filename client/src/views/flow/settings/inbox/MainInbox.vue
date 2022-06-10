@@ -205,7 +205,7 @@ export default {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
     },
     smsNotification() {
-      return this.$store.getters.getNotificationsByTopic('sms_reply')
+      return this.$store.getters.getAllNotifications
     },
     projectsFiltered() {
       return this.projects.filter(p => {
@@ -471,12 +471,12 @@ export default {
       }
     },
     hasNotification(projectId) {
-      return this.smsNotification?.filter(n => n.metadata.projectId === projectId)?.length > 0
+      return this.smsNotification?.filter(n => n.metadata?.projectId === projectId)?.length > 0
     },
     clearNotification(projectId) {
       const notificationIds = this.smsNotification
-        .filter(n => n.metadata.projectId === projectId)
-        .map(notif => notif.id)
+        ?.filter(n => n.metadata.projectId === projectId)
+        ?.map(notif => notif.id)
 
       this.$store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
     },

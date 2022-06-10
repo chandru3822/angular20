@@ -138,7 +138,7 @@
                                 and ust.user_status_type = 'Active'
                         ) tb), '[]') AS "users"
       from flow.sms_team st
-      where st.archived = false and st.id = :id
+      where st.archived = false and st.id in (:ids)
   ]]></smsTeam.getTeamUsers>
 
   <smsTeam.getDetails><![CDATA[
@@ -230,14 +230,24 @@
         and st.archived = false;
   ]]></smsTeam.getTeamsForUser>
 
+<!--  Original Query -->
+<!--  <smsTeam.getDefaultTeamId><![CDATA[-->
+<!--    select st.id-->
+<!--      from flow.sms_team st-->
+<!--      where case when :isParent-->
+<!--            then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))-->
+<!--            else st.company_id = :companyId end-->
+<!--        and st.is_default is true;-->
+<!--  ]]></smsTeam.getDefaultTeamId>-->
+
   <smsTeam.getDefaultTeamId><![CDATA[
     select st.id
       from flow.sms_team st
-      where case when :isParent
-            then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-            else st.company_id = :companyId end
-        and st.is_default is true;
+      where st.company_id = :companyId
+        and st.is_default is true
+    limit 1
   ]]></smsTeam.getDefaultTeamId>
+
 
   <smsTeam.insertTeam><![CDATA[
       insert into flow.sms_team

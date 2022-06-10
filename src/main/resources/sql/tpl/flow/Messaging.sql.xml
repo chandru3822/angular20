@@ -62,9 +62,8 @@ select p.project_id,
 from projects p
 ]]></messaging.getProjects>
 
-  <messaging.getProject>
-    <![CDATA[
-      select p.id as projectId, p.project_name, s.abbreviation as state,
+  <messaging.getProject><![CDATA[
+      select p.id as projectId, p.project_name, s.abbreviation as state, c.company_id,
        (coalesce((
             SELECT array_to_json(array_agg(row_to_json(st)))
             FROM (
@@ -91,85 +90,70 @@ from projects p
                  inner join flow.state s ON s.id = cs.state_id
                  inner join flow.project_message_properties pmp on p.id = pmp.project_id
         where pmp.project_id = :projectId
-            ]]>
-  </messaging.getProject>
+  ]]></messaging.getProject>
 
-  <messaging.getProjectsBySmsTeam>
-    <![CDATA[
-      select pmt.project_id
-        from flow.project_message_team pmt
-          where pmt.sms_team_id = :smsTeamId and archived = false
-      group by project_id
-            ]]>
-  </messaging.getProjectsBySmsTeam>
+  <messaging.getProjectsBySmsTeam><![CDATA[
+    select pmt.project_id
+      from flow.project_message_team pmt
+        where pmt.sms_team_id = :smsTeamId and archived = false
+    group by project_id
+  ]]></messaging.getProjectsBySmsTeam>
 
-  <messaging.getActiveProjectId>
-    <![CDATA[
-      select pmp.id
-        from flow.project_message_properties pmp
-      where pmp.project_id = :projectId
-            ]]>
-  </messaging.getActiveProjectId>
+  <messaging.getActiveProjectId><![CDATA[
+    select pmp.id
+      from flow.project_message_properties pmp
+    where pmp.project_id = :projectId
+  ]]></messaging.getActiveProjectId>
 
-  <messaging.insertProject>
-    <![CDATA[
-            insert into flow.project_message_properties
-                  (project_id, closed, created_by_id, date_created, modified_by_id, date_modified)
-                  values (:projectId, false, :createdById, now(), :createdById, now())
-            ]]>
-  </messaging.insertProject>
+  <messaging.insertProject><![CDATA[
+  insert into flow.project_message_properties
+    (project_id, closed, created_by_id, date_created, modified_by_id, date_modified)
+    values (:projectId, false, :createdById, now(), :createdById, now())
+  ]]></messaging.insertProject>
 
-  <messaging.saveProjectStatusOpen>
-    <![CDATA[
-            update flow.project_message_properties
-            set closed = false,
-                date_modified = now(),
-                modified_by_id = :modifiedById
-              where project_id = :projectId
-            ]]>
-  </messaging.saveProjectStatusOpen>
+  <messaging.saveProjectStatusOpen><![CDATA[
+    update flow.project_message_properties
+    set closed = false,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      where project_id = :projectId
+  ]]></messaging.saveProjectStatusOpen>
 
-  <messaging.saveProjectStatusClosed>
-    <![CDATA[
-            update flow.project_message_properties
-            set closed = true,
-                last_sent = null,
-                date_modified = now(),
-                modified_by_id = :modifiedById
-              where project_id = :projectId
-            ]]>
-  </messaging.saveProjectStatusClosed>
+  <messaging.saveProjectStatusClosed><![CDATA[
+    update flow.project_message_properties
+    set closed = true,
+        last_sent = null,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      where project_id = :projectId
+  ]]></messaging.saveProjectStatusClosed>
 
-  <messaging.getOwnersForProject>
-    <![CDATA[
-          select user_id, sms_team_id from flow.project_message_owner
-            where project_id = :projectId and archived = false
-          ]]>
-  </messaging.getOwnersForProject>
+  <messaging.getOwnersForProject><![CDATA[
+    select distinct user_id, sms_team_id from flow.project_message_owner where project_id = :projectId and archived is false
+  ]]></messaging.getOwnersForProject>
 
   <messaging.getHistory><![CDATA[
-        select * from coalesce((
-                         SELECT array_to_json(array_agg(row_to_json(history)))
-                         FROM (
-                                   select st.team_name, u.first_name || ' ' || u.last_name as "userName", pmoh.date_created, date_removed,
-                                          (select u1.first_name || ' ' || u1.last_name from flow.user u1 where u1.id = pmoh.created_by_id) as "addedBy",
-                                          (select u2.first_name || ' ' || u2.last_name from flow.user u2 where u2.id = pmoh.modified_by_id) as "removedBy"
-                                      from flow.project_message_owner_history pmoh
-                                   inner join flow.project p on pmoh.project_id = p.id
-                                   inner join flow.sms_team st on pmoh.sms_team_id = st.id
-                                   left join flow.user u on pmoh.user_id = u.id
-                                   where project_id = :projectId
-                                    order by pmoh.date_modified desc
-                              ) history), '[]') AS "projectHistory"
-
+  select * from coalesce((
+   SELECT array_to_json(array_agg(row_to_json(history)))
+   FROM (
+             select st.team_name, u.first_name || ' ' || u.last_name as "userName", pmoh.date_created, date_removed,
+                    (select u1.first_name || ' ' || u1.last_name from flow.user u1 where u1.id = pmoh.created_by_id) as "addedBy",
+                    (select u2.first_name || ' ' || u2.last_name from flow.user u2 where u2.id = pmoh.modified_by_id) as "removedBy"
+                from flow.project_message_owner_history pmoh
+             inner join flow.project p on pmoh.project_id = p.id
+             inner join flow.sms_team st on pmoh.sms_team_id = st.id
+             left join flow.user u on pmoh.user_id = u.id
+             where project_id = :projectId
+              order by pmoh.date_modified desc
+        ) history), '[]') AS "projectHistory"
   ]]></messaging.getHistory>
 
   <messaging.setLastSent><![CDATA[
-        update flow.project_message_properties set last_sent = now(), date_modified = now(), modified_by_id = :modifiedById where project_id = :projectId
+    update flow.project_message_properties set last_sent = now(), date_modified = now(), modified_by_id = :modifiedById where project_id = :projectId
   ]]></messaging.setLastSent>
 
   <messaging.clearLastSent><![CDATA[
-        update flow.project_message_properties set last_sent = null, date_modified = now(), modified_by_id = :modifiedById where project_id = :projectId
+        update flow.project_message_properties set last_sent = null, date_modified = now(), modified_by_id = :modifiedById where project_id in (:projectIds)
   ]]></messaging.clearLastSent>
 
   <messaging.getStaleProjects><![CDATA[
@@ -181,12 +165,6 @@ from projects p
       (project_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
       values (:projectId, :teamId, :createdById, now(), :createdById, now())
   ]]></messaging.insertTeam>
-
-  <messaging.insertOwner><![CDATA[
-      insert into flow.project_message_owner
-      (project_id, sms_team_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
-      values (:projectId, :teamId, :userId, :createdById, now(), :createdById, now())
-  ]]></messaging.insertOwner>
 
   <messaging.removeOwner><![CDATA[
       update flow.project_message_owner
