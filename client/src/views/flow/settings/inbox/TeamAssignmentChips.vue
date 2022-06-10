@@ -188,6 +188,7 @@ export default {
         case 1: this.removeTeam(this.teamToRemove.id)
             break
       }
+      this.removeOption = 0
       this.showRemoveDialog = false
     },
     async removeTeam(teamId) {
