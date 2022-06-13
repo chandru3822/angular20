@@ -150,6 +150,12 @@ public class NotificationService {
         }
 
         if (!insertedIds.isEmpty()) {
+          // clear cache for all users that are getting updates
+          final Cache cache = cacheManager.getCache(CachingConfig.NOTIFICATION);
+          if (cache != null) {
+            userIds.forEach(cache::evictIfPresent);
+          }
+
           final Array idsSqlArray = sqlArrayService.createSqlArrayOfType("bigint", insertedIds);
           final List<Notification> notifications =
               sqlCache.query(
@@ -162,11 +168,6 @@ public class NotificationService {
               .forEach(notify -> pubSubService.publish(EventChannel.NOTIFICATION, notify));
 
           return notifications;
-        }
-
-        final Cache cache = cacheManager.getCache(CachingConfig.NOTIFICATION);
-        if (cache != null) {
-          userIds.forEach(cache::evictIfPresent);
         }
 
       } catch (SQLException | JsonProcessingException e) {

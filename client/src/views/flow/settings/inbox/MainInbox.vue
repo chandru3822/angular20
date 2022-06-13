@@ -471,12 +471,12 @@ export default {
       }
     },
     hasNotification(projectId) {
-      return this.smsNotification?.filter(n => n.metadata.projectId === projectId)?.length > 0
+      return this.smsNotification?.filter(n => n.metadata?.projectId === projectId)?.length > 0
     },
     clearNotification(projectId) {
       const notificationIds = this.smsNotification
-        .filter(n => n.metadata.projectId === projectId)
-        .map(notif => notif.id)
+        ?.filter(n => n.metadata.projectId === projectId)
+        ?.map(notif => notif.id)
 
       this.$store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
     },

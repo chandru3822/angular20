@@ -104,6 +104,9 @@ public class SmsTeamService {
   }
 
   public void deleteTeam(Long smsTeamId) {
+    final User user = securityService.getCurrentUser();
+    final Long modifiedByUserId = user.trueUserId();
+
     // Get a list of Projects that have this team assigned to them
     List<Long> projectIds =
         sqlCache.query(
@@ -115,11 +118,9 @@ public class SmsTeamService {
     deleteTeamsAndOwnersFromProjects(smsTeamId, null, null, null);
 
     // For any Project that has no teams assigned, assign the default team
-    messagingService.addDefaultTeam(projectIds);
+    messagingService.addDefaultTeam(projectIds, modifiedByUserId);
 
     SmsTeam smsTeam = getTeamDetails(smsTeamId);
-    User user = securityService.getCurrentUser();
-
     for (SmsTeamUser smsTeamUser : smsTeam.getUsers()) {
       deleteUser(smsTeamId, smsTeamUser.getId());
     }
@@ -134,7 +135,7 @@ public class SmsTeamService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", smsTeamId);
-    params.put("modifiedById", user.trueUserId());
+    params.put("modifiedById", modifiedByUserId);
     sqlCache.update("smsTeam.deleteTeam", params);
   }
 
