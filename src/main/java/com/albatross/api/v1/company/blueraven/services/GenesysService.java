@@ -294,7 +294,9 @@ public class GenesysService {
 
     try {
       sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+
     } catch (Exception e) {
+      
       log.error(
           "GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}",
           contactId,
