@@ -364,6 +364,22 @@ where pse.process_step_id = :processStepId
             cpsst.process_step_status_type as "processStepStatusType",
             cest.event_status_type as "eventStatusType",
             coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(links)))
+                                           FROM (
+                                                  SELECT psal.id,
+                                                         psal.archived,
+                                                         psal.process_step_event_action_id as "processStepEventActionId",
+                                                         psal.created_by_id as "createdById",
+                                                         psal.modified_by_id as "modifiedById",
+                                                         l.link,
+                                                         l.url
+                                                  FROM flow.process_step_event_action_link psal
+                                                         inner join flow.link l on l.id = psal.link_id
+                                                  WHERE psal.process_step_event_action_id = psea.id
+                                                    and psal.archived is not true
+                                                  order by l.link
+                                                ) links), '[]') AS "childLinks",
+            coalesce((
                                  SELECT array_to_json(array_agg(row_to_json(logic)))
                                  FROM (
                                         SELECT psl.id,

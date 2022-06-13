@@ -345,12 +345,13 @@ public class ProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepEventLogic>> processStepEventLogicTypeRef = new TypeReference<>() {
-      };
+      TypeReference<List<ProcessStepEventLogic>> processStepEventLogicTypeRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepEventLogicList", new JsonCollectionDeserializer(processStepEventLogicTypeRef, objectMapper));
 
-      TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {
-      };
+      TypeReference<List<ProcessStepEventActionLink>> childLinksRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "childLinks", new JsonCollectionDeserializer(childLinksRef, objectMapper));
+
+      TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "customFields", new JsonCollectionDeserializer(customFieldsRef, objectMapper));
     }
   }
