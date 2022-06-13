@@ -80,7 +80,7 @@
                 <input type="checkbox" v-model="item.active" disabled readonly>
               </td>
               <td>
-                <v-btn small text v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>

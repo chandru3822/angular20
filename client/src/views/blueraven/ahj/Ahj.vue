@@ -401,9 +401,8 @@
   }
 
   .ahj-link-icon {
-
     &:hover {
-      color: var(--v-primaryText-base) !important;
+      color: var(--v-primary-lighten1) !important;
     }
   }
 
