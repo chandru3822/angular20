@@ -292,7 +292,18 @@ public class GenesysService {
       params.put("userId", SystemSettings.CRON_USER.getId());
     }
 
-    sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+    try {
+      sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+
+    } catch (Exception e) {
+
+      log.error(
+          "GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}",
+          contactId,
+          textValue,
+          cfgaId,
+          e.getMessage());
+    }
   }
 
   private String checkIfCustomFieldDropdownValueExists(
