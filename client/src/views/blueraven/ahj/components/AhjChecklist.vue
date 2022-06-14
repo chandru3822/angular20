@@ -20,7 +20,7 @@
                   v-model="checklistItem.description">
       </v-textarea>
       <div class="checklist-btns">
-        <a @click="hideCtrls" class="cancel-link mr-3">Cancel</a>
+        <v-btn color="primary" text @click="hideCtrls" class="cancel-link mr-3">Cancel</v-btn>
         <confirm-delete-dialog
             label="this checklist item: "
             :item-to-delete="checklistItem.description"
@@ -28,7 +28,7 @@
             textbutton
             v-if="editMode">
         </confirm-delete-dialog>
-        <v-btn @click="saveItem" color="primaryButton" class="white--text py-1 px-2"
+        <v-btn @click="saveItem" color="primary" class="white--text py-1 px-2"
                :disabled="checklistItem.description === ''" small>
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>

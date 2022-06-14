@@ -22,7 +22,7 @@
           </v-list-item-title>
         </v-list-item-content>
         <v-list-item-action>
-          <v-icon small v-if="userCanEdit" class="mr-3" @click="deleteDocument(document.id)">delete</v-icon>
+          <v-icon small color="primary" v-if="userCanEdit" class="mr-3" @click="deleteDocument(document.id)">delete</v-icon>
         </v-list-item-action>
       </v-list-item>
     </v-list>

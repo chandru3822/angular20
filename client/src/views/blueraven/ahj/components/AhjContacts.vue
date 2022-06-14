@@ -30,13 +30,13 @@
                   v-model="contact.notes">
       </v-textarea>
       <div class="contact-btns">
-        <a @click="hideCtrls"
-           class="cancel-link">Cancel</a>
+        <v-btn color="primary" text @click="hideCtrls"
+           class="cancel-link">Cancel</v-btn>
         <v-btn v-show="editMode" dark v-if="userCanEdit"
                @click="deleteContact" class="error">
           Delete
         </v-btn>
-        <v-btn @click="saveContact" color="primaryButton" class="white--text"
+        <v-btn @click="saveContact" color="primary" class="white--text"
                :disabled="contact.name === ''">
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
@@ -62,7 +62,7 @@
         <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
         <dt></dt>
         <dd>
-          <v-btn small color="primary" v-if="userCanEdit"
+          <v-btn small color="primary" v-if="userCanEdit && !(addMode || editMode)"
                  @click="editContact(contact)"
                  class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
         </dd>
@@ -225,7 +225,6 @@
 
 <style scoped lang="scss">
   .cancel-link {
-    font-size: 0.85em !important;
     text-decoration: none;
   }
   .cancel-link:hover {

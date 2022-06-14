@@ -23,9 +23,9 @@
                       v-model="requirement.position">
         </v-text-field>
         <div class="requirement-btns">
-          <a @click="hideCtrls"
-             class="cancel-link">Cancel</a>
-          <v-btn v-if="userCanEdit" @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
+          <v-btn color="primary" text @click="hideCtrls"
+             class="cancel-link">Cancel</v-btn>
+          <v-btn v-if="userCanEdit" @click="saveRequirement(null, false)" color="primary" class="white--text py-1 px-2"
                  :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
             {{ addMode ? 'Add' : 'Update' }}
           </v-btn>

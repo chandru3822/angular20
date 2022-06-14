@@ -24,13 +24,13 @@
                   v-model="link.notes">
       </v-textarea>
       <div class="link-btns">
-        <a @click="hideCtrls"
-           class="cancel-link">Cancel</a>
+        <v-btn color="primary" text @click="hideCtrls"
+           class="cancel-link">Cancel</v-btn>
         <v-btn v-show="editMode" dark v-if="userCanEdit"
                @click="deleteLink" class="error">
           Delete
         </v-btn>
-        <v-btn @click="saveLink" color="primaryButton" class="white--text"
+        <v-btn @click="saveLink" color="primary" class="white--text"
                :disabled="!linkInfoEntered">
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
