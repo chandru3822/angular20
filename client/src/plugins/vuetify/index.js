@@ -35,7 +35,8 @@ export default new Vuetify({
               accent: '#3c79b6',
               error:'#B4221F',
               success:'#1B5E20',
-              active:'#e3eff7'
+              active:'#e3eff7',
+              anchor: '#2c5893'
           },
       // dark: {
       //   primary: '#1F3C73',
