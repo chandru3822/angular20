@@ -142,6 +142,10 @@ public class MessagingService {
 
           // Insert each of the SMS Team's Users so they are associated with the project
           for (SmsTeamUser owner : ownersSelected) {
+            if (ownerUserIds.contains(owner.getUserId())) {
+              continue;
+            }
+
             ownerUserIds.add(owner.getUserId());
 
             ps.setLong(1, projectId);
