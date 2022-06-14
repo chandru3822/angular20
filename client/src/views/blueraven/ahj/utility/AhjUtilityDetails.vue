@@ -5,7 +5,7 @@
       <v-col cols="12" class="pt-0">
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-            <v-btn id="back-btn" text class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
+            <v-btn id="back-btn" text color="primary" class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
               <v-icon>arrow_left</v-icon>
               <span id="back-btn-text">Back to menu</span>
             </v-btn>
@@ -18,22 +18,24 @@
               </div>
             </div>
 
-            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(--v-secondary-base)">
-              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>
-            </v-tabs>
+<!--            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(&#45;&#45;v-secondary-base)">-->
+<!--              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>-->
+<!--            </v-tabs>-->
           </v-col>
         </v-row>
 
         <v-row dense>
           <v-col class="ahj-form-btns" cols="12">
-            <a v-if="dataWasChanged"
+            <v-btn v-if="dataWasChanged"
                @click="resetForm"
+                   text
+                   color="primary"
                class="cancel-link"
                style="margin-right: 10px"
-            >Cancel</a>
+            >Cancel</v-btn>
             <v-btn id="save-btn"
                    v-if="userCanEdit"
-                   color="primaryButton"
+                   color="primary"
                    class="white--text mr-0"
                    @click="saveAhjUtility"
             >Save

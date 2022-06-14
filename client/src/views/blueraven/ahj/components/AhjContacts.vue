@@ -62,7 +62,7 @@
         <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
         <dt></dt>
         <dd>
-          <v-btn small color="primaryButton" v-if="userCanEdit"
+          <v-btn small color="primary" v-if="userCanEdit"
                  @click="editContact(contact)"
                  class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
         </dd>
