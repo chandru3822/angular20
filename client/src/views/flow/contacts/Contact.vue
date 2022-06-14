@@ -262,7 +262,7 @@
                 :readonly="true"
               />
               <v-dialog
-                v-if="userIsAdmin"
+                v-if="userCanDelete"
                 v-model="deleteContactConfirm"
                 width="500">
                 <template #activator="{ on }">
@@ -430,7 +430,7 @@ export default {
       owners: [],
       contactId: parseInt(this.$route.params.id),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADMIN'),
+      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
       companyId: this.$store.state.user.details.companyId,
       timezone: this.$store.state.user.details.timezone?.value,
       changeOwner: false,
