@@ -4,12 +4,11 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.services.CommunicationService;
-import com.albatross.api.v1.flow.services.ContactService;
-import com.albatross.api.v1.flow.services.SMSService;
-import com.albatross.api.v1.flow.services.UserService;
+import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.services.*;
 import com.google.common.collect.Maps;
 import com.google.i18n.phonenumbers.NumberParseException;
+import freemarker.core.InvalidReferenceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -41,6 +40,7 @@ public class CommunicationController {
   private final CommunicationService communicationService;
   private final SMSService smsService;
   private final ContactService contactService;
+  private final ProjectService projectService;
   private final UserService userService;
   private final SecurityService securityService;
 
@@ -49,8 +49,9 @@ public class CommunicationController {
     return communicationService.getDefaultEmailTemplate();
   }
 
-  @PostMapping(value = "/sendTextsForProject")
-  public Map<String, Object> sendTextsForProject(@RequestBody SendTextsRequest sendTexts) {
+  @PostMapping(value = "/sendTextsForProject/{projectId}")
+  public Map<String, Object> sendTextsForProject(@PathVariable Long projectId,
+                                                 @RequestBody SendTextsRequest sendTexts) {
     User user = securityService.getCurrentUser();
     String groupId = UUID.randomUUID().toString();
     Long contactId = sendTexts.getUserIDs().get(0);
@@ -60,11 +61,15 @@ public class CommunicationController {
       String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
       try {
         String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+        Optional<Project> project = projectService.getProject(projectId);
+        String template = communicationService.renderTemplate(sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), Map.of("contact", contact, "project", project.get(), "user", user));
+
         communicationService.queueTextMessagesForProject(
             groupId,
             contact,
+            projectId,
             safePhone,
-            sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
+            template,
             sendTexts.getMediaURLs(),
             user.getId());
 
@@ -73,6 +78,13 @@ public class CommunicationController {
         log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
         throw new ResponseStatusException(
             HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+      } catch (InvalidReferenceException ire) {
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid parameter in message: " + ire.getMessage(), new Exception());
+      } catch (Exception e) {
+        log.error("MESSAGING: Error queueing SMS message ", e);
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
       }
     } else {
       throw new ResponseStatusException(

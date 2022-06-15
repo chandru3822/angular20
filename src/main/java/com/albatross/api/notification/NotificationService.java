@@ -1,9 +1,7 @@
 package com.albatross.api.notification;
 
-import com.albatross.api.notification.model.CreateNotificationDto;
-import com.albatross.api.notification.model.Notification;
-import com.albatross.api.notification.model.NotificationEventMessage;
-import com.albatross.api.notification.model.NotificationMapper;
+import com.albatross.api.config.CachingConfig;
+import com.albatross.api.notification.model.*;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.Subscriber;
@@ -15,6 +13,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +37,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@CacheConfig(cacheNames = CachingConfig.NOTIFICATION)
 @RequiredArgsConstructor
 public class NotificationService {
 
@@ -42,6 +46,7 @@ public class NotificationService {
   private final SqlArrayService sqlArrayService;
   private final NamedParameterJdbcTemplate jdbcTemplate;
   private final ObjectMapper objectMapper;
+  private final CacheManager cacheManager;
 
   /**
    * Creates a notification (i.e. stores a record in the database) and sends out a pubsub event in
@@ -145,6 +150,12 @@ public class NotificationService {
         }
 
         if (!insertedIds.isEmpty()) {
+          // clear cache for all users that are getting updates
+          final Cache cache = cacheManager.getCache(CachingConfig.NOTIFICATION);
+          if (cache != null) {
+            userIds.forEach(cache::evictIfPresent);
+          }
+
           final Array idsSqlArray = sqlArrayService.createSqlArrayOfType("bigint", insertedIds);
           final List<Notification> notifications =
               sqlCache.query(
@@ -158,6 +169,7 @@ public class NotificationService {
 
           return notifications;
         }
+
       } catch (SQLException | JsonProcessingException e) {
         log.error("[Notifications] Error while doing a bulk insert", e);
       }
@@ -172,7 +184,9 @@ public class NotificationService {
 
     final List<Notification> notifications =
         sqlCache.query(
-            "notification.getUnreadByUser", params, new NotificationMapper(this.objectMapper));
+            "notification.getUnreadByUserPageable",
+            params,
+            new NotificationMapper(this.objectMapper));
 
     final Long count =
         sqlCache
@@ -184,6 +198,13 @@ public class NotificationService {
 
     return new PageImpl<>(
         notifications, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+  }
+
+  @Cacheable(key = "#userId")
+  public List<Notification> getUserNotifications(@NonNull Long userId) {
+    final Map<String, Object> params = Map.of("userId", userId);
+    return sqlCache.query(
+        "notification.getUnreadByUser", params, new NotificationMapper(this.objectMapper));
   }
 
   @Async
@@ -204,11 +225,25 @@ public class NotificationService {
   }
 
   @Transactional
+  @CacheEvict(
+      key = "#userId",
+      condition = "#notificationIds != null and !#notificationIds.isEmpty()")
   public void markUserNotificationsAsRead(@NonNull Long userId, List<Long> notificationIds)
       throws SQLException {
     if (notificationIds == null || notificationIds.isEmpty()) {
       return;
     }
+
+    Notification notification =
+        new Notification()
+            .setTopic(NotificationTopic.SMS_REPLY)
+            .setTitle("Notification read")
+            .setBody("")
+            .setPriority(1)
+            .setMetadata(null)
+            .setUserId(userId);
+    pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
+
     final Array ids = sqlArrayService.createSqlArrayOfType("bigint", notificationIds);
     final int updatedRecords =
         sqlCache.update(

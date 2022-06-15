@@ -520,7 +520,7 @@ const router = new Router({
               path: 'tournaments',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')) {
+                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') ) {
                   return import (/* webpackChunkName: "tournamentSettings" */ './views/flow/settings/tournaments/Tournaments.vue')
                 } else {
                   return accessDenied()
@@ -531,7 +531,7 @@ const router = new Router({
               path: 'tournaments/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')) {
+                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') ) {
                   return import (/* webpackChunkName: "tournamentSettings" */ './views/flow/settings/tournaments/Tournament.vue')
                 } else {
                   return accessDenied()
@@ -681,6 +681,16 @@ const router = new Router({
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
                   return import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'messageTemplates',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/MessageTemplate.vue')
                 } else {
                   return accessDenied()
                 }
@@ -936,6 +946,16 @@ const router = new Router({
                 }
               ]
             }, {
+              path: 'smsTeams',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/SmsTeam.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'functions',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -1182,7 +1202,8 @@ const router = new Router({
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
           component: () => {
-            if (store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')) {
+            //dont change this permission unless double checking with rn and cj. we have been back and forth on this 100 times
+            if (store.getters.userHasFeatureAccessLevel('PROJECT', 'ADMIN') || store.getters.userHasFeatureAccessLevel('PROJECT', 'DELETE')) {
               return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
             } else {
               return accessDenied()
@@ -1513,7 +1534,21 @@ const router = new Router({
               return accessDenied()
             }
           }
-        }
+        },
+          {
+              path: 'inbox',
+              name: 'inbox',
+              meta: {title: 'Albatross - Inbox'},
+              component: () => import (/* webpackChunkName: "inbox" */ './views/flow/settings/inbox/MainInbox'),
+              children: [
+                  {
+                      path: 'inboxConversation/:projectId',
+                      name: 'inboxConversation',
+                      meta: {title: 'Albatross - Inbox Conversation'},
+                      component: () => import (/* webpackChunkName: "inboxConversation" */ './views/flow/settings/inbox/MainInbox')
+                  }
+              ]
+          },
       ]
     }
   ]

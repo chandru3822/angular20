@@ -37,6 +37,7 @@ export default new Vuetify({
         calendarBorder: '#f2f5f8',
         primaryText: '#1F3C73',
         blackText: '#30363c',
+          error: '#B4221F'
       },
       // dark: {
       //   primary: '#1F3C73',

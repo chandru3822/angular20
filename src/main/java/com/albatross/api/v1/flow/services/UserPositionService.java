@@ -24,6 +24,7 @@ public class UserPositionService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final SmsTeamService smsTeamService;
   private final ObjectMapper om;
 
   public List<UserPosition> getUserPositions(Long userId) {
@@ -69,6 +70,12 @@ public class UserPositionService {
   public void deleteUserPosition(Long userPositionId) {
     User user = securityService.getCurrentUser();
 
+    UserPosition positionToBeDeleted = getOne(userPositionId);
+    if (positionToBeDeleted.getPrimaryFlag()) {
+      // Find all SMS Teams that use this position or org, then delete the User from all these teams
+      smsTeamService.deleteUserByUserId(positionToBeDeleted.getUserId(), positionToBeDeleted.getOrgId(), positionToBeDeleted.getPositionId());
+    }
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.trueUserId());
     params.put("userPositionId", userPositionId);
@@ -89,6 +96,14 @@ public class UserPositionService {
     params.put("endDate", userPosition.getEndDate());
     params.put("primaryFlag", primaryFlag);
 
+    UserPosition formerPrimaryPosition =
+      sqlCache
+      .get(
+        "userPosition.getPrimaryPosition",
+        params,
+        new UserPositionMapper<>(UserPosition.class, om))
+      .orElse(null);
+
     Long id;
     if (null != userPosition.getId()) {
       id = userPosition.getId();
@@ -102,6 +117,12 @@ public class UserPositionService {
     }
 
     if (primaryFlag) {
+      // If there was an existing Primary that is being replaced,  remove User from any SMS conversations
+      if (formerPrimaryPosition != null && formerPrimaryPosition.getId() != id) {
+        // Find all SMS Teams that use this position or org, then delete the User from all these teams
+        smsTeamService.deleteUserByUserId(userPosition.getUserId(), formerPrimaryPosition.getOrgId(), formerPrimaryPosition.getPositionId());
+      }
+
       // if setting a position to primary, need to remove all other primary positions
       sqlCache.update("userPosition.resetPrimaryFlags", params);
     }

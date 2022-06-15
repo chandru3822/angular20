@@ -122,12 +122,23 @@
 
           <v-file-input
               dense
+              class="mb-5"
+              multiple
+              :accept="acceptedFileTypes"
+              ref="fileInput"
+              hide-details
+              label="Attach utility bill"
+              @change="uploadUtilityBillFiles"
+          />
+
+          <v-file-input
+              dense
               class="mb-3"
               multiple
               :accept="acceptedFileTypes"
               ref="fileInput"
               hide-details
-              label="Attach utility bill, notes/drawings for reference"
+              label="Attach supporting files"
               @change="uploadFiles"
           />
 
@@ -210,6 +221,10 @@ export default {
           formData.append('attachments', a);
         });
 
+        this.newDesignRequest?.utilityBillAttachments?.forEach(a => {
+          formData.append('utilityBillAttachments', a);
+        });
+
         const {data, status} = await postRequest(`/proposal/design`, formData, 'blueraven')
         //this endpoint returns all of the designs because adding a new one could possible remove (cancel) an existing one
         this.designs = data
@@ -281,6 +296,10 @@ export default {
     },
     uploadFiles: function (files) {
       this.newDesignRequest.attachments = files
+    },
+    //cuz i am dumb and can't figure out how to pass in "files"
+    uploadUtilityBillFiles: function (files) {
+      this.newDesignRequest.utilityBillAttachments = files
     },
   }
 }

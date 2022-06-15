@@ -86,7 +86,7 @@
                 <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="updateEmailAddress(item)" :disabled="!isEditValid(item.id)" v-if="index === editIndex">
+                <v-btn small text @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
                 <v-btn small text v-if="index === editIndex" @click="clearChanges()">
@@ -163,7 +163,8 @@ export default {
       await this.getEmailSenders()
         this.editIndex = null
     },
-    isEditValid(itemId){
+    isEditValid(item){
+      const itemId = item.id
       const senderNameRef = this.$refs[`senderName-edit-${itemId}`]
       const emailAddressRef = this.$refs[`emailAddress-edit-${itemId}`]
       if(senderNameRef && emailAddressRef){
@@ -172,9 +173,7 @@ export default {
         return senderNameRef.valid
       } else if (!senderNameRef && emailAddressRef) {
         return emailAddressRef.valid
-      } else {
-        return false
-      }
+      } else return !!(item.senderName && item.emailAddress);
     },
     async updateEmailAddress(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)

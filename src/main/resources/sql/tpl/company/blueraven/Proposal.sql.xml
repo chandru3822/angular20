@@ -182,6 +182,7 @@
                                                              then '(Primary)' end                                       as "ancillaryCustomFieldHint",
                                                      cfga.custom_field_id                                               as "customFieldId",
                                                      cfga.field_order                                                   as "fieldOrder",
+                                                     cfga.required                                                      as "required",
                                                      cfga.use_parent_data                                               as "useParentData",
                                                      coalesce(cf.list_of_value_id, flowCf.list_of_value_id)             as "listOfValueId",
                                                      coalesce(cf.field_name, flowCf.field_name)                         as "fieldName",

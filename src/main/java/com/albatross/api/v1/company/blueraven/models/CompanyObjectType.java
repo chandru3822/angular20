@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CompanyObjectType extends com.albatross.api.v1.flow.model.CompanyObjectType {
-  private Boolean allowAncillary;
+  private Boolean allowAncillary, allowMinMax;
 }

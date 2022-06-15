@@ -217,6 +217,8 @@ public class CommunicationService {
         smsService.queueMessage(
             messageGroupId,
             user.getId(),
+            null,
+          null,
             user.getPhoneNumber(),
             template,
             mediaURLs,
@@ -229,23 +231,25 @@ public class CommunicationService {
   }
 
   @Async
-  public void queueTextMessagesForProject(
+  public void queueTextMessagesForProject (
       String messageGroupId,
       Contact contact,
+      Long projectId,
       String toPhone,
-      String templateContent,
+      String template,
       List<URI> mediaURLs,
       Long sentByUserId) {
     try {
-      final String template = renderTemplate(templateContent, Map.of("contact", contact));
       smsService.queueMessage(
-          messageGroupId,
-          contact.getId(),
-          toPhone,
-          template,
-          mediaURLs,
-          RecipientType.PROJECT,
-          sentByUserId);
+        messageGroupId,
+        null,
+        contact.getId(),
+        projectId,
+        toPhone,
+        template,
+        mediaURLs,
+        RecipientType.PROJECT,
+        sentByUserId);
     } catch (Exception ex) {
       log.error("MESSAGING: Error queueing SMS ", ex);
     }

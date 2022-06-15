@@ -20,5 +20,6 @@ public class ProcessStepEventAction {
   private List<ProcessStepEventActionField> customFields, requiredFields, optionalFields;
   private List<ProcessStepEventLogic> processStepEventLogicList;
   private List<ProcessStepEventActionChildFunction> childFunctions;
+  private List<ProcessStepEventActionLink> childLinks;
 }
 
