@@ -58,9 +58,10 @@ public class BlueravenProposalController {
       @RequestParam Long projectId,
       @RequestParam String description,
       @RequestParam String dueDate,
-      @RequestParam(required = false) List<MultipartFile> attachments)
+      @RequestParam(required = false) List<MultipartFile> attachments,
+      @RequestParam(required = false) List<MultipartFile> utilityBillAttachments)
       throws IOException {
-    return proposalService.requestNewDesign(projectId, description, dueDate, attachments);
+    return proposalService.requestNewDesign(projectId, description, dueDate, attachments, utilityBillAttachments);
   }
 
   @GetMapping(value = "/{proposalId}")

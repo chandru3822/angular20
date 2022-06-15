@@ -148,7 +148,7 @@ export default {
         path: '/settings/tournaments',
         title: 'Tournaments',
         pathMatch: '/settings/tournaments',
-        show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+        show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
       }, {
         path: '/settings/companyCustomFields',
         title: 'Company Custom Fields',
@@ -193,6 +193,10 @@ export default {
         title: 'Functions',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/messageTemplates',
+        title: 'Message Templates',
+        show: this.hasSettingsAccess
+      }, {
         header: 'Configurations',
         show: this.hasSettingsAccess
       }, {
@@ -210,6 +214,10 @@ export default {
       }, {
         path: '/settings/projectStatuses',
         title: 'Project Statuses',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/smsTeams',
+        title: 'SMS Teams',
         show: this.hasSettingsAccess
       }, {
         path: '/settings/workQueue/types',

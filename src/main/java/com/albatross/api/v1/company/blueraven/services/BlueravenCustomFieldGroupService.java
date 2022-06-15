@@ -240,6 +240,27 @@ public class BlueravenCustomFieldGroupService {
     sqlCache.update("blueravenCustomFieldGroup.assignment.saveUseParentData", params);
   }
 
+  public void updateRequired(CustomField customField) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+    params.put("userId", user.trueUserId());
+    params.put("required", null != customField.getRequired() ? customField.getRequired() : false);
+
+    sqlCache.update("blueravenCustomFieldGroup.assignment.saveRequired", params);
+  }
+
+  public void saveMinMax(CustomField customField) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+    params.put("userId", user.trueUserId());
+    params.put("minValue", customField.getMinValue());
+    params.put("maxValue", customField.getMaxValue());
+
+    sqlCache.update("blueravenCustomFieldGroup.assignment.saveMinMax", params);
+  }
+
   public String getCfgaSql(String objectType) {
     String primaryKeyColumn = ObjectType.get(objectType).primaryKeyColumn;
     String sql =
@@ -265,6 +286,7 @@ public class BlueravenCustomFieldGroupService {
             + "                                cfga.id as \"customFieldGroupAssignmentId\",\n"
             + "                                cfga.custom_field_id as \"customFieldId\",\n"
             + "                                cfga.field_order as \"fieldOrder\",\n"
+            + "                                cfga.required as \"required\",\n"
             + "                                cf.list_of_value_id as \"listOfValueId\",\n"
             + "                                cf.field_name as \"fieldName\",\n"
             + "                                cf.custom_field_sql_key as \"customFieldSqlKey\",\n"
@@ -302,7 +324,6 @@ public class BlueravenCustomFieldGroupService {
             + " = :sourceId\n"
             + "                         where cfga.custom_field_group_id = cfg.id\n"
             + "                           and cfga.archived is not true\n"
-            + "                           and cf.archived is not true\n"
             + "                         order by cfga.field_order, cf.field_name\n"
             + "                       ) fields), '[]') AS \"customFieldValues\"\n"
             + " from brs.custom_field_group cfg\n"

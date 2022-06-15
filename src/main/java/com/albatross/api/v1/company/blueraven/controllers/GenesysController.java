@@ -147,4 +147,17 @@ public class GenesysController {
       return ResponseEntity.badRequest().body("Error updating contact");
     }
   }
+
+//  @PostMapping(value = "/triggerProcessGenesysContacts")
+//  public ResponseEntity triggerProcessGenesysContacts() {
+//    try {
+//      genesysService.processGenesysContacts();
+//      return ResponseEntity.ok("Success.");
+//    } catch (Exception e) {
+//      String msg = "GENE: Error with process Genesys Contacts: {}";
+//      log.error(msg, e.getMessage());
+//      return ResponseEntity.badRequest().body("Error occurred during process Genesys Contacts");
+//    }
+//  }
+
 }

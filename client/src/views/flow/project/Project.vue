@@ -127,7 +127,7 @@
       <v-toolbar-items>
         <div>
           <v-btn color="#fff"
-                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
                  class="mt-3 no-text-transform"
                  :to="`/projectAdmin/${projectId}`"
           >
@@ -210,7 +210,7 @@
                      :project="project"
         ></router-view>
       </div>
-      <div class="white-bg project-section px-0"
+      <div class="project-section px-0 white-bg "
            :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
                     'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                     'collapse-right text-center': $store.state.project.rightSideSplit}">

@@ -1,5 +1,7 @@
 package com.albatross.api.config;
 
+import com.albatross.api.v1.flow.enums.SystemSettings;
+import com.albatross.api.v1.flow.services.MessagingService;
 import com.albatross.api.v1.flow.services.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,12 +52,15 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.fillProjectGeoCoords.enabled:false}")
     private boolean fillProjectGeoCoords;
 
+    @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
+    private boolean closeProjectConversations;
+
     private final SMSService smsService;
     private final MailService mailService;
     private final AvailabilityService availabilityService;
     private final ProjectProcessStepService projectProcessStepService;
-    private final ProjectService projectService;
     private final ContactService contactService;
+    private final MessagingService messagingService;
 
 
     @Override
@@ -90,6 +95,16 @@ public class ScheduledConfig implements SchedulingConfigurer {
             smsService.processTwilioWebhookPayloads();
         }
     }
+
+  //    every  day at 1 am
+  @Scheduled(fixedDelayString = "${app.cron.closeProjectConversations.delay:20000}")//@Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  public void closeProjectConversations() {
+    if (closeProjectConversations) {
+      log.info("*** CRON: start close SMS project conversations ***");
+      messagingService.closeStaleProjects(SystemSettings.CRON_USER.getId());
+      log.info("*** CRON: end close SMS project conversations ***");
+    }
+  }
 
   //    every  minute
   @Scheduled(fixedDelayString = "${app.cron.sendEmail.delay:60000}")

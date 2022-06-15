@@ -6,7 +6,8 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.JodaDateTimeEditor;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RecipientType;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.smsQueue.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -111,6 +112,8 @@ public class SMSService {
   public SMSQueueItem queueMessage(
       String messageGroup,
       Long userId,
+      Long contactId,
+      Long projectId,
       String toPhone,
       String message,
       List<URI> mediaURLs,
@@ -121,6 +124,8 @@ public class SMSService {
     MapSqlParameterSource source = new MapSqlParameterSource();
     source.addValue("messageGroup", messageGroup);
     source.addValue("userId", userId);
+    source.addValue("contactId", contactId);
+    source.addValue("projectId", projectId);
     source.addValue("message", message);
     source.addValue("toPhone", toPhone);
     source.addValue("mediaUrls", null);
@@ -399,8 +404,8 @@ public class SMSService {
   public void updateSms(SMSQueueItem smsQueueItem) {
     Map<String, Object> params = new HashMap<>();
     params.put("smsId", smsQueueItem.getId());
-    params.put("priority", smsQueueItem.getPrioirty());
-    params.put("messageRead", smsQueueItem.getMessageRead());
+    params.put("priority", smsQueueItem.isPriority());
+    params.put("messageRead", smsQueueItem.isMessageRead());
     params.put(
         "ownerUserPositionId",
         smsQueueItem.getOwner() != null ? smsQueueItem.getOwner().getUserPositionId() : null);
@@ -409,9 +414,6 @@ public class SMSService {
 
   public void saveReply(TwilioMessageRequest sms) {
     log.debug("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
-
-    RecipientType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
-
     sqlCache.update("sms.reply.save", sms.toHashMap());
   }
 

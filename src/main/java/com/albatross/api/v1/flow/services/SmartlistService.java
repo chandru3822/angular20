@@ -2841,6 +2841,16 @@ public class SmartlistService {
             valueJoins.append(String.format(" left join flow.user_position \"%s\" on \"%s\".id = %s.%s ", joinUserPosition, joinUserPosition, joinTable, f.getJoinColumn()));
             valueJoins.append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), joinUserPosition));
             f.setUserPositionTable(joinUserPosition);
+          } else if (f.getReferenceTable().equals("flow.project_process_step") || Objects.equals(f.getReferenceTable(), "flow.process_step")) {
+              if (isAdditionalPs) {
+                  //see if this PPS table has already been joined
+                  // if so reuse the table, if not join it
+                  if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
+                      f.setPpsTable(getPpsTable(f, eventFields, null));
+                  } else {
+                      valueJoins.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), true));
+                  }
+              }
           }
         } else {
           if (f.getCustomFieldSqlKey() != null) {
@@ -2956,7 +2966,6 @@ public class SmartlistService {
               //see if this PPS table has already been joined
               // if so reuse the table, if not join it
               if (isPsAlreadyJoined(valueJoins.toString(), f.getProcessStepId())) {
-                f.setPpsTable(getPpsTable(f, eventFields, null));
                 //if ref table if process step, join here and that becomes join table
                 if (Objects.equals(f.getReferenceTable(), "flow.process_step")) {
                   joinTable = UUID.randomUUID().toString();
@@ -3457,6 +3466,7 @@ public class SmartlistService {
           }
         } else if (f.getObjectTypeId() == 6) {
 
+            //@TODO: Joining the PPS/PPSE tables should be avoided here when this field's processStepEventId is one of smartlist.getEventWorkQueueTypes() processStepEventId(s)
           //check if process step is already joined
           if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
             //if the PS is already joined, use it
@@ -3500,10 +3510,17 @@ public class SmartlistService {
               .append(String.format(" left join %s \"%s\" on \"%s\".id = \"%s\".%s ", f.getReferenceTable(), f.getValueReferenceTable(), f.getValueReferenceTable(), companyStatusTable, f.getJoinColumn()));
           } else if (Objects.equals(f.getReferenceTable(), "flow.org")) { //else if field is event resource
 
-            final String newValueTable = UUID.randomUUID().toString();
-            final long systemListNumber = (f.getEventResourceSystemListId() == 1 || f.getEventResourceSystemListId() == 2) ? 1 : f.getEventResourceSystemListId();
-            query.append(String.format(" left join \"systemList_%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListNumber, newValueTable, newValueTable, f.getPpsEventTable(), f.getJoinColumn()));
-            f.setValueReferenceTable(newValueTable);
+              final String newValueTable = UUID.randomUUID().toString();
+              final long systemListNumber = (f.getEventResourceSystemListId() == 1 || f.getEventResourceSystemListId() == 2) ? 1 : f.getEventResourceSystemListId();
+              final List<Long> processStepEventIds = smartlist.getEventWorkQueueTypes().stream()
+                                                              .map(ProcessStepEventWorkQueueType::getProcessStepEventId)
+                                                              .toList();
+              if (processStepEventIds.contains(f.getProcessStepEventId())) {
+                  query.append(String.format(" left join \"systemList_%s\" \"%s\" on \"%s\".id = flow.project_process_step_event.%s", systemListNumber, newValueTable, newValueTable, f.getJoinColumn()));
+              } else {
+                  query.append(String.format(" left join \"systemList_%s\" \"%s\" on \"%s\".id = \"%s\".%s", systemListNumber, newValueTable, newValueTable, f.getPpsEventTable(), f.getJoinColumn()));
+              }
+              f.setValueReferenceTable(newValueTable);
           }
         }
       } else {//else field is custom
@@ -4053,7 +4070,7 @@ public class SmartlistService {
   private String getSqlOperator(Long operatorTypeId, Long dataTypeId, DataTypeRequirement r) {
 
     // List of whether the dataTypeRequirementId is being compared to `null` or `not null`
-    List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L);
+    List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L, 30L, 31L);
 
     switch (operatorTypeId.intValue()) {
       case 1:

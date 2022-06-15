@@ -31,7 +31,8 @@ const store = new Vuex.Store({
     store => {
       store.commit(Mutations.INIT)
       store.subscribe((mutation, state) => {
-        localStorage.setItem('store', JSON.stringify(state))
+        const { notifications, ...newState } = state //don't store notifications
+        localStorage.setItem('store', JSON.stringify(newState))
       })
     }
   ],
