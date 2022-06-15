@@ -179,6 +179,7 @@ public class GenesysService {
       params.put("booleanValue", null);
       params.put("textValue", null);
       params.put("numericValue", null);
+      params.put("richTextValue", null);
       params.put("intValue", Long.parseLong(leadStatusId));
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
@@ -282,6 +283,7 @@ public class GenesysService {
     params.put("textValue", textValue);
     params.put("numericValue", null);
     params.put("intValue", null);
+    params.put("richTextValue", null);
     params.put("intArrayValue", null);
     params.put("customFieldGroupAssignmentId", cfgaId);
     params.put("sourceId", contactId);
