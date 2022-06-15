@@ -113,7 +113,7 @@ import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsDropdown from '@/views/flow/components/AttachmentsDropdown'
 import { ProjectMutations } from '@/stores/ProjectStore'
 import { AppMutations } from '@/stores/AppStore'
-import { getRequest, getSnackbar, postRequest } from '@/helpers/helpers'
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHistoryDrilldown'
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
@@ -253,7 +253,7 @@ export default {
     async fetchTeamsForUser() {
       try {
         this.projectIsLoading = true
-        const { data } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.teamsAssociatedToUser = data
 
@@ -261,7 +261,7 @@ export default {
           this.userHasTeam = true
           this.teamNamesAssociatedToUser = this.teamsAssociatedToUser.map(team => team.teamName)
         }
-
+        handleHidingGlobalLoader(this, status)
         await this.loadProject()
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -273,7 +273,7 @@ export default {
     async loadProject() {
       this.userAssigned = false
       try {
-        const { data } = await getRequest('/messaging/projects/' + this.projectId)
+        const { data, status } = await getRequest('/messaging/projects/' + this.projectId)
         this.projectMessageProperties = data
         this.projectMessageProperties.smsTeamOwners?.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
@@ -285,7 +285,7 @@ export default {
             })
           }
         })
-
+        handleHidingGlobalLoader(this, status)
         this.projectIsLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -297,10 +297,11 @@ export default {
     async getAvailableTeams() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data } = await getRequest(`/smsTeam/users`)
+        const { data, status } = await getRequest(`/smsTeam/users`)
         if (data) {
           this.selectableTeams = data
         }
+        handleHidingGlobalLoader(this, status)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

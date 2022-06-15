@@ -155,7 +155,7 @@
 <script>
 import { AppMutations } from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar, postRequest } from '@/helpers/helpers'
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
@@ -349,7 +349,7 @@ export default {
     async fetchProjects() {
       try {
         this.showLoading(true)
-        const { data } = await getRequest(`/messaging/projects`)
+        const { data, status } = await getRequest(`/messaging/projects`)
         if (data) {
           this.projects = data
           this.projects?.forEach(p => {
@@ -363,7 +363,7 @@ export default {
             })
           })
         }
-
+        handleHidingGlobalLoader(this, status)
         this.showLoading(false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -375,7 +375,7 @@ export default {
     async reloadProjects() {
       try {
         this.showLoading(true)
-        const { data } = await getRequest(`/messaging/projects`)
+        const { data, status } = await getRequest(`/messaging/projects`)
         if (data) {
           this.projects = data
           this.projects?.forEach(p => {
@@ -389,7 +389,6 @@ export default {
             })
           })
         }
-
         const projectIds = this.projects?.map(p => p.projectId)
 
         let projectId = parseInt(this.$route.params.projectId) || null
@@ -397,6 +396,7 @@ export default {
         if (this.$route.path.includes('inboxConversation') && projectId != null && projectId !== 0 && !projectIds.includes(projectId)) {
           await this.$router.push({ path: `/inbox` })
         }
+        handleHidingGlobalLoader(this, status)
         this.showLoading(false)
         this.reloadInProgress = false
       } catch (e) {
@@ -500,7 +500,7 @@ export default {
     async getAvailableTeams() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data } = await getRequest(`/smsTeam/users`)
+        const { data, status } = await getRequest(`/smsTeam/users`)
         this.selectableTeams = data
         this.selectableTeams.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
@@ -544,7 +544,7 @@ export default {
         if (!this.selectedOwnerFilters.includes('Unassigned')) {
           this.selectedOwnerFilters.push('Unassigned')
         }
-
+        handleHidingGlobalLoader(this, status)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
