@@ -127,8 +127,8 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-              <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
+              <v-btn color="primary" text @click="close">Cancel</v-btn>
+              <v-btn color="primary" raised @click="saveAhj" class="white--text"
                      :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId">
                 {{ ahjBtnTxt }}
               </v-btn>

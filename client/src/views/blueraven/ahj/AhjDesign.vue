@@ -1,14 +1,14 @@
 <template>
   <v-row no-gutters>
     <v-col class="ahj-form-btns py-1" cols="12">
-      <a v-if="dataWasChanged"
+      <v-btn color="primary" text v-if="dataWasChanged"
          @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
-      >Cancel</a>
+      >Cancel</v-btn>
       <v-btn class="white--text mr-0 save-btn"
              v-if="userCanEdit"
-             color="primaryButton"
+             color="primary"
              @click="saveDialog = true"
       >Save</v-btn>
     </v-col>
@@ -466,7 +466,6 @@
   }
   .save-btn {
     margin: 10px 5px 10px 0;
-    text-transform: capitalize;
   }
   .v-card__title,
   .v-toolbar__title {

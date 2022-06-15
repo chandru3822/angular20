@@ -42,7 +42,7 @@
       <v-list-item :title="link.name">
         <v-list-item-content class="flex-row-center">
           <v-list-item-action @click="editLink(link)" v-if="userCanEdit">
-            <v-icon small>edit</v-icon>
+            <v-icon small color="primary">edit</v-icon>
           </v-list-item-action>
           <v-list-item-title :style="[{'font-size': isNested ? '0.95em !important' : '0.85em !important'}, {'text-align': 'left'}]">
             <a :href="link.link" target="_blank" class="list-link">{{ link.name }}</a>

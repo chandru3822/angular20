@@ -6,7 +6,7 @@
       <v-tooltip top v-if="showTooltip">
         <template v-slot:activator="{ on: tooltip }">
           <div v-on="{ ...tooltip }" class="d-inline-block">
-            <v-btn v-if="textbutton" color="brRed" class="white--text py-1 px-2 align-center" small v-on="on" :disabled="isDisabled">
+            <v-btn v-if="textbutton" color="error" class="white--text py-1 px-2 align-center" small v-on="on" :disabled="isDisabled">
               Delete
             </v-btn>
             <v-btn v-else small text v-on="on" :disabled="isDisabled" class="align-center">

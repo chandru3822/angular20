@@ -116,7 +116,7 @@
           {{title}}
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon color="#ddd" style="border-radius: 3px">
+        <v-btn icon color="primary" style="border-radius: 3px">
           <v-icon v-show="!addMode && !editMode"
                   @click="addRequirement" class="white--text">add</v-icon>
           <v-icon v-show="addMode || editMode"
@@ -137,7 +137,7 @@
         <div class="requirement-btns">
           <a @click="hideCtrls"
              class="cancel-link">Cancel</a>
-          <v-btn @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
+          <v-btn @click="saveRequirement(null, false)" color="primary" class="white--text py-1 px-2"
                  :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
             {{ addMode ? 'Add' : 'Update' }}
           </v-btn>

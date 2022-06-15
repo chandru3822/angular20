@@ -41,7 +41,7 @@
         <v-list-item v-show="checklistItemsCopy.length > 0"
                      class="grab" :title="item.description">
           <v-list-item-action>
-            <v-icon small v-if="userCanEdit" class="mr-3" @click="editItem(item)">edit</v-icon>
+            <v-icon small color="primary" v-if="userCanEdit" class="mr-3" @click="editItem(item)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <pre class="app-pre-wrapper">

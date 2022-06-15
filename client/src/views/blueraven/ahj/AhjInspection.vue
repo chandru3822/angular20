@@ -2,13 +2,14 @@
 <template>
   <v-row no-gutters>
     <v-col class="ahj-form-btns py-1" cols="12">
-      <a v-if="dataWasChanged"
+      <v-btn color="primary" text v-if="dataWasChanged"
          @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
-      >Cancel</a>
-      <v-btn class="white--text mr-0 save-btn" v-if="userCanEdit"
-             color="primaryButton"
+      >Cancel</v-btn>
+      <v-btn class="white--text mr-0 save-btn"
+             v-if="userCanEdit"
+             color="primary"
              @click="saveDialog = true"
       >Save</v-btn>
     </v-col>
@@ -54,7 +55,7 @@
             <v-card flat class="pa-0">
               <v-card-title class="pa-0">
                 Scheduling Note
-                <v-btn text x-small fab @click="editSchedulingNote = !editSchedulingNote">
+                <v-btn text color="primary" x-small fab @click="editSchedulingNote = !editSchedulingNote">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -111,7 +112,7 @@
             <v-card flat class="pa-0">
               <v-card-title class="pa-0">
                 Instructions for BRS Technician
-                <v-btn text x-small fab @click="editInstructionsForBRSTech = !editInstructionsForBRSTech">
+                <v-btn color="primary" text x-small fab @click="editInstructionsForBRSTech = !editInstructionsForBRSTech">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -128,7 +129,7 @@
             <v-card flat class="pa-0">
               <v-card-title class="pa-0">
                 Documentation Notes
-                <v-btn text x-small fab @click="editDocumentationNote = !editDocumentationNote">
+                <v-btn text color="primary" x-small fab @click="editDocumentationNote = !editDocumentationNote">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -190,7 +191,7 @@
             <v-card flat class="pa-0">
               <v-card-title class="pa-0">
                 Scheduling with Customer Note
-                <v-btn text x-small fab @click="editCustomerNote = !editCustomerNote">
+                <v-btn text x-small color="primary" fab @click="editCustomerNote = !editCustomerNote">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -251,7 +252,7 @@
             <v-card flat class="pa-0">
               <v-card-title class="pa-0">
                 Obtaining Results Notes
-                <v-btn text x-small fab @click="editObtainingResultsNote = !editObtainingResultsNote">
+                <v-btn text x-small color="primary" fab @click="editObtainingResultsNote = !editObtainingResultsNote">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -323,7 +324,7 @@
             <v-card flat class="pa-0">
               <v-card-title class="pa-0">
                 Re-inspection Notes
-                <v-btn text x-small fab @click="editReinspectionNote = !editReinspectionNote">
+                <v-btn text x-small color="primary" fab @click="editReinspectionNote = !editReinspectionNote">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -376,7 +377,7 @@
             <v-card flat class="pa-0">
               <v-card-title class="pa-0">
                 MPU Inspection Notes
-                <v-btn text x-small fab @click="editMPUNote = !editMPUNote">
+                <v-btn text x-small color="primary" fab @click="editMPUNote = !editMPUNote">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -540,17 +541,17 @@
 
         <v-card-actions class="px-6">
           <v-spacer></v-spacer>
-          <a @click="saveDialog = false"
+          <v-btn color="primary" text @click="saveDialog = false"
              class="cancel-link mr-2"
-          >Cancel</a>
+          >Cancel</v-btn>
           <v-btn v-if="ahjInspection.updateAllInState"
                  class="white--text mr-0 save-btn"
-                 color="primaryButton"
+                 color="primary"
                  @click="saveConfirmDialog = true"
           >Save</v-btn>
           <v-btn v-else
                  class="white--text mr-0 save-btn"
-                 color="primaryButton"
+                 color="primary"
                  @click="updateAhjInspection"
           >Save</v-btn>
         </v-card-actions>
@@ -569,11 +570,11 @@
 
         <v-card-actions class="px-6">
           <v-spacer></v-spacer>
-          <a @click="saveConfirmDialog = false"
+          <v-btn color="primary" text @click="saveConfirmDialog = false"
              class="cancel-link mr-2"
-          >Cancel</a>
+          >Cancel</v-btn>
           <v-btn class="white--text mr-0 save-btn"
-                 color="primaryButton"
+                 color="primary"
                  @click="updateAhjInspection"
           >Yes</v-btn>
         </v-card-actions>
@@ -823,7 +824,6 @@
   }
   .save-btn {
     margin: 10px 5px 10px 0;
-    text-transform: capitalize;
   }
   .empty-list {
     padding: 20px;

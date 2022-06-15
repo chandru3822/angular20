@@ -2,14 +2,15 @@
 <template>
   <v-row no-gutters id="ahj-permit">
     <v-col class="ahj-form-btns py-1" cols="12">
-      <a v-if="dataWasChanged"
-         @click="resetForm"
+      <v-btn v-if="dataWasChanged"
+             color="primary" text
+             @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
-      >Cancel</a>
+      >Cancel</v-btn>
       <v-btn class="white--text mr-0 save-btn"
              v-if="userCanEdit"
-             color="primaryButton"
+             color="primary"
              @click="saveDialog = true"
       >Save</v-btn>
     </v-col>
@@ -169,7 +170,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 BRS Technician Permit Submission Instructions
-                <v-btn text x-small fab @click="editBrsTechnicianPermitSubmissionInstructions = !editBrsTechnicianPermitSubmissionInstructions">
+                <v-btn color="primary" text x-small fab @click="editBrsTechnicianPermitSubmissionInstructions = !editBrsTechnicianPermitSubmissionInstructions">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -197,7 +198,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 Submission Instructions
-                <v-btn text x-small fab @click="editSubmissionInstruction = !editSubmissionInstruction">
+                <v-btn text color="primary" x-small fab @click="editSubmissionInstruction = !editSubmissionInstruction">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -263,7 +264,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 Revision Submission Instructions
-                <v-btn text x-small fab @click="editRevisionSubmissionInstruction = !editRevisionSubmissionInstruction">
+                <v-btn text color="primary" x-small fab @click="editRevisionSubmissionInstruction = !editRevisionSubmissionInstruction">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -306,7 +307,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 Cancellation and Refund Instructions
-                <v-btn text x-small fab @click="editCancellationAndRefundInstructions = !editCancellationAndRefundInstructions">
+                <v-btn text x-small color="primary" fab @click="editCancellationAndRefundInstructions = !editCancellationAndRefundInstructions">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -381,7 +382,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 As-Built Submission Instructions
-                <v-btn text x-small fab @click="editAsBuiltSubmissionInstruction = !editAsBuiltSubmissionInstruction">
+                <v-btn text x-small color="primary" fab @click="editAsBuiltSubmissionInstruction = !editAsBuiltSubmissionInstruction">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -435,7 +436,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 Non Standard Submission Instructions
-                <v-btn text x-small fab @click="editNonStandardSubmissionInstruction = !editNonStandardSubmissionInstruction">
+                <v-btn text x-small color="primary" fab @click="editNonStandardSubmissionInstruction = !editNonStandardSubmissionInstruction">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -505,7 +506,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 Approval Instructions
-                <v-btn text x-small fab @click="editApprovalInstructions = !editApprovalInstructions">
+                <v-btn text x-small color="primary" fab @click="editApprovalInstructions = !editApprovalInstructions">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -558,7 +559,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 BRS Technician Permit Pick-up and Delivery Instructions
-                <v-btn text x-small fab @click="editBrsTechnicianPermitPickupAndDeliveryInstructions = !editBrsTechnicianPermitPickupAndDeliveryInstructions">
+                <v-btn text x-small color="primary" fab @click="editBrsTechnicianPermitPickupAndDeliveryInstructions = !editBrsTechnicianPermitPickupAndDeliveryInstructions">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -585,7 +586,7 @@
             <v-card flat class="mt-1 pa-0">
               <v-card-title class="px-0 pb-0">
                 Delivery Instructions
-                <v-btn text x-small fab @click="editDeliveryInstruction = !editDeliveryInstruction">
+                <v-btn text x-small color="primary" fab @click="editDeliveryInstruction = !editDeliveryInstruction">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-card-title>
@@ -691,17 +692,18 @@
 
         <v-card-actions class="px-6">
           <v-spacer></v-spacer>
-          <a @click="saveDialog = false"
+          <v-btn @click="saveDialog = false"
+                 color="primary" text
              class="cancel-link mr-2"
-          >Cancel</a>
+          >Cancel</v-btn>
           <v-btn v-if="ahjPermit.updateAllInState"
                  class="white--text mr-0 save-btn"
-                 color="primaryButton"
+                 color="primary"
                  @click="saveConfirmDialog = true"
           >Save</v-btn>
           <v-btn v-else
                  class="white--text mr-0 save-btn"
-                 color="primaryButton"
+                 color="primary"
                  @click="updateAhjPermit"
           >Save</v-btn>
         </v-card-actions>
@@ -720,11 +722,11 @@
 
         <v-card-actions class="px-6">
           <v-spacer></v-spacer>
-          <a @click="saveConfirmDialog = false"
+          <v-btn color="primary" text @click="saveConfirmDialog = false"
              class="cancel-link mr-2"
-          >Cancel</a>
+          >Cancel</v-btn>
           <v-btn class="white--text mr-0 save-btn"
-                 color="primaryButton"
+                 color="primary"
                  @click="updateAhjPermit"
           >Yes</v-btn>
         </v-card-actions>
