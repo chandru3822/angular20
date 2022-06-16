@@ -12,7 +12,6 @@
 
     <div id="appts-created-pipeline-container" class="mb-8">
       <div class="pipeline-header-container">
-        <v-icon class="pipeline-icon">mdi-poll</v-icon>
         <div class="pipeline-title">Appointments Created Pipeline</div>
       </div>
 
@@ -163,7 +162,6 @@
       <div id="appts-to-fdc-pipeline-container" :class="{'mb-8': apptsToFdcPipelineData.length > 0}">
         <div class="pipeline-header-container">
           <div id="pipeline-header-left-side">
-            <v-icon class="pipeline-icon">mdi-poll</v-icon>
             <div class="pipeline-title">Appointments to FDC Pipeline</div>
           </div>
 
@@ -442,12 +440,12 @@
               <th class="funnel-th view-btns">
                 <div class="view-btns-container">
                   <v-btn class="funnel-btn black--text" @click="viewSelected('standard')"
-                         :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
+                         :class="{'white--text': viewSelect === 'standard', 'primary--text': viewSelect !== 'standard', 'elevation-2': viewSelect !== 'standard'}"
                          :color="viewSelect === 'standard' ? 'primary' : 'secondary'">
                     Standard View
                   </v-btn>
                   <v-btn class="funnel-btn black--text" @click="viewSelected('apptDateCohort')"
-                         :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
+                         :class="{'white--text': viewSelect === 'apptDateCohort', 'primary--text': viewSelect !== 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
                          :color="viewSelect === 'apptDateCohort' ? 'primary' : 'secondary'">
                     Appt Date Cohort
                   </v-btn>
@@ -754,7 +752,7 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+            <v-btn class="white--text text-capitalize mr-4 mb-2" color="primary"
                    @click="closeFunnelDrilldownDialog">
               Close
             </v-btn>
@@ -2283,7 +2281,6 @@ export default {
 }
 
 #closer-dash-container {
-  font-family: 'Roboto Condensed', sans-serif !important;
   letter-spacing: 0.02em !important;
   overflow: auto;
 }
@@ -2507,14 +2504,13 @@ export default {
     width: 100%;
 
     .pipeline-icon {
-      color: var(--v-primaryText-base) !important;
+      color: var(--v-primary-base) !important;
       font-size: 24px;
     }
 
     .pipeline-title {
       font-size: 18px;
       font-weight: bold;
-      color: var(--v-primary-base);
       margin-left: 8px;
     }
   }
@@ -2601,7 +2597,7 @@ export default {
 
       .funnel-th {
         padding: 2px;
-        color: var(--v-primary-base);
+        color: var(--v-grey-darken2);
         font-size: 8px;
         font-weight: normal;
         text-align: center;
@@ -2666,14 +2662,13 @@ export default {
     width: 100%;
 
     .pipeline-icon {
-      color: var(--v-primaryText-base) !important;
+      color: var(--v-primary-base) !important;
       font-size: 24px;
     }
 
     .pipeline-title {
       font-size: 18px;
       font-weight: bold;
-      color: var(--v-primary-base);
       margin-left: 8px;
     }
 
@@ -2805,7 +2800,7 @@ export default {
       }
 
       .funnel-th {
-        color: var(--v-primary-base);
+        color: var(--v-grey-darken2);
         font-size: 8px;
         font-weight: normal;
         text-align: center;
