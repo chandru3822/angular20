@@ -27,6 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -49,7 +53,6 @@ public class MessagingService {
   private final SqlCache sqlCache;
   private final NotificationService notificationService;
   private final PubSubService pubSubService;
-  private final SecurityService securityService;
   private final ObjectMapper om;
   private final NamedParameterJdbcTemplate jdbc;
   private final CacheManager cacheManager;
@@ -77,29 +80,32 @@ public class MessagingService {
     return projectMessageProps.get();
   }
 
-  public List<ProjectMessageProperties> getProjects() {
-    User user = securityService.getCurrentUser();
-
-    Boolean viewAll =
-        securityService.userHasFeatureAccessLevel(
-            user.getId(),
-            user.getCompanyId(),
-            user.getHighestCompanyId(),
-            "SMS_INBOX",
-            List.of("VIEW_ALL"));
-
-    List<SmsTeam> userAssignedTeams = getTeamsForUser(user);
-    List<Long> smsTeamIds = userAssignedTeams.stream().map(SmsTeam::getId).toList();
+  public Page<ProjectMessageProperties> getProjects(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds, Pageable pageable) {
+    boolean containsUnassigned = false;
+    if (ownerUserIds.contains(-1L)) {
+      containsUnassigned = true;
+      ownerUserIds.remove(-1L);
+    }
 
     Map<String, Object> params =
         Map.of(
             "smsTeamIds", smsTeamIds,
-            "viewAll", viewAll);
+            "ownerIds", ownerUserIds,
+            "notifProjectIds", notifProjectIds,
+            "query", query,
+            "unassisgned", containsUnassigned,
+            "limit", pageable.getPageSize(),
+            "offset", pageable.getOffset());
 
-    return sqlCache.query(
+     List<ProjectMessageProperties> projects = sqlCache.query(
         "messaging.getProjects",
         params,
         new MessagePropertiesMapper<>(ProjectMessageProperties.class, om));
+
+    Integer count =
+      sqlCache.queryForObject("messaging.getProjectsCount", params, Integer.class);
+    return new PageImpl<>(
+      projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   private void updateProjectStatus(Long projectId, Boolean closed, @NonNull Long modifiedByUserId) {

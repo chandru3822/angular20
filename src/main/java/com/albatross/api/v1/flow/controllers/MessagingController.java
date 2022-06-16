@@ -7,7 +7,10 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.services.MessageTemplateService;
 import com.albatross.api.v1.flow.services.MessagingService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -61,9 +64,12 @@ public class MessagingController {
     messagingService.removeTeam(projectId, smsTeamId, details.getTrueUserId());
   }
 
-  @GetMapping(value = "/projects")
-  public List<ProjectMessageProperties> getProjects() {
-    return messagingService.getProjects();
+  @PostMapping(value = "/projects")
+  public Page<ProjectMessageProperties> getProjects(@RequestParam String query,
+                                                    @RequestBody FilterData filterData,
+                                                    Pageable pageable) {
+
+    return messagingService.getProjects(query, filterData.getOwnerUserIds(), filterData.getSmsTeamIds(), filterData.getNotifProjectIds(), pageable);
   }
 
   @GetMapping(value = "/projects/{projectId}")
@@ -95,5 +101,12 @@ public class MessagingController {
   public void createNotification(
       @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
     messagingService.addSmsOwnershipNotification(projectId, details.getTrueUserId());
+  }
+
+  @Data
+  public static class FilterData {
+    private List<Long> ownerUserIds;
+    private List<Long> smsTeamIds;
+    private List<Long> notifProjectIds;
   }
 }
