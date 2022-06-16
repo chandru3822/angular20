@@ -24,17 +24,17 @@
               class="elevation-1"
           >
             <template #no-data>
-              No available users
+              <div class="black--text">No available users</div>
             </template>
 
             <template #no-results>
-              No available users
+              <div class="black--text">No available users</div>
             </template>
 
             <template #item="{ item, index }">
               <tr class="vertical-top" :class="{'shaded-row': index % 2}">
-                <td class="text-left pt-1">
-                  <v-btn text :to="{ name: 'commissionUser', params: {id: item.id} }">
+                <td class="text-left pt-1" >
+                  <v-btn text color="primary" :to="{ name: 'commissionUser', params: {id: item.id} }">
                     {{item.name}}
                   </v-btn>
                 </td>
