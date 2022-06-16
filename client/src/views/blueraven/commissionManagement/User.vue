@@ -24,7 +24,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd"
+            <v-btn text color="primary" v-if="userCanAdd"
                    @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]">
               <v-icon v-if="addNewCommissionPlan">remove</v-icon>
               <v-icon v-else>add</v-icon>
@@ -68,7 +68,7 @@
                    :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate">
               Save
             </v-btn>
-            <v-btn color="secondary" @click="addNewCommissionPlan = !addNewCommissionPlan">
+            <v-btn color="primary" text @click="addNewCommissionPlan = !addNewCommissionPlan"><!--todo: determine correct cancel button style-->
               Cancel
             </v-btn>
           </div>
@@ -108,7 +108,7 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn :disabled="!item.endDate && !item.note"
+              <v-btn color="primary" :disabled="!item.endDate && !item.note"
                      @click="[expanded = [], savePlan(item, 2)]">Save</v-btn>
             </td>
           </template>
@@ -125,11 +125,11 @@
                 </pre>
               </td>
               <td>
-                <v-btn small text @click="[expanded = [item], selectedIndex = index]"
+                <v-btn small text color="primary" @click="[expanded = [item], selectedIndex = index]"
                        v-if="!expanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="[expanded = [], selectedIndex = index]"
+                <v-btn small text color="primary" @click="[expanded = [], selectedIndex = index]"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
               </td>
@@ -146,7 +146,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd"
+            <v-btn text color="primary" v-if="userCanAdd"
                    @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan,
                                 newOverridePlan = {}, getOverridePlans()]">
               <v-icon v-if="addNewOverridePlan">remove</v-icon>
@@ -191,7 +191,7 @@
                  :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate">
             Save
           </v-btn>
-          <v-btn color="secondary" @click="addNewOverridePlan = !addNewOverridePlan">
+          <v-btn color="primary" text @click="addNewOverridePlan = !addNewOverridePlan">
             Cancel
           </v-btn>
         </v-card>
@@ -237,7 +237,7 @@
               <div class="mb-2" v-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn :disabled="(!item.endDate && !item.note) || item.dateError "
+              <v-btn color="primary" :disabled="(!item.endDate && !item.note) || item.dateError "
                      @click="[overrideExpanded = [], savePlan(item, 1)]">Save</v-btn>
             </td>
           </template>
@@ -254,11 +254,11 @@
                 </pre>
               </td>
               <td>
-                <v-btn small text @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
+                <v-btn small text color="primary" @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
                        v-if="!overrideExpanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="[overrideExpanded = [], overrideSelectedIndex = index]"
+                <v-btn small text color="primary" @click="[overrideExpanded = [], overrideSelectedIndex = index]"
                        v-if="overrideExpanded.includes(item)">cancel
                 </v-btn>
               </td>
@@ -275,12 +275,12 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd"
+            <v-btn text color="primary" v-if="userCanAdd"
                    @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]">
               <v-icon v-if="addNewReceivingPlan">remove</v-icon>
               <v-icon v-else>mdi-content-copy</v-icon>
             </v-btn>
-            <v-btn text @click="addOverridePlan()" v-if="userCanAdd" >
+            <v-btn text color="primary" @click="addOverridePlan()" v-if="userCanAdd" >
               <v-icon>add</v-icon>
             </v-btn>
           </v-toolbar-items>
@@ -341,7 +341,7 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn :disabled="!item.endDate && !item.note" @click="[addNewReceivingPlan = false, savePlan(item, 3)]">Save</v-btn>
+              <v-btn color="primary" :disabled="!item.endDate && !item.note" @click="[addNewReceivingPlan = false, savePlan(item, 3)]">Save</v-btn>
             </td>
           </template>
 
@@ -354,11 +354,11 @@
                 </pre>
               </td>
               <td>
-                <v-btn small text @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
+                <v-btn small text color="primary" @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
                        v-if="!receivingExpanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="[receivingExpanded = [], receivingSelectedIndex = index]"
+                <v-btn small text color="primary" @click="[receivingExpanded = [], receivingSelectedIndex = index]"
                        v-if="receivingExpanded.includes(item)">cancel
                 </v-btn>
               </td>
