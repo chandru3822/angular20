@@ -16,6 +16,7 @@
             text
             label="Search by project or owner"
             v-model="searchQuery"
+            @input="searchProjects"
             class="albatross-body-2 mb-n4"
             clearable
           />
@@ -33,12 +34,15 @@
             </v-chip>
             <v-autocomplete v-model="selectedTeamFilters"
                             :items="teamFilterOptions"
+                            item-text="teamName"
+                            item-value="id"
                             prepend-icon="group"
                             class="filter-control albatross-body-2 align-self-end flex-shrink-1"
                             placeholder="Teams"
                             :menu-props="{offsetY:true}"
                             multiple
                             clearable
+                            @input="reloadProjects"
                             v-if="teamFilterOptions.length > 1">
               <v-list-item
                 slot="prepend-item"
@@ -60,7 +64,7 @@
               >
                 <v-chip small
                         v-if="index <= teamFilterChipLimit && selectedTeamFilters && selectedTeamFilters.length <= teamFilterChipLimit">
-                  <span>{{ item }}</span>
+                  <span>{{ item.teamName }}</span>
                 </v-chip>
                 <span
                   v-if="index === 0 && selectedTeamFilters && selectedTeamFilters.length > teamFilterChipLimit"
@@ -70,10 +74,13 @@
             </v-autocomplete>
             <v-autocomplete v-model="selectedOwnerFilters"
                             :items="ownerFilterOptions"
+                            item-text="name"
+                            item-value="userId"
                             prepend-icon="person"
                             class="filter-control albatross-body-2 align-self-end flex-shrink-1"
                             placeholder="Owners"
                             :menu-props="{offsetY:true}"
+                            @input="reloadProjects"
                             multiple
                             clearable>
               <v-list-item
@@ -96,7 +103,7 @@
               >
                 <v-chip small
                         v-if="index <= ownerFilterChipLimit && selectedOwnerFilters && selectedOwnerFilters.length <= ownerFilterChipLimit">
-                  <span>{{ item }}</span>
+                  <span>{{ item.userName }}</span>
                 </v-chip>
                 <span
                   v-if="index === 0 && selectedOwnerFilters && selectedOwnerFilters.length > ownerFilterChipLimit"
@@ -108,46 +115,64 @@
           </v-row>
         </v-toolbar-items>
       </v-toolbar>
-      <v-col v-if="!projectsFiltered || projectsFiltered.length === 0" class="text-center pt-6">No available
-        conversations
-      </v-col>
-      <v-col v-for="item in projectsFiltered" class="inbox-row pa-6 clickable"
-             :class="{'selected': $route.params.projectId == item.projectId}"
-             @click="$router.push({path: `/inbox/inboxConversation/${item.projectId}`}); clearNotification(item.projectId)">
-        <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
-          <v-col cols="11" class="text-ellipses pa-0">
-            <div class="d-flex align-baseline"
-                 :class="{'notif-div': (hasNotification(item.projectId))}">
-              <div>
-                <v-badge
-                  dot
-                  color="#F35858"
-                  class="notif-badge"
-                  v-if="hasNotification(item.projectId)"
-                >
-                </v-badge>
-                <b>{{ item.projectName }}</b>
-              </div>
-              <span v-if="item.messageHistory.length > 0"
-                    class="albatross-body-2 px-2 text-ellipses">{{ getTime(item.messageHistory[0].lastMessageSent)
-                }}</span>
-              <span class="albatross-body-2 px-1 text-ellipses deemphasis">{{ item.state }}</span>
-            </div>
-            <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}</div>
+      <v-data-table
+        :items="projectsFiltered"
+        :options.sync="options"
+        disable-sort
+        :mobile-breakpoint="0"
+        :footer-props="footerProps"
+        :server-items-length="totalProjects"
+        hide-default-header
+        class="elevation-1"
+      >
+        <template #no-data>
+          No available conversations
+        </template>
+
+        <template #no-results>
+          No available conversations
+        </template>
+
+        <template #item="{ item, index }">
+          <v-col class="inbox-row pa-6 clickable"
+                 :class="{'selected': $route.params.projectId == item.projectId}"
+                 @click="$router.push({path: `/inbox/inboxConversation/${item.projectId}`}); clearNotification(item.projectId)">
+            <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
+              <v-col cols="11" class="pa-0">
+                <div class="d-flex align-baseline"
+                     :class="{'notif-div': (hasNotification(item.projectId))}">
+                  <div>
+                    <v-badge
+                      dot
+                      color="#F35858"
+                      class="notif-badge"
+                      v-if="hasNotification(item.projectId)"
+                    >
+                    </v-badge>
+                    <b>{{ item.projectName }}</b>
+                  </div>
+                  <span v-if="item.messageHistory.length > 0"
+                        class="albatross-body-2 px-2">{{ getTime(item.messageHistory[0].lastMessageSent)
+                    }}</span>
+                  <span class="albatross-body-2 px-1 deemphasis">{{ item.state }}</span>
+                </div>
+                <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}</div>
+              </v-col>
+            </v-row>
+            <TeamAssignmentChips
+              :sms-team-owners="item.smsTeamOwners"
+              :team-names-associated-to-user="teamNamesAssociatedToUser"
+              :reloading="reloadInProgress"
+              :show-assign-to-me-button="false"
+              :project-id="item.projectId"
+              :project="item"
+              show-selected-styles
+              @updateOwner="fetchProjects"
+              @joinConversation="[assignToMeProject = item, joinConversation()]"
+            />
           </v-col>
-        </v-row>
-        <TeamAssignmentChips
-          :sms-team-owners="item.smsTeamOwners"
-          :team-names-associated-to-user="teamNamesAssociatedToUser"
-          :reloading="reloadInProgress"
-          :show-assign-to-me-button="false"
-          :project-id="item.projectId"
-          :project="item"
-          show-selected-styles
-          @updateOwner="fetchProjects"
-          @joinConversation="[assignToMeProject = item, joinConversation()]"
-        />
-      </v-col>
+        </template>
+      </v-data-table>
     </template>
   </ThreeColumnLayout>
 </template>
@@ -179,6 +204,13 @@ export default {
       userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL'),
       snackbar: {},
       projects: [],
+      options: {
+        itemsPerPage: 100
+      },
+      footerProps: {
+        'items-per-page-options': [25, 50, 100],
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+      },
       searchQuery: '',
       constants,
       userId: this.$store.state.user.details.id,
@@ -197,7 +229,9 @@ export default {
       thingsLoading: 0,
       viewWidth: window.innerWidth,
       selectableTeams: [],
-      reloadInProgress: false
+      reloadInProgress: false,
+      totalProjects: 0,
+      initialLoad: true
     }
   },
   computed: {
@@ -209,47 +243,7 @@ export default {
     },
     projectsFiltered() {
       return this.projects.filter(p => {
-        let ownerExists = false
-        let teamExists = false
-        let searchTermExists = false
         let notificationExists = false
-
-        if (this.searchQuery && (p.projectName?.toLowerCase().includes(this.searchQuery.toLowerCase()) || ((p.projectId + '').indexOf(this.searchQuery) > -1))) {
-          searchTermExists = true
-        }
-
-        p.smsTeamOwners.forEach(team => {
-          if (this.selectedTeamFilters.includes(team.teamName) || this.selectedTeamFilters.length === 0) {
-            teamExists = true
-
-            team.users.forEach(owner => {
-              if (this.selectedOwnerFilters.includes(owner.name)) {
-                ownerExists = true
-              }
-
-              if (this.searchQuery && owner.name?.toLowerCase().includes(this.searchQuery.toLowerCase())) {
-                searchTermExists = true
-              }
-            })
-
-            if (team.users.length === 0 && this.selectedOwnerFilters.includes('Unassigned')) {
-              ownerExists = true
-            }
-          }
-
-        })
-
-        if (this.selectedOwnerFilters.length === 0) {
-          ownerExists = true
-        }
-
-        if (this.selectedTeamFilters.length === 0) {
-          teamExists = true
-        }
-
-        if (this.searchQuery == '' || this.searchQuery === null) {
-          searchTermExists = true
-        }
 
         if (this.showUnreadOnly) {
           if (this.hasNotification(p.projectId)) {
@@ -259,7 +253,7 @@ export default {
           notificationExists = true
         }
 
-        return ownerExists && teamExists && searchTermExists && notificationExists
+        return notificationExists
       }).sort((a, b) => {
         return this.sortOldToNew ?
           (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0) - (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) :
@@ -349,9 +343,20 @@ export default {
     async fetchProjects() {
       try {
         this.showLoading(true)
-        const { data, status } = await getRequest(`/messaging/projects`)
+        const {page, itemsPerPage} = this.options
+        let filterData = {
+          ownerUserIds: this.selectedOwnerFilters,
+          smsTeamIds: this.selectedTeamFilters,
+          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+        }
+
+        const {data} = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
+          filterData
+        )
+
         if (data) {
-          this.projects = data
+          this.projects = data.content
+          this.totalProjects = data?.totalElements || 0
           this.projects?.forEach(p => {
             p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
             p.smsTeamOwners.forEach(team => {
@@ -365,6 +370,7 @@ export default {
         }
         handleHidingGlobalLoader(this, status)
         this.showLoading(false)
+        this.initialLoad = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching projects')
@@ -375,9 +381,21 @@ export default {
     async reloadProjects() {
       try {
         this.showLoading(true)
-        const { data, status } = await getRequest(`/messaging/projects`)
+        const {page, itemsPerPage} = this.options
+
+        let filterData = {
+          ownerUserIds: this.selectedOwnerFilters,
+          smsTeamIds: this.selectedTeamFilters,
+          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+        }
+
+        const {data} = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
+          filterData
+        )
+
         if (data) {
-          this.projects = data
+          this.projects = data.content
+          this.totalProjects = data?.totalElements || 0
           this.projects?.forEach(p => {
             p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
             p.smsTeamOwners.forEach(team => {
@@ -484,15 +502,17 @@ export default {
       if (this.allTeamsSelected) {
         this.selectedTeamFilters = []
       } else {
-        this.selectedTeamFilters = cloneDeep(this.teamFilterOptions)
+        this.selectedTeamFilters = this.teamFilterOptions?.map(t => t.id)
       }
+      this.reloadProjects();
     },
     toggleSelectAllOwners() {
       if (this.allOwnersSelected) {
         this.selectedOwnerFilters = []
       } else {
-        this.selectedOwnerFilters = cloneDeep(this.ownerFilterOptions)
+        this.selectedOwnerFilters = this.ownerFilterOptions?.map(o => o.userId)
       }
+      this.reloadProjects();
     },
     onResize() {
       this.viewWidth = window.innerWidth
@@ -504,33 +524,31 @@ export default {
         this.selectableTeams = data
         this.selectableTeams.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
-            if (this.teamFilterOptions.indexOf(team.teamName) === -1) {
-              this.teamFilterOptions.push(team.teamName)
+            if (this.teamFilterOptions.indexOf(team) === -1) {
+              this.teamFilterOptions.push(team)
             }
 
-            if (!this.selectedTeamFilters.includes(team.teamName)) {
-              this.selectedTeamFilters.push(team.teamName)
+            if (!this.selectedTeamFilters.includes(team.id)) {
+              this.selectedTeamFilters.push(team.id)
             }
 
             team.users.forEach(owner => {
-              if (this.ownerFilterOptions.indexOf(owner.userName) === -1) {
-                this.ownerFilterOptions.push(owner.userName)
-              }
+              if (!this.ownerAlreadyAddedToFilter(owner)) {
+                this.ownerFilterOptions.push(owner)
 
-              if (owner.userId === this.userId) {
-                if (!this.selectedOwnerFilters.includes(owner.userName)) {
-                  this.selectedOwnerFilters.push(owner.userName)
+                if (owner.userId === this.userId) {
+                  this.selectedOwnerFilters.push(owner.userId)
                 }
               }
             })
           } else if (this.userCanViewAll) {
-            if (this.teamFilterOptions.indexOf(team.teamName) === -1) {
-              this.teamFilterOptions.push(team.teamName)
+            if (this.teamFilterOptions.indexOf(team) === -1) {
+              this.teamFilterOptions.push(team)
             }
 
             team.users.forEach(owner => {
-              if (this.ownerFilterOptions.indexOf(owner.userName) === -1) {
-                this.ownerFilterOptions.push(owner.userName)
+              if (!this.ownerAlreadyAddedToFilter(owner)) {
+                this.ownerFilterOptions.push(owner)
               }
             })
           }
@@ -540,30 +558,51 @@ export default {
         this.teamFilterOptions.sort()
         this.ownerFilterOptions.sort()
 
-        this.ownerFilterOptions.push('Unassigned')
-        if (!this.selectedOwnerFilters.includes('Unassigned')) {
-          this.selectedOwnerFilters.push('Unassigned')
+        this.ownerFilterOptions.push({name:'Unassigned',userName:'Unassigned',id:-1, userId: -1})
+        if (!this.selectedOwnerFilters.includes(-1)) {
+          this.selectedOwnerFilters.push(-1)
         }
         handleHidingGlobalLoader(this, status)
         this.$store.commit(AppMutations.SET_LOADING, false)
+        await this.fetchProjects()
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
-    }
+    },
+    ownerAlreadyAddedToFilter(ownerToAdd) {
+      let alreadyAdded = false
+      this.ownerFilterOptions.forEach(o => {
+        if (o.userId === ownerToAdd.userId) {
+          alreadyAdded = true
+        }
+      })
+      return alreadyAdded
+    },
+    searchProjects: debounce(function () {
+      //don't allow searchQuery to be null - causes issues
+      this.searchQuery = this.searchQuery || ''
+      this.reloadProjects()
+    }, 500),
   },
   watch: {
     smsOwnershipEvents: debounce(function() {
       this.fetchTeamsForUser()
       this.reloadProjects()
-    }, 500)
+    }, 500),
+    options: {
+      handler() {
+        if(!this.initialLoad) {
+          this.reloadProjects()
+        }
+      }
+    }
   },
   created() {
     this.fetchTeamsForUser()
     this.getAvailableTeams()
-    this.fetchProjects()
     window.addEventListener('resize', this.onResize)
   }
 }
@@ -643,7 +682,7 @@ a {
 }
 
 .text-ellipses {
-  width: inherit;
+  width: calc(35% - 110px);
   display: block;
   overflow: hidden;
   white-space: nowrap;
