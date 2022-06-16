@@ -68,7 +68,7 @@
                    :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate">
               Save
             </v-btn>
-            <v-btn color="primary" text @click="addNewCommissionPlan = !addNewCommissionPlan"><!--todo: determine correct cancel button style-->
+            <v-btn color="primary" text @click="addNewCommissionPlan = !addNewCommissionPlan">
               Cancel
             </v-btn>
           </div>

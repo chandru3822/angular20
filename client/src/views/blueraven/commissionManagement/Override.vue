@@ -1,5 +1,8 @@
 <template>
   <v-container class="pa-0" id="override-container">
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteReceivingUser" @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete <strong>{{ itemToDelete.name }}</strong>?
+    </ConfirmDeleteDialogImproved>
     <v-toolbar flat color="transparent">
       <v-toolbar-title>
         <span v-if="overrideId">{{override.name}}</span>
@@ -14,7 +17,7 @@
                  @click="saveOverride()">
             Save
           </v-btn>
-          <v-btn color="green" class="white--text mr-2"
+          <v-btn color="success" class="white--text mr-2"
                  v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approveOverride()">
@@ -24,7 +27,7 @@
                     v-model="deleteConfirm"
                     width="500">
             <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
+              <v-btn color="error" class="white--text mr-2" v-on="on">
                 Delete
               </v-btn>
             </template>
@@ -285,7 +288,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="override.status === 'PENDING'" @click="addReceivingUser = !addReceivingUser">
+            <v-btn text color="primary" v-if="override.status === 'PENDING'" @click="addReceivingUser = !addReceivingUser">
               <v-icon v-if="addReceivingUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -355,7 +358,7 @@
                             label="M2 Allocation"
                             v-model.number="item.m2Allocation">
               </v-text-field>
-              <v-btn :disabled="!item.m1Allocation || (positionId === 1 && !item.m2Allocation)"
+              <v-btn color="primary" :disabled="!item.m1Allocation || (positionId === 1 && !item.m2Allocation)"
                      @click="[expanded = [], updateReceivingUser(item)]">Save</v-btn>
             </td>
           </template>
@@ -367,51 +370,17 @@
               <td class="text-left">{{item.m1Allocation}}</td>
               <td class="text-left" v-if="positionId !== 4">{{item.m2Allocation}}</td>
               <td>
-                <v-btn small text @click="expanded = [item]"
+                <v-btn small text color="primary" @click="expanded = [item]"
                        v-if="override.status === 'PENDING' && !expanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="expanded = []"
-                       v-if="expanded.includes(item)">cancel
+                <v-btn small text color="primary" @click="expanded = []"
+                       v-if="expanded.includes(item)">
+                  cancel
                 </v-btn>
-                <v-dialog
-                  v-if="override.status === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{ item.name }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteReceivingUser(item.userId)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn color="primary" text @click="openDeleteDialog(item)">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
@@ -426,7 +395,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd"
+            <v-btn text color="primary" v-if="userCanAdd"
                    @click="[addAssignedUser = !addAssignedUser, newAssignedUser = {}, userHistory = []]">
               <v-icon v-if="addAssignedUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
@@ -576,7 +545,7 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
-                <v-btn small text @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
+                <v-btn small text color="primary" @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
                        v-if="override.status === 'PENDING' && !assignedUserExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
@@ -638,11 +607,13 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
 
   export default {
     name: 'Override',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmDeleteDialogImproved,
       CustomValueInput,
       DatetimePickerInput
     },
@@ -752,6 +723,8 @@
         errorMessages: [],
         userHistory: [],
         customFieldGroups: [],
+        showDeleteDialog: false,
+        itemToDelete: {}
       }
     },
     methods: {
@@ -1121,7 +1094,8 @@
           }
         }
       },
-      async deleteReceivingUser (receivingUserId) {
+      async deleteReceivingUser () {
+        const receivingUserId = this.itemToDelete.userId
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/receivingUsers/${receivingUserId}`, 'blueraven')
@@ -1138,7 +1112,16 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
+      openDeleteDialog(item) {
+        this.itemToDelete = item
+        this.showDeleteDialog = true
+      },
+      closeDeleteDialog(){
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     }
   }
 </script>
