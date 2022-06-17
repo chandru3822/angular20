@@ -23,6 +23,7 @@
           <v-row class="px-2 toolbar-row-2">
             <v-checkbox
               v-model="showUnreadOnly"
+              @change="reloadProjects"
               label="Show unread only"
               class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0"
               :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
@@ -242,19 +243,8 @@ export default {
       return this.$store.getters.getNotificationsByTopic('sms_reply')
     },
     projectsFiltered() {
-      return this.projects.filter(p => {
-        let notificationExists = false
-
-        if (this.showUnreadOnly) {
-          if (this.hasNotification(p.projectId)) {
-            notificationExists = true
-          }
-        } else {
-          notificationExists = true
-        }
-
-        return notificationExists
-      }).sort((a, b) => {
+      let projectList = this.projects;
+      return projectList.sort((a, b) => {
         return this.sortOldToNew ?
           (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0) - (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) :
           (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) - (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0)
