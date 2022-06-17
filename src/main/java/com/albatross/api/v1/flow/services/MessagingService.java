@@ -38,6 +38,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -87,15 +88,14 @@ public class MessagingService {
       ownerUserIds.remove(-1L);
     }
 
-    Map<String, Object> params =
-        Map.of(
-            "smsTeamIds", smsTeamIds,
-            "ownerIds", ownerUserIds,
-            "notifProjectIds", notifProjectIds,
-            "query", query,
-            "unassigned", containsUnassigned,
-            "limit", pageable.getPageSize(),
-            "offset", pageable.getOffset());
+    final HashMap<String, Object> params = new HashMap<>();
+    params.put("query", StringUtils.hasText(query) ? query: null );
+    params.put("smsTeamIds", smsTeamIds);
+    params.put("ownerIds", ownerUserIds);
+    params.put("notifProjectIds", notifProjectIds);
+    params.put("unassigned", containsUnassigned);
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
 
      List<ProjectMessageProperties> projects = sqlCache.query(
         "messaging.getProjects",
