@@ -157,7 +157,8 @@
                     }}</span>
                   <span class="albatross-body-2 px-1 deemphasis">{{ item.state }}</span>
                 </div>
-                <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}</div>
+                <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}
+                </div>
               </v-col>
             </v-row>
             <TeamAssignmentChips
@@ -181,13 +182,12 @@
 <script>
 import { AppMutations } from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
-import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
+import { getRequest, getSnackbar, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
-import cloneDeep from 'lodash.clonedeep'
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import debounce from 'lodash.debounce'
 
@@ -243,7 +243,7 @@ export default {
       return this.$store.getters.getNotificationsByTopic('sms_reply')
     },
     projectsFiltered() {
-      let projectList = this.projects;
+      let projectList = this.projects
       return projectList.sort((a, b) => {
         return this.sortOldToNew ?
           (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0) - (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) :
@@ -333,14 +333,14 @@ export default {
     async fetchProjects() {
       try {
         this.showLoading(true)
-        const {page, itemsPerPage} = this.options
+        const { page, itemsPerPage } = this.options
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
           notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
         }
 
-        const {data} = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
+        const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
           filterData
         )
 
@@ -371,7 +371,7 @@ export default {
     async reloadProjects() {
       try {
         this.showLoading(true)
-        const {page, itemsPerPage} = this.options
+        const { page, itemsPerPage } = this.options
 
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
@@ -379,7 +379,7 @@ export default {
           notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
         }
 
-        const {data} = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
+        const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
           filterData
         )
 
@@ -494,7 +494,7 @@ export default {
       } else {
         this.selectedTeamFilters = this.teamFilterOptions?.map(t => t.id)
       }
-      this.reloadProjects();
+      this.reloadProjects()
     },
     toggleSelectAllOwners() {
       if (this.allOwnersSelected) {
@@ -502,7 +502,7 @@ export default {
       } else {
         this.selectedOwnerFilters = this.ownerFilterOptions?.map(o => o.userId)
       }
-      this.reloadProjects();
+      this.reloadProjects()
     },
     onResize() {
       this.viewWidth = window.innerWidth
@@ -548,7 +548,7 @@ export default {
         this.teamFilterOptions.sort()
         this.ownerFilterOptions.sort()
 
-        this.ownerFilterOptions.push({name:'Unassigned',userName:'Unassigned',id:-1, userId: -1})
+        this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
         if (!this.selectedOwnerFilters.includes(-1)) {
           this.selectedOwnerFilters.push(-1)
         }
@@ -571,11 +571,11 @@ export default {
       })
       return alreadyAdded
     },
-    searchProjects: debounce(function () {
+    searchProjects: debounce(function() {
       //don't allow searchQuery to be null - causes issues
       this.searchQuery = this.searchQuery || ''
       this.reloadProjects()
-    }, 500),
+    }, 500)
   },
   watch: {
     smsOwnershipEvents: debounce(function() {
@@ -584,7 +584,7 @@ export default {
     }, 500),
     options: {
       handler() {
-        if(!this.initialLoad) {
+        if (!this.initialLoad) {
           this.reloadProjects()
         }
       }

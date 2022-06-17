@@ -1,6 +1,6 @@
 <sql>
   <messaging.getProjects><![CDATA[
-  with projects as (select distinct on (p.id) p.id                                   as project_id,
+with projects as (select distinct on (p.id) p.id                                   as project_id,
                                             p.contact_id,
                                             p.project_name,
                                             c.search_phones                        as mobile,
@@ -20,10 +20,10 @@
                                 (p.id = any ( array [ :notifProjectIds ]::int[] ))
                             else 1=1 end
                         and case
-                            when :query is not null then
-                                        p.project_name like :query || '%' or
+                            when :query::varchar is not null then
+                                        lower(p.project_name) like '%' || lower(:query) || '%' or
                                         p.id::varchar like :query or
-                                        concat(u.first_name, ' ', u.last_name) like :query || '%'
+                                        lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
                             else 1 = 1 end
                     and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
                          (exists(select id
@@ -104,10 +104,10 @@ from projects p
                                      on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id
                            left join flow.user u on pmo2.user_id = u.id
                   where case
-                            when :query is not null then
-                                        p.project_name like :query || '%' or
+                            when :query::varchar is not null then
+                                        lower(p.project_name) like '%' || lower(:query) || '%' or
                                         p.id::varchar like :query or
-                                        concat(u.first_name, ' ', u.last_name) like :query || '%'
+                                        lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
                             else 1 = 1 end
                     and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
                          (exists(select id
