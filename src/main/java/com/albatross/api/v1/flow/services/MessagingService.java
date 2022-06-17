@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.notification.NotificationService;
 import com.albatross.api.notification.model.CreateNotificationDto;
 import com.albatross.api.notification.model.Notification;
@@ -9,7 +10,6 @@ import com.albatross.api.notification.model.NotificationEventMessage;
 import com.albatross.api.notification.model.NotificationTopic;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
-import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.ProjectMessageOwner;
@@ -77,7 +77,7 @@ public class MessagingService {
               new MessagePropertiesMapper<>(ProjectMessageProperties.class, om));
     }
 
-    return projectMessageProps.get();
+    return projectMessageProps.orElseThrow(()->new NotFoundException("Messaging project not found"));
   }
 
   public Page<ProjectMessageProperties> getProjects(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds, Pageable pageable) {
@@ -93,7 +93,7 @@ public class MessagingService {
             "ownerIds", ownerUserIds,
             "notifProjectIds", notifProjectIds,
             "query", query,
-            "unassisgned", containsUnassigned,
+            "unassigned", containsUnassigned,
             "limit", pageable.getPageSize(),
             "offset", pageable.getOffset());
 

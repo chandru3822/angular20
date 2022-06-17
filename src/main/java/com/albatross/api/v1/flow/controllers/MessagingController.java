@@ -65,11 +65,17 @@ public class MessagingController {
   }
 
   @PostMapping(value = "/projects")
-  public Page<ProjectMessageProperties> getProjects(@RequestParam String query,
-                                                    @RequestBody FilterData filterData,
-                                                    Pageable pageable) {
+  public Page<ProjectMessageProperties> getProjects(
+      @RequestParam(required = false, defaultValue = "") String query,
+      @RequestBody FilterData filterData,
+      Pageable pageable) {
 
-    return messagingService.getProjects(query, filterData.getOwnerUserIds(), filterData.getSmsTeamIds(), filterData.getNotifProjectIds(), pageable);
+    return messagingService.getProjects(
+        query,
+        filterData.getOwnerUserIds(),
+        filterData.getSmsTeamIds(),
+        filterData.getNotifProjectIds(),
+        pageable);
   }
 
   @GetMapping(value = "/projects/{projectId}")
