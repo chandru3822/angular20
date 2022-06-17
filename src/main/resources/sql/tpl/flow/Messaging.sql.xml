@@ -35,7 +35,7 @@
                                                    and pmo3.project_id = p.id
                                            end) or
                           case
-                              when :unassisgned is true then
+                              when :unassigned is true then
                                   pmo2.id is null end)
                       )
                   limit :limit offset :offset),
@@ -119,7 +119,7 @@ from projects p
                                                    and pmo3.project_id = p.id
                                            end) or
                           case
-                              when :unassisgned is true then
+                              when :unassigned is true then
                                   pmo2.id is null end)
                       )
                   )
