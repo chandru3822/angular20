@@ -621,7 +621,7 @@
                 <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left mb-4 px-3" color="transparent">
-                <v-btn small class="ml-1 mr-1 mt-1" v-for="r in selectedEvent.requirements" :key="r.id"
+                <v-btn small class="ml-1 mr-1 mt-1" v-for="r in selectedEventRequirements" :key="r.id"
                        :disabled="!userCanEdit"
                        @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({ requirementNbr: r.requirementNbr, processStepEventRequirementId: r.id, archived: false })]">
                   {{ r.requirementNbr }}
@@ -807,6 +807,7 @@ export default {
       actionLogicString: null,
       selectedChildRequirementParamDynamicValues: [],
       selectedActionIndex: null,
+      selectedEventRequirements: [],
       selectedEvent: {
         processStepEventActions: []
       },
@@ -890,7 +891,7 @@ export default {
   methods: {
     //populate requirements so that events can use them any time they change from the requirements component
     populateRequirements(reqs) {
-      this.selectedEvent.requirements = reqs
+      this.selectedEventRequirements = reqs
     },
     copyToClipBoard(){
       navigator.clipboard.writeText(this.actionLogicString);
@@ -1105,7 +1106,7 @@ export default {
         //update the necessary psr's to immutable
         if (psrListToUpdate.length > 0) {
           psrListToUpdate.forEach(psr => {
-            let match = this.selectedEvent.requirements.find(r => r.id === psr.processStepEventRequirementId)
+            let match = this.selectedEventRequirements.find(r => r.id === psr.processStepEventRequirementId)
             match.immutable = true
           })
         }

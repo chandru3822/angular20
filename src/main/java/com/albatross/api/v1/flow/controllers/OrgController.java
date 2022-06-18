@@ -39,6 +39,11 @@ public class OrgController {
     return orgService.getSchedulingOrgs(stateId, isSchedulingTool);
   }
 
+  @GetMapping(value = "/{id}/users", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<User> getUsersInOrg(@PathVariable Long id) {
+    return orgService.getUsersInOrg(id);
+  }
+
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Org getOrg(@PathVariable Long id) {
     return orgService.getOrg(id);
