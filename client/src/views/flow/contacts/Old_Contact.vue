@@ -1,6 +1,5 @@
 <template>
-  <div id="contact-container" v-if="contact && contact.id">
-<!--    unsaved fields modal -->
+  <v-container class="pt-0" v-if="contact && contact.id">
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
@@ -32,116 +31,312 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!--    modal for editing project fields -->
-    <v-dialog width="500"
-              v-if="contact && contact.id"
-              v-model="showEditContactModal" content-class="square-card">
-      <v-card class="px-6 py-4 square-card">
-        <v-form ref="contactEditForm">
-          <v-card-title
-            color="blackText"
-            class="albatross-header-3 text-capitalize pa-0"
-            primary-title>
-            Contact Overview
-          </v-card-title>
-          <v-card-text class="pt-4 px-0">
-            <div>
-              <v-text-field
-                v-model="tempContact.fullName"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                label="Project Name"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempContact.street1"
-                label="Street"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempContact.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempContact.city"
-                label="City"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempContact.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                type="text"
-                v-model="tempContact.postalCode"
-                counter
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                maxlength="10"
-                @keypress="isNumberOrHyphen"
-                :rules="postalCodeRules"
-                @change="tempContact.reloadCoordinates = true"
-                label="Postal Code"
-              ></v-text-field>
-              <v-autocomplete v-model="tempContact.companyStateId"
-                              :items="states"
-                              label="State"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :loading="statesLoading"
-                              item-text="state"
-                              item-value="id"
-                              @input="tempContact.reloadCoordinates = true"
-              ></v-autocomplete>
-              <v-select v-model="tempContact.companyCountryId"
-                        :items="countries"
-                        label="Country"
+    <v-row class="contact-header elevation-0">
+      <v-col cols="6" class="text-left pb-2">
+        <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
+        <div class="contact-title">
+          {{ contact.fullName }}
+          <v-menu
+            v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+            bottom
+            offset-y
+            :close-on-content-click="false"
+          >
+            <template v-slot:activator="{ on: menu }">
+              <v-tooltip top>
+                <template v-slot:activator="{ on: tooltip }">
+                  <div v-on="{ ...tooltip }" class="d-inline-block">
+                    <v-btn v-on="{ ...menu }"
+                           color="primaryCustom"
+                           :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                           class="white--text"
+                           id="qa-create-project-button"
+                           @click="getAvailableProcesses">
+                      Add Project
+                    </v-btn>
+                  </div>
+                </template>
+                <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
+                <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+              </v-tooltip>
+            </template>
+            <v-card class="pa-5">
+              Select a process to be used
+              <v-select attach v-model="selectedProcess"
+                        :items="availableProcesses"
+                        label="Process"
+                        id="qa-process-selector"
+                        placeholder="Select one..."
+                        item-text="processName"
+                        return-object
+                        class="mt-2 qa-process-selector"
+              ></v-select>
+              <v-btn text :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
+                Add Project
+              </v-btn>
+            </v-card>
+          </v-menu>
+        </div>
+        <div class="contact-subtitle">
+          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
+        </div>
+      </v-col>
+      <v-col cols="4" class="contact-owner pb-2 text-right">
+        <div class="d-inline-block mr-4" v-if="contact.companyId !== this.companyId">
+          <v-avatar
+            :tile="false"
+            :size="25"
+            color="#D6D6D6"
+            class="account-img mr-2"
+          >
+            <v-icon color="white" size="20">mdi-office-building</v-icon>
+          </v-avatar>
+          <span>{{ contact.companyName }}</span><br/>
+          <span class="project-company-subheader">Company</span>
+        </div>
+        <div class="d-inline-block">
+          <div>
+            <v-row v-if="contact.owner && !changeOwner">
+              <v-avatar
+                :tile="false"
+                :size="40"
+                color="grey lighten-4"
+                class="account-img mr-2"
+              >
+                <v-img name="accountImg" v-if="contact.owner.presignedUrl" :src="contact.owner.presignedUrl"></v-img>
+                <img name="accountImg" v-else src="../../../assets/flow/user_img_placeholder.png">
+              </v-avatar>
+              <div class="d-inline-block">
+                {{ contact.owner.fullName }}<br/>
+                {{ contact.owner.position }}
+              </div>
+            </v-row>
+            <v-row>
+              <v-col class="pa-0">
+                <div v-if="changeOwner && userCanEdit">
+                  <v-autocomplete v-model="contact.owner"
+                                  :items="owners"
+                                  label="Select Owner"
+                                  item-text="fullName"
+                                  return-object
+                                  autocomplete="off"
+                                  @change="updateOwner"
+                                  attach
+                  >
+                  </v-autocomplete>
+                </div>
+                <v-btn text x-small class="change-owner-button" v-if="userCanEdit && !contactOwnerIsReadOnly()"
+                       @click="changeOwner = !changeOwner">
+                  <span v-if="changeOwner">cancel</span>
+                  <span v-else-if="contact.owner && contact.owner.userId">change</span>
+                  <span v-else style="font-size: 15px;">add owner</span>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </div>
+        </div>
+      </v-col>
+      <v-col cols="2" class="contact-owner pb-2">
+        Associated Projects<br/>
+        <div v-for="p in contact.projects" :key="p.id">
+          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}/details`">
+            {{ p.projectName }} <span v-if="contact.projects && contact.projects.length > 1">- {{ p.id }}</span>
+          </router-link>
+          <span v-else>{{ p.projectName }}</span>
+        </div>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" md="6" class="text-left">
+        <v-form ref="contactForm">
+          <div>
+            <v-toolbar color="transparent" class="elevation-0">
+              <v-toolbar-title>Summary</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="validate(true)">Save
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card class="pa-4">
+              <v-text-field text
+                            label="First Name"
+                            id="qa-first-name-field"
+                            placeholder=" "
+                            :rules="nameRequiredRules"
+                            @change="dirtySystemFields = true"
+                            :readonly="!userCanEdit"
+                            v-model="contact.firstName"></v-text-field>
+              <v-text-field text
+                            label="Last Name"
+                            id="qa-last-name-field"
+                            placeholder=" "
+                            :rules="nameRequiredRules"
+                            @change="dirtySystemFields = true"
+                            :readonly="!userCanEdit"
+                            v-model="contact.lastName"></v-text-field>
+              <v-text-field text
+                            label="Address"
+                            id="qa-address-field"
+                            placeholder=" "
+                            :required="true"
+                            :rules="[ ...addressRules, ...addressFieldRequired.street]"
+                            :readonly="!userCanEdit"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
+                            v-model="contact.street1"></v-text-field>
+              <v-text-field text
+                            label="City"
+                            id="qa-city-field"
+                            placeholder=" "
+                            :rules="[...cityRules, ...addressFieldRequired.city]"
+                            @change="[addressChanged = true, dirtySystemFields = true]"
+                            :readonly="!userCanEdit"
+                            v-model="contact.city"></v-text-field>
+              <v-select attach v-model="contact.companyStateId"
+                        :items="states"
+                        label="State"
+                        id="qa-state-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
-                        :loading="countriesLoading"
-                        @input="tempContact.reloadCoordinates = true"
+                        :rules="[ ...addressFieldRequired.state ]"
+                        @change="[addressChanged = true, dirtySystemFields = true]"
+                        item-text="state"
+                        item-value="id"
+              ></v-select>
+              <v-select attach v-model="contact.companyCountryId"
+                        :items="countries"
+                        label="Country"
+                        id="qa-country-field"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        :rules="[ ...addressFieldRequired.country ]"
+                        @change="[addressChanged = true, dirtySystemFields = true]"
                         item-text="country"
                         item-value="id"
               ></v-select>
-            </div>
-            <v-autocomplete v-model="tempContact.owner"
-                            :readonly="contactOwnerFieldIsReadOnly()"
-                            :disabled="contactOwnerFieldIsReadOnly()"
-                            :items="availableOwners"
-                            :loading="ownersLoading"
-                            label="Project Owner"
-                            clearable
-                            item-text="fullName"
-                            return-object
-                            autocomplete="off">
-            </v-autocomplete>
-          </v-card-text>
+              <v-text-field text
+                            label="Zip"
+                            type="text"
+                            id="qa-zip-field"
+                            placeholder=" "
+                            @change="[addressChanged = true, dirtySystemFields = true]"
+                            :readonly="!userCanEdit"
+                            counter
+                            @keypress="isNumberOrHyphen"
+                            :rules="[ ...postalCodeRules, ...addressFieldRequired.zip ]"
+                            maxlength="10"
+                            v-model="contact.postalCode"></v-text-field>
+              <v-text-field text
+                            label="Phone"
+                            id="qa-phone-field"
+                            placeholder=" "
+                            :rules="contactPhoneRule"
+                            @change="dirtySystemFields = true"
+                            :readonly="!userCanEdit"
+                            v-model="contact.phone"></v-text-field>
+              <v-text-field text
+                            label="Mobile"
+                            id="qa-mobile-field"
+                            :readonly="!userCanEdit"
+                            @change="dirtySystemFields = true"
+                            :rules="contactPhoneRule"
+                            placeholder=" "
+                            v-model="contact.mobile"></v-text-field>
+              <v-text-field text
+                            label="E-Mail"
+                            id="qa-email-field"
+                            placeholder=" "
+                            :rules="emailRules"
+                            @change="dirtySystemFields = true"
+                            :readonly="!userCanEdit"
+                            v-model="contact.email"></v-text-field>
+              <DatetimePickerInput
+                v-model="contact.dateCreated"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Created Date"
+                :readonly="true"
+              />
+              <v-dialog
+                v-if="userCanDelete"
+                v-model="deleteContactConfirm"
+                width="500">
+                <template #activator="{ on }">
+                  <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on" id="qa-delete-contact">
+                    Delete Contact
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                    class="text-h5 grey lighten-2"
+                    primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this contact?</span>
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="deleteContactConfirm = false" id="qa-delete-contact-no">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="deleteContact"
+                      id="qa-delete-contact-yes">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-card>
+          </div>
+          <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
+            <v-toolbar color="transparent" class="elevation-0">
+              <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <!--              <v-btn text @click="saveContact">Save</v-btn>-->
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card class="pa-4">
+              <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                                :key="idx"
+                                :required="cf.required"
+                                :readonly="getReadOnly(cf)"
+                                :callback="populateDirtyCfvs"
+                                :field="cf"></CustomValueInput>
+            </v-card>
+          </div>
         </v-form>
 
-        <v-card-actions class="pa-0">
-          <v-btn @click="showEditContactModal = false" class="text-capitalize">
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primaryCustom"
-            class="white--text text-capitalize font-weight-bold"
-            :disabled="!contact.fullName"
-            @click="validateForm()">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!--    end dialog -->
-    <v-toolbar flat color="#E3E3E3" class="contact-header" v-if="!contactLoading && contact && contact.id">
-      <v-toolbar-title class="app-title albatross-header-1 d-flex align-center">
-        {{ contact.fullName }}
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-      </v-toolbar-items>
-    </v-toolbar>
+      </v-col>
+      <v-col cols="12" md="6" class="text-left pa-0">
+        <v-toolbar color="transparent" class="elevation-0">
+          <v-toolbar-title>Notes</v-toolbar-title>
+        </v-toolbar>
+        <v-card class="square-card mx-4">
+          <NotesAndActivityContent ref="notes" :showNotes="true" :showActivity="false"
+                                   :notes="notes" :primaryId="parseInt(contactId)"
+                                   type="Contact"
+          ></NotesAndActivityContent>
+        </v-card>
 
-    <v-row class="contact-split-container">
+        <Attachments :object-type-id="2" :contact-id="contactId"/>
+      </v-col>
     </v-row>
-  </div>
+
+  </v-container>
   <v-row align="center" justify="center" v-else-if="!contactLoading">
     <v-col cols="12" sm="8">
       <v-card color="secondaryMaster" class="elevation-12 pb-5">
@@ -179,7 +374,6 @@ import {getCompanyStates} from '@/services/stateService'
 import {getCountries} from '@/services/countryService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from '@/helpers/constants'
-import cloneDeep from 'lodash.clonedeep'
 import Attachments from '@/views/flow/components/Attachments'
 
 export default {
@@ -234,14 +428,7 @@ export default {
       dirtyCfvs: [],
       dirtySystemFields: false,
       owners: [],
-      availableOwners: [],
-      ownersLoading: false,
-      statesLoading: false,
-      countriesLoading: false,
-      tempContact: {},
-      showEditContactModal: false,
-      contactId: parseInt(this.$route.params.contactId),
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
+      contactId: parseInt(this.$route.params.id),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
       companyId: this.$store.state.user.details.companyId,
@@ -292,27 +479,6 @@ export default {
     }
   },
   methods: {
-    async validateForm() {
-      if (this.$refs.contactEditForm.validate()) {
-        //these could be combined - just dont have time atm
-        // this.saveProjectAddressFields()
-        // this.updateOwner()
-        //have to wait for this one to complete or it doesn't have the right values to display fresh ones
-        // await this.updateStatus()
-        //set project values if they hit save
-        this.contact = cloneDeep(this.tempContact)
-        this.showEditProjectModal = false
-      }
-    },
-    contactOwnerFieldIsReadOnly() {
-      if(this.is7oaksAdmin) {
-        return false
-      } else if (this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
-      } else {
-        return this.contact.ownerReadOnly
-      }
-    },
     getDirtyText() {
       return this.hasDirtyNotes && (this.dirtyCfvs.length > 0 || this.dirtySystemFields) ?
         'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
@@ -577,26 +743,5 @@ export default {
   text-decoration: underline;
   text-transform: lowercase;
 }
-
-.contact-header {
-  height: 64px;
-}
-
-#contact-container {
-  width: 100%;
-  height: 100%;
-  max-height: 100% !important;
-  padding: 0 !important;
-  overflow: hidden;
-}
-
-.contact-split-container {
-  height: calc(100% - 50px);
-  max-width: 100%;
-  width: 100%;
-  margin-right: 0 !important;
-  margin-left: 0 !important;
-}
-
 </style>
 

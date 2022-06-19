@@ -1222,10 +1222,10 @@ const router = new Router({
           },
           children: []
         }, {
-          path: '/contact/:id',
+          path: '/contact/:contactId',
           name: 'contact',
-          meta: {title: 'Albatross - Contact'},
           props: true,
+          meta: {title: 'Albatross - Contact'},
           component: () => {
             if (store.getters.userHasFeature('CONTACTS')) {
               return import (/* webpackChunkName: "contacts" */ './views/flow/contacts/Contact.vue')
