@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION flow.set_pps_cfv(p_project_id integer, p_user_id integer,p_cfga integer, p_value_to_save text)
+CREATE OR REPLACE FUNCTION flow.set_pps_cfv(p_project_id integer, p_user_id integer,p_cfga integer, p_value_to_save text, p_override_existing boolean default true)
     returns boolean AS
 $BODY$
 declare
@@ -8,6 +8,7 @@ declare
     v_project_process_step_id int;
     v_data_type_id int;
     v_request_is_valid boolean;
+    v_existing_value text;
 BEGIN
 --     now()
 --     now() AT TIME ZONE 'US/MOUNTAIN'
@@ -29,12 +30,21 @@ BEGIN
                                      where cfga.id = p_cfga) into v_request_is_valid;
 
     if v_request_is_valid is true then
-        select cfv.id into v_existing_id
+        select cfv.id,
+               coalesce(text_value,
+                        boolean_value::text,
+                        date_value::text,
+                        timestamp_value::text,
+                        numeric_value::text,
+                        int_value::text,
+                        int_array_value::text)
+        into v_existing_id, v_existing_value
         from flow.project_process_step_custom_field_value cfv
                  inner join flow.project_process_step pps on cfv.project_process_step_id = pps.id
         where pps.project_id = p_project_id
           and cfv.custom_field_group_assignment_id = p_cfga
           and pps.main is true;
+
 
         select pps.id, cdt.data_type_id into v_project_process_step_id, v_data_type_id
         from flow.project_process_step pps
@@ -79,6 +89,8 @@ BEGIN
                 values (v_project_process_step_id, p_cfga, null, null, null, null, null, null, p_value_to_save::int[], p_user_id, now(), p_user_id, now());
             end if;
         else
+        --only  do update if told to do override existing OR (the existing value is null or empty)
+          if p_override_existing is true or (v_existing_value is null or v_existing_value = '') then
             if v_data_type_id = 1 then
                 update flow.project_process_step_custom_field_value
                     set date_value = coalesce(v_date_value_to_save::date, p_value_to_save::date),
@@ -123,6 +135,7 @@ BEGIN
                     date_modified = now()
                 where id = v_existing_id;
             end if;
+          end if;
         end if;
     --     not sure why we are returning anything
         v_field_saved = true;
