@@ -88,6 +88,7 @@
                                               where dfp.db_function_id = cf.db_function_id
                                                 and dfp.parameter_type_id = 2
                                                 and apdv.archived is not true
+                                                order by dfp.display_order
                                           ) params), '[]') AS "actionParamDynamicValues"
                              FROM flow.process_step_action_company_function psacf
                                       inner join flow.company_function cf on cf.id = psacf.company_function_id
@@ -320,6 +321,7 @@
                              where dfp.db_function_id = cf.db_function_id
                                and dfp.parameter_type_id = 2
                                and apdv.archived is not true
+                               order by dfp.display_order
                          ) params), '[]') AS "actionParamDynamicValues"
     from flow.process_step_action_company_function cp
              inner join flow.company_function cf on cf.id = cp.company_function_id
@@ -387,6 +389,7 @@ select
       dfp.db_function_id = cf.db_function_id and
       dfp.parameter_type_id = 2 and
       apdv.archived is not true
+      order by dfp.display_order
   ) params), '[]') AS "actionParamDynamicValues",
   coalesce((
      SELECT array_to_json(array_agg(row_to_json(params)))
