@@ -9,12 +9,12 @@ export const NotificationPlugin = {
       store.registerModule(NOTIFICATION_MODULE, NotificationStore)
     }
 
-    // const evtSource = new EventSource(url, { withCredentials: true })
-    // topics?.forEach(topic => {
-    //   evtSource.addEventListener(topic, function(e) {
-    //     const data = JSON.parse(e?.data)
-    //     store.dispatch(NotificationActions.HANDLE_STREAM_EVENT, data)
-    //   })
-    // })
+    const evtSource = new EventSource(url, { withCredentials: true })
+    topics?.forEach(topic => {
+      evtSource.addEventListener(topic, function(e) {
+        const data = JSON.parse(e?.data)
+        store.dispatch(NotificationActions.HANDLE_STREAM_EVENT, data)
+      })
+    })
   }
 }
