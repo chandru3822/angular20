@@ -7,7 +7,7 @@
         <slot name="search"></slot>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <div>
+          <div v-if="showHeaderBtn">
             <v-btn v-if="constants.IS_MOBILE" class="mt-3 no-text-transform" @click="">
               <v-icon >mdi-cloud-download</v-icon>
             </v-btn>
@@ -55,6 +55,7 @@ export default {
     headerText: String,
     headerBtnText:String,
     headerHidden: Boolean,
+    showHeaderBtn: Boolean,
     leftCollapsed: Boolean,
     leftSmall: Boolean,
     leftHidden: Boolean,

@@ -19,7 +19,7 @@
         >{{ sidebarTitle }}
         </div>
         <v-spacer v-if="!$store.state.project.rightSideSplit"></v-spacer>
-        <div v-if="selectedOption === 0 && !$store.state.project.rightSideSplit">
+        <div v-if="selectedOption === 0 && userCanViewSms && !$store.state.project.rightSideSplit">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
               <v-btn icon @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
@@ -44,9 +44,9 @@
           <v-icon>mdi-menu</v-icon>
         </v-btn>
       </div>
-      <span v-if="selectedOption === 0 && !$store.state.project.rightSideSplit" class="pl-6 albatross-body-3 mt-n2">Members</span>
+      <span v-if="selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
       <TeamAssignmentChips
-        v-if="selectedOption === 0 && !$store.state.project.rightSideSplit"
+        v-if="selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms"
         :sms-team-owners="projectMessageProperties.smsTeamOwners"
         :team-names-associated-to-user="teamNamesAssociatedToUser"
         :reloading="projectIsLoading"
@@ -65,7 +65,7 @@
       <div v-show="!$store.state.project.rightSideSplit" class="height-one-hunned">
         <Messaging v-if="selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
         <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
-        <AttachmentsDropdown v-else :projectId="projectId" :project-process-step-id="projectProcessStepId" />
+        <AttachmentsDropdown v-else-if="selectedOption === 2" :projectId="projectId" :project-process-step-id="projectProcessStepId" />
       </div>
     </div>
     <div class="footer-container"
@@ -168,10 +168,12 @@ export default {
     }
   },
   created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    this.fetchTeamsForUser()
-    this.getAvailableTeams()
-    this.$store.commit(AppMutations.SET_LOADING, false)
+    if(this.userCanViewSms) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.fetchTeamsForUser()
+      this.getAvailableTeams()
+      this.$store.commit(AppMutations.SET_LOADING, false)
+    }
   },
   computed: {
     sidebarTitle() {
