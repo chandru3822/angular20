@@ -1,5 +1,6 @@
 <template>
   <ThreeColumnLayout
+    id="main-inbox-container"
     :header-hidden="true"
     :right-hidden="!$route.params.projectId"
     :left-hidden="true"
@@ -595,6 +596,15 @@ export default {
 }
 </script>
 
+<style lang="scss">
+#main-inbox-container .v-data-table__wrapper table,
+#main-inbox-container .v-data-table__wrapper tbody{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block;
+}
+</style>
+
 <style scoped lang="scss">
 
 .sticky-toolbar {
@@ -669,7 +679,7 @@ a {
 }
 
 .text-ellipses {
-  width: calc(35% - 110px);
+  width: 100%;
   display: block;
   overflow: hidden;
   white-space: nowrap;
