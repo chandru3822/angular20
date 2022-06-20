@@ -1,12 +1,12 @@
 package com.albatross.api.v1.flow.model;
 
+import com.albatross.api.security.FeatureAccessControlGrantedAuthority;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.IOException;
@@ -58,9 +58,13 @@ public class UserAccountDetails implements UserDetails {
     this.enabled = true;
 
     this.authorities = new HashSet<>();
-    for (FeatureAccessControl fc : featureAccess) {
-      this.authorities.add(
-          new SimpleGrantedAuthority(fc.getFeatureCode() + "_" + fc.getAccessCode()));
+    if (featureAccess != null && !featureAccess.isEmpty()) {
+      final var authorities =
+          featureAccess.stream()
+              .filter(FeatureAccessControl::isEnabled)
+              .map(FeatureAccessControlGrantedAuthority::new)
+              .toList();
+      this.authorities = new HashSet<>(authorities);
     }
   }
 
