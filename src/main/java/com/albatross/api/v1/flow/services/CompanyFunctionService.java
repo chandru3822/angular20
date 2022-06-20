@@ -72,6 +72,7 @@ public class CompanyFunctionService {
     params.put("dbFunctionId", dbFunctionId);
     // 2 = dynamic value params - maybe we pass this in later if needed
     params.put("parameterTypeId", 2);
+//    this returns "false" as the default for boolean fields. fyi.  maybe we add this as an option to the dfp later
     return sqlCache.query(
         "companyFunction.getFunctionDynamicParams", params, RequirementParamDynamicValue.class);
   }
