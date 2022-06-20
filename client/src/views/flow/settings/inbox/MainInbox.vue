@@ -468,6 +468,7 @@ export default {
           this.teamsAssociatedToUser = data
           this.teamNamesAssociatedToUser = data?.map(team => team.teamName)
         }
+        await this.getAvailableTeams()
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
@@ -589,7 +590,6 @@ export default {
   },
   created() {
     this.fetchTeamsForUser()
-    this.getAvailableTeams()
     window.addEventListener('resize', this.onResize)
   }
 }
