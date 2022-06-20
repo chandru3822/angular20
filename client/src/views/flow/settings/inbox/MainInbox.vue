@@ -222,7 +222,6 @@ export default {
       selectedTeamFilters: [],
       showUnreadOnly: false,
       showAssignToMeDialog: false,
-      selectedSmsTeam: '',
       assignToMeProject: [],
       teamsAssociatedToUser: [],
       teamNamesAssociatedToUser: [],
@@ -444,7 +443,6 @@ export default {
         }
         this.showLoading(true)
         await postRequest(`/messaging/addTeam/${this.assignToMeProject.projectId}`, selectedTeam)
-        this.selectedSmsTeam = ''
         this.snackbar = getSnackbar('SUCCESS', 'Successfully joined conversation')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         if (!this.$route.path.includes('inboxConversation')) {
@@ -456,7 +454,6 @@ export default {
         await this.fetchProjects()
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.selectedSmsTeam = ''
         this.snackbar = getSnackbar('ERROR', 'Error joining conversation')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.showLoading(false)
