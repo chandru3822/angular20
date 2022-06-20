@@ -207,7 +207,7 @@ export default {
       snackbar: {},
       projects: [],
       options: {
-        itemsPerPage: 100
+        itemsPerPage: 25
       },
       footerProps: {
         'items-per-page-options': [25, 50, 100],
