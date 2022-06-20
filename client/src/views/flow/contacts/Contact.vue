@@ -1,169 +1,26 @@
 <template>
-  <div id="contact-container" v-if="contact && contact.id">
-<!--    unsaved fields modal -->
-    <v-dialog width="500" v-model="unsavedFieldsModal">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Confirm
-        </v-card-title>
-
-        <v-card-text class="pt-4">
-          You have unsaved {{ getDirtyText() }}. <br/>
-          Are you sure you want to continue without saving?
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="unsavedFieldsModal = false">
-            No
-          </v-btn>
-          <v-btn
-            color="primaryCustom"
-            text
-            @click="[navigationOverride = true, goToPath(toPath)]">
-            Yes
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!--    modal for editing project fields -->
-    <v-dialog width="500"
-              v-if="contact && contact.id"
-              v-model="showEditContactModal" content-class="square-card">
-      <v-card class="px-6 py-4 square-card">
-        <v-form ref="contactEditForm">
-          <v-card-title
-            color="blackText"
-            class="albatross-header-3 text-capitalize pa-0"
-            primary-title>
-            Contact Overview
-          </v-card-title>
-          <v-card-text class="pt-4 px-0">
-            <div>
-              <v-text-field
-                v-model="tempContact.fullName"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                label="Project Name"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempContact.street1"
-                label="Street"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempContact.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempContact.city"
-                label="City"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempContact.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                type="text"
-                v-model="tempContact.postalCode"
-                counter
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                maxlength="10"
-                @keypress="isNumberOrHyphen"
-                :rules="postalCodeRules"
-                @change="tempContact.reloadCoordinates = true"
-                label="Postal Code"
-              ></v-text-field>
-              <v-autocomplete v-model="tempContact.companyStateId"
-                              :items="states"
-                              label="State"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :loading="statesLoading"
-                              item-text="state"
-                              item-value="id"
-                              @input="tempContact.reloadCoordinates = true"
-              ></v-autocomplete>
-              <v-select v-model="tempContact.companyCountryId"
-                        :items="countries"
-                        label="Country"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        :loading="countriesLoading"
-                        @input="tempContact.reloadCoordinates = true"
-                        item-text="country"
-                        item-value="id"
-              ></v-select>
-            </div>
-            <v-autocomplete v-model="tempContact.owner"
-                            :readonly="contactOwnerFieldIsReadOnly()"
-                            :disabled="contactOwnerFieldIsReadOnly()"
-                            :items="availableOwners"
-                            :loading="ownersLoading"
-                            label="Project Owner"
-                            clearable
-                            item-text="fullName"
-                            return-object
-                            autocomplete="off">
-            </v-autocomplete>
-          </v-card-text>
-        </v-form>
-
-        <v-card-actions class="pa-0">
-          <v-btn @click="showEditContactModal = false" class="text-capitalize">
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primaryCustom"
-            class="white--text text-capitalize font-weight-bold"
-            :disabled="!contact.fullName"
-            @click="validateForm()">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!--    end dialog -->
-    <v-toolbar flat color="#E3E3E3" class="contact-header" v-if="!contactLoading && contact && contact.id">
-      <v-toolbar-title class="app-title albatross-header-1 d-flex align-center">
-        {{ contact.fullName }}
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-      </v-toolbar-items>
-    </v-toolbar>
-
-    <v-row class="contact-split-container">
-    </v-row>
-  </div>
-  <v-row align="center" justify="center" v-else-if="!contactLoading">
-    <v-col cols="12" sm="8">
-      <v-card color="secondaryMaster" class="elevation-12 pb-5">
-        <v-toolbar dark color="red">
-          <v-toolbar-title>Error</v-toolbar-title>
-        </v-toolbar>
-        <v-card-text class="login-card-text">
-          This contact either doesn't exist or you don't have access to it in this context.
-        </v-card-text>
-        <v-card-actions class="justify-center">
-          <v-btn to="/contacts">Click here to go back to Contacts</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+  <ThreeColumnLayout :header-text="contact.fullName" :show-header-btn="false">
+    <template v-slot:left-column>
+      <div>
+        contact edit fields will go here
+      </div>
+    </template>
+    <template v-slot:main-column>
+      custom fields will go here
+    </template>
+    <slot  name="right-column">
+      <ProjectActivity v-if="!contactLoading && contactId !== 0"
+                       @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
+    </slot>
+  </ThreeColumnLayout>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-
+import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent.vue'
+import ThreeColumnLayout from '@/views/ThreeColumnLayout'
+// import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent.vue'
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -180,27 +37,19 @@ import {getCountries} from '@/services/countryService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
-import Attachments from '@/views/flow/components/Attachments'
+// import Attachments from '@/views/flow/components/Attachments'
 
 export default {
   name: 'Contact',
   components: {
     CustomValueInput,
-    NotesAndActivityContent,
+    // NotesAndActivityContent,
     DatetimePickerInput,
-    Attachments
+    ThreeColumnLayout,
+    ProjectActivity
+    // Attachments
   },
-  watch: {
-    // contact: {
-    //   // This will let Vue know to look inside the array
-    //   deep: true,
-    //
-    //   // We have to move our method to a handler field
-    //   handler() {
-    //     this.validate(false)
-    //   }
-    // }
-  },
+  watch: {},
   data() {
     return {
       snackbar: {},
