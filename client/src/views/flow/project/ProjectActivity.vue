@@ -22,7 +22,7 @@
         <div v-if="selectedOption === 0 && userCanViewSms && !$store.state.project.rightSideSplit">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
-              <v-btn icon @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
+              <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
                 <v-icon>mdi-history</v-icon>
               </v-btn>
             </template>
@@ -36,11 +36,11 @@
           </v-dialog>
 
         </div>
-        <v-btn v-if="$route.path.indexOf('inbox') > 0" class="d-inline-block align-self-center" small text
+        <v-btn v-if="$route.path.indexOf('inbox') > 0" class="d-inline-block align-self-center" small text color="primary"
                @click="closeRight()">
           <v-icon>close</v-icon>
         </v-btn>
-        <v-btn v-else class="d-inline-block" small text @click="collapseSide()">
+        <v-btn v-else class="d-inline-block" small text color="primary" @click="collapseSide()">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
       </div>

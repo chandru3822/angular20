@@ -158,7 +158,7 @@
                       :close-on-content-click="true"
                       min-width="290px">
                 <template v-slot:activator="{ on }">
-                  <v-btn v-on="on" text>
+                  <v-btn v-on="on" text color="primary">
                     <v-icon>mdi-dots-horizontal</v-icon>
                   </v-btn>
                 </template>
