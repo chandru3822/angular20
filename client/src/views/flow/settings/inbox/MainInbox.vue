@@ -513,7 +513,7 @@ export default {
         this.selectableTeams = data
         this.selectableTeams.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
-            if (this.teamFilterOptions.indexOf(team) === -1) {
+            if (!this.teamAlreadyAddedToFilter(team)) {
               this.teamFilterOptions.push(team)
             }
 
@@ -531,7 +531,7 @@ export default {
               }
             })
           } else if (this.userCanViewAll) {
-            if (this.teamFilterOptions.indexOf(team) === -1) {
+            if (!this.teamAlreadyAddedToFilter(team)) {
               this.teamFilterOptions.push(team)
             }
 
@@ -565,6 +565,15 @@ export default {
       let alreadyAdded = false
       this.ownerFilterOptions.forEach(o => {
         if (o.userId === ownerToAdd.userId) {
+          alreadyAdded = true
+        }
+      })
+      return alreadyAdded
+    },
+    teamAlreadyAddedToFilter(teamToAdd) {
+      let alreadyAdded = false
+      this.teamFilterOptions.forEach(t => {
+        if (t.id === teamToAdd.id) {
           alreadyAdded = true
         }
       })
