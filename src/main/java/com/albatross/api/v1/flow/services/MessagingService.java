@@ -516,6 +516,16 @@ public class MessagingService {
           sqlCache.query(
               "messaging.findUserByForTeam", params, new SingleColumnRowMapper<>(Long.class));
 
+      Notification notification =
+        new Notification()
+          .setTopic(NotificationTopic.SMS_REPLY)
+          .setTitle("Notification read")
+          .setBody("")
+          .setPriority(1)
+          .setUserId(userId);
+
+      pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
+
       log.debug(
           "[Messaging] Marked {} records as read for smsTeamId={}", updatedRecords, smsTeamId);
     } else {
