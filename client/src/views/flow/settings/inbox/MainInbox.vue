@@ -1,5 +1,6 @@
 <template>
   <ThreeColumnLayout
+    id="main-inbox-container"
     :header-hidden="true"
     :right-hidden="!$route.params.projectId"
     :left-hidden="true"
@@ -206,7 +207,7 @@ export default {
       snackbar: {},
       projects: [],
       options: {
-        itemsPerPage: 100
+        itemsPerPage: 25
       },
       footerProps: {
         'items-per-page-options': [25, 50, 100],
@@ -336,7 +337,7 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
         }
 
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
@@ -375,7 +376,7 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
         }
 
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
@@ -595,6 +596,15 @@ export default {
 }
 </script>
 
+<style lang="scss">
+#main-inbox-container .v-data-table__wrapper table,
+#main-inbox-container .v-data-table__wrapper tbody{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block;
+}
+</style>
+
 <style scoped lang="scss">
 
 .sticky-toolbar {
@@ -669,7 +679,7 @@ a {
 }
 
 .text-ellipses {
-  width: calc(35% - 110px);
+  width: 100%;
   display: block;
   overflow: hidden;
   white-space: nowrap;
