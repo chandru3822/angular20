@@ -213,7 +213,6 @@ public class GenesysService {
     }
 
     WritableDialerContact wdc = new WritableDialerContact();
-    Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     HashMap<String, Object> contactMap = new HashMap<>();
     wdc.setId(contact.getId().toString());
@@ -244,8 +243,6 @@ public class GenesysService {
     getCfvValues(contactMap, values);
     String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
 
-    wdc.setData(contactMap);
-
     String leadLevel = (String) contactMap.remove("lead_level");
     if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
@@ -258,6 +255,8 @@ public class GenesysService {
     }
 
     contactMap.put("QueueName", getQueueName(leadLevel));
+
+    wdc.setData(contactMap);
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
@@ -616,7 +615,7 @@ public class GenesysService {
       return "SMS Level 10";
     }
 
-    return null;
+    return "";
   }
 
   // Get the Genesys id of the Contact List from Genesys
@@ -753,8 +752,14 @@ public class GenesysService {
 
       try {
         addContact(contact.getId(), values, false);
+      } catch (ApiException ae) {
+        JSONObject apiException = new JSONObject(ae.getRawBody());
+        log.error(
+          "GENESYS: API Error during Cron - adding contactId={}, msg={}",
+          contact.getId(),
+          apiException.getString("message"));
       } catch (Exception e) {
-        log.error("GENESYS: Error updating contact list", e);
+        log.error("GENESYS: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
       }
     }
   }
