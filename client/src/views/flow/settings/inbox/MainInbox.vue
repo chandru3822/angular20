@@ -337,7 +337,7 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
         }
 
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
@@ -376,7 +376,7 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
         }
 
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
