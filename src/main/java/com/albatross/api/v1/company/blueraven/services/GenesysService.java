@@ -753,8 +753,14 @@ public class GenesysService {
 
       try {
         addContact(contact.getId(), values, false);
+      } catch (ApiException ae) {
+        JSONObject apiException = new JSONObject(ae.getRawBody());
+        log.error(
+          "GENESYS: API Error during Cron - adding contactId={}, msg={}",
+          contact.getId(),
+          apiException.getString("message"));
       } catch (Exception e) {
-        log.error("GENESYS: Error updating contact list", e);
+        log.error("GENESYS: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
       }
     }
   }
