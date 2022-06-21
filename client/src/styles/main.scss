@@ -35,6 +35,10 @@ body {
   font-weight: 700;
 }
 
+.default-text-color {
+  color: rgba(0,0,0,0.87) !important;
+}
+
 .fixed-toolbar {
   position: sticky;
   position: -webkit-sticky; /* for Safari */
