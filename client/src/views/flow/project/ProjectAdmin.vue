@@ -6,6 +6,7 @@
       </div>
       <v-spacer></v-spacer>
       <v-dialog
+        v-if="userCanDelete"
         class="d-inline-block"
         v-model="deleteProjectConfirm"
         width="500">
@@ -44,7 +45,7 @@
         </v-card>
       </v-dialog>
     </v-toolbar>
-    <v-row>
+    <v-row v-if="userIsAdmin">
 
 
       <v-col cols="12">
@@ -256,6 +257,8 @@ export default {
       deleteProjectConfirm: false,
       displayDropdown: false,
       displayChangeOwner: false,
+      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE'),
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       availableOwners: [],
       cancelledCompanyStatuses: [],
       availableProcessStepStatuses: [],

@@ -5,16 +5,14 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ProcessStepStatusController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by randanunn on 2019-05-20. !Describe Purpose!
@@ -76,7 +74,8 @@ public class ProcessStepStatusService {
     params.put("processStepId", processStepId);
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("processStepStatus.availableForProcessStep", params, CompanyProcessStepStatusType.class);
+    List<CompanyProcessStepStatusType> anc= sqlCache.query("processStepStatus.availableForProcessStep", params, CompanyProcessStepStatusType.class);
+    return anc;
   }
 
   public List<CompanyProcessStepStatusType> getCancelledCompanyStatusTypesForCompany(Long projectId, Long projectProcessStepId) {
@@ -115,13 +114,24 @@ public class ProcessStepStatusService {
     return sqlCache.get("processStepStatus.getType", params, CompanyProcessStepStatusType.class);
   }
 
-  public void deleteType(Long typeId) {
+  public ResponseEntity<ProcessStepStatusController.CannotDeleteProcessStepStatus> deleteType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", typeId);
-    params.put("modifiedById", currentUser.trueUserId());
-    sqlCache.update("processStepStatus.deleteType", params);
+    List<ProjectProcessStep> pps = sqlCache.query("processStepStatus.typeInUseByProject", Map.of("companyProcessStepStatusTypeId", typeId), ProjectProcessStep.class);
+    List<ProcessStep> ps = sqlCache.query("processStepStatus.typeInUse", Map.of("companyProcessStepStatusTypeId", typeId), ProcessStep.class);
+    if (pps.isEmpty() && ps.isEmpty()) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", typeId);
+      params.put("modifiedById", currentUser.trueUserId());
+      sqlCache.update("processStepStatus.deleteType", params);
+      return ResponseEntity.ok().build();
+    }
+    else {
+      ProcessStepStatusController.CannotDeleteProcessStepStatus cannotDelete = new ProcessStepStatusController.CannotDeleteProcessStepStatus();
+      cannotDelete.setProjectSteps(pps);
+      cannotDelete.setSteps(ps);
+      return ResponseEntity.badRequest().body(cannotDelete);
+    }
   }
 
   public void updateType(CompanyProcessStepStatusType type) {

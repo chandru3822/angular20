@@ -1,5 +1,57 @@
 <template>
   <v-container class="custom-field-group-container">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="text-h5 error--text">
+          Error Event Status
+        </v-card-title>
+
+        <v-card-text>
+          You cannot delete an Event Status that is currently in use.  Please remove from the following locations before deleting.
+          <v-list v-for="(item, index) in fieldsInUse.events" :key="item.eventName">
+            <v-list-item-content>
+              Event
+              <div v-if="item.eventName">{{ item.eventName }}</div>
+            </v-list-item-content>
+          </v-list>
+
+          <v-list v-for="(item, index) in fieldsInUse.processStepEventActions" :key="index">
+            <v-list-item-content>
+              Process Step Event Action
+              <div v-if="item.eventName">Event: {{ item.eventName }}</div>
+              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
+              <div><span v-if="item.actionName"> Action: {{ item.actionName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+          <v-list v-for="(item, index) in fieldsInUse.processStepEventRequirements" :key="index">
+            <v-list-item-content>
+              Process Step Event Requirement
+              <div v-if="item.eventName">Event: {{ item.eventName }}</div>
+              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -153,6 +205,8 @@ export default {
       userId: this.$store.state.user.details.id,
       companyId: this.$store.state.user.details.companyId,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      fieldsInUse: [],
+      deleteError: false
     }
   },
   mounted() {
@@ -266,14 +320,24 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await deleteRequest(`/event/companyStatus/${item.id}`)
+        this.fieldsInUse = [];
         this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        if (e.status === 400) {
+          this.deleteError = true;
+          this.fieldsInUse = e.data;
+          this.snackbar = getSnackbar("ERROR", "Error Deleting Status");
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+        else {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async saveType(type, isNew) {

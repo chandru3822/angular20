@@ -49,7 +49,7 @@
           :required="required"
           :label="getFieldName()"
           :hide-details="hideDetails"
-          :rules="getRequiredRule()"
+          :rules="rules"
           :filled="filledStyle"
           :disabled="readonly"
           :readonly="readonly"
@@ -65,7 +65,7 @@
           :disabled="readonly"
           :class="{'error--text': readonly}"
           placeholder=" "
-          :rules="getRequiredRule()"
+          :rules="rules"
           :filled="filledStyle"
           :label="getFieldName()"
           :hide-details="hideDetails"
@@ -85,7 +85,7 @@
           :disabled="readonly"
           :class="{'error--text': readonly}"
           placeholder=" "
-          :rules="getRequiredRule()"
+          :rules="rules"
           :filled="filledStyle"
           :label="getFieldName()"
           :hide-details="hideDetails"
@@ -105,7 +105,7 @@
           :hide-details="hideDetails"
           placeholder=" "
           :filled="filledStyle"
-          :rules="getRequiredRule()"
+          :rules="rules"
           type="number"
           v-model.number="field.intValue"
           @change="callback(field)"
@@ -126,7 +126,7 @@
           placeholder=" "
           :filled="filledStyle"
           item-disabled="archived"
-          :rules="getRequiredRule()"
+          :rules="rules"
           :items="field.listOfValues"
           :label="getFieldName()"
           :hide-details="hideDetails"
@@ -159,7 +159,7 @@
           :readonly="readonly"
           :disabled="readonly"
           :class="{'error--text': readonly}"
-          :rules="getRequiredRule(field.dataTypeId)"
+          :rules="rules"
           :label="getFieldName()"
           :hide-details="hideDetails"
           item-value="id"
@@ -191,7 +191,7 @@
           :items="field.listOfValues"
           :label="getFieldName()"
           :hide-details="hideDetails"
-          :rules="getRequiredRule()"
+          :rules="rules"
           placeholder=" "
           item-value="id"
           item-text="name"
@@ -222,7 +222,7 @@
           :readonly="readonly"
           :disabled="readonly"
           :class="{'error--text': readonly}"
-          :rules="getRequiredRule()"
+          :rules="rules"
           placeholder=" "
           item-value="id"
           item-text="name"
@@ -239,7 +239,7 @@
 
         <div v-if="field.dataTypeId === 13">
           <!-- this hidden text field makes the form's required fields validation work -->
-          <v-text-field style="display: none;" v-model="field.richTextValue" :required="required" :rules="getRequiredRule()">
+          <v-text-field style="display: none;" v-model="field.richTextValue" :required="required" :rules="rules">
           </v-text-field>
           <div class="rich-text-label" v-if="!hideLabel && !showFieldName">
             {{ getFieldName() }}
@@ -328,6 +328,9 @@ export default {
       return field.values
     }
   },
+  created() {
+    this.getRules()
+  },
   computed: {
     fieldAncillaryName() {
       if (this.field.ancillaryCustomFieldHint) {
@@ -345,12 +348,15 @@ export default {
     return {
       search: null,
       isLoading: false,
+      rules: [],
       toolbarOptions: {
         modules: {
           toolbar: [
             ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
-            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'size': ['small', 'normal', 'large', 'huge'] }],  // custom dropdown
+            //without the color array then black = false which just un-sets color. in our case our default is navy blue, so unsetting the color goes back to navy blue and not to black.  by setting the black value to #000000 it fixes this issue.  when our default color changes to black then we could just remove the colors in this array to use the defaults from quill
+            [ { 'color': ["#000000", "#e60000", "#ff9900", "#ffff00", "#008a00", "#0066cc", "#9933ff", "#ffffff", "#facccc", "#ffebcc", "#ffffcc", "#cce8cc", "#cce0f5", "#ebd6ff", "#bbbbbb", "#f06666", "#ffc266", "#ffff66", "#66b966", "#66a3e0", "#c285ff", "#888888", "#a10000", "#b26b00", "#b2b200", "#006100", "#0047b2", "#6b24b2", "#444444", "#5c0000", "#663d00", "#666600", "#003700", "#002966", "#3d1466"] },
+              { 'background': [] }],          // dropdown with defaults from theme
+            [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
             ['clean']                                         // remove all formatting button
           ],
         }
@@ -382,13 +388,47 @@ export default {
     getFieldName() {
       return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
     },
-    getRequiredRule(dataTypeId) {
-      if (this.required && [7, 10].includes(dataTypeId)) {
-        return this.arrayRequiredRules
+    getRules() {
+      let rules = []
+      //handle required rule
+      if(this.required && [7, 10].includes(this.field.dataTypeId)) {
+        //dont do push here cuz arrayRequiredRules is already an array
+        rules = this.arrayRequiredRules
       } else if (this.required) {
-        return this.requiredRules
+        //dont do push here cuz requiredRules is already an array
+        rules = this.requiredRules
       }
+
+      //handle min/max validation (currently only used in brs - proposal design fields
+      if (this.field.minValue) {
+        // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
+        rules.push(v => ( (!v && v !== 0) || (v >= this.field.minValue )) || `Value must be greater than or equal to ${this.field.minValue}`)
+      }
+      if(this.field.maxValue) {
+        rules.push(v => ( (!v && v !== 0) || (v <= this.field.maxValue) ) || `Value must be less than or equal to ${this.field.maxValue}`)
+      }
+      this.rules = rules
     },
+    // getRequiredRule(dataTypeId) {
+    //   if (this.required && [7, 10].includes(this.field.dataTypeId)) {
+    //     return this.arrayRequiredRules
+    //   } else if (this.required) {
+    //     return this.requiredRules
+    //   } else {
+    //     return []
+    //   }
+    // },
+    // getMinMaxRule() {
+    //   let rules = []
+    //   if (this.field.minValue) {
+    //     // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
+    //     rules.push(v => ( (!v && v !== 0) || (v >= this.field.minValue )) || `Value must be greater than or equal to ${this.field.minValue}`)
+    //   }
+    //   if(this.field.maxValue) {
+    //     rules.push(v => ( (!v && v !== 0) || (v <= this.field.maxValue) ) || `Value must be less than or equal to ${this.field.maxValue}`)
+    //   }
+    //   return rules
+    // },
 
     getItems: debounce(async function (query = "") {
       try {

@@ -1,5 +1,6 @@
 package com.albatross.api.config;
 
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.services.MessagingService;
 import com.albatross.api.v1.flow.services.*;
 import lombok.RequiredArgsConstructor;
@@ -100,7 +101,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void closeProjectConversations() {
     if (closeProjectConversations) {
       log.info("*** CRON: start close SMS project conversations ***");
-      messagingService.closeStaleProjects();
+      messagingService.closeStaleProjects(SystemSettings.CRON_USER.getId());
       log.info("*** CRON: end close SMS project conversations ***");
     }
   }

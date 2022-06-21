@@ -99,8 +99,8 @@
         </v-col>
       </v-row>
     </v-form>
-    <v-divider class="mt-3 mb-3"></v-divider>
-    <v-row>
+    <v-divider class="mt-3 mb-3" v-if="userProfileCustomFields && userProfileCustomFields.length > 0"></v-divider>
+    <v-row v-if="userProfileCustomFields && userProfileCustomFields.length > 0">
       <v-col cols="12" md="6">
         <h3>Custom Fields</h3>
         <SpinnerInline v-if="loadingUserProfileCustomFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>

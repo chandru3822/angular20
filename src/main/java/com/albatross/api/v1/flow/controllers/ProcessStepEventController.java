@@ -91,6 +91,18 @@ public class ProcessStepEventController {
     processStepEventService.deleteActionFromEvent(actionId);
   }
 
+  // event action child links
+  @PostMapping(value = "/{eventId}/action/{actionId}/addLinkToAction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepEventActionLink addLinkToAction(@PathVariable Long actionId,
+                                               @RequestBody ProcessStepEventActionLink link) {
+    return processStepEventService.addLinkToAction(actionId, link);
+  }
+
+  @DeleteMapping(value = "/{eventId}/action/{actionId}/deleteLinkFromAction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteLink(@PathVariable Long id) {
+    processStepEventService.deleteLinkFromAction(id);
+  }
+
   // event action child functions
 
   @PostMapping(value = "/{eventId}/action/{actionId}/addChildFunctionToAction", produces = MediaType.APPLICATION_JSON_VALUE)

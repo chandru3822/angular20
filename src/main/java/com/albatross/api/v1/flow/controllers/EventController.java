@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.event.EventStatusType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.albatross.api.v1.flow.services.EventService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,8 +116,8 @@ public class EventController {
   }
 
   @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteCompanyEventStatus(@PathVariable Long id) {
-    eventService.deleteCompanyEventStatus(id);
+  public ResponseEntity<EventController.CannotDeleteEventStatus> deleteCompanyEventStatus(@PathVariable Long id) {
+    return eventService.deleteCompanyEventStatus(id);
   }
 
   @PostMapping(value = "/status/assignCompanyStatus/{companyStatusTypeId}/toEvent/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -147,4 +148,17 @@ public class EventController {
                                      @RequestBody List<WhiteListedPosition> whiteListedPositions) {
     eventService.saveWhiteListPositions(eventId, typeId, whiteListedPositions);
   }
+
+  @Data
+  public static class CannotDeleteEventStatus {
+    private List<EventCompanyEventStatusType> events;
+    private List<ProcessStepEventData> processStepEventActions;
+    private List<ProcessStepEventData> processStepEventRequirements;
+  }
+
+  @Data
+  public static class ProcessStepEventData {
+    private String actionName, eventName, processStepName;
+  }
+
 }

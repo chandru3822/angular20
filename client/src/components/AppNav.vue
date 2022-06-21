@@ -8,7 +8,7 @@
       >
         THIS IS UAT - YOU SHOULD BE WORKING IN PRODUCTION
         <v-btn
-            href="https://albatross.myblueraven.com"
+          href="https://albatross.myblueraven.com"
         >
           CLICK HERE
         </v-btn>
@@ -20,7 +20,7 @@
       >
         BE CAREFUL!! YOU ARE MASQUERADING!!
         <v-btn :disabled="clearingMasquerade" :loading="clearingMasquerade"
-          @click="clearMasquerade()"
+               @click="clearMasquerade()"
         >
           CLEAR
         </v-btn>
@@ -38,7 +38,8 @@
                   :close-on-content-click="false">
             <template v-slot:activator="{ on }">
               <v-btn icon v-on="on" :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
-                <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
+                <img class="header-logo" v-if="selectedCompany.logoPresignedUrl"
+                     :src="selectedCompany.logoPresignedUrl">
                 <v-icon v-else>mdi-office-building</v-icon>
               </v-btn>
             </template>
@@ -46,7 +47,7 @@
               <v-list-item v-for="(item, index) in companies" :key="index"
                            :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
                            @click="[menuOpen = false, changeContext(item.id)]">
-                <v-list-item-title>{{item.companyName}}</v-list-item-title>
+                <v-list-item-title>{{ item.companyName }}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -73,7 +74,7 @@
             <v-list v-if="displayedTabs.length > 1">
               <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
                            @click="[tabMenuOpen = false, goToPath(tab.path)]">
-                <v-list-item-title>{{tab.label}}
+                <v-list-item-title>{{ tab.label }}
                   <v-badge
                     class="notif-badge"
                     color="#F35858"
@@ -84,9 +85,10 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor" v-model="model" dark slider-color="secondary">
+          <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor" v-model="model" dark
+                  slider-color="secondary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
-              {{tab.label}}
+              {{ tab.label }}
               <v-badge
                 dot
                 class="notif-badge"
@@ -98,7 +100,7 @@
           </v-tabs>
           <v-spacer class="ml-5"></v-spacer>
           <v-toolbar-items v-if="companyTools.length > 0">
-            <CompanyTools :company-tools="companyTools"/>
+            <CompanyTools :company-tools="companyTools" />
           </v-toolbar-items>
           <v-spacer class="ml-5"></v-spacer>
           <v-toolbar-items>
@@ -107,22 +109,23 @@
         </v-app-bar>
       </v-col>
     </v-row>
-<!--    <div id="context-label"-->
-<!--         @click="goToPath('/home')"-->
-<!--         v-if="companies.length > 1 && selectedCompany.companyName" class="rounded-tr-xl">-->
-<!--      {{selectedCompany.companyName}}-->
-<!--    </div>-->
+    <!--    <div id="context-label"-->
+    <!--         @click="goToPath('/home')"-->
+    <!--         v-if="companies.length > 1 && selectedCompany.companyName" class="rounded-tr-xl">-->
+    <!--      {{selectedCompany.companyName}}-->
+    <!--    </div>-->
   </div>
 </template>
 
 <script>
-import {AppMutations} from '@/stores/AppStore'
-import {UserActions, UserMutations} from '@/stores/UserStore'
+import { AppMutations } from '@/stores/AppStore'
+import { UserActions, UserMutations } from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
+import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 
 const { VUE_APP_ENV } = process.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -131,9 +134,9 @@ export default {
   name: 'appNav',
   components: {
     AccountMenu,
-    CompanyTools,
+    CompanyTools
   },
-  data () {
+  data() {
     return {
       snackbar: {},
       constants,
@@ -149,10 +152,10 @@ export default {
       companyTools: [],
       model: '',
       headerColor: VUE_APP_ENV === 'local' ? constants.LOCAL_COLOR :
-                   VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ?  constants.STAGE_COLOR :
-                   VUE_APP_ENV === 'flux' ? constants.FLUX_COLOR :
-                   VUE_APP_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
-      tabs: [ {
+        VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? constants.STAGE_COLOR :
+          VUE_APP_ENV === 'flux' ? constants.FLUX_COLOR :
+            VUE_APP_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
+      tabs: [{
         label: 'Contacts',
         path: '/contacts',
         feature: 'CONTACTS',
@@ -164,74 +167,61 @@ export default {
         show: true
       },
         {
-        label: 'Schedule',
-        path: '/schedule',
-        feature: 'SCHEDULE',
+          label: 'Schedule',
+          path: '/schedule',
+          feature: 'SCHEDULE',
           show: true
-      },
+        },
         {
-        label: 'Work Queue',
-        path: '/workQueue',
-        feature: 'WORK_QUEUE',
-        show: true
-      }, {
-        label: 'Smartlists',
-        path: '/smartlist',
-        feature: 'SMARTLIST',
-        show: true
-      }, {
-        label: 'Inbox',
-        path: '/inbox',
-        feature: 'SMS_INBOX',
-        show: true
-      }],
-      VUE_APP_ENV,
-      smsNotification: []
+          label: 'Work Queue',
+          path: '/workQueue',
+          feature: 'WORK_QUEUE',
+          show: true
+        }, {
+          label: 'Smartlists',
+          path: '/smartlist',
+          feature: 'SMARTLIST',
+          show: true
+        }, {
+          label: 'Inbox',
+          path: '/inbox',
+          feature: 'SMS_INBOX',
+          show: true
+        }],
+      VUE_APP_ENV
     }
   },
-  created () {
-		this.loadComplete = true
-    if(this.$store.state.user?.details?.id) {
+  created() {
+    this.loadComplete = true
+    if (this.$store.state.user?.details?.id) {
       this.getCompanies()
       this.getCompanyTools()
       this.getSmsNotification()
     }
-	},
-  mounted() {
-    //notification stream
-    this.evtSource = new EventSource(`${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${this.$store.state.user.jwt}`)
-    this.evtSource.addEventListener('sms_reply', function(e) {
-      const data = JSON.parse(e.data)
-      if (data) {
-        this.getSmsNotification()
-      }
-    }.bind(this))
   },
   computed: {
-    displayedTabs () {
+    displayedTabs() {
       return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature) && tab.show)
     },
+    smsNotification() {
+      return this.$store.getters.getNotificationsByTopic('sms_reply')
+    }
   },
   methods: {
-    async changeContext (companyId) {
+    async changeContext(companyId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       const params = {
         companyId,
         isAdmin: this.$store.getters.isFullAdmin
       }
-      await this.$store.dispatch(UserActions.CHANGE_CONTEXT, params )
+      await this.$store.dispatch(UserActions.CHANGE_CONTEXT, params)
     },
-    async getCompanies () {
+    async getCompanies() {
       // get the companies that a user has access to
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        let url
-        if(this.$store.getters.isFullAdmin) {
-          url = `/companies`
-        } else {
-          url = `/companies/assignedToUser`
-        }
-        const {data} = await getRequest(url, null, [])
+        const url = (this.$store.getters.isFullAdmin) ? `/companies` : `/companies/assignedToUser`
+        const { data } = await getRequest(url, null, [])
         this.companies = data
         this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
         this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId) || {}
@@ -242,57 +232,46 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getCompanyTools () {
-        // get the company tools then filter the ones the user has access to
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-            const {data} = await getRequest(`/feature/companyTools`, null, [])
-            this.companyTools = data.filter(d => {
-              return this.$store.getters.userHasFeature(d.featureCode)
-            })
-            this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
-            this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      goToPath(path) {
-        this.$router.push({path: `${path}`})
-      },
-      async clearMasquerade () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.clearingMasquerade = true
-          const {data} = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/clear`)
-          if(data && data.token) {
-            this.$store.commit(UserMutations.SET_JWT, data.token)
-            //update the user
-            const {data: currentUser} = await getRequest(`/user/current`)
-            await this.$store.commit(UserMutations.SET_DETAILS, currentUser);
-            //then reload the screen
-            window.location.reload()
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Clearing Masquerade')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    async getSmsNotification() {
+    async getCompanyTools() {
+      // get the company tools then filter the ones the user has access to
+      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/notifications/`)
-        if (data && data.length > 0) {
-          this.smsNotification = data.filter(n => n.topic == "sms_reply")
-        }
-        else {
-          this.smsNotification = []
+        const { data } = await getRequest(`/feature/companyTools`, null, [])
+        this.companyTools = data.filter(d => {
+          return this.$store.getters.userHasFeature(d.featureCode)
+        })
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    goToPath(path) {
+      this.$router.push({ path: `${path}` })
+    },
+    async clearMasquerade() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.clearingMasquerade = true
+        const { data } = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/clear`)
+        if (data && data.token) {
+          this.$store.commit(UserMutations.SET_JWT, data.token)
+          //update the user
+          const { data: currentUser } = await getRequest(`/user/current`)
+          await this.$store.commit(UserMutations.SET_DETAILS, currentUser)
+          //then reload the screen
+          window.location.reload()
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching notifications')
+        this.snackbar = getSnackbar('ERROR', 'Error Clearing Masquerade')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    getSmsNotification() {
+      this.$store.dispatch(NotificationActions.FETCH_NOTIFICATIONS)
     }
   }
 }
@@ -310,7 +289,7 @@ export default {
   max-width: 45px;
 }
 
-.account-menu-button{
+.account-menu-button {
   text-transform: capitalize;
   box-shadow: none !important;
   -webkit-box-shadow: none !important;

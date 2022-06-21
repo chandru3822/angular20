@@ -179,6 +179,7 @@ public class GenesysService {
       params.put("booleanValue", null);
       params.put("textValue", null);
       params.put("numericValue", null);
+      params.put("richTextValue", null);
       params.put("intValue", Long.parseLong(leadStatusId));
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
@@ -236,7 +237,7 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(calendar.getTime()));
+    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, false);
 
@@ -282,6 +283,7 @@ public class GenesysService {
     params.put("textValue", textValue);
     params.put("numericValue", null);
     params.put("intValue", null);
+    params.put("richTextValue", null);
     params.put("intArrayValue", null);
     params.put("customFieldGroupAssignmentId", cfgaId);
     params.put("sourceId", contactId);
@@ -294,7 +296,9 @@ public class GenesysService {
 
     try {
       sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+
     } catch (Exception e) {
+
       log.error(
           "GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}",
           contactId,
@@ -347,7 +351,7 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(calendar.getTime()));
+    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, true);
 
@@ -612,7 +616,7 @@ public class GenesysService {
       return "SMS Level 10";
     }
 
-    return "";
+    return null;
   }
 
   // Get the Genesys id of the Contact List from Genesys
@@ -821,25 +825,7 @@ public class GenesysService {
     if (isUpdate) {
       contactMap.put("line_id", "");
     } else {
-      try {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("contactId", contactId);
-        Optional<String> textelPhoneKey =
-            sqlCache.get(
-                "genesys.getTextelPhoneKeyByContactId",
-                params,
-                new SingleColumnRowMapper<>(String.class));
-        if (textelPhoneKey.isPresent()) {
-          contactMap.put("line_id", textelPhoneKey.get());
-        } else {
-          saveTextelPhoneKey(contactId, contactMap);
-        }
-      } catch (Exception e) {
-        log.error(
-            "GENESYS: Error saving Textel Phone Key for contactId={}, msg={}",
-            contactId,
-            e.getMessage());
-      }
+      saveTextelPhoneKey(contactId, contactMap);
     }
   }
 

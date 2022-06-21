@@ -87,4 +87,13 @@ public class BlueravenCustomFieldGroupController {
     customFieldGroupService.saveUseParentData(customField);
   }
 
+  @PutMapping(value = "/updateRequired", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateRequired(@RequestBody CustomField customField) {
+    customFieldGroupService.updateRequired(customField);
+  }
+
+  @PutMapping(value = "/saveMinMax", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveMinMax(@RequestBody CustomField customField) {
+    customFieldGroupService.saveMinMax(customField);
+  }
 }

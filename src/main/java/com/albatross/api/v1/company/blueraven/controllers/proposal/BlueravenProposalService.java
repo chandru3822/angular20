@@ -13,6 +13,7 @@ import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
+import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -46,6 +47,7 @@ public class BlueravenProposalService {
   private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
   private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
+  private final ProjectService projectService;
   private final AttachmentService attachmentService;
   private final PropertiesConfiguration propertiesConfiguration;
 
@@ -87,7 +89,7 @@ public class BlueravenProposalService {
   }
 
   public List<ProposalDesign> requestNewDesign(
-      Long projectId, String description, String dueDate, List<MultipartFile> attachments)
+      Long projectId, String description, String dueDate, List<MultipartFile> attachments, List<MultipartFile> utilityBillAttachments)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -109,7 +111,13 @@ public class BlueravenProposalService {
     // upload attachments to the new step
     if (null != attachments && attachments.size() > 0) {
       for (MultipartFile a : attachments) {
-        projectProcessStepService.addAttachment(a, ppsId, 936L);
+        projectProcessStepService.addAttachment(a, ppsId, 946L); //Proposal Request Supporting Files
+      }
+    }
+    // upload utility bill attachments to the new step
+    if (null != utilityBillAttachments && utilityBillAttachments.size() > 0) {
+      for (MultipartFile a : utilityBillAttachments) {
+        projectService.addAttachment(a, projectId, 47L); //Utility Bill
       }
     }
 

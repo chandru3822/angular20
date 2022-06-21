@@ -94,7 +94,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
       User systemUser = new User();
       systemUser.setId(id);
       // @TODO hardcoded the BR system user email since we're under a tight time constraint. This
-      // needs to be more generiized with the system settings enum
+      // needs to be more generalized with the system settings enum
       // @TODO in case we use other system users here
       systemUser.setEmail("system.admin@blueravensolar.com");
       return Optional.of(new UserAccountDetails(systemUser, Collections.emptyList()));

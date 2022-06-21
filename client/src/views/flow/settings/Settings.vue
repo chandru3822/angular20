@@ -148,7 +148,7 @@ export default {
         path: '/settings/tournaments',
         title: 'Tournaments',
         pathMatch: '/settings/tournaments',
-        show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+        show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
       }, {
         path: '/settings/companyCustomFields',
         title: 'Company Custom Fields',

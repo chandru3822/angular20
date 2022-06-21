@@ -29,50 +29,37 @@
     </sms.queue.fetch>
 
     <sms.queue.fetchByProjectId><![CDATA[
-      SELECT
-         sms.message,
-         array_to_json(sms.media_urls) AS media_urls,
-         created,
-         sms.from_phone,
-         sms.recipient_type_id,
-         sms.message_sent_by_user_id as user_id,
-         case when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text) else null end as full_name
-       FROM flow.sms_queue sms
-        left join flow.user u on sms.message_sent_by_user_id = u.id
-       WHERE
-           sms.to_phone ILIKE '%' || translate((select case when length(c.phone) = 0 then 'NULL' else c.phone end from flow.project p
-                                                                                                                         inner join flow.contact c on c.id = p.contact_id
-                                                where p.id = :projectId), '() -', '')
-          OR
-             sms.to_phone ILIKE '%' || translate((select case when length(c.mobile) = 0 then 'NULL' else c.mobile end from flow.project p
-                                                                                                                             inner join flow.contact c on c.id = p.contact_id
-                                                  where p.id = :projectId), '() -', '')
-           AND (
-                 error_message IS NULL OR
-                 (LOWER(error_message) IN
-                  ('api.twilio.com:443 failed to respond') AND
-                   -- so we don't retry very very old texts
-                  created >= '2017-11-08'
-                   )
-               )
-       UNION ALL
-       SELECT body as message,
-              array_to_json(media_urls),
-              date_received as created,
-              from_phone,
-              1 as recipient_type_id,
-              null::int as user_id,
-              null::text as full_name
-      from flow.sms_reply
-       WHERE
-           from_phone ILIKE '%' || translate((select case when length(c.phone) = 0 then 'NULL' else c.phone end from flow.project p
-                                                                                                                       inner join flow.contact c on c.id = p.contact_id
-                                              where p.id = :projectId), '() -', '')
-          OR
-           from_phone ILIKE '%' || translate((select case when length(c.mobile) = 0 then 'NULL' else c.mobile end from flow.project p
-                                                                                                                         inner join flow.contact c on c.id = p.contact_id
-                                              where p.id = :projectId), '() -', '')
-        ORDER BY created ASC
+SELECT sms.message,
+       array_to_json(sms.media_urls) AS media_urls,
+       created,
+       sms.from_phone,
+       sms.recipient_type_id,
+       sms.message_sent_by_user_id   as user_id,
+       case
+           when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text)
+           end                       as full_name
+FROM flow.sms_queue sms
+         inner join flow.user u on sms.message_sent_by_user_id = u.id
+         inner join flow.contact c on c.search_phones = sms.search_to_phone and c.archived is false
+         inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
+    AND (error_message IS NULL OR
+         (LOWER(error_message) IN
+          ('api.twilio.com:443 failed to respond') AND
+             -- so we don't retry very very old texts
+          created >= '2017-11-08'
+             ))
+UNION ALL
+SELECT body          as message,
+       array_to_json(media_urls),
+       date_received as created,
+       from_phone,
+       1             as recipient_type_id,
+       null::int     as user_id,
+       null::text    as full_name
+from flow.sms_reply sr
+         inner join flow.contact c on c.search_phones = sr.search_from_phone and c.archived is false
+         inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
+ORDER BY created ASC;
     ]]></sms.queue.fetchByProjectId>
 
     <sms.queue.exportAll>
@@ -145,31 +132,34 @@
     <sms.queue.insert>
         <![CDATA[
             WITH sq AS (INSERT INTO flow.sms_queue (
-              message_group,user_id,message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id
+                                                  message_group,user_id,contact_id, project_id, message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id
             ) VALUES (
-              :messageGroup,:userId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId
-            )
-            RETURNING id,user_id,message,media_urls,
+                       :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId
+                     )
+            RETURNING id,user_id,contact_id, project_id,message,media_urls,
               message_group,message_sid,message_status,error_message,
               from_phone,to_phone,twilio_created,twilio_sent,twilio_delivered,
-              updated,created,recipient_type_id)
-            SELECT sq.id,
-                   sq.user_id,
-                   sq.message,
-                   array_to_json(sq.media_urls)       AS media_urls,
-                   sq.message_group,
-                   sq.message_sid,
-                   sq.message_status,
-                   sq.error_message,
-                   sq.from_phone,
-                   sq.to_phone,
-                   sq.twilio_created,
-                   sq.twilio_sent,
-                   sq.twilio_delivered,
-                   sq.updated,
-                   sq.created,
-                   sq.recipient_type_id
-            FROM sq
+              updated,created,recipient_type_id, message_sent_by_user_id)
+          SELECT sq.id,
+                 sq.user_id,
+                 sq.contact_id,
+                 sq.project_id,
+                 sq.message,
+                 array_to_json(sq.media_urls)       AS media_urls,
+                 sq.message_group,
+                 sq.message_sid,
+                 sq.message_status,
+                 sq.error_message,
+                 sq.from_phone,
+                 sq.to_phone,
+                 sq.twilio_created,
+                 sq.twilio_sent,
+                 sq.twilio_delivered,
+                 sq.updated,
+                 sq.created,
+                 sq.recipient_type_id,
+                 sq.message_sent_by_user_id
+          FROM sq
         ]]>
     </sms.queue.insert>
 
@@ -275,29 +265,26 @@
         ]]>
     </sms.reply.save>
 
-  <sms.getProjects>
-    <![CDATA[
-        select p.id from flow.project p
-            LEFT JOIN flow.contact c ON :from ILIKE '%' || translate((case when length(c.phone) = 0 then 'NULL' else c.phone end), '() -', '')
-        where c.id is not null and p.archived is false
-        ]]>
-  </sms.getProjects>
+  <sms.getProjects><![CDATA[
+    select p.id from flow.project p
+     inner join flow.contact c on p.contact_id = c.id
+    where c.search_phones = :from
+    and p.archived is false
+  ]]></sms.getProjects>
 
-    <sms.reply.fetch>
-        <![CDATA[
-        SELECT *
-        FROM flow.sms_reply
-        WHERE from_phone = :phone
-          AND date_received > :since
-        ORDER BY date_received DESC
-        LIMIT 1
-        ]]>
-    </sms.reply.fetch>
+    <sms.reply.fetch><![CDATA[
+      SELECT *
+      FROM flow.sms_reply
+      WHERE from_phone = :phone
+        AND date_received > :since
+      ORDER BY date_received DESC
+      LIMIT 1
+    ]]></sms.reply.fetch>
 
     <sms.getSmsQueue.count><![CDATA[
-    select count(1)
-    from flow.sms_queue sms
-    where sms.id in (select max(sq.id) from flow.sms_queue sq group by sq.user_id)
+      select count(1)
+      from flow.sms_queue sms
+      where sms.id in (select max(sq.id) from flow.sms_queue sq group by sq.user_id)
     ]]></sms.getSmsQueue.count>
 
     <sms.getSmsQueue><![CDATA[

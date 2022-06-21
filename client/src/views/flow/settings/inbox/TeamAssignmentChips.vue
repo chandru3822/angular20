@@ -102,7 +102,7 @@
       <template v-slot:activator="{on, attrs}">
         <v-btn icon v-bind="attrs" v-on="on" large class="align-self-baseline">
           <v-tooltip top small><template v-slot:activator="{on, attrs}">
-            <v-icon @click="" v-bind="attrs" v-on="on">
+            <v-icon color="primary" @click="" v-bind="attrs" v-on="on">
               mdi-plus
             </v-icon>
           </template>
@@ -188,6 +188,7 @@ export default {
         case 1: this.removeTeam(this.teamToRemove.id)
             break
       }
+      this.removeOption = 0
       this.showRemoveDialog = false
     },
     async removeTeam(teamId) {

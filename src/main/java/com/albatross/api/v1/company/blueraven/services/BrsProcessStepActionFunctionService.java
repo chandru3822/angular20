@@ -61,6 +61,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
+            params.put("richTextValue", null);
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
@@ -96,6 +97,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
+            params.put("richTextValue", null);
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
@@ -125,6 +127,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
+            params.put("richTextValue", null);
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
@@ -162,6 +165,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
+            params.put("richTextValue", null);
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
@@ -192,6 +196,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
+            params.put("richTextValue", null);
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (Exception e) {
@@ -232,6 +237,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
+            params.put("richTextValue", null);
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (Exception e) {
@@ -327,6 +333,7 @@ public class BrsProcessStepActionFunctionService {
                 params.put("numericValue", null);
                 params.put("intValue", null);
                 params.put("intArrayValue", null);
+                params.put("richTextValue", null);
                 params.put("jsonValue", null);
 
                 //IDing by field name is about a generic as we can get as of now, but not ideal

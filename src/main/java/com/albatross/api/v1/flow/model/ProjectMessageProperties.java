@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.model;
 
 import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,9 +14,10 @@ import java.util.*;
  */
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProjectMessageProperties {
 
-  private Long projectId, messageStatusId, ownerUserId;
+  private Long projectId, messageStatusId, ownerUserId, companyId;
   private String projectName, fullName, orgName, displayedOwner, state, createdBy;
   private Date lastMessageSentAt;
   private boolean closed, showAssignedToMeButton = false;

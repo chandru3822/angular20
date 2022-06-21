@@ -127,7 +127,7 @@
       <v-toolbar-items>
         <div>
           <v-btn color="#fff"
-                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
                  class="mt-3 no-text-transform primary--text"
                  :to="`/projectAdmin/${projectId}`"
           >

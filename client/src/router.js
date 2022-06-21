@@ -520,7 +520,7 @@ const router = new Router({
               path: 'tournaments',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')) {
+                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') ) {
                   return import (/* webpackChunkName: "tournamentSettings" */ './views/flow/settings/tournaments/Tournaments.vue')
                 } else {
                   return accessDenied()
@@ -531,7 +531,7 @@ const router = new Router({
               path: 'tournaments/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')) {
+                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN') ) {
                   return import (/* webpackChunkName: "tournamentSettings" */ './views/flow/settings/tournaments/Tournament.vue')
                 } else {
                   return accessDenied()
@@ -1202,7 +1202,8 @@ const router = new Router({
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
           component: () => {
-            if (store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')) {
+            //dont change this permission unless double checking with rn and cj. we have been back and forth on this 100 times
+            if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')) {
               return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
             } else {
               return accessDenied()

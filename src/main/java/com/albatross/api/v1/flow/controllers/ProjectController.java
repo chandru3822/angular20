@@ -3,6 +3,8 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.DensitySearch;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.project.ProjectDensityResult;
 import com.albatross.api.v1.flow.model.project.ProjectStatusCount;
@@ -12,12 +14,14 @@ import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEven
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.services.MessagingService;
 import com.albatross.api.v1.flow.services.ProjectService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,9 +73,10 @@ public class ProjectController {
   }
 
   @DeleteMapping(value = "/{projectId}")
-  public void deleteProject(@PathVariable Long projectId) {
+  public void deleteProject(
+      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
     projectService.deleteProject(projectId);
-    messagingService.deleteConversation(projectId);
+    messagingService.deleteConversation(projectId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/owners")
@@ -165,8 +170,9 @@ public class ProjectController {
   }
 
   @DeleteMapping(value = "/companyStatus/{id}")
-  public void deleteCompanyProjectStatus(@PathVariable Long id) {
-    projectService.deleteCompanyProjectStatus(id);
+  public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(
+      @PathVariable Long id) {
+    return projectService.deleteCompanyProjectStatus(id);
   }
 
   @GetMapping(value = "/status")
@@ -191,5 +197,18 @@ public class ProjectController {
     String report = projectService.generateReport(query);
     return new ResponseEntity<>(
         report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
+  }
+
+  @Data
+  public static class CannotDeleteProjectStatus {
+    private List<Project> projectsWithStatus;
+    private List<ProcessStepAction> processStepActions;
+    private List<ProcessStepEventData> processStepEventRequirements;
+    private List<ProcessStepEventData> processStepRequirements;
+  }
+
+  @Data
+  public static class ProcessStepEventData {
+    private String actionName, eventName, processStepName;
   }
 }
