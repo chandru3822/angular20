@@ -36,7 +36,6 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -49,7 +48,8 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('SMS_INBOX')")
+//have to turn this off for now for the soft rollout.  search for @softRollOutChangeBack
+//@PreAuthorize("hasFeatureAccess('SMS_INBOX')")
 @RequiredArgsConstructor
 public class MessagingService {
 
