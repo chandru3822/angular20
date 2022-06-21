@@ -147,7 +147,9 @@ export default {
   },
   data() {
     return {
-      userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
+      //todo change this back after soft roll out is done @softRollOutChangeBack
+      userCanViewSms: true,
+      // userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
       projectId: parseInt(this.$route.params.projectId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
