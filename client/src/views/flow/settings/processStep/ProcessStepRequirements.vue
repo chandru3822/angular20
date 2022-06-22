@@ -645,7 +645,8 @@ export default {
       addNewRequirement: false,
       newRequirement: {
         requirementParamDynamicValues: [],
-        customValue: false
+        customValue: false,
+        failIfNoReferenceStepFound: true
       },
       eventStatuses: [],
       // selectedEventStatuses: [],
@@ -1061,7 +1062,9 @@ export default {
         this.selectedListValue = {}
         this.addNewRequirement = false
         this.newRequirement = {
-          requirementParamDynamicValues: []
+          requirementParamDynamicValues: [],
+          customValue: false,
+          failIfNoReferenceStepFound: true
         }
         this.selectedDataTypeRequirement = {}
         this.parent = {}

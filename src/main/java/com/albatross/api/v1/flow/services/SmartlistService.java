@@ -647,39 +647,6 @@ public class SmartlistService {
     withClause.append(" \"systemList_3\" as (select id, org_name::text as name from flow.org), ");
     withClause.append(" \"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
 
-    if(null != smartlist.getWorkQueueTypeId()) {
-      withClause.append(" \"ps_wq_statuses\" as (\n" +
-        "    select pswqtpsst.process_step_status_type_id,\n" +
-        "           pswqtpsst.company_process_step_status_type_id,\n" +
-        "           pswqt.process_step_id\n" +
-        "    from flow.process_step_work_queue_type_process_step_status_type pswqtpsst\n" +
-        "             inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id\n" +
-        "             inner join flow.process_step ps on pswqt.process_step_id = ps.id\n" +
-        "    where pswqt.work_queue_type_id = " + smartlist.getWorkQueueTypeId() + "\n" +
-        "      and pswqt.archived is not true\n" +
-        "      and pswqtpsst.archived is not true\n" +
-        "      and ps.archived is not true\n" +
-        "      and ps.company_id = any\n" +
-        "                        (select id from flow.company_hierarchy_filter_down(" + companyId + "))\n" +
-        "      and pswqtpsst.archived is not true\n" +
-        "),\n" +
-        "     \"pj_wq_statuses\" as (\n" +
-        "         select pswqtpsst.project_status_type_id,\n" +
-        "                pswqtpsst.company_project_status_type_id,\n" +
-        "                pswqt.process_step_id\n" +
-        "         from flow.process_step_work_queue_type_project_status_type pswqtpsst\n" +
-        "                  inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id\n" +
-        "                  inner join flow.process_step ps on pswqt.process_step_id = ps.id\n" +
-        "         where pswqt.work_queue_type_id = " + smartlist.getWorkQueueTypeId() + "\n" +
-        "           and pswqt.archived is not true\n" +
-        "           and pswqtpsst.archived is not true\n" +
-        "           and ps.archived is not true\n" +
-        "           and ps.company_id = any\n" +
-        "                        (select id from flow.company_hierarchy_filter_down(" + companyId + "))\n" +
-        "           and pswqtpsst.archived is not true\n" +
-        "     ), ");
-    }
-
     StringBuilder query = new StringBuilder(" select ");
 
     if(null != smartlist.getWorkQueueTypeId()) {
@@ -687,16 +654,7 @@ public class SmartlistService {
         "       flow.project.project_name                                                                             as \"Project Name\",\n" +
         "       flow.process_step.process_step_name                                                                   as \"Process Step Name\",\n" +
         "       cpsst.process_step_status_type                                                                        as \"Process Step Status Type\",\n" +
-          "       (select coalesce((select extract(days from now()::timestamp - wqc.date_entered_queue)\n" +
-          "          from flow.work_queue_cycle wqc\n" +
-          "            inner join flow.process_step_work_queue_type_process_step_status_type pswqtpstt on wqc.process_step_work_queue_type_process_step_status_type_id = pswqtpstt.id\n" +
-          "            inner join flow.process_step_work_queue_type pswqt2 on  pswqt2.id = pswqtpstt.process_step_work_queue_type_id\n" +
-          "          where wqc.project_process_step_id = flow.project_process_step.id\n" +
-          "            and pswqt2.id = pswqt.id\n" +
-          "            and wqc.date_exited_queue is null\n" +
-          "            and pswqt2.archived is false\n" +
-          "            and pswqtpstt.archived is false\n" +
-          "       ), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\", \n" +
+          "       (select coalesce(extract(days from now()::timestamp - wqc.date_entered_queue), DATE_PART('day', now() - flow.project_process_step.date_created))) as \"Days In Queue\", \n" +
         "       st.abbreviation                                                                                       as \"State Abbreviation\",\n" +
         "       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end                            AS \"Owner\",\n" +
           " (select array_to_string(array(\n" +
@@ -1115,27 +1073,31 @@ public class SmartlistService {
     } else {
       //this is all required for the work queue stuff
       query.append(
-        "from flow.project\n" +
-        "         inner join flow.contact on flow.contact.id = flow.project.contact_id" +
-        "         left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id\n" +
-        "         left join flow.user on flow.user.id = flow.user_position.user_id" +
-        "         inner join flow.company_process cp on cp.id = flow.project.company_process_id\n" +
-        "         inner join flow.project_process_step on flow.project_process_step.project_id = flow.project.id\n" +
-        "         inner join flow.company_project_status_type cpst on cpst.id = flow.project.company_project_status_type_id\n" +
-        "         inner join flow.process_step on flow.process_step.id = flow.project_process_step.process_step_id\n" +
-        "         inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = flow.process_step.id\n" +
-        "         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id\n" +
-        "         inner join flow.company_process_step_status_type cpsst on cpsst.id = flow.project_process_step.company_process_step_status_type_id\n" +
-        "         left join flow.company_state cs on cs.id = flow.project.company_state_id\n" +
-        "         left join flow.state st on st.id = cs.state_id\n" +
-        "         left join flow.user_position up on up.id = flow.project_process_step.user_position_id\n" +
-        "         left join flow.user u on u.id = up.user_id\n" +
-        "         inner join ps_wq_statuses pws on pws.process_step_id = flow.process_step.id and (pws.process_step_status_type_id = cpsst.process_step_status_type_id OR pws.company_process_step_status_type_id = cpsst.id)\n" +
-        "         inner join pj_wq_statuses pjws on pjws.process_step_id = flow.process_step.id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = flow.project.company_project_status_type_id)\n" +
-        "         left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id \n" +
-        "         left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id \n" +
-        "         left join flow.user_position \"contact_user_position\" on \"contact_user_position\".id = flow.contact.owner_user_position_id \n" +
-        "         left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id \n");
+        "from flow.work_queue_cycle wqc\n" +
+          "       inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst\n" +
+          "                  on wqc.process_step_work_queue_type_process_step_status_type_id = pswqtpsst.id\n" +
+          "       inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id\n" +
+          "       inner join flow.project_process_step on flow.project_process_step.id = wqc.project_process_step_id\n" +
+          "       inner join flow.process_step on flow.process_step.id = flow.project_process_step.process_step_id\n" +
+          "       inner join flow.project on flow.project.id = flow.project_process_step.project_id\n" +
+          "       inner join flow.contact on flow.contact.id = flow.project.contact_id\n" +
+          "       left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id\n" +
+          "       left join flow.user on flow.user.id = flow.user_position.user_id\n" +
+          "       inner join flow.company_process cp on cp.id = flow.project.company_process_id\n" +
+          "       inner join flow.company_project_status_type cpst on cpst.id = flow.project.company_project_status_type_id\n" +
+          "       inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id\n" +
+          "       inner join flow.company_process_step_status_type cpsst\n" +
+          "                  on cpsst.id = flow.project_process_step.company_process_step_status_type_id\n" +
+          "       left join flow.company_state cs on cs.id = flow.project.company_state_id\n" +
+          "       left join flow.state st on st.id = cs.state_id\n" +
+          "       left join flow.user_position up on up.id = flow.project_process_step.user_position_id\n" +
+          "       left join flow.user u on u.id = up.user_id\n" +
+          "       left join flow.user_position \"project_user_position\"\n" +
+          "                 on \"project_user_position\".id = flow.project.user_position_id\n" +
+          "       left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id\n" +
+          "       left join flow.user_position \"contact_user_position\"\n" +
+          "                 on \"contact_user_position\".id = flow.contact.owner_user_position_id\n" +
+          "       left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id");
     }
 
     if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
@@ -1583,11 +1545,12 @@ public class SmartlistService {
       }
 
       if(null != smartlist.getWorkQueueTypeId()) {
-        whereClause.append(" pswqt.work_queue_type_id = " + smartlist.getWorkQueueTypeId() + "\n" +
+        //we no longer show only main pps in work queues...removed that line
+        whereClause.append(" wqc.date_entered_queue is not null and wqc.date_exited_queue is null \n" +
+          "  and pswqt.work_queue_type_id = " + smartlist.getWorkQueueTypeId() + "\n" +
           "  and pswqt.archived is not true\n" +
           "  and flow.project_process_step.archived is not true\n" +
           "  and flow.project.archived is not true\n" +
-          "  and flow.project_process_step.main is true\n" +
           "      and flow.process_step.company_id = any\n" +
           "                        (select id from flow.company_hierarchy_filter_down(" + companyId + ")) and ");
       }
@@ -3346,6 +3309,10 @@ public class SmartlistService {
     //add "from" clause and initial joins
     query.append(addFromClause((useEventData) ? 6L : smartlist.getObjectTypeId(), null, smartlist.getWorkQueueTypeId()));
 
+    final List<Long> pseRequirementIds = smartlist.getEventWorkQueueTypes().stream()
+                                                                           .map(ProcessStepEventWorkQueueType::getProcessStepEventId)
+                                                                           .toList();
+
     //join value tables for every field
     for (SmartlistFieldAssignment f : fields) {
       //set all table aliases up front
@@ -3466,34 +3433,40 @@ public class SmartlistService {
           }
         } else if (f.getObjectTypeId() == 6) {
 
-            //@TODO: Joining the PPS/PPSE tables should be avoided here when this field's processStepEventId is one of smartlist.getEventWorkQueueTypes() processStepEventId(s)
-          //check if process step is already joined
-          if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
-            //if the PS is already joined, use it
-            final String ppsTable = fields.stream()
-              .filter(field -> Objects.equals(field.getProcessStepId(), f.getProcessStepId()))
-              .map(SmartlistFieldAssignment::getPpsTable)
-              .findFirst()
-              .orElse(null);
-            f.setPpsTable(ppsTable);
-
-            //check if event is already joined
-            if (query.indexOf(".process_step_event_id = " + f.getEventId()) != -1) {
-              // grab event table
-              final String ppsEventTable = fields.stream()
-                .filter(field -> Objects.equals(field.getEventId(), f.getEventId()))
-                .map(SmartlistFieldAssignment::getPpsEventTable)
-                .findFirst()
-                .orElse(null);
-              f.setPpsEventTable(ppsEventTable);
+            //if event is already a row in the queue
+            if (pseRequirementIds.contains(f.getProcessStepEventId())) {
+                //use the base tables
+                f.setPpsEventTable("flow.project_process_step_event");
+                f.setPpsTable("flow.project_process_step");
             } else {
-              query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
+                //check if process step is already joined
+                if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
+                    //if the PS is already joined, use it
+                    final String ppsTable = fields.stream()
+                                                  .filter(field -> Objects.equals(field.getProcessStepId(), f.getProcessStepId()))
+                                                  .map(SmartlistFieldAssignment::getPpsTable)
+                                                  .findFirst()
+                                                  .orElse(null);
+                    f.setPpsTable(ppsTable);
+
+                    //check if event is already joined
+                    if (query.indexOf(".process_step_event_id = " + f.getEventId()) != -1) {
+                        // grab event table
+                        final String ppsEventTable = fields.stream()
+                                                           .filter(field -> Objects.equals(field.getEventId(), f.getEventId()))
+                                                           .map(SmartlistFieldAssignment::getPpsEventTable)
+                                                           .findFirst()
+                                                           .orElse(null);
+                        f.setPpsEventTable(ppsEventTable);
+                    } else {
+                        query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
+                    }
+                } else {
+                    //join pps and ppse tables
+                    query.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+                    query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
+                }
             }
-          } else {
-            //join pps and ppse tables
-            query.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
-            query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
-          }
 
           //if field is event name system field
           if (Objects.equals(f.getReferenceTable(), "flow.event")) {

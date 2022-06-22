@@ -1203,7 +1203,7 @@ const router = new Router({
           path: '/projectAdmin/:projectId',
           component: () => {
             //dont change this permission unless double checking with rn and cj. we have been back and forth on this 100 times
-            if (store.getters.userHasFeatureAccessLevel('PROJECT', 'ADMIN') || store.getters.userHasFeatureAccessLevel('PROJECT', 'DELETE')) {
+            if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')) {
               return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
             } else {
               return accessDenied()

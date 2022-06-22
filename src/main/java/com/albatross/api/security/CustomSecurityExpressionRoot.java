@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CustomSecurityExpressionRoot extends SecurityExpressionRoot
@@ -36,6 +37,31 @@ public class CustomSecurityExpressionRoot extends SecurityExpressionRoot
       final boolean anyMatch = Arrays.stream(featureAccessLevels).anyMatch(authorities::contains);
       final boolean isSystemAdminUser =
           details.getHighestCompanyId().equals(SYS_ADMIN_ID);
+      return anyMatch || isSystemAdminUser;
+    }
+
+    return false;
+  }
+
+  /**
+   *  Allows access if they have any level of access to the provided feature (ideally used on a class level as a catch-all)
+   *
+   * @param featureAccess
+   * @return
+   */
+  public boolean hasFeatureAccess(String... featureAccess){
+    final var principal = this.getPrincipal();
+    if (principal instanceof final UserAccountDetails details) {
+
+      final var features =
+        details
+          .getAuthorities().stream().filter(FeatureAccessControlGrantedAuthority.class::isInstance)
+          .map(FeatureAccessControlGrantedAuthority.class::cast)
+          .map(FeatureAccessControlGrantedAuthority::getFeatureCode)
+          .collect(Collectors.toSet());
+      final boolean anyMatch = Arrays.stream(featureAccess).anyMatch(features::contains);
+      final boolean isSystemAdminUser =
+        details.getHighestCompanyId().equals(SYS_ADMIN_ID);
       return anyMatch || isSystemAdminUser;
     }
 

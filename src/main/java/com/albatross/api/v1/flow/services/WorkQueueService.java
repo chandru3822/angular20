@@ -4,12 +4,15 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Note;
+import com.albatross.api.v1.flow.model.OwningPosition;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistResult;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueue;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueMetric;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -40,22 +43,26 @@ public class WorkQueueService {
 
   public List<WorkQueue> getWorkQueues(
       Long workQueueCategoryId,
-      Long userId,
-      Boolean unassigned,
       Boolean filterFutureFollowUps,
       Boolean filterFutureEvents) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
-    params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
-    params.put("userId", userId);
     params.put("filterFutureFollowUps", null != filterFutureFollowUps && filterFutureFollowUps);
     params.put("filterFutureEvents", null != filterFutureEvents && filterFutureEvents);
-    params.put("unassigned", null != unassigned && unassigned);
 
-    return sqlCacheRO.query("workQueue.getWorkQueues", params, WorkQueue.class);
+    return sqlCacheRO.query("workQueue.getWorkQueueCards", params, WorkQueue.class);
+  }
+
+  public List<WorkQueueMetric> getWorkQueueMetrics(
+    Long workQueueCategoryId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("workQueueCategoryId", workQueueCategoryId);
+    params.put("companyId", user.getCompanyId());
+
+    return sqlCacheRO.query("workQueue.getWorkQueueMetrics", params, WorkQueueMetric.class);
   }
 
   public SmartlistResult getWorkQueueDetails(

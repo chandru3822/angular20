@@ -52,6 +52,7 @@ public class VerseWebhookService {
         params.put("booleanValue", null);
         params.put("textValue", null);
         params.put("numericValue", null);
+        params.put("richTextValue", null);
         params.put("intValue", Long.parseLong(leadStatusId));
         params.put("intArrayValue", null);
         params.put("customFieldGroupAssignmentId", 399L);

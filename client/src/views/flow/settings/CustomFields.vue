@@ -7,10 +7,13 @@
         <v-card-title class="text-h5 error--text">Error Deleting Custom Field</v-card-title>
 
         <v-card-text>
-          You cannot delete a field that is currently in use.  Please remove the field from the following locations before deleting.
+          You cannot delete a field that is currently in use. Please remove the field from the following locations
+          before deleting.
           <v-list v-for="(item, index) in fieldsInUse" :key="index">
             <v-list-item-content>
-              {{ item.objectType }} <span v-if="item.processStepName">{{item.processStepName}}</span>{{ item.groupName }} - {{ item.fieldName}}
+              {{ item.objectType }} <span v-if="item.processStepName">{{ item.processStepName }}</span>{{
+                item.groupName
+              }} - {{ item.fieldName }}
             </v-list-item-content>
           </v-list>
         </v-card-text>
@@ -46,7 +49,7 @@
             ></v-select>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card>
+        <v-card class="square-card">
           <v-card-title class="pt-0">
             <v-text-field
               v-model="search"
@@ -63,11 +66,12 @@
             :fixed-header="true"
             :items-per-page="25"
             single-expand
+            :loading="fieldsLoading"
             :search="search"
             hide-default-header
             :footer-props="footerProps"
             :expanded.sync="expanded"
-            class="elevation-1 mt-1"
+            class="elevation-1 mt-1 square-card"
           >
             <template #no-data>
               No available fields
@@ -92,10 +96,10 @@
                       <v-icon v-else>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog
-                        v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                        label="this field: "
-                        :item-to-delete="item.fieldName"
-                        @confirm-delete="deleteField(item)"
+                      v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      label="this field: "
+                      :item-to-delete="item.fieldName"
+                      @confirm-delete="deleteField(item)"
                     ></confirm-delete-dialog>
                   </div>
                 </td>
@@ -106,7 +110,7 @@
                 <v-col class="flex-display pl-3 pr-3 justify" :class="{'shaded-row': selectedIndex % 2}">
                   <v-card text class="text-center field-card one-hunned" flat
                           :color="selectedIndex % 2 ? 'rowShadeCustom' : 'white'">
-                    <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
+                    <v-card-text>{{ item.custom ? 'Add Field' : 'Edit Field' }}</v-card-text>
                     <v-text-field
                       label="Field Name"
                       :readonly="!userCanEdit"
@@ -123,7 +127,7 @@
                              v-model="item.systemReadonly">
                     </div>
                     <div v-if="!apiPath" class="text-left read-only-label">
-                      <label>{{ item.systemReadonly ? 'This field is readonly at system level and cannot be changed.' : 'Read-only:'}}</label>
+                      <label>{{ item.systemReadonly ? 'This field is readonly at system level and cannot be changed.' : 'Read-only:' }}</label>
                       <input type="checkbox"
                              v-if="!item.systemReadonly"
                              :readonly="!userCanEdit"
@@ -137,7 +141,8 @@
                              class="ml-2"
                              v-model="item.systemReadonly">
                       <br>
-                      <div v-if="item.companyDataType && (item.companyDataType.dataTypeId === 1 || item.companyDataType.dataTypeId === 2)">
+                      <div
+                        v-if="item.companyDataType && (item.companyDataType.dataTypeId === 1 || item.companyDataType.dataTypeId === 2)">
                         <label>Allow Selecting Now: </label>
                         <input type="checkbox"
                                :readonly="!userCanEdit"
@@ -177,7 +182,8 @@
                           cache-items
                           clearable
                         />
-                        <span v-if="item.flowCustomFieldId">Tied to Flow Custom Field ID#{{item.flowCustomFieldId}}</span>
+                        <span
+                          v-if="item.flowCustomFieldId">Tied to Flow Custom Field ID#{{ item.flowCustomFieldId }}</span>
                       </div>
 
                       <div v-else>
@@ -194,7 +200,7 @@
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="item.lazyLoadValues"
-                          label="Lazy load values" />
+                          label="Lazy load values"/>
                       </div>
                     </div>
 
@@ -227,7 +233,7 @@
                     <v-col class="options-container"
                            v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList && !item.companyDataType.customBehavior">
                       <div class="mb-2">
-                        Selectable Options<br />
+                        Selectable Options<br/>
                         Sort Alphabetically:
                         <input type="checkbox" class="ml-3" v-model="item.sortListValuesAlphabetically">
                       </div>
@@ -271,7 +277,7 @@
                                     class="fix-opacity"
                                     v-model="ot.archived"
                                     :false-value="true" :true-value="false"
-                                    :label="ot.objectType" />
+                                    :label="ot.objectType"/>
                       </v-container>
                       <v-container v-else>
                         <v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"
@@ -285,10 +291,10 @@
                       </v-container>
                     </v-col>
                     <v-btn
-                        v-if="userCanEdit"
-                        :disabled="invalid(item)"
-                        @click="[saveChanges(item.custom, item), item.expanded = !item.expanded]">
-                      {{item.custom ? 'Add Field' : 'Save Changes'}}
+                      v-if="userCanEdit"
+                      :disabled="invalid(item)"
+                      @click="[saveChanges(item.custom, item), item.expanded = !item.expanded]">
+                      {{ item.custom ? 'Add Field' : 'Save Changes' }}
                     </v-btn>
                   </v-card>
                 </v-col>
@@ -302,7 +308,7 @@
 </template>
 
 <script>
-import { AppMutations } from "@/stores/AppStore";
+import {AppMutations} from "@/stores/AppStore";
 import Vue2Filters from "vue2-filters";
 import cloneDeep from "lodash.clonedeep";
 import orderBy from "lodash.orderby";
@@ -324,7 +330,7 @@ export default {
   name: "CustomFields",
   mixins: [Vue2Filters.mixin],
   props: {
-    apiPath: { type: String }
+    apiPath: {type: String}
   },
   components: {
     ConfirmDeleteDialog,
@@ -340,8 +346,8 @@ export default {
       // this is used so the expanded row uses the full width...bug in vuetify
       // headers: Array(2).fill({}),
       headers: [
-        { text: "Field Name", value: "fieldName", showFilter: true },
-        { text: "", value: "icons", showFilter: false }
+        {text: "Field Name", value: "fieldName", showFilter: true},
+        {text: "", value: "icons", showFilter: false}
       ],
       footerProps: {
         "items-per-page-options": [25, 50]
@@ -357,9 +363,10 @@ export default {
       systemListOptions: [],
       dataTypes: [],
       companyId: this.$store.state.user.details.companyId,
-      selectedObjectType: { id: -1, objectType: "All" },
+      selectedObjectType: {id: -1, objectType: "All"},
       customFieldObjectTypes: [],
       objectFilters: [],
+      fieldsLoading: true,
       userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
       blankNewObject: {
@@ -374,24 +381,33 @@ export default {
     };
   },
   async created() {
-    await this.getCompanyDataTypes();
-    //todo @randa do this so that if there are exclusions they will load correctly
-    this.getCustomFieldObjectTypes();
-    this.getCustomFields();
-    this.getSystemLists();
+    this.fieldsLoading = true
+    Promise.all([
+      this.getCompanyDataTypes(),
+      //todo @randa do this so that if there are exclusions they will load correctly
+      this.getCustomFieldObjectTypes(),
+      this.getCustomFields(),
+      this.getSystemLists()
+    ]).then(() => {
+      this.fieldsLoading = false
+    })
   },
   watch: {
-    customFieldQuery(val){
+    customFieldQuery(val) {
       val && this.debounceFindCustomFields(val)
     }
   },
   methods: {
-    isSystemReference (dataType){
+    isSystemReference(dataType) {
       return /System Reference/i.test(dataType)
     },
     getLovValues(lovs, alphaSort) {
       // return lovs
-      return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder);
+      //when user manually changes the order it was borked. this should fix it, even though it sucks it loads every time.  bandaid crap fixes for the win!
+      lovs.forEach((lov, idx) => {
+        lov.displayOrder = idx
+      })
+      return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort && lov.id ? lov.name?.toLowerCase() : lov.displayOrder);
     },
     filterDataTypes(item) {
       if (this.userIsSystemAdmin) {
@@ -403,25 +419,24 @@ export default {
         });
       }
     },
-    debounceFindCustomFields: debounce(function(query){
+    debounceFindCustomFields: debounce(function (query) {
       this.findCustomFields(query)
     }, 250),
 
-    async findCustomFields(query){
+    async findCustomFields(query) {
       try {
-        const { data } = await getRequestWithParams(`/customField/getAll`,{
-          params: { query, hasListValues: true }
+        const {data} = await getRequestWithParams(`/customField/getAll`, {
+          params: {query, hasListValues: true}
         }, null, []);
         this.availableCustomFields = data
-      }catch (e){
+      } catch (e) {
         this.availableCustomFields = []
         console.error(e)
       }
     },
     async getCustomFields() {
-      this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        const { data, status } = await getRequest(`/customField/getAll`, this.apiPath, null, []);
+        const {data, status} = await getRequest(`/customField/getAll`, this.apiPath, null, []);
         data?.forEach(d => {
           d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId);
         });
@@ -430,25 +445,20 @@ export default {
         if (this.userCanEdit) {
           this.customFields.unshift(cloneDeep(this.blankNewObject));
         }
-        handleHidingGlobalLoader(this, status);
       } catch (e) {
         console.error("*** ERROR ***", e);
         this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false);
       }
     },
     async getSystemLists() {
-      this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        const { data, status } = await getRequest(`/systemList`);
+        const {data, status} = await getRequest(`/systemList`);
         this.systemLists = data;
-        handleHidingGlobalLoader(this, status);
       } catch (e) {
         console.error("*** ERROR ***", e);
         this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false);
       }
     },
     async getSystemListOptions(listId) {
@@ -457,7 +467,7 @@ export default {
 
         this.$store.commit(AppMutations.SET_LOADING, true);
         try {
-          const { data, status } = await getRequestWithParams(`/systemList/${listId}/options`, {
+          const {data, status} = await getRequestWithParams(`/systemList/${listId}/options`, {
             params: {
               //well i named these poorly...
               //  if a list itself has sub options it means they can select suboptions
@@ -476,39 +486,33 @@ export default {
       }
     },
     async getCustomFieldObjectTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        const { data, status } = await getRequest(`/objectType/getCompanyObjectTypes`, this.apiPath, null, []);
+        const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`, this.apiPath, null, []);
         data?.forEach(d => d.archived = true);
         this.customFieldObjectTypes = cloneDeep(data);
         this.objectFilters = data;
-        this.objectFilters.unshift({ id: -2, objectType: "Unassigned" });
-        this.objectFilters.unshift({ id: -1, objectType: "All" });
-        handleHidingGlobalLoader(this, status);
+        this.objectFilters.unshift({id: -2, objectType: "Unassigned"});
+        this.objectFilters.unshift({id: -1, objectType: "All"});
       } catch (e) {
         console.error("*** ERROR ***", e);
         this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false);
       }
     },
     async getCompanyDataTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        const { data, status } = await getRequest(`/dataType/getCompanyDataTypes`);
+        const {data, status} = await getRequest(`/dataType/getCompanyDataTypes`);
         this.dataTypes = data;
-        handleHidingGlobalLoader(this, status);
       } catch (e) {
         console.error("*** ERROR ***", e);
         this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false);
       }
     },
     async deleteField(item) {
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        const { data, status } = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, []);
+        const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, []);
         if (data?.length > 0) {
           item.deleteConfirm = false;
           this.deleteError = true;
@@ -575,7 +579,7 @@ export default {
         }
 
         object.fieldName = object.newFieldName ?? object.fieldName;
-        const { data, status } = await postRequest(`/customField`, object, this.apiPath);
+        const {data, status} = await postRequest(`/customField`, object, this.apiPath);
         data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId);
         this.$set(object, "listOfValues", data.listOfValues);
 
@@ -606,7 +610,7 @@ export default {
       }
     },
     addOption(options) {
-      options.push({ placeholder: "Enter New Option Name", archived: false });
+      options.push({placeholder: "Enter New Option Name", archived: false});
     },
     invalid(item) {
       // todo: use real form validation?
@@ -641,7 +645,7 @@ export default {
 
 <style lang="scss">
 #custom-field-container .v-data-table__wrapper {
-  height: calc(100vh - 350px);
+  height: calc(100vh - 275px);
   min-height: 300px;
 }
 </style>

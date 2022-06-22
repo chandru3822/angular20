@@ -61,13 +61,11 @@ public class SecurityService implements UserDetailsService {
   }
 
   public Optional<UserAccountDetails> getUserDetailsById(Long id) {
-    Optional<User> user = findUserById(id);
-    if (user.isEmpty()) {
-      return Optional.empty();
-    }
-    List<FeatureAccessControl> results =
-        getUserFeatureAccess(user.get().getId(), user.get().getCompanyId());
-    return Optional.of(new UserAccountDetails(user.get(), results));
+    return findUserById(id).map(user->{
+      List<FeatureAccessControl> results =
+        getUserFeatureAccess(user.getId(), user.getCompanyId());
+      return new UserAccountDetails(user, results);
+    });
   }
 
   public boolean isLoggedIn() {
@@ -129,7 +127,7 @@ public class SecurityService implements UserDetailsService {
     return userService.findByUserUuid(uuid);
   }
 
-  public Optional<User> findUserById(Long id) {
+  private Optional<User> findUserById(Long id) {
     return Optional.ofNullable(userService.findUserById(id));
   }
 

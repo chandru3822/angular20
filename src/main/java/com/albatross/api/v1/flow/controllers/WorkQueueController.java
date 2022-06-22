@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.smartlist.SmartlistResult;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueue;
+import com.albatross.api.v1.flow.model.workQueue.WorkQueueMetric;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
 import com.albatross.api.v1.flow.services.WorkQueueService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +28,14 @@ public class WorkQueueController {
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueue> getWorkQueues (@RequestParam(required = false) Long workQueueCategoryId,
-                                        @RequestParam(required = false) Boolean unassigned,
-                                        @RequestParam(required = false) Long userId,
                                         @RequestParam(required = false) Boolean filterFutureFollowUps,
                                         @RequestParam(required = false) Boolean filterFutureEvents) {
-    return workQueueService.getWorkQueues(workQueueCategoryId, userId, unassigned, filterFutureFollowUps, filterFutureEvents);
+    return workQueueService.getWorkQueues(workQueueCategoryId, filterFutureFollowUps, filterFutureEvents);
+  }
+
+  @GetMapping(value = "/metrics", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueMetric> getWorkQueueMetrics (@RequestParam(required = false) Long workQueueCategoryId) {
+    return workQueueService.getWorkQueueMetrics(workQueueCategoryId);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
