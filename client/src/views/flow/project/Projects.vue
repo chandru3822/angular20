@@ -69,7 +69,7 @@
 
           <template #item="{item: project}">
             <tr class="clickable">
-              <td class="text-left pa-0">
+              <td class="text-left py-0 pl-4">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
                   {{project.id}}
                 </router-link>
