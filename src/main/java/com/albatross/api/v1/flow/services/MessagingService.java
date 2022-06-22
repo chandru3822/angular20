@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.notification.NotificationService;
 import com.albatross.api.notification.model.CreateNotificationDto;
 import com.albatross.api.notification.model.Notification;
@@ -9,7 +10,6 @@ import com.albatross.api.notification.model.NotificationEventMessage;
 import com.albatross.api.notification.model.NotificationTopic;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
-import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.ProjectMessageOwner;
@@ -27,6 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -34,6 +38,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -43,13 +48,14 @@ import java.util.*;
 
 @Slf4j
 @Service
+//have to turn this off for now for the soft rollout.  search for @softRollOutChangeBack
+//@PreAuthorize("hasFeatureAccess('SMS_INBOX')")
 @RequiredArgsConstructor
 public class MessagingService {
 
   private final SqlCache sqlCache;
   private final NotificationService notificationService;
   private final PubSubService pubSubService;
-  private final SecurityService securityService;
   private final ObjectMapper om;
   private final NamedParameterJdbcTemplate jdbc;
   private final CacheManager cacheManager;
@@ -74,32 +80,34 @@ public class MessagingService {
               new MessagePropertiesMapper<>(ProjectMessageProperties.class, om));
     }
 
-    return projectMessageProps.get();
+    return projectMessageProps.orElseThrow(()->new NotFoundException("Messaging project not found"));
   }
 
-  public List<ProjectMessageProperties> getProjects() {
-    User user = securityService.getCurrentUser();
+  public Page<ProjectMessageProperties> getProjects(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds, Pageable pageable) {
+    boolean containsUnassigned = false;
+    if (ownerUserIds.contains(-1L)) {
+      containsUnassigned = true;
+      ownerUserIds.remove(-1L);
+    }
 
-    Boolean viewAll =
-        securityService.userHasFeatureAccessLevel(
-            user.getId(),
-            user.getCompanyId(),
-            user.getHighestCompanyId(),
-            "SMS_INBOX",
-            List.of("VIEW_ALL"));
+    final HashMap<String, Object> params = new HashMap<>();
+    params.put("query", StringUtils.hasText(query) ? query: null );
+    params.put("smsTeamIds", smsTeamIds);
+    params.put("ownerIds", ownerUserIds);
+    params.put("notifProjectIds", notifProjectIds);
+    params.put("unassigned", containsUnassigned);
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
 
-    List<SmsTeam> userAssignedTeams = getTeamsForUser(user);
-    List<Long> smsTeamIds = userAssignedTeams.stream().map(SmsTeam::getId).toList();
-
-    Map<String, Object> params =
-        Map.of(
-            "smsTeamIds", smsTeamIds,
-            "viewAll", viewAll);
-
-    return sqlCache.query(
+     List<ProjectMessageProperties> projects = sqlCache.query(
         "messaging.getProjects",
         params,
         new MessagePropertiesMapper<>(ProjectMessageProperties.class, om));
+
+    Integer count =
+      sqlCache.queryForObject("messaging.getProjectsCount", params, Integer.class);
+    return new PageImpl<>(
+      projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   private void updateProjectStatus(Long projectId, Boolean closed, @NonNull Long modifiedByUserId) {
@@ -507,6 +515,16 @@ public class MessagingService {
       userIds =
           sqlCache.query(
               "messaging.findUserByForTeam", params, new SingleColumnRowMapper<>(Long.class));
+
+      Notification notification =
+        new Notification()
+          .setTopic(NotificationTopic.SMS_REPLY)
+          .setTitle("Notification read")
+          .setBody("")
+          .setPriority(1)
+          .setUserId(userId);
+
+      pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
 
       log.debug(
           "[Messaging] Marked {} records as read for smsTeamId={}", updatedRecords, smsTeamId);

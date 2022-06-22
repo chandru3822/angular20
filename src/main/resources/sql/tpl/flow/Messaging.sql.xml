@@ -1,19 +1,44 @@
 <sql>
   <messaging.getProjects><![CDATA[
-  with projects as (select distinct p.id            as project_id,
-                                  p.contact_id,
-                                  p.project_name,
-                                  c.search_phones as mobile,
-                                  s.abbreviation  as state
+with projects as (select distinct on (p.id) p.id                                   as project_id,
+                                            p.contact_id,
+                                            p.project_name,
+                                            c.search_phones                        as mobile,
+                                            s.abbreviation                         as state,
+                                            concat(u.first_name, ' ', u.last_name) as "name"
                   from flow.project p
                            inner join flow.contact c ON c.id = p.contact_id
                            inner join flow.company_state cs on p.company_state_id = cs.id
                            inner join flow.state s ON s.id = cs.state_id
                            inner join flow.project_message_properties pmp on pmp.project_id = p.id
                            left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
-                  where pmt.sms_team_id = any (array [ :smsTeamIds ]::int[])
-                     or :viewAll
-                      and pmp.closed is false),
+                           left join flow.project_message_owner pmo2
+                                     on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id and pmo2.archived is false
+                           left join flow.user u on pmo2.user_id = u.id
+                  where case
+                            when array_length( array [ :notifProjectIds  ]::int[], 1) > 0 then
+                                (p.id = any ( array [ :notifProjectIds ]::int[] ))
+                            else 1=1 end
+                        and case
+                            when :query::varchar is not null then
+                                        lower(p.project_name) like '%' || lower(:query) || '%' or
+                                        p.id::varchar like '%' || lower(:query) || '%'  or
+                                        lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
+                            else 1 = 1 end
+                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
+                         (exists(select id
+                                 from flow.project_message_owner pmo3
+                                 where case
+                                           when array_length( array [ :ownerIds ]::int[], 1) > 0 then
+                                                   (pmo3.user_id = any ( array [ :ownerIds ]::int[] )) and
+                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::int[])
+                                                   and pmo3.project_id = p.id and pmo3.archived is false
+                                           end) or
+                          case
+                              when :unassigned is true then
+                                  pmo2.id is null end)
+                      )
+                  limit :limit offset :offset),
      last_message as (select p.project_id,
                              q.message,
                              q.recipient_type_id,
@@ -61,6 +86,45 @@ select p.project_id,
                         order by lm.project_id, lm.last_message_sent desc) mh), '[]')) as message_history
 from projects p
 ]]></messaging.getProjects>
+
+  <messaging.getProjectsCount><![CDATA[
+  with projects as (select distinct on (p.id) p.id                                   as project_id,
+                                            p.contact_id,
+                                            p.project_name,
+                                            c.search_phones                        as mobile,
+                                            s.abbreviation                         as state,
+                                            concat(u.first_name, ' ', u.last_name) as "name"
+                  from flow.project p
+                           inner join flow.contact c ON c.id = p.contact_id
+                           inner join flow.company_state cs on p.company_state_id = cs.id
+                           inner join flow.state s ON s.id = cs.state_id
+                           inner join flow.project_message_properties pmp on pmp.project_id = p.id
+                           left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
+                           left join flow.project_message_owner pmo2
+                                     on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id
+                           left join flow.user u on pmo2.user_id = u.id
+                  where case
+                            when :query::varchar is not null then
+                                        lower(p.project_name) like '%' || lower(:query) || '%' or
+                                        p.id::varchar like :query or
+                                        lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
+                            else 1 = 1 end
+                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
+                         (exists(select id
+                                 from flow.project_message_owner pmo3
+                                 where case
+                                           when array_length( array [ :ownerIds ]::int[], 1) > 0 then
+                                                   (pmo3.user_id = any ( array [ :ownerIds ]::int[] )) and
+                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::int[])
+                                                   and pmo3.project_id = p.id
+                                           end) or
+                          case
+                              when :unassigned is true then
+                                  pmo2.id is null end)
+                      )
+                  )
+   select count(*) from projects
+]]></messaging.getProjectsCount>
 
   <messaging.getProject><![CDATA[
       select p.id as projectId, p.project_name, s.abbreviation as state, c.company_id,

@@ -10,7 +10,7 @@
     <!--    6: {{this.showIncentive}}-->
     <!--    7: {{this.incentiveDataLoaded}}-->
 
-    <div id="appts-created-pipeline-container" class="mb-8">
+    <div id="appts-created-pipeline-container" class="mb-8" v-if="userCanViewAllProjects">
       <div class="pipeline-header-container">
         <v-icon class="pipeline-icon">mdi-poll</v-icon>
         <div class="pipeline-title">Appointments Created Pipeline</div>
@@ -801,6 +801,7 @@ export default {
       selectedFunnel: {},
       isCloserRegional: false,
       userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'),
+      userCanViewAllProjects: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL'),
       headers: [
         {text: '', value: '', show: true, sortable: false},
         {text: 'Name', value: 'customer_name', show: true},

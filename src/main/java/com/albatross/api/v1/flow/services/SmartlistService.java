@@ -3346,6 +3346,10 @@ public class SmartlistService {
     //add "from" clause and initial joins
     query.append(addFromClause((useEventData) ? 6L : smartlist.getObjectTypeId(), null, smartlist.getWorkQueueTypeId()));
 
+    final List<Long> pseRequirementIds = smartlist.getEventWorkQueueTypes().stream()
+                                                                           .map(ProcessStepEventWorkQueueType::getProcessStepEventId)
+                                                                           .toList();
+
     //join value tables for every field
     for (SmartlistFieldAssignment f : fields) {
       //set all table aliases up front
@@ -3466,34 +3470,40 @@ public class SmartlistService {
           }
         } else if (f.getObjectTypeId() == 6) {
 
-            //@TODO: Joining the PPS/PPSE tables should be avoided here when this field's processStepEventId is one of smartlist.getEventWorkQueueTypes() processStepEventId(s)
-          //check if process step is already joined
-          if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
-            //if the PS is already joined, use it
-            final String ppsTable = fields.stream()
-              .filter(field -> Objects.equals(field.getProcessStepId(), f.getProcessStepId()))
-              .map(SmartlistFieldAssignment::getPpsTable)
-              .findFirst()
-              .orElse(null);
-            f.setPpsTable(ppsTable);
-
-            //check if event is already joined
-            if (query.indexOf(".process_step_event_id = " + f.getEventId()) != -1) {
-              // grab event table
-              final String ppsEventTable = fields.stream()
-                .filter(field -> Objects.equals(field.getEventId(), f.getEventId()))
-                .map(SmartlistFieldAssignment::getPpsEventTable)
-                .findFirst()
-                .orElse(null);
-              f.setPpsEventTable(ppsEventTable);
+            //if event is already a row in the queue
+            if (pseRequirementIds.contains(f.getProcessStepEventId())) {
+                //use the base tables
+                f.setPpsEventTable("flow.project_process_step_event");
+                f.setPpsTable("flow.project_process_step");
             } else {
-              query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
+                //check if process step is already joined
+                if (query.indexOf(".process_step_id = " + f.getProcessStepId()) != -1) {
+                    //if the PS is already joined, use it
+                    final String ppsTable = fields.stream()
+                                                  .filter(field -> Objects.equals(field.getProcessStepId(), f.getProcessStepId()))
+                                                  .map(SmartlistFieldAssignment::getPpsTable)
+                                                  .findFirst()
+                                                  .orElse(null);
+                    f.setPpsTable(ppsTable);
+
+                    //check if event is already joined
+                    if (query.indexOf(".process_step_event_id = " + f.getEventId()) != -1) {
+                        // grab event table
+                        final String ppsEventTable = fields.stream()
+                                                           .filter(field -> Objects.equals(field.getEventId(), f.getEventId()))
+                                                           .map(SmartlistFieldAssignment::getPpsEventTable)
+                                                           .findFirst()
+                                                           .orElse(null);
+                        f.setPpsEventTable(ppsEventTable);
+                    } else {
+                        query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
+                    }
+                } else {
+                    //join pps and ppse tables
+                    query.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
+                    query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
+                }
             }
-          } else {
-            //join pps and ppse tables
-            query.append(joinPpsTable(f.getPpsTable(), f.getProcessStepId(), smartlist.isMainProcessSteps()));
-            query.append(joinPPsEventTable(f.getPpsEventTable(), f.getPpsTable(), f.getProcessStepEventId(), true));
-          }
 
           //if field is event name system field
           if (Objects.equals(f.getReferenceTable(), "flow.event")) {
