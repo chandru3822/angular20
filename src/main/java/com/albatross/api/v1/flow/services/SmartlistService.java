@@ -1583,11 +1583,11 @@ public class SmartlistService {
       }
 
       if(null != smartlist.getWorkQueueTypeId()) {
+        //we no longer show only main pps in work queues...removed that line
         whereClause.append(" pswqt.work_queue_type_id = " + smartlist.getWorkQueueTypeId() + "\n" +
           "  and pswqt.archived is not true\n" +
           "  and flow.project_process_step.archived is not true\n" +
           "  and flow.project.archived is not true\n" +
-          "  and flow.project_process_step.main is true\n" +
           "      and flow.process_step.company_id = any\n" +
           "                        (select id from flow.company_hierarchy_filter_down(" + companyId + ")) and ");
       }
