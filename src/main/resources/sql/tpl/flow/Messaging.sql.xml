@@ -96,8 +96,8 @@ from projects p
                                             concat(u.first_name, ' ', u.last_name) as "name"
                   from flow.project p
                            inner join flow.contact c ON c.id = p.contact_id
-                           inner join flow.company_state cs on p.company_state_id = cs.id
-                           inner join flow.state s ON s.id = cs.state_id
+                           left outer join flow.company_state cs on p.company_state_id = cs.id
+                           left outer join flow.state s ON s.id = cs.state_id
                            inner join flow.project_message_properties pmp on pmp.project_id = p.id
                            left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
                            left join flow.project_message_owner pmo2
