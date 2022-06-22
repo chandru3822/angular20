@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pt-0" id="three-column-container">
+  <v-container class="pa-0" id="three-column-container">
     <v-row>
       <slot name="header">
       <v-toolbar v-if="!headerHidden" flat color="#E3E3E3" class="three-column-header px-4">
