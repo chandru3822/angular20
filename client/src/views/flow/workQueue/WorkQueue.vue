@@ -82,7 +82,7 @@
                              'light-border': !wq.useEventData,
                              'dark-border': wq.useEventData}"
                     :key="wq.id"
-                    width="288" :height="!metricsLoading && wqHasMetrics(wq) ? 223 : 108">
+                    width="288" :height="wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
                 <router-link class="no-text-decoration card-link"
                              :to="wq.workQueueCount > 0 ? {name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}} : ''">
@@ -103,53 +103,60 @@
 
                   <div class="card-metrics-container"
                        :class="{'card-metrics-container-secondary-view': selectedViewType !== 0}"
-                       v-if="!metricsLoading && wqHasMetrics(wq)">
-                    <div class="one-hunned">
-                      <div class="card-metric card-metric-left">
-                        <div class="card-metric-percent"
-                             v-if="selectedViewType === 0"
-                             :class="getMetricPercentColor(wq.metrics.shortWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
-                          {{ wq.metrics.shortWindowPercentage * 100 | currency('', 0) }}%
-                          <!--                      <span class="card-metric-difference">-->
-                          <!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
-                          <!--                        </span>-->
-                        </div>
-                        <div class="card-metric-percent"
-                             v-else-if="selectedViewType === 1">
-                          {{ wq.metrics.shortWindowExited }}
-                        </div>
-                        <div class="card-metric-percent"
-                             v-else-if="selectedViewType === 2">
-                          {{ wq.metrics.shortWip >= 0 ? '+' : '' }}{{ wq.metrics.shortWip }}
-                        </div>
-                        {{ wq.shortWindow }} {{
-                          getDurationTypePluralization(wq.shortWindow, wq.metrics.shortWindowDurationType)
-                        }}
-                      </div>
-                      <div class="card-metric-divider"></div>
-                      <div class="card-metric">
-                        <div class="card-metric-percent"
-                             v-if="selectedViewType === 0"
-                             :class="getMetricPercentColor(wq.metrics.longWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
-                          {{ wq.metrics.longWindowPercentage * 100 | currency('', 0) }}%
-                          <!--                      <span class="card-metric-difference">-->
-                          <!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
-                          <!--                        </span>-->
-                        </div>
-                        <div class="card-metric-percent"
-                             v-else-if="selectedViewType === 1">
-                          {{ wq.metrics.longWindowExited }}
-                        </div>
-                        <div class="card-metric-percent"
-                             v-else-if="selectedViewType === 2">
-                          {{ wq.metrics.longWip >= 0 ? '+' : '' }}{{ wq.metrics.longWip }}
-                        </div>
-                        {{ wq.longWindow }} {{ wq.metrics.longWindowDurationType }}
-                      </div>
+                       v-if="wqHasMetrics(wq)">
+                    <div class="one-hunned" v-if="metricsLoading">
+                      <SpinnerInline :size="50" :spinner-color="wq.color" :transparent="true" :centered="true"/>
                     </div>
-                    <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
-                      Completed within expected time of <strong>{{ wq.expectedCycle }}
-                      {{ getDurationTypePluralization(wq.metrics.expectedCycle, wq.metrics.expectedCycleDurationType) }}</strong>
+                    <div class="one-hunned" v-else>
+                      <div class="one-hunned">
+                        <div class="card-metric card-metric-left">
+                          <div class="card-metric-percent"
+                               v-if="selectedViewType === 0"
+                               :class="getMetricPercentColor(wq.metrics.shortWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
+                            {{ wq.metrics.shortWindowPercentage * 100 | currency('', 0) }}%
+                            <!--                      <span class="card-metric-difference">-->
+                            <!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
+                            <!--                        </span>-->
+                          </div>
+                          <div class="card-metric-percent"
+                               v-else-if="selectedViewType === 1">
+                            {{ wq.metrics.shortWindowExited }}
+                          </div>
+                          <div class="card-metric-percent"
+                               v-else-if="selectedViewType === 2">
+                            {{ wq.metrics.shortWip >= 0 ? '+' : '' }}{{ wq.metrics.shortWip }}
+                          </div>
+                          {{ wq.shortWindow }} {{
+                            getDurationTypePluralization(wq.shortWindow, wq.metrics.shortWindowDurationType)
+                          }}
+                        </div>
+                        <div class="card-metric-divider"></div>
+                        <div class="card-metric">
+                          <div class="card-metric-percent"
+                               v-if="selectedViewType === 0"
+                               :class="getMetricPercentColor(wq.metrics.longWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
+                            {{ wq.metrics.longWindowPercentage * 100 | currency('', 0) }}%
+                            <!--                      <span class="card-metric-difference">-->
+                            <!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
+                            <!--                        </span>-->
+                          </div>
+                          <div class="card-metric-percent"
+                               v-else-if="selectedViewType === 1">
+                            {{ wq.metrics.longWindowExited }}
+                          </div>
+                          <div class="card-metric-percent"
+                               v-else-if="selectedViewType === 2">
+                            {{ wq.metrics.longWip >= 0 ? '+' : '' }}{{ wq.metrics.longWip }}
+                          </div>
+                          {{ wq.longWindow }} {{ wq.metrics.longWindowDurationType }}
+                        </div>
+                      </div>
+                      <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
+                        Completed within expected time of <strong>{{ wq.expectedCycle }}
+                        {{
+                          getDurationTypePluralization(wq.metrics.expectedCycle, wq.metrics.expectedCycleDurationType)
+                        }}</strong>
+                      </div>
                     </div>
                   </div>
                 </router-link>
@@ -240,8 +247,10 @@ export default {
       return isLightColor(color) ? '#363636' : '#ffffff'
     },
     wqHasMetrics(wq) {
+      //per carlin he wants to show the empty box until metrics have loaded so we are changing the "hasMetrics" check to a less restrictive check
+      // let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
+      //   && wq.metrics.shortWindowDurationType != null && wq.metrics.longWindowDurationType != null && wq.metrics.expectedCycleDurationType != null
       let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
-        && wq.metrics.shortWindowDurationType != null && wq.metrics.longWindowDurationType != null && wq.metrics.expectedCycleDurationType != null
       return hasMetrics
     },
     async getWorkQueueCategories() {
@@ -275,7 +284,7 @@ export default {
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
       localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
       if (this.selectedWorkQueueCategory?.id || this.showAll) {
-        if(this.source){
+        if (this.source) {
           this.source.cancel()
         }
         const CancelToken = axios.CancelToken
@@ -292,7 +301,7 @@ export default {
               filterFutureEvents: this.hideFutureEvents
             }
           })
-          if(isFilteredReload) {
+          if (isFilteredReload) {
             //if filtered reload then adjust the numbers...dont reload
             data.forEach(d => {
               this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId).workQueueCount = d.workQueueCount
@@ -301,12 +310,12 @@ export default {
             this.workQueues = data
           }
           //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
-          if(status === 200) {
+          if (status === 200) {
             this.cardsLoading = false
           }
           //after cards are loaded then load metrics
           //do not reload metrics if re-filtering for future follow up dates.
-          if(!isFilteredReload) {
+          if (!isFilteredReload) {
             this.loadMetrics(this.selectedWorkQueueCategory.id)
           }
         } catch (e) {
@@ -331,7 +340,7 @@ export default {
           }
         })
         //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
-        if(status === 200) {
+        if (status === 200) {
           //assign each metric to the appropriate card
           data.forEach(d => {
             this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId).metrics = d
