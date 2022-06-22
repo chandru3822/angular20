@@ -30,7 +30,7 @@
       </template>
     </v-row>
 
-    <v-btn icon class="templateButton " style="display: none" small>
+    <v-btn icon color="primary" class="templateButton " style="display: none" small>
       <v-tooltip bottom small>
         <template v-slot:activator="{on, attrs}">
           <v-icon @click="" v-bind="attrs" v-on="on">
