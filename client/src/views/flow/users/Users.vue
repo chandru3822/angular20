@@ -338,8 +338,9 @@
             <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
             <v-card-actions class="flex-display justify-end px-4 pt-0">
               <v-btn
+                text color="primary"
                 @click="msgDialog = false">
-                Close
+                Cancel
               </v-btn>
               <v-btn
                 color="primary" class="white--text mr-2 "
@@ -407,6 +408,7 @@
             <v-file-input
                 dense
                 outlined
+                color="primary"
                 label="Upload image"
                 v-model="textFile"
                 @change="uploadTextAttachment"
@@ -416,8 +418,9 @@
             <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
             <v-card-actions class="flex-display justify-end px-4 pt-0">
               <v-btn
+                text color="primary"
                 @click="msgDialog = false">
-                Close
+                Cancel
               </v-btn>
               <v-btn
                 color="primary" class="white--text mr-2"
