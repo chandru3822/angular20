@@ -45,22 +45,24 @@
                 <label class="wq-follow-up-switch-label">Hide work with a next follow-up date in the future</label>
                 <v-switch
                   dense
+                  :disabled="cardsLoading || metricsLoading"
                   hide-details
                   color="primaryCustom"
                   v-model="hideFutureFollowUps"
                   class="wq-follow-up-switch d-inline-block fix-switch-color"
-                  @change="getWorkQueues()"
+                  @change="getWorkQueues(true)"
                 />
               </div>
               <div class="future-switch">
                 <label class="wq-follow-up-switch-label">Hide work with an event start date in the future</label>
                 <v-switch
                   dense
+                  :disabled="cardsLoading || metricsLoading"
                   hide-details
                   color="primaryCustom"
                   v-model="hideFutureEvents"
                   class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
-                  @change="getWorkQueues()"
+                  @change="getWorkQueues(true)"
                 />
               </div>
             </v-col>
@@ -80,7 +82,7 @@
                              'light-border': !wq.useEventData,
                              'dark-border': wq.useEventData}"
                     :key="wq.id"
-                    width="288" :height="wqHasMetrics(wq) ? 223 : 108">
+                    width="288" :height="!metricsLoading && wqHasMetrics(wq) ? 223 : 108">
               <v-card-text class="pa-0">
                 <router-link class="no-text-decoration card-link"
                              :to="wq.workQueueCount > 0 ? {name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}} : ''">
@@ -93,61 +95,61 @@
                     <div class="card-title ellipse two-lines">{{ wq.workQueueType }}</div>
                     <div class="card-count">{{ wq.workQueueCount }}</div>
                   </div>
-                  <div v-if="null != wq.expectedTarget && selectedViewType === 0"
+                  <div v-if="null != wq.metrics.expectedTarget && selectedViewType === 0"
                        class="expected-target-banner"
                        :style="{'background-color': wq.color, 'color': getTargetColor(wq.color)}">
-                    {{ wq.expectedTarget * 100 | currency('', 0) }}%
+                    {{ wq.metrics.expectedTarget * 100 | currency('', 0) }}%
                   </div>
 
                   <div class="card-metrics-container"
                        :class="{'card-metrics-container-secondary-view': selectedViewType !== 0}"
-                       v-if="wqHasMetrics(wq)">
+                       v-if="!metricsLoading && wqHasMetrics(wq)">
                     <div class="one-hunned">
                       <div class="card-metric card-metric-left">
                         <div class="card-metric-percent"
                              v-if="selectedViewType === 0"
-                             :class="getMetricPercentColor(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                          {{ wq.shortWindowPercentage * 100 | currency('', 0) }}%
+                             :class="getMetricPercentColor(wq.metrics.shortWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
+                          {{ wq.metrics.shortWindowPercentage * 100 | currency('', 0) }}%
                           <!--                      <span class="card-metric-difference">-->
                           <!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
                           <!--                        </span>-->
                         </div>
                         <div class="card-metric-percent"
                              v-else-if="selectedViewType === 1">
-                          {{ wq.shortWindowExited }}
+                          {{ wq.metrics.shortWindowExited }}
                         </div>
                         <div class="card-metric-percent"
                              v-else-if="selectedViewType === 2">
-                          {{ wq.shortWip >= 0 ? '+' : '' }}{{ wq.shortWip }}
+                          {{ wq.metrics.shortWip >= 0 ? '+' : '' }}{{ wq.metrics.shortWip }}
                         </div>
                         {{ wq.shortWindow }} {{
-                          getDurationTypePluralization(wq.shortWindow, wq.shortWindowDurationType)
+                          getDurationTypePluralization(wq.shortWindow, wq.metrics.shortWindowDurationType)
                         }}
                       </div>
                       <div class="card-metric-divider"></div>
                       <div class="card-metric">
                         <div class="card-metric-percent"
                              v-if="selectedViewType === 0"
-                             :class="getMetricPercentColor(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation)">
-                          {{ wq.longWindowPercentage * 100 | currency('', 0) }}%
+                             :class="getMetricPercentColor(wq.metrics.longWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
+                          {{ wq.metrics.longWindowPercentage * 100 | currency('', 0) }}%
                           <!--                      <span class="card-metric-difference">-->
                           <!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
                           <!--                        </span>-->
                         </div>
                         <div class="card-metric-percent"
                              v-else-if="selectedViewType === 1">
-                          {{ wq.longWindowExited }}
+                          {{ wq.metrics.longWindowExited }}
                         </div>
                         <div class="card-metric-percent"
                              v-else-if="selectedViewType === 2">
-                          {{ wq.longWip >= 0 ? '+' : '' }}{{ wq.longWip }}
+                          {{ wq.metrics.longWip >= 0 ? '+' : '' }}{{ wq.metrics.longWip }}
                         </div>
-                        {{ wq.longWindow }} {{ wq.longWindowDurationType }}
+                        {{ wq.longWindow }} {{ wq.metrics.longWindowDurationType }}
                       </div>
                     </div>
                     <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
                       Completed within expected time of <strong>{{ wq.expectedCycle }}
-                      {{ getDurationTypePluralization(wq.expectedCycle, wq.expectedCycleDurationType) }}</strong>
+                      {{ getDurationTypePluralization(wq.metrics.expectedCycle, wq.metrics.expectedCycleDurationType) }}</strong>
                     </div>
                   </div>
                 </router-link>
@@ -202,6 +204,7 @@ export default {
       snackbar: {},
       model: {},
       categoriesLoading: true,
+      metricsLoading: true,
       cardsLoading: false,
       hideFutureFollowUps: false,
       hideFutureEvents: false,
@@ -237,8 +240,9 @@ export default {
       return isLightColor(color) ? '#363636' : '#ffffff'
     },
     wqHasMetrics(wq) {
-      return wq.shortWindow && wq.longWindow && wq.expectedCycle
-        && wq.shortWindowDurationType && wq.longWindowDurationType && wq.expectedCycleDurationType
+      let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
+        && wq.metrics.shortWindowDurationType != null && wq.metrics.longWindowDurationType != null && wq.metrics.expectedCycleDurationType != null
+      return hasMetrics
     },
     async getWorkQueueCategories() {
       this.categoriesLoading = true
@@ -253,20 +257,20 @@ export default {
         this.categoriesLoading = false
       }
     },
-    async getWorkQueueOwners() {
-      try {
-        const {data} = await getRequest(`/workQueue/owners`)
-        this.workQueueOwners = data
-        this.workQueueOwners.unshift(this.noOwner)
-        this.workQueueOwners.unshift(this.anyOwner)
-
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Owners')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getWorkQueues() {
+    // async getWorkQueueOwners() {
+    //   try {
+    //     const {data} = await getRequest(`/workQueue/owners`)
+    //     this.workQueueOwners = data
+    //     this.workQueueOwners.unshift(this.noOwner)
+    //     this.workQueueOwners.unshift(this.anyOwner)
+    //
+    //   } catch (e) {
+    //     console.error('*** ERROR ***', e)
+    //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Owners')
+    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    //   }
+    // },
+    async getWorkQueues(isFilteredReload) {
       localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
       localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
@@ -284,16 +288,26 @@ export default {
             cancelToken: this.source.token,
             params: {
               workQueueCategoryId: this.selectedWorkQueueCategory.id,
-              userId: this.selectedUserPosition.userId,
-              unassigned: this.selectedUserPosition.unassigned,
               filterFutureFollowUps: this.hideFutureFollowUps,
               filterFutureEvents: this.hideFutureEvents
             }
           })
-          this.workQueues = data
+          if(isFilteredReload) {
+            //if filtered reload then adjust the numbers...dont reload
+            data.forEach(d => {
+              this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId).workQueueCount = d.workQueueCount
+            })
+          } else {
+            this.workQueues = data
+          }
           //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
           if(status === 200) {
             this.cardsLoading = false
+          }
+          //after cards are loaded then load metrics
+          //do not reload metrics if re-filtering for future follow up dates.
+          if(!isFilteredReload) {
+            this.loadMetrics(this.selectedWorkQueueCategory.id)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -305,8 +319,34 @@ export default {
         this.workQueues = []
       }
     },
+    async loadMetrics() {
+      this.metricsLoading = true
+      try {
+        //use the same cancel token as loading cards so that this all works
+        const {data, status} = await getRequestWithParams(`/workQueue/metrics`, {
+          source: this.source,
+          cancelToken: this.source.token,
+          params: {
+            workQueueCategoryId: this.selectedWorkQueueCategory.id
+          }
+        })
+        //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
+        if(status === 200) {
+          //assign each metric to the appropriate card
+          data.forEach(d => {
+            this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId).metrics = d
+          })
+          this.metricsLoading = false
+        }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.categoriesLoading = false
+      }
+    },
     getDurationTypePluralization(duration, durationType) {
-      return duration === 1 ? durationType.slice(0, -1) : durationType
+      return duration === 1 ? durationType?.slice(0, -1) : durationType
     },
     getMetricPercentColor(value, expectation, inverse) {
       if (inverse) {
