@@ -1,5 +1,5 @@
 <template>
-  <v-card width="300px" class="pa-6">
+  <v-card width="300px" min-height="270px" class="pa-6 d-flex flex-column">
     <div class="albatross-header-4-new">Add Member</div>
     <v-select v-model="teamToSave"
               :items="selectableTeams"

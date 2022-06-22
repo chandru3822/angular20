@@ -22,7 +22,7 @@ with projects as (select distinct on (p.id) p.id                                
                         and case
                             when :query::varchar is not null then
                                         lower(p.project_name) like '%' || lower(:query) || '%' or
-                                        p.id::varchar like :query or
+                                        p.id::varchar like '%' || lower(:query) || '%'  or
                                         lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
                             else 1 = 1 end
                     and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and

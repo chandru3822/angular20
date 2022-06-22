@@ -407,7 +407,7 @@ export default {
       lovs.forEach((lov, idx) => {
         lov.displayOrder = idx
       })
-      return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort ? lov.name.toLowerCase() : lov.displayOrder);
+      return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort && lov.id ? lov.name?.toLowerCase() : lov.displayOrder);
     },
     filterDataTypes(item) {
       if (this.userIsSystemAdmin) {

@@ -683,32 +683,34 @@
         }
       },
       async fetchAvailableCustomFields(objectTypeId, groupId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          if (this.addField && this.newFieldType === 'native') {
-            const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
-              params: {
-                companyObjectTypeId: objectTypeId,
-                groupId,
-                processStepId: this.processStepId
-              }
-            })
-            this.availableCustomFields = data
-            this.parentObjects = []
-            this.ancillaryCustomFields = []
-            handleHidingGlobalLoader(this, status)
-          } else if (this.addField && this.newFieldType === 'ancillary') {
-            this.availableCustomFields = []
-            const {data, status} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: this.processStepId}})
-            this.selectedAncillaryField = {}
-            this.parentObjects = data
-            handleHidingGlobalLoader(this, status)
+        if(this.addField) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            if (this.addField && this.newFieldType === 'native') {
+              const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+                params: {
+                  companyObjectTypeId: objectTypeId,
+                  groupId,
+                  processStepId: this.processStepId
+                }
+              })
+              this.availableCustomFields = data
+              this.parentObjects = []
+              this.ancillaryCustomFields = []
+              handleHidingGlobalLoader(this, status)
+            } else if (this.addField && this.newFieldType === 'ancillary') {
+              this.availableCustomFields = []
+              const {data, status} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: this.processStepId}})
+              this.selectedAncillaryField = {}
+              this.parentObjects = data
+              handleHidingGlobalLoader(this, status)
+            }
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async loadFieldsByParent() {
