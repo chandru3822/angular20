@@ -29,10 +29,10 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit" @click="editGroup = !editGroup">
+            <v-btn text color="primary" v-if="userCanEdit" @click="editGroup = !editGroup">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -82,7 +82,7 @@
                     <v-select attach style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
                   </td>
                   <td class="text-right">
-                    <v-btn small text @click="goToCallGroup(item.id)">
+                    <v-btn small text color="primary" @click="goToCallGroup(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog
