@@ -7,7 +7,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text v-if="userCanEdit" @click="editZone = !editZone">
+        <v-btn text color="primary" v-if="userCanEdit" @click="editZone = !editZone">
           <v-icon>edit</v-icon>
         </v-btn>
       </v-toolbar-items>

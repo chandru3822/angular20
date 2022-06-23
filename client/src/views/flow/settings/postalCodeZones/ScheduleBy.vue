@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd" @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
+            <v-btn text color="primary" v-if="userCanAdd" @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
               <v-icon v-if="addScheduler">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -67,7 +67,7 @@
               <td>
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
+                    <v-btn text color="primary" v-on="on">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </template>
