@@ -67,44 +67,7 @@
             <tr :class="{ 'shaded-row': index % 2 }">
               <td class="text-left">{{ item.orgName }}</td>
               <td class="text-right">
-                <v-dialog
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn small text color="primary" class="clickable" v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{item.orgName}}</strong> from this user?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                          text color="primary"
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteOrgCalendarFromUser(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" class="clickable" @click="[showDeleteDialog=true, itemToDelete=item]"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -112,7 +75,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteOrgCalendarFromUser(itemToDelete)" @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete <strong>{{itemToDeleteOrgName}}</strong> from this user?
+    </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -129,10 +94,12 @@
     getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers'
+  import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
 
   export default {
     name: 'UserAccess',
     components: {
+      ConfirmDeleteDialogImproved,
 
       AccessControl
     },
@@ -142,6 +109,9 @@
           return this.userOrgCalendars.find(uoc => uoc.orgId === oc.id && !uoc.archived) == null
         })
       },
+      itemToDeleteOrgName () {
+        return this.itemToDelete ? this.itemToDelete.orgName : ""
+      }
     },
     data() {
       return {
@@ -159,7 +129,9 @@
           { text: 'Calendar', value: 'calendar', show: true },
           { text: '', value: 'icons', show: true },
         ],
-        accessControlKey: 0
+        accessControlKey: 0,
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
     created () {
@@ -226,6 +198,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
       async getAllOrgCalendars() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -266,6 +239,11 @@
       filterUserOrgAccess () {
         return this.userOrgCalendars.filter(uoc => { return !uoc.archived})
       },
+
+      closeDeleteDialog() {
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     }
   }
 </script>
