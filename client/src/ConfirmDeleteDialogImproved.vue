@@ -10,7 +10,7 @@
           Delete
         </slot>
       </v-card-title>
-      <v-card-text class="albatross-body-2 pb-4">
+      <v-card-text class="albatross-body-2 pb-4 default-text-color">
         <slot>Are you sure you want to delete?</slot>
       </v-card-text>
       <v-card-actions>
