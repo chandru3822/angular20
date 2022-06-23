@@ -6,12 +6,12 @@
           <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="validate">
+            <v-btn text color="primary" @click="validate">
               <v-icon class="mr-2">mdi-content-save</v-icon>
               Save Changes
             </v-btn>
 
-            <v-btn text v-if="userIsAdmin" :to="`/settings/userProfileAdmin`">
+            <v-btn text color="primary" v-if="userIsAdmin" :to="`/settings/userProfileAdmin`">
               <v-icon class="mr-2">mdi-cogs</v-icon>
               Admin
             </v-btn>
@@ -121,7 +121,7 @@
             <v-icon v-if="addImage">remove</v-icon>
             <v-icon v-else>add</v-icon>
           </v-btn>
-          <v-btn v-else text class="mr-2" @click="deleteAttachment(profileImage.id)">
+          <v-btn v-else text color="primary" class="mr-2" @click="deleteAttachment(profileImage.id)">
             <v-icon>delete</v-icon>
           </v-btn>
         </v-toolbar>

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newZone = {}, getCompanyTimezones()]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newZone = {}, getCompanyTimezones()]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -31,7 +31,7 @@
                             item-value="id"
                             attach
             ></v-autocomplete>
-            <v-btn :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
+            <v-btn color="primary" :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -74,7 +74,7 @@
                   <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.distributionTimeFrameDays}}</td>
                   <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.schedulableFutureDays}}</td>
                   <td class="text-right">
-                    <v-btn small text @click="goToPostalCodeZone(item.id)">
+                    <v-btn small text color="primary" @click="goToPostalCodeZone(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog

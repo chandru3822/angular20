@@ -43,8 +43,8 @@
       <v-row>
         <v-col cols="12" class="text-center">
           <v-btn :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
-                 @click="saveCompany" v-if="userCanEdit">
-            <v-icon>mdi-content-save</v-icon>
+                 color="primary" @click="saveCompany" v-if="userCanEdit">
+            <v-icon class="pr-2">mdi-content-save</v-icon>
             Save Changes
           </v-btn>
         </v-col>

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">States</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]">
+            <v-btn text color="primary" v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -30,7 +30,7 @@
                  @click="saveCompanyState(selectedState, true)">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, selectedState = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addNew = !addNew, selectedState = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -83,7 +83,7 @@
                 <v-btn small text color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
                 <confirm-delete-dialog
                     v-if="userCanDelete"
                     label="this state: "
