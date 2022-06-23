@@ -543,11 +543,28 @@ export default {
           }
         })
 
-        // Sort the filter alphabetically
-        this.teamFilterOptions.sort()
-        this.ownerFilterOptions.sort()
-
         this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
+
+        this.teamFilterOptions.sort((a,b)=>{
+          if(a.teamName < b.teamName) {
+            return -1
+          }
+          if(a.teamName > b.teamName) {
+            return 1
+          }
+          return 0
+        })
+
+        this.ownerFilterOptions.sort((a,b)=>{
+          if(a.name < b.name) {
+            return -1
+          }
+          if(a.name > b.name) {
+            return 1
+          }
+          return 0
+        })
+
         if (!this.selectedOwnerFilters.includes(-1)) {
           this.selectedOwnerFilters.push(-1)
         }
