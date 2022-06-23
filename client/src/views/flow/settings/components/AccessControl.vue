@@ -1,6 +1,5 @@
 <template>
   <div>
-    Chocolate Milk
     <v-data-table
       :headers="headers"
       :items="companyFeatureList"
@@ -243,8 +242,6 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-input[type=checkbox] {
-  color: var(--v-primary-base);
-}
+
 </style>
 
