@@ -69,14 +69,23 @@ public class PubSubService {
     }
   }
 
+  /**
+   * there really isn't a greate way to know if a client closes a connection so we broadcast a
+   * simple ping message periodically allowing us to close the connection on the server side
+   */
+  public void broadcastKeepAlive() {
+    subscribers.forEach(this::sendKeepAlive);
+  }
+
   private void sendKeepAlive(Subscriber subscriber) {
     try {
       final String message =
-          "keepalive event sent at %s"
+          "ping event sent at %s"
               .formatted(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
-      subscriber.send(SseEmitter.event().name("keepalive").data(message).reconnectTime(5000));
+      subscriber.send(SseEmitter.event().name("ping").data(message).reconnectTime(5000));
     } catch (IOException e) {
       log.warn("Error sending keepalive event");
+      subscriber.completeWithError(e);
     }
   }
 }
