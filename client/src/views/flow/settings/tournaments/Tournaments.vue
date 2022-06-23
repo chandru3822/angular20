@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Tournaments</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -62,10 +62,11 @@
             <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate
                    || (newTournament.startDate >= newTournament.endDate) || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId
                    || validateCustomFields()"
+                   color="primary"
                    @click="addTournament">
               Save
             </v-btn>
-            <v-btn class="ml-2" @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">Cancel</v-btn>
+            <v-btn text color="primary" class="ml-2" @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">Cancel</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -87,7 +88,7 @@
                     <input type="checkbox" v-model="item.active" readonly disabled>
                   </td>
                   <td class="text-right">
-                    <v-btn small text @click="goToTournament(item.id)">
+                    <v-btn small text color="primary" @click="goToTournament(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog

@@ -5,7 +5,7 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="app-title">Brackets</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn text @click="addBracket = !addBracket">
+          <v-btn text color="primary" @click="addBracket = !addBracket">
             <v-icon>add</v-icon>
           </v-btn>
         </v-toolbar>
@@ -24,7 +24,7 @@
                  @click="addNewBracket">
             Save
           </v-btn>
-          <v-btn text @click="[addBracket = !addBracket, newBracket = {}]">
+          <v-btn text color="primary" @click="[addBracket = !addBracket, newBracket = {}]">
             Cancel
           </v-btn>
         </v-card>
@@ -95,7 +95,7 @@
                 v-model="b.replicateConfirm"
                 width="500">
                 <template v-slot:activator="{ on }">
-                  <v-btn small text v-on="on">
+                  <v-btn small text color="primary" v-on="on">
                     <v-icon>mdi-content-copy</v-icon>
                   </v-btn>
                 </template>
@@ -211,11 +211,11 @@
                     </div>
                   </td>
                   <td class="text-right">
-                    <v-btn small text @click="[item.edit = !item.edit, rerenderKey++]">
+                    <v-btn small text color="primary" @click="[item.edit = !item.edit, rerenderKey++]">
                       <v-icon v-if="!item.edit">edit</v-icon>
                       <span v-else>cancel</span>
                     </v-btn>
-                    <v-btn v-if="item.edit" text
+                    <v-btn v-if="item.edit" text color="primary"
                            :disabled="!item.startDate || !item.endDate || item.startDate > item.endDate"
                            @click="saveRound(b, item)">Save
                     </v-btn>

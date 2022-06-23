@@ -90,12 +90,12 @@
               <v-toolbar-title class="app-title">Tournament Background Image</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
+                <v-btn text color="primary" v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
                        @click="addImage = !addImage">
                   <v-icon v-if="addImage">remove</v-icon>
                   <v-icon v-else>add</v-icon>
                 </v-btn>
-                <v-btn v-else-if="userCanEdit" text class="mr-2"
+                <v-btn v-else-if="userCanEdit" text color="primary" class="mr-2"
                        @click="deleteAttachment(tournament.backgroundAttachmentId)">
                   <v-icon>delete</v-icon>
                 </v-btn>

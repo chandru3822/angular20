@@ -2,9 +2,9 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/tournaments'">
+        <v-btn text class="pl-1 pr-2 primary--text" :to="'/settings/tournaments'">
           <v-icon>arrow_left</v-icon>
-          <span>Back</span>
+          Back
         </v-btn>
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">{{tournament.tournamentName}}</v-toolbar-title>
