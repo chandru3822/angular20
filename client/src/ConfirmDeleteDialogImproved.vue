@@ -21,13 +21,13 @@
             color="primary"
             class="text-capitalize mr-2 mb-2"
         >
-          No
+          <slot name="no">No</slot>
         </v-btn>
         <v-btn
             color="primary"
             class="white--text elevation-2 text-capitalize mr-2 mb-2"
             @click="yes">
-          Yes
+          <slot name="yes">Yes</slot>
         </v-btn>
       </v-card-actions>
     </v-card>

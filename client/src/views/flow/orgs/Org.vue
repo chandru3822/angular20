@@ -1,6 +1,10 @@
 <template>
   <v-container>
-    <confirm-delete-dialog-improved :open-confirm-delete-dialog="unsavedFieldsModal" @closeConfirmDeleteDialog="unsavedFieldsModal = false" @confirm-delete="[navigationOverride = true, goToPath(toPath)]">You have unsaved fields.  Are you sure you want to continue without saving?</confirm-delete-dialog-improved>
+    <confirm-delete-dialog-improved :open-confirm-delete-dialog="unsavedFieldsModal" @closeConfirmDeleteDialog="unsavedFieldsModal = false" @confirm-delete="[navigationOverride = true, goToPath(toPath)]">
+      You have unsaved fields.  Are you sure you want to continue without saving?
+      <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Don't Save</template>
+    </confirm-delete-dialog-improved>
     <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="org-header elevation-1">
       <v-col cols="12" class="text-left">
