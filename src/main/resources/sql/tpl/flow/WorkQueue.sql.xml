@@ -17,11 +17,15 @@
                    inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
                               on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
                    inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
+                   inner join flow.project_process_step pps on wqc2.project_process_step_id = pps.id
+                   inner join flow.project p on pps.project_id = p.id
             where date_exited_queue is null
               and date_entered_queue is not null
               and pswqt2.work_queue_type_id = wqt.id
               and pswqtpsst2.archived is false
               and pswqt2.archived is false
+              and p.archived is not true
+              and pps.archived is not true
               and case when :filterFutureFollowUps is true then
                            wqc2.project_process_step_id not in (
                            select project_process_step_id
@@ -62,11 +66,16 @@
                    inner join flow.process_step_event_work_queue_type pswqt2
                               on pswqtpsst2.process_step_event_work_queue_type_id = pswqt2.id
                    inner join flow.project_process_step_event ppse on ppse.id = wqc2.project_process_step_event_id
+                   inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id and wqc2.project_process_step_id = pps.id
+                   inner join flow.project p on pps.project_id = p.id
             where date_exited_queue is null
               and date_entered_queue is not null
               and pswqt2.work_queue_type_id = wqt.id
               and pswqtpsst2.archived is false
               and pswqt2.archived is false
+              and p.archived is not true
+              and pps.archived is not true
+              and ppse.archived is not true
               and case when :filterFutureEvents is true then
                             ppse.start_time <= now()
                         else true end
