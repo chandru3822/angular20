@@ -250,6 +250,81 @@ CREATE TRIGGER project_project_details_trg
 EXECUTE PROCEDURE flow.project_details();
 
 
+CREATE OR REPLACE FUNCTION flow.contact_search()
+  RETURNS TRIGGER AS
+$$
+declare
+  v_owner_org_ids integer[];
+BEGIN
+
+
+    select array_agg(owner_org_ids)
+    from (
+    select distinct t.id as owner_org_ids
+    from  flow.user_position up
+            join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
+    where new.owner_user_position_id is not null and up.id = new.owner_user_position_id
+    union
+    select distinct t.id as owner_org_ids
+    from  flow.project p
+       inner join flow.user_position up on up.id = p.user_position_id
+            join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
+    where p.contact_id = new.id and p.user_position_id is not null) as foo
+    into v_owner_org_ids;
+    new.owner_org_ids = v_owner_org_ids;
+
+
+
+  RETURN new;
+END
+$$
+  LANGUAGE plpgsql;
+
+drop trigger if exists contact_search_trg on flow.contact;
+CREATE TRIGGER contact_search_trg
+  before INSERT or update
+  ON flow.contact
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.contact_search();
+
+CREATE OR REPLACE FUNCTION flow.project_search()
+  RETURNS TRIGGER AS
+$$
+declare
+  v_owner_org_ids integer[];
+BEGIN
+
+  select array_agg(owner_org_ids)
+  from (
+  select distinct t.id as owner_org_ids
+  from  flow.user_position up
+          join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
+  where new.user_position_id is not null and up.id = new.user_position_id
+  union
+  select distinct t.id as owner_org_ids
+  from  flow.contact c
+          inner join flow.user_position up on up.id = c.owner_user_position_id
+          join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
+  where new.contact_id = c.id and c.owner_user_position_id is not null) as foo
+  into v_owner_org_ids;
+
+  update flow.contact
+    set owner_org_ids = v_owner_org_ids
+  where id = new.contact_id;
+
+  RETURN new;
+END
+$$
+  LANGUAGE plpgsql;
+
+drop trigger if exists project_search_trg on flow.project;
+CREATE TRIGGER project_search_trg
+  before INSERT or update
+  ON flow.project
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.project_search();
+
+
 CREATE OR REPLACE FUNCTION flow.update_project_details_process_steps()
   RETURNS TRIGGER AS
 $body$
