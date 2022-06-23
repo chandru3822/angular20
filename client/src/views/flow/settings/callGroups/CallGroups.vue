@@ -44,7 +44,7 @@
                 tabindex=1
                 v-model="newCallGroup.callGroupName"
             ></v-text-field>
-            <v-btn :disabled="!newCallGroup.callGroupName" @click="addCallGroup">Save</v-btn>
+            <v-btn color="primary" :disabled="!newCallGroup.callGroupName" @click="addCallGroup">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">

@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
+            <v-btn text color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
