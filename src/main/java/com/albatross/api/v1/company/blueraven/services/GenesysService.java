@@ -326,7 +326,6 @@ public class GenesysService {
     }
 
     Contact contact = contactService.getContact(contactId);
-    Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
@@ -341,8 +340,6 @@ public class GenesysService {
         "mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put(
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("Total Call Attempts", "");
-    contactMap.put("Contacted Call Attempts", "");
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("Call Scheduled", "");
@@ -386,8 +383,6 @@ public class GenesysService {
       return;
     }
 
-    dc.setData(contactMap);
-
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
 
@@ -403,6 +398,19 @@ public class GenesysService {
       if (contactListId == null || contactListId.isEmpty()) {
         continue;
       }
+
+      // Get call attempts from existing contact in Genesys
+      try {
+        DialerContact currentContact = apiInstance.getOutboundContactlistContact(contactListId, contact.getId().toString());
+        Map<String, Object> genesysContactData = currentContact.getData();
+        contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts"));
+        contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts"));
+      } catch (Exception e) {
+        contactMap.put("Total Call Attempts", "");
+        contactMap.put("Contacted Call Attempts", "");
+      }
+
+      dc.setData(contactMap);
 
       // Try with the Contact ID first (for imported contacts)
       // if that doesn't work use the Genesys Agent ID (newly created Contacts)
