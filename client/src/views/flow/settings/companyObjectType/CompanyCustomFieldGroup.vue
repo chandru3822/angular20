@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -64,24 +64,24 @@
                 <td>
                   <div class="item-icons">
                     <div v-if="userCanEdit" class="flex-display">
-                      <v-btn small text
+                      <v-btn small text color="primary"
                              @click="item.edit = !item.edit">
                         <v-icon v-if="item.edit">remove</v-icon>
                         <v-icon v-else>edit</v-icon>
                       </v-btn>
-                      <v-btn small text
+                      <v-btn small text color="primary"
                              v-if="item.edit"
                              @click="[saveGroup(item), item.edit = false]">
                         <v-icon>save</v-icon>
                       </v-btn>
                     </div>
-                    <v-btn small text
+                    <v-btn small text color="primary"
                            v-if="userCanAdd"
                            @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
-                    <v-btn small text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
+                    <v-btn small text color="primary" @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                       <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
