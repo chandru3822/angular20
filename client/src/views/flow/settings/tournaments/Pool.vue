@@ -5,7 +5,7 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="app-title">{{pool.customName || pool.poolType + ' Pool'}}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn text @click="editPool = !editPool">
+          <v-btn text color="primary" @click="editPool = !editPool">
             <v-icon v-if="!editPool">edit</v-icon>
             <v-icon v-else>close</v-icon>
           </v-btn>
@@ -93,7 +93,7 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="app-title">Positions</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn text @click="addPosition = !addPosition">
+            <v-btn text color="primary" @click="addPosition = !addPosition">
               <v-icon>add</v-icon>
             </v-btn>
           </v-toolbar>
@@ -106,11 +106,11 @@
               item-value="id"
             ></v-select>
 
-            <v-btn text :disabled="!positionId"
+            <v-btn color="primary" :disabled="!positionId"
                    @click="addPositionToPool">
               Save
             </v-btn>
-            <v-btn text @click="[addPosition = !addPosition, positionId = null]">
+            <v-btn text color="primary" @click="[addPosition = !addPosition, positionId = null]">
               Cancel
             </v-btn>
           </v-card>
@@ -152,7 +152,7 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="app-title">Users</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn text @click="addUser = !addUser">
+            <v-btn text color="primary" @click="addUser = !addUser">
               <v-icon>add</v-icon>
             </v-btn>
           </v-toolbar>
@@ -166,11 +166,11 @@
               attach
             ></v-autocomplete>
 
-            <v-btn text :disabled="!userId"
+            <v-btn color="primary" :disabled="!userId"
                    @click="addUserToPool">
               Save
             </v-btn>
-            <v-btn text @click="[addUser = !addUser, userId = null]">
+            <v-btn text color="primary" @click="[addUser = !addUser, userId = null]">
               Cancel
             </v-btn>
           </v-card>

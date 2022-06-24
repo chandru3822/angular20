@@ -5,7 +5,7 @@
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Don't Save</template>
     </confirm-delete-dialog-improved>
-    <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
+    <v-breadcrumbs color="primary lighten-1" :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="org-header elevation-1">
       <v-col cols="12" class="text-left">
         <div class="org-title">Organization</div>

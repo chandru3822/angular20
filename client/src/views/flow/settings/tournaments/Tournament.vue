@@ -2,10 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2 primary--text" :to="'/settings/tournaments'">
-          <v-icon>arrow_left</v-icon>
-          Back
-        </v-btn>
+        <v-breadcrumbs :items="breadcrumbs" color="primary lighten-1"></v-breadcrumbs>
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">{{tournament.tournamentName}}</v-toolbar-title>
         </v-toolbar>
@@ -62,7 +59,15 @@
             label: 'Winner',
             path: `/settings/tournaments/${this.$route.params.id}/pool/3`,
           }
-        ]
+        ],
+        breadcrumbs: [
+          {
+            text: 'Back to Tournaments',
+            disabled: false,
+            exact: true,
+            to: `/settings/tournaments`
+          },
+        ],
       }
     },
     computed: {},
