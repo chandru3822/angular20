@@ -17,11 +17,16 @@ export default {
     this.setupNotificationStream()
   },
   beforeDestroy() {
-    this.evtSource?.close()
+    this.cleanupNotificationStream()
   },
   methods: {
     setupNotificationStream() {
       const setup = () => {
+        //only people with access to SMS_INBOX feature access need to have real time notifications enabled
+        if (!this.$store.getters.userHasFeature('SMS_INBOX')){
+          return
+        }
+
         const url = `${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`
         const topics = ['sms_ownership', 'sms_reply']
         this.evtSource = new EventSource(url, { withCredentials: true })
@@ -56,7 +61,11 @@ export default {
           }
         })
       }
+    },
+    cleanupNotificationStream() {
+      this.evtSource?.close()
     }
+
   }
 }
 </script>
