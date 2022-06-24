@@ -300,7 +300,7 @@ export default {
                 file: {
                   name: u.message,
                   url: u.mediaUrls[0],
-                  meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
+                  meta: u.fullName ? u.fullName + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
                 }
               }
             }
@@ -310,7 +310,7 @@ export default {
               author: msgFrom,
               data: {
                 text: u.message,
-                meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
+                meta: u.fullName ? u.fullName + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
               }
             }
           }
