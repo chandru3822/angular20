@@ -155,12 +155,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
     log.info("*** CRON: end CONTACT geo coords updates ***");
   }
 
-  @Scheduled(fixedDelay = 60, initialDelay = 60, timeUnit = TimeUnit.SECONDS)
-  public void sendPing() {
-    log.debug("*** CRON: sending ping notification ***");
-    pubSubService.broadcastKeepAlive();
-  }
-
   @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
   public Executor taskExecutor() {
     return Executors.newScheduledThreadPool(10);
