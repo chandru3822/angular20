@@ -89,7 +89,7 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text
+                    <v-btn class="clickable" small text color="primary"
                            @click="[expanded.includes(item) ? expanded = [] : expanded = [item], item.newFieldName = item.fieldName, selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
                       <v-icon v-if="expanded.includes(item)">remove</v-icon>
                       <v-icon v-else-if="item.custom">add</v-icon>
@@ -254,15 +254,16 @@
                               </v-text-field>
                             </v-list-item-content>
                             <v-list-item-action class="grab" v-if="!item.sortListValuesAlphabetically">
-                              <v-icon>drag_handle</v-icon>
+                              <v-icon color="primary">drag_handle</v-icon>
                             </v-list-item-action>
                             <v-list-item-action class="clickable" @click="ddo.archived = true">
-                              <v-icon>delete</v-icon>
+                              <v-icon color="primary">delete</v-icon>
                             </v-list-item-action>
                           </v-list-item>
                         </v-list>
                       </draggable>
                       <v-btn
+                          color="primary"
                         @click="addOption(item.listOfValues)">
                         Add Option
                       </v-btn>
@@ -292,6 +293,7 @@
                     </v-col>
                     <v-btn
                       v-if="userCanEdit"
+                      color="primary"
                       :disabled="invalid(item)"
                       @click="[saveChanges(item.custom, item), item.expanded = !item.expanded]">
                       {{ item.custom ? 'Add Field' : 'Save Changes' }}
