@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -30,6 +31,7 @@ public class PubSubService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final Set<Subscriber> subscribers = ConcurrentHashMap.newKeySet();
 
+  @PreAuthorize("hasFeatureAccess('SMS_INBOX')") //NOTE: currently tied to this feature
   public Subscriber subscribe(Subscriber subscriber) {
 
     subscriber.onCompletion(() -> subscribers.remove(subscriber));
@@ -37,7 +39,7 @@ public class PubSubService {
     subscriber.onError((err) -> subscribers.remove(subscriber));
 
     subscribers.add(subscriber);
-    log.info("[PubSub] Subscriber count={}", subscribers.size());
+    log.info("[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
 
     // send an initial event so the front end knows to keep reconnecting
     sendKeepAlive(subscriber);
@@ -79,7 +81,7 @@ public class PubSubService {
   }
 
   private void setLastMessageRecv() {
-    //value is not important
+    // value is not important
     redisTemplate
         .opsForValue()
         .set(
@@ -97,7 +99,7 @@ public class PubSubService {
    * simple ping message periodically allowing us to close the connection on the server side
    */
   @Scheduled(fixedDelay = 90, initialDelay = 90, timeUnit = TimeUnit.SECONDS)
-  public void broadcastKeepAlive() {
+  protected void broadcastKeepAlive() {
     // only send it out if we haven't had a message sent out in the last 90 seconds
     if (getLastMessageRecv() == null) {
       log.debug("[PubSub] Sending out ping");
