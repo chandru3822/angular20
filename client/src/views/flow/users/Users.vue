@@ -31,7 +31,7 @@
           <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="msgDialog = true">
+            <v-btn text @click="msgDialog = true" :disabled="allUsersLoading">
               <v-icon v-if="constants.IS_MOBILE">email</v-icon>
               <span v-else>Send Email/Text</span>
             </v-btn>
@@ -54,7 +54,7 @@
             disable-sort
             :mobile-breakpoint="0"
             :footer-props="footerProps"
-            :loading="dataLoading || allUsersLoading"
+            :loading="dataLoading"
             :server-items-length="totalUsers"
             hide-default-header
             :calculate-widths="true"
@@ -179,7 +179,9 @@
                     >{{ filters.positions.length }} selected</span>
                   </template>
                 </v-autocomplete>
-                <v-checkbox v-else-if="header.selectFilter" v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
+                <v-checkbox v-else-if="header.selectFilter"
+                            :disabled="allUsersLoading"
+                            v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
                 <v-text-field outlined
                               v-else-if="header.value !== 'phoneExtension'"
                               hide-details
@@ -195,7 +197,7 @@
             <tr
               :class="{'shaded-row': index % 2}"
             >
-              <td><v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox></td>
+              <td><v-checkbox v-model="item.selected" :disabled="allUsersLoading" @change="toggleSingleSelect(item)"></v-checkbox></td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.firstName}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.lastName}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.email}}</td>
@@ -597,7 +599,8 @@
         // Get allUsers once
         // this was loading twice if a search was done prior to completing this request. putting it in its own fn that is called by the created method fixes that
         this.allUsersLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        //removing global loader since now it just waits for this to finish before you can send a text
+        // this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
           //could default these params since we want all users
@@ -615,13 +618,13 @@
           const {data, status} = await postRequest(`/user/search?page=0&size=9999`, params)
           this.allUsers = data?.content || []
           this.allUsersLoading = false
-          handleHidingGlobalLoader(this, status)
+          // handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving All Users')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.allUsersLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          // this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getUsers () {
@@ -634,6 +637,7 @@
         this.source = CancelToken.source()
 
         if (this.filters.statuses && this.filters.statuses.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
           this.dataLoading = true
           const { page, itemsPerPage } = this.options
 
@@ -755,7 +759,8 @@
           if(!useSavedSearch) {
             this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
           }
-          await this.getAllUsers()
+          //removed the await because this page takes forever to load. instead, you cannot send email/text until the allUsersLoading is false
+          this.getAllUsers()
           await this.getUsers()
           // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

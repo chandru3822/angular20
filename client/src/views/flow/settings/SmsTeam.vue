@@ -486,7 +486,7 @@ export default {
         this.snackbar = getSnackbar('SUCCESS', 'User removed')
         user.archived = true
         const userIndex = this.expandedItem.users.findIndex(u => u.id === user.id);
-        this.expandedItem.users.pop(userIndex)
+        this.expandedItem.users.splice(userIndex, 1)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -501,7 +501,7 @@ export default {
         const {data, status} = await deleteRequest(`/smsTeam/${this.expandedItem.id}/position/` + position.positionId)
         position.archived = true
         const positionIndex = this.expandedItem.positions.findIndex(p => p.id === position.id);
-        this.expandedItem.positions.pop(positionIndex)
+        this.expandedItem.positions.splice(positionIndex, 1)
         this.snackbar = getSnackbar('SUCCESS', 'Position removed')
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -533,7 +533,7 @@ export default {
         this.snackbar = getSnackbar('SUCCESS', 'Organization removed')
         org.archived = true
         const orgIndex = this.expandedItem.orgs.findIndex(o => o.id === org.id);
-        this.expandedItem.orgs.pop(orgIndex)
+        this.expandedItem.orgs.splice(orgIndex, 1)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

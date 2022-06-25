@@ -6,10 +6,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-/**
- * Created by John Berns on 2022-01-25.
- * !Describe Purpose!
- */
+/** Created by John Berns on 2022-01-25. !Describe Purpose! */
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)

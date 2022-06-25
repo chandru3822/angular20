@@ -22,6 +22,8 @@ BEGIN
              coalesce(pst.id,0) as project_status_type_id
       from flow.process_step_work_queue_type_process_step_status_type pswqtpsst
              inner join flow.process_step_work_queue_type pswqt  on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
+             inner join flow.work_queue_type wqt on pswqt.work_queue_type_id = wqt.id and wqt.archived is false
+             inner join flow.process_step ps on pswqt.process_step_id = ps.id and ps.archived is false
              left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqt.id = pswqtpst.process_step_work_queue_type_id and pswqtpst.archived is false
              left join flow.company_process_step_status_type cpsst on pswqtpsst.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
              left join flow.process_step_status_type psst on pswqtpsst.process_step_status_type_id = psst.id and psst.archived is false

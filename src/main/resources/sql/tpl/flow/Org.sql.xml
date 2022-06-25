@@ -11,6 +11,22 @@
     order by o.org_name
   ]]></org.getAllForCompany>
 
+  <org.getUsersInOrg><![CDATA[
+    select u.id,
+           u.first_name || ' ' || u.last_name as full_name,
+           p.position,
+           primary_flag
+    from flow.user_position up
+      inner join flow.user u on up.user_id = u.id
+      inner join flow.position p on up.position_id = p.id
+    where up.org_id = :orgId
+      and up.archived is false
+      and u.archived is false
+      and up.primary_flag is true
+      and up.start_date <= now() and (up.end_date is null or up.end_date >= now())
+    order by full_name
+  ]]></org.getUsersInOrg>
+
   <org.getSchedulingOrgs><![CDATA[
     select o.id,
      o.company_id,
@@ -118,7 +134,20 @@
     select o.*,
            p.org_name as parent_org_name,
            ot.org_type,
-           ot.org_parent_type_id as parent_org_type_id
+           ot.org_parent_type_id as parent_org_type_id,
+           coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(childOrgs)))
+                  FROM (
+                         SELECT childOrg.id,
+                                childOrg.org_name as "orgName",
+                                childOrg.active_flag as "activeFlag",
+                                childOrgType.org_type as "orgType"
+                         FROM flow.org childOrg
+                           inner join flow.org_type childOrgType on childOrg.org_type_id = childOrgType.id
+                         WHERE childOrg.parent_org_id = o.id
+                           and childOrg.archived is not true
+                         order by childOrg.active_flag desc, childOrg.org_name
+                       ) childOrgs), '[]') AS "childOrgs"
     from flow.org o
         left join flow.org p on p.id = o.parent_org_id
         inner join flow.org_type ot on ot.id = o.org_type_id

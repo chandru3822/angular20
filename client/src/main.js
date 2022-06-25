@@ -22,7 +22,7 @@ const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
 
-Vue.use(NotificationPlugin, `${VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`, {
+Vue.use(NotificationPlugin,  {
   store
 })
 Vue.use(Vue2Filters)

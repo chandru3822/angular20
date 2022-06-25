@@ -19,7 +19,7 @@
         >{{ sidebarTitle }}
         </div>
         <v-spacer v-if="!$store.state.project.rightSideSplit"></v-spacer>
-        <div v-if="selectedOption === 0 && !$store.state.project.rightSideSplit">
+        <div v-if="selectedOption === 0 && userCanViewSms && !$store.state.project.rightSideSplit">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
               <v-btn icon @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
@@ -44,9 +44,9 @@
           <v-icon>mdi-menu</v-icon>
         </v-btn>
       </div>
-      <span v-if="selectedOption === 0 && !$store.state.project.rightSideSplit" class="pl-6 albatross-body-3 mt-n2">Members</span>
+      <span v-if="selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
       <TeamAssignmentChips
-        v-if="selectedOption === 0 && !$store.state.project.rightSideSplit"
+        v-if="selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms"
         :sms-team-owners="projectMessageProperties.smsTeamOwners"
         :team-names-associated-to-user="teamNamesAssociatedToUser"
         :reloading="projectIsLoading"
@@ -65,7 +65,7 @@
       <div v-show="!$store.state.project.rightSideSplit" class="height-one-hunned">
         <Messaging v-if="selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
         <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
-        <AttachmentsDropdown v-else :projectId="projectId" :project-process-step-id="projectProcessStepId" />
+        <AttachmentsDropdown v-else-if="selectedOption === 2" :projectId="projectId" :project-process-step-id="projectProcessStepId" />
       </div>
     </div>
     <div class="footer-container"
@@ -113,7 +113,7 @@ import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsDropdown from '@/views/flow/components/AttachmentsDropdown'
 import { ProjectMutations } from '@/stores/ProjectStore'
 import { AppMutations } from '@/stores/AppStore'
-import { getRequest, getSnackbar, postRequest } from '@/helpers/helpers'
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHistoryDrilldown'
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
@@ -147,7 +147,9 @@ export default {
   },
   data() {
     return {
-      userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
+      //todo change this back after soft roll out is done @softRollOutChangeBack
+      userCanViewSms: true,
+      // userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
       projectId: parseInt(this.$route.params.projectId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
@@ -168,10 +170,12 @@ export default {
     }
   },
   created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    this.fetchTeamsForUser()
-    this.getAvailableTeams()
-    this.$store.commit(AppMutations.SET_LOADING, false)
+    if(this.userCanViewSms) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.fetchTeamsForUser()
+      this.getAvailableTeams()
+      this.$store.commit(AppMutations.SET_LOADING, false)
+    }
   },
   computed: {
     sidebarTitle() {
@@ -253,7 +257,7 @@ export default {
     async fetchTeamsForUser() {
       try {
         this.projectIsLoading = true
-        const { data } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.teamsAssociatedToUser = data
 
@@ -261,7 +265,7 @@ export default {
           this.userHasTeam = true
           this.teamNamesAssociatedToUser = this.teamsAssociatedToUser.map(team => team.teamName)
         }
-
+        handleHidingGlobalLoader(this, status)
         await this.loadProject()
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -273,7 +277,7 @@ export default {
     async loadProject() {
       this.userAssigned = false
       try {
-        const { data } = await getRequest('/messaging/projects/' + this.projectId)
+        const { data, status } = await getRequest('/messaging/projects/' + this.projectId)
         this.projectMessageProperties = data
         this.projectMessageProperties.smsTeamOwners?.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
@@ -285,7 +289,7 @@ export default {
             })
           }
         })
-
+        handleHidingGlobalLoader(this, status)
         this.projectIsLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -297,10 +301,11 @@ export default {
     async getAvailableTeams() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data } = await getRequest(`/smsTeam/users`)
+        const { data, status } = await getRequest(`/smsTeam/users`)
         if (data) {
           this.selectableTeams = data
         }
+        handleHidingGlobalLoader(this, status)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

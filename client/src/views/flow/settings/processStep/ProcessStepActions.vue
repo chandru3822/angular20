@@ -562,6 +562,12 @@
                               placeholder="Enter a dynamic value (number)"
                               v-model="fp.dynamicValue"
                               :label="fp.parameterName"></v-text-field>
+                            <v-checkbox
+                              v-else-if="fp.dataTypeId === 3"
+                              type="checkbox"
+                              v-model="fp.dynamicValue"
+                              :label="fp.parameterName"
+                            />
                             <v-text-field
                               v-else
                               :key="index"
@@ -629,34 +635,36 @@
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
-                                    v-if="fp.dataTypeId === 2"
+                                    v-else-if="fp.dataTypeId === 2"
                                     placeholder="Enter a timestamp"
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
-                                  <v-text-field
-                                    v-if="fp.dataTypeId === 3"
+                                  <v-checkbox
+                                    v-else-if="fp.dataTypeId === 3"
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
-                                    placeholder="Enter a boolean"
+                                    type="checkbox"
                                     v-model="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
+                                    :label="fp.parameterName"
+                                  />
                                   <v-text-field
-                                    v-if="fp.dataTypeId === 4"
+                                    v-else-if="fp.dataTypeId === 4"
+                                    type="number"
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter a number"
-                                    v-model="fp.dynamicValue"
+                                    v-model.number="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
-                                    v-if="fp.dataTypeId === 6"
+                                    v-else-if="fp.dataTypeId === 6"
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter an integer"
                                     type="number"
                                     step="1"
-                                    v-model="fp.dynamicValue"
+                                    v-model.number="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
                                     v-else

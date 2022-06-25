@@ -179,6 +179,7 @@ public class GenesysService {
       params.put("booleanValue", null);
       params.put("textValue", null);
       params.put("numericValue", null);
+      params.put("richTextValue", null);
       params.put("intValue", Long.parseLong(leadStatusId));
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
@@ -212,7 +213,6 @@ public class GenesysService {
     }
 
     WritableDialerContact wdc = new WritableDialerContact();
-    Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     HashMap<String, Object> contactMap = new HashMap<>();
     wdc.setId(contact.getId().toString());
@@ -236,14 +236,12 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(calendar.getTime()));
+    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, false);
 
     getCfvValues(contactMap, values);
     String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
-
-    wdc.setData(contactMap);
 
     String leadLevel = (String) contactMap.remove("lead_level");
     if (leadLevel.equals("20")) {
@@ -257,6 +255,8 @@ public class GenesysService {
     }
 
     contactMap.put("QueueName", getQueueName(leadLevel));
+
+    wdc.setData(contactMap);
 
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
@@ -282,6 +282,7 @@ public class GenesysService {
     params.put("textValue", textValue);
     params.put("numericValue", null);
     params.put("intValue", null);
+    params.put("richTextValue", null);
     params.put("intArrayValue", null);
     params.put("customFieldGroupAssignmentId", cfgaId);
     params.put("sourceId", contactId);
@@ -294,7 +295,9 @@ public class GenesysService {
 
     try {
       sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+
     } catch (Exception e) {
+
       log.error(
           "GENESYS: Error in updateGenesysCfv contactId={}, textValue={}, cfgaId={}, msg={}",
           contactId,
@@ -323,7 +326,6 @@ public class GenesysService {
     }
 
     Contact contact = contactService.getContact(contactId);
-    Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
@@ -338,8 +340,6 @@ public class GenesysService {
         "mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put(
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("Total Call Attempts", "");
-    contactMap.put("Contacted Call Attempts", "");
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("Call Scheduled", "");
@@ -347,7 +347,7 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(calendar.getTime()));
+    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, true);
 
@@ -383,8 +383,6 @@ public class GenesysService {
       return;
     }
 
-    dc.setData(contactMap);
-
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
 
@@ -400,6 +398,19 @@ public class GenesysService {
       if (contactListId == null || contactListId.isEmpty()) {
         continue;
       }
+
+      // Get call attempts from existing contact in Genesys
+      try {
+        DialerContact currentContact = apiInstance.getOutboundContactlistContact(contactListId, contact.getId().toString());
+        Map<String, Object> genesysContactData = currentContact.getData();
+        contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts"));
+        contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts"));
+      } catch (Exception e) {
+        contactMap.put("Total Call Attempts", "");
+        contactMap.put("Contacted Call Attempts", "");
+      }
+
+      dc.setData(contactMap);
 
       // Try with the Contact ID first (for imported contacts)
       // if that doesn't work use the Genesys Agent ID (newly created Contacts)
@@ -749,8 +760,14 @@ public class GenesysService {
 
       try {
         addContact(contact.getId(), values, false);
+      } catch (ApiException ae) {
+        JSONObject apiException = new JSONObject(ae.getRawBody());
+        log.error(
+          "GENESYS: API Error during Cron - adding contactId={}, msg={}",
+          contact.getId(),
+          apiException.getString("message"));
       } catch (Exception e) {
-        log.error("GENESYS: Error updating contact list", e);
+        log.error("GENESYS: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
       }
     }
   }
@@ -821,25 +838,7 @@ public class GenesysService {
     if (isUpdate) {
       contactMap.put("line_id", "");
     } else {
-      try {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("contactId", contactId);
-        Optional<String> textelPhoneKey =
-            sqlCache.get(
-                "genesys.getTextelPhoneKeyByContactId",
-                params,
-                new SingleColumnRowMapper<>(String.class));
-        if (textelPhoneKey.isPresent()) {
-          contactMap.put("line_id", textelPhoneKey.get());
-        } else {
-          saveTextelPhoneKey(contactId, contactMap);
-        }
-      } catch (Exception e) {
-        log.error(
-            "GENESYS: Error saving Textel Phone Key for contactId={}, msg={}",
-            contactId,
-            e.getMessage());
-      }
+      saveTextelPhoneKey(contactId, contactMap);
     }
   }
 

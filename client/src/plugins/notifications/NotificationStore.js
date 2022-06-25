@@ -16,6 +16,7 @@ export default {
     messages: []
   }),
   getters: {
+    getAllNotifications: (state) => state.notifications,
     getNotificationsByTopic: (state) => (topic) => {
       return state.notifications.filter(n => n.topic === topic) ?? []
     },
@@ -31,9 +32,7 @@ export default {
     [NotificationActions.FETCH_NOTIFICATIONS]: async ({ commit }) => {
       try {
         const { data } = await getRequest(`/notifications/`)
-        if (data?.length) {
-          commit('setNotifications', data)
-        }
+        commit('setNotifications', data ?? [])
       } catch (e) {
         console.error('*** ERROR ***', e)
       }
@@ -56,13 +55,13 @@ export default {
     },
     [NotificationActions.HANDLE_STREAM_EVENT]: async ({ dispatch, commit }, message) => {
       if (message?.topic) {
-        switch (message.topic) {
-          case 'sms_reply':
-            dispatch('_debouncedFetchNotifications')
-            break
+        commit('addMessage', message)
+
+        //only trigger a notification refresh on this topic
+        if (message?.topic === 'sms_reply'){
+          dispatch('_debouncedFetchNotifications')
         }
       }
-      commit('addMessage', message)
     }
   },
   mutations: {

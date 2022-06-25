@@ -364,10 +364,10 @@ public class ContactLeadService {
     } catch (ApiException e) {
       JSONObject apiException = new JSONObject(e.getRawBody());
       String msg = "GENE: Error adding contact: {}";
-//      log.error(msg, apiException.getString("message"));
+      log.error(msg, apiException.getString("message"));
     } catch (IOException e) {
       String msg = "GENE: Error adding contact: {}";
-//      log.error(msg, e.getMessage());
+      log.error(msg, e.getMessage());
     }
   }
 

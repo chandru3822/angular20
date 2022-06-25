@@ -354,8 +354,10 @@ export default {
         modules: {
           toolbar: [
             ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
-            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'size': ['small', 'normal', 'large', 'huge'] }],  // custom dropdown
+            //without the color array then black = false which just un-sets color. in our case our default is navy blue, so unsetting the color goes back to navy blue and not to black.  by setting the black value to #000000 it fixes this issue.  when our default color changes to black then we could just remove the colors in this array to use the defaults from quill
+            [ { 'color': ["#000000", "#e60000", "#ff9900", "#ffff00", "#008a00", "#0066cc", "#9933ff", "#ffffff", "#facccc", "#ffebcc", "#ffffcc", "#cce8cc", "#cce0f5", "#ebd6ff", "#bbbbbb", "#f06666", "#ffc266", "#ffff66", "#66b966", "#66a3e0", "#c285ff", "#888888", "#a10000", "#b26b00", "#b2b200", "#006100", "#0047b2", "#6b24b2", "#444444", "#5c0000", "#663d00", "#666600", "#003700", "#002966", "#3d1466"] },
+              { 'background': [] }],          // dropdown with defaults from theme
+            [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
             ['clean']                                         // remove all formatting button
           ],
         }

@@ -1,19 +1,44 @@
 <sql>
   <messaging.getProjects><![CDATA[
-  with projects as (select distinct p.id            as project_id,
-                                  p.contact_id,
-                                  p.project_name,
-                                  c.search_phones as mobile,
-                                  s.abbreviation  as state
+with projects as (select distinct on (p.id) p.id                                   as project_id,
+                                            p.contact_id,
+                                            p.project_name,
+                                            c.search_phones                        as mobile,
+                                            s.abbreviation                         as state,
+                                            concat(u.first_name, ' ', u.last_name) as "name"
                   from flow.project p
                            inner join flow.contact c ON c.id = p.contact_id
-                           inner join flow.company_state cs on p.company_state_id = cs.id
-                           inner join flow.state s ON s.id = cs.state_id
+                           left outer join flow.company_state cs on p.company_state_id = cs.id
+                           left outer join flow.state s ON s.id = cs.state_id
                            inner join flow.project_message_properties pmp on pmp.project_id = p.id
                            left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
-                  where pmt.sms_team_id = any (array [ :smsTeamIds ]::int[])
-                     or :viewAll
-                      and pmp.closed is false),
+                           left join flow.project_message_owner pmo2
+                                     on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id and pmo2.archived is false
+                           left join flow.user u on pmo2.user_id = u.id
+                  where case
+                            when array_length( array [ :notifProjectIds  ]::int[], 1) > 0 then
+                                (p.id = any ( array [ :notifProjectIds ]::int[] ))
+                            else 1=1 end
+                        and case
+                            when :query::varchar is not null then
+                                        lower(p.project_name) like '%' || lower(:query) || '%' or
+                                        p.id::varchar like '%' || lower(:query) || '%'  or
+                                        lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
+                            else 1 = 1 end
+                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
+                         (exists(select id
+                                 from flow.project_message_owner pmo3
+                                 where case
+                                           when array_length( array [ :ownerIds ]::int[], 1) > 0 then
+                                                   (pmo3.user_id = any ( array [ :ownerIds ]::int[] )) and
+                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::int[])
+                                                   and pmo3.project_id = p.id and pmo3.archived is false
+                                           end) or
+                          case
+                              when :unassigned is true then
+                                  pmo2.id is null end)
+                      )
+                  limit :limit offset :offset),
      last_message as (select p.project_id,
                              q.message,
                              q.recipient_type_id,
@@ -62,138 +87,157 @@ select p.project_id,
 from projects p
 ]]></messaging.getProjects>
 
-  <messaging.getProject>
-    <![CDATA[
-      select p.id as projectId, p.project_name, s.abbreviation as state,
-       (coalesce((
-            SELECT array_to_json(array_agg(row_to_json(st)))
-            FROM (
-               select st.id, st.team_name as "teamName",
-               coalesce((
-                            SELECT array_to_json(array_agg(row_to_json(tb)))
-                            FROM (
-                                     SELECT pmo.id,
-                                            pmo.user_id as "userId",
-                                            concat(u.first_name, ' ', u.last_name) as "name",
-                                            pmo.sms_team_id as "smsTeamId",
-                                            pmo.archived
-                                     FROM flow.project_message_owner pmo
-                                              inner join flow.user u on pmo.user_id = u.id
-                                     WHERE pmo.archived = false and
-                                             pmo.project_id = :projectId and
-                                             pmo.sms_team_id = pmt.sms_team_id) tb), '[]') AS "users"
-        from flow.project_message_team pmt
-                 inner join flow.sms_team st on pmt.sms_team_id = st.id
-        where pmt.project_id = :projectId and pmt.archived = false) st), '[]')) as "smsTeamOwners"
-        from flow.project p
-                 inner join flow.contact c ON c.id = p.contact_id
-                 inner join flow.company_state cs on p.company_state_id = cs.id
-                 inner join flow.state s ON s.id = cs.state_id
-                 inner join flow.project_message_properties pmp on p.id = pmp.project_id
-        where pmp.project_id = :projectId
-            ]]>
-  </messaging.getProject>
+  <messaging.getProjectsCount><![CDATA[
+  with projects as (select distinct on (p.id) p.id                                   as project_id,
+                                            p.contact_id,
+                                            p.project_name,
+                                            c.search_phones                        as mobile,
+                                            s.abbreviation                         as state,
+                                            concat(u.first_name, ' ', u.last_name) as "name"
+                  from flow.project p
+                           inner join flow.contact c ON c.id = p.contact_id
+                           left outer join flow.company_state cs on p.company_state_id = cs.id
+                           left outer join flow.state s ON s.id = cs.state_id
+                           inner join flow.project_message_properties pmp on pmp.project_id = p.id
+                           left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
+                           left join flow.project_message_owner pmo2
+                                     on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id
+                           left join flow.user u on pmo2.user_id = u.id
+                  where case
+                            when :query::varchar is not null then
+                                        lower(p.project_name) like '%' || lower(:query) || '%' or
+                                        p.id::varchar like :query or
+                                        lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
+                            else 1 = 1 end
+                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
+                         (exists(select id
+                                 from flow.project_message_owner pmo3
+                                 where case
+                                           when array_length( array [ :ownerIds ]::int[], 1) > 0 then
+                                                   (pmo3.user_id = any ( array [ :ownerIds ]::int[] )) and
+                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::int[])
+                                                   and pmo3.project_id = p.id
+                                           end) or
+                          case
+                              when :unassigned is true then
+                                  pmo2.id is null end)
+                      )
+                  )
+   select count(*) from projects
+]]></messaging.getProjectsCount>
 
-  <messaging.getProjectsBySmsTeam>
-    <![CDATA[
-      select pmt.project_id
-        from flow.project_message_team pmt
-          where pmt.sms_team_id = :smsTeamId and archived = false
-      group by project_id
-            ]]>
-  </messaging.getProjectsBySmsTeam>
+  <messaging.getProject><![CDATA[
+     select p.id                                                     as projectId,
+           p.project_name,
+           s.abbreviation                                           as state,
+           c.company_id,
+           (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
+                      FROM (select st.id,
+                                   st.team_name                                                        as "teamName",
+                                   coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
+                                             FROM (SELECT pmo.id,
+                                                          pmo.user_id                            as "userId",
+                                                          concat(u.first_name, ' ', u.last_name) as "name",
+                                                          pmo.sms_team_id                        as "smsTeamId",
+                                                          pmo.archived
+                                                   FROM flow.project_message_owner pmo
+                                                            inner join flow.user u on pmo.user_id = u.id
+                                                   WHERE pmo.archived = false
+                                                     and pmo.project_id = p.id
+                                                     and pmo.sms_team_id = pmt.sms_team_id) tb), '[]') AS "users"
+                            from flow.project_message_team pmt
+                                     inner join flow.sms_team st on pmt.sms_team_id = st.id
+                            where pmt.project_id = p.id
+                              and pmt.archived = false) st), '[]')) as "smsTeamOwners"
+    from flow.project p
+             inner join flow.project_message_properties pmp on p.id = pmp.project_id
+             inner join flow.contact c ON c.id = p.contact_id
+             left outer join flow.company_state cs on cs.id = p.company_state_id
+             left outer join flow.state s on s.id = cs.state_id
+    where p.id = :projectId
+  ]]></messaging.getProject>
 
-  <messaging.getActiveProjectId>
-    <![CDATA[
-      select pmp.id
-        from flow.project_message_properties pmp
-      where pmp.project_id = :projectId
-            ]]>
-  </messaging.getActiveProjectId>
+  <messaging.getProjectsBySmsTeam><![CDATA[
+    select pmt.project_id
+      from flow.project_message_team pmt
+        where pmt.sms_team_id = :smsTeamId and archived = false
+    group by project_id
+  ]]></messaging.getProjectsBySmsTeam>
 
-  <messaging.insertProject>
-    <![CDATA[
-            insert into flow.project_message_properties
-                  (project_id, closed, created_by_id, date_created, modified_by_id, date_modified)
-                  values (:projectId, false, :createdById, now(), :createdById, now())
-            ]]>
-  </messaging.insertProject>
+  <messaging.getActiveProjectId><![CDATA[
+    select pmp.id from flow.project_message_properties pmp where pmp.project_id = :projectId
+  ]]></messaging.getActiveProjectId>
 
-  <messaging.saveProjectStatusOpen>
-    <![CDATA[
-            update flow.project_message_properties
-            set closed = false,
-                date_modified = now(),
-                modified_by_id = :modifiedById
-              where project_id = :projectId
-            ]]>
-  </messaging.saveProjectStatusOpen>
+  <messaging.insertProject><![CDATA[
+  insert into flow.project_message_properties
+  (project_id, closed, created_by_id, date_created, modified_by_id, date_modified)
+  values (:projectId, false, :createdById, now(), :createdById, now())
+  on conflict (project_id)
+      do update set modified_by_id = excluded.modified_by_id,
+                    date_modified  = excluded.date_modified
+  ]]></messaging.insertProject>
 
-  <messaging.saveProjectStatusClosed>
-    <![CDATA[
-            update flow.project_message_properties
-            set closed = true,
-                last_sent = null,
-                date_modified = now(),
-                modified_by_id = :modifiedById
-              where project_id = :projectId
-            ]]>
-  </messaging.saveProjectStatusClosed>
+  <messaging.saveProjectStatusOpen><![CDATA[
+    update flow.project_message_properties
+    set closed = false,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      where project_id = :projectId
+  ]]></messaging.saveProjectStatusOpen>
 
-  <messaging.getOwnersForProject>
-    <![CDATA[
-          select user_id, sms_team_id from flow.project_message_owner
-            where project_id = :projectId and archived = false
-          ]]>
-  </messaging.getOwnersForProject>
+  <messaging.saveProjectStatusClosed><![CDATA[
+    update flow.project_message_properties
+    set closed = true,
+        last_sent = null,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      where project_id = :projectId
+  ]]></messaging.saveProjectStatusClosed>
+
+  <messaging.getOwnersForProject><![CDATA[
+    select distinct user_id, sms_team_id from flow.project_message_owner where project_id = :projectId and archived is false
+  ]]></messaging.getOwnersForProject>
 
   <messaging.getHistory><![CDATA[
-        select * from coalesce((
-                         SELECT array_to_json(array_agg(row_to_json(history)))
-                         FROM (
-                                   select st.team_name, u.first_name || ' ' || u.last_name as "userName", pmoh.date_created, date_removed,
-                                          (select u1.first_name || ' ' || u1.last_name from flow.user u1 where u1.id = pmoh.created_by_id) as "addedBy",
-                                          (select u2.first_name || ' ' || u2.last_name from flow.user u2 where u2.id = pmoh.modified_by_id) as "removedBy"
-                                      from flow.project_message_owner_history pmoh
-                                   inner join flow.project p on pmoh.project_id = p.id
-                                   inner join flow.sms_team st on pmoh.sms_team_id = st.id
-                                   left join flow.user u on pmoh.user_id = u.id
-                                   where project_id = :projectId
-                                    order by pmoh.date_modified desc
-                              ) history), '[]') AS "projectHistory"
-
+  select * from coalesce((
+   SELECT array_to_json(array_agg(row_to_json(history)))
+   FROM (
+             select st.team_name, u.first_name || ' ' || u.last_name as "userName", pmoh.date_created, date_removed,
+                    (select u1.first_name || ' ' || u1.last_name from flow.user u1 where u1.id = pmoh.created_by_id) as "addedBy",
+                    (select u2.first_name || ' ' || u2.last_name from flow.user u2 where u2.id = pmoh.modified_by_id) as "removedBy"
+                from flow.project_message_owner_history pmoh
+             inner join flow.project p on pmoh.project_id = p.id
+             inner join flow.sms_team st on pmoh.sms_team_id = st.id
+             left join flow.user u on pmoh.user_id = u.id
+             where project_id = :projectId
+              order by pmoh.date_modified desc
+        ) history), '[]') AS "projectHistory"
   ]]></messaging.getHistory>
 
   <messaging.setLastSent><![CDATA[
-        update flow.project_message_properties set last_sent = now(), date_modified = now(), modified_by_id = :modifiedById where project_id = :projectId
+    update flow.project_message_properties set last_sent = now(), date_modified = now(), modified_by_id = :modifiedById where project_id = :projectId
   ]]></messaging.setLastSent>
 
   <messaging.clearLastSent><![CDATA[
-        update flow.project_message_properties set last_sent = null, date_modified = now(), modified_by_id = :modifiedById where project_id = :projectId
+    update flow.project_message_properties set last_sent = null, date_modified = now(), modified_by_id = :modifiedById where project_id in (:projectIds)
   ]]></messaging.clearLastSent>
 
   <messaging.getStaleProjects><![CDATA[
-        select project_id from flow.project_message_properties pmp where pmp.last_sent < ((now() AT TIME ZONE 'US/Mountain') :: DATE) - 3
+    select project_id from flow.project_message_properties pmp where pmp.last_sent < ((now() AT TIME ZONE 'US/Mountain') :: DATE) - 3
   ]]></messaging.getStaleProjects>
 
   <messaging.insertTeam><![CDATA[
-      insert into flow.project_message_team
-      (project_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
-      values (:projectId, :teamId, :createdById, now(), :createdById, now())
+    insert into flow.project_message_team
+    (project_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:projectId, :teamId, :createdById, now(), :createdById, now())
   ]]></messaging.insertTeam>
 
-  <messaging.insertOwner><![CDATA[
-      insert into flow.project_message_owner
-      (project_id, sms_team_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
-      values (:projectId, :teamId, :userId, :createdById, now(), :createdById, now())
-  ]]></messaging.insertOwner>
-
   <messaging.removeOwner><![CDATA[
-      update flow.project_message_owner
-        set archived = true,
-            modified_by_id = :modifiedById,
-            date_modified = now()
-        where project_id = :projectId and user_id = :userId and sms_team_id = :smsTeamId
+    update flow.project_message_owner
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where project_id = :projectId and user_id = :userId and sms_team_id = :smsTeamId
   ]]></messaging.removeOwner>
 
   <messaging.getTeamId><![CDATA[
@@ -201,24 +245,24 @@ from projects p
   ]]></messaging.getTeamId>
 
   <messaging.getSmsTeamsForProject><![CDATA[
-    select st.id, st.team_name,
-           coalesce((
-                        SELECT array_to_json(array_agg(row_to_json(tb)))
-                        FROM (
-                                 SELECT pmo.id,
-                                        pmo.user_id as "userId",
-                                        concat(u.first_name, ' ', u.last_name) as "name",
-                                        pmo.sms_team_id as "smsTeamId",
-                                        pmo.archived
-                                 FROM flow.project_message_owner pmo
-                                     --inner join flow.sms_team_user stu on stu.id = pmu.sms_team_user_id
-                                     inner join flow.user u on pmo.user_id = u.id
-                                 WHERE pmo.archived = false and
-                                       pmo.project_id = :projectId and
-                                       pmo.sms_team_id = pmt.sms_team_id) tb), '[]') AS "users"
-                                  from flow.project_message_team pmt
-                                      inner join flow.sms_team st on pmt.sms_team_id = st.id
-                                  where pmt.project_id = :projectId and pmt.archived = false
+select st.id,
+       st.team_name,
+       coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
+                 FROM (SELECT pmo.id,
+                              pmo.user_id                            as "userId",
+                              concat(u.first_name, ' ', u.last_name) as "name",
+                              pmo.sms_team_id                        as "smsTeamId",
+                              pmo.archived
+                       FROM flow.project_message_owner pmo
+                                --inner join flow.sms_team_user stu on stu.id = pmu.sms_team_user_id
+                                inner join flow.user u on pmo.user_id = u.id
+                       WHERE pmo.archived = false
+                         and pmo.project_id = :projectId
+                         and pmo.sms_team_id = pmt.sms_team_id) tb), '[]') AS "users"
+from flow.project_message_team pmt
+         inner join flow.sms_team st on pmt.sms_team_id = st.id
+where pmt.project_id = :projectId
+  and pmt.archived = false
   ]]></messaging.getSmsTeamsForProject>
 
   <messaging.getSmsTeamsForProjectByUser><![CDATA[
@@ -253,11 +297,11 @@ from projects p
   ]]></messaging.removeTeamOwners>
 
   <messaging.deleteProjectConversation><![CDATA[
-            update flow.project_message_properties
-            set archived = true,
-                date_modified = now(),
-                modified_by_id = :modifiedById
-              where project_id = :projectId
+    update flow.project_message_properties
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      where project_id = :projectId
   ]]></messaging.deleteProjectConversation>
 
   <messaging.removeAllTeams><![CDATA[
