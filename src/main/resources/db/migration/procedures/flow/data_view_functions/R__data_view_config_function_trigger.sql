@@ -1364,7 +1364,7 @@ declare
   v_owner_position_ids integer[];
 BEGIN
 
-  if new.owner_user_position_id is not null and new.owner_user_position_id != old.owner_user_position_id then
+  if new.owner_user_position_id is not null then
 
     select array_agg(owner_org_ids)
     from (select distinct t.id as owner_org_ids
@@ -1386,7 +1386,8 @@ BEGIN
           union
           select p.contact_id as contact_id, user_position_id as owner_id
           from flow.project p
-          where p.contact_id = new.id) as foo
+          where p.contact_id = new.id
+            and p.user_position_id is not null) as foo
     group by foo.contact_id
     into v_owner_position_ids;
 
@@ -1416,7 +1417,7 @@ declare
   v_owner_position_ids integer[];
 BEGIN
 
-  if (new.user_position_id is not null and new.user_position_id != old.user_position_id) then
+  if (new.user_position_id is not null) then
 
     select array_agg(owner_org_ids)
     from (select distinct t.id as owner_org_ids
@@ -1438,11 +1439,12 @@ BEGIN
           union
           select p.contact_id as contact_id,p.user_position_id as owner_id
           from flow.project p
-          where p.contact_id = new.contact_id and p.id != new.id
+          where p.contact_id = new.contact_id and p.id != new.id and
+            p.user_position_id is not null
           union
           select c.id as contact_id ,owner_user_position_id as owner_id
           from flow.contact c
-          where c.id = new.contact_id) as foo
+          where c.id = new.contact_id and c.owner_user_position_id is not null) as foo
     group by foo.contact_id
     into v_owner_position_ids;
 
