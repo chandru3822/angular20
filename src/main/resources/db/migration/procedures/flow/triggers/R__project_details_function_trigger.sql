@@ -254,25 +254,41 @@ CREATE OR REPLACE FUNCTION flow.contact_search()
   RETURNS TRIGGER AS
 $$
 declare
-  v_owner_org_ids integer[];
+  v_owner_org_ids      integer[];
+  v_owner_position_ids integer[];
 BEGIN
 
+  if new.owner_user_position_id is not null then
 
     select array_agg(owner_org_ids)
-    from (
-    select distinct t.id as owner_org_ids
-    from  flow.user_position up
-            join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
-    where new.owner_user_position_id is not null and up.id = new.owner_user_position_id
-    union
-    select distinct t.id as owner_org_ids
-    from  flow.project p
-       inner join flow.user_position up on up.id = p.user_position_id
-            join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
-    where p.contact_id = new.id and p.user_position_id is not null) as foo
+    from (select distinct t.id as owner_org_ids
+          from flow.user_position up
+                 join LATERAL flow.org_hierarchy_filter_up_search(array [up.org_id]) as t on true
+          where new.owner_user_position_id is not null
+            and up.id = new.owner_user_position_id
+          union
+          select distinct t.id as owner_org_ids
+          from flow.project p
+                 inner join flow.user_position up on up.id = p.user_position_id
+                 join LATERAL flow.org_hierarchy_filter_up_search(array [up.org_id]) as t on true
+          where p.contact_id = new.id
+            and p.user_position_id is not null) as foo
     into v_owner_org_ids;
-    new.owner_org_ids = v_owner_org_ids;
 
+    select array_agg(owner_id) as owner_ids
+    from (select new.id as contact_id, new.owner_user_position_id as owner_id
+          union
+          select p.contact_id as contact_id, user_position_id as owner_id
+          from flow.project p
+          where p.contact_id = new.id
+          and p.user_position_id is not null) as foo
+    group by foo.contact_id
+    into v_owner_position_ids;
+
+
+    new.owner_position_ids = v_owner_position_ids;
+    new.owner_org_ids = v_owner_org_ids;
+  end if;
 
 
   RETURN new;
@@ -291,27 +307,46 @@ CREATE OR REPLACE FUNCTION flow.project_search()
   RETURNS TRIGGER AS
 $$
 declare
-  v_owner_org_ids integer[];
+  v_owner_org_ids      integer[];
+  v_owner_position_ids integer[];
 BEGIN
 
-  select array_agg(owner_org_ids)
-  from (
-  select distinct t.id as owner_org_ids
-  from  flow.user_position up
-          join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
-  where new.user_position_id is not null and up.id = new.user_position_id
-  union
-  select distinct t.id as owner_org_ids
-  from  flow.contact c
-          inner join flow.user_position up on up.id = c.owner_user_position_id
-          join LATERAL  flow.org_hierarchy_filter_up_search(array[up.org_id]) as t  on true
-  where new.contact_id = c.id and c.owner_user_position_id is not null) as foo
-  into v_owner_org_ids;
+  if (new.user_position_id is not null) then
 
-  update flow.contact
-    set owner_org_ids = v_owner_org_ids
-  where id = new.contact_id;
+    select array_agg(owner_org_ids)
+    from (select distinct t.id as owner_org_ids
+          from flow.user_position up
+                 join LATERAL flow.org_hierarchy_filter_up_search(array [up.org_id]) as t on true
+          where new.user_position_id is not null
+            and up.id = new.user_position_id
+          union
+          select distinct t.id as owner_org_ids
+          from flow.contact c
+                 inner join flow.user_position up on up.id = c.owner_user_position_id
+                 join LATERAL flow.org_hierarchy_filter_up_search(array [up.org_id]) as t on true
+          where new.contact_id = c.id
+            and c.owner_user_position_id is not null) as foo
+    into v_owner_org_ids;
 
+    select array_agg(owner_id) as owner_ids
+    from (select new.contact_id as contact_id,new.user_position_id as owner_id
+          union
+          select p.contact_id as contact_id,p.user_position_id as owner_id
+          from flow.project p
+          where p.contact_id = new.contact_id and p.id != new.id and
+                p.user_position_id is not null
+          union
+          select c.id as contact_id ,owner_user_position_id as owner_id
+          from flow.contact c
+          where c.id = new.contact_id and c.owner_user_position_id is not null) as foo
+    group by foo.contact_id
+    into v_owner_position_ids;
+
+    update flow.contact
+    set owner_org_ids      = v_owner_org_ids,
+        owner_position_ids = v_owner_position_ids
+    where id = new.contact_id;
+  end if;
   RETURN new;
 END
 $$
