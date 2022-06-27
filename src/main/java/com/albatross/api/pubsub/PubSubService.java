@@ -102,9 +102,13 @@ public class PubSubService {
   @Scheduled(fixedDelay = 90, initialDelay = 90, timeUnit = TimeUnit.SECONDS)
   protected void broadcastKeepAlive() {
     // only send it out if we haven't had a message sent out in the last 90 seconds
-    if (getLastMessageRecv() == null) {
-      log.debug("[PubSub] Sending out ping");
-      subscribers.forEach(this::sendKeepAlive);
+    try {
+      if (getLastMessageRecv() == null) {
+        log.debug("[PubSub] Sending out ping");
+        subscribers.forEach(this::sendKeepAlive);
+      }
+    } catch (Exception e) {
+      log.error("[PubSub] Error sending keepalive ping", e);
     }
   }
 
