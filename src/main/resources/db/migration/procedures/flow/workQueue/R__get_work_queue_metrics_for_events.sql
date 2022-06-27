@@ -312,10 +312,10 @@ BEGIN
   select count(*) as short_window_denominator
   into v_short_window_denominator
   from flow.work_queue_cycle wqc
-         inner join flow.company_process_step_status_type cpsst
-                    on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-         inner join flow.process_step_status_type psst
-                    on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.company_event_status_type cest
+                    on wqc.company_event_status_type_id = cest.id and cest.archived is false
+         inner join flow.event_status_type est
+                    on est.id = cest.event_status_type_id and est.archived is false
          inner join flow.process_step_event_work_queue_type_event_status_type pswqtpsst2
                     on wqc.process_step_event_work_queue_type_event_status_type_id = pswqtpsst2.id
          inner join flow.process_step_event_work_queue_type pswqt
@@ -340,10 +340,10 @@ BEGIN
   select count(*) as long_window_numerator
   into v_long_window_numerator
   from flow.work_queue_cycle wqc
-         inner join flow.company_process_step_status_type cpsst
-                    on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-         inner join flow.process_step_status_type psst
-                    on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.company_event_status_type cest
+                    on wqc.company_event_status_type_id = cest.id and cest.archived is false
+         inner join flow.event_status_type est
+                    on est.id = cest.event_status_type_id and est.archived is false
          inner join flow.process_step_event_work_queue_type_event_status_type pswqtpsst2
                     on wqc.process_step_event_work_queue_type_event_status_type_id = pswqtpsst2.id
          inner join flow.process_step_event_work_queue_type pswqt
@@ -401,10 +401,10 @@ BEGIN
   select count(*) as long_window_denominator
   into v_long_window_denominator
   from flow.work_queue_cycle wqc
-         inner join flow.company_process_step_status_type cpsst
-                    on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-         inner join flow.process_step_status_type psst
-                    on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+         inner join flow.company_event_status_type cest
+                    on wqc.company_event_status_type_id = cest.id and cest.archived is false
+         inner join flow.event_status_type est
+                    on est.id = cest.event_status_type_id and est.archived is false
          inner join flow.process_step_event_work_queue_type_event_status_type pswqtpsst2
                     on wqc.process_step_event_work_queue_type_event_status_type_id = pswqtpsst2.id
          inner join flow.process_step_event_work_queue_type pswqt

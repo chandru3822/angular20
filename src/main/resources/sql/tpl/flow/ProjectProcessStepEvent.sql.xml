@@ -488,4 +488,138 @@ where ppse.id = :id
       where id = :projectProcessStepEventId
   ]]></projectProcessStepEvent.setStatus>
 
+  <projectProcessStepEvent.getActiveCloserAppointment><![CDATA[
+     select
+        ppse.id,
+        pps.id as project_process_step_id,
+        pps.project_id,
+        ppse.process_step_event_id as process_step_event_id,
+        ppse.date_created,
+        ps.process_step_name,
+        ppse.start_time,
+        ppse.end_time,
+        pps.company_process_step_status_type_id,
+        cpsst.process_step_status_type_id,
+        coalesce(ppse.date_modified, ppse.date_created) as last_updated,
+        cest.event_status_type,
+        e.id as event_id,
+        e.event_name,
+        ppse.resource_id,
+        cest.event_status_type_id,
+        cest.id as company_event_status_type_id,
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource
+      from flow.project p
+             inner join flow.project_process_step pps on pps.project_id = p.id
+             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+             inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+             inner join flow.event e on pse.event_id = e.id
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+             inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+             left join flow.user_position up on up.id = ppse.resource_id
+             left join flow.user u on u.id = up.user_id
+             left join flow.org o on o.id = ppse.resource_id
+             inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+             inner join flow.system_list sl on sl.id = csl.system_list_id
+      where p.id = :projectId
+        and pps.archived is not true
+        and ppse.archived is not true
+        and p.archived is not true
+        and cest.id =
+            (select id from flow.company_event_status_type cest2 where cest2.company_id = :companyId
+                                                             and cest2.event_status_type = 'Pending')
+      order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+  ]]></projectProcessStepEvent.getActiveCloserAppointment>
+
+  <projectProcessStepEvent.getActiveAhjInspectionWork><![CDATA[
+     select
+        ppse.id,
+        pps.id as project_process_step_id,
+        pps.project_id,
+        ppse.process_step_event_id as process_step_event_id,
+        ppse.date_created,
+        ps.process_step_name,
+        ppse.start_time,
+        ppse.end_time,
+        pps.company_process_step_status_type_id,
+        cpsst.process_step_status_type_id,
+        coalesce(ppse.date_modified, ppse.date_created) as last_updated,
+        cest.event_status_type,
+        e.id as event_id,
+        e.event_name,
+        ppse.resource_id,
+        cest.event_status_type_id,
+        cest.id as company_event_status_type_id,
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource
+      from flow.project p
+             inner join flow.project_process_step pps on pps.project_id = p.id
+             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+             inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+             inner join flow.event e on pse.event_id = e.id
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+             inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+             left join flow.user_position up on up.id = ppse.resource_id
+             left join flow.user u on u.id = up.user_id
+             left join flow.org o on o.id = ppse.resource_id
+             inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+             inner join flow.system_list sl on sl.id = csl.system_list_id
+      where p.id = :projectId
+        and pps.archived is not true
+        and ppse.archived is not true
+        and p.archived is not true
+        and ppse.process_step_event_id = 39
+        and cest.event_status_type_id =
+            (select id from flow.company_event_status_type cest2 where cest2.company_id = :companyId
+                                                             and cest2.event_status_type = 'Active')
+      order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+  ]]></projectProcessStepEvent.getActiveAhjInspectionWork>
+
+  <projectProcessStepEvent.getActiveInstallation><![CDATA[
+     select
+        ppse.id,
+        pps.id as project_process_step_id,
+        pps.project_id,
+        ppse.process_step_event_id as process_step_event_id,
+        ppse.date_created,
+        ps.process_step_name,
+        ppse.start_time,
+        ppse.end_time,
+        pps.company_process_step_status_type_id,
+        cpsst.process_step_status_type_id,
+        coalesce(ppse.date_modified, ppse.date_created) as last_updated,
+        cest.event_status_type,
+        e.id as event_id,
+        e.event_name,
+        ppse.resource_id,
+        cest.event_status_type_id,
+        cest.id as company_event_status_type_id,
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource
+      from flow.project p
+             inner join flow.project_process_step pps on pps.project_id = p.id
+             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+             inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
+             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+             inner join flow.event e on pse.event_id = e.id
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+             inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+             left join flow.user_position up on up.id = ppse.resource_id
+             left join flow.user u on u.id = up.user_id
+             left join flow.org o on o.id = ppse.resource_id
+             inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+             inner join flow.system_list sl on sl.id = csl.system_list_id
+      where p.id = :projectId
+        and pps.archived is not true
+        and ppse.archived is not true
+        and p.archived is not true
+        and ppse.process_step_event_id = 22
+        and cest.event_status_type_id =
+            (select id from flow.company_event_status_type cest2 where cest2.company_id = :companyId
+                                                             and cest2.event_status_type = 'Active')
+      order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+  ]]></projectProcessStepEvent.getActiveInstallation>
+
 </sql>
