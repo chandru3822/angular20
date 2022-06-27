@@ -9,10 +9,11 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class CombinedStepAndType {
+public class DefaultField {
 
-  private Long id, objectTypeId;
-  private String name;
-  private Boolean isProcessStep;
+  private Long id, dataTypeId, objectTypeId;
+  private String fieldName, columnName, propertyName;
+  private Boolean archived, watchedByTrigger;
+
 }
 

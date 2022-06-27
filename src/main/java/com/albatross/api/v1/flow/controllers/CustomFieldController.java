@@ -35,6 +35,11 @@ public class CustomFieldController {
     return customFieldService.deleteField(id);
   }
 
+  @GetMapping(value = "/getByProcessStepEvent/{id}")
+  public List<CustomField> getByProcessStepEvent(@PathVariable Long id) {
+    return customFieldService.getByProcessStepEvent(id);
+  }
+
   @GetMapping(value = "/getByParentProcessStep/{id}")
   public List<CustomField> getByParentProcessStep(@PathVariable Long id,
                                                   @RequestParam(required = false) Boolean excludedUnhandledDataTypes) {

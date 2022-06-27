@@ -9,10 +9,11 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class CombinedStepAndType {
+public class UniqueBehaviorType {
 
-  private Long id, objectTypeId;
-  private String name;
-  private Boolean isProcessStep;
+  private Long id;
+  private String uniqueBehaviorType, description;
+  private Boolean archived;
+
 }
 
