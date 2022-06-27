@@ -4,7 +4,7 @@
       <div class="albatross-header-3 pt-0 d-flex align-center project-activity-header"
            :class="{'title-collapse': $store.state.project.rightSideSplit,
                     'title-no-collapse': !$store.state.project.rightSideSplit}">
-        <v-tooltip bottom small v-if="$route.path.includes('inboxConversation')">
+        <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
           <template v-slot:activator="{on, attrs}">
             <div v-if="!$store.state.project.rightSideSplit"
                  v-bind="attrs" v-on="on"
@@ -19,7 +19,7 @@
         >{{ sidebarTitle }}
         </div>
         <v-spacer v-if="!$store.state.project.rightSideSplit"></v-spacer>
-        <div v-if="selectedOption === 0 && userCanViewSms && !$store.state.project.rightSideSplit">
+        <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !$store.state.project.rightSideSplit">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
               <v-btn icon @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
@@ -36,7 +36,7 @@
           </v-dialog>
 
         </div>
-        <v-btn v-if="$route.path.indexOf('inbox') > 0" class="d-inline-block align-self-center" small text
+        <v-btn v-if="showSmsTab && $route.path.indexOf('inbox') > 0" class="d-inline-block align-self-center" small text
                @click="closeRight()">
           <v-icon>close</v-icon>
         </v-btn>
@@ -44,9 +44,9 @@
           <v-icon>mdi-menu</v-icon>
         </v-btn>
       </div>
-      <span v-if="selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
+      <span v-if="showSmsTab && selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
       <TeamAssignmentChips
-        v-if="selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms"
+        v-if="showSmsTab && selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms"
         :sms-team-owners="projectMessageProperties.smsTeamOwners"
         :team-names-associated-to-user="teamNamesAssociatedToUser"
         :reloading="projectIsLoading"
@@ -63,9 +63,9 @@
     <v-divider v-if="selectedOption === 0 && !$store.state.project.rightSideSplit"></v-divider>
     <div class="project-activity-inner-container">
       <div v-show="!$store.state.project.rightSideSplit" class="height-one-hunned">
-        <Messaging v-if="selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
-        <ProjectNotes v-else-if="selectedOption === 1"></ProjectNotes>
-        <AttachmentsDropdown v-else-if="selectedOption === 2" :projectId="projectId" :project-process-step-id="projectProcessStepId" />
+        <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
+        <ProjectNotes :contact-id="contactId" v-else-if="selectedOption === 1"></ProjectNotes>
+        <AttachmentsDropdown :contact-id="contactId" v-else-if="selectedOption === 2" :projectId="projectId" :project-process-step-id="projectProcessStepId" />
       </div>
     </div>
     <div class="footer-container"
@@ -79,7 +79,7 @@
         class="section-footer ma-0" :class="{'px-4': !$store.state.project.rightSideSplit}"
       >
         <v-col cols="4" class="px-0">
-          <v-btn text block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
+          <v-btn v-if="showSmsTab" text block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
                  :class="{'section-selected': selectedOption===0}">
             <v-icon>mdi-forum-outline</v-icon>
           </v-btn>
@@ -134,6 +134,13 @@ export default {
     ProjectNotes,
     Messaging
   },
+  props: {
+    showSmsTab: {
+      type: Boolean,
+      default: true
+    },
+    contactId: Number
+  },
   watch: {
     // whenever userImage changes, this function will run
     '$route.params.projectId': function() {
@@ -153,7 +160,7 @@ export default {
       projectId: parseInt(this.$route.params.projectId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
-      selectedOption: this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab ? 1 : this.$store.state.project.selectedTab),
+      selectedOption: this.showSmsTab && this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab || (this.$store.state.project.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.$store.state.project.selectedTab,
       userHasTeam: false,
       userAssigned: false,
       showJoinConversationDialog: false,
@@ -188,9 +195,9 @@ export default {
           }
 
         case 1:
-          return 'Project Notes'
+          return null != this.contactId ? 'Contact Notes' : 'Project Notes'
         case 2:
-          return this.$route.params.ppsEventId ? 'Event Documents' : this.$route.params.processStepId ? 'Process Step Documents' : 'Project Documents'
+          return null != this.contactId ? 'Contact Documents' : this.$route.params.ppsEventId ? 'Event Documents' : this.$route.params.processStepId ? 'Process Step Documents' : 'Project Documents'
       }
     },
     sidebarSubTitle() {
@@ -200,7 +207,7 @@ export default {
         case 1:
           return ''
         case 2:
-          return this.$route.params.ppsEventId ? 'Documents related to the selected event.' : this.$route.params.processStepId ? 'Documents related to the selected process step.' : 'Documents related to the selected project.'
+          return null != this.contactId ? null : this.$route.params.ppsEventId ? 'Documents related to the selected event.' : this.$route.params.processStepId ? 'Documents related to the selected process step.' : 'Documents related to the selected project.'
       }
     },
     isSidebarCollapsed() {
@@ -255,23 +262,25 @@ export default {
       }
     },
     async fetchTeamsForUser() {
-      try {
-        this.projectIsLoading = true
-        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.teamsAssociatedToUser = data
+      if(this.showSmsTab) {
+        try {
+          this.projectIsLoading = true
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.teamsAssociatedToUser = data
 
-        if (data != null && data.length > 0) {
-          this.userHasTeam = true
-          this.teamNamesAssociatedToUser = this.teamsAssociatedToUser.map(team => team.teamName)
+          if (data != null && data.length > 0) {
+            this.userHasTeam = true
+            this.teamNamesAssociatedToUser = this.teamsAssociatedToUser.map(team => team.teamName)
+          }
+          handleHidingGlobalLoader(this, status)
+          await this.loadProject()
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.projectIsLoading = false
         }
-        handleHidingGlobalLoader(this, status)
-        await this.loadProject()
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.projectIsLoading = false
       }
     },
     async loadProject() {
@@ -375,10 +384,6 @@ export default {
 
 .section-not-selected {
   background-color: white;
-}
-
-.right-expander-button {
-  margin-right: 10px;
 }
 
 .title-collapse {

@@ -68,8 +68,14 @@
                         p.longitude,
                         p.postal_code as "postalCode",
                         s.abbreviation as "stateAbbreviation",
-                           p.date_created as "dateCreated"
-                            from flow.project p
+                        p.date_created as "dateCreated",
+                        p.company_project_status_type_id as "companyProjectStatusTypeId",
+                        cpst.project_status_type_id as "projectStatusTypeId",
+                        cpst.project_status_type as "projectStatusType",
+                        pst.project_status_type as "rootProjectStatusType"
+                      from flow.project p
+                        inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+                        inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
                         left join flow.company_state cs on cs.id = p.company_state_id
                         left join flow.state s on s.id = cs.state_id
                      where p.contact_id = c.id
@@ -81,10 +87,13 @@
                      u.last_name as "lastName",
                      concat(u.first_name, ' ', u.last_name) as "fullName",
                      p.position,
-                     up.id as "userPositionId"
+                     up.id as "userPositionId",
+                     ust.has_access as "hasAccess"
                   FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position p on p.id = up.position_id
+                    inner join flow.company_user_status cus on cus.user_id = u.id
+                    inner join flow.user_status_type ust on cus.user_status_type_id = ust.id and ust.company_id = c.company_id
                   WHERE up.id = c.owner_user_position_id) o) AS owner
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id

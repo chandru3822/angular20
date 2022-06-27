@@ -214,7 +214,7 @@
            :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
                     'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                     'collapse-right text-center': $store.state.project.rightSideSplit}">
-        <ProjectActivity v-if="!projectLoading"
+        <ProjectActivity v-if="!projectLoading"  :show-sms-tab="true"
                          @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
       </div>
     </v-row>
@@ -552,9 +552,9 @@ export default {
   padding: 12px;
 }
 
-.left-expander-button {
-  margin-left: 10px;
-}
+//.left-expander-button {
+//  margin-left: 10px;
+//}
 
 .title-collapsed {
   margin-top: 12px;

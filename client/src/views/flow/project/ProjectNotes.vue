@@ -22,6 +22,9 @@ export default {
   components: {
     NotesAndActivityContent,
   },
+  props: {
+    contactId: Number
+  },
   data () {
     return {
       snackbar: {},
@@ -32,16 +35,21 @@ export default {
   created () {
     this.getNotes()
   },
-  computed: {},
+  computed: {
+    notesTitle() {
+      null != this.contactId ? `Contact Notes` : `Project Notes`
+    }
+  },
   methods: {
     hasDirtyNotes () {
       return this.$refs.notes.hasUnsavedNotes()
     },
     getNotes: async function () {
       try {
-        const {data} = await getRequestWithParams(`/note/getProjectNotes`, {
+        let url = null != this.contactId ? `/note/getContactNotes` : `/note/getProjectNotes`
+        const {data} = await getRequestWithParams(url, {
           params: {
-            primaryId: this.projectId
+            primaryId: null != this.contactId ? this.contactId : this.projectId
           }
         })
         this.notes = data
