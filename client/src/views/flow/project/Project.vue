@@ -450,7 +450,6 @@ export default {
       }
     },
     saveProjectAddressFields: async function () {
-      this.editAddress = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         //temp project holds all the changes in case they cancel. use those values

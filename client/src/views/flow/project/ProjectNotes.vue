@@ -4,8 +4,8 @@
       :showNotes="true"
       :showActivity="false"
       :notes="notes"
-      :primaryId="parseInt(projectId)"
-      type="Project"
+      :primaryId="primaryId"
+      :type="contactId != null ? `Contact` : `Project`"
       class="px-2"
     />
 
@@ -36,8 +36,8 @@ export default {
     this.getNotes()
   },
   computed: {
-    notesTitle() {
-      null != this.contactId ? `Contact Notes` : `Project Notes`
+    primaryId() {
+      return null != this.contactId ? this.contactId : this.projectId
     }
   },
   methods: {

@@ -1,5 +1,39 @@
 <template>
   <div id="contact-container">
+    <!--    modal for leaving with unsaved fields -->
+    <v-dialog width="500" v-model="unsavedFieldsModal">
+      <v-card>
+        <v-card-title
+          class="text-h5 grey lighten-2"
+          primary-title
+        >
+          Confirm
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          You have unsaved fields. <br/>
+          Are you sure you want to continue without saving?
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="unsavedFieldsModal = false">
+            No
+          </v-btn>
+          <v-btn
+            color="primaryCustom"
+            text
+            @click="[navigationOverride = true, goToPath(toPath)]">
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!--    end unsaved fields modal -->
+
     <!--    modal for editing project fields -->
     <v-dialog width="500"
               v-if="contact && contact.id"
@@ -251,10 +285,11 @@
                 </template>
                 <v-card class="pa-5">
                   Select a process to be used
-                  <v-select attach v-model="selectedProcess"
+                  <v-select v-model="selectedProcess"
                             :items="availableProcesses"
                             label="Process"
                             id="qa-process-selector"
+                            :loading="processesLoading"
                             placeholder="Select one..."
                             item-text="processName"
                             return-object
@@ -283,7 +318,7 @@
         </div>
       </template>
       <template v-slot:main-column>
-        <div v-if="contact && contact.id">
+        <div v-if="contact && contact.id && !fieldsLoading">
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="albatross-header-3">
               Contact Details
@@ -291,12 +326,20 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <div>
-                <v-btn
-                  color="primaryCustom"
-                  class="white--text mt-3 ml-2"
-                  :disabled="fieldsSaving || getReadOnly()"
-                  @click="[fieldsSaving = true, validateFields(true)]"
-                >Save Fields
+                <!--                <v-btn-->
+                <!--                  color="primaryCustom"-->
+                <!--                  class="white&#45;&#45;text mt-3 ml-2"-->
+                <!--                  :disabled="fieldsSaving || getReadOnly()"-->
+                <!--                  @click="[fieldsSaving = true, validateFields(true)]"-->
+                <!--                >Save Fields-->
+                <!--                </v-btn>-->
+                <v-btn color="primaryCustom"
+                       class="white--text mt-3"
+                       v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="validateFields(true)">
+                  Save Fields
                 </v-btn>
               </div>
             </v-toolbar-items>
@@ -323,40 +366,42 @@
           <v-row class="px-5">
             <v-col cols="12" class="text-left py-0 px-0">
               <!--    process field groups-->
-              <v-col
-                class="pt-0"
-                v-for="(cfg, index) in customFieldGroups"
-                :key="index"
-              >
-                <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
-                  <v-toolbar-title>
-                    {{ cfg.groupName }}
-                  </v-toolbar-title>
-                  <v-spacer></v-spacer>
-                  <v-toolbar-items>
-                  </v-toolbar-items>
-                </v-toolbar>
+              <v-form ref="contactForm">
+                <v-col
+                  class="pt-0"
+                  v-for="(cfg, index) in customFieldGroups"
+                  :key="index"
+                >
+                  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+                    <v-toolbar-title>
+                      {{ cfg.groupName }}
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                    </v-toolbar-items>
+                  </v-toolbar>
 
-                <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-                  <v-row>
-                    <v-col :cols="12" class="pb-0 pt-2">
-                      <CustomValueInput
-                        v-for="(field, idx) in cfg.customFieldValues"
-                        :key="idx"
-                        :use-field-ancillary-name="true"
-                        :callback="populateDirtyCfvs"
-                        :readonly="getReadOnly(field)"
-                        :field="field"
-                        :show-field-name="false"
-                      />
-                    </v-col>
-                  </v-row>
+                  <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+                    <v-row>
+                      <v-col :cols="12" class="pb-0 pt-2">
+                        <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                                          :key="idx"
+                                          :required="cf.required"
+                                          :readonly="getReadOnly(cf)"
+                                          :callback="populateDirtyCfvs"
+                                          :field="cf"></CustomValueInput>
+                      </v-col>
+                    </v-row>
 
-                </v-card>
-              </v-col>
+                  </v-card>
+                </v-col>
 
+              </v-form>
             </v-col>
           </v-row>
+        </div>
+        <div v-else>
+          <SpinnerInline centered :size="50" color="primaryCustom"/>
         </div>
       </template>
       <template v-slot:right-column>
@@ -385,7 +430,7 @@ import {
   postRequest,
   formatPhoneNumber,
   getRequestWithParams,
-  getSnackbar
+  getSnackbar, logError
 } from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
@@ -394,6 +439,7 @@ import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
 import {getStatusClass} from "@/services/processStepStatusTypeService";
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: 'Contact',
@@ -402,7 +448,8 @@ export default {
     // NotesAndActivityContent,
     DatetimePickerInput,
     ThreeColumnLayout,
-    ProjectActivity
+    ProjectActivity,
+    SpinnerInline
   },
   watch: {},
   data() {
@@ -427,7 +474,6 @@ export default {
         v => ((!v || (this.contact.phone !== this.contact.mobile))) || 'Phone and Mobile Cannot be the same',
       ],
       deleteContactConfirm: false,
-      addressChanged: false,
       isNumberOrHyphen,
       contactLoading: true,
       customFieldGroups: [],
@@ -454,8 +500,8 @@ export default {
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
       companyId: this.$store.state.user.details.companyId,
       timezone: this.$store.state.user.details.timezone?.value,
-      changeOwner: false,
       selectedProcess: null,
+      processesLoading: true,
       availableProcesses: [],
       breadcrumbs: [
         {
@@ -481,8 +527,7 @@ export default {
     }
   },
   async created() {
-    console.log('randaLogger', this.contactId)
-    let requests = [this.getContact(), this.getCompanyStates(), this.getCountries(), this.getOwners(), this.getCustomFieldGroups()]
+    let requests = [this.getContact(), this.getCustomFieldGroups()]
     await Promise.all(requests).then(async () => {
       this.fieldsLoading = false
     })
@@ -517,15 +562,28 @@ export default {
     },
     async validateForm() {
       if (this.$refs.contactEditForm.validate()) {
-        // todo come back and fix this
         //these could be combined - just dont have time atm
-        // this.saveProjectAddressFields()
-        // this.updateOwner()
-        //have to wait for this one to complete or it doesn't have the right values to display fresh ones
-        // await this.updateStatus()
+        this.saveContactAddressFields()
+        this.updateOwner()
+
         //set project values if they hit save
         this.contact = cloneDeep(this.tempContact)
-        this.showEditProjectModal = false
+        this.showEditModal = false
+      }
+    },
+    saveContactAddressFields: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //temp contact holds all the changes in case they cancel. use those values
+        const {status} = await postRequest(`/contact`, this.tempContact)
+        this.snackbar = getSnackbar('SUCCESS', 'Contact Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     contactOwnerFieldIsReadOnly() {
@@ -536,10 +594,6 @@ export default {
       } else {
         return this.contact.ownerReadOnly
       }
-    },
-    getDirtyText() {
-      return this.hasDirtyNotes && (this.dirtyCfvs.length > 0 || this.dirtySystemFields) ?
-        'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
     },
     goToPath(path) {
       this.$router.push(path)
@@ -563,31 +617,27 @@ export default {
       }
     },
     async saveContact() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        // save contact - tell server if address changed or not so we know whether to reload lat/long
-        this.contact.reloadCoordinates = this.addressChanged
-        const {data} = await postRequest(`/contact`, this.contact)
-        this.addressChanged = false
-        this.contact.reloadCoordinates = false
-        this.contact.projects = data.projects
-        this.dirtySystemFields = false
-        await this.saveCustomFieldValues()
-
+      if (this.dirtyCfvs.length > 0) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          // Save BlueRaven Solar Contacts to Genesys
-          if (this.companyId === 3) {
-            await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
+          //we no longer save the contact system fields here
+          await this.saveCustomFieldValues()
+
+          try {
+            // Save BlueRaven Solar Contacts to Genesys
+            if (this.companyId === 3) {
+              await putRequest(`/genesys/contact/${this.contact.id}`, this.dirtyCfvs, 'blueraven')
+            }
+          } catch (e) {
+            console.error('*** ERROR ***', e)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.fieldsSaving = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async saveCustomFieldValues() {
@@ -614,56 +664,46 @@ export default {
       }
     },
     async getCustomFieldGroups() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequestWithParams(`/customFieldValues/contact/${this.contactId}`)
         this.customFieldGroups = data
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getContact() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/contact/${this.contactId}`)
         this.contact = data
         this.contactLoading = false
         window.document.title = `Contact - ${this.contact.fullName}`
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.contactLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getOwners() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
           contactId: parseInt(this.contactId)
         }
         const {data, status} = await getRequestWithParams(`/contact/owners`, {params})
         this.availableOwners = data
-
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateOwner() {
-      this.changeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/contact/${this.contact.id}/updateOwner`, this.contact.owner)
+        //we use tempContact to save values in case they cancel then it repopulates at the end
+        const {status} = await putRequest(`/contact/${this.contactId}/updateOwner`, this.tempContact.owner || {userPositionId: null})
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.contact.owner = {}
@@ -674,21 +714,19 @@ export default {
       }
     },
     async getAvailableProcesses() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.processesLoading = true
         let params = {
           contactId: parseInt(this.contactId)
         }
         const {data, status} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
         this.selectedProcess = data?.length === 1 ? data[0] : {}
-
-        handleHidingGlobalLoader(this, status)
+        this.processesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async convertToCustomer() {
@@ -707,29 +745,23 @@ export default {
       }
     },
     async getCompanyStates() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getCompanyStates()
         this.states = data
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getCountries() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getCountries(parseInt(this.companyId))
         this.countries = data
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     getReadOnly: function (field) {
