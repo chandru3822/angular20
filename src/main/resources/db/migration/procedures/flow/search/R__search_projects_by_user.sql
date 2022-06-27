@@ -53,7 +53,7 @@ BEGIN
   from flow.user_position up
   where user_id = p_user_id;
   case
-    when p_searchterm is not null then
+    when p_searchterm is not null and p_searchterm != '' then
       RETURN QUERY
       SELECT limited_projects.id,
              limited_projects.project_name,
