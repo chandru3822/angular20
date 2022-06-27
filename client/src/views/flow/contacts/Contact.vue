@@ -321,7 +321,7 @@
         <div v-if="contact && contact.id && !fieldsLoading">
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="albatross-header-3">
-              Contact Details
+              Contact Summary
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
