@@ -4,13 +4,13 @@
       width="500">
     <v-card>
       <v-card-title
-          class="albatross-body-1 lighten-2 pb-1"
+          class="albatross-header-2 lighten-2 pb-1"
           primary-title>
         <slot name="title">
           Delete
         </slot>
       </v-card-title>
-      <v-card-text class="albatross-body-2 pb-4 default-text-color">
+      <v-card-text class="albatross-body-1 pb-4 default-text-color">
         <slot>Are you sure you want to delete?</slot>
       </v-card-text>
       <v-card-actions>
