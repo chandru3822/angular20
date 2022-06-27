@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.update_appointment_data(p_project_process_step_event_id integer, p_project_id integer)
+CREATE OR REPLACE FUNCTION brs.update_appointment_data(p_project_process_step_event_id integer, p_project_id integer,p_start_time timestamp default null)
   RETURNS void AS
 $BODY$
 declare
@@ -41,7 +41,7 @@ BEGIN
       prioritized_closer_appointment_outcome_date     = null
   where project_id = p_project_id;
 
-  select int_value, start_time, id
+  select int_value, coalesce(start_time,p_start_time), id
   into v_first_appointment_id_not_used,v_first_appointment_start_time,v_first_appointment_ppse_id
   from brs.get_earliest_outcome_record_by_type(p_project_process_step_event_id, null, false);
 
@@ -76,7 +76,8 @@ BEGIN
   v_prioritized_closer_appointment_outcome = coalesce(v_pitched_id, v_missed_id, v_not_either_id);
   v_prioritized_closer_appointment_outcome_date = coalesce(v_pitched, v_missed, v_not_either);
 
-
+raise notice '12222222 %',v_first_appointment_start_time;
+  raise notice '55555555 %',v_first_appointment_ppse_id;
   update brs.project_details
   set first_appointment_missed_id                     = v_missed_id,
       first_appointment_missed                        = v_missed,

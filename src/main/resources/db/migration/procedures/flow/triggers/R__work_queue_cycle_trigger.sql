@@ -277,7 +277,6 @@ BEGIN
            (company_event_status_type_id IS NOT NULL) AND
            (process_step_event_work_queue_type_event_status_type_id IS NOT NULL)) do nothing;
   else
-
     for x in select ppse.process_step_event_id,
                     ppse.id,
                     cpst2.id as company_process_status_type_id,
@@ -332,7 +331,6 @@ BEGIN
                           where pswqt2.process_step_id = pps.process_step_id
                             and pswqt2.archived is false)
       loop
-
         update flow.work_queue_cycle
         set date_exited_queue = now(),
             modified_by_id    = new.modified_by_id,
@@ -382,6 +380,6 @@ CREATE TRIGGER project_work_queue_cycle_trg
   after update
   ON flow.project
   FOR EACH ROW
-  when (old.company_project_status_type_id != new.company_project_status_type_id or new.archived is true or
-        old.archived is true and new.archived is false)
+  when ((old.company_project_status_type_id != new.company_project_status_type_id) or (new.archived is true )or
+        (old.archived is true and new.archived is false))
 EXECUTE PROCEDURE flow.project_work_queue_cycle();

@@ -200,6 +200,11 @@ export default {
         header: 'Configurations',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/dataViews',
+        title: 'Data Views',
+        pathMatch: '/settings/dataView',
+        show: this.$store.getters.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')
+      }, {
         path: '/settings/orgTypes',
         title: 'Organization Types',
         show: this.hasSettingsAccess

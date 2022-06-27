@@ -1,0 +1,1543 @@
+delete from brs.project_details_config
+  where id = 5290;
+alter table flow.company
+  add column if not exists schema_name varchar;
+
+update flow.company
+set schema_name = 'brs'
+where id = 3;
+
+CREATE TABLE if not exists flow.data_view
+(
+  id             serial  not null,
+  company_id     integer not null,
+  view_name      character varying(63),
+  display_name   character varying(63),
+  company_process_ids  integer[] not null,
+  date_created   timestamp without time zone DEFAULT now() not null,
+  date_modified  timestamp without time zone DEFAULT now() not null,
+  created_by_id  integer not null,
+  modified_by_id integer,
+  archived       boolean not null            default false,
+  CONSTRAINT data_view_pk primary key (id),
+  CONSTRAINT dv_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dv_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dv_company_id_fk FOREIGN KEY (company_id)
+    REFERENCES flow.company (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create index if not exists dv_company_id_idx
+  on flow.data_view (company_id);
+
+create index if not exists dv_view_name_idx
+  on flow.data_view (view_name);
+
+insert into flow.data_view(company_id, view_name, date_created, created_by_id,display_name,company_process_ids)
+  (select 3, 'project_details', now(), 2350555,'Project Details','{1,18}'
+   where not exists(select id from flow.data_view where view_name = 'project_details'));
+
+create table  if not exists flow.data_view_field_config
+(
+  id              serial  not null,
+  data_view_id    integer not null,
+  default_field_id                 integer,
+  custom_field_group_assignment_id integer,
+  process_step_event_id            integer,
+  process_step_id                  integer,
+  field_to_update                  varchar(100)                              not null,
+  display_name                     varchar(100),
+  update_first_value_only          boolean                     default false not null,
+  update_first_value_only_id       varchar,
+  reset_on_new boolean not null default false,
+  date_created    timestamp without time zone DEFAULT now() not null,
+  date_modified   timestamp without time zone DEFAULT now() not null,
+  created_by_id   integer not null,
+  modified_by_id  integer,
+  archived        boolean not null            default false,
+  CONSTRAINT data_view_field_config_pk primary key (id),
+  CONSTRAINT dvfc_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvfc_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvfc_data_view_id_fk FOREIGN KEY (data_view_id)
+    REFERENCES flow.data_view (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvfc_default_field_id_fk FOREIGN KEY (default_field_id)
+    REFERENCES flow.default_field (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvfc_custom_field_group_assignment_id_fk FOREIGN KEY (custom_field_group_assignment_id)
+    REFERENCES flow.custom_field_group_assignment (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvfc_process_step_event_id_fk FOREIGN KEY (process_step_event_id)
+    REFERENCES flow.process_step_event (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvfc_process_step_id_fk FOREIGN KEY (process_step_id)
+    REFERENCES flow.process_step (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create index if not exists dvfc_data_view_id_idx
+  on flow.data_view_field_config (data_view_id);
+
+create index if not exists dvfc_parent_id_idx
+  on flow.data_view_field_config (default_field_id);
+
+
+create index if not exists dvfc_custom_field_group_assignment_id_idx
+  on flow.data_view_field_config (custom_field_group_assignment_id);
+
+create index if not exists dvfc_process_step_event_id_idx
+  on flow.data_view_field_config (process_step_event_id);
+
+
+CREATE TABLE if not exists flow.data_view_child_field_config
+(
+  id  serial,
+  data_view_field_config_id integer,
+  unique_behavior_type_id integer,
+  field_to_update character varying(100),
+  data_type_id integer,
+  date_created                     timestamp without time zone DEFAULT now() not null,
+  date_modified                    timestamp without time zone DEFAULT now() not null,
+  created_by_id                    integer                                   not null,
+  modified_by_id                   integer,
+  archived                         boolean  not null  default false,
+  CONSTRAINT dvcfc_field_config_id_fk FOREIGN KEY (data_view_field_config_id)
+    REFERENCES flow.data_view_field_config (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvcfc_unique_behavour_type_id_fk FOREIGN KEY (unique_behavior_type_id)
+    REFERENCES flow.unique_behavior_type (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvcfc_data_type_id_fk FOREIGN KEY (data_type_id)
+    REFERENCES flow.data_type (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvcfc_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvcfc_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create index if not exists dvcfc_data_view_field_config_id_idx
+  on flow.data_view_child_field_config (data_view_field_config_id);
+
+create index if not exists dvcfc_unique_behavour_type_id_idx
+  on flow.data_view_child_field_config (unique_behavior_type_id);
+
+
+alter table flow.custom_field
+  add column if not exists custom_field_sql_column varchar;
+
+update flow.custom_field set custom_field_sql_column = 'proposal_nbr' where id in (622);
+
+alter table flow.object_type
+  add column if not exists reference_table varchar;
+
+
+alter table flow.default_field
+  add column if not exists watched_by_trigger boolean not null default false;
+
+alter table flow.default_field
+  add column if not exists allow_child_fields boolean not null default false;
+
+alter table flow.unique_behavior_type add column if not exists description text;
+
+alter table flow.unique_behavior_type
+  add column if not exists data_view boolean not null default false;
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+(select 'EVENT_RESOURCE_TRIGGER','Returns an Org Name or User Name for the Resource of an Event',now(),2350555,true
+  where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'STATE_FIELD_TRIGGER','Returns the name of the State',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'STATE_FIELD_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'COUNTRY_FIELD_TRIGGER','Returns the name of the Country',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'COUNTRY_FIELD_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'STATE_ABBREV_FIELD_TRIGGER','Returns the abbreviation for a State',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'STATE_ABBREV_FIELD_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_POSITION_NAME_BY_ID_TRIGGER','Returns the first and last name for a user position record',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_POSITION_ID_TRIGGER','Returns the user ID for a user position record',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_ID_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'CONTACT_TYPE_TRIGGER','Returns the contact type record for a contact',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'CONTACT_TYPE_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROJECT_STATUS_TRIGGER','Returns the company project status for a project',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROJECT_STATUS_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROCESS_FIELD_TRIGGER','Returns the process name associated with the project',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROCESS_FIELD_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_NAME_BY_ID_TRIGGER','Returns the first name and last name for a user',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_NAME_BY_ID_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'USER_ID_TRIGGER','Return the ID for a user based on a user',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_ID_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'DEFAULT_CFGA_TRIGGER','Returns default value based on the custom field ID',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'DEFAULT_CFGA_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'CONTACT_NAME_BY_ID_TRIGGER','Returns first name and last name for a Contact',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'CONTACT_NAME_BY_ID_TRIGGER'));
+
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROCESS_STEP_STATUS_TRIGGER','Returns process step status for a given project process step',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROCESS_STEP_STATUS_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'PROCESS_STEP_NAME_TRIGGER','Returns process step name for a given project process step',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'PROCESS_STEP_NAME_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'EVENT_STATUS_TRIGGER','Returns event status for a given event',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_STATUS_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'EVENT_PROCESS_STEP_TRIGGER','Returns process step name for a given event',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_PROCESS_STEP_TRIGGER'));
+
+insert into flow.unique_behavior_type(unique_behavior_type,description, date_created, created_by_id,data_view)
+  (select 'EVENT_TRIGGER','Returns event name for a given event',now(),2350555,true
+   where not exists (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_TRIGGER'));
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                              watched_by_trigger)
+(select 'Start Time','start_time','startTime',2,(select id from flow.object_type where object_code = 'EVENT'),now(),2350555,
+        true
+  where not exists (select id from flow.default_field where column_name = 'start_time'));
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+  (select 'End Time','end_time','endTime',2,(select id from flow.object_type where object_code = 'EVENT'),now(),2350555,
+          true
+   where not exists (select id from flow.default_field where column_name = 'end_time'));
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger,allow_child_fields)
+  (select 'Resource ID','resource_id',
+  'resourceID',6,
+          (select id from flow.object_type where object_code = 'EVENT'),
+          now(),2350555,
+          true,true
+   where not exists (select id from flow.default_field where column_name = 'resource_id'));
+
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+(select (select id from flow.data_view where view_name = 'project_details'),
+        (select id from flow.default_field where column_name = 'start_time'),
+        null,
+        pdec.process_step_event_id,
+        pdec.field_to_update,
+        pdec.display_name,
+        pdec.update_first_value_only,
+        pdec.update_first_value_only_id,
+       now(),now(),2350555,false
+        from brs.project_detail_events_config pdec
+ where field_to_use = 'start_time');
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+(select (select dvfc.id from flow.data_view_field_config dvfc
+                   inner join flow.default_field df on dvfc.default_field_id = df.id and df.column_name = 'start_time'
+                    where field_to_update = pdec.field_to_update and
+                          process_step_event_id = pdec.process_step_event_id),
+        (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER'),--TODO need to change this when you figure out events
+        pdec.second_field_to_update,
+        1,
+        now(),now(),2350555,false
+ from brs.project_detail_events_config pdec
+ where field_to_use = 'start_time' and second_field_to_update is not null);
+
+
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'end_time'),
+          null,
+          pdec.process_step_event_id,
+          pdec.field_to_update,
+          pdec.display_name,
+          pdec.update_first_value_only,
+          pdec.update_first_value_only_id,
+          now(),now(),2350555,false
+   from brs.project_detail_events_config pdec
+   where field_to_use = 'end_time');
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id from flow.data_view_field_config dvfc
+                                 inner join flow.default_field df on dvfc.default_field_id = df.id and df.column_name = 'end_time'
+           where field_to_update = pdec.field_to_update and
+               process_step_event_id = pdec.process_step_event_id),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER'),--TODO need to change this when you figure out events
+          pdec.second_field_to_update,
+          1,
+          now(),now(),2350555,false
+   from brs.project_detail_events_config pdec
+   where field_to_use = 'end_time' and second_field_to_update is not null);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'resource_id'),
+          null,
+          pdec.process_step_event_id,
+          pdec.field_to_update,
+          pdec.display_name,
+          pdec.update_first_value_only,
+          pdec.update_first_value_only_id,
+          now(),now(),2350555,false
+   from brs.project_detail_events_config pdec
+   where field_to_use = 'resource_id');
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id from flow.data_view_field_config dvfc
+                                 inner join flow.default_field df on dvfc.default_field_id = df.id and df.column_name = 'resource_id'
+           where field_to_update = pdec.field_to_update and
+               process_step_event_id = pdec.process_step_event_id),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER'),
+          pdec.second_field_to_update,
+          5,
+          now(),now(),2350555,false
+   from brs.project_detail_events_config pdec
+   where field_to_use = 'resource_id' and second_field_to_update is not null);
+
+
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          null,
+          pdc.custom_field_group_assignment_id,
+          null,
+          pdc.field_to_update,
+          pdc.display_name,
+          pdc.update_first_value_only,
+          pdc.update_first_value_only_id,
+          now(),now(),2350555,false
+   from brs.project_details_config pdc
+   where custom_field_group_assignment_id >0
+     and company_id = 3 and pdc.field_to_update not in ( 'closer_user_position_id','cancelled_date'));
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = pdc.field_to_update and
+               custom_field_group_assignment_id = pdc.custom_field_group_assignment_id),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'DEFAULT_CFGA_TRIGGER'),
+          pdc.second_field_to_update,
+          5,
+          now(),now(),2350555,false
+   from brs.project_details_config pdc
+   where custom_field_group_assignment_id >0
+     and company_id = 3 and pdc.field_to_update not in ( 'closer_user_position_id','cancelled_date')
+    and pdc.second_field_to_update is not null);
+
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Email','email','contact_email',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Phone','phone','contact_phone',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Mobile Phone','mobile','contact_mobile_phone',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+-- insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+--                                object_type_id, date_created, created_by_id,
+--                                watched_by_trigger, unique_behavior_type_id)
+-- values('Contact Name','contact_name','contactName',5,(select id from flow.object_type where object_code = 'CONTACT'),
+--        now(),2350555,true,null);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Archived','archived','projectArchived',3,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field df where df.column_name = 'archived'
+                                                  and df.field_name = 'Project Archived'),
+          null,
+          null,
+          'archived',
+          'Archived',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Date Created','date_created','dateCreated',2,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field df where df.column_name = 'date_created'
+                                                  and df.field_name = 'Project Date Created'),
+          null,
+          null,
+          'project_created_date',
+          'Project Date Created',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Street1','street1','project_street1',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project City','city','project_city',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Time Zone','time_zone','project_time_zone',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Project State ID','company_state_id','project_company_state_id',6,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Postal Code','postal_code','project_postal_code',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+-- insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+--                                object_type_id, date_created, created_by_id,
+--                                watched_by_trigger)
+-- values('Project ID','id','projectId',6,(select id from flow.object_type where object_code = 'PROJECT'),
+--        now(),2350555,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field df where df.property_name = pdc.field_to_update),
+          null,
+          null,
+          pdc.field_to_update,
+          pdc.display_name,
+          pdc.update_first_value_only,
+          pdc.update_first_value_only_id,
+          now(),now(),2350555,false
+   from brs.project_details_config pdc
+   where pdc.company_id = 3 and pdc.custom_field_group_assignment_id < 1 and pdc.field_to_update not in ('project_state_abbreviation','project_id','contact_name'));
+
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field df where df.column_name = 'company_state_id'),
+          null,
+          null,
+          'project_state_id',
+          pdc.display_name,
+         pdc.update_first_value_only,
+          pdc.update_first_value_only_id,
+          now(),now(),2350555,false
+   from brs.project_details_config pdc
+   where pdc.company_id = 3 and pdc.custom_field_group_assignment_id < 1 and pdc.field_to_update in ('project_state_abbreviation'));
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'project_state_id'),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'STATE_ABBREV_FIELD_TRIGGER'),
+          'project_state_abbreviation',
+          5,
+          now(),now(),2350555,false
+   from brs.project_details_config pdc
+   where custom_field_group_assignment_id <1
+     and company_id = 3 and pdc.field_to_update in ( 'project_state_abbreviation'));
+
+
+--TODO update the property_name column on flow.default_field for all the fields above.  Make them camel case;
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Contact Type ID','contact_type_id','contactTypeId',6,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact First Name','first_name','contactFirstName',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field df where df.column_name = 'first_name'
+                          and df.field_name = 'Contact First Name'),
+          null,
+          null,
+          'contact_first_name',
+          'Contact First Name',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Last Name','last_name','contactLastName',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field df where df.column_name = 'last_name'
+            and df.field_name = 'Contact Last Name'),
+          null,
+          null,
+          'contact_last_name',
+          'Contact Last Name',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Street 1','street1','contactStreet1',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Street 2','street2','contactStreet2',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact City','city','contactCity',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Postal Code','postal_code','contactPostalCode',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Prospect Status','prospect_status','contactProspectStatus',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Mailing Street1','mailing_street1','contactMailingStreet1',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Mailing Street2','mailing_street2','contactMailingStreet2',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Mailing city','mailing_city','contactMailingCity',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Mailing Postal Code','mailing_postal_code','contactMailingPostalCode',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Title','title','contactTitle',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Owner User Position ID','owner_user_position_id','ownerUserPositionID',6,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true,true);
+
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'owner_user_position_id'),
+          null,
+          null,
+          'setter_user_position_id',
+          'Setter Name',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'setter_user_position_id'),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER'),
+          'setter_name',
+          5,
+          now(),now(),2350555,false);
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'setter_user_position_id'),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_ID_TRIGGER'),
+          'setter_user_id',
+          6,
+          now(),now(),2350555,false);
+
+
+alter table brs.project_details add column  if not exists setter_name text;
+alter table brs.project_details add column  if not exists contact_first_name text;
+alter table brs.project_details add column  if not exists contact_last_name text;
+create index if not exists pd_setter_name_idx
+  on brs.project_details (setter_name);
+create index if not exists pd_contact_first_name_idx
+  on brs.project_details (contact_first_name);
+create index if not exists pd_contact_last_name_idx
+  on brs.project_details (contact_last_name);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Contact Company State ID','company_state_id','contactCompanyStateId',6,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Contact Mailing Company State ID','mailing_company_state_id','contactMailingCompanyStateId',6,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Contact Company Country ID','company_country_id','contactCompanyCountryId',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true,true);
+
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Longitude','longitude','contactLongitude',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact Latitude','latitude','contactLatitude',5,(select id from flow.object_type where object_code = 'CONTACT'),
+       now(),2350555,true);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Contact ID','contact_id','contactId',6,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'contact_id'),
+          null,
+          null,
+          'contact_id',
+          'Contact Name',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'contact_id'),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'CONTACT_NAME_BY_ID_TRIGGER'),
+          'contact_name',
+          5,
+          now(),now(),2350555,false);
+
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Process Step Event ID','process_step_event_id','processStepEventID',6,(select id from flow.object_type where object_code = 'EVENT'),
+       now(),2350555,true,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'resource_id'),
+          null,
+          14,
+          'closer_user_position_id',
+          'Closer Name',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'closer_user_position_id' and dvfc.process_step_event_id = 14),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER'),
+          'closer_name',
+          5,
+          now(),now(),2350555,false);
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'closer_user_position_id' and dvfc.process_step_event_id = 14),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_ID_TRIGGER'),
+          'closer_user_id',
+          6,
+          now(),now(),2350555,false);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Company Event Status Type ID','company_event_status_type_id','companyEventStatusTypeID',6,(select id from flow.object_type where object_code = 'EVENT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Cancelled Date','cancelled_date','cancelledDate',2,(select id from flow.object_type where object_code = 'EVENT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Completed Date','completed_date','completedDate',2,(select id from flow.object_type where object_code = 'EVENT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Scheduled Date','scheduled_date','scheduledDate',2,(select id from flow.object_type where object_code = 'EVENT'),
+       now(),2350555,true,true);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Project Creator ID','created_by_id','projectCreatedById',6,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'created_by_id'),
+          null,
+          null,
+          'project_created_by_id',
+          'Project Creator',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'project_created_by_id'),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_NAME_BY_ID_TRIGGER'),
+          'project_creator',
+          5,
+          now(),now(),2350555,false);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Company Process ID','company_process_id','companyProcessId',6,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Name','project_name','projectName',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Company Project Status Type ID','company_project_status_type_id','companyProjectStatusTypeId',6,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true,true);
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'company_project_status_type_id'),
+          null,
+          null,
+          'company_project_status_type_id',
+          'Project Status',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'company_project_status_type_id'),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'PROJECT_STATUS_TRIGGER'),
+          'company_project_status_type',
+          5,
+          now(),now(),2350555,false);
+
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('User Position ID','user_position_id','userPositionId',6,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true,true);
+
+
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'user_position_id'),
+          null,
+          null,
+          'closer_user_position_id',
+          'Closer Name',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'closer_user_position_id'
+           and dvfc.process_step_event_id is null),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER'),
+          'closer_name',
+          5,
+          now(),now(),2350555,false);
+
+insert into flow.data_view_child_field_config(data_view_field_config_id, unique_behavior_type_id,field_to_update,data_type_id, date_created, date_modified, created_by_id,archived)
+  (select (select dvfc.id
+           from flow.data_view_field_config dvfc
+           where field_to_update = 'closer_user_position_id'
+           and dvfc.process_step_event_id is null),
+          (select id from flow.unique_behavior_type where unique_behavior_type = 'USER_POSITION_ID_TRIGGER'),
+          'closer_user_id',
+          6,
+          now(),now(),2350555,false);
+
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Street 2','street2','projectStreet2',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+-- insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+--                                object_type_id, date_created, created_by_id,
+--                                watched_by_trigger, unique_behavior_type_id)
+-- values('Project Company State ID','project_company_state_id','projectCompanyStateID',6,(select id from flow.object_type where object_code = 'PROJECT'),
+--        now(),2350555,true,(select id from flow.unique_behavior_type where unique_behavior_type = 'STATE_ABBREV_FIELD_TRIGGER'));
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger, allow_child_fields)
+values('Project Company Country ID','company_country_id','projectCompanyCountryId',6,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Longitude','longitude','projectLongitude',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Project Latitude','latitude','projectLatitude',5,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Cancelled Date','cancelled_date','cancelledDate',1,(select id from flow.object_type where object_code = 'PROJECT'),
+       now(),2350555,true);
+
+--TODO this is in the trigger but should it come from the concrete project table.
+--todo it is currently getting set in the project_details_function_trigger
+insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id,
+                                        process_step_event_id, field_to_update, display_name,
+                                        update_first_value_only, update_first_value_only_id,
+                                        date_created, date_modified, created_by_id,
+                                        archived)
+  (select (select id from flow.data_view where view_name = 'project_details'),
+          (select id from flow.default_field where column_name = 'cancelled_date' and
+                                                   object_type_id = (select id from flow.object_type where object_code = 'PROJECT')),
+          null,
+          null,
+          'cancelled_date',
+          'Cancelled',
+          false,
+          null,
+          now(),now(),2350555,false);
+
+--drop table if exists brs.project_details_config;
+
+
+CREATE OR REPLACE function flow.add_column_to_data_view(p_data_view_field_config_id integer,
+                                                        p_data_view_child_field_config_id integer)
+  returns void
+AS
+$BODY$
+declare
+  v_field_to_update            varchar;
+  v_data_type                  varchar;
+  v_update_first_value_only    boolean;
+  v_data_type_id               integer;
+  v_schema_name                varchar;
+  v_view_name                  varchar;
+  v_update_first_value_only_id varchar;
+  v_data_view_field_config_id  integer;
+  x                            record;
+BEGIN
+
+  if p_data_view_field_config_id is not null and p_data_view_child_field_config_id is null then
+    select dvfc.id,
+           dvfc.field_to_update,
+           coalesce(dt.data_type, dt2.data_type) as data_type,
+           dvfc.update_first_value_only,
+           coalesce(dt.id, dt2.id)               as data_type_id,
+           c.schema_name,
+           dv.view_name,
+           dvfc.update_first_value_only_id
+    into v_data_view_field_config_id,v_field_to_update,v_data_type,v_update_first_value_only,v_data_type_id,
+      v_schema_name,v_view_name,v_update_first_value_only_id
+    from flow.data_view_field_config dvfc
+           inner join flow.data_view dv on dvfc.data_view_id = dv.id
+           inner join flow.company c on dv.company_id = c.id
+           left join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+           left join flow.custom_field cf on cfga.custom_field_id = cf.id
+           left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+           left join flow.data_type dt2 on cdt.data_type_id = dt2.id
+           left join flow.default_field df on dvfc.default_field_id = df.id
+           left join flow.data_type dt on df.data_type_id = dt.id
+    where dvfc.id = p_data_view_field_config_id;
+
+    if v_data_type_id = 7 then
+      v_data_type = 'integer[]';
+    elsif v_data_type_id in (8, 9) then
+      v_data_type = 'integer';
+    end if;
+    --     v_sql = $$ALTER TABLE $$||v_schema_name||$$.$$||v_view_name||$$ ADD COLUMN if not exists $$ || v_field_to_update || $$ $$ ||v_data_type||$$;$$;
+--     raise notice 'what is this %',v_sql;
+    EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
+            v_field_to_update || $$ $$ || v_data_type || $$;$$;
+    EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
+
+    if v_update_first_value_only is true then
+      v_data_type = 'integer';
+      EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
+              v_field_to_update || $$_cfv_id $$ || v_data_type || $$;$$;
+      EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||
+              $$_cfv_id);$$;
+
+    end if;
+
+  else
+    select dvcfc.field_to_update, dt2.data_type,
+           c.schema_name,dv.view_name
+    into v_field_to_update,v_data_type,
+      v_schema_name,v_view_name
+    from flow.data_view_child_field_config dvcfc
+           inner join flow.data_type dt2 on dvcfc.data_type_id = dt2.id
+           inner join flow.data_view_field_config dvfc2 on dvcfc.data_view_field_config_id = dvfc2.id
+           inner join flow.data_view dv on dvfc2.data_view_id = dv.id
+           inner join flow.company c on c.id = dv.company_id
+    where dvcfc.id = p_data_view_child_field_config_id;
+
+    EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
+            v_field_to_update || $$ $$ || v_data_type || $$;$$;
+    EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
+  end if;
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+--TODO create migration strategy for new columns being added to project details
+alter table brs.project_details add column if not exists project_created_by_id integer;
+create index if not exists pd_project_created_by_id_idx
+  on brs.project_details (project_created_by_id);
+alter table brs.project_details add column if not exists date_modified timestamp;
+update brs.project_details set date_modified = now();
+alter table brs.project_details alter column date_modified set not null;
+create index if not exists pd_date_modified_idx
+  on brs.project_details (date_modified);
+
+drop trigger if exists project_project_details_for_contact_trg on flow.contact;
+drop function  if exists  flow.project_details_from_contact();
+
+
+CREATE OR REPLACE function flow.initialize_data_view_table(p_company_id integer,p_table_name character varying)
+  returns void
+AS $BODY$
+declare
+  v_schema_name character varying;
+BEGIN
+
+  select schema_name
+    into v_schema_name
+  from flow.company
+    where id = p_company_id;
+
+  execute $$Create table if NOT EXISTS $$||v_schema_name||$$.$$||p_table_name||$$ (id serial not null primary key,
+                                                                      project_id integer not null,
+                                                                      contact_id integer,
+                                                                      date_modified timestamp without time zone DEFAULT now() not null );$$;
+
+  execute $$insert into $$||v_schema_name||$$.$$||p_table_name||$$(project_id, contact_id, date_modified)
+(select p.id,p.contact_id,now()
+ from flow.project p); $$;
+
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+drop trigger if exists update_project_details_trg on flow.project_process_step_custom_field_value;
+drop FUNCTION if exists flow.update_project_details_process_steps();
+
+drop trigger if exists update_project_details_from_events_trg on flow.project_process_step_event_custom_field_value;
+drop FUNCTION if exists flow.update_project_details_process_steps_from_events();
+
+drop trigger if exists update_events_trg on flow.project_process_step_event;
+drop FUNCTION if exists flow.update_events();
+
+drop trigger if exists update_project_details_project_trg on flow.project_custom_field_value;
+drop function if exists flow.update_project_details_project();
+
+drop trigger if exists update_contact_details_project_details_trg on flow.contact_custom_field_value;
+drop function if exists flow.update_contact_details_project_details();
+
+update flow.data_view_child_field_config
+set data_type_id = 6
+where data_view_field_config_id in (
+  select id
+  from flow.data_view_field_config
+  where field_to_update in ('closer_user_position_id',
+                            'proposal_number_id',
+                            'proposal_number_id',
+                            'proposal_number_id',
+                            'proposal_number_id',
+                            'proposal_number_id',
+                            'proposal_number_id_booking',
+                            'proposal_number_id_booking',
+                            'proposal_number_id_closer_appointment',
+                            'proposal_number_id_final_design',
+                            'proposal_number_id_final_design')
+  and data_type_id = 1);
+
+update flow.data_view_child_field_config
+set data_type_id = 1
+where data_view_field_config_id in (
+  select id from flow.data_view_field_config
+  where field_to_update in ('site_survey_start_time'));
+
+
+delete from brs.project_details_config where company_id != 3;
+
+with my_data as (
+  select distinct pdec.field_to_update
+  from brs.project_detail_events_config pdec)
+delete from brs.project_details_config
+where id in (
+  select pdc.id
+  from brs.project_details_config pdc
+         inner join my_data md on md.field_to_update = pdc.field_to_update
+    and company_id = 3);
+
+
+with my_data as (
+  select pdc.custom_field_group_assignment_id
+  from brs.project_details_config pdc
+  where company_id = 3
+  except
+  select pdc.custom_field_group_assignment_id
+  from brs.project_details_config pdc
+         inner join flow.custom_field_group_assignment cfga on pdc.custom_field_group_assignment_id = cfga.id and cfga.archived is false
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
+         inner join flow.process_step ps on cfg.process_step_id = ps.id and ps.archived is false
+         inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
+  where pdc.company_id = 3)
+delete from brs.project_details_config where id in (
+  select pdc2.id--,pdc2.field_to_update,cfg.group_name,ps.process_step_name,cf.field_name,cfga.id
+  from brs.project_details_config pdc2
+         inner join flow.custom_field_group_assignment cfga on pdc2.custom_field_group_assignment_id = cfga.id
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join flow.process_step ps on cfg.process_step_id = ps.id
+         inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+         inner join my_data md on md.custom_field_group_assignment_id = pdc2.custom_field_group_assignment_id);
+
+
+alter table flow.default_field drop column if exists allow_child_fields;
+
+update flow.unique_behavior_type
+set data_view = true
+where id > 3;
+
+drop index if exists flow.dvfc_field_to_update_cfg_uidx;
+drop index if exists flow.dvfc_field_to_update_cfg1_uidx;
+drop index if exists flow.dvfc_field_to_update_ps_uidx;
+drop index if exists flow.dvfc_field_to_update_df_uidx;
+drop index if exists flow.dvfc_update_first_value_only_id_uidx;
+drop index if exists flow.dvfc_process_step_id_df_uidx;
+drop index if exists flow.dvfc_reset_on_new_uidx;
+drop index if exists flow.dvfc_update_first_only_uidx;
+
+drop index if exists flow.dvfc_1_uidx;
+drop index if exists flow.dvfc_2_uidx;
+
+CREATE UNIQUE INDEX dvfc_field_to_update_cfg_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id,process_step_event_id);
+CREATE UNIQUE INDEX dvfc_field_to_update_cfg1_uidx ON flow.data_view_field_config (data_view_id,field_to_update,custom_field_group_assignment_id) where process_step_event_id is null and process_step_id is null and default_field_id is null;
+CREATE UNIQUE INDEX dvfc_field_to_update_ps_uidx ON flow.data_view_field_config (data_view_id,field_to_update,process_step_event_id,default_field_id) where process_step_id is null and custom_field_group_assignment_id is null;
+CREATE UNIQUE INDEX dvfc_field_to_update_df_uidx ON flow.data_view_field_config (data_view_id,field_to_update,default_field_id)where process_step_event_id is null and custom_field_group_assignment_id is null and process_step_id is null;
+CREATE UNIQUE INDEX dvfc_process_step_id_df_uidx ON flow.data_view_field_config (data_view_id,default_field_id,process_step_id)where process_step_event_id is null and custom_field_group_assignment_id is null;
+
+CREATE UNIQUE INDEX dvfc_reset_on_new_uidx ON flow.data_view_field_config (data_view_id,reset_on_new,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+CREATE UNIQUE INDEX dvfc_update_first_only_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only,process_step_event_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+
+CREATE UNIQUE INDEX dvfc_1_uidx ON flow.data_view_field_config (data_view_id,reset_on_new,process_step_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+CREATE UNIQUE INDEX dvfc_2_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only,process_step_id,custom_field_group_assignment_id) where update_first_value_only is true and reset_on_new is true;
+
+
+
+drop index if exists flow.dv_view_name_uidx;
+CREATE UNIQUE INDEX dv_view_name_uidx ON flow.data_view (company_id,view_name);
+drop index if exists flow.dv_display_name_uidx;
+CREATE UNIQUE INDEX dv_display_name_uidx ON flow.data_view (company_id,display_name);
+
+
+drop index if exists flow.dvcfc_field_to_update_uidx;
+CREATE UNIQUE INDEX dvcfc_field_to_update_uidx ON flow.data_view_child_field_config (data_view_field_config_id,field_to_update);
+
+
+
+
+create table  if not exists flow.data_view_maintenance
+(
+  id              serial  not null,
+  data_view_field_config_id    integer,
+  company_process_ids     integer[],
+  data_view_id    integer,
+  company_process_ids_added boolean not null default false,
+  processed                 boolean not null default false,
+  date_created    timestamp without time zone DEFAULT now() not null,
+  CONSTRAINT data_view_maintenance_pk primary key (id),
+  CONSTRAINT dvm_data_view_field_config_id_fk FOREIGN KEY (data_view_field_config_id)
+    REFERENCES flow.data_view_field_config (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT dvm_data_view_id_id_fk FOREIGN KEY (data_view_id)
+    REFERENCES flow.data_view (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+create index if not exists dvfcd_data_view_field_config_id_idx
+  on flow.data_view_maintenance (data_view_field_config_id);
+
+drop index if exists flow.dvm_data_view_field_config_id_uidx;
+CREATE UNIQUE INDEX dvm_data_view_field_config_id_uidx ON flow.data_view_maintenance (data_view_field_config_id,company_process_ids_added) where data_view_field_config_id is not null and processed = false;
+
+
+alter table flow.data_view_child_field_config add column if not exists display_name character varying(63);
+
+update flow.data_view_field_config
+set update_first_value_only_id = null,
+    update_first_value_only = false
+where update_first_value_only_id in ('permit_pack_submittal_end_time_ppscfv_id','site_survey_verified_date_ppscfv_id');
+
+update flow.data_view_field_config set update_first_value_only_id = null,update_first_value_only = false
+where field_to_update in ('permit_pack_submittal_resource') and process_step_event_id in (3,60);
+
+
+alter table brs.project_details add column  if not exists permit_pack_submittal_end_time_cfv_id integer;
+create index if not exists pd_permit_pack_submittal_end_time_cfv_id_idx
+  on brs.project_details (permit_pack_submittal_end_time_cfv_id);
+
+alter table brs.project_details add column  if not exists permit_pack_submittal_resource_cfv_id integer;
+create index if not exists pd_permit_pack_submittal_resource_cfv_id_idx
+  on brs.project_details (permit_pack_submittal_resource_cfv_id);
+
+ALTER TABLE brs.project_details
+  RENAME COLUMN permit_pack_submittal_ppse_id TO permit_pack_submittal_start_time_cfv_id;
+
+update flow.data_view_field_config
+set update_first_value_only_id = 'permit_pack_submittal_start_time_cfv_id',
+    update_first_value_only = true
+where field_to_update = 'permit_pack_submittal_start_time';
+
+update flow.data_view_field_config
+set update_first_value_only_id = 'permit_pack_submittal_end_time_cfv_id',
+    update_first_value_only = true
+where field_to_update = 'permit_pack_submittal_end_time';
+
+update flow.data_view_field_config
+set update_first_value_only_id = 'permit_pack_submittal_resource_cfv_id',
+    update_first_value_only = true
+where field_to_update = 'permit_pack_submittal_resource';
+
+with update_data as (
+  select project_id,permit_pack_submittal_start_time_cfv_id
+  from brs.project_details
+  where permit_pack_submittal_start_time_cfv_id is not null
+)
+update brs.project_details pd1
+set permit_pack_submittal_end_time_cfv_id = ud.permit_pack_submittal_start_time_cfv_id,
+    permit_pack_submittal_resource_cfv_id =  ud.permit_pack_submittal_start_time_cfv_id
+from update_data ud
+where ud.project_id = pd1.project_id;
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step','process_step_id','processStepID',6,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step User Position','user_position_id','userPositionID',6,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Company Process Step Status','company_process_step_status_type_id','companyProcessStepStatusTyeId',6,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step Complete Date','process_step_complete_date','processStepCompleteDate',2,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+
+insert into flow.default_field(field_name, column_name, property_name, data_type_id,
+                               object_type_id, date_created, created_by_id,
+                               watched_by_trigger)
+values('Process Step Cancelled Date','cancelled_date','cancelledDAte',2,(select id from flow.object_type where object_code = 'PROCESS_STEP'),
+       now(),2350555,true);
+
+
+drop trigger if exists pps_update_project_details_trg on flow.project_process_step;
+drop FUNCTION flow.pps_update_project_details();
+
+update flow.custom_field set custom_field_sql_column = 'name'
+where id =392;
+
+INSERT INTO flow.unique_behavior_type (unique_behavior_type, date_created, date_modified, created_by_id, modified_by_id, archived, description, data_view) VALUES
+  ('CONVERT_TIMESTAMP_TO_DATE_TRIGGER', now(), now(), 2350555, 2350555, false, null, true);
+update flow.data_view_child_field_config set unique_behavior_type_id = (select id from flow.unique_behavior_type where unique_behavior_type = 'CONVERT_TIMESTAMP_TO_DATE_TRIGGER')
+where field_to_update = 'site_survey_date';
+
+
+
+INSERT INTO flow.data_view_field_config (data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, field_to_update, display_name, update_first_value_only, update_first_value_only_id, reset_on_new, date_created, date_modified, created_by_id, modified_by_id, archived, process_step_id) VALUES
+(1, 61, null, null, 'complete_date_booking', 'Booking Complete Date', true, 'complete_date_booking_cfv_id ', false, '2022-05-20 14:37:57.003571', '2022-05-20 14:37:57.003571', 2417164, null, false, 4);
+
+alter table brs.project_details add column if not exists complete_date_booking_cfv_id integer;
+create index if not exists pd_complete_date_booking_cfv_id_idx
+on brs.project_details (complete_date_booking_cfv_id);
+
+INSERT INTO flow.data_view_field_config (data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, field_to_update, display_name, update_first_value_only, update_first_value_only_id, reset_on_new, date_created, date_modified, created_by_id, modified_by_id, archived, process_step_id) VALUES
+  (1, 61, null, null, 'complete_date_final_design_completion', 'Final Design Complete Date', true, 'complete_date_final_design_completion_cfv_id ', false, '2022-05-20 14:37:57.003571', '2022-05-20 14:37:57.003571', 2417164, null, false, 175);
+
+alter table brs.project_details add column if not exists complete_date_final_design_completion_cfv_id integer;
+create index if not exists pd_complete_date_final_design_completion_cfv_id_idx
+  on brs.project_details (complete_date_final_design_completion_cfv_id);
+CREATE UNIQUE INDEX dvfc_update_first_value_only_id_uidx ON flow.data_view_field_config (data_view_id,update_first_value_only_id,process_step_event_id) where custom_field_group_assignment_id is null and process_step_event_id is not null and process_step_id is null;
+
+
+with update_data as (
+  select dvfc.id,pse.id as process_step_event_id
+  from flow.data_view_field_config dvfc
+         inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id and cfga.archived is false
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
+         inner join flow.process_step_event pse on pse.event_id = cfg.event_id and pse.archived is false
+         inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
+  where data_view_id = 1 and cfg.event_id is not null
+    and dvfc.custom_field_group_assignment_id not in (1006,1050,22694))
+update flow.data_view_field_config dvfc2
+set process_step_event_id = ud.process_step_event_id
+from update_data ud
+where ud.id = dvfc2.id;
+
+delete from flow.data_view_child_field_config where data_view_field_config_id in (
+  select id from flow.data_view_field_config where custom_field_group_assignment_id = 1050
+);
+delete from flow.data_view_field_config where custom_field_group_assignment_id = 1050;
+
+update flow.data_view_field_config
+set process_step_event_id = 4
+where field_to_update = 'resurvey_brs_no_show'
+  and custom_field_group_assignment_id = 1006;
+
+update flow.data_view_field_config
+set process_step_event_id = 79
+where field_to_update = 'site_survey_brs_no_show'
+  and custom_field_group_assignment_id = 1006;
+
+update flow.data_view_field_config
+set process_step_event_id = 79
+where field_to_update = 'site_survey_verified_date'
+  and custom_field_group_assignment_id = 22694;
+
+
+delete from flow.data_view_field_config
+where custom_field_group_assignment_id = 202
+  and field_to_update = 'Energized_date';
+
+
+with update_data as (
+  select dvfc.id,ps.id as process_step_id
+  from flow.data_view_field_config dvfc
+         inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id and cfga.archived is false
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false and cfg.event_id is null
+         inner join flow.process_step ps on cfg.process_step_id = ps.id)
+update flow.data_view_field_config dvfc2
+set process_step_id = ud.process_step_id
+from update_data ud
+where ud.id = dvfc2.id;
+
+delete from flow.data_view_field_config
+where id in (
+  select dvfc.id
+  from flow.data_view_field_config dvfc
+         inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+         inner join flow.process_step ps on cfg.process_step_id = ps.id
+  where dvfc.custom_field_group_assignment_id is not null and
+    (cfga.archived is true or cfg.archived is true or cf.archived is true or ps.archived is true));
+
+
+insert into flow.feature(feature_name, feature_code, feature_path)
+select 'Data View', 'DATA_VIEW', null
+where not exists( select id from flow.feature where feature_code = 'DATA_VIEW');
+;
+
+insert into flow.company_feature(feature_name, company_id, feature_id, home_page)
+select 'Data View', 3, (select id from flow.feature where feature_code = 'DATA_VIEW'), false
+where not exists( select id from flow.company_feature where feature_name = 'Data View' and company_id = 3);
+
+
+drop table if exists flow.trigger_error;
+
+create table if not exists flow.trigger_error
+(
+  id                                   serial
+    constraint trigger_error_pk
+      primary key,
+  contact_id integer,
+  contact_custom_field_value_id integer,
+  project_id integer,
+  project_custom_field_value_id integer,
+  project_process_step_id integer,
+  project_process_step_custom_value_id integer,
+  project_process_step_event_id integer,
+  project_process_step_event_custom_field_value_id integer,
+  error                                text
+);
+
+
+alter table brs.project_details add column  if not exists smart_thermostat_quantity integer;
+
+create index if not exists pd_smart_thermostat_quantity_idx
+  on brs.project_details (smart_thermostat_quantity);
+
+
+alter table flow.data_view_child_field_config drop column if exists data_type_id;
+alter table flow.unique_behavior_type
+  add column if not exists return_data_type_id integer references flow.data_type(id);
+
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_RESOURCE_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'STATE_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'COUNTRY_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'STATE_ABBREV_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'USER_POSITION_NAME_BY_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 6
+where unique_behavior_type = 'USER_POSITION_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'CONTACT_TYPE_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROJECT_STATUS_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROCESS_FIELD_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'USER_NAME_BY_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 6
+where unique_behavior_type = 'USER_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'DEFAULT_CFGA_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'CONTACT_NAME_BY_ID_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROCESS_STEP_STATUS_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'PROCESS_STEP_NAME_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_STATUS_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_PROCESS_STEP_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 5
+where unique_behavior_type = 'EVENT_TRIGGER';
+update flow.unique_behavior_type
+set return_data_type_id = 1
+where unique_behavior_type = 'CONVERT_TIMESTAMP_TO_DATE_TRIGGER';
