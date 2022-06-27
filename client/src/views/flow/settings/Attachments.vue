@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -18,7 +18,7 @@
                         placeholder="Enter a type"
                         label="Attachment Type">
           </v-text-field>
-          <v-btn v-if="addNew" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
+          <v-btn v-if="addNew" color="primary" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
           <v-list v-for="(a, index) in filterBy(attachmentTypes, false, 'archived')"
                   :key="index" class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
@@ -28,17 +28,16 @@
                 <div v-else>{{a.attachmentType}}</div>
               </v-list-item-content>
               <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                <v-icon v-if="selectedAttachmentTypeId === a.id" @click="saveType(a)">save</v-icon>
-                <v-icon v-else @click="selectedAttachmentTypeId = a.id">edit</v-icon>
+                <v-icon v-if="selectedAttachmentTypeId === a.id" color="primary" @click="saveType(a)">save</v-icon>
+                <v-icon v-else color="primary" @click="selectedAttachmentTypeId = a.id">edit</v-icon>
               </v-list-item-action>
-              <confirm-delete-dialog
-                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                  label="this attachment type: "
-                  :item-to-delete="a.attachmentType"
-                  @confirm-delete="[a.archived = true, deleteType(a.id)]"
-              ></confirm-delete-dialog>
+              <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="[itemToDelete=a, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
             </v-list-item>
           </v-list>
+          <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+                                       @confirm-delete = deleteType
+                                       @closeConfirmDeleteDialog="closeDeleteDialog"
+          >Are you sure you want to delete this attachment type: <strong>{{itemToDeleteAttachmentType}}</strong></ConfirmDeleteDialogImproved>
         </v-container>
       </v-col>
     </v-row>
@@ -55,10 +54,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
   export default {
     name: 'Attachments',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmDeleteDialogImproved, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data() {
@@ -70,10 +70,16 @@
         newType: {},
         selectedAttachmentTypeId: null,
         userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
-    computed: {},
+    computed: {
+      itemToDeleteAttachmentType() {
+        return this.itemToDelete ? this.itemToDelete.attachmentType : ''
+      }
+    },
     methods: {
       async getAttachmentTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -89,7 +95,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteType(typeId) {
+      async deleteType() {
+        const typeId = this.itemToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/attachmentType/type/${typeId}`)
@@ -102,6 +109,8 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.itemToDelete.archived = true
+        this.closeDeleteDialog()
       },
       async addNewType() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -143,6 +152,10 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      closeDeleteDialog(){
+        this.showDeleteDialog = false
+        this.itemToDelete = null
       }
     },
     async created() {
