@@ -36,7 +36,6 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -49,7 +48,8 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('SMS_INBOX')")
+//have to turn this off for now for the soft rollout.  search for @softRollOutChangeBack
+//@PreAuthorize("hasFeatureAccess('SMS_INBOX')")
 @RequiredArgsConstructor
 public class MessagingService {
 
@@ -363,6 +363,7 @@ public class MessagingService {
   private void addSmsOwnershipNotification(ProjectMessageProperties pmp, Long modifiedByUserId) {
     final List<Long> teamIds = pmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
     final List<SmsTeam> teamUsers = getTeamUsers(pmp.getCompanyId(), teamIds);
+
     for (SmsTeam smsTeamDetails : teamUsers) {
 
       List<Long> smsTeamUserIds =
@@ -475,6 +476,10 @@ public class MessagingService {
     params.put("companyId", companyId);
     params.put("ids", teamIds);
 
+    if (teamIds == null || teamIds.isEmpty()){
+      return List.of();
+    }
+
     return sqlCache
         .query("smsTeam.getTeamUsers", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
   }
@@ -515,6 +520,16 @@ public class MessagingService {
       userIds =
           sqlCache.query(
               "messaging.findUserByForTeam", params, new SingleColumnRowMapper<>(Long.class));
+
+      Notification notification =
+        new Notification()
+          .setTopic(NotificationTopic.SMS_REPLY)
+          .setTitle("Notification read")
+          .setBody("")
+          .setPriority(1)
+          .setUserId(userId);
+
+      pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
 
       log.debug(
           "[Messaging] Marked {} records as read for smsTeamId={}", updatedRecords, smsTeamId);

@@ -1,5 +1,5 @@
 <sql>
-  <workQueue.getWorkQueues><![CDATA[
+  <workQueue.getWorkQueueCards><![CDATA[
     select wqt.id as work_queue_type_id,
            wqt.work_queue_type,
            wqt.work_queue_category_id,
@@ -12,90 +12,38 @@
            wqt.use_event_data,
            s.id as smartlist_id,
            wqc.color,
-           metrics.*,
-           (
-             with ps_wq_statuses as (
-               select pswqtpsst.process_step_status_type_id,
-                      pswqtpsst.company_process_step_status_type_id,
-                      pswqt.process_step_id
-               from flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                      inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-                      inner join flow.process_step ps on pswqt.process_step_id = ps.id
-               where pswqt.work_queue_type_id = wqt.id
-                 and pswqt.archived is not true
-                 and pswqtpsst.archived is not true
-                 and ps.archived is not true
-                 and case
-                       when :isParent then ps.company_id = any
-                                           (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                       else ps.company_id = :companyId end
-                 and pswqtpsst.archived is not true
-             ),
-                  pj_wq_statuses as (
-                    select pswqtpsst.project_status_type_id,
-                           pswqtpsst.company_project_status_type_id,
-                           pswqt.process_step_id
-                    from flow.process_step_work_queue_type_project_status_type pswqtpsst
-                           inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-                           inner join flow.process_step ps on pswqt.process_step_id = ps.id
-                    where pswqt.work_queue_type_id = wqt.id
-                      and pswqt.archived is not true
-                      and pswqtpsst.archived is not true
-                      and ps.archived is not true
-                      and case
-                            when :isParent then ps.company_id = any
-                                                (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                            else ps.company_id = :companyId end
-                      and pswqtpsst.archived is not true
-                  )
-             select count(*)
-             from flow.project p
-                    inner join flow.company_process cp on cp.id = p.company_process_id
-                    inner join flow.project_process_step pps on pps.project_id = p.id
-                    inner join flow.process_step ps on ps.id = pps.process_step_id
-                    inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
-                    inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-                    inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-                    left join flow.user_position up on up.id = pps.user_position_id
-                    left join flow.user u on u.id = up.user_id
-                    inner join ps_wq_statuses pws on pws.process_step_id = ps.id and (pws.process_step_status_type_id = cpsst.process_step_status_type_id OR pws.company_process_step_status_type_id = cpsst.id)
-                    inner join pj_wq_statuses pjws on pjws.process_step_id = ps.id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = p.company_project_status_type_id)
-             where wqt.id = pswqt.work_queue_type_id
-               and pswqt.archived is not true
-               and pps.archived is not true
-               and p.archived is not true
-               and case
-                     when :isParent then ps.company_id = any
-                                         (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                     else ps.company_id = :companyId end
-               and case
-                     when :unassigned is true then pps.user_position_id is null
-                     when :unassigned is not true and :userId::int is not null then pps.user_position_id = any (
-                       select id from flow.user_position where user_id = :userId::int and archived is false
-                     )
-                     else true end
-               and case when :filterFutureFollowUps is true then
-                            pps.id not in (
-                            select project_process_step_id
-                            from flow.project_process_step_process_step_work_queue_type_note pn
-                                   inner join flow.note n on pn.note_id = n.id
-                            where pps.id = pn.project_process_step_id
-                              and n.archived is not true
-                              and n.follow_up_date > now()::date
-                            order by date_created desc
-                            limit 1
-                          )
-                        else true end
-               and pps.main is true
-           )      as work_queue_count
+           (select count(*)
+            from flow.work_queue_cycle wqc2
+                   inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
+                              on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
+                   inner join flow.process_step_work_queue_type pswqt2 on pswqtpsst2.process_step_work_queue_type_id = pswqt2.id
+                   inner join flow.project_process_step pps on wqc2.project_process_step_id = pps.id
+                   inner join flow.project p on pps.project_id = p.id
+            where date_exited_queue is null
+              and date_entered_queue is not null
+              and pswqt2.work_queue_type_id = wqt.id
+              and pswqtpsst2.archived is false
+              and pswqt2.archived is false
+              and p.archived is not true
+              and pps.archived is not true
+              and case when :filterFutureFollowUps is true then
+                           wqc2.project_process_step_id not in (
+                           select project_process_step_id
+                           from flow.project_process_step_process_step_work_queue_type_note pn
+                                  inner join flow.note n on pn.note_id = n.id
+                           where wqc2.project_process_step_id = pn.project_process_step_id
+                             and n.archived is not true
+                             and n.follow_up_date > now()::date
+                           order by date_created desc
+                           limit 1
+                         )
+                       else true end
+             ) as work_queue_count
     from flow.work_queue_type wqt
-           inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
-           inner join flow.smartlist s on s.work_queue_type_id = wqt.id
-           left join lateral (select * from flow.get_work_queue_metrics(wqt.id)as metrics) as metrics on true
-    where case
-            when :workQueueCategoryId::int is not null then wqt.work_queue_category_id = :workQueueCategoryId
-            else true end
-      and wqt.company_id = :parentCompanyId
+           inner join flow.work_queue_category wqc on wqt.work_queue_category_id = wqc.id
+           inner join flow.smartlist s on wqt.id = s.work_queue_type_id
+    where wqt.work_queue_category_id = :workQueueCategoryId
+      and wqt.company_id = :companyId
       and wqt.archived is not true
       and wqt.use_event_data is false
     union all
@@ -104,363 +52,72 @@
            wqt.work_queue_category_id,
            wqt.display_order as work_queue_type_display_order,
            wqc.display_order as work_queue_category_display_order,
-           null as short_window,
-           null as long_window,
-           null as expected_cycle,
-           null as inverse_expectation,
+           wqt.short_window,
+           wqt.long_window,
+           wqt.expected_cycle,
+           wqt.inverse_expectation,
            wqt.use_event_data,
            s.id as smartlist_id,
            wqc.color,
-           null as short_window_numerator       ,
-           null as short_window_denominator     ,
-           null as long_window_numerator        ,
-           null as long_window_denominator      ,
-           null as short_window_percentage      ,
-           null as long_window_percentage       ,
-           null as short_window_duration_type   ,
-           null as long_window_duration_type    ,
-           null as expected_cycle_duration_type ,
-           null as expected_target              ,
-           null as inverse_expectation          ,
-           null as short_window_entered         ,
-           null as short_window_exited          ,
-           null as long_window_entered          ,
-           null as long_window_exited           ,
-           null as short_wip                    ,
-           null as long_wip                     ,
-           (
-             with ps_wq_statuses as (
-               select pswqtpsst.process_step_status_type_id,
-                      pswqtpsst.company_process_step_status_type_id,
-                      pswqt.process_step_event_id
-               from flow.process_step_event_work_queue_type_process_step_status_type pswqtpsst
-                      inner join flow.process_step_event_work_queue_type pswqt on pswqtpsst.process_step_event_work_queue_type_id = pswqt.id
-                      inner join flow.process_step_event pse on pswqt.process_step_event_id = pse.id
-                      inner join flow.process_step ps on pse.process_step_id = ps.id
-               where pswqt.work_queue_type_id = wqt.id
-                 and pswqt.archived is not true
-                 and pswqtpsst.archived is not true
-                 and pse.archived is not true
-                 and ps.archived is not true
-                 and case
-                       when :isParent then ps.company_id = any
-                                           (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                       else ps.company_id = :companyId end
-                 and pswqtpsst.archived is not true
-             ),
-                  pj_wq_statuses as (
-                    select pswqtpsst.project_status_type_id,
-                           pswqtpsst.company_project_status_type_id,
-                           pswqt.process_step_event_id
-                    from flow.process_step_event_work_queue_type_project_status_type pswqtpsst
-                           inner join flow.process_step_event_work_queue_type pswqt on pswqtpsst.process_step_event_work_queue_type_id = pswqt.id
-                           inner join flow.process_step_event pse on pswqt.process_step_event_id = pse.id
-                           inner join flow.process_step ps on pse.process_step_id = ps.id
-                    where pswqt.work_queue_type_id = wqt.id
-                      and pswqt.archived is not true
-                      and pswqtpsst.archived is not true
-                      and pse.archived is not true
-                      and ps.archived is not true
-                      and case
-                            when :isParent then ps.company_id = any
-                                                (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                            else ps.company_id = :companyId end
-                      and pswqtpsst.archived is not true
-                  ),
-                  pse_wq_statuses as (
-                    select pswqtpsst.event_status_type_id,
-                           pswqtpsst.company_event_status_type_id,
-                           pswqt.process_step_event_id
-                    from flow.process_step_event_work_queue_type_event_status_type pswqtpsst
-                           inner join flow.process_step_event_work_queue_type pswqt on pswqtpsst.process_step_event_work_queue_type_id = pswqt.id
-                           inner join flow.process_step_event pse on pswqt.process_step_event_id = pse.id
-                           inner join flow.process_step ps on pse.process_step_id = ps.id
-                    where pswqt.work_queue_type_id = wqt.id
-                      and pswqt.archived is not true
-                      and pswqtpsst.archived is not true
-                      and pse.archived is not true
-                      and ps.archived is not true
-                      and case
-                            when :isParent then ps.company_id = any
-                                                (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                            else ps.company_id = :companyId end
-                      and pswqtpsst.archived is not true
-                  )
-             select count(*)
-             from flow.project p
-                    inner join flow.company_process cp on cp.id = p.company_process_id
-                    inner join flow.project_process_step pps on pps.project_id = p.id
-                    inner join flow.process_step ps on ps.id = pps.process_step_id
-                    inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id
-                    inner join flow.process_step_event_work_queue_type pswqt on pswqt.process_step_event_id = ppse.process_step_event_id
-                    inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-                    inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-                    inner join flow.company_event_status_type cest on cest.id = ppse.company_event_status_type_id
-                    left join flow.user_position up on up.id = pps.user_position_id
-                    left join flow.user u on u.id = up.user_id
-                    inner join ps_wq_statuses pws on pws.process_step_event_id = ppse.process_step_event_id and (pws.process_step_status_type_id = cpsst.process_step_status_type_id OR pws.company_process_step_status_type_id = cpsst.id)
-                    inner join pj_wq_statuses pjws on pjws.process_step_event_id = ppse.process_step_event_id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = p.company_project_status_type_id)
-                    inner join pse_wq_statuses psews on psews.process_step_event_id = ppse.process_step_event_id and (psews.event_status_type_id = cest.event_status_type_id OR psews.company_event_status_type_id = ppse.company_event_status_type_id)
-             where wqt.id = pswqt.work_queue_type_id
-               and pswqt.archived is not true
-               and pps.archived is not true
-               and ppse.archived is not true
-               and p.archived is not true
-               and case
-                     when :isParent then ps.company_id = any
-                                         (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                     else ps.company_id = :companyId end
-               and case
-                     when :unassigned is true then pps.user_position_id is null
-                     when :unassigned is not true and :userId::int is not null then pps.user_position_id = any (
-                       select id from flow.user_position where user_id = :userId::int and archived is false
-                     )
-                     else true end
-               and case when :filterFutureFollowUps is true then
-                            ppse.id not in (
-                            select project_process_step_event_id
-                            from flow.pps_event_process_step_event_work_queue_type_note pn
-                                   inner join flow.note n on pn.note_id = n.id
-                            where ppse.id = pn.project_process_step_event_id
-                              and n.archived is not true
-                              and n.follow_up_date > now()::date
-                            order by date_created desc
-                            limit 1
-                          )
-                        else true end
-               and case when :filterFutureEvents is true then
+           (select count(*)
+            from flow.work_queue_cycle wqc2
+                   inner join flow.process_step_event_work_queue_type_event_status_type pswqtpsst2
+                              on wqc2.process_step_event_work_queue_type_event_status_type_id = pswqtpsst2.id
+                   inner join flow.process_step_event_work_queue_type pswqt2
+                              on pswqtpsst2.process_step_event_work_queue_type_id = pswqt2.id
+                   inner join flow.project_process_step_event ppse on ppse.id = wqc2.project_process_step_event_id
+                   inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+                   inner join flow.project p on pps.project_id = p.id
+            where date_exited_queue is null
+              and date_entered_queue is not null
+              and pswqt2.work_queue_type_id = wqt.id
+              and pswqtpsst2.archived is false
+              and pswqt2.archived is false
+              and p.archived is not true
+              and pps.archived is not true
+              and ppse.archived is not true
+              and case when :filterFutureEvents is true then
                             ppse.start_time <= now()
                         else true end
-               and pps.main is true
-           )      as work_queue_count
+              and case when :filterFutureFollowUps is true then
+                           wqc2.project_process_step_event_id not in (
+                           select project_process_step_event_id
+                           from flow.pps_event_process_step_event_work_queue_type_note pn
+                                  inner join flow.note n on pn.note_id = n.id
+                           where wqc2.project_process_step_event_id = pn.project_process_step_event_id
+                             and n.archived is not true
+                             and n.follow_up_date > now()::date
+                           order by date_created desc
+                           limit 1
+                         )
+                       else true end) as work_queue_count
     from flow.work_queue_type wqt
-           inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
-           inner join flow.smartlist s on s.work_queue_type_id = wqt.id
-    where case
-            when :workQueueCategoryId::int is not null then wqt.work_queue_category_id = :workQueueCategoryId
-            else true end
-      and wqt.use_event_data is true
-      and wqt.company_id = :parentCompanyId
+      inner join flow.work_queue_category wqc on wqt.work_queue_category_id = wqc.id
+      inner join flow.smartlist s on wqt.id = s.work_queue_type_id
+    where wqt.work_queue_category_id = :workQueueCategoryId
+      and wqt.company_id = :companyId
       and wqt.archived is not true
+      and wqt.use_event_data is true
     order by work_queue_category_display_order, work_queue_type_display_order
+  ]]></workQueue.getWorkQueueCards>
 
-
-  ]]></workQueue.getWorkQueues>
-
-  <workQueue.getProcessStepsByTypeId><![CDATA[
-     with ps_wq_statuses as (
-    select pswqtpsst.process_step_status_type_id,
-           pswqtpsst.company_process_step_status_type_id,
-           pswqt.process_step_id
-    from flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-             inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-             inner join flow.process_step ps on pswqt.process_step_id = ps.id
-    where pswqt.work_queue_type_id = :workQueueTypeId
-      and pswqt.archived is not true
-      and pswqtpsst.archived is not true
-      and ps.archived is not true
-      and case
-              when :isParent then ps.company_id = any
-                                  (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-              else ps.company_id = :companyId end
-      and pswqtpsst.archived is not true
-),
-     pj_wq_statuses as (
-         select pswqtpsst.project_status_type_id,
-                pswqtpsst.company_project_status_type_id,
-                pswqt.process_step_id
-         from flow.process_step_work_queue_type_project_status_type pswqtpsst
-                  inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-                  inner join flow.process_step ps on pswqt.process_step_id = ps.id
-         where pswqt.work_queue_type_id = :workQueueTypeId
-           and pswqt.archived is not true
-           and pswqtpsst.archived is not true
-           and ps.archived is not true
-           and case
-                   when :isParent then ps.company_id = any
-                                       (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                   else ps.company_id = :companyId end
-           and pswqtpsst.archived is not true
-     )
-select ps.id                                                                            as process_step_id,
-       p.project_name,
-       pps.id                                                                           as project_process_step_id,
-       wqt.work_queue_type,
-       st.abbreviation as state_abbreviation,
-       wqt.id as work_queue_type_id,
-       pswqt.id as process_step_work_queue_type_id,
-       pps.project_id,
-       ps.process_step_name,
-       cpsst.process_step_status_type,
-       p.company_project_status_type_id,
-       DATE_PART('day', now() - pps.date_created) as days_in_queue,
-       cpst.project_status_type_id,
-       p.contact_id,
-       case when u.id is not null then concat(u.first_name, ' ', u.last_name) end AS owner,
-       coalesce(pps.date_modified, pps.date_created)                                    as last_updated,
-       coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(owningPositions)))
-                    FROM (
-                             SELECT pspop.id,
-                                    pspop.process_step_process_id as "processStepProcessId",
-                                    pspop.position_id             as "positionId",
-                                    pspop.archived
-                             FROM flow.process_step_process_owning_position pspop
-                                      inner join flow.process_step_process psp on psp.id = pspop.process_step_process_id
-                             WHERE psp.process_step_id = ps.id
-                               and pspop.archived is not true) owningPositions), '[]')  AS "owningPositions",
-       coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(activeProcessSteps)))
-                    FROM (
-                             select ps2.process_step_name as "processStepName",
-                                    ps2.id                as "processStepId"
-                             from flow.project_process_step pps2
-                                      inner join flow.process_step ps2 on ps2.id = pps2.process_step_id
-                                      inner join flow.company_process_step_status_type cpsst2
-                                                 on cpsst2.id = pps2.company_process_step_status_type_id
-                                      inner join flow.process_step_status_type psst2
-                                                 on psst2.id = cpsst2.process_step_status_type_id
-                             where pps2.project_id = p.id
-                               and cpsst2.process_step_status_type_id = 1
-                               and pps2.archived is not true
-                               and pps2.id != pps.id
-                             order by ps2.process_step_name) activeProcessSteps), '[]') AS "activeProcessSteps",
-       coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(notes)))
-                    FROM (
-                             select n.id,
-                                    n.note,
-                                    n.archived,
-                                    n.parent_id as "parentId",
-                                    n.date_created as "dateCreated",
-                                    n.date_modified as "dateModified",
-                                    n.created_by_id as "createdById",
-                                    n.follow_up_date as "followUpDate",
-                                    concat(creator.first_name, ' ', creator.last_name) as "createdBy",
-                                    n.modified_by_id as "modifiedById",
-                                    pn.project_process_step_id as "projectProcessStepId",
-                                    pn.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
-                                    coalesce((
-                                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
-                                                 FROM (
-                                                          select n2.id,
-                                                                 n2.note,
-                                                                 n2.archived,
-                                                                 n2.date_created as "dateCreated",
-                                                                 n2.date_modified as "dateModified",
-                                                                 n2.created_by_id as "createdById",
-                                                                 n2.follow_up_date as "followUpDate",
-                                                                 concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
-                                                                 n2.modified_by_id as "modifiedById",
-                                                                 pn2.project_process_step_id as "projectProcessStepId",
-                                                                 pn2.process_step_work_queue_type_id as "processStepWorkQueueTypeId"
-                                                          from flow.note n2
-                                                                   inner join flow.project_process_step_process_step_work_queue_type_note pn2 on pn2.note_id = n2.id
-                                                                   inner join flow.user creator2 on creator2.id = n2.created_by_id
-                                                          where n2.archived is not true
-                                                            and n2.parent_id = n.id
-                                                          order by n2.date_created
-                                                      ) childNotes), '[]') AS "childNotes"
-                             from flow.note n
-                                      inner join flow.project_process_step_process_step_work_queue_type_note pn on pn.note_id = n.id
-                                      inner join flow.user creator on creator.id = n.created_by_id
-                             where n.archived is not true
-                               and n.parent_id is null
-                               and pn.project_process_step_id = pps.id
-                               and pn.process_step_work_queue_type_id = pswqt.id
-                             order by n.date_created desc
-
-                         ) notes), '[]') AS "notes"
-from flow.project p
-         inner join flow.company_process cp on cp.id = p.company_process_id
-         inner join flow.project_process_step pps on pps.project_id = p.id
-         inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-         inner join flow.process_step ps on ps.id = pps.process_step_id
-         inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
-         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-         left join flow.company_state cs on cs.id = p.company_state_id
-         left join flow.state st on st.id = cs.state_id
-         left join flow.user_position up on up.id = pps.user_position_id
-         left join flow.user u on u.id = up.user_id
-         inner join ps_wq_statuses pws on pws.process_step_id = ps.id and (pws.process_step_status_type_id = cpsst.process_step_status_type_id OR pws.company_process_step_status_type_id = cpsst.id)
-         inner join pj_wq_statuses pjws on pjws.process_step_id = ps.id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = p.company_project_status_type_id)
-where pswqt.work_queue_type_id = :workQueueTypeId
-  and pswqt.archived is not true
-  and pps.archived is not true
-  and p.archived is not true
-  and pps.main is true
-  and case
-          when :isParent then ps.company_id = any (select id
-                                                   from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-          else ps.company_id = :companyId end
-
-order by pps.date_created
-limit :limit
-offset :offset
-
-
-  ]]></workQueue.getProcessStepsByTypeId>
-
-  <workQueue.getProcessStepsByTypeIdCount><![CDATA[
-  with ps_wq_statuses as (
-    select pswqtpsst.process_step_status_type_id,
-           pswqtpsst.company_process_step_status_type_id,
-           pswqt.process_step_id
-    from flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-             inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-             inner join flow.process_step ps on pswqt.process_step_id = ps.id
-    where pswqt.work_queue_type_id = :workQueueTypeId
-      and pswqt.archived is not true
-      and pswqtpsst.archived is not true
-      and ps.archived is not true
-      and case
-              when :isParent then ps.company_id = any
-                                  (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-              else ps.company_id = :companyId end
-      and pswqtpsst.archived is not true
-),
-     pj_wq_statuses as (
-         select pswqtpsst.project_status_type_id,
-                pswqtpsst.company_project_status_type_id,
-                pswqt.process_step_id
-         from flow.process_step_work_queue_type_project_status_type pswqtpsst
-                  inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-                  inner join flow.process_step ps on pswqt.process_step_id = ps.id
-         where pswqt.work_queue_type_id = :workQueueTypeId
-           and pswqt.archived is not true
-           and pswqtpsst.archived is not true
-           and ps.archived is not true
-           and case
-                   when :isParent then ps.company_id = any
-                                       (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                   else ps.company_id = :companyId end
-           and pswqtpsst.archived is not true
-     )
-    select count(*)
-    from flow.project p
-         inner join flow.company_process cp on cp.id = p.company_process_id
-         inner join flow.project_process_step pps on pps.project_id = p.id
-         inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-         inner join flow.process_step ps on ps.id = pps.process_step_id
-         inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
-         inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-         inner join flow.company_process_step_status_type cpsst
-                    on cpsst.id = pps.company_process_step_status_type_id
-         left join flow.user_position up on up.id = pps.user_position_id
-         left join flow.user u on u.id = up.user_id
-         inner join ps_wq_statuses pws on pws.process_step_id = ps.id and (pws.process_step_status_type_id = cpsst.process_step_status_type_id OR pws.company_process_step_status_type_id = cpsst.id)
-         inner join pj_wq_statuses pjws on pjws.process_step_id = ps.id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = p.company_project_status_type_id)
-    where pswqt.work_queue_type_id = :workQueueTypeId
-      and pswqt.archived is not true
-        and pps.archived is not true
-        and p.archived is not true
-        and pps.main is true
-    and case
-          when :isParent then ps.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-          else ps.company_id = :companyId end
-  ]]></workQueue.getProcessStepsByTypeIdCount>
+  <workQueue.getWorkQueueMetrics><![CDATA[
+    select metrics.*
+    from flow.work_queue_type wqt
+      left join lateral (select * from flow.get_work_queue_metrics(wqt.id)as metrics) as metrics on true
+     where wqt.work_queue_category_id = :workQueueCategoryId
+     and wqt.company_id = :companyId
+      and wqt.archived is not true
+      and wqt.use_event_data is false
+    union all
+    select metrics.*
+    from flow.work_queue_type wqt
+       left join lateral (select * from flow.get_work_queue_metrics_for_events(wqt.id)as metrics) as metrics on true
+     where wqt.work_queue_category_id = :workQueueCategoryId
+    and wqt.company_id = :companyId
+      and wqt.archived is not true
+      and wqt.use_event_data is true
+  ]]></workQueue.getWorkQueueMetrics>
 
   <workQueue.getWorkQueueOwners><![CDATA[
     select distinct pps.user_position_id,
@@ -478,174 +135,6 @@ offset :offset
           else ps.company_id = :companyId end
     order by first_name, last_name
   ]]></workQueue.getWorkQueueOwners>
-
-
-  <workQueue.getProcessStepsByTypeIdForHack><![CDATA[
-      with ps_wq_statuses as (
-          select pswqtpsst.process_step_status_type_id,
-                 pswqtpsst.company_process_step_status_type_id,
-                 pswqt.process_step_id
-          from flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-                   inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-                   inner join flow.process_step ps on pswqt.process_step_id = ps.id
-          where pswqt.work_queue_type_id = :workQueueTypeId
-            and pswqt.archived is not true
-            and pswqtpsst.archived is not true
-            and ps.archived is not true
-            and case
-                    when :isParent then ps.company_id = any
-                                        (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                    else ps.company_id = :companyId end
-            and pswqtpsst.archived is not true
-      ),
-           pj_wq_statuses as (
-               select pswqtpsst.project_status_type_id,
-                      pswqtpsst.company_project_status_type_id,
-                      pswqt.process_step_id
-               from flow.process_step_work_queue_type_project_status_type pswqtpsst
-                        inner join flow.process_step_work_queue_type pswqt on pswqtpsst.process_step_work_queue_type_id = pswqt.id
-                        inner join flow.process_step ps on pswqt.process_step_id = ps.id
-               where pswqt.work_queue_type_id = :workQueueTypeId
-                 and pswqt.archived is not true
-                 and pswqtpsst.archived is not true
-                 and ps.archived is not true
-                 and case
-                         when :isParent then ps.company_id = any
-                                             (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                         else ps.company_id = :companyId end
-                 and pswqtpsst.archived is not true
-           )
-
-      select
-          ps.id      as process_step_id,
-          p.id as project_id,
-          (select pps2.id
-           from flow.project_process_step pps2
-                    left join flow.project_process_step_custom_field_value ppscfv on pps2.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
-           where  pps2.process_step_id = 1 and pps2.main is true and pps2.project_id = p.id
-          ) as pps2_id,
-          p.project_name,
-          pps.id as project_process_step_id,
-          coalesce((select  ppscfv3.timestamp_value
-                    from  flow.project_process_step pps3
-                              left join flow.project_process_step_custom_field_value ppscfv3 on pps3.id = ppscfv3.project_process_step_id and ppscfv3.custom_field_group_assignment_id in (17263, 17349, 17350, 17351, 17352)
-                    where pps3.project_id = p.id and pps3.process_step_id in (247,249,251,252,250) and pps3.main is true
-                   ),(select ppscfv.timestamp_value
-                      from  flow.project_process_step pps2
-                                left join flow.project_process_step_custom_field_value ppscfv on pps2.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
-                      where pps2.project_id = p.id and pps2.process_step_id = 1 and pps2.main is true )) as proposal_due_date,
-          wqt.work_queue_type,
-          st.abbreviation as state_abbreviation,
-          wqt.id as work_queue_type_id,
-          pswqt.id as process_step_work_queue_type_id,
-          pps.project_id,
-          ps.process_step_name,
-          cpsst.process_step_status_type,
-          p.company_project_status_type_id,
-          DATE_PART('day', now() - pps.date_created) as days_in_queue,
-          cpst.project_status_type_id,
-          p.contact_id,
-          case when u.id is not null then concat(u.first_name, ' ', u.last_name) end AS owner,
-          coalesce(pps.date_modified, pps.date_created)                                    as last_updated,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(owningPositions)))
-                       FROM (
-                                SELECT pspop.id,
-                                       pspop.process_step_process_id as "processStepProcessId",
-                                       pspop.position_id             as "positionId",
-                                       pspop.archived
-                                FROM flow.process_step_process_owning_position pspop
-                                         inner join flow.process_step_process psp on psp.id = pspop.process_step_process_id
-                                WHERE psp.process_step_id = ps.id
-                                  and pspop.archived is not true) owningPositions), '[]')  AS "owningPositions",
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(activeProcessSteps)))
-                       FROM (
-                                select ps2.process_step_name as "processStepName",
-                                       ps2.id                as "processStepId"
-                                from flow.project_process_step pps2
-                                         inner join flow.process_step ps2 on ps2.id = pps2.process_step_id
-                                         inner join flow.company_process_step_status_type cpsst2
-                                                    on cpsst2.id = pps2.company_process_step_status_type_id
-                                         inner join flow.process_step_status_type psst2
-                                                    on psst2.id = cpsst2.process_step_status_type_id
-                                where pps2.project_id = p.id
-                                  and cpsst2.process_step_status_type_id = 1
-                                  and pps2.archived is not true
-                                  and pps2.id != pps.id
-                                order by ps2.process_step_name) activeProcessSteps), '[]') AS "activeProcessSteps",
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(notes)))
-                       FROM (
-                                select n.id,
-                                       n.note,
-                                       n.archived,
-                                       n.parent_id as "parentId",
-                                       n.date_created as "dateCreated",
-                                       n.date_modified as "dateModified",
-                                       n.created_by_id as "createdById",
-                                       n.follow_up_date as "followUpDate",
-                                       concat(creator.first_name, ' ', creator.last_name) as "createdBy",
-                                       n.modified_by_id as "modifiedById",
-                                       pn.project_process_step_id as "projectProcessStepId",
-                                       pn.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
-                                       coalesce((
-                                                    SELECT array_to_json(array_agg(row_to_json(childNotes)))
-                                                    FROM (
-                                                             select n2.id,
-                                                                    n2.note,
-                                                                    n2.archived,
-                                                                    n2.date_created as "dateCreated",
-                                                                    n2.date_modified as "dateModified",
-                                                                    n2.created_by_id as "createdById",
-                                                                    n2.follow_up_date as "followUpDate",
-                                                                    concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
-                                                                    n2.modified_by_id as "modifiedById",
-                                                                    pn2.project_process_step_id as "projectProcessStepId",
-                                                                    pn2.process_step_work_queue_type_id as "processStepWorkQueueTypeId"
-                                                             from flow.note n2
-                                                                      inner join flow.project_process_step_process_step_work_queue_type_note pn2 on pn2.note_id = n2.id
-                                                                      inner join flow.user creator2 on creator2.id = n2.created_by_id
-                                                             where n2.archived is not true
-                                                               and n2.parent_id = n.id
-                                                             order by n2.date_created
-                                                         ) childNotes), '[]') AS "childNotes"
-                                from flow.note n
-                                         inner join flow.project_process_step_process_step_work_queue_type_note pn on pn.note_id = n.id
-                                         inner join flow.user creator on creator.id = n.created_by_id
-                                where n.archived is not true
-                                  and n.parent_id is null
-                                  and pn.project_process_step_id = pps.id
-                                  and pn.process_step_work_queue_type_id = pswqt.id
-                                order by n.date_created desc
-                            ) notes), '[]') AS "notes"
-      from flow.project p
-               inner join flow.company_process cp on cp.id = p.company_process_id
-               inner join flow.project_process_step pps on pps.project_id = p.id
-               inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-               inner join flow.process_step ps on ps.id = pps.process_step_id
-               inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
-               inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-               inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-               left join flow.company_state cs on cs.id = p.company_state_id
-               left join flow.state st on st.id = cs.state_id
-               left join flow.user_position up on up.id = pps.user_position_id
-               left join flow.user u on u.id = up.user_id
-               inner join ps_wq_statuses pws on pws.process_step_id = ps.id and (pws.process_step_status_type_id = cpsst.process_step_status_type_id OR pws.company_process_step_status_type_id = cpsst.id)
-               inner join pj_wq_statuses pjws on pjws.process_step_id = ps.id and (pjws.project_status_type_id = cpst.project_status_type_id OR pjws.company_project_status_type_id = p.company_project_status_type_id)
-      where pswqt.work_queue_type_id = :workQueueTypeId
-        and pswqt.archived is not true
-        and pps.archived is not true
-        and pps.main is true
-        and p.archived is not true
-        and case
-                when :isParent then ps.company_id = any (select id
-                                                         from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-                else ps.company_id = :companyId end
-      order by proposal_due_date nulls last
-      limit :limit
-      offset :offset
-  ]]></workQueue.getProcessStepsByTypeIdForHack>
 
   <workQueue.getInstallerDashboardWorkQueues><![CDATA[
    select wqt.id as work_queue_type_id,

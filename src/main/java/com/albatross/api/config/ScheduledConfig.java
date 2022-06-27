@@ -1,7 +1,7 @@
 package com.albatross.api.config;
 
+import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
-import com.albatross.api.v1.flow.services.MessagingService;
 import com.albatross.api.v1.flow.services.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,86 +18,89 @@ import javax.annotation.PostConstruct;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Configuration
 @EnableScheduling
 @RequiredArgsConstructor
-// only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
+// only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are
+// true
 @ConditionalOnProperty(prefix = "app.scheduled", value = "enabled")
 public class ScheduledConfig implements SchedulingConfigurer {
 
-    @Value(value = "${app.cron.sendSms.enabled:false}")
-    private Boolean sendSmsNotifications;
+  private final SMSService smsService;
+  private final MailService mailService;
+  private final AvailabilityService availabilityService;
+  private final ProjectProcessStepService projectProcessStepService;
+  private final ContactService contactService;
+  private final MessagingService messagingService;
+  private final PubSubService pubSubService;
 
-    @Value(value = "${app.cron.sendEmail.enabled:false}")
-    private Boolean sendEmailNotifications;
+  @Value(value = "${app.cron.sendSms.enabled:false}")
+  private Boolean sendSmsNotifications;
 
-    @Value(value = "${app.home_url}")
-    private String homeUrl;
+  @Value(value = "${app.cron.sendEmail.enabled:false}")
+  private Boolean sendEmailNotifications;
 
-    @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
-    private Boolean processFutureAppointments;
+  @Value(value = "${app.home_url}")
+  private String homeUrl;
 
-    @Value(value = "${app.cron.autoTriggers.enabled:false}")
-    private boolean autoTriggers;
+  @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
+  private Boolean processFutureAppointments;
 
-    @Value(value = "${app.cron.initialAutoTriggers.enabled:false}")
-    private boolean initialAutoTriggers;
+  @Value(value = "${app.cron.autoTriggers.enabled:false}")
+  private boolean autoTriggers;
 
-    @Value(value = "${app.cron.cacheAvailability.enabled:false}")
-    private boolean runCachedAvailability;
+  @Value(value = "${app.cron.initialAutoTriggers.enabled:false}")
+  private boolean initialAutoTriggers;
 
-    @Value(value = "${app.cron.fillProjectGeoCoords.enabled:false}")
-    private boolean fillProjectGeoCoords;
+  @Value(value = "${app.cron.cacheAvailability.enabled:false}")
+  private boolean runCachedAvailability;
 
-    @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
-    private boolean closeProjectConversations;
+  @Value(value = "${app.cron.fillProjectGeoCoords.enabled:false}")
+  private boolean fillProjectGeoCoords;
 
-    private final SMSService smsService;
-    private final MailService mailService;
-    private final AvailabilityService availabilityService;
-    private final ProjectProcessStepService projectProcessStepService;
-    private final ContactService contactService;
-    private final MessagingService messagingService;
+  @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
+  private boolean closeProjectConversations;
 
+  @Override
+  public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+    final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(10);
+    taskRegistrar.setScheduler(scheduledExecutorService);
+  }
 
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-      final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(10);
-      taskRegistrar.setScheduler(scheduledExecutorService);
+  /*
+  //
+  // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN, THAT IS WHEN AUTO TRIGGERS
+  // FYI: RUN AND THEY DO SOME HEAVY LIFTING ON THE DB
+  //
+  */
+
+  @PostConstruct
+  public void init() {
+    log.info("*** CRON: cron service enabled ***");
+  }
+
+  //    every  minute
+  @Scheduled(fixedDelayString = "${app.cron.sendSms.delay:20000}")
+  public void sendSmsNotifications() {
+    if (sendSmsNotifications) {
+      smsService.processMessages();
+
+      // Update the status for any text messages that Twilio has recently told us about.
+      // This is separate from the processMessages call because a failure within that
+      // method will rollback the db transaction which contains very important information
+      // about outbound texts
+      smsService.processTwilioWebhookPayloads();
     }
-
-    /*
-    //
-    // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN, THAT IS WHEN AUTO TRIGGERS
-    // FYI: RUN AND THEY DO SOME HEAVY LIFTING ON THE DB
-    //
-    */
-
-
-    @PostConstruct
-    public void init() {
-        log.info("*** CRON: cron service enabled ***");
-    }
-
-    //    every  minute
-    @Scheduled(fixedDelayString = "${app.cron.sendSms.delay:20000}")
-    public void sendSmsNotifications() {
-        if (sendSmsNotifications) {
-            smsService.processMessages();
-
-            // Update the status for any text messages that Twilio has recently told us about.
-            // This is separate from the processMessages call because a failure within that
-            // method will rollback the db transaction which contains very important information
-            // about outbound texts
-            smsService.processTwilioWebhookPayloads();
-        }
-    }
+  }
 
   //    every  day at 1 am
-  @Scheduled(fixedDelayString = "${app.cron.closeProjectConversations.delay:20000}")//@Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  @Scheduled(
+      fixedDelayString =
+          "${app.cron.closeProjectConversations.delay:20000}") // @Scheduled(cron = "0 0 1 * * *",
+  // zone = "America/Denver")
   public void closeProjectConversations() {
     if (closeProjectConversations) {
       log.info("*** CRON: start close SMS project conversations ***");
@@ -114,46 +117,46 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-    //    every  day at 1 am
-    @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
-    public void cacheAvailability() {
-        if (runCachedAvailability) {
-            log.info("*** CRON: start cache availability ***");
-            availabilityService.cacheAvailability();
-            log.info("*** CRON: end cache availability ***");
-        }
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  public void cacheAvailability() {
+    if (runCachedAvailability) {
+      log.info("*** CRON: start cache availability ***");
+      availabilityService.cacheAvailability();
+      log.info("*** CRON: end cache availability ***");
     }
+  }
 
-    // last day of every month
-//    @Scheduled(cron = "0 0 0 L * ?")
-    @Scheduled(cron = "0 0 2 27 * *", zone = "America/Denver")
-    public void processFutureRecurringEvents() {
-        if(processFutureAppointments) {
-            log.info("*** CRON: start populating recurring events ***");
-            availabilityService.processFutureRecurringEvents();
-            log.info("*** CRON: end populating recurring events ***");
-        }
+  // last day of every month
+  //    @Scheduled(cron = "0 0 0 L * ?")
+  @Scheduled(cron = "0 0 2 27 * *", zone = "America/Denver")
+  public void processFutureRecurringEvents() {
+    if (processFutureAppointments) {
+      log.info("*** CRON: start populating recurring events ***");
+      availabilityService.processFutureRecurringEvents();
+      log.info("*** CRON: end populating recurring events ***");
     }
+  }
 
-    @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
-    public void autoTriggers() {
-      if (autoTriggers) {
-        log.info("*** CRON: start auto triggers ***");
-        projectProcessStepService.performTimeBasedAutoTriggers();
-        log.info("*** CRON: end auto triggers ***");
-      }
+  @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
+  public void autoTriggers() {
+    if (autoTriggers) {
+      log.info("*** CRON: start auto triggers ***");
+      projectProcessStepService.performTimeBasedAutoTriggers();
+      log.info("*** CRON: end auto triggers ***");
     }
+  }
 
   // @TODO: This is temporary - randa. updating contact geo-location until all are finished
-    @Scheduled(cron = "0 0 4 * * *", zone = "America/Denver")
-    public void updateContactLatLong() throws Exception {
-      log.info("*** CRON: start CONTACT geo coords updates ***");
-      contactService.updateContactLatLong(50000);
-      log.info("*** CRON: end CONTACT geo coords updates ***");
-    }
+  @Scheduled(cron = "0 0 4 * * *", zone = "America/Denver")
+  public void updateContactLatLong() throws Exception {
+    log.info("*** CRON: start CONTACT geo coords updates ***");
+    contactService.updateContactLatLong(50000);
+    log.info("*** CRON: end CONTACT geo coords updates ***");
+  }
 
-    @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
-    public Executor taskExecutor() {
-      return Executors.newScheduledThreadPool(10);
-    }
+  @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
+  public Executor taskExecutor() {
+    return Executors.newScheduledThreadPool(10);
+  }
 }

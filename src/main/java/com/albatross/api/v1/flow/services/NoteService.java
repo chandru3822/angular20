@@ -1,12 +1,14 @@
 package com.albatross.api.v1.flow.services;
 
-import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Contact;
+import com.albatross.api.v1.flow.model.Note;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -127,20 +130,25 @@ public class NoteService {
 
     Note fetchedNote = getNote(noteId);
     fetchedNote.setPrimaryId(note.getPrimaryId());
-    // Match for firstName lastName (Email)
-    Pattern mentionedNameRegex = Pattern.compile("\\B@([a-zA-Z-\\s*()]+)\\s(\\S+) \\(([^)]+)\\)");
-    Matcher m = mentionedNameRegex.matcher(fetchedNote.getNote());
-    // If mention(s) are found in the Note
-    while (m.find()) {
-      String firstName = m.group(1);
-      String lastName = m.group(2);
-      String emailAddress = m.group(3);
 
-      try {
-        InputStream inputStream =
-            ScheduledConfig.class.getResourceAsStream(
-                "/communication/templates/note-mention-email.ftl.html");
-        String template = IOUtils.toString(inputStream);
+    try (InputStream inputStream =
+        NoteService.class.getResourceAsStream(
+            "/communication/templates/note-mention-email.ftl.html")) {
+
+      // Match for firstName lastName (Email)
+      Pattern mentionedNameRegex = Pattern.compile("\\B@([a-zA-Z-\\s*()]+)\\s(\\S+) \\(([^)]+)\\)");
+      Matcher m = mentionedNameRegex.matcher(fetchedNote.getNote());
+
+      if (inputStream == null) {
+        throw new RuntimeException("[Note] Unable to find template");
+      }
+      String template = IOUtils.toString(inputStream, Charset.defaultCharset());
+
+      // If mention(s) are found in the Note
+      while (m.find()) {
+        String firstName = m.group(1);
+        String lastName = m.group(2);
+        String emailAddress = m.group(3);
 
         String locationOfNote = "";
         String link = "";
@@ -160,43 +168,46 @@ public class NoteService {
           }
         }
 
-        // Check if text message or email
         User mentionedUser = userService.findByUsernameOrEmailIgnoreCase(emailAddress);
-        if (NotificationType.EMAIL.id.equals(mentionedUser.getNotificationTypeId())) {
-          Map<String, Object> context = new HashMap<>();
-          context.put("firstName", firstName);
-          context.put("lastName", lastName);
-          context.put("locationOfNote", locationOfNote);
-          context.put("link", link);
-          context.put("noteContents", note.getNote());
-          String emailSubject =
-              currentUser.getFirstName()
-                  + " "
-                  + currentUser.getLastName()
-                  + " mentioned you in a note on "
-                  + noteRefName;
-          communicationService.sendEmail(
-              emailSubject,
-              emailAddress,
-              template,
-              context,
-              "noreply@albatross.myblueraven.com",
-              "Albatross",
-              currentUser.trueUserId());
+        if (mentionedUser != null) {
+          if (NotificationType.EMAIL.id.equals(mentionedUser.getNotificationTypeId())) {
+            Map<String, Object> context = new HashMap<>();
+            context.put("firstName", firstName);
+            context.put("lastName", lastName);
+            context.put("locationOfNote", locationOfNote);
+            context.put("link", link);
+            context.put("noteContents", note.getNote());
+            String emailSubject =
+                currentUser.getFirstName()
+                    + " "
+                    + currentUser.getLastName()
+                    + " mentioned you in a note on "
+                    + noteRefName;
+            communicationService.sendEmail(
+                emailSubject,
+                emailAddress,
+                template,
+                context,
+                "noreply@albatross.myblueraven.com",
+                "Albatross",
+                currentUser.trueUserId());
+          } else {
+            String groupId = UUID.randomUUID().toString();
+            String textMessage =
+                "You were mentioned in an Albatross note. Click here: "
+                    + link
+                    + " to open the "
+                    + locationOfNote
+                    + ".";
+            communicationService.queueTextMessages(
+                groupId, mentionedUser, textMessage, null, currentUser.trueUserId());
+          }
         } else {
-          String groupId = UUID.randomUUID().toString();
-          String textMessage =
-              "You were mentioned in an Albatross note. Click here: "
-                  + link
-                  + " to open the "
-                  + locationOfNote
-                  + ".";
-          communicationService.queueTextMessages(
-              groupId, mentionedUser, textMessage, null, currentUser.trueUserId());
+          log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
         }
-      } catch (IOException e) {
-        log.error("NOTE: Error sending user mention email", e);
       }
+    } catch (IOException e) {
+      log.error("NOTE: Error sending user mention email", e);
     }
 
     return fetchedNote;

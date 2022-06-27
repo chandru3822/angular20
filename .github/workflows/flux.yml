@@ -5,7 +5,7 @@ name: Albatross Build [Flux]
 on:
       push:
           branches:
-              - "event-child-fn"
+              - "project_details_refactor"
 
 jobs:
     build:
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/setup-node@v2
         name: Setup Node
         with:
-          node-version: '12'
+          node-version: '16'
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
 

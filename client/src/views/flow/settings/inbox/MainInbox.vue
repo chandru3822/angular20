@@ -1,5 +1,6 @@
 <template>
   <ThreeColumnLayout
+    id="main-inbox-container"
     :header-hidden="true"
     :right-hidden="!$route.params.projectId"
     :left-hidden="true"
@@ -206,7 +207,7 @@ export default {
       snackbar: {},
       projects: [],
       options: {
-        itemsPerPage: 100
+        itemsPerPage: 25
       },
       footerProps: {
         'items-per-page-options': [25, 50, 100],
@@ -222,7 +223,6 @@ export default {
       selectedTeamFilters: [],
       showUnreadOnly: false,
       showAssignToMeDialog: false,
-      selectedSmsTeam: '',
       assignToMeProject: [],
       teamsAssociatedToUser: [],
       teamNamesAssociatedToUser: [],
@@ -337,7 +337,7 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
         }
 
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
@@ -376,7 +376,7 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? this.smsNotification?.map(n => n.metadata?.projectId) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
         }
 
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
@@ -444,7 +444,6 @@ export default {
         }
         this.showLoading(true)
         await postRequest(`/messaging/addTeam/${this.assignToMeProject.projectId}`, selectedTeam)
-        this.selectedSmsTeam = ''
         this.snackbar = getSnackbar('SUCCESS', 'Successfully joined conversation')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         if (!this.$route.path.includes('inboxConversation')) {
@@ -456,7 +455,6 @@ export default {
         await this.fetchProjects()
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.selectedSmsTeam = ''
         this.snackbar = getSnackbar('ERROR', 'Error joining conversation')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.showLoading(false)
@@ -471,6 +469,7 @@ export default {
           this.teamsAssociatedToUser = data
           this.teamNamesAssociatedToUser = data?.map(team => team.teamName)
         }
+        await this.getAvailableTeams()
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
@@ -514,7 +513,7 @@ export default {
         this.selectableTeams = data
         this.selectableTeams.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
-            if (this.teamFilterOptions.indexOf(team) === -1) {
+            if (!this.teamAlreadyAddedToFilter(team)) {
               this.teamFilterOptions.push(team)
             }
 
@@ -532,7 +531,7 @@ export default {
               }
             })
           } else if (this.userCanViewAll) {
-            if (this.teamFilterOptions.indexOf(team) === -1) {
+            if (!this.teamAlreadyAddedToFilter(team)) {
               this.teamFilterOptions.push(team)
             }
 
@@ -544,11 +543,28 @@ export default {
           }
         })
 
-        // Sort the filter alphabetically
-        this.teamFilterOptions.sort()
-        this.ownerFilterOptions.sort()
-
         this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
+
+        this.teamFilterOptions.sort((a,b)=>{
+          if(a.teamName < b.teamName) {
+            return -1
+          }
+          if(a.teamName > b.teamName) {
+            return 1
+          }
+          return 0
+        })
+
+        this.ownerFilterOptions.sort((a,b)=>{
+          if(a.name < b.name) {
+            return -1
+          }
+          if(a.name > b.name) {
+            return 1
+          }
+          return 0
+        })
+
         if (!this.selectedOwnerFilters.includes(-1)) {
           this.selectedOwnerFilters.push(-1)
         }
@@ -566,6 +582,15 @@ export default {
       let alreadyAdded = false
       this.ownerFilterOptions.forEach(o => {
         if (o.userId === ownerToAdd.userId) {
+          alreadyAdded = true
+        }
+      })
+      return alreadyAdded
+    },
+    teamAlreadyAddedToFilter(teamToAdd) {
+      let alreadyAdded = false
+      this.teamFilterOptions.forEach(t => {
+        if (t.id === teamToAdd.id) {
           alreadyAdded = true
         }
       })
@@ -592,11 +617,19 @@ export default {
   },
   created() {
     this.fetchTeamsForUser()
-    this.getAvailableTeams()
     window.addEventListener('resize', this.onResize)
   }
 }
 </script>
+
+<style lang="scss">
+#main-inbox-container .v-data-table__wrapper table,
+#main-inbox-container .v-data-table__wrapper tbody{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block;
+}
+</style>
 
 <style scoped lang="scss">
 
@@ -672,7 +705,7 @@ a {
 }
 
 .text-ellipses {
-  width: calc(35% - 110px);
+  width: 100%;
   display: block;
   overflow: hidden;
   white-space: nowrap;

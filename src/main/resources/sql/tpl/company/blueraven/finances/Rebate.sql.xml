@@ -178,62 +178,63 @@
   <rebate.getPaymentsPending>
     <![CDATA[
             select * from (
-                  select p.id project_id,
-                         p.project_name project_name,
-                         (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy) as createdBy,
-                         pd.substantial_completion_date substantialCompletionDate,
-                         pd.primary_financier_name as financier,
-                         pd.num_of_promotion_payments as numberOfPromotionPayments,
-                         pd.product_name as product,
+                select pd.project_id,
+                       pd.contact_name project_name,
+                       (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy) as createdBy,
+                       pd.substantial_completion_date substantialCompletionDate,
+                       pd.primary_financier_name as financier,
+                       pd.num_of_promotion_payments as numberOfPromotionPayments,
+                       pd.product_name as product,
+                       pd.total_promotion_amount,
+                       (select count(*) from brs.project_rebate_payment where project_id = pd.project_id) as numOfPayments
+--                 from flow.project p
+                     from brs.project_details pd
+                where pd.substantial_completion_date is not null and
+                    pd.product_name in ('BluePower Plus','BluePower Plus PrePaid') and
+                    pd.company_id = 3 and
+                    pd.archived is false
+                group by pd.project_id,
+                         pd.contact_name,
+                         (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy),
+                         pd.substantial_completion_date,
+                         pd.primary_financier_name,
+                         pd.num_of_promotion_payments,
+                         pd.product_name,
                          pd.total_promotion_amount,
-                         (select count(*) from brs.project_rebate_payment where project_id = p.id) as numOfPayments
-                  from flow.project p
-                           left join brs.project_details pd on pd.project_id = p.id
-                  where pd.substantial_completion_date is not null and
-                        pd.product_name in ('BluePower Plus','BluePower Plus PrePaid') and
-                        pd.company_id = 3
-                  group by p.id,
-                           pd.contact_name,
-                           (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy),
-                           pd.substantial_completion_date,
-                           pd.primary_financier_name,
-                           pd.num_of_promotion_payments,
-                           pd.product_name,
-                           pd.total_promotion_amount,
-                           numOfPayments
+                         numOfPayments
               ) as payments where numOfPayments < 1
         ]]>
   </rebate.getPaymentsPending>
 
   <rebate.getPaymentsNeedApproval>
     <![CDATA[
-            select prp.id payment_id,
-            p.id project_id,
-            p.project_name project_name,
-			      pd.substantial_completion_date substantialCompletionDate,
-            (select batch_date::date
-             from brs.project_rebate_payment prp1
-                 inner join brs.project_rebate_batch drb on drb.id = prp1.project_rebate_batch_id
-             where project_rebate_payment_state_id = 3
-                    and prp1.project_id = p.id
-             order by payment_nbr desc limit 1) as last_payment_date,
-            prp.payment_amount,
-            coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
-            (select max(payment_nbr) from brs.project_rebate_payment where project_id = p.id and project_rebate_payment_state_id = 3) last_payment,
-            (select min(payment_nbr) from brs.project_rebate_payment where project_id = p.id and project_rebate_payment_state_id = 1) next_scheduled_payment,
-            prps.name state,
-            case when (select count(1) from brs.project_rebate_payment where project_id = p.id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
-            pd.primary_financier_name as financier,
-            pd.num_of_promotion_payments as numberOfPromotionPayments,
-            pd.product_name as product,
-            pd.total_promotion_amount,
-            (pd.total_promotion_amount - (select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
-            false as selected
-			from flow.project p
-                inner join brs.project_rebate_payment prp on p.id = prp.project_id
-                inner join brs.project_rebate_payment_state prps on prp.project_rebate_payment_state_id = prps.id
-			          left join brs.project_details pd on pd.project_id = p.id
-			where prp.payment_nbr = (select min(payment_nbr) from brs.project_rebate_payment prp1 where prp.project_id = prp1.project_id and prp1.project_rebate_payment_state_id = 1)
+           select prp.id payment_id,
+                   pd.project_id,
+                   pd.contact_name project_name,
+                   pd.substantial_completion_date substantialCompletionDate,
+                   (select batch_date::date
+                    from brs.project_rebate_payment prp1
+                           inner join brs.project_rebate_batch drb on drb.id = prp1.project_rebate_batch_id
+                    where project_rebate_payment_state_id = 3
+                      and prp1.project_id = pd.project_id
+                    order by payment_nbr desc limit 1) as last_payment_date,
+                   prp.payment_amount,
+                   coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3),0) total_paid,
+                   (select max(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 3) last_payment,
+                   (select min(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 1) next_scheduled_payment,
+                   prps.name state,
+                   case when (select count(1) from brs.project_rebate_payment where project_id = pd.project_id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
+                   pd.primary_financier_name as financier,
+                   pd.num_of_promotion_payments as numberOfPromotionPayments,
+                   pd.product_name as product,
+                   pd.total_promotion_amount,
+                   (pd.total_promotion_amount - (select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3)) balance_owed,
+                   false as selected
+            from brs.project_details pd
+                   inner join brs.project_rebate_payment prp on pd.project_id = prp.project_id
+                   inner join brs.project_rebate_payment_state prps on prp.project_rebate_payment_state_id = prps.id
+            where prp.payment_nbr = (select min(payment_nbr) from brs.project_rebate_payment prp1 where prp.project_id = prp1.project_id and prp1.project_rebate_payment_state_id = 1)
+              and pd.archived is false
         ]]>
   </rebate.getPaymentsNeedApproval>
 
@@ -250,6 +251,7 @@
          pd.product_name as product,
          pd.total_promotion_amount
          from flow.project p
+         where p.archived is false
            inner join brs.project_rebate_payment prp on p.id = prp.project_id
            left join brs.project_details pd on pd.project_id = p.id
            group by p.id,

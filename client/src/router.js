@@ -696,6 +696,26 @@ const router = new Router({
                 }
               },
             }, {
+              path: 'dataViews',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')) {
+                  return import (/* webpackChunkName: "dataViews" */ './views/flow/settings/DataViews.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'dataView/:id',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')) {
+                  return import (/* webpackChunkName: "dataViews" */ './views/flow/settings/DataView.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'workQueue',
               meta: {title: 'Albatross - Settings'},
               component: () => {
