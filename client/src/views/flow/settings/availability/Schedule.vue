@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew && userCanAdd" @click="setNew" class="mb-3">
+        <v-btn color="primary" v-if="!addNew && userCanAdd" @click="setNew" class="mb-3">
           Add Schedule
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
@@ -95,7 +95,7 @@
                 <td class="text-left px-0" width="150px"  v-if="!useSlotSchedule">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'down')">
+                      <v-btn text small color="primary" v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'down')">
                         <v-icon>mdi-arrow-collapse-down</v-icon>
                       </v-btn>
                     </template>
@@ -105,7 +105,7 @@
                   </v-btn>
                   <v-tooltip top v-if="index !== 0">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'up')">
+                      <v-btn text small color="primary" v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'up')">
                         <v-icon>mdi-arrow-collapse-up</v-icon>
                       </v-btn>
                     </template>
@@ -113,7 +113,7 @@
                   </v-tooltip>
                   <v-btn text small v-else>
                   </v-btn>
-                  <v-btn text small @click="[item.startTime = null, item.endTime = null]">
+                  <v-btn text small color="primary" @click="[item.startTime = null, item.endTime = null]">
                     <v-icon>close</v-icon>
                   </v-btn>
                 </td>
@@ -126,7 +126,7 @@
           </div>
           <v-card-actions>
             <v-card-actions>
-              <v-btn color="secondary" @click="[newSchedule = {}, addNew = false]">Cancel</v-btn>
+              <v-btn text color="primary" @click="[newSchedule = {}, addNew = false]">Cancel</v-btn>
               <v-btn color="primary"  @click="saveSchedule(newSchedule, true)" class="white--text"
                      :disabled="!newSchedule.startDate">
                 Save
@@ -264,7 +264,7 @@
 
                         <v-tooltip top v-if="index !== 6 && userCanEdit">
                           <template v-slot:activator="{ on }">
-                            <v-btn text small v-on="on" @click="copyTimes(schedule, item, index, 'down')">
+                            <v-btn text small color="primary" v-on="on" @click="copyTimes(schedule, item, index, 'down')">
                               <v-icon>mdi-arrow-collapse-down</v-icon>
                             </v-btn>
                           </template>
@@ -274,7 +274,7 @@
                         </v-btn>
                         <v-tooltip top v-if="index !== 0 && userCanEdit">
                           <template v-slot:activator="{ on }">
-                            <v-btn text small v-on="on" @click="copyTimes(schedule, item, index, 'up')">
+                            <v-btn text color="primary" small v-on="on" @click="copyTimes(schedule, item, index, 'up')">
                               <v-icon>mdi-arrow-collapse-up</v-icon>
                             </v-btn>
                           </template>
@@ -283,7 +283,7 @@
 
                         <v-btn text small v-else>
                         </v-btn>
-                        <v-btn text small @click="[item.startTime = null, item.endTime = null]" v-if="userCanEdit">
+                        <v-btn text small color="primary" @click="[item.startTime = null, item.endTime = null]" v-if="userCanEdit">
                           <v-icon>close</v-icon>
                         </v-btn>
                       </td>
@@ -311,43 +311,29 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.startDate | formatDate('date')}} - {{item.endDate | formatDate('date')}}</td>
               <td class="text-right">
-                <v-btn small text @click="[expanded = [item], selectedIndex = index]"
+                <v-btn small text color="primary" @click="[expanded = [item], selectedIndex = index]"
                        v-if="!expanded.includes(item)">
                   <v-icon v-if="userCanEdit">edit</v-icon>
                   <v-icon v-else>mdi-chevron-down</v-icon>
                 </v-btn>
-                <v-btn small text @click="expanded = []"
+                <v-btn small text color="primary" @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="userCanDelete">
-                  <template #activator="{ on }">
-                    <v-btn v-on="on" small text :disabled="cannotDeleteSchedule(item)">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title>
-                      <span class="text-h5">Confirm</span>
-                    </v-card-title>
-                    <v-card-text>
-                      Are you sure you want to archive this schedule?<br>
-                      <strong>{{ item.startDate | formatDate('date') }} - {{ item.endDate | formatDate('date') }}</strong>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="secondaryButton" text @click="item.deleteConfirm = false">No</v-btn>
-                      <v-btn color="brRed" class="white--text"
-                             @click="archiveSchedule(item)">Yes</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" :disabled="cannotDeleteSchedule(item)" @click="[itemToDelete=item, showDeleteDialog=true]">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+<ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+                             @confirm-delete="archiveSchedule"
+                             @closeConfirmDeleteDialog="closeDeleteDialog">
+  Are you sure you want to archive this schedule?<br>
+  <strong>{{ scheduleToDeleteString }}</strong>
+</ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -357,10 +343,12 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
+  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
   export default {
     name: 'Schedule',
     components: {
+      ConfirmDeleteDialogImproved,
 
       DatetimePickerInput
     },
@@ -391,7 +379,16 @@
         slotSchedules: [],
         saveError: false,
         saveErrorMsg: '',
-        currentlyInDST: moment().isDST()
+        currentlyInDST: moment().isDST(),
+        showDeleteDialog: false,
+        itemToDelete: null
+      }
+    },
+    computed: {
+      scheduleToDeleteString (){
+        return this.itemToDelete ?
+        `${this.$filters.formatDate(this.itemToDelete.startDate, 'date') || ''} - ${this.$filters.formatDate(this.itemToDelete.endDate, 'date') || ''}`
+            : ''
       }
     },
     created() {
@@ -650,7 +647,8 @@
         //per judson request - cannot delete schedules that have a start date prior to or equal to today (unless they have admin permission)
         return !this.userIsAdmin && moment(item.startDate) <= moment()
       },
-      async archiveSchedule(item) {
+      async archiveSchedule() {
+        const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
@@ -667,10 +665,15 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
       filterSchedules () {
         return this.schedules.filter(s => { return !s.archived})
       },
+      closeDeleteDialog(){
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     }
   }
 </script>

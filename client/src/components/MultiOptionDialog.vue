@@ -1,6 +1,6 @@
 <template>
   <v-dialog
-      v-model="openConfirmDeleteDialog"
+      v-model="openDialog"
       width="500">
     <v-card>
       <v-card-title
@@ -11,23 +11,24 @@
         </slot>
       </v-card-title>
       <v-card-text class="albatross-body-2 pb-4 default-text-color">
-        <slot>Are you sure you want to delete?</slot>
+        <slot>Please select on option.</slot>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-            @click="no"
+            @click="cancel"
             text
             color="primary"
             class="text-capitalize mr-2 mb-2"
         >
-          <slot name="no">No</slot>
+          <slot name="cancel">Cancel</slot>
         </v-btn>
-        <v-btn
+        <v-btn v-for="(option, index) in options"
+            @click="select(index)"
             color="primary"
-            class="white--text elevation-2 text-capitalize mr-2 mb-2"
-            @click="yes">
-          <slot name="yes">Yes</slot>
+            class="text-capitalize mr-2 mb-2"
+        >
+          {{option}}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -36,25 +37,23 @@
 
 <script>
 export default {
-  name: "ConfirmDeleteDialogImproved",
+  name: "MultiOptionDialog",
   props: {
-    openConfirmDeleteDialog: Boolean,
+    openDialog: Boolean,
     hideTitle:Boolean,
-    itemToDelete: Object
+    options:[]
   },
   data() {
     return {
     }
   },
   methods: {
-    yes(){
-      this.$emit('confirm-delete')
-      this.$emit('openConfirmDeleteDialog', false)
+    cancel() {
+      this.$emit('cancel')
     },
-    no() {
-      this.$emit('openConfirmDeleteDialog', false)
-      this.$emit('closeConfirmDeleteDialog')
-    }
+    select(option){
+      this.$emit('option-' + option)
+    },
   }
 }
 </script>
