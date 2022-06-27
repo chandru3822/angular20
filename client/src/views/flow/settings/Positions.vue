@@ -49,7 +49,7 @@
                 {{item.orgType}}
               </td>
               <td class="px-0">
-                <v-btn small fab text class="d-inline-block" @click="clickRow(item.id)">
+                <v-btn small fab text color="primary" class="d-inline-block" @click="clickRow(item.id)">
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
                 <confirm-delete-dialog
