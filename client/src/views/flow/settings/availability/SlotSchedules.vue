@@ -92,16 +92,12 @@
             <tr  class="text-left" :class="{'shaded-row': slotSchedules.indexOf(item) % 2}">
               <td class="text-left">{{ item.scheduleName }}</td>
               <td class="text-right">
-                <v-btn small text v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <confirm-delete-dialog
-                    v-if="userCanDelete"
-                    label="this schedule: "
-                    :item-to-delete="item.scheduleName"
-                    @confirm-delete="deleteSchedule(item)"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="userCanDelete" @click="[itemToDelete = item, showDeleteDialog = true]"><v-icon>delete</v-icon></v-btn>
+
               </td>
             </tr>
           </template>
@@ -109,7 +105,10 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+                                 @confirm-delete="deleteSchedule"
+                                 @closeConfirmDeleteDialog="closeDeleteDialog"
+    >Are you sure you want to delete this schedule: <strong>{{itemToDeleteName}}</strong></ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -120,13 +119,18 @@
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
   export default {
     name: 'SlotSchedules',
     mixins: [Vue2Filters.mixin],
     computed: {
+      itemToDeleteName() {
+        return this.itemToDelete ? this.itemToDelete.scheduleName : ''
+      }
     },
     components: {
+      ConfirmDeleteDialogImproved,
       ConfirmDeleteDialog,
       ZonelessTimePickerInput
     },
@@ -147,7 +151,9 @@
           {text: 'Schedule Name', value: 'scheduleName', show: true },
           {text: '', value: 'icons', show: true},
         ],
-        expanded: []
+        expanded: [],
+        showDeleteDialog: false,
+        itemToDelete:null,
       }
     },
     created() {
@@ -216,7 +222,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteSchedule(schedule) {
+      async deleteSchedule() {
+        const schedule = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/availability/slotSchedule/${schedule.id}`)
@@ -230,7 +237,12 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
+      closeDeleteDialog(){
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     }
   }
 </script>

@@ -63,7 +63,7 @@
           </div>
           <v-card-actions>
             <v-card-actions>
-              <v-btn color="secondary" @click="[newAppt = {}, addNew = false]">Cancel</v-btn>
+              <v-btn text color="primary" @click="[newAppt = {}, addNew = false]">Cancel</v-btn>
               <v-btn color="primary"  @click="saveAppt(newAppt)" class="white--text"
                      :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50">
                 Save
@@ -183,7 +183,7 @@
                        v-if="!expanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="expanded = []"
+                <v-btn small text color="primary" @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
                 <v-btn small text color="primary"
@@ -310,7 +310,7 @@
       deleteOptions() {
         if(this.itemToDelete) {
           return this.itemToDelete.recurringEventId ? ['one only', 'all occurrences']
-              : ['archive']
+              : ['confirm']
         }
         return null
       }
