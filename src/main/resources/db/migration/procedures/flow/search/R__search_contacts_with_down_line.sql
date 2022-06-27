@@ -53,7 +53,7 @@ BEGIN
   where user_id = p_userid;
 
   case
-    when p_searchterm is not null then
+    when p_searchterm is not null and p_searchterm != '' then
       RETURN QUERY
       SELECT limited_contacts.id,
              limited_contacts.first_name,
@@ -104,15 +104,13 @@ BEGIN
               and c.date_created is not null
               and c.archived is not true
               and (c.owner_org_ids && v_org_ids)
-              and case
-                    when p_searchterm is not null then
+              and
                       ((c.id::text like '%' || v_clean_name_search_term || '%') or
                        (c.contact_full_name_search like '%' || v_clean_name_search_term || '%') or
                        (c.contact_street_search like '%' || v_clean_address_search_term || '%') or
                        (c.contact_email_search like '%' || v_clean_email_search_term || '%') or
                        (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%') or
                        (c.contact_phone_search like '%' || v_clean_phone_search_term || '%'))
-              end
             order by c.date_created desc
             limit p_limit offset p_offset) as limited_contacts;
     else

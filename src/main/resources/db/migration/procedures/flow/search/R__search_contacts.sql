@@ -47,7 +47,7 @@ BEGIN
   end if;
 
   case
-    when p_searchterm is not null then
+    when p_searchterm is not null and p_searchterm != '' then
       RETURN QUERY
       SELECT limited_contacts.id,
              limited_contacts.first_name,

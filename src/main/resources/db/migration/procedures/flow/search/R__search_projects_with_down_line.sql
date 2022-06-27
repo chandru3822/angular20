@@ -51,7 +51,7 @@ BEGIN
   from flow.user_position up
   where user_id = p_user_id;
   case
-    when p_searchterm is not null then
+    when p_searchterm is not null and p_searchterm != '' then
       RETURN QUERY
       SELECT limited_projects.id,
              limited_projects.project_name,
@@ -96,12 +96,10 @@ BEGIN
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and (c.owner_org_ids && v_org_ids)
-                    and case
-                          when p_searchterm is not null then
+                    and
                               ((p.id::text like '%' || v_clean_name_search_term || '%') or
                               (p.project_name_search like '%' || v_clean_name_search_term || '%') or
                               (p.project_street_search like '%' || v_clean_address_search_term || '%'))
-                    end
                     and case
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
@@ -134,12 +132,10 @@ BEGIN
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and (c.owner_org_ids && v_org_ids)
-                    and case
-                          when p_searchterm is not null then
+                    and
                               ((c.contact_email_search like '%' || v_clean_email_search_term || '%') or
                               (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%') or
                               (c.contact_phone_search like '%' || v_clean_phone_search_term || '%'))
-                    end
                     and case
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
