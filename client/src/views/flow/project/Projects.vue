@@ -67,8 +67,8 @@
             No available projects
           </template>
 
-          <template #item="{item: project}">
-            <tr class="clickable">
+          <template #item="{item: project, index}">
+            <tr class="clickable"  :class="{'shaded-row': index % 2}">
               <td class="text-left pa-0">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
                   {{project.id}}

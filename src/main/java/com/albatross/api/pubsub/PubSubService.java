@@ -39,7 +39,7 @@ public class PubSubService {
     subscriber.onError((err) -> subscribers.remove(subscriber));
 
     subscribers.add(subscriber);
-    log.info("[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
+    log.debug("[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
 
     // send an initial event so the front end knows to keep reconnecting
     sendKeepAlive(subscriber);

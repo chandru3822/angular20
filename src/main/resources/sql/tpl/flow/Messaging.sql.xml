@@ -298,7 +298,7 @@ where pmt.project_id = :projectId
 
   <messaging.deleteProjectConversation><![CDATA[
     update flow.project_message_properties
-    set archived = true,
+    set closed = true,
         date_modified = now(),
         modified_by_id = :modifiedById
       where project_id = :projectId

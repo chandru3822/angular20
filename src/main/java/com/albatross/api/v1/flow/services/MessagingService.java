@@ -363,6 +363,7 @@ public class MessagingService {
   private void addSmsOwnershipNotification(ProjectMessageProperties pmp, Long modifiedByUserId) {
     final List<Long> teamIds = pmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
     final List<SmsTeam> teamUsers = getTeamUsers(pmp.getCompanyId(), teamIds);
+
     for (SmsTeam smsTeamDetails : teamUsers) {
 
       List<Long> smsTeamUserIds =
@@ -474,6 +475,10 @@ public class MessagingService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("ids", teamIds);
+
+    if (teamIds == null || teamIds.isEmpty()){
+      return List.of();
+    }
 
     return sqlCache
         .query("smsTeam.getTeamUsers", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
