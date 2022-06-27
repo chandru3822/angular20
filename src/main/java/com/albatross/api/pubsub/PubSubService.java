@@ -31,7 +31,7 @@ public class PubSubService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final Set<Subscriber> subscribers = ConcurrentHashMap.newKeySet();
 
-  @PreAuthorize("hasFeatureAccess('SMS_INBOX')") //NOTE: currently tied to this feature
+  @PreAuthorize("hasFeatureAccess('SMS_INBOX')") // NOTE: currently tied to this feature
   public Subscriber subscribe(Subscriber subscriber) {
 
     subscriber.onCompletion(() -> subscribers.remove(subscriber));
@@ -39,7 +39,8 @@ public class PubSubService {
     subscriber.onError((err) -> subscribers.remove(subscriber));
 
     subscribers.add(subscriber);
-    log.debug("[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
+    log.debug(
+        "[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
 
     // send an initial event so the front end knows to keep reconnecting
     sendKeepAlive(subscriber);
@@ -114,6 +115,7 @@ public class PubSubService {
               .formatted(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
       subscriber.send(SseEmitter.event().name("ping").data(message).reconnectTime(5000));
     } catch (IOException e) {
+      log.error("[PubSub] Error sending keepalive ping", e);
       subscriber.completeWithError(e);
     }
   }

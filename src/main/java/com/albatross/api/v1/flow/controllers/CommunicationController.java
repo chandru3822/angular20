@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
@@ -60,26 +61,40 @@ public class CommunicationController {
   }
 
   @PostMapping(value = "/sendTextsForProject/{projectId}")
-  public Map<String, Object> sendTextsForProject(@PathVariable Long projectId,
-                                                 @RequestBody SendTextsRequest sendTexts) {
+  public Map<String, Object> sendTextsForProject(
+      @PathVariable Long projectId, @RequestBody SendTextsRequest sendTexts) {
     User user = securityService.getCurrentUser();
     String groupId = UUID.randomUUID().toString();
     Long contactId = sendTexts.getUserIDs().get(0);
     Contact contact = contactService.getContact(contactId);
     log.debug("TWILIO: attempting text for contact ID: {}", contactId);
-    if(null != contact) {
+    if (null != contact) {
       String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
       try {
         String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
         Optional<Project> projectIn = projectService.getProject(projectId);
+        if (projectIn.isEmpty()) {
+          log.error("MESSAGING: Missing project id={}", projectId);
+          throw new ApiException("Unable to find project");
+        }
         Project project = projectIn.get();
 
         ProjectDetails projectDetails = getProjectTemplateFields(projectId, project.getTimeZone());
 
-        Map<String, Object> contextMap = Map.of("contact", contact, "project", project,
-          "user", user, "projectDetails", projectDetails);
+        Map<String, Object> contextMap =
+            Map.of(
+                "contact",
+                contact,
+                "project",
+                project,
+                "user",
+                user,
+                "projectDetails",
+                projectDetails);
 
-        String template = communicationService.renderTemplate(sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), contextMap);
+        String template =
+            communicationService.renderTemplate(
+                sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), contextMap);
 
         communicationService.queueTextMessagesForProject(
             groupId,
@@ -101,20 +116,23 @@ public class CommunicationController {
         if (m.find()) {
           String invalidParamName = m.group(1);
           throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "Invalid parameter " + invalidParamName + " ", new Exception());
-        }
-        else {
+              HttpStatus.BAD_REQUEST,
+              "Invalid parameter " + invalidParamName + " ",
+              new Exception());
+        } else {
           throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
+              HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
         }
       } catch (Exception e) {
         log.error("MESSAGING: Error queueing SMS message ", e);
         throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
+            HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
       }
     } else {
       throw new ResponseStatusException(
-        HttpStatus.BAD_REQUEST, "Could not find contact for contact id: " + contactId, new Exception());
+          HttpStatus.BAD_REQUEST,
+          "Could not find contact for contact id: " + contactId,
+          new Exception());
     }
   }
 
@@ -240,8 +258,8 @@ public class CommunicationController {
   }
 
   private ProjectDetails getProjectTemplateFields(Long projectId, String projectTimeZone) {
-    ProjectDetails projectDetails =  new ProjectDetails();
-    Optional<String> primaryFinancierName  = projectService.getPrimaryFinancierName(projectId);
+    ProjectDetails projectDetails = new ProjectDetails();
+    Optional<String> primaryFinancierName = projectService.getPrimaryFinancierName(projectId);
     String financier = "";
     if (primaryFinancierName.isPresent()) {
       financier = primaryFinancierName.get();
@@ -249,52 +267,95 @@ public class CommunicationController {
     }
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
-    Optional<ProjectProcessStepEvent> activeCloserAppointment = projectProcessStepEventService.getActiveCloserAppointment(projectId);
+    Optional<ProjectProcessStepEvent> activeCloserAppointment =
+        projectProcessStepEventService.getActiveCloserAppointment(projectId);
     String closerAppointmentTime = "";
     String ahjInspectionTime = "";
 
     if (activeCloserAppointment.isPresent()) {
       closerAppointmentTime = activeCloserAppointment.get().getStartTime().toString();
-      LocalDateTime timestampFunctionResult = (closerAppointmentTime !=  null) ? LocalDateTime.parse(closerAppointmentTime, dateTimeFormatter) : null;
-      ZonedDateTime zoneTimestampFunctionResult = (timestampFunctionResult != null) ? timestampFunctionResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(projectTimeZone)) : null;
-      closerAppointmentTime = zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+      LocalDateTime timestampFunctionResult =
+          (closerAppointmentTime != null)
+              ? LocalDateTime.parse(closerAppointmentTime, dateTimeFormatter)
+              : null;
+      ZonedDateTime zoneTimestampFunctionResult =
+          (timestampFunctionResult != null)
+              ? timestampFunctionResult
+                  .atZone(ZoneId.of("UTC"))
+                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
+              : null;
+      closerAppointmentTime =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
       projectDetails.setLocalCloserAppointmentStartTime(closerAppointmentTime);
     }
 
-    Optional<ProjectProcessStepEvent> activeAhjInspectionWork = projectProcessStepEventService.getActiveAhjInspectionWork(projectId);
+    Optional<ProjectProcessStepEvent> activeAhjInspectionWork =
+        projectProcessStepEventService.getActiveAhjInspectionWork(projectId);
     if (activeAhjInspectionWork.isPresent()) {
       ahjInspectionTime = activeAhjInspectionWork.get().getStartTime().toString();
-      LocalDateTime timestampFunctionResult = (ahjInspectionTime !=  null) ? LocalDateTime.parse(ahjInspectionTime, dateTimeFormatter) : null;
-      ZonedDateTime zoneTimestampFunctionResult = (timestampFunctionResult != null) ? timestampFunctionResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(projectTimeZone)) : null;
-      ahjInspectionTime = zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+      LocalDateTime timestampFunctionResult =
+          (ahjInspectionTime != null)
+              ? LocalDateTime.parse(ahjInspectionTime, dateTimeFormatter)
+              : null;
+      ZonedDateTime zoneTimestampFunctionResult =
+          (timestampFunctionResult != null)
+              ? timestampFunctionResult
+                  .atZone(ZoneId.of("UTC"))
+                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
+              : null;
+      ahjInspectionTime =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
       projectDetails.setAhjInspectionWorkStartTime(ahjInspectionTime);
     }
 
-    Optional<ProjectProcessStepEvent> activeInstallation = projectProcessStepEventService.getActiveInstallation(projectId);
+    Optional<ProjectProcessStepEvent> activeInstallation =
+        projectProcessStepEventService.getActiveInstallation(projectId);
     String installationStartDate = "";
     String installationStartTime = "";
     String installationLatestStartTime = "";
     String installationEndTime = "";
     if (activeInstallation.isPresent()) {
       installationStartTime = activeInstallation.get().getStartTime().toString();
-      LocalDateTime timestampFunctionStartTimeResult = (installationStartTime !=  null) ? LocalDateTime.parse(installationStartTime, dateTimeFormatter) : null;
-      ZonedDateTime zoneStartTimestampFunctionResult = (timestampFunctionStartTimeResult != null) ? timestampFunctionStartTimeResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(projectTimeZone)) : null;
-      installationStartDate = zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-      installationStartTime = zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+      LocalDateTime timestampFunctionStartTimeResult =
+          (installationStartTime != null)
+              ? LocalDateTime.parse(installationStartTime, dateTimeFormatter)
+              : null;
+      ZonedDateTime zoneStartTimestampFunctionResult =
+          (timestampFunctionStartTimeResult != null)
+              ? timestampFunctionStartTimeResult
+                  .atZone(ZoneId.of("UTC"))
+                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
+              : null;
+      installationStartDate =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+      installationStartTime =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
       zoneStartTimestampFunctionResult = zoneStartTimestampFunctionResult.plusHours(1L);
-      installationLatestStartTime = zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+      installationLatestStartTime =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
 
       installationEndTime = activeInstallation.get().getEndTime().toString();
-      LocalDateTime timestampFunctionEndTimeResult = (installationEndTime !=  null) ? LocalDateTime.parse(installationEndTime, dateTimeFormatter) : null;
-      ZonedDateTime zoneEndTimestampFunctionResult = (timestampFunctionEndTimeResult != null) ? timestampFunctionEndTimeResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(projectTimeZone)) : null;
-      installationEndTime = zoneEndTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+      LocalDateTime timestampFunctionEndTimeResult =
+          (installationEndTime != null)
+              ? LocalDateTime.parse(installationEndTime, dateTimeFormatter)
+              : null;
+      ZonedDateTime zoneEndTimestampFunctionResult =
+          (timestampFunctionEndTimeResult != null)
+              ? timestampFunctionEndTimeResult
+                  .atZone(ZoneId.of("UTC"))
+                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
+              : null;
+      installationEndTime =
+          zoneEndTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
 
       projectDetails.setInstallationDate(installationStartDate);
       projectDetails.setInstallationStartTime(installationStartTime);
       projectDetails.setInstallationLatestStartTime(installationLatestStartTime);
       projectDetails.setInstallationEndTime(installationEndTime);
 
-      Optional<String> scopeOfWork = projectProcessStepService.getInstallationScopeOfWork(activeInstallation.get().getProjectProcessStepId());
+      Optional<String> scopeOfWork =
+          projectProcessStepService.getInstallationScopeOfWork(
+              activeInstallation.get().getProjectProcessStepId());
       if (scopeOfWork.isPresent()) {
         projectDetails.setInstallationScopeOfWork(scopeOfWork.get());
       }
@@ -310,7 +371,13 @@ public class CommunicationController {
 
   @Data
   public static class ProjectDetails {
-    private String primaryFinancier, localCloserAppointmentStartTime, ahjInspectionWorkStartTime,
-    installationDate, installationStartTime, installationLatestStartTime, installationEndTime, installationScopeOfWork;
+    private String primaryFinancier,
+        localCloserAppointmentStartTime,
+        ahjInspectionWorkStartTime,
+        installationDate,
+        installationStartTime,
+        installationLatestStartTime,
+        installationEndTime,
+        installationScopeOfWork;
   }
 }
