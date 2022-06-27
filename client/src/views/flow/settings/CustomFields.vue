@@ -95,12 +95,7 @@
                       <v-icon v-else-if="item.custom">add</v-icon>
                       <v-icon v-else>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                      v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      label="this field: "
-                      :item-to-delete="item.fieldName"
-                      @confirm-delete="deleteField(item)"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -306,6 +301,13 @@
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+                                 @confirm-delete="deleteField"
+                                 @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>
+      <template v-slot:no >Cancel</template>
+      <template v-slot:yes >Delete</template>
+    </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -327,6 +329,7 @@ import {
 } from "@/helpers/helpers";
 import constants from "@/helpers/constants";
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
 export default {
   name: "CustomFields",
@@ -335,6 +338,7 @@ export default {
     apiPath: {type: String}
   },
   components: {
+    ConfirmDeleteDialogImproved,
     ConfirmDeleteDialog,
     draggable
   },
@@ -379,8 +383,15 @@ export default {
         companyId: this.$store.state.user.details.companyId,
         listOfValues: [],
         customFieldObjectTypes: []
-      }
+      },
+      showDeleteDialog: false,
+      itemToDelete: null
     };
+  },
+  computed : {
+    itemToDeleteName() {
+      return this.itemToDelete ? this.itemToDelete.fieldName : ''
+    }
   },
   async created() {
     this.fieldsLoading = true
@@ -511,7 +522,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
       }
     },
-    async deleteField(item) {
+    async deleteField() {
+      const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
         const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, []);
@@ -537,6 +549,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
         this.$store.commit(AppMutations.SET_LOADING, false);
       }
+      this.closeDeleteDialog()
     },
     changeSelectedObjectType() {
       if (this.selectedObjectType.id === -1) {
@@ -640,6 +653,10 @@ export default {
       return this.customFields.filter(cf => {
         return !cf.archived;
       });
+    },
+    closeDeleteDialog(){
+      this.showDeleteDialog = false
+      this.itemToDelete = null
     }
   }
 };
