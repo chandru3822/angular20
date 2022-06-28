@@ -14,7 +14,7 @@ public class NotificationSubscriber extends Subscriber {
   private final Set<NotificationTopic> subscribedTypes;
 
   public NotificationSubscriber(EventChannel eventChannel, Long userId, Set<NotificationTopic> subscribedTypes) {
-    super(eventChannel, userId);
+    super(eventChannel, userId, Long.MAX_VALUE);
     this.subscribedTypes = subscribedTypes;
   }
 
