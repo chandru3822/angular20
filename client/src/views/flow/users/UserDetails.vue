@@ -91,7 +91,7 @@
         <div v-if="!$store.state.project.leftSideSplit && user && user.id"
              class="px-2 height-one-hunned overflow-y-auto">
           <v-toolbar flat color="transparent">
-            <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">User Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn
@@ -115,6 +115,13 @@
             <span class="detail-label">Username:</span>
             <span class="detail-item">{{ user.username }}</span> <br/>
           </div>
+          <v-divider class="mt-4" v-if="user.loginAttempts >= 9"></v-divider>
+          <v-card color="#ffcac7" class="pa-4 mx-2 mt-2" v-if="user.loginAttempts >= 9">
+            <label>Too Many Attempts, User Account Locked</label><br/>
+            <v-btn v-if="userIsAdmin" @click="unlockUserAccount" color="primaryCustom" class="white--text mt-2">
+              Unlock
+            </v-btn>
+          </v-card>
           <v-divider class="mt-4"></v-divider>
           <div class="mt-2">
             <v-toolbar color="transparent" flat>

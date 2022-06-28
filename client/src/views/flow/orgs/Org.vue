@@ -134,7 +134,7 @@
         <div v-if="!$store.state.project.leftSideSplit && org && org.id"
              class="px-2 height-one-hunned overflow-y-auto">
           <v-toolbar flat color="transparent">
-            <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Organization Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn

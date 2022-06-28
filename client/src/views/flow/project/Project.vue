@@ -146,7 +146,7 @@
         </div>
         <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
           <v-toolbar flat>
-            <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Project Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn
