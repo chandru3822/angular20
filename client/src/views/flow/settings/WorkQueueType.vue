@@ -2,7 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/workQueue/types'">
+        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/workQueue/types'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
@@ -20,10 +20,10 @@
               <v-btn text color="primary" v-if="!editType" class="" @click="[editType = !editType]">
                 <v-icon>edit</v-icon>
               </v-btn>
-              <v-btn text class="" v-else @click="saveType()">
+              <v-btn text color="primary" class="" v-else @click="saveType()">
                 <v-icon>save</v-icon>
               </v-btn>
-              <v-btn text v-if="editType" class="" @click="[editType = !editType]">
+              <v-btn text color="primary" v-if="editType" class="" @click="[editType = !editType]">
                 cancel
               </v-btn>
             </div>
@@ -142,19 +142,13 @@
               <v-btn text color="primary" v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
                 <v-icon>edit</v-icon>
               </v-btn>
-              <v-btn text class="" v-else @click="saveType()">
+              <v-btn text color="primary" class="" v-else @click="saveType()">
                 <v-icon>save</v-icon>
               </v-btn>
-              <v-btn text v-if="editSchedule" class="" @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]">
+              <v-btn text color="primary" v-if="editSchedule" class="" @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]">
                 cancel
               </v-btn>
             </div>
-
-            <v-btn
-              text
-            >
-              Cancel
-            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
 

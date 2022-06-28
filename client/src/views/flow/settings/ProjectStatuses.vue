@@ -80,7 +80,7 @@
                     label="Select a Category"
                     item-text="projectStatusType"
                           attach></v-autocomplete>
-          <v-btn :disabled="!newType.projectStatusTypeId || !newType.projectStatusType" @click="saveType(newType, true)">Save</v-btn>
+          <v-btn color="primary" :disabled="!newType.projectStatusTypeId || !newType.projectStatusType" @click="saveType(newType, true)">Save</v-btn>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -219,7 +219,7 @@
                 <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[initItemColor(item), expanded = [item]]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
                 <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     label="this status type: "

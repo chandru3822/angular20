@@ -29,7 +29,7 @@
               </v-avatar>
             </div>
             <v-color-picker v-if="showColor" class="my-3" v-model="newCategory.color" :canvas-height="colorOptions.height" :width="colorOptions.width" :mode="colorOptions.mode" :hide-mode-switch="colorOptions.hideModeSwitch"></v-color-picker>
-            <v-btn :disabled="!newCategory.workQueueCategory" @click="addNewCategory">Save</v-btn>
+            <v-btn color="primary" :disabled="!newCategory.workQueueCategory" @click="addNewCategory">Save</v-btn>
           </div>
           <v-data-table
               :headers="headers"
@@ -54,7 +54,7 @@
             <template #item="{ item }">
               <tr :class="{'shaded-row': workQueueCategories.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text icon small class="handle" v-if="userCanEdit">
+                  <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -75,7 +75,7 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text  v-if="userCanEdit">
+                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
                       <v-icon v-if="selectedWorkQueueCategoryId === item.id" @click="saveCategory(item)">save</v-icon>
                       <v-icon v-else @click="selectedWorkQueueCategoryId = item.id">edit</v-icon>
                     </v-btn>
