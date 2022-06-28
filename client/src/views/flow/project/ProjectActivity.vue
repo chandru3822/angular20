@@ -226,7 +226,6 @@ export default {
       }
     },
     isSidebarCollapsed() {
-      debugger
       return !this.$route.path.indexOf('inbox') && this.$store.state.project.rightSideSplit
     },
     smsOwnershipEvents() {

@@ -1913,4 +1913,12 @@ public class ProjectProcessStepService {
 
     return passed;
   }
+
+  public Optional<String> getInstallationScopeOfWork(Long projectProcessStepId) {
+    return
+      sqlCache.get(
+        "projectProcessStep.getProjectInstallationScopeOfWork",
+        Map.of("projectProcessStepId", projectProcessStepId),
+        new SingleColumnRowMapper<>(String.class));
+  }
 }
