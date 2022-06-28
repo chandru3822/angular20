@@ -269,6 +269,7 @@ public class CommunicationController {
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
     Optional<ProjectProcessStepEvent> activeCloserAppointment =
         projectProcessStepEventService.getActiveCloserAppointment(projectId);
+
     String closerAppointmentTime = "";
     String ahjInspectionTime = "";
 
