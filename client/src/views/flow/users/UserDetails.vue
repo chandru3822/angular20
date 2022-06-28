@@ -63,6 +63,7 @@
                             v-model="tempUser.username"></v-text-field>
               <v-text-field text class="mt-4"
                             v-if="userIsAdmin"
+                            :rules="passwordRule"
                             label="Password"
                             placeholder=" "
                             v-model="tempUser.newPassword"></v-text-field>
@@ -330,6 +331,7 @@ export default {
         v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"
       ],
       usernameRule: constants.USERNAME_RULES,
+      passwordRule: constants.PASSWORD_RULES,
       emailRule: constants.EMAIL_RULES,
       snackbar: {},
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),

@@ -111,12 +111,14 @@
                             placeholder=" "
                             :rules="contactPhoneRule"
                             :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             v-model="tempContact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
                             placeholder=" "
                             :rules="contactPhoneRule"
                             :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             v-model="tempContact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
@@ -124,6 +126,7 @@
                             placeholder=" "
                             :rules="emailRules"
                             :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             v-model="tempContact.email"></v-text-field>
             </div>
             <v-autocomplete v-model="tempContact.owner"
