@@ -53,7 +53,7 @@
                 tabindex=1
                 v-model="newStep.processStepName"
             ></v-text-field>
-            <v-btn :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
+            <v-btn color="primary" :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">

@@ -42,7 +42,7 @@
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="!createNew && userCanAdd" @click="createNew = !createNew">
+            <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Create Group</span>
             </v-btn>
@@ -65,6 +65,7 @@
             Save
           </v-btn>
           <v-btn
+              text color="primary"
             @click="[newGroup = {}, createNew = false]">
             Cancel
           </v-btn>
@@ -95,7 +96,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <v-btn text icon small class="handle" v-if="userCanEdit">
+                    <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
@@ -105,8 +106,8 @@
                                     v-if="item.edit"
                                     v-model="item.groupName">
                         <template slot="append-outer">
-                          <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
-                          <v-icon @click="item.edit = false">clear</v-icon>
+                          <v-icon color="primary" @click="[saveGroupName(item), item.edit = false]">save</v-icon>
+                          <v-icon color="primary" @click="item.edit = false">clear</v-icon>
                         </template>
                       </v-text-field>
                       <a style="text-decoration: underline;" v-else @click="item.edit = true">
@@ -117,12 +118,12 @@
                   </td>
                   <td>
                     <div class="item-icons">
-                      <v-btn v-if="userCanAdd" small text
+                      <v-btn v-if="userCanAdd" small text color="primary"
                              @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                         <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                         <v-icon v-else>add</v-icon>
                       </v-btn>
-                      <v-btn small text
+                      <v-btn small text color="primary"
                              @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
@@ -224,7 +225,7 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <v-btn @click="addField = false">Cancel</v-btn>
+                    <v-btn color="primary" @click="addField = false">Cancel</v-btn>
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -240,7 +241,7 @@
                               :key="index" class="pa-0" color="transparent">
                         <v-list-item class="grab">
                           <v-list-item-action>
-                            <v-icon v-if="userCanEdit">drag_handle</v-icon>
+                            <v-icon color="primary" v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
                             <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
@@ -394,7 +395,7 @@
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small v-on="{...tooltip, ...menu}"
+                                  <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
                                          v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
                                     <v-icon>mdi-cursor-move</v-icon>
                                   </v-btn>

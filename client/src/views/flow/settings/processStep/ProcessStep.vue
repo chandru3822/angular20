@@ -2,7 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/processSteps'">
+        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/processSteps'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
@@ -24,10 +24,10 @@
             <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else @click="saveProcessStep($event,true)">
+            <v-btn text color="primary" class="" v-else @click="saveProcessStep($event,true)">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text  v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
+            <v-btn text color="primary" v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
               cancel
             </v-btn>
           </div>

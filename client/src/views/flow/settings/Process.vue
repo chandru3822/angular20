@@ -15,7 +15,7 @@
             <span v-else>
               {{  processId ? process.processName : 'New Process Step'}}
             </span>
-            <v-btn class="d-inline-block" small text v-if="processId && editName && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveProcess()">
+            <v-btn class="d-inline-block" small text color="primary" v-if="processId && editName && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveProcess()">
               <v-icon>save</v-icon>
             </v-btn>
             <v-btn class="d-inline-block" small text color="primary" v-else-if="processId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="editName = true">
@@ -23,7 +23,7 @@
             </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAvailableProcessSteps()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+            <v-btn text color="primary" @click="getAvailableProcessSteps()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
               {{addNew ? 'Cancel' : 'Add Process Step'}}
             </v-btn>
           </v-toolbar-items>
@@ -49,7 +49,7 @@
           ></v-autocomplete>
 <!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
-          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
+          <v-btn color="primary" :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
                  @click="assignProcessStep">
             Save
           </v-btn>
@@ -111,13 +111,11 @@
                                 attach
                 ></v-autocomplete>
                 <div class="mt-3 text-center">
-                  <v-btn :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
+                  <v-btn color="primary" :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
                          @click="saveProcessStepProcess(item)">
-                    <v-icon>save</v-icon>
                     Save
                   </v-btn>
-                  <v-btn class="ml-3" @click="expanded = []">
-                    <v-icon>remove</v-icon>
+                  <v-btn text color="primary" class="ml-3" @click="expanded = []">
                     Cancel
                   </v-btn>
                 </div>

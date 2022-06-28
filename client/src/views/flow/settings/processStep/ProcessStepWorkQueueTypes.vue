@@ -6,7 +6,7 @@
         <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text
+          <v-btn text color="primary"
                  @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [], eventStatuses: [] }, getWorkQueueTypesForItem(), prepTempStatuses(newWorkQueueType, false), prepTempProcessStepStatuses(newWorkQueueType, false), prepTempEventStatuses(newWorkQueueType, false)]"
                  v-if="userCanAdd">
             <v-icon v-if="!addNewWorkQueueType">add</v-icon>
@@ -144,7 +144,7 @@
               </template>
             </template>
           </v-autocomplete>
-          <v-btn
+          <v-btn color="primary"
             :disabled="!newWorkQueueType.workQueueTypeId || (!newWorkQueueType.projectStatuses || newWorkQueueType.projectStatuses.length === 0)
           || (!newWorkQueueType.processStepStatuses || newWorkQueueType.processStepStatuses.length === 0)
            || (showEventFields && (!newWorkQueueType.eventStatuses || newWorkQueueType.eventStatuses.length === 0))"
@@ -288,7 +288,7 @@
                   </template>
                 </v-autocomplete>
 
-                <v-btn class="mt-3" v-if="userCanEdit"
+                <v-btn class="mt-3" v-if="userCanEdit" color="primary"
                        :disabled="(!item.projectStatuses || item.projectStatuses.filter(ps => !ps.archived).length === 0)
                                     || (!item.processStepStatuses || item.processStepStatuses.filter(ps => !ps.archived).length === 0)
                                     || (showEventFields && (!item.eventStatuses || item.eventStatuses.filter(ps => !ps.archived).length === 0))"
@@ -327,7 +327,7 @@
                            v-if="!expanded.includes(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn text @click="expanded = []" v-else>cancel
+                    <v-btn text color="primary" @click="expanded = []" v-else>cancel
                     </v-btn>
                     <confirm-delete-dialog
                         v-if="userCanEdit"

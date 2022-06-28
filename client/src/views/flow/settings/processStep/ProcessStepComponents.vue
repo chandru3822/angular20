@@ -59,13 +59,13 @@
               <v-toolbar-title class="app-title">Process Step Status Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text
+                <v-btn text color="primary"
                        @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
                        v-if="userCanAdd">
                   <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
                   {{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}
                 </v-btn>
-                <v-btn text @click="expandPsst = !expandPsst">
+                <v-btn text color="primary" @click="expandPsst = !expandPsst">
                   <v-icon v-if="!expandPsst">mdi-chevron-down</v-icon>
                   <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
@@ -138,11 +138,11 @@
               <v-toolbar-title class="app-title">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getLinksForProcessStep" v-if="userCanAdd">
+                <v-btn text color="primary" @click="getLinksForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewLink">add</v-icon>
                   {{ addNewLink ? 'Cancel' : 'Add Link' }}
                 </v-btn>
-                <v-btn text @click="expandLinks = !expandLinks">
+                <v-btn text color="primary" @click="expandLinks = !expandLinks">
                   <v-icon v-if="!expandLinks">mdi-chevron-down</v-icon>
                   <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
@@ -191,11 +191,11 @@
               <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getAttachmentTypesForProcessStep" v-if="userCanAdd">
+                <v-btn text color="primary" @click="getAttachmentTypesForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewType">add</v-icon>
                   {{ addNewType ? 'Cancel' : 'Add Type' }}
                 </v-btn>
-                <v-btn text @click="expandAttachmentTypes = !expandAttachmentTypes">
+                <v-btn text color="primary" @click="expandAttachmentTypes = !expandAttachmentTypes">
                   <v-icon v-if="!expandAttachmentTypes">mdi-chevron-down</v-icon>
                   <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>

@@ -18,7 +18,7 @@
                         placeholder="Enter new process name"
                         label="Process">
           </v-text-field>
-          <v-btn v-if="addNew" @click="addNewProcess">Save</v-btn>
+          <v-btn color="primary" :disabled="!newProcess.processName" v-if="addNew" @click="addNewProcess">Save</v-btn>
           <v-list v-for="(p, index) in filterBy(processes, false, 'archived')"
                   :key="index">
             <v-list-item :class="{'shaded-row': index % 2}">
