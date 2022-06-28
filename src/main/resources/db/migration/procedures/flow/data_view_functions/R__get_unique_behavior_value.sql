@@ -26,6 +26,13 @@ BEGIN
            inner join flow.state s on cs.state_id = s.id
     where cs.id = p_value::integer;
 
+  elsif p_unique_behavior_type = 'STATE_FIELD_ID_TRIGGER' then
+    select s.id
+    into v_value
+    from flow.company_state cs
+           inner join flow.state s on cs.state_id = s.id
+    where cs.id = p_value::integer;
+
   elsif p_unique_behavior_type = 'COUNTRY_FIELD_TRIGGER' then
     select c.country
     into v_value
@@ -129,7 +136,7 @@ BEGIN
     from flow.contact c
     where c.id = p_value::integer;
 
-  elsif p_unique_behavior_type = 'DEFAULT_CFGA_TRIGGER' then
+  elsif p_unique_behavior_type = 'DEFAULT_CFGA_TRIGGER' or p_unique_behavior_type = 'DEFAULT_CFGA_TRIGGER_INTEGER' then
 
     if p_type = 'PROCESS_STEP' then
 
