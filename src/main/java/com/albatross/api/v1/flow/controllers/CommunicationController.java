@@ -266,6 +266,11 @@ public class CommunicationController {
       projectDetails.setPrimaryFinancier(financier);
     }
 
+    // If the project has no Time Zone set
+    if (projectTimeZone == null) {
+      return projectDetails;
+    }
+
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
     Optional<ProjectProcessStepEvent> activeCloserAppointment =
         projectProcessStepEventService.getActiveCloserAppointment(projectId);
@@ -273,7 +278,7 @@ public class CommunicationController {
     String closerAppointmentTime = "";
     String ahjInspectionTime = "";
 
-    if (activeCloserAppointment.isPresent() && projectTimeZone != null) {
+    if (activeCloserAppointment.isPresent()) {
       closerAppointmentTime = activeCloserAppointment.get().getStartTime().toString();
       LocalDateTime timestampFunctionResult =
           (closerAppointmentTime != null)
@@ -292,7 +297,7 @@ public class CommunicationController {
 
     Optional<ProjectProcessStepEvent> activeAhjInspectionWork =
         projectProcessStepEventService.getActiveAhjInspectionWork(projectId);
-    if (activeAhjInspectionWork.isPresent() && projectTimeZone != null) {
+    if (activeAhjInspectionWork.isPresent()) {
       ahjInspectionTime = activeAhjInspectionWork.get().getStartTime().toString();
       LocalDateTime timestampFunctionResult =
           (ahjInspectionTime != null)
@@ -315,7 +320,7 @@ public class CommunicationController {
     String installationStartTime = "";
     String installationLatestStartTime = "";
     String installationEndTime = "";
-    if (activeInstallation.isPresent() && projectTimeZone != null) {
+    if (activeInstallation.isPresent()) {
       installationStartTime = activeInstallation.get().getStartTime().toString();
       LocalDateTime timestampFunctionStartTimeResult =
           (installationStartTime != null)
