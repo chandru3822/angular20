@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newSchedule = {}]" color="primary">
+            <v-btn text color="primary" @click="[addNew = !addNew, newSchedule = {}]">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>

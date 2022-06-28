@@ -17,7 +17,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">SMS Teams</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addTeam = !addTeam, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'ADD')">
+            <v-btn text color="primary" @click="[addTeam = !addTeam, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addTeam ? 'Cancel' : 'Add New'}}</span>
             </v-btn>

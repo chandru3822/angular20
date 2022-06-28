@@ -41,7 +41,7 @@
           <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>

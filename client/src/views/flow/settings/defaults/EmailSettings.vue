@@ -9,7 +9,7 @@
             <v-btn text v-if="addNew" @click="addEmail()" :disabled="!addFormValid">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text @click="[addNew = !addNew, newEmail = {}]">
+            <v-btn text color="primary" @click="[addNew = !addNew, newEmail = {}]">
               <span>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>

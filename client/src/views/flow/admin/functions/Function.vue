@@ -11,7 +11,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newParam = {}, getDataTypes(), getParameterTypes(), getSystemValues()]">
+            <v-btn text color="primary" @click="[addNew = !addNew, newParam = {}, getDataTypes(), getParameterTypes(), getSystemValues()]">
               {{addNew ? 'Cancel' : 'Add New Param'}}
             </v-btn>
           </v-toolbar-items>

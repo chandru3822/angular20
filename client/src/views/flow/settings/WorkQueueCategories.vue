@@ -5,7 +5,7 @@
         <v-toolbar flat class="app-toolbar">
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Functions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newFunction = {}, getDataTypes(), getFunctionTypes()]">
+            <v-btn text color="primary" @click="[addNew = !addNew, newFunction = {}, getDataTypes(), getFunctionTypes()]">
               {{addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>

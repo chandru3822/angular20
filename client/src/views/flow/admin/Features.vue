@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Features</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, selectedFeature = {}]">
+            <v-btn text color="primary" @click="[addNew = !addNew, selectedFeature = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
