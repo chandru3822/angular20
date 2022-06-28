@@ -272,7 +272,7 @@ public class CommunicationController {
     String closerAppointmentTime = "";
     String ahjInspectionTime = "";
 
-    if (activeCloserAppointment.isPresent()) {
+    if (activeCloserAppointment.isPresent() && projectTimeZone != null) {
       closerAppointmentTime = activeCloserAppointment.get().getStartTime().toString();
       LocalDateTime timestampFunctionResult =
           (closerAppointmentTime != null)
@@ -291,7 +291,7 @@ public class CommunicationController {
 
     Optional<ProjectProcessStepEvent> activeAhjInspectionWork =
         projectProcessStepEventService.getActiveAhjInspectionWork(projectId);
-    if (activeAhjInspectionWork.isPresent()) {
+    if (activeAhjInspectionWork.isPresent() && projectTimeZone != null) {
       ahjInspectionTime = activeAhjInspectionWork.get().getStartTime().toString();
       LocalDateTime timestampFunctionResult =
           (ahjInspectionTime != null)
@@ -314,7 +314,7 @@ public class CommunicationController {
     String installationStartTime = "";
     String installationLatestStartTime = "";
     String installationEndTime = "";
-    if (activeInstallation.isPresent()) {
+    if (activeInstallation.isPresent() && projectTimeZone != null) {
       installationStartTime = activeInstallation.get().getStartTime().toString();
       LocalDateTime timestampFunctionStartTimeResult =
           (installationStartTime != null)
