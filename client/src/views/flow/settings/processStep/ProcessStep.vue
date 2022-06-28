@@ -21,7 +21,7 @@
             </div>
           </div>
           <div class="text-right" v-if="userCanEdit">
-            <v-btn text v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
+            <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
             <v-btn text class="" v-else @click="saveProcessStep($event,true)">

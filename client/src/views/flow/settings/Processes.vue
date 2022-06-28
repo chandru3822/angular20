@@ -26,7 +26,7 @@
                 {{p.processName}}
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <v-btn @click="goToProcess(p.id)" text>
+                <v-btn @click="goToProcess(p.id)" text color="primary">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-list-item-action>

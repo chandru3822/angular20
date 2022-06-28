@@ -83,7 +83,7 @@
                 <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
               </td>
               <td>
-                <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
+                <v-btn small text color="primary" @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">

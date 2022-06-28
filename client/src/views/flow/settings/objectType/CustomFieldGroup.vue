@@ -427,7 +427,7 @@
 
                         </v-menu>
                         <v-btn text small v-else></v-btn>
-                        <v-btn text small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                        <v-btn text color="primary" small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
                         <confirm-delete-dialog

@@ -58,7 +58,7 @@
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToEvent(item.id)">{{item.eventName}}</td>
                   <td class="text-right">
-                    <v-btn small text @click="goToEvent(item.id)">
+                    <v-btn small text color="primary" @click="goToEvent(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog

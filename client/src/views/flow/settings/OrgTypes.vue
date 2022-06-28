@@ -39,7 +39,7 @@
                  @click="saveOrgType(newOrgType, true)">
             Save
           </v-btn>
-          <v-btn @click="[addType = !addType, newOrgType = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addType = !addType, newOrgType = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -93,7 +93,7 @@
               <td class="text-left">{{ item.level || 'n/a' }}</td>
               <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>

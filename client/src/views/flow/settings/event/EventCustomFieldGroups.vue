@@ -424,7 +424,7 @@
                               </v-row>
                             </div>
                           </v-list-item-content>
-                          <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit)]">
+                          <v-btn text color="primary" small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit)]">
                             <v-icon>edit</v-icon>
                           </v-btn>
                           <v-menu offset-y

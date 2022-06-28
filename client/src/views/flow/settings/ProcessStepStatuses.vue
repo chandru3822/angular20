@@ -123,7 +123,7 @@
                     {{item.rootProcessStepStatusType}}
                   </td>
                   <td class="text-right">
-                    <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                    <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>

@@ -35,7 +35,7 @@
               <td class="text-left">{{item.roleName}}</td>
               <!-- icon column -->
               <td class="text-right">
-                <v-btn text @click="clickRow(item.id)">
+                <v-btn text color="primary" @click="clickRow(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-dialog

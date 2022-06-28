@@ -18,7 +18,7 @@
             <v-btn class="d-inline-block" small text v-if="processId && editName && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveProcess()">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn class="d-inline-block" small text v-else-if="processId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="editName = true">
+            <v-btn class="d-inline-block" small text color="primary" v-else-if="processId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="editName = true">
               <v-icon>edit</v-icon>
             </v-btn>
           <v-spacer></v-spacer>

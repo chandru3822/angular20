@@ -84,7 +84,7 @@
                     </v-btn>
                   </td>
                   <td class="text-right pl-0">
-                    <v-btn small text :to="`/settings/processStep/${item.id}/components`">
+                    <v-btn small text color="primary" :to="`/settings/processStep/${item.id}/components`">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <confirm-delete-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"

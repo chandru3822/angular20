@@ -452,7 +452,7 @@
                           <td class="text-left">{{ cp.initialProcessStepStatusType }}</td>
                           <td class="text-left">{{ cp.existingProcessStepStatusType }}</td>
                           <td class="text-right">
-                            <v-btn text v-if="!cpExpanded.includes(cp)"
+                            <v-btn text color="primary" v-if="!cpExpanded.includes(cp)"
                                    @click="[ cpExpanded = [cp], getStatusesAssignedToStep(cp), getCancelledStatuses(cp)]">
                               <v-icon>edit</v-icon>
                             </v-btn>
@@ -844,7 +844,7 @@
                 <td class="text-left">{{ item.projectStatusType || 'N/A' }}</td>
                 <td>
                   <div style="display: flex; float: right;">
-                    <v-btn small text
+                    <v-btn small text color="primary"
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
                       <v-icon>edit</v-icon>

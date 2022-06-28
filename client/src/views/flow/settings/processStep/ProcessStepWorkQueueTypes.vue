@@ -322,7 +322,7 @@
                 </td>
                 <td class="text-right">
                   <div class="flex-display">
-                    <v-btn text
+                    <v-btn text color="primary"
                            @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true)]"
                            v-if="!expanded.includes(item)">
                       <v-icon>edit</v-icon>

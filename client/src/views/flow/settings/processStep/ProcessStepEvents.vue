@@ -74,7 +74,7 @@
                     <div style="display: flex; justify-content: flex-end">
                       <router-link class="no-text-decoration pr-3"
                                    :to="`/settings/processStep/${processStepId}/event/${item.id}`">
-                        <v-btn small text >
+                        <v-btn small text color="primary">
                           <v-icon>edit</v-icon>
                         </v-btn>
                       </router-link>

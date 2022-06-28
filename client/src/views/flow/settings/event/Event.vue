@@ -16,7 +16,7 @@
                         label="Event Name"></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit && !editName" class="" @click="[oldName = event.eventName, editName = !editName]">
+            <v-btn text color="primary" v-if="userCanEdit && !editName" class="" @click="[oldName = event.eventName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
             <v-btn text class="" v-else-if="userCanEdit" @click="saveEventName()">

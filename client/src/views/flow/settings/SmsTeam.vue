@@ -250,7 +250,7 @@
               </td>
               <td class="pl-6"><v-icon v-if="item.isDefault">mdi-check</v-icon></td>
               <td class="text-right">
-                <v-btn small text v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')" @click="expanded = [item]; expandedItem = item;">
+                <v-btn small text color="primary" v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')" @click="expanded = [item]; expandedItem = item;">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'DELETE')"

@@ -690,7 +690,7 @@
               <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn text @click="[expanded = [action]]" v-if="!expanded.includes(action)">
+                  <v-btn text color="primary" @click="[expanded = [action]]" v-if="!expanded.includes(action)">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn text @click="expanded = []" v-else>cancel

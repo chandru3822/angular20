@@ -17,7 +17,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn text v-if="!editType" class="" @click="[editType = !editType]">
+              <v-btn text color="primary" v-if="!editType" class="" @click="[editType = !editType]">
                 <v-icon>edit</v-icon>
               </v-btn>
               <v-btn text class="" v-else @click="saveType()">
@@ -139,7 +139,7 @@
           <v-spacer/>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn text v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
+              <v-btn text color="primary" v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
                 <v-icon>edit</v-icon>
               </v-btn>
               <v-btn text class="" v-else @click="saveType()">

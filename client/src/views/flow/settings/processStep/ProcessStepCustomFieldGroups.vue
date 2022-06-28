@@ -410,7 +410,7 @@
                               </v-list-item>
                             </v-list>
                           </v-menu>
-                          <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
+                          <v-btn text color="primary" small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
                             <v-icon>edit</v-icon>
                           </v-btn>
 
