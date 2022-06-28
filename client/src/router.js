@@ -1281,7 +1281,6 @@ const router = new Router({
         }, {
           path: '/org/:id',
           name: 'org',
-          props: true,
           meta: {title: 'Albatross - Org'},
           component: () => {
             if (store.getters.userHasFeature('ORGS')) {

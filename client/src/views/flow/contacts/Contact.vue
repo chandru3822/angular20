@@ -315,7 +315,7 @@
         </div>
       </template>
       <template v-slot:main-column>
-        <div v-if="contact && contact.id && !fieldsLoading">
+        <div v-if="contact && contact.id && !fieldsLoading" style="overflow-x: hidden">
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="albatross-header-3">
               Contact Summary
@@ -334,25 +334,6 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <!--        <v-form ref="contactForm" v-if="contact && contact.id">-->
-          <!--          <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">-->
-          <!--            <v-toolbar color="transparent" class="elevation-0">-->
-          <!--              <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>-->
-          <!--              <v-spacer></v-spacer>-->
-          <!--              <v-toolbar-items>-->
-          <!--                &lt;!&ndash;              <v-btn text @click="saveContact">Save</v-btn>&ndash;&gt;-->
-          <!--              </v-toolbar-items>-->
-          <!--            </v-toolbar>-->
-          <!--            <v-card class="pa-4">-->
-          <!--              <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"-->
-          <!--                                :key="idx"-->
-          <!--                                :required="cf.required"-->
-          <!--                                :readonly="getReadOnly(cf)"-->
-          <!--                                :callback="populateDirtyCfvs"-->
-          <!--                                :field="cf"></CustomValueInput>-->
-          <!--            </v-card>-->
-          <!--          </div>-->
-          <!--        </v-form>-->
           <v-row class="px-5">
             <v-col cols="12" class="text-left py-0 px-0">
               <!--    process field groups-->
@@ -482,7 +463,6 @@ export default {
       statesLoading: false,
       countriesLoading: false,
       tempContact: {},
-      showEditContactModal: false,
       contactId: parseInt(this.$route.params.contactId),
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
@@ -492,14 +472,6 @@ export default {
       selectedProcess: null,
       processesLoading: true,
       availableProcesses: [],
-      breadcrumbs: [
-        {
-          text: 'Back to Contacts',
-          disabled: false,
-          exact: true,
-          to: `/contacts`
-        },
-      ]
     }
   },
   computed: {

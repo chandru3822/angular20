@@ -175,7 +175,7 @@ export default {
 }
 
 .split-container {
-  height: calc(100% - 50px);
+  height: calc(100% - 65px);
   max-width: 100%;
   width: 100%;
   margin-right: 0 !important;

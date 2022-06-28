@@ -210,7 +210,7 @@
         </div>
       </template>
       <template v-slot:main-column>
-        <div v-if="user && user.id && !fieldsLoading">
+        <div v-if="user && user.id && !fieldsLoading" style="overflow-x: hidden">
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="albatross-header-3">
               User Summary
@@ -592,7 +592,7 @@ export default {
 #user-detail-container {
   width: calc(100vw);
   height: calc(100% - 81px);
-  max-height: 100% !important;
+  max-height: calc(100% - 81px);
   padding: 0 !important;
   overflow: hidden;
   margin-left: -15px;
