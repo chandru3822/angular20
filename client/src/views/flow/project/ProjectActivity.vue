@@ -64,8 +64,15 @@
     <div class="project-activity-inner-container">
       <div v-show="!$store.state.project.rightSideSplit" class="height-one-hunned">
         <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
-        <ProjectNotes :contact-id="contactId" v-else-if="selectedOption === 1"></ProjectNotes>
-        <AttachmentsDropdown :contact-id="contactId" v-else-if="selectedOption === 2" :projectId="projectId" :project-process-step-id="projectProcessStepId" />
+        <ProjectNotes :contact-id="contactId" :user-id="userId"
+                      :object-type-id="objectTypeId" :project-id="projectId"
+                      :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
+        <AttachmentsDropdown :contact-id="contactId"
+                             :user-id="userId"
+                             :object-type-id="objectTypeId"
+                             :org-id="orgId"
+                             v-else-if="selectedOption === 2"
+                             :projectId="projectId" :project-process-step-id="projectProcessStepId" />
       </div>
     </div>
     <div class="footer-container"
@@ -139,7 +146,9 @@ export default {
       type: Boolean,
       default: true
     },
-    contactId: Number
+    contactId: Number,
+    userId: Number,
+    orgId: Number,
   },
   watch: {
     // whenever userImage changes, this function will run
@@ -168,7 +177,7 @@ export default {
       teamNamesAssociatedToUser: [],
       selectableTeams: [],
       projectMessageProperties: {},
-      userId: this.$store.state.user.details.id,
+      currentUserId: this.$store.state.user.details.id,
       showHistoryDialog: false,
       teamsMenuOpen: false,
       myOwner: [],
@@ -185,6 +194,10 @@ export default {
     }
   },
   computed: {
+    objectTypeId() {
+      //not needed for other types
+      return this.userId ? 3 : this.contactId ? 2 : this.orgId ? 5 : null
+    },
     sidebarTitle() {
       switch (this.selectedOption) {
         case 0:
@@ -195,9 +208,11 @@ export default {
           }
 
         case 1:
-          return null != this.contactId ? 'Contact Notes' : 'Project Notes'
+          return this.orgId ? 'Organization Notes' : this.userId ? 'User Notes'
+                    : this.contactId ? 'Contact Notes' : this.projectId ? 'Project Notes' : null
         case 2:
-          return null != this.contactId ? 'Contact Documents' : this.$route.params.ppsEventId ? 'Event Documents' : this.$route.params.processStepId ? 'Process Step Documents' : 'Project Documents'
+          return this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
+            : this.$route.params.ppsEventId ? 'Event Documents' : this.$route.params.processStepId ? 'Process Step Documents' : this.projectId ? 'Project Documents' : null
       }
     },
     sidebarSubTitle() {
@@ -207,7 +222,7 @@ export default {
         case 1:
           return ''
         case 2:
-          return null != this.contactId ? null : this.$route.params.ppsEventId ? 'Documents related to the selected event.' : this.$route.params.processStepId ? 'Documents related to the selected process step.' : 'Documents related to the selected project.'
+          return this.$route.params.ppsEventId ? 'Documents related to the selected event.' : this.$route.params.processStepId ? 'Documents related to the selected process step.' : this.projectId ? 'Documents related to the selected project.' : null
       }
     },
     isSidebarCollapsed() {
@@ -291,7 +306,7 @@ export default {
         this.projectMessageProperties.smsTeamOwners?.forEach(team => {
           if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
             team.users?.forEach(owner => {
-              if (owner.userId === this.userId) {
+              if (owner.userId === this.currentUserId) {
                 this.userAssigned = true
                 this.myOwner.push(owner)
               }

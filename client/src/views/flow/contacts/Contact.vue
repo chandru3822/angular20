@@ -34,7 +34,7 @@
     </v-dialog>
     <!--    end unsaved fields modal -->
 
-    <!--    modal for editing project fields -->
+    <!--    modal for editing contact fields -->
     <v-dialog width="500"
               v-if="contact && contact.id"
               v-model="showEditModal" content-class="square-card">
@@ -157,8 +157,6 @@
     </v-dialog>
     <!--    end dialog -->
     <ThreeColumnLayout :header-text="contact.fullName"
-                       :show-back-btn="true"
-                       :back-btn-path="`/contacts`"
                        :auto-overflow-left="false">
 
 
@@ -219,8 +217,7 @@
               <v-btn
                 text x-small
                 @click="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
-                v-if="contact && contact.id && ($store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT')
-                    || !contactOwnerFieldIsReadOnly())">
+                v-if="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())">
                 <v-icon>edit</v-icon>
               </v-btn>
             </v-toolbar-items>
@@ -326,13 +323,6 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <div>
-                <!--                <v-btn-->
-                <!--                  color="primaryCustom"-->
-                <!--                  class="white&#45;&#45;text mt-3 ml-2"-->
-                <!--                  :disabled="fieldsSaving || getReadOnly()"-->
-                <!--                  @click="[fieldsSaving = true, validateFields(true)]"-->
-                <!--                >Save Fields-->
-                <!--                </v-btn>-->
                 <v-btn color="primaryCustom"
                        class="white--text mt-3"
                        v-if="userCanEdit"
@@ -420,7 +410,6 @@ import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import {ProjectMutations} from "@/stores/ProjectStore";
-// import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent.vue'
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -581,7 +570,7 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
