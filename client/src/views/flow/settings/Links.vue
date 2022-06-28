@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Links</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newLink = { url: ''}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newLink = { url: ''}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -27,11 +27,11 @@
               These parameters can be used to add some system values to a url. <br/>
               Validation is not yet in place so be careful which screens you assign a url to. <br/>
               For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
-              <v-btn v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
+              <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
                 {{p.name}}
               </v-btn>
             </div>
-            <v-btn class="mt-4" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
+            <v-btn color="primary" class="mt-4" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
           </v-card>
           <div v-else>
             <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
@@ -52,7 +52,7 @@
                       These parameters can be used to add some system values to a url. <br/>
                       Validation is not yet in place so be careful which screens you assign a url to. <br/>
                       For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
-                      <v-btn v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
+                      <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
                         {{p.name}}
                       </v-btn>
                     </div>
@@ -60,10 +60,10 @@
                   <div v-else>{{a.link}}</div>
                 </v-list-item-content>
                 <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <v-btn text :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id" @click="saveLink(a)">
+                  <v-btn text color="primary" :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id" @click="saveLink(a)">
                     <v-icon>save</v-icon>
                   </v-btn>
-                  <v-icon v-else @click="selectedLinkId = a.id">edit</v-icon>
+                  <v-icon v-else color="primary" @click="selectedLinkId = a.id">edit</v-icon>
                 </v-list-item-action>
                 <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
