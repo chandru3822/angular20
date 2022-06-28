@@ -8,11 +8,11 @@
           <v-toolbar-title class="app-title">Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text v-if="userCanAdd">
+            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
               {{ addNewAction ? 'Cancel' : 'Add Action' }}
             </v-btn>
-            <v-btn text @click="expandActions = !expandActions">
+            <v-btn text color="primary" @click="expandActions = !expandActions">
               <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>
               <v-icon v-else>mdi-chevron-up</v-icon>
             </v-btn>
@@ -114,7 +114,7 @@
               </v-color-picker>
             </div>
           </div>
-          <v-btn v-if="newAction.actionName && newAction.actionTypeId"
+          <v-btn color="primary" v-if="newAction.actionName && newAction.actionTypeId"
                  @click="saveNewAction">
             <v-icon>save</v-icon>
             Save
@@ -849,46 +849,10 @@
                            v-if="!actionExpanded.includes(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text @click="[actionExpanded = [], selectedActionIndex = index]"
+                    <v-btn small text color="primary" @click="[actionExpanded = [], selectedActionIndex = index]"
                            v-if="actionExpanded.includes(item)">cancel
                     </v-btn>
-                    <v-dialog
-                      v-if="userCanEdit"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template #activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this action?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primary"
-                            text
-                            @click="[item.archived = true, deleteAction(item)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -898,6 +862,11 @@
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteAction" @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete this action?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -922,11 +891,13 @@ import {
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
+import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
 
 export default {
   name: 'ProcessStepActions',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmDeleteDialogImproved,
     ProcessStepRequirements
   },
 
@@ -1075,7 +1046,9 @@ export default {
       ],
       //doing these as strings since the filtered list will be too
       invalidFirsts: ['2', '3', '4'],
-      invalidLasts: ['1', '3', '4', '5']
+      invalidLasts: ['1', '3', '4', '5'],
+      showDeleteDialog: false,
+      itemToDelete: null
     }
   },
   computed: {},
@@ -1308,7 +1281,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteAction(item) {
+    async deleteAction() {
+      const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${item.id}`)
@@ -1322,6 +1296,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.itemToDelete.archive = true
+      this.closeDeleteDialog()
     },
     //child process steps
     async loadChildProcessSteps(actionId) {
@@ -1570,8 +1546,10 @@ export default {
           this.updateAction(item)
         }
       }
-
-
+    },
+    closeDeleteDialog(){
+      this.showDeleteDialog = false
+      this.itemToDelete = null
     }
   }
 

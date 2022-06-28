@@ -22,8 +22,7 @@
               {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
             </template>
           </v-autocomplete>
-          <v-btn class="white--text"
-                 color="primaryButton"
+          <v-btn color="primary"
                  @click="saveEventDetails(selectedEvent)"
           >Save
           </v-btn>
@@ -39,7 +38,7 @@
           <v-toolbar-title class="app-title">Event Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
+            <v-btn text color="primary" @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
                    v-if="userCanAdd">
               <v-icon v-if="!addNewEventAction">add</v-icon>
               {{ addNewEventAction ? 'Cancel' : 'Add Action' }}
