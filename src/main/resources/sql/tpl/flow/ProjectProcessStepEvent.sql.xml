@@ -529,7 +529,7 @@ where ppse.id = :id
         and cest.id =
             (select id from flow.company_event_status_type cest2 where cest2.company_id = :companyId
                                                              and cest2.event_status_type = 'Pending')
-      order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+      order by ppse.start_time desc limit 1
   ]]></projectProcessStepEvent.getActiveCloserAppointment>
 
   <projectProcessStepEvent.getActiveAhjInspectionWork><![CDATA[
@@ -574,7 +574,7 @@ where ppse.id = :id
         and cest.event_status_type_id =
             (select id from flow.company_event_status_type cest2 where cest2.company_id = :companyId
                                                              and cest2.event_status_type = 'Active')
-      order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+      order by ppse.start_time desc limit 1
   ]]></projectProcessStepEvent.getActiveAhjInspectionWork>
 
   <projectProcessStepEvent.getActiveInstallation><![CDATA[
@@ -619,7 +619,7 @@ where ppse.id = :id
         and cest.event_status_type_id =
             (select id from flow.company_event_status_type cest2 where cest2.company_id = :companyId
                                                              and cest2.event_status_type = 'Active')
-      order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+      order by ppse.start_time desc limit 1
   ]]></projectProcessStepEvent.getActiveInstallation>
 
 </sql>
