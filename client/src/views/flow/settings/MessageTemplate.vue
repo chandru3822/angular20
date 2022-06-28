@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Message Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addTemplate = !addTemplate, newType = {}]" v-if="userCanEdit">
+            <v-btn text color="primary" @click="[addTemplate = !addTemplate, newType = {}]" v-if="userCanEdit">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addTemplate ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -102,7 +102,7 @@
 
               </v-autocomplete>
 
-              <v-btn color="primaryCustom" class="white--text mr-2" :disabled="!item.title || !item.message" @click="saveTemplate(item, false)">Save</v-btn>
+              <v-btn color="primary" class="white--text mr-2" :disabled="!item.title || !item.message" @click="saveTemplate(item, false)">Save</v-btn>
             </td>
           </template>
 
@@ -111,7 +111,7 @@
               <td class="text-left">{{ item.title }}</td>
               <td class="">{{getTeamsForTemplate(item)}}</td>
               <td class="text-right">
-                <v-btn small text v-if="!expanded.includes(item) && userCanEdit" @click="expanded = [item]; expandedItem = item; getAttachments()">
+                <v-btn small text color="primary" v-if="!expanded.includes(item) && userCanEdit" @click="expanded = [item]; expandedItem = item; getAttachments()">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <confirm-delete-dialog
@@ -119,7 +119,7 @@
                     label="this template"
                     @confirm-delete="deleteTemplate(item)"
                 ></confirm-delete-dialog>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>
             </tr>
           </template>
