@@ -485,10 +485,10 @@
   ]]></project.getEventsByProjectId>
 
   <project.getPrimaryFinancierName><![CDATA[
-     select pd.primary_financier_name as financier
-      from flow.project p
-             inner join brs.project_details pd on p.id = pd.project_id
-    where p.id = :projectId
+     select primary_financier_name as primaryFinancier, installation_start_time, installation_end_time, closer_appointment_start as localCloserAppointmentStartTime,
+            ahj_inspection_work_date as ahjInspectionWorkStartTime
+      from brs.project_details
+    where project_id = :projectId
   ]]></project.getPrimaryFinancierName>
 
   <project.getAttachments><![CDATA[
