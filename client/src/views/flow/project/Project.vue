@@ -146,7 +146,7 @@
         </div>
         <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
           <v-toolbar flat>
-            <v-toolbar-title class="albatross-header-3">Overview</v-toolbar-title>
+            <v-toolbar-title class="albatross-header-3">Project Overview</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn
@@ -214,7 +214,7 @@
            :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
                     'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                     'collapse-right text-center': $store.state.project.rightSideSplit}">
-        <ProjectActivity v-if="!projectLoading"
+        <ProjectActivity v-if="!projectLoading"  :show-sms-tab="true"
                          @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
       </div>
     </v-row>
@@ -450,7 +450,6 @@ export default {
       }
     },
     saveProjectAddressFields: async function () {
-      this.editAddress = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         //temp project holds all the changes in case they cancel. use those values
@@ -552,9 +551,9 @@ export default {
   padding: 12px;
 }
 
-.left-expander-button {
-  margin-left: 10px;
-}
+//.left-expander-button {
+//  margin-left: 10px;
+//}
 
 .title-collapsed {
   margin-top: 12px;

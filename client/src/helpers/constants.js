@@ -50,6 +50,10 @@ constants.ADDRESS_RULES = [
   v => (!v || /^[-#'.a-zA-Z0-9&\s]+$/.test(v)) || "Address must only contain alphanumeric, whitespace, or [-#'.&] characters"
 ]
 
+constants.PASSWORD_RULES = [
+  v => (!v || (v && (v.length >= 8))) || 'Must be at least 8 characters',
+]
+
 constants.PHONE_RULES = [
   v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
   v => /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v) || "Please reformat the Phone field with a valid phone number"

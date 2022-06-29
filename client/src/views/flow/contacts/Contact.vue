@@ -1,5 +1,6 @@
 <template>
-  <v-container class="pt-0" v-if="contact && contact.id">
+  <div id="contact-container">
+    <!--    modal for leaving with unsaved fields -->
     <v-dialog width="500" v-model="unsavedFieldsModal">
       <v-card>
         <v-card-title
@@ -10,7 +11,7 @@
         </v-card-title>
 
         <v-card-text class="pt-4">
-          You have unsaved {{ getDirtyText() }}. <br/>
+          You have unsaved fields. <br/>
           Are you sure you want to continue without saving?
         </v-card-text>
 
@@ -31,334 +32,382 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-row class="contact-header elevation-0">
-      <v-col cols="6" class="text-left pb-2">
-        <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
-        <div class="contact-title">
-          {{ contact.fullName }}
-          <v-menu
-            v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
-            bottom
-            offset-y
-            :close-on-content-click="false"
-          >
-            <template v-slot:activator="{ on: menu }">
-              <v-tooltip top>
-                <template v-slot:activator="{ on: tooltip }">
-                  <div v-on="{ ...tooltip }" class="d-inline-block">
-                    <v-btn v-on="{ ...menu }"
-                           color="primaryCustom"
-                           :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
-                           class="white--text"
-                           id="qa-create-project-button"
-                           @click="getAvailableProcesses">
-                      Add Project
-                    </v-btn>
-                  </div>
-                </template>
-                <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
-                <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
-              </v-tooltip>
-            </template>
-            <v-card class="pa-5">
-              Select a process to be used
-              <v-select attach v-model="selectedProcess"
-                        :items="availableProcesses"
-                        label="Process"
-                        id="qa-process-selector"
-                        placeholder="Select one..."
-                        item-text="processName"
-                        return-object
-                        class="mt-2 qa-process-selector"
-              ></v-select>
-              <v-btn text :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
-                Add Project
-              </v-btn>
-            </v-card>
-          </v-menu>
-        </div>
-        <div class="contact-subtitle">
-          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
-        </div>
-      </v-col>
-      <v-col cols="4" class="contact-owner pb-2 text-right">
-        <div class="d-inline-block mr-4" v-if="contact.companyId !== this.companyId">
-          <v-avatar
-            :tile="false"
-            :size="25"
-            color="#D6D6D6"
-            class="account-img mr-2"
-          >
-            <v-icon color="white" size="20">mdi-office-building</v-icon>
-          </v-avatar>
-          <span>{{ contact.companyName }}</span><br/>
-          <span class="project-company-subheader">Company</span>
-        </div>
-        <div class="d-inline-block">
-          <div>
-            <v-row v-if="contact.owner && !changeOwner">
-              <v-avatar
-                :tile="false"
-                :size="40"
-                color="grey lighten-4"
-                class="account-img mr-2"
-              >
-                <v-img name="accountImg" v-if="contact.owner.presignedUrl" :src="contact.owner.presignedUrl"></v-img>
-                <img name="accountImg" v-else src="../../../assets/flow/user_img_placeholder.png">
-              </v-avatar>
-              <div class="d-inline-block">
-                {{ contact.owner.fullName }}<br/>
-                {{ contact.owner.position }}
-              </div>
-            </v-row>
-            <v-row>
-              <v-col class="pa-0">
-                <div v-if="changeOwner && userCanEdit">
-                  <v-autocomplete v-model="contact.owner"
-                                  :items="owners"
-                                  label="Select Owner"
-                                  item-text="fullName"
-                                  return-object
-                                  autocomplete="off"
-                                  @change="updateOwner"
-                                  attach
-                  >
-                  </v-autocomplete>
-                </div>
-                <v-btn text x-small class="change-owner-button" v-if="userCanEdit && !contactOwnerIsReadOnly()"
-                       @click="changeOwner = !changeOwner">
-                  <span v-if="changeOwner">cancel</span>
-                  <span v-else-if="contact.owner && contact.owner.userId">change</span>
-                  <span v-else style="font-size: 15px;">add owner</span>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </div>
-        </div>
-      </v-col>
-      <v-col cols="2" class="contact-owner pb-2">
-        Associated Projects<br/>
-        <div v-for="p in contact.projects" :key="p.id">
-          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}/details`">
-            {{ p.projectName }} <span v-if="contact.projects && contact.projects.length > 1">- {{ p.id }}</span>
-          </router-link>
-          <span v-else>{{ p.projectName }}</span>
-        </div>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12" md="6" class="text-left">
-        <v-form ref="contactForm">
-          <div>
-            <v-toolbar color="transparent" class="elevation-0">
-              <v-toolbar-title>Summary</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <v-btn text v-if="userCanEdit"
-                       :loading="fieldsLoading"
-                       :disabled="fieldsSaving"
-                       @click="validate(true)">Save
-                </v-btn>
-              </v-toolbar-items>
-            </v-toolbar>
-            <v-card class="pa-4">
-              <v-text-field text
-                            label="First Name"
-                            id="qa-first-name-field"
-                            placeholder=" "
-                            :rules="nameRequiredRules"
-                            @change="dirtySystemFields = true"
-                            :readonly="!userCanEdit"
-                            v-model="contact.firstName"></v-text-field>
-              <v-text-field text
-                            label="Last Name"
-                            id="qa-last-name-field"
-                            placeholder=" "
-                            :rules="nameRequiredRules"
-                            @change="dirtySystemFields = true"
-                            :readonly="!userCanEdit"
-                            v-model="contact.lastName"></v-text-field>
-              <v-text-field text
-                            label="Address"
-                            id="qa-address-field"
-                            placeholder=" "
-                            :required="true"
-                            :rules="[ ...addressRules, ...addressFieldRequired.street]"
-                            :readonly="!userCanEdit"
-                            @change="[addressChanged = true, dirtySystemFields = true]"
-                            v-model="contact.street1"></v-text-field>
-              <v-text-field text
-                            label="City"
-                            id="qa-city-field"
-                            placeholder=" "
-                            :rules="[...cityRules, ...addressFieldRequired.city]"
-                            @change="[addressChanged = true, dirtySystemFields = true]"
-                            :readonly="!userCanEdit"
-                            v-model="contact.city"></v-text-field>
-              <v-select attach v-model="contact.companyStateId"
-                        :items="states"
-                        label="State"
-                        id="qa-state-field"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        :rules="[ ...addressFieldRequired.state ]"
-                        @change="[addressChanged = true, dirtySystemFields = true]"
-                        item-text="state"
-                        item-value="id"
-              ></v-select>
-              <v-select attach v-model="contact.companyCountryId"
+    <!--    end unsaved fields modal -->
+
+    <!--    modal for editing contact fields -->
+    <v-dialog width="500"
+              v-if="contact && contact.id"
+              v-model="showEditModal" content-class="square-card">
+      <v-card class="px-6 py-4 square-card">
+        <v-form ref="contactEditForm">
+          <v-card-title
+            color="blackText"
+            class="albatross-header-3 text-capitalize pa-0"
+            primary-title>
+            Contact Overview
+          </v-card-title>
+          <v-card-text class="pt-4 px-0">
+            <div>
+              <v-text-field
+                v-model="tempContact.firstName"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                label="Contact First Name"
+              ></v-text-field>
+              <v-text-field
+                v-model="tempContact.lastName"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                label="Contact Last Name"
+              ></v-text-field>
+              <v-text-field
+                v-model="tempContact.street1"
+                label="Street"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                @change="tempContact.reloadCoordinates = true"
+              ></v-text-field>
+              <v-text-field
+                v-model="tempContact.city"
+                label="City"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                @change="tempContact.reloadCoordinates = true"
+              ></v-text-field>
+              <v-text-field
+                type="text"
+                v-model="tempContact.postalCode"
+                counter
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                maxlength="10"
+                @keypress="isNumberOrHyphen"
+                :rules="postalCodeRules"
+                @change="tempContact.reloadCoordinates = true"
+                label="Postal Code"
+              ></v-text-field>
+              <v-autocomplete v-model="tempContact.companyStateId"
+                              :items="states"
+                              label="State"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              :loading="statesLoading"
+                              item-text="state"
+                              item-value="id"
+                              @input="tempContact.reloadCoordinates = true"
+              ></v-autocomplete>
+              <v-select v-model="tempContact.companyCountryId"
                         :items="countries"
                         label="Country"
-                        id="qa-country-field"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
-                        :rules="[ ...addressFieldRequired.country ]"
-                        @change="[addressChanged = true, dirtySystemFields = true]"
+                        :loading="countriesLoading"
+                        @input="tempContact.reloadCoordinates = true"
                         item-text="country"
                         item-value="id"
               ></v-select>
               <v-text-field text
-                            label="Zip"
-                            type="text"
-                            id="qa-zip-field"
-                            placeholder=" "
-                            @change="[addressChanged = true, dirtySystemFields = true]"
-                            :readonly="!userCanEdit"
-                            counter
-                            @keypress="isNumberOrHyphen"
-                            :rules="[ ...postalCodeRules, ...addressFieldRequired.zip ]"
-                            maxlength="10"
-                            v-model="contact.postalCode"></v-text-field>
-              <v-text-field text
                             label="Phone"
-                            id="qa-phone-field"
                             placeholder=" "
                             :rules="contactPhoneRule"
-                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
-                            v-model="contact.phone"></v-text-field>
+                            :disabled="!userCanEdit"
+                            v-model="tempContact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
-                            id="qa-mobile-field"
-                            :readonly="!userCanEdit"
-                            @change="dirtySystemFields = true"
-                            :rules="contactPhoneRule"
                             placeholder=" "
-                            v-model="contact.mobile"></v-text-field>
+                            :rules="contactPhoneRule"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            v-model="tempContact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
                             id="qa-email-field"
                             placeholder=" "
                             :rules="emailRules"
-                            @change="dirtySystemFields = true"
                             :readonly="!userCanEdit"
-                            v-model="contact.email"></v-text-field>
-              <DatetimePickerInput
-                v-model="contact.dateCreated"
-                :timezone="timezone"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="Created Date"
-                :readonly="true"
-              />
-              <v-dialog
-                v-if="userCanDelete"
-                v-model="deleteContactConfirm"
-                width="500">
-                <template #activator="{ on }">
-                  <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on" id="qa-delete-contact">
-                    Delete Contact
-                  </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title>
-                    Confirm
-                  </v-card-title>
-
-                  <v-card-text class="pt-4">
-                    <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this contact?</span>
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      @click="deleteContactConfirm = false" id="qa-delete-contact-no">
-                      No
-                    </v-btn>
-                    <v-btn
-                      color="primaryCustom"
-                      text
-                      @click="deleteContact"
-                      id="qa-delete-contact-yes">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-card>
-          </div>
-          <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
-            <v-toolbar color="transparent" class="elevation-0">
-              <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <!--              <v-btn text @click="saveContact">Save</v-btn>-->
-              </v-toolbar-items>
-            </v-toolbar>
-            <v-card class="pa-4">
-              <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
-                                :key="idx"
-                                :required="cf.required"
-                                :readonly="getReadOnly(cf)"
-                                :callback="populateDirtyCfvs"
-                                :field="cf"></CustomValueInput>
-            </v-card>
-          </div>
+                            :disabled="!userCanEdit"
+                            v-model="tempContact.email"></v-text-field>
+            </div>
+            <v-autocomplete v-model="tempContact.owner"
+                            :readonly="contactOwnerFieldIsReadOnly()"
+                            :disabled="contactOwnerFieldIsReadOnly()"
+                            :items="availableOwners"
+                            :loading="ownersLoading"
+                            label="Contact Owner"
+                            clearable
+                            item-text="fullName"
+                            return-object
+                            autocomplete="off">
+            </v-autocomplete>
+          </v-card-text>
         </v-form>
 
-      </v-col>
-      <v-col cols="12" md="6" class="text-left pa-0">
-        <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>Notes</v-toolbar-title>
-        </v-toolbar>
-        <v-card class="square-card mx-4">
-          <NotesAndActivityContent ref="notes" :showNotes="true" :showActivity="false"
-                                   :notes="notes" :primaryId="parseInt(contactId)"
-                                   type="Contact"
-          ></NotesAndActivityContent>
-        </v-card>
-
-        <Attachments :object-type-id="2" :contact-id="contactId"/>
-      </v-col>
-    </v-row>
-
-  </v-container>
-  <v-row align="center" justify="center" v-else-if="!contactLoading">
-    <v-col cols="12" sm="8">
-      <v-card color="secondaryMaster" class="elevation-12 pb-5">
-        <v-toolbar dark color="red">
-          <v-toolbar-title>Error</v-toolbar-title>
-        </v-toolbar>
-        <v-card-text class="login-card-text">
-          This contact either doesn't exist or you don't have access to it in this context.
-        </v-card-text>
-        <v-card-actions class="justify-center">
-          <v-btn to="/contacts">Click here to go back to Contacts</v-btn>
+        <v-card-actions class="pa-0">
+          <v-btn @click="showEditModal = false" class="text-capitalize">
+            cancel
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primaryCustom"
+            class="white--text text-capitalize font-weight-bold"
+            :disabled="!contact.firstName || !contact.lastName"
+            @click="validateForm()">
+            Save
+          </v-btn>
         </v-card-actions>
       </v-card>
-    </v-col>
-  </v-row>
+    </v-dialog>
+    <!--    end dialog -->
+    <ThreeColumnLayout :header-text="contact.fullName"
+                       :auto-overflow-left="false">
+
+
+      <template v-slot:back-btn>
+        <v-btn fab text small class="mr-2" @click="goToPath('/contacts')">
+          <v-icon>mdi-view-list</v-icon>
+        </v-btn>
+      </template>
+      <template v-slot:header-btn>
+        <div class="mt-3">
+          <v-dialog
+            v-if="userCanDelete"
+            v-model="deleteContactConfirm"
+            width="500">
+            <template #activator="{ on }">
+              <v-btn text class="mr-2 " v-on="on" id="qa-delete-contact">
+                <v-icon>delete</v-icon>
+              </v-btn>
+            </template>
+            <v-card>
+              <v-card-title
+                class="text-h5 grey lighten-2"
+                primary-title>
+                Confirm
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this contact?</span>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="deleteContactConfirm = false" id="qa-delete-contact-no">
+                  No
+                </v-btn>
+                <v-btn
+                  color="primaryCustom"
+                  text
+                  @click="deleteContact"
+                  id="qa-delete-contact-yes">
+                  Yes
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+      </template>
+      <template v-slot:left-column>
+        <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
+             class="px-2 height-one-hunned overflow-y-auto">
+          <v-toolbar flat color="transparent">
+            <v-toolbar-title class="albatross-header-3">Contact Overview</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn
+                text x-small
+                @click="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
+                v-if="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())">
+                <v-icon>edit</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <div class="mx-4 address-details">
+            <span class="detail-label">Date Created:</span>
+            <span class="detail-item">{{ contact.dateCreated | formatDate('date') }}</span> <br/>
+            <div class="mt-2">
+              <span class="vertical-top detail-label">Address:</span>
+              <div class="d-inline-block detail-item">
+                {{ contact.street1 }} <br/>
+                {{ contact.city }} {{ contact.state }} {{ contact.postalCode }}
+              </div>
+            </div>
+            <span class="detail-label">Phone:</span>
+            <span class="detail-item">{{ formatPhoneNumber(contact.phone) }}</span> <br/>
+            <span class="detail-label">Mobile:</span>
+            <span class="detail-item">{{ formatPhoneNumber(contact.mobile) }}</span> <br/>
+            <span class="detail-label">Email:</span>
+            <span class="detail-item">{{ contact.email }}</span> <br/>
+            <div class="mt-2">
+              <span class="vertical-top detail-label">Owner:</span>
+              <div class="d-inline-block detail-item" v-if="contact && contact.owner">
+                <span :class="{'error-text': !contact.owner.hasAccess}">{{
+                    contact.owner.fullName
+                  }} - {{ contact.owner.position }} <br/></span>
+                <span v-if="contact.owner.hasAccess">{{ formatPhoneNumber(contact.owner.phoneNumber) }}<br/></span>
+              </div>
+            </div>
+          </div>
+          <v-divider class="mt-4"></v-divider>
+          <v-toolbar color="transparent" flat>
+            <v-toolbar-title class="albatross-header-3">Associated Projects</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-menu
+                v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                bottom
+                offset-y
+                :close-on-content-click="false"
+              >
+                <template v-slot:activator="{ on: menu }">
+                  <!--                  <v-tooltip top :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId">-->
+                  <v-tooltip top
+                             :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
+                    <template v-slot:activator="{ on: tooltip }">
+                      <div v-on="{ ...tooltip }" class="d-inline-block mt-4">
+                        <v-btn v-on="{ ...menu }"
+                               text
+                               x-small
+                               :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                               class="white--text"
+                               id="qa-create-project-button"
+                               @click="getAvailableProcesses">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </div>
+                    </template>
+                    <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
+                    <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                  </v-tooltip>
+                </template>
+                <v-card class="pa-5">
+                  Select a process to be used
+                  <v-select v-model="selectedProcess"
+                            :items="availableProcesses"
+                            label="Process"
+                            id="qa-process-selector"
+                            :loading="processesLoading"
+                            placeholder="Select one..."
+                            item-text="processName"
+                            return-object
+                            class="mt-2 qa-process-selector"
+                  ></v-select>
+                  <v-btn text :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
+                    Add Project
+                  </v-btn>
+                </v-card>
+              </v-menu>
+            </v-toolbar-items>
+          </v-toolbar>
+          <div class="mx-2">
+            <v-card flat v-for="p in contact.projects"
+                    class="project-button albatross-body-1"
+                    @click="goToPath(`/project/${p.id}/details`)">
+              {{ p.projectName }}
+              <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
+              <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
+              <div class="albatross-body-3"
+                   v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
+                {{ p.id }}
+              </div>
+            </v-card>
+          </div>
+        </div>
+      </template>
+      <template v-slot:main-column>
+        <div v-if="contact && contact.id && !fieldsLoading" style="overflow-x: hidden">
+          <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
+            <v-toolbar-title class="albatross-header-3">
+              Contact Summary
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text @click="setSplitColumnValue()" class="px-0">
+                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
+              </v-btn>
+              <div>
+                <v-btn color="primaryCustom"
+                       class="white--text mt-3"
+                       v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="validateFields(true)">
+                  Save Fields
+                </v-btn>
+              </div>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-row class="px-5">
+            <v-col cols="12" class="text-left py-0 px-0">
+              <!--    process field groups-->
+              <v-form ref="contactForm">
+                <v-col
+                  class="pt-0"
+                  v-for="(cfg, index) in customFieldGroups"
+                  :key="index"
+                >
+                  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+                    <v-toolbar-title>
+                      {{ cfg.groupName }}
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                    </v-toolbar-items>
+                  </v-toolbar>
+
+                  <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+                    <v-row>
+                      <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                                          :key="idx"
+                                          :required="cf.required"
+                                          :readonly="getReadOnly(cf)"
+                                          :callback="populateDirtyCfvs"
+                                          :field="cf"
+                                          :show-field-name="false"></CustomValueInput>
+                      </v-col>
+                      <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                                          :key="idx"
+                                          :required="cf.required"
+                                          :readonly="getReadOnly(cf)"
+                                          :callback="populateDirtyCfvs"
+                                          :field="cf"
+                                          :show-field-name="false"></CustomValueInput>
+                      </v-col>
+                    </v-row>
+
+                  </v-card>
+                </v-col>
+
+              </v-form>
+            </v-col>
+          </v-row>
+        </div>
+        <div v-else>
+          <SpinnerInline centered :size="50" color="primaryCustom"/>
+        </div>
+      </template>
+      <template v-slot:right-column>
+        <ProjectActivity v-if="!contactLoading && contactId !== 0"
+                         :contact-id="contactId"
+                         :show-sms-tab="false"></ProjectActivity>
+      </template>
+    </ThreeColumnLayout>
+  </div>
+
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-
+import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent.vue'
+import ThreeColumnLayout from '@/views/ThreeColumnLayout'
+import {ProjectMutations} from "@/stores/ProjectStore";
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -366,41 +415,39 @@ import {
   isNumberOrHyphen,
   putRequest,
   postRequest,
+  formatPhoneNumber,
   getRequestWithParams,
-  getSnackbar
+  getSnackbar, logError
 } from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
 import {getCountries} from '@/services/countryService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from '@/helpers/constants'
-import Attachments from '@/views/flow/components/Attachments'
+import cloneDeep from 'lodash.clonedeep'
+import {getStatusClass} from "@/services/processStepStatusTypeService";
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: 'Contact',
   components: {
     CustomValueInput,
-    NotesAndActivityContent,
+    // NotesAndActivityContent,
     DatetimePickerInput,
-    Attachments
+    ThreeColumnLayout,
+    ProjectActivity,
+    SpinnerInline
   },
-  watch: {
-    // contact: {
-    //   // This will let Vue know to look inside the array
-    //   deep: true,
-    //
-    //   // We have to move our method to a handler field
-    //   handler() {
-    //     this.validate(false)
-    //   }
-    // }
-  },
+  watch: {},
   data() {
     return {
       snackbar: {},
       states: [],
       countries: [],
+      showEditModal: false,
       contact: {},
+      getStatusClass,
+      formatPhoneNumber,
       postalCodeRules: constants.POSTAL_CODE_RULES,
       cityRules: constants.CITY_RULES,
       emailRules: constants.EMAIL_RULES,
@@ -414,7 +461,6 @@ export default {
         v => ((!v || (this.contact.phone !== this.contact.mobile))) || 'Phone and Mobile Cannot be the same',
       ],
       deleteContactConfirm: false,
-      addressChanged: false,
       isNumberOrHyphen,
       contactLoading: true,
       customFieldGroups: [],
@@ -422,28 +468,27 @@ export default {
       toPath: null,
       navigationOverride: false,
       notes: [],
+      cloneDeep,
       fieldsSaving: false,
       fieldsLoading: true,
       hasDirtyNotes: false,
       dirtyCfvs: [],
       dirtySystemFields: false,
-      owners: [],
-      contactId: parseInt(this.$route.params.id),
+      // owners: [],
+      availableOwners: [],
+      ownersLoading: false,
+      statesLoading: false,
+      countriesLoading: false,
+      tempContact: {},
+      contactId: parseInt(this.$route.params.contactId),
+      is7oaksAdmin: this.$store.getters.isFullAdmin,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
       companyId: this.$store.state.user.details.companyId,
       timezone: this.$store.state.user.details.timezone?.value,
-      changeOwner: false,
       selectedProcess: null,
+      processesLoading: true,
       availableProcesses: [],
-      breadcrumbs: [
-        {
-          text: 'Back to Contacts',
-          disabled: false,
-          exact: true,
-          to: `/contacts`
-        },
-      ]
     }
   },
   computed: {
@@ -460,7 +505,7 @@ export default {
     }
   },
   async created() {
-    let requests = [this.getContact(), this.getCompanyStates(), this.getCountries(), this.getOwners(), this.getCustomFieldGroups(), this.getNotes()]
+    let requests = [this.getContact(), this.getCustomFieldGroups()]
     await Promise.all(requests).then(async () => {
       this.fieldsLoading = false
     })
@@ -479,20 +524,78 @@ export default {
     }
   },
   methods: {
-    getDirtyText() {
-      return this.hasDirtyNotes && (this.dirtyCfvs.length > 0 || this.dirtySystemFields) ?
-        'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
+    setSplitColumnValue() {
+      //flip the flag
+      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+    },
+    getCustomFieldValuesToDisplay(values, columnNum) {
+      if (this.$store.state.project.manualColumnSplit) {
+        return values.filter(function (element, index, values) {
+          return (index % 2 === (columnNum === 1 ? 0 : 1));
+        });
+      } else {
+        return values
+      }
+    },
+    collapseSide(side) {
+      if (side === 'left') {
+        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+      } else {
+        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+      }
+    },
+    getStatesAndCountries: function () {
+      // only load countries and states if they try to edit the project address and they haven't already been loaded
+      if (this.states.length === 0 || this.countries.length === 0) {
+        this.getCompanyStates()
+        this.getCountries()
+      }
+    },
+    async validateForm() {
+      if (this.$refs.contactEditForm.validate()) {
+        //these could be combined - just dont have time atm
+        this.saveContactAddressFields()
+        this.updateOwner()
+
+        //set project values if they hit save
+        this.contact = cloneDeep(this.tempContact)
+        this.showEditModal = false
+      }
+    },
+    saveContactAddressFields: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //temp contact holds all the changes in case they cancel. use those values
+        const {status} = await postRequest(`/contact`, this.tempContact)
+        this.snackbar = getSnackbar('SUCCESS', 'Contact Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    contactOwnerFieldIsReadOnly() {
+      if (this.is7oaksAdmin) {
+        return false
+      } else if (this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
+        return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+      } else {
+        return this.contact.ownerReadOnly
+      }
     },
     goToPath(path) {
       this.$router.push(path)
     },
-    async validate(saveContact) {
+    async validateFields(saveContact) {
       let valid = this.$refs.contactForm?.validate()
       if (valid && saveContact) {
         this.fieldsSaving = true
         await this.saveContact()
         this.fieldsSaving = false
-      }  else {
+      } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
@@ -505,31 +608,27 @@ export default {
       }
     },
     async saveContact() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        // save contact - tell server if address changed or not so we know whether to reload lat/long
-        this.contact.reloadCoordinates = this.addressChanged
-        const {data} = await postRequest(`/contact`, this.contact)
-        this.addressChanged = false
-        this.contact.reloadCoordinates = false
-        this.contact.projects = data.projects
-        this.dirtySystemFields = false
-        await this.saveCustomFieldValues()
-
+      if (this.dirtyCfvs.length > 0) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          // Save BlueRaven Solar Contacts to Genesys
-          if (this.companyId === 3) {
-            await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
+          //we no longer save the contact system fields here
+          await this.saveCustomFieldValues()
+
+          try {
+            // Save BlueRaven Solar Contacts to Genesys
+            if (this.companyId === 3) {
+              await putRequest(`/genesys/contact/${this.contact.id}`, this.dirtyCfvs, 'blueraven')
+            }
+          } catch (e) {
+            console.error('*** ERROR ***', e)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.fieldsSaving = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async saveCustomFieldValues() {
@@ -556,73 +655,46 @@ export default {
       }
     },
     async getCustomFieldGroups() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequestWithParams(`/customFieldValues/contact/${this.contactId}`)
         this.customFieldGroups = data
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getContact() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/contact/${this.contactId}`)
         this.contact = data
         this.contactLoading = false
         window.document.title = `Contact - ${this.contact.fullName}`
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.contactLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getOwners() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
           contactId: parseInt(this.contactId)
         }
         const {data, status} = await getRequestWithParams(`/contact/owners`, {params})
-        this.owners = data
-
-        handleHidingGlobalLoader(this, status)
+        this.availableOwners = data
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getNotes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/note/getContactNotes`, {
-          params: {
-            primaryId: this.contactId
-          }
-        }, null, [])
-        this.notes = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateOwner() {
-      this.changeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/contact/${this.contact.id}/updateOwner`, this.contact.owner)
+        //we use tempContact to save values in case they cancel then it repopulates at the end
+        const {status} = await putRequest(`/contact/${this.contactId}/updateOwner`, this.tempContact.owner || {userPositionId: null})
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.contact.owner = {}
@@ -633,21 +705,19 @@ export default {
       }
     },
     async getAvailableProcesses() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.processesLoading = true
         let params = {
           contactId: parseInt(this.contactId)
         }
         const {data, status} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
         this.selectedProcess = data?.length === 1 ? data[0] : {}
-
-        handleHidingGlobalLoader(this, status)
+        this.processesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async convertToCustomer() {
@@ -666,33 +736,31 @@ export default {
       }
     },
     async getCompanyStates() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getCompanyStates()
         this.states = data
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getCountries() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getCountries(parseInt(this.companyId))
         this.countries = data
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     getReadOnly: function (field) {
-      return !this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
+      let fieldReadOnly = false
+      if (null != field) {
+        fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
+      }
+      return !this.userCanEdit || fieldReadOnly
     },
     async deleteContact() {
       try {
@@ -712,7 +780,36 @@ export default {
 }
 </script>
 
+<style lang="scss">
+.cfg-name-toolbar .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-name-toolbar .v-toolbar__title {
+  font-size: 14px;
+}
+
+.cfg-detail-header .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-detail-header .v-toolbar__title {
+  font-size: 16px;
+}
+
+</style>
+
 <style lang="scss" scoped>
+.cfg-detail-header {
+  background-color: var(--v-secondary-base) !important;
+  margin-left: -10px;
+  margin-right: -10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .contact-header {
   border-bottom: solid 1px #EAEAF4
 }
@@ -743,5 +840,43 @@ export default {
   text-decoration: underline;
   text-transform: lowercase;
 }
+
+.contact-header {
+  height: 64px;
+}
+
+#contact-container {
+  width: 100%;
+  height: 100%;
+  max-height: 100% !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.contact-split-container {
+  height: calc(100% - 50px);
+  max-width: 100%;
+  width: 100%;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #9E9C9C;
+}
+
+.detail-item {
+  font-size: 0.875rem;
+  margin-left: 5px;
+  overflow-wrap: break-word;
+}
+
+.project-button {
+  border: solid 1px #C4C4C4;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
 </style>
 

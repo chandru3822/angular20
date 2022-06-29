@@ -1914,11 +1914,15 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public Optional<String> getInstallationScopeOfWork(Long projectProcessStepId) {
+  public Optional<String> getInstallationScopeOfWork(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
     return
       sqlCache.get(
         "projectProcessStep.getProjectInstallationScopeOfWork",
-        Map.of("projectProcessStepId", projectProcessStepId),
+        params,
         new SingleColumnRowMapper<>(String.class));
   }
 }

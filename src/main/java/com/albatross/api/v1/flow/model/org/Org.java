@@ -16,7 +16,7 @@ public class Org {
 
 
   private Long id, companyId, parentOrgId, orgTypeId, orgLevelId, companyStateId, stateId, parentOrgTypeId, defaultAppointmentLength, orgId, companyTimezoneId;
-  private String orgName, orgType, parentOrgName, title; //title used for scheduling tool
+  private String orgName, orgType, parentOrgName, title, stateAbbreviation, state, timezone; //title used for scheduling tool
   private Boolean activeFlag, schedulable, availableToChildren, showType, archived;
   private List<Org> childOrgs;
 
