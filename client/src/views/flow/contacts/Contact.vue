@@ -325,6 +325,10 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
+              <v-btn text @click="setSplitColumnValue()" class="px-0">
+                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
+              </v-btn>
               <div>
                 <v-btn color="primaryCustom"
                        class="white--text mt-3"
@@ -357,13 +361,23 @@
 
                   <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
                     <v-row>
-                      <v-col :cols="12" class="pb-0 pt-2">
-                        <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                      <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                                           :key="idx"
                                           :required="cf.required"
                                           :readonly="getReadOnly(cf)"
                                           :callback="populateDirtyCfvs"
-                                          :field="cf"></CustomValueInput>
+                                          :field="cf"
+                                          :show-field-name="false"></CustomValueInput>
+                      </v-col>
+                      <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                                          :key="idx"
+                                          :required="cf.required"
+                                          :readonly="getReadOnly(cf)"
+                                          :callback="populateDirtyCfvs"
+                                          :field="cf"
+                                          :show-field-name="false"></CustomValueInput>
                       </v-col>
                     </v-row>
 
@@ -510,6 +524,19 @@ export default {
     }
   },
   methods: {
+    setSplitColumnValue() {
+      //flip the flag
+      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+    },
+    getCustomFieldValuesToDisplay(values, columnNum) {
+      if (this.$store.state.project.manualColumnSplit) {
+        return values.filter(function (element, index, values) {
+          return (index % 2 === (columnNum === 1 ? 0 : 1));
+        });
+      } else {
+        return values
+      }
+    },
     collapseSide(side) {
       if (side === 'left') {
         this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
