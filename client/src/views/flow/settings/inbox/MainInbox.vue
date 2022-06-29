@@ -4,6 +4,7 @@
     :header-hidden="true"
     :right-hidden="!$route.params.projectId"
     :left-hidden="true"
+    :auto-overflow-left="true"
     @closeRight="$router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>

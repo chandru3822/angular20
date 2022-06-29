@@ -32,7 +32,7 @@
               </v-btn>
 
               <v-btn
-                  v-if="!projectProcessStepId && getNonPrimaryCount(type.attachmentTypeId) != 0"
+                  v-if="!objectTypeId && (!projectProcessStepId && getNonPrimaryCount(type.attachmentTypeId) !== 0)"
                   @click.native.stop="type.showNonPrimary = !type.showNonPrimary"
                   elevation="0"
 
@@ -54,7 +54,7 @@
         <AttachmentsTable
             :display-type="type"
             :attachments="attachments"
-            :show-non-primary-docs="type.showNonPrimary || !!projectProcessStepId"
+            :show-non-primary-docs="null != objectTypeId || type.showNonPrimary || !!projectProcessStepId"
         ></AttachmentsTable>
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -145,7 +145,6 @@ export default {
     },
     loadAllPageDetails() {
       if (this.projectProcessStepEventId) {
-        //adding more params so the backend can filter out mismatched data via url
         this.typePath = `/project/${this.projectId}/pps/${this.projectProcessStepId}/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
       } else if (this.projectProcessStepId) {
@@ -168,8 +167,10 @@ export default {
         this.attachmentPath = `/org/${this.orgId}/attachments`
       }
 
-      this.fetchAttachmentTypes()
-      this.fetchAttachments()
+      if(this.typePath && this.attachmentPath) {
+        this.fetchAttachmentTypes()
+        this.fetchAttachments()
+      }
     },
     fetchAttachmentTypes: async function () {
       this.attachmentTypesLoading = true
