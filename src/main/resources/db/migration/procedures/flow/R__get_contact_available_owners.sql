@@ -7,6 +7,7 @@ returns table (
     first_name varchar,
     last_name varchar,
     full_name text,
+    has_access boolean,
     user_position_id int,
     "position" varchar
 ) as
@@ -19,6 +20,7 @@ select  DISTINCT ON (u.last_name, u.first_name, u.id)
        u.first_name,
        u.last_name,
        concat(u.first_name, ' ', u.last_name) as full_name,
+       ust.has_access,
        up.id as user_position_id,
        p.position
 from flow.position p

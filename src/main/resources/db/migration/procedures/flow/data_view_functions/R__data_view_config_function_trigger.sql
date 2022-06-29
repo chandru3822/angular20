@@ -1364,7 +1364,7 @@ declare
   v_owner_position_ids integer[];
 BEGIN
 
-  if new.owner_user_position_id is not null then
+  if new.owner_user_position_id is not null and new.owner_user_position_id != old.owner_user_position_id then
 
     select array_agg(owner_org_ids)
     from (select distinct t.id as owner_org_ids
@@ -1417,7 +1417,7 @@ declare
   v_owner_position_ids integer[];
 BEGIN
 
-  if (new.user_position_id is not null) then
+  if (new.user_position_id is not null and new.user_position_id != old.user_position_id) then
 
     select array_agg(owner_org_ids)
     from (select distinct t.id as owner_org_ids
