@@ -161,6 +161,8 @@
                                  @confirm-delete="deleteType"
                                  @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this status type: <strong>{{itemToDeleteEventStatusType}}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
     </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
