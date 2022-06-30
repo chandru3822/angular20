@@ -33,6 +33,7 @@ DECLARE
   v_clean_phone_search_term   VARCHAR;
   v_clean_email_search_term   VARCHAR;
   v_clean_address_search_term VARCHAR;
+  v_position_ids              integer[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = right(trim(translate(p_searchterm, '+-(). ', '')), 10);
@@ -48,6 +49,12 @@ BEGIN
   end if;
   select array_agg(up.org_id)
   into v_org_ids
+  from flow.user_position up
+  where user_id = p_user_id
+    and up.start_date <= now()
+    and (up.end_date is null or up.end_date >= now());
+  select array_agg(up.id)
+  into v_position_ids
   from flow.user_position up
   where user_id = p_user_id;
   case
@@ -95,7 +102,7 @@ BEGIN
                          left join flow.state s on s.id = cs.state_id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_org_ids && v_org_ids)
+                    and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
                     and
                               ((p.id::text like '%' || v_clean_name_search_term || '%') or
                               (p.project_name_search like '%' || v_clean_name_search_term || '%') or
@@ -197,7 +204,7 @@ BEGIN
                       left join flow.state s on s.id = cs.state_id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
-                 and (c.owner_org_ids && v_org_ids)
+                 and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
                  and case
                        when p_company_project_status_type_id is not null then
                          cpst.id = p_company_project_status_type_id
