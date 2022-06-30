@@ -75,7 +75,7 @@
                           item-value="id"
                           label="Select a Category"
                           item-text="eventStatusType"></v-autocomplete>
-          <v-btn :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">
+          <v-btn color="primary" :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">
             Save
           </v-btn>
         </v-card>
@@ -143,12 +143,11 @@
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                  <confirm-delete-dialog
-                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      label="this status type: "
-                      :item-to-delete="item.eventStatusType"
-                      @confirm-delete="[item.archived = true, deleteType(item)]"
-                  ></confirm-delete-dialog>
+                  <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                         @click="[itemToDelete=item, showDeleteDialog=true]"
+                  >
+                    <v-icon>delete</v-icon>
+                  </v-btn>
                 </td>
 
               </tr>
@@ -158,6 +157,11 @@
       </v-col>
 
     </v-row>
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+                                 @confirm-delete="deleteType"
+                                 @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete this status type: <strong>{{itemToDeleteEventStatusType}}</strong>?
+    </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -175,11 +179,13 @@ import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventS
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
 
 export default {
   name: 'EventStatuses',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmDeleteDialogImproved,
     ConfirmDeleteDialog,
     draggable,
   },
@@ -206,7 +212,9 @@ export default {
       companyId: this.$store.state.user.details.companyId,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       fieldsInUse: [],
-      deleteError: false
+      deleteError: false,
+      showDeleteDialog: false,
+      itemToDelete: null
     }
   },
   mounted() {
@@ -225,7 +233,11 @@ export default {
       }
     })
   },
-  computed: {},
+  computed: {
+    itemToDeleteEventStatusType() {
+      return this.itemToDelete ? this.itemToDelete.eventStatusType : ''
+    }
+  },
   methods: {
     async saveOrderChanges(types) {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -316,7 +328,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteType(item) {
+    async deleteType() {
+      const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await deleteRequest(`/event/companyStatus/${item.id}`)
@@ -324,6 +337,7 @@ export default {
         this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+        this.itemToDelete.archived = true
       } catch (e) {
         if (e.status === 400) {
           this.deleteError = true;
@@ -339,6 +353,7 @@ export default {
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
+      this.closeDeleteDialog()
     },
     async saveType(type, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -374,6 +389,10 @@ export default {
       return this.statusTypes.filter(s => {
         return !s.archived
       })
+    },
+    closeDeleteDialog() {
+      this.showDeleteDialog = false
+      this.itemToDelete = null
     }
   },
   async created() {
