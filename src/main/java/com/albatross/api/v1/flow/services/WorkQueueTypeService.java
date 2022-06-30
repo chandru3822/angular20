@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -59,11 +60,26 @@ public class WorkQueueTypeService {
         new WorkQueueTypeMapper<>(WorkQueueType.class, om));
   }
 
-  public void deleteType(Long typeId) {
+  public ResponseEntity<List<FieldInUse>> deleteType(Long typeId) {
     User user = securityService.getCurrentUser();
-    sqlCache.update(
+
+    List<FieldInUse> fields = getProcessStepsUsingWqt(typeId);
+    if (!fields.isEmpty()) {
+      return ResponseEntity.badRequest().body(fields);
+    } else {
+      sqlCache.update(
         "workQueueType.deleteType",
         ImmutableMap.of("id", typeId, "modifiedById", user.trueUserId()));
+      return ResponseEntity.ok().build();
+    }
+  }
+
+  public List<FieldInUse> getProcessStepsUsingWqt(Long wqtId) {
+    //this actually returns process steps and events using the wqtId
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("wqtId", wqtId);
+    List<FieldInUse> fieldsInUse = sqlCache.query("workQueueType.getProcessStepsUsingWqt", params, FieldInUse.class);
+    return fieldsInUse;
   }
 
   public Optional<WorkQueueType> updateType(WorkQueueType type) {
