@@ -117,7 +117,7 @@ public class SunpowerService {
     applicantDetails.put("firstName", contact.getFirstName());
     applicantDetails.put("lastName", contact.getLastName());
 
-    String phone = contact.getPhone();
+    String phone = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
     if (!phone.isEmpty() && phone.startsWith("+1")) {
       phone = phone.substring(2);
     }
