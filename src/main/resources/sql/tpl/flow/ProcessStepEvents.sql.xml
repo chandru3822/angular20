@@ -358,6 +358,10 @@ where pse.process_step_id = :processStepId
         where id = :id
   ]]></processStepEvent.updateActionDisplayOrder>
 
+  <processStepEvent.duplicateAction><![CDATA[
+    select * from flow.duplicate_event_action(:actionId::int, :userId::int, :companyId::int);
+  ]]></processStepEvent.duplicateAction>
+
   <processStepEvent.getStepEventAction><![CDATA[
     select  psea.*,
             at.action_type as "actionType",

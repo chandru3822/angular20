@@ -109,6 +109,18 @@ public class ProcessStepEventService {
     return sqlCache.get("processStepEvent.getStepEventAction", params, new ProcessStepEventActionMapper<>(ProcessStepEventAction.class, om));
   }
 
+  public Optional<ProcessStepEventAction> duplicateAction(Long processStepEventActionId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("actionId", processStepEventActionId);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+
+    Long newActionId = sqlCache.queryForObject("processStepEvent.duplicateAction", params, Long.class);
+    return getStepEventAction(newActionId);
+  }
+
   public Optional<ProcessStepEventAction> saveStepEventAction(Long processStepId, Long eventId, ProcessStepEventAction processStepEventAction) {
     User currentUser = securityService.getCurrentUser();
 
