@@ -259,8 +259,8 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          this.closeDeleteDialog()
         }
+        this.closeDeleteDialog()
       },
       async addNewType () {
         this.$store.commit(AppMutations.SET_LOADING, true)
