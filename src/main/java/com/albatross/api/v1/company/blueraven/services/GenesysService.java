@@ -213,7 +213,8 @@ public class GenesysService {
     }
 
     WritableDialerContact wdc = new WritableDialerContact();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     HashMap<String, Object> contactMap = new HashMap<>();
     wdc.setId(contact.getId().toString());
     contactMap.put("id", contact.getId());
@@ -236,7 +237,7 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
+    contactMap.put("date_created", formatterDate.format(contact.getDateCreated()) + "T" + formatterTime.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, false);
 
@@ -326,7 +327,8 @@ public class GenesysService {
     }
 
     Contact contact = contactService.getContact(contactId);
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
@@ -347,7 +349,7 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
+    contactMap.put("date_created", formatterDate.format(contact.getDateCreated()) + "T" + formatterTime.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, true);
 
