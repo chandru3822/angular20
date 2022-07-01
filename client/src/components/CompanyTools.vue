@@ -131,6 +131,11 @@
     display: inline-block;
     margin: 0 10px;
   }
+
+  .v-list .v-list-item--active{
+    color:var(--v-anchor-base);
+    background-color: var(--v-primary-lighten9);
+  }
   .account-menu-button{
     text-transform: capitalize;
     box-shadow: none !important;
