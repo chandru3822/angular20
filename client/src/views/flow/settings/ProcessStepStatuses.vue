@@ -127,12 +127,9 @@
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                    <confirm-delete-dialog
-                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                        label="this status type: "
-                        :item-to-delete="item.processStepStatusType"
-                        @confirm-delete="deleteType(item)"
-                    ></confirm-delete-dialog>
+                    <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </td>
 
                 </tr>
@@ -143,6 +140,14 @@
       </v-col>
 
     </v-row>
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+                                 @confirm-delete="deleteType"
+                                 @closeConfirmDeleteDialog="closeDeleteDialog"
+    >
+      Are you sure you want to delete this status type: <strong>{{toDeleteProcessStepStatusType}}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -155,11 +160,11 @@
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
 
   export default {
     name: 'Statuses',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmDeleteDialogImproved},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -189,10 +194,15 @@
         companyId: this.$store.state.user.details.companyId,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         fieldsInUse: [],
-        deleteError: false
+        deleteError: false,
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
     computed: {
+      toDeleteProcessStepStatusType(){
+        return this.itemToDelete ? this.itemToDelete.processStepStatusType : ''
+      }
     },
     methods: {
       filteredRootStatuses() {
@@ -224,7 +234,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteType (type) {
+      async deleteType () {
+        const type = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await deleteRequest(`/processStep/status/${type.id}`)
@@ -248,6 +259,7 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
+          this.closeDeleteDialog()
         }
       },
       async addNewType () {
@@ -292,6 +304,10 @@
       filterProcessStepStatuses () {
         return this.statusTypes.filter(s => { return !s.archived})
       },
+      closeDeleteDialog() {
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     },
     async created () {
       this.getCompanyStatusTypes()

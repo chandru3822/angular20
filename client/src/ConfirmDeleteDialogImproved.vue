@@ -1,7 +1,8 @@
 <template>
   <v-dialog
-      v-model="openConfirmDeleteDialog"
-      width="500">
+    v-model="show"
+    width="500"
+  >
     <v-card>
       <v-card-title
           class="albatross-header-2 lighten-2 pb-1"
@@ -16,7 +17,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-            @click="no"
+          @click.native="no"
             text
             color="primary"
             class="text-capitalize mr-2 mb-2"
@@ -46,14 +47,24 @@ export default {
     return {
     }
   },
+  computed: {
+    show: {
+      get () {
+        return this.openConfirmDeleteDialog
+      },
+      set (value) {
+        this.$emit('closeConfirmDeleteDialog', value)
+      }
+    }
+  },
   methods: {
     yes(){
       this.$emit('confirm-delete')
-      this.$emit('openConfirmDeleteDialog', false)
+      this.show.set(false)
     },
     no() {
-      this.$emit('openConfirmDeleteDialog', false)
-      this.$emit('closeConfirmDeleteDialog')
+      this.$emit('closeConfirmDeleteDialog', false)
+      this.show=false
     }
   }
 }
