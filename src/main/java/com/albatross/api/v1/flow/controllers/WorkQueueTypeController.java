@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.DurationType;
 import com.albatross.api.v1.flow.model.FieldInUse;
+import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
@@ -41,6 +42,13 @@ public class WorkQueueTypeController {
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<WorkQueueType> getWorkQueueType (@PathVariable Long id) {
     return workQueueTypeService.getType(id);
+  }
+
+  @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                     @RequestBody WorkQueueType workQueueType) {
+    //will only savePositions if they changed
+    workQueueTypeService.saveHiddenAndWhiteList(workQueueType, savePositions);
   }
 
   @PutMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)

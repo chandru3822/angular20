@@ -7,6 +7,7 @@ import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.Note;
 import com.albatross.api.v1.flow.model.OwningPosition;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
@@ -28,7 +29,9 @@ import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -40,17 +43,21 @@ public class WorkQueueService {
   private final SmartlistService smartlistService;
   private final WorkQueueTypeService workQueueTypeService;
   private final SqlCacheRO sqlCacheRO;
+  private final UserPositionService userPositionService;
+  private final SqlArrayService sqlArrayService;
 
-  public List<WorkQueue> getWorkQueues(
-      Long workQueueCategoryId,
-      Boolean filterFutureFollowUps,
-      Boolean filterFutureEvents) {
+  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Boolean filterFutureFollowUps, Boolean filterFutureEvents) throws SQLException {
     User user = securityService.getCurrentUser();
+    List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+    Boolean userIsSuperAdmin = securityService.userIsSuperAdmin(user.getId());
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
     params.put("companyId", user.getCompanyId());
     params.put("filterFutureFollowUps", null != filterFutureFollowUps && filterFutureFollowUps);
     params.put("filterFutureEvents", null != filterFutureEvents && filterFutureEvents);
+    params.put("positionIds", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(UserPosition::getPositionId).collect(Collectors.toList())) : null);
+    params.put("hiddenWqtOverride", userIsSuperAdmin);
 
     return sqlCacheRO.query("workQueue.getWorkQueueCards", params, WorkQueue.class);
   }

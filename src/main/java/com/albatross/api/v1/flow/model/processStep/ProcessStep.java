@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.model.processStep;
 
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.OwningPosition;
+import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +20,7 @@ public class ProcessStep {
   private Long id, companyProcessId, companyId, createdById, modifiedById;
   // originalProcessStepName used for frontend validation (without having to loop to populate it on frontend)
   private String processStepName, originalProcessStepName;
-  private Boolean archived, nonAdminAdd;
+  private Boolean archived, nonAdminAdd, readonly;
   private Date dateCreated, dateModified;
 
   private List<CustomFieldGroup> customFieldGroups;
@@ -27,6 +28,7 @@ public class ProcessStep {
   private List<ProcessStepLink> links;
 
   private List<OwningPosition> owningPositions;
+  private List<WhiteListedPosition> whiteListedPositions;
 
   private List<ProcessStepWorkQueueType> workQueueTypes;
   private List<ProcessStepCompanyProcessStepStatusType> companyProcessStepStatusTypes;

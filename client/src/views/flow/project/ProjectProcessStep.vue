@@ -192,6 +192,7 @@
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hideFromWeb"
             :action-result="action"
+            :block-perform="processStepReadOnly"
             :projectProcessStepId="parseInt(projectProcessStepId)"
             :handleOnComplete="handleActionCompleted"
             :handleOnCompleteError="handleOnCompleteError"
@@ -224,7 +225,7 @@
             <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
-          <v-btn v-if="projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
+          <v-btn v-if="!getReadOnly() && projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
             <v-icon class="px-0">mdi-upload</v-icon>
           </v-btn>
           <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
@@ -367,6 +368,7 @@ export default {
       unsavedFieldsModal: false,
       fieldsSaving: false,
       projectMismatch: false,
+      processStepReadOnly: false,
       getStatusClass,
       showUploadModal: false,
       uploadModalWidth: 600,
@@ -432,6 +434,8 @@ export default {
 
       if (this.showUnperformableActions) {
         return this.processStep.actions
+      } else if (this.processStepReadOnly) {
+        return []
       } else {
         return this.processStep.actions.filter(a => a.canPerform === true)
       }
@@ -534,6 +538,7 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
+          this.processStepReadOnly = this.processStep.readonly && !this.$store.getters.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
           this.processStepId = this.processStep.processStepId
           // this.contactId = this.processStep.contactId
           this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
@@ -686,6 +691,7 @@ export default {
       return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
         || fieldReadOnly
         || !this.userCanEdit
+        || this.processStepReadOnly
     },
     followMultipleLinks(action) {
       let params = {

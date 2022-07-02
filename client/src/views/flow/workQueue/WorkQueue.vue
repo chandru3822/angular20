@@ -343,7 +343,11 @@ export default {
         if (status === 200) {
           //assign each metric to the appropriate card
           data.forEach(d => {
-            this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId).metrics = d
+            let match = this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
+            //if a wqt is hidden from a user then no match will be found
+            if(match) {
+              match.metrics = d
+            }
           })
           this.metricsLoading = false
         }
