@@ -1,5 +1,5 @@
 <template>
-  <v-container class="custom-field-group-container">
+  <v-container class="custom-field-group-container" v-if="processStep && processStep.id">
     <v-row>
       <v-col cols="12">
         <v-btn text class="pl-1 pr-2" :to="'/settings/processSteps'">
@@ -45,6 +45,9 @@
 
     </v-row>
   </v-container>
+  <v-container class="custom-field-group-container" v-else-if="!processStepLoading">
+    Process Step Not Found
+  </v-container>
 </template>
 
 <script>
@@ -66,6 +69,7 @@
         snackbar: {},
         constants,
         editName: false,
+        processStepLoading: true,
         oldName: null,
         processStepId: this.$route.params.id,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
@@ -111,16 +115,20 @@
     },
     methods: {
       async getProcessStepDetails () {
+        this.processStepLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
           this.processStep = data
+          this.processStepLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          let msg = e?.data?.message || 'Error Retrieving Data'
+          this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.processStepLoading = false
         }
       },
       async saveProcessStep(e, closeEditor) {
