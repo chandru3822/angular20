@@ -36,8 +36,11 @@ public class ProcessStepService {
   }
 
   public ProcessStep getProcessStep(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", currentUser.getCompanyId());
     return sqlCache
         .get("processStep.get", params, new ProcessStepMapper<>(ProcessStep.class, om))
         .orElse(null);
