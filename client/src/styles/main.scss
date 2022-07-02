@@ -387,14 +387,14 @@ label[for="adminOriginatorSelect"] {
 //Global Styles
 //there may be a better way to do this, but I wanted to at least get something going here
 .albatross-header-1 {
-  font-weight: normal;
+  font-weight: bold;
   font-size: 1.25rem;
 }
 .albatross-header-2,
 .cfg-name-toolbar .v-toolbar__title.albatross-header-2,
 .v-toolbar__title.albatross-header-2 //to override vuetify styling
 {
-  font-weight: bold;
+  font-weight: normal;
   font-size: 1.25rem;
 }
 .albatross-header-3,

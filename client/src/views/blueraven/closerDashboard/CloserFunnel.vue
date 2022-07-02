@@ -12,7 +12,7 @@
 
     <div id="appts-created-pipeline-container" class="mb-8" v-if="userCanViewAllProjects">
       <div class="pipeline-header-container">
-        <div class="pipeline-title">Appointments Created Pipeline</div>
+        <div class="pipeline-title albatross-header-2">Appointments Created Pipeline</div>
       </div>
 
       <!-- FUNNEL -->
@@ -162,7 +162,7 @@
       <div id="appts-to-fdc-pipeline-container" :class="{'mb-8': apptsToFdcPipelineData.length > 0}">
         <div class="pipeline-header-container">
           <div id="pipeline-header-left-side">
-            <div class="pipeline-title">Appointments to FDC Pipeline</div>
+            <div class="pipeline-title albatross-header-2">Appointments to FDC Pipeline</div>
           </div>
 
           <!-- DROPDOWNS -->
@@ -2510,8 +2510,6 @@ export default {
     }
 
     .pipeline-title {
-      font-size: 18px;
-      font-weight: bold;
       margin-left: 8px;
     }
   }
@@ -2668,8 +2666,6 @@ export default {
     }
 
     .pipeline-title {
-      font-size: 18px;
-      font-weight: bold;
       margin-left: 8px;
     }
 
@@ -3198,7 +3194,6 @@ export default {
       }
 
       .pipeline-title {
-        font-size: 24px;
         margin-left: 10px;
       }
     }
@@ -3350,7 +3345,6 @@ export default {
       }
 
       .pipeline-title {
-        font-size: 24px;
         margin-left: 10px;
       }
 
