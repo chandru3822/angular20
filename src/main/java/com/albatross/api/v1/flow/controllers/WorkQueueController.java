@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ public class WorkQueueController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueue> getWorkQueues (@RequestParam(required = false) Long workQueueCategoryId,
                                         @RequestParam(required = false) Boolean filterFutureFollowUps,
-                                        @RequestParam(required = false) Boolean filterFutureEvents) {
+                                        @RequestParam(required = false) Boolean filterFutureEvents) throws SQLException {
     return workQueueService.getWorkQueues(workQueueCategoryId, filterFutureFollowUps, filterFutureEvents);
   }
 

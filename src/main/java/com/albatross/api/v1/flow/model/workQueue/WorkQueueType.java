@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model.workQueue;
 
+import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import lombok.Data;
 
 import java.util.List;
@@ -17,5 +18,6 @@ public class WorkQueueType {
       longWindowDurationType, shortWindowDurationType, expectedCycleDurationType;
     private List<WorkQueueTypeSchedule> schedule;
     private Double expectedTarget;
-    private Boolean archived, inverseExpectation, useEventData;
+    private Boolean archived, inverseExpectation, useEventData, hidden;
+  private List<WhiteListedPosition> hiddenWhiteListedPositions;
 }

@@ -38,6 +38,13 @@ public class ProcessStepController {
     return processStepService.getProcessStep(id);
   }
 
+  @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveReadOnlyAndWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                       @RequestBody ProcessStep processStep) {
+    //will only savePositions if they changed
+    processStepService.saveReadOnlyAndWhiteList(processStep, savePositions);
+  }
+
   @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<FieldInUse> deleteStep(@PathVariable Long id) {
     return processStepService.deleteStep(id);
