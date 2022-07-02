@@ -73,14 +73,17 @@ public class WorkQueueService {
   }
 
   public SmartlistResult getWorkQueueDetails(
-      Long workQueueTypeId,
-      Long smartlistId,
-      Long userId,
-      Boolean unassigned,
-      String timezone,
-      Pageable pageable,
-      List<Long> installationCrewIds) {
+    Long workQueueTypeId,
+    Long smartlistId,
+    Long userId,
+    Boolean unassigned,
+    String timezone,
+    Pageable pageable,
+    List<Long> installationCrewIds) throws SQLException {
     User user = securityService.getCurrentUser();
+    List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+    Boolean userIsSuperAdmin = securityService.userIsSuperAdmin(user.getId());
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
@@ -90,81 +93,89 @@ public class WorkQueueService {
     params.put("unassigned", null == unassigned ? false : unassigned);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
+    params.put("positionIds", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(UserPosition::getPositionId).collect(Collectors.toList())) : null);
+    params.put("hiddenWqtOverride", userIsSuperAdmin);
 
-    Optional<WorkQueueType> workQueueType = workQueueTypeService.getType(workQueueTypeId);
-    Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
-    if (smartlist == null) {
-      throw new ResponseStatusException(
+    Boolean userHasAccess = sqlCache.queryForObject("workQueue.userCanAccessData", params, Boolean.class);
+
+    if (userHasAccess) {
+      Optional<WorkQueueType> workQueueType = workQueueTypeService.getType(workQueueTypeId);
+      Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
+      if (smartlist == null) {
+        throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
-    }
-    log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
-    List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
+      }
+      log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
+      List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
 
-    fields = smartlistService.prettifyFieldNames(fields);
+      fields = smartlistService.prettifyFieldNames(fields);
 
       String query = null;
       if ((workQueueType.isPresent() && !workQueueType.get().getUseEventData()) || (null != installationCrewIds && !installationCrewIds.isEmpty())) {
-          // if the work queue type is not for event data OR it is for install crews, then keep doing
-          // the same thing
-          query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
+        // if the work queue type is not for event data OR it is for install crews, then keep doing
+        // the same thing
+        query = smartlistService.buildSql(smartlist, fields, timezone, installationCrewIds, false);
       } else {
-          // this should only be called for wqt using event data
-          query = smartlistService.buildWorkQueueSql(smartlist, fields, true, timezone);
+        // this should only be called for wqt using event data
+        query = smartlistService.buildWorkQueueSql(smartlist, fields, true, timezone);
 
-          // add default fields to fields list
-          var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
+        // add default fields to fields list
+        var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
 
-          defaultFields.addAll(fields);
-          fields = defaultFields;
+        defaultFields.addAll(fields);
+        fields = defaultFields;
       }
-    List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+      List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
-    List<Map<String, Object>> randasResults = new ArrayList<>();
+      List<Map<String, Object>> randasResults = new ArrayList<>();
 
-    for (Map<String, Object> result : results) {
+      for (Map<String, Object> result : results) {
 
-      Map<String, Object> newResult = new HashMap<>();
+        Map<String, Object> newResult = new HashMap<>();
 
-      for (Map.Entry<String, Object> entry : result.entrySet()) {
-        if (result.get(entry.getKey()) != null) {
-          if (Objects.equals(entry.getValue().getClass(), PGobject.class)) {
-            newResult.put(entry.getKey(), ((PGobject) entry.getValue()).getValue());
+        for (Map.Entry<String, Object> entry : result.entrySet()) {
+          if (result.get(entry.getKey()) != null) {
+            if (Objects.equals(entry.getValue().getClass(), PGobject.class)) {
+              newResult.put(entry.getKey(), ((PGobject) entry.getValue()).getValue());
+            } else {
+              newResult.put(entry.getKey(), entry.getValue());
+            }
           } else {
             newResult.put(entry.getKey(), entry.getValue());
           }
-        } else {
-          newResult.put(entry.getKey(), entry.getValue());
         }
+
+        randasResults.add(newResult);
       }
 
-      randasResults.add(newResult);
+      return new SmartlistResult(fields, randasResults);
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You do not have access to this drilldown.", new Exception());
     }
-
-    return new SmartlistResult(fields, randasResults);
   }
 
-    public String buildSql(Long smartlistId, Boolean useEventData) {
-        Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
-        if (smartlist == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
-        }
-
-        log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
-        List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
-        fields = smartlistService.prettifyFieldNames(fields);
-        String query;
-        if (useEventData) {
-            query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
-
-            // add default fields to fields list
-            var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
-            defaultFields.addAll(fields);
-            fields = defaultFields;
-        } else {
-            query = smartlistService.buildSql(smartlist, fields);
-        }
-        return query;
+  public String buildSql(Long smartlistId, Boolean useEventData) {
+    Smartlist smartlist = smartlistService.getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
+
+    log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
+    List<SmartlistFieldAssignment> fields = smartlistService.getAssignedFields(smartlistId);
+    fields = smartlistService.prettifyFieldNames(fields);
+    String query;
+    if (useEventData) {
+      query = smartlistService.buildWorkQueueSql(smartlist, fields, useEventData, null);
+
+      // add default fields to fields list
+      var defaultFields = smartlistService.getEventWorkqueueDefaultFields(false);
+      defaultFields.addAll(fields);
+      fields = defaultFields;
+    } else {
+      query = smartlistService.buildSql(smartlist, fields);
+    }
+    return query;
+  }
 
   public List<WorkQueueOwner> getWorkQueueOwners() {
     User user = securityService.getCurrentUser();
@@ -186,21 +197,24 @@ public class WorkQueueService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {};
+      TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "owningPositions",
-          new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
+        List.class,
+        "owningPositions",
+        new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
 
-      TypeReference<List<ProjectProcessStep>> activeProcessStepsRef = new TypeReference<>() {};
+      TypeReference<List<ProjectProcessStep>> activeProcessStepsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "activeProcessSteps",
-          new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
+        List.class,
+        "activeProcessSteps",
+        new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
 
-      TypeReference<List<Note>> notesRef = new TypeReference<>() {};
+      TypeReference<List<Note>> notesRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class, "notes", new JsonCollectionDeserializer(notesRef, objectMapper));
+        List.class, "notes", new JsonCollectionDeserializer(notesRef, objectMapper));
     }
   }
 }

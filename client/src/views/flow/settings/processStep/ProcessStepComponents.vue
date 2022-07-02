@@ -449,7 +449,7 @@ export default {
         const {status} = await putRequest(`/processStep/saveReadOnlyAndWhiteList?savePositions=${this.readOnlyPositionsChanged ?? false}`, this.processStep)
         this.readOnlyPositionsChanged = false
         if(!this.processStep.readonly) {
-          this.readOnlyWhiteListedPositions = []
+          this.processStep.whiteListedPositions = []
         }
         this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

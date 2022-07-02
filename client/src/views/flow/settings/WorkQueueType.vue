@@ -429,7 +429,7 @@ export default {
         const {status} = await putRequest(`/workQueueType/saveHiddenAndWhiteList?savePositions=${this.hiddenPositionsChanged ?? false}`, this.workQueueType)
         this.hiddenPositionsChanged = false
         if(!this.workQueueType.hidden) {
-          this.hiddenWhiteListedPositions = []
+          this.workQueueType.hiddenWhiteListedPositions = []
         }
         this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

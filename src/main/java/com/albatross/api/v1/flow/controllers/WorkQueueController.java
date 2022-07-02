@@ -45,7 +45,7 @@ public class WorkQueueController {
                                               @RequestParam String timezone,
                                               @RequestParam(required = false) Boolean unassigned,
                                               @RequestParam(required = false) Long userId,
-                                              Pageable pageable) {
+                                              Pageable pageable) throws SQLException {
     return workQueueService.getWorkQueueDetails(id, smartlistId, userId, unassigned, timezone, pageable, null);
   }
 
@@ -56,7 +56,7 @@ public class WorkQueueController {
                                               @RequestParam String timezone,
                                               @RequestParam(required = false) Boolean unassigned,
                                               @RequestParam(required = false) Long userId,
-                                              Pageable pageable) {
+                                              Pageable pageable) throws SQLException {
     return workQueueService.getWorkQueueDetails(id, smartlistId, userId, unassigned, timezone, pageable, installationCrewIds);
   }
 

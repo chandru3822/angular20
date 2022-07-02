@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +25,13 @@ public class WorkQueueCategoryController {
   private WorkQueueCategoryService workQueueCategoryService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueCategory> getWorkQueueCategories () {
-    return workQueueCategoryService.getWorkQueueCategories();
+  public List<WorkQueueCategory> getWorkQueueCategoriesFiltered () throws SQLException {
+    return workQueueCategoryService.getWorkQueueCategories(true);
+  }
+
+  @GetMapping(value = "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueCategory> getWorkQueueCategories () throws SQLException {
+    return workQueueCategoryService.getWorkQueueCategories(false);
   }
 
   @DeleteMapping(value = "/{categoryId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -38,8 +44,15 @@ public class WorkQueueCategoryController {
     return workQueueCategoryService.updateCategory(category);
   }
 
+  @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                     @RequestBody WorkQueueCategory workQueueCategory) {
+    //will only savePositions if they changed
+    workQueueCategoryService.saveHiddenAndWhiteList(workQueueCategory, savePositions);
+  }
+
   @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueCategory> updateCategoryDisplayOrders(@RequestBody List<WorkQueueCategory> categories) {
+  public List<WorkQueueCategory> updateCategoryDisplayOrders(@RequestBody List<WorkQueueCategory> categories) throws SQLException {
     return workQueueCategoryService.updateCategoryDisplayOrders(categories);
   }
 
