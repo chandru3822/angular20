@@ -1384,7 +1384,7 @@ BEGIN
     into v_owner_org_ids;
 
     select array_agg(owner_id) as owner_ids
-    from (select new.id as contact_id, new.owner_user_position_id as owner_id
+    from (select new.id as contact_id, new.owner_user_position_id as owner_id where new.owner_user_position_id is not null
           union
           select p.contact_id as contact_id, user_position_id as owner_id
           from flow.project p
@@ -1439,7 +1439,7 @@ BEGIN
     into v_owner_org_ids;
 
     select array_agg(owner_id) as owner_ids
-    from (select new.contact_id as contact_id,new.user_position_id as owner_id
+    from (select new.contact_id as contact_id,new.user_position_id as owner_id  where new.user_position_id is not null
           union
           select p.contact_id as contact_id,p.user_position_id as owner_id
           from flow.project p
