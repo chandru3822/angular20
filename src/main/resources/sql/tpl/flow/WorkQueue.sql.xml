@@ -47,7 +47,7 @@
       and wqt.company_id = :companyId
       and wqt.archived is not true
       and wqt.use_event_data is false
-      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] <@ (select array_agg(wlp.position_id)
+      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
                                                       FROM flow.white_listed_position wlp
                                                       WHERE wlp.white_list_type_id = 10
                                                         AND wlp.archived is not true
@@ -105,7 +105,7 @@
       and wqt.company_id = :companyId
       and wqt.archived is not true
       and wqt.use_event_data is true
-      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] <@ (select array_agg(wlp.position_id)
+      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
                                                       FROM flow.white_listed_position wlp
                                                       WHERE wlp.white_list_type_id = 10
                                                         AND wlp.archived is not true

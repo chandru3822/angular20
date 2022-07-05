@@ -588,7 +588,7 @@ public class ProjectService {
 
   public CommunicationController.ProjectDetails getProjectDetailTemplateFields(Long projectId) {
     return sqlCache
-      .get("project.getPrimaryFinancierName", Map.of("projectId", projectId), CommunicationController.ProjectDetails.class)
+      .get("project.getProjectDetailTemplateFields", Map.of("projectId", projectId), CommunicationController.ProjectDetails.class)
       .orElse(null);
   }
 

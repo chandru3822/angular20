@@ -260,7 +260,7 @@ public class CommunicationController {
   private ProjectDetails getProjectTemplateFields(Long projectId, String projectTimeZone) {
     ProjectDetails projectDetails = projectService.getProjectDetailTemplateFields(projectId);
 
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]");
     if (projectTimeZone != null && !projectTimeZone.isEmpty()) {
       String closerAppointmentTime = "";
       String ahjInspectionTime = "";

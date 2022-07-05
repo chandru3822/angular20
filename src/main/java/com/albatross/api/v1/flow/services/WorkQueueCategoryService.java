@@ -36,8 +36,12 @@ public class WorkQueueCategoryService {
 
   public List<WorkQueueCategory> getWorkQueueCategories(Boolean filtered) throws SQLException {
     User user = securityService.getCurrentUser();
-    List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
     Boolean userIsSuperAdmin = securityService.userIsSuperAdmin(user.getId());
+
+    List<UserPosition> userPositions = null;
+    if(filtered) {
+     userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getHighestParentCompanyId());

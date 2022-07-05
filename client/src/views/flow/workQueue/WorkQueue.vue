@@ -230,7 +230,8 @@ export default {
   async created() {
     await this.getWorkQueueCategories()
     this.selectedWorkQueueCategoryId = parseInt(localStorage.getItem('wqCategoryId'))
-    let matchingCategory = this.workQueueCategories.find(wqc => wqc.id = this.selectedWorkQueueCategoryId)
+    let matchingCategory = this.workQueueCategories.find(wqc => wqc.id === this.selectedWorkQueueCategoryId)
+    console.log('randaLogger',this.selectedWorkQueueCategoryId  )
     console.log('randaLogger',matchingCategory  )
     if(matchingCategory) {
       this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false

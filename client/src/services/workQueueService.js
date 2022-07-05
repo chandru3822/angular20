@@ -5,6 +5,7 @@ export async function getWorkQueueTypes(sortByName) {
   return await getRequestWithParams(`/workQueueType`, { params })
 }
 
-export async function getWorkQueueCategories() {
-  return await getRequest(`/workQueueCategory`)
+export async function getWorkQueueCategories(isAdmin) {
+  let url = isAdmin ? `/workQueueCategory/admin` : '/workQueueCategory'
+  return await getRequest(url)
 }
