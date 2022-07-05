@@ -505,6 +505,7 @@ export default {
     }
   },
   async created() {
+    console.log('routed param',this.$route.params.contactId)
     let requests = [this.getContact(), this.getCustomFieldGroups()]
     await Promise.all(requests).then(async () => {
       this.fieldsLoading = false
