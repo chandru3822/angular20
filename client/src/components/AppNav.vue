@@ -127,7 +127,7 @@ import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 
-const { VUE_APP_ENV } = process.env
+const { VUE_APP_ENV } =  import.meta.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
 
 export default {

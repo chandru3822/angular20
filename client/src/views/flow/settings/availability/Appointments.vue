@@ -238,7 +238,7 @@
   import moment from 'moment-timezone'
   import constants from "@/helpers/constants"
 
-  const { VUE_APP_ENV } = process.env
+  const { VUE_APP_ENV } =  import.meta.env
 
   export default {
     name: 'Appointments',

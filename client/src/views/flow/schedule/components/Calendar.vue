@@ -256,7 +256,8 @@
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
   import {getSchedulingOrgTypes} from '@/services/orgService'
-  import momentTimezonePlugin from '@fullcalendar/moment-timezone'
+  // import momentTimezonePlugin from '@fullcalendar/moment-timezone'
+  import momentTimezonePlugin from '@/plugins/fc-moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
 
   import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'

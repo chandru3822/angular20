@@ -67,7 +67,7 @@
   import Vue2Filters from "vue2-filters"
   import SpinnerInline from '@/components/SpinnerInline'
   import { getRequest, getSnackbar } from '@/helpers/helpers'
-  const { VUE_APP_ENV } = process.env
+  const { VUE_APP_ENV } =  import.meta.env
 
   export default {
     name: 'CompanyTools',

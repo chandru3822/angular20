@@ -71,7 +71,7 @@
   import moment from 'moment-timezone'
   import Vue2Filters from "vue2-filters"
 
-  const { VUE_APP_ENV } = process.env
+  const { VUE_APP_ENV } =  import.meta.env
 
   export default {
     name: 'AccountMenu',

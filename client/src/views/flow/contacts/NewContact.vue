@@ -104,7 +104,7 @@ import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
-const { VUE_APP_ENV } = process.env
+const { VUE_APP_ENV } =  import.meta.env
 
 export default {
   name: 'NewContact',

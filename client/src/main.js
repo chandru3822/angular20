@@ -1,10 +1,10 @@
 import Vue from 'vue'
-import Vuetify from './plugins/vuetify'
+import Vuetify from '@/plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
 import Vue2Filters from 'vue2-filters'
-import App from './App.vue'
-import router from './router'
-import store from './store'
+import App from '@/App.vue'
+import router from '@/router'
+import store from '@/store'
 import axios from 'axios'
 import { UserMutations } from '@/stores/UserStore'
 import { AppMutations } from '@/stores/AppStore'
@@ -15,9 +15,9 @@ import VueGtag from 'vue-gtag'
 import '@/styles/main.scss'
 
 // @todo: make PWA awesomeness
-import './registerServiceWorker'
+// import './registerServiceWorker.js'
 
-const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_APP_GA_ID, VUE_APP_MAINTENANCE_MODE } = process.env
+const { VITE_BASE_API, VITE_ENV, VITE_GA_ID, VITE_MAINTENANCE_MODE } = import.meta.env
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
@@ -80,7 +80,7 @@ axios.interceptors.request.use((config) => {
     store &&
     store.state &&
     store.state.user &&
-    (config.baseURL?.indexOf(VUE_APP_BASE_API) > -1 || config.url.indexOf(VUE_APP_BASE_API) > -1)
+    (config.baseURL?.indexOf(VITE_BASE_API) > -1 || config.url.indexOf(VITE_BASE_API) > -1)
   ) {
     config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
   }
@@ -138,7 +138,7 @@ axios.interceptors.response.use(
         //remove the loading spinner that was likely turned on before this error happened
         store.commit(AppMutations.SET_LOADING, false)
         //dont do this reroute on local, it is super annoying
-        if (VUE_APP_ENV !== 'local') {
+        if (VITE_ENV !== 'local') {
           router.push({ path: `/serverError?code=${response.status}` })
         } else {
           //if local we dont reroute, but throw the error so we can see if failed
@@ -155,7 +155,7 @@ axios.interceptors.response.use(
 Vue.use(
   VueGtag,
   {
-    config: { id: VUE_APP_GA_ID }
+    config: { id: VITE_GA_ID }
   },
   router
 )

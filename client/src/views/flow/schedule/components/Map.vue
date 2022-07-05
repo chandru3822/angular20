@@ -39,7 +39,7 @@
 <script>
   import 'mapbox-gl/dist/mapbox-gl.css'
   import Mapbox from 'mapbox-gl'
-  import {MglMap, MglPopup, MglMarker, MglNavigationControl} from 'vue-mapbox'
+  import {MglMap, MglPopup, MglMarker, MglNavigationControl} from 'v-mapbox'
   import constants from '@/helpers/constants'
 
   export default {
