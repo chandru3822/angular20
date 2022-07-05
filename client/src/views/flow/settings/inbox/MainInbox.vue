@@ -373,6 +373,7 @@ export default {
       try {
         this.showLoading(true)
         const { page, itemsPerPage } = this.options
+        this.options.page = 1;
 
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
@@ -633,7 +634,6 @@ export default {
 </style>
 
 <style scoped lang="scss">
-
 .sticky-toolbar {
   position: sticky;
   top: 0;
