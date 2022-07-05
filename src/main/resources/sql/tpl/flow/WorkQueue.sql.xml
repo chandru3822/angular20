@@ -132,7 +132,7 @@
   ]]></workQueue.getWorkQueueMetrics>
 
   <workQueue.userCanAccessData><![CDATA[
-    select case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] <@ (select array_agg(wlp.position_id)
+    select case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.white_list_type_id = 10
                                                             AND wlp.archived is not true
