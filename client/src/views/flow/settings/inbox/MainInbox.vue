@@ -634,7 +634,6 @@ export default {
 </style>
 
 <style scoped lang="scss">
-
 .sticky-toolbar {
   position: sticky;
   top: 0;
