@@ -93,7 +93,7 @@ public class AhjInspectionService {
     params.put("documentationNote", inspection.getDocumentationNote());
     params.put("mpuInspectionNote", inspection.getMpuInspectionNote());
 
-    if (inspection.getUpdateAllInState() != null && inspection.getUpdateAllInState()) {
+    if (inspection.getUpdateAllInState() != null && inspection.getUpdateAllInState() && inspection.getAhjIds().size() > 0) {
       params.put("ahjIds", inspection.getAhjIds());
       sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
