@@ -253,7 +253,7 @@
       async deleteType(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/workQueueType/type/${item.id}`)
+          const {status} = await putRequest(`/workQueueType/delete/${item.id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
@@ -265,7 +265,6 @@
             this.deleteError = true
             this.cannotDeleteReasons = e.data
           }
-          console.log('randaLogger',this.cannotDeleteReasons)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

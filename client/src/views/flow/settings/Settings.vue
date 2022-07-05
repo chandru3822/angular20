@@ -65,9 +65,10 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 || cot.flowTypeId === 3 || cot.flowTypeId === 4 })" :key="o.id"
+            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return [1,3,4,5].includes(cot.flowTypeId) })" :key="o.id"
                          :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` :
-                                      o.flowTypeId === 4 ? `/settings/events` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
+                                      o.flowTypeId === 4 ? `/settings/events` :
+                                      o.flowTypeId === 5 ? `/settings/attachments` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
                          @click="setTitle"
                          class="dense-setting-row"
                          :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
@@ -178,10 +179,6 @@ export default {
       }, {
         path: '/settings/customFields',
         title: 'Custom Fields',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/attachments',
-        title: 'Attachments',
         show: this.hasSettingsAccess
       }, {
         path: '/settings/links',
