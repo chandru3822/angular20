@@ -7,6 +7,14 @@
     order by event_name
   ]]></event.getAllForCompany>
 
+  <event.getProcessStepsUsingEvent><![CDATA[
+    select ps.process_step_name
+    from flow.process_step_event pse
+      inner join flow.process_step ps on pse.process_step_id = ps.id
+    where pse.event_id = :eventId
+      and pse.archived is false
+  ]]></event.getProcessStepsUsingEvent>
+
   <event.get><![CDATA[
     select e.id,
            event_name,
