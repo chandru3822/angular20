@@ -164,7 +164,6 @@ export default {
     validate (saveContact) {
 
       let valid = this.$refs.contactForm.validate()
-      console.log('VALID', valid)
       if (valid && saveContact) {
         this.saveContact()
       }
@@ -231,10 +230,11 @@ export default {
             await postRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
           }
 
-          this.$router.push({name: 'contact', params: {id: data.id}})
+          //i have no idea why router.push({name: 'contact'}) suddenly stopped working, but this fixes it
+          this.$router.push({path: `/contact/${data.id}`})
           handleHidingGlobalLoader(this, status)
         } else {
-          this.$router.push({name: 'contact', params: {id: data.id}})
+          this.$router.push({path: `/contact/${data.id}`})
           handleHidingGlobalLoader(this, status)
         }
       } catch (e) {

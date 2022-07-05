@@ -320,7 +320,7 @@
       async saveHiddenAndWhiteList (item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${this.hiddenPositionsChanged ?? false}`, item)
+          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${item.hiddenPositionsChanged ?? false}`, item)
           this.hiddenPositionsChanged = false
           if(!item.hidden) {
             item.hiddenWhiteListedPositions = []
@@ -341,7 +341,7 @@
       async getWorkQueueCategories() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getWorkQueueCategories()
+          const {data, status} = await getWorkQueueCategories(true)
           this.workQueueCategories = data
 
           handleHidingGlobalLoader(this, status)
