@@ -306,6 +306,9 @@ public class CommunicationController {
         zoneStartTimestampFunctionResult = zoneStartTimestampFunctionResult.plusHours(1L);
         installationLatestStartTime =
           zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        projectDetails.setInstallationDate(installationStartDate);
+        projectDetails.setInstallationStartTime(installationStartTime);
+        projectDetails.setInstallationLatestStartTime(installationLatestStartTime);
       }
 
 
@@ -318,12 +321,9 @@ public class CommunicationController {
             .withZoneSameInstant(ZoneId.of(projectTimeZone));
         installationEndTime =
           zoneEndTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+        projectDetails.setInstallationEndTime(installationEndTime);
       }
 
-      projectDetails.setInstallationDate(installationStartDate);
-      projectDetails.setInstallationStartTime(installationStartTime);
-      projectDetails.setInstallationLatestStartTime(installationLatestStartTime);
-      projectDetails.setInstallationEndTime(installationEndTime);
     }
 
     Optional<String> scopeOfWork =
