@@ -484,12 +484,12 @@
 
   ]]></project.getEventsByProjectId>
 
-  <project.getPrimaryFinancierName><![CDATA[
+  <project.getProjectDetailTemplateFields><![CDATA[
      select primary_financier_name as primaryFinancier, installation_start_time, installation_end_time, closer_appointment_start as localCloserAppointmentStartTime,
             ahj_inspection_work_date as ahjInspectionWorkStartTime
       from brs.project_details
     where project_id = :projectId
-  ]]></project.getPrimaryFinancierName>
+  ]]></project.getProjectDetailTemplateFields>
 
   <project.getAttachments><![CDATA[
     select
