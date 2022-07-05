@@ -142,9 +142,9 @@ public class AttachmentTypeController {
     return attachmentTypeService.getProjectTypes(projectId);
   }
 
-  @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteType(@PathVariable Long typeId) {
-    attachmentTypeService.deleteType(typeId);
+  @DeleteMapping(value = "/delete/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<FieldInUse>> deleteType(@PathVariable Long typeId) {
+    return attachmentTypeService.deleteType(typeId);
   }
 
   @PutMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
