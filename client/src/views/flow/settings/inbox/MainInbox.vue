@@ -45,7 +45,7 @@
                             :menu-props="{offsetY:true}"
                             multiple
                             clearable
-                            @input="reloadProjects"
+                            @input="teamSelectionChanged"
                             v-if="teamFilterOptions.length > 1">
               <v-list-item
                 slot="prepend-item"
@@ -373,7 +373,6 @@ export default {
       try {
         this.showLoading(true)
         const { page, itemsPerPage } = this.options
-        this.options.page = 1;
 
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
@@ -597,6 +596,10 @@ export default {
         }
       })
       return alreadyAdded
+    },
+    teamSelectionChanged() {
+      this.options.page = 1
+      this.reloadProjects()
     },
     searchProjects: debounce(function() {
       //don't allow searchQuery to be null - causes issues
