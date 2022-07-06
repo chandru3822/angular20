@@ -262,12 +262,6 @@ public class CommunicationController {
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]");
     if (projectTimeZone != null && !projectTimeZone.isEmpty()) {
-      String closerAppointmentTime = "";
-      String ahjInspectionTime = "";
-      String installationStartDate = "";
-      String installationStartTime = "";
-      String installationLatestStartTime = "";
-      String installationEndTime = "";
       LocalDateTime timestampFunctionResult;
       ZonedDateTime zoneTimestampFunctionResult;
 
@@ -277,7 +271,7 @@ public class CommunicationController {
           timestampFunctionResult
             .atZone(ZoneId.of("UTC"))
             .withZoneSameInstant(ZoneId.of(projectTimeZone));
-        closerAppointmentTime =
+        String closerAppointmentTime =
           zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
         projectDetails.setLocalCloserAppointmentStartTime(closerAppointmentTime);
       }
@@ -288,8 +282,11 @@ public class CommunicationController {
           timestampFunctionResult
             .atZone(ZoneId.of("UTC"))
             .withZoneSameInstant(ZoneId.of(projectTimeZone));
-        ahjInspectionTime =
-          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+        String ahjInspectionDate =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        String ahjInspectionTime =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        projectDetails.setAhjInspectionWorkDate(ahjInspectionDate);
         projectDetails.setAhjInspectionWorkStartTime(ahjInspectionTime);
       }
 
@@ -299,12 +296,12 @@ public class CommunicationController {
           timestampFunctionStartTimeResult
             .atZone(ZoneId.of("UTC"))
             .withZoneSameInstant(ZoneId.of(projectTimeZone));
-        installationStartDate =
+        String installationStartDate =
           zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-        installationStartTime =
+        String installationStartTime =
           zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
         zoneStartTimestampFunctionResult = zoneStartTimestampFunctionResult.plusHours(1L);
-        installationLatestStartTime =
+        String installationLatestStartTime =
           zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
         projectDetails.setInstallationDate(installationStartDate);
         projectDetails.setInstallationStartTime(installationStartTime);
@@ -319,7 +316,7 @@ public class CommunicationController {
           timestampFunctionEndTimeResult
             .atZone(ZoneId.of("UTC"))
             .withZoneSameInstant(ZoneId.of(projectTimeZone));
-        installationEndTime =
+        String installationEndTime =
           zoneEndTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
         projectDetails.setInstallationEndTime(installationEndTime);
       }
@@ -345,6 +342,7 @@ public class CommunicationController {
   public static class ProjectDetails {
     private String primaryFinancier,
         localCloserAppointmentStartTime,
+        ahjInspectionWorkDate,
         ahjInspectionWorkStartTime,
         installationDate,
         installationStartTime,
