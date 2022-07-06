@@ -272,7 +272,7 @@ public class CommunicationController {
             .atZone(ZoneId.of("UTC"))
             .withZoneSameInstant(ZoneId.of(projectTimeZone));
         String closerAppointmentTime =
-          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
         projectDetails.setLocalCloserAppointmentStartTime(closerAppointmentTime);
       }
 
