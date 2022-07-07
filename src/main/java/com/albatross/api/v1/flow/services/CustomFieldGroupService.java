@@ -266,6 +266,7 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("eventId", customFieldGroup.getEventId());
+    params.put("attachmentTypeId", customFieldGroup.getAttachmentTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
 
@@ -316,6 +317,30 @@ public class CustomFieldGroupService {
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId =
         sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
+
+    CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+
+    if (null != customFieldGroup.getSchedulingFields()) {
+      List<CustomField> newFieldList = new ArrayList<>();
+      for (CustomField cf : customFieldGroup.getSchedulingFields()) {
+        cf.setCustomFieldGroupId(cfg.getId());
+        CustomField newCf = addFieldToGroup(cf);
+        newFieldList.add(newCf);
+      }
+      cfg.setCustomFields(newFieldList);
+    }
+
+    return cfg;
+  }
+
+  public CustomFieldGroup addAttachmentCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", ObjectType.ATTACHMENT.id);
+    params.put("companyId", currentUser.getCompanyId());
+    Long companyObjectTypeId =
+      sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
 
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 

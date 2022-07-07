@@ -157,6 +157,11 @@ public class AttachmentTypeController {
     return attachmentTypeService.insertType(type);
   }
 
+  @GetMapping(value = "/type/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<AttachmentType> getType(@PathVariable Long id) {
+    return attachmentTypeService.getType(id);
+  }
+
   //event types
   @GetMapping(value = "/eventTypes/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<EventAttachmentType>> getEventTypes(@PathVariable Long eventId) {

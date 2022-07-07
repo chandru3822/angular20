@@ -486,6 +486,25 @@ const router = new Router({
                 }
               }
             }, {
+              path: 'attachment/:id',
+              name: 'AttachmentSettings',
+              meta: {title: 'Albatross - Settings'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/Attachment.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+              children: [
+                {
+                  path: 'customFieldGroups',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/AttachmentCustomFieldGroups.vue'),
+                }
+              ]
+            }, {
               path: 'companyCustomFields',
               meta: {title: 'Albatross - Settings'},
               component: () => {

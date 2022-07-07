@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
@@ -7,11 +8,15 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.event.EventAttachmentType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.model.project.ProjectAttachmentType;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +29,7 @@ public class AttachmentTypeService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final ObjectMapper om;
 
   public List<AttachmentType> getAttachmentTypesForCompany() {
     User user = securityService.getCurrentUser();
@@ -185,11 +191,16 @@ public class AttachmentTypeService {
         "attachmentType.getAttachmentTypesForProject", params, AttachmentType.class);
   }
 
+  public Optional<AttachmentType> getType(Long typeId) {
+    User currentUser = securityService.getCurrentUser();
+    return getType(currentUser.getCompanyId(), typeId);
+  }
+
   public Optional<AttachmentType> getType(Long companyId, Long typeId) {
     return sqlCache.get(
         "attachmentType.getType",
         ImmutableMap.of("companyId", companyId, "typeId", typeId),
-        AttachmentType.class);
+      new AttachmentTypeMapper<>(AttachmentType.class, om));
   }
 
   public void deleteProcessStepType(Long id) {
@@ -446,5 +457,23 @@ public class AttachmentTypeService {
     sqlCache.update(
         "attachmentType.deleteEventType",
         ImmutableMap.of("id", id, "modifiedById", currentUser.getId()));
+  }
+
+  public static class AttachmentTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public AttachmentTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "customFieldGroups",
+        new JsonCollectionDeserializer(customFieldGroupRef, objectMapper));
+    }
   }
 }
