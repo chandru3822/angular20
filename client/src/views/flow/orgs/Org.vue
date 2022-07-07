@@ -471,17 +471,15 @@ export default {
     },
     async validateForm() {
       if (this.$refs.orgEditForm.validate()) {
-        this.saveOrgSystemFields()
-
-        //set project values if they hit save
-        this.org = cloneDeep(this.tempOrg)
+        await this.saveOrgSystemFields()
         this.showEditModal = false
       }
     },
     saveOrgSystemFields: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/org`, this.org)
+        const {data, status} = await putRequest(`/org`, this.tempOrg)
+        this.org = data
         this.showEditModal = false
         this.snackbar = getSnackbar('SUCCESS', 'Organization Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
