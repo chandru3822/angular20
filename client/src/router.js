@@ -492,7 +492,7 @@ const router = new Router({
               props: true,
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/Attachment.vue')
+                  return import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/AttachmentType.vue')
                 } else {
                   return accessDenied()
                 }
@@ -501,7 +501,7 @@ const router = new Router({
                 {
                   path: 'customFieldGroups',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/AttachmentCustomFieldGroups.vue'),
+                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/AttachmentTypeCustomFieldGroups.vue'),
                 }
               ]
             }, {

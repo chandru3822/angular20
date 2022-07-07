@@ -47,7 +47,7 @@ import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
 
 export default {
-  name: 'AttachmentSettings',
+  name: 'AttachmentTypeSettings',
   mixins: [Vue2Filters.mixin],
 
   data () {

@@ -248,7 +248,7 @@ import orderBy from "lodash.orderby"
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 
 export default {
-  name: 'AttachmentCustomFieldGroups',
+  name: 'AttachmentTypeCustomFieldGroups',
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmDeleteDialog,

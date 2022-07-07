@@ -119,6 +119,11 @@ public class CustomFieldGroupController {
     return customFieldGroupService.addAttachmentCustomFieldGroup(customFieldGroup);
   }
 
+  @PostMapping(value = "/addProcessStepAttachmentCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup addProcessStepAttachmentCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.addProcessStepAttachmentCustomFieldGroup(customFieldGroup);
+  }
+
   @Data
   public static class DeleteWithRequirementParams {
     private Long customFieldGroupId, customFieldGroupAssignmentId;

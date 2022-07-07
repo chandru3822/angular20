@@ -267,6 +267,7 @@ public class CustomFieldGroupService {
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("eventId", customFieldGroup.getEventId());
     params.put("attachmentTypeId", customFieldGroup.getAttachmentTypeId());
+    params.put("processStepAttachmentTypeId", customFieldGroup.getProcessStepAttachmentTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
 
@@ -342,19 +343,20 @@ public class CustomFieldGroupService {
     Long companyObjectTypeId =
       sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
 
-    CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+  }
 
-    if (null != customFieldGroup.getSchedulingFields()) {
-      List<CustomField> newFieldList = new ArrayList<>();
-      for (CustomField cf : customFieldGroup.getSchedulingFields()) {
-        cf.setCustomFieldGroupId(cfg.getId());
-        CustomField newCf = addFieldToGroup(cf);
-        newFieldList.add(newCf);
-      }
-      cfg.setCustomFields(newFieldList);
-    }
+  public CustomFieldGroup addProcessStepAttachmentCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User currentUser = securityService.getCurrentUser();
 
-    return cfg;
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", ObjectType.ATTACHMENT.id);
+    params.put("companyId", currentUser.getCompanyId());
+    Long companyObjectTypeId =
+      sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
+
+    //even though this is for a process step attachment type, the company_object_type_id is still set to the attachment object type id
+    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
   }
 
   public List<FieldInUse> getFieldsInUse(

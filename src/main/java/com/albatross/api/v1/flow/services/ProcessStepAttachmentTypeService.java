@@ -1,12 +1,17 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAttachmentType;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,15 +34,18 @@ public class ProcessStepAttachmentTypeService {
   }
 
   public List<ProcessStepAttachmentType> getAvailableTypesForStep(Long processStepId) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
+    params.put("companyId", currentUser.getCompanyId());
     return sqlCache.query("processStepAttachmentType.getAvailableTypesForStep", params, ProcessStepAttachmentType.class);
   }
 
   public Optional<ProcessStepAttachmentType> getProcessStepAttachmentType(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<ProcessStepAttachmentType> result = sqlCache.get("processStepAttachmentType.get", params, ProcessStepAttachmentType.class);
+    Optional<ProcessStepAttachmentType> result = sqlCache.get("processStepAttachmentType.get", params, new ProcessStepAttachmentTypeMapper<>(ProcessStepAttachmentType.class, om));
     return result;
   }
 
@@ -73,4 +81,21 @@ public class ProcessStepAttachmentTypeService {
     sqlCache.update("processStepAttachmentType.deleteTypeFromStep", params);
   }
 
+  public static class ProcessStepAttachmentTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProcessStepAttachmentTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "customFieldGroups",
+        new JsonCollectionDeserializer(customFieldGroupRef, objectMapper));
+    }
+  }
 }
