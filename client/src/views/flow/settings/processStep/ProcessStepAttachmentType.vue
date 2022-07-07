@@ -14,7 +14,7 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title class="app-title">Ancillary Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text v-if="!createNew && userCanAdd" @click="createNew = !createNew">
@@ -118,10 +118,10 @@
               <template #expanded-item="{ headers, item }">
                 <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
-                    <h3 class="text-left">Add Reference Field</h3>
+                    <h3 class="text-left">Add Ancillary Field</h3>
                     <v-autocomplete v-model="selectedAncillaryField"
                                     :items="ancillaryCustomFields"
-                                    label="Reference Custom Field"
+                                    label="Ancillary Custom Field"
                                     item-text="fieldName"
                                     return-object
                                     autocomplete="off"
