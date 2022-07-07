@@ -1,0 +1,66 @@
+<sql>
+  <processStepAttachmentType.getStepTypes><![CDATA[
+    select psat.id,
+           psat.process_step_id,
+           psat.attachment_type_id,
+           psat.archived,
+           at.attachment_type,
+           psat.display_order
+    from flow.process_step_attachment_type psat
+           inner join flow.attachment_type at on psat.attachment_type_id = at.id
+    where psat.process_step_id = :processStepId
+      and psat.archived is not true
+    order by psat.display_order
+  ]]></processStepAttachmentType.getStepTypes>
+
+  <processStepAttachmentType.getAvailableTypesForStep><![CDATA[
+      select at.id,
+             at.attachment_type,
+             at.archived
+      from flow.attachment_type at
+      where at.archived is not true
+        and not exists (
+          select psat.attachment_type_id
+          from flow.process_step_attachment_type psat
+          where psat.process_step_id = :processStepId
+            and psat.attachment_type_id = at.id
+            and psat.archived is not true
+        )
+      order by at.attachment_type
+  ]]></processStepAttachmentType.getAvailableTypesForStep>
+
+  <processStepAttachmentType.get><![CDATA[
+    select psat.id,
+           psat.process_step_id,
+           psat.attachment_type_id,
+           at.attachment_type,
+           psat.archived
+    from flow.process_step_attachment_type psat
+      inner join flow.attachment_type at on psat.attachment_type_id = at.id
+    where psat.id = :id
+  ]]></processStepAttachmentType.get>
+
+  <processStepAttachmentType.addTypeToStep><![CDATA[
+    insert into flow.process_step_attachment_type(process_step_id, attachment_type_id, created_by_id, display_order)
+    values (:processStepId, :attachmentTypeId, :createdById,
+            (select coalesce(max(display_order) + 1, 0) from flow.process_step_attachment_type pse
+             where process_step_id = :processStepId and archived is false))
+  ]]></processStepAttachmentType.addTypeToStep>
+
+  <processStepAttachmentType.updateDisplayOrder><![CDATA[
+      update flow.process_step_attachment_type
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></processStepAttachmentType.updateDisplayOrder>
+
+  <processStepAttachmentType.deleteTypeFromStep><![CDATA[
+    update flow.process_step_attachment_type
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></processStepAttachmentType.deleteTypeFromStep>
+
+</sql>

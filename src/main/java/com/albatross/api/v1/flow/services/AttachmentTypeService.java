@@ -46,12 +46,6 @@ public class AttachmentTypeService {
         "attachmentType.getSystemTypes", Collections.emptyMap(), AttachmentType.class);
   }
 
-  public void updateOrderInProcessStep(List<ProcessStepAttachmentType> attachmentTypes) {
-    for (ProcessStepAttachmentType at : attachmentTypes) {
-      updateTypeOrderInProcessStep(at);
-    }
-  }
-
   public void updateTypeOrderInProcessStep(ProcessStepAttachmentType attachmentType) {
     User currentUser = securityService.getCurrentUser();
 
@@ -203,22 +197,6 @@ public class AttachmentTypeService {
       new AttachmentTypeMapper<>(AttachmentType.class, om));
   }
 
-  public void deleteProcessStepType(Long id) {
-    User currentUser = securityService.getCurrentUser();
-
-    sqlCache.update(
-        "attachmentType.deleteProcessStepType",
-        ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
-  }
-
-  public Optional<ProcessStepAttachmentType> getProcessStepType(Long id) {
-
-    return sqlCache.get(
-        "attachmentType.getProcessStepType",
-        ImmutableMap.of("id", id),
-        ProcessStepAttachmentType.class);
-  }
-
   public List<ProcessStepAttachmentType> getProcessStepTypes(Long processStepId) {
     Map<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
@@ -236,27 +214,6 @@ public class AttachmentTypeService {
     params.put("companyId", user.getCompanyId());
     return sqlCache.query(
       "attachmentType.getProcessStepTypesByPps", params, ProcessStepAttachmentType.class);
-  }
-
-  public Optional<ProcessStepAttachmentType> insertProcessStepType(
-      ProcessStepAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    Long id =
-        sqlCache
-            .updateReturningId(
-                "attachmentType.insertProcessStepType",
-                ImmutableMap.of(
-                    "createdById",
-                    currentUser.trueUserId(),
-                    "attachmentTypeId",
-                    attachmentType.getAttachmentTypeId(),
-                    "processStepId",
-                    attachmentType.getProcessStepId()),
-                "id")
-            .longValue();
-
-    return getProcessStepType(id);
   }
 
   public void deleteProjectType(Long id) {

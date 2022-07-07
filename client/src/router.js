@@ -862,18 +862,19 @@ const router = new Router({
                 }, {
                   path: 'events',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvents.vue'),
-                  children: [
-                    {
-                      path: ':eventId',
-                      meta: {title: 'Albatross - Settings'},
-                      component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvent.vue'),
-                    }
-                  ]
+                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvents.vue')
                 }, {
                   path: 'event/:eventId',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvent.vue'),
+                }, {
+                  path: 'attachmentTypes',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepAttachmentTypes.vue')
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepAttachmentType.vue'),
                 },
               ]
             },  {

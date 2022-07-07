@@ -39,11 +39,6 @@ public class AttachmentTypeController {
     return attachmentTypeService.getSystemAttachmentTypes();
   }
 
-  @PutMapping(value = "/updateOrderInProcessStep", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateOrderInProcessStep(@RequestBody List<ProcessStepAttachmentType> attachmentTypes) {
-    attachmentTypeService.updateOrderInProcessStep(attachmentTypes);
-  }
-
   @PutMapping(value = "/updateOrderInProject", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateOrderInProject(@RequestBody List<ProjectAttachmentType> attachmentTypes) {
     attachmentTypeService.updateOrderInProject(attachmentTypes);
@@ -104,27 +99,11 @@ public class AttachmentTypeController {
     return attachmentTypeService.getAttachmentTypesForProject();
   }
 
-  @DeleteMapping(value = "/processStepType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteProcessStepType(@PathVariable Long id) {
-    attachmentTypeService.deleteProcessStepType(id);
-  }
-
-  //this loads by processStepId
-  @GetMapping(value = "/processStepTypes/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypes(@PathVariable Long processStepId) {
-    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypes(processStepId), HttpStatus.OK);
-  }
-
   //this loads by projectProcessStepId - we include projectId so we can verify that the request is valid
   @GetMapping(value = "/project/{projectId}/processStepTypes/{ppsId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypesByPps(@PathVariable Long projectId,
                                                                                   @PathVariable Long ppsId) {
     return new ResponseEntity<>(attachmentTypeService.getProcessStepTypesByPps(projectId, ppsId), HttpStatus.OK);
-  }
-
-  @PostMapping(value = "/processStepType", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepAttachmentType> insertProcessStepType(@RequestBody ProcessStepAttachmentType attachmentType) {
-    return attachmentTypeService.insertProcessStepType(attachmentType);
   }
 
   @DeleteMapping(value = "/projectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
