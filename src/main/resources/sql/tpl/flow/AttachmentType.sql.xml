@@ -12,7 +12,7 @@
   <attachmentType.getAllUsingType><![CDATA[
     select concat('Process Step: ', ps.process_step_name) as process_step_name
       from flow.process_step_attachment_type at
-        inner join flow.process_step ps on at.process_step_id = ps.id
+             inner join flow.process_step ps on at.process_step_id = ps.id
       where at.attachment_type_id = :typeId
         and at.archived is false
         and ps.archived is false
@@ -29,12 +29,20 @@
       where at.attachment_type_id = :typeId
         and at.archived is false
       union
-      select ot.object_type as process_step_name
-      from flow.company_object_type_attachment_type cotat
-             inner join flow.company_object_type cot on cotat.company_object_type_id = cot.id
-             inner join flow.object_type ot on cot.object_type_id = ot.id
-      where cotat.attachment_type_id = :typeId
-        and cotat.archived is false
+      select 'Contact' as process_step_name
+      from flow.contact_attachment_type at
+      where at.attachment_type_id = :typeId
+        and at.archived is false
+      union
+      select 'Organization' as process_step_name
+      from flow.org_attachment_type at
+      where at.attachment_type_id = :typeId
+        and at.archived is false
+      union
+      select 'User' as process_step_name
+      from flow.user_attachment_type at
+      where at.attachment_type_id = :typeId
+        and at.archived is false
       order by process_step_name
   ]]></attachmentType.getAllUsingType>
 
@@ -47,116 +55,6 @@
     and at.is_system is true
     order by at.attachment_type
   ]]></attachmentType.getSystemTypes>
-
-  <attachmentType.getObjectType><![CDATA[
-    SELECT cotat.id,
-       cotat.attachment_type_id as "attachmentTypeId",
-       cotat.created_by_id as "createdById",
-       cotat.company_object_type_id as "companyObjectTypeId",
-       cotat.modified_by_id as "modifiedById",
-       cotat.display_order as "displayOrder",
-       at.attachment_type as "attachmentType",
-       cotat.archived
-    FROM flow.company_object_type_attachment_type cotat
-           inner join flow.attachment_type at on at.id = cotat.attachment_type_id
-    where cotat.id = :id
-  ]]></attachmentType.getObjectType>
-
-  <attachmentType.updateTypeOrderInObjectType><![CDATA[
-    update flow.company_object_type_attachment_type
-        set display_order = :displayOrder,
-            modified_by_id = :modifiedById,
-            date_modified = now()
-    where id = :id
-  ]]></attachmentType.updateTypeOrderInObjectType>
-
-  <attachmentType.insertObjectType><![CDATA[
-
-insert into flow.company_object_type_attachment_type (attachment_type_id, company_object_type_id, display_order,
-                                                      created_by_id, date_created, modified_by_id, date_modified)
-values (:attachmentTypeId, :companyObjectTypeId, (select coalesce(max(display_order) + 1, 0)
-                                                  from flow.company_object_type_attachment_type
-                                                  where company_object_type_id = :companyObjectTypeId
-                                                    and archived is not true), :createdById, now(), :createdById, now())
-  ]]></attachmentType.insertObjectType>
-
-  <attachmentType.getObjectTypes><![CDATA[
-    SELECT cotat.id,
-           cotat.attachment_type_id as "attachmentTypeId",
-           cotat.created_by_id as "createdById",
-           cotat.company_object_type_id as "companyObjectTypeId",
-           cotat.modified_by_id as "modifiedById",
-           at.attachment_type as "attachmentType",
-           cotat.display_order as "displayOrder",
-           cotat.archived
-    FROM flow.company_object_type_attachment_type cotat
-           inner join flow.attachment_type at on at.id = cotat.attachment_type_id
-    where cotat.company_object_type_id = :companyObjectTypeId
-      and cotat.archived is not true
-    order by cotat.display_order
-  ]]></attachmentType.getObjectTypes>
-
-  <attachmentType.deleteObjectType>
-    <![CDATA[
-        update flow.company_object_type_attachment_type
-        set archived = true,
-          modified_by_id = :modifiedById,
-          date_modified = now()
-        where id = :id
-    ]]>
-  </attachmentType.deleteObjectType>
-
-  <attachmentType.getAvailableTypesForObjectType><![CDATA[
-    select at.*
-    from flow.attachment_type at
-    where at.archived is not true
-      and at.company_id = :companyId
-      and at.is_system is not true
-      and not exists (
-        select company_object_type_id
-        from flow.company_object_type_attachment_type cotat
-        where cotat.attachment_type_id = at.id
-          and cotat.company_object_type_id = :id
-          and archived is not true
-          and at.is_system is not true
-      )
-    order by at.attachment_type
-  ]]></attachmentType.getAvailableTypesForObjectType>
-
-  <attachmentType.getAvailableTypesForProcessStep><![CDATA[
-    select at.*
-      from flow.attachment_type at
-    where at.archived is not true
-      and at.company_id = :companyId
-      and at.is_system is not true
-      and not exists (
-        select process_step_id
-        from flow.process_step_attachment_type psat
-        where psat.attachment_type_id = at.id
-          and psat.process_step_id = :id
-          and archived is not true
-          and at.is_system is not true
-      )
-     order by at.attachment_type
-
-  ]]></attachmentType.getAvailableTypesForProcessStep>
-
-  <attachmentType.getAttachmentTypesForProject><![CDATA[
-    select at.*,
-           kp.key_pattern
-    from flow.attachment_type at
-         inner join flow.key_pattern kp on kp.id = at.key_pattern_id
-    where company_id = :companyId
-      and at.archived is not true
-      and at.is_system is not true
-      and not exists (
-            select id
-            from flow.project_attachment_type pat
-            where pat.attachment_type_id = at.id
-              and pat.archived is not true
-        )
-        order by at.attachment_type
-  ]]></attachmentType.getAttachmentTypesForProject>
 
   <attachmentType.getType><![CDATA[
       select at.id,
@@ -242,81 +140,6 @@ values (:attachmentTypeId, :companyObjectTypeId, (select coalesce(max(display_or
     ]]>
   </attachmentType.insertType>
 
-  <attachmentType.getProjectType><![CDATA[
-    SELECT psat.id,
-       psat.attachment_type_id as "attachmentTypeId",
-       psat.created_by_id as "createdById",
-       psat.company_id as "companyId",
-       psat.modified_by_id as "modifiedById",
-       at.attachment_type as "attachmentType",
-       psat.display_order as "displayOrder",
-       psat.archived
-    FROM flow.project_attachment_type psat
-           inner join flow.attachment_type at on at.id = psat.attachment_type_id
-    where psat.id = :id
-  ]]></attachmentType.getProjectType>
-
-  <attachmentType.getProjectTypes><![CDATA[
-    SELECT pat.id,
-       pat.attachment_type_id as "attachmentTypeId",
-       pat.created_by_id as "createdById",
-       pat.company_id as "companyId",
-       pat.modified_by_id as "modifiedById",
-       at.attachment_type as "attachmentType",
-       pat.display_order as "displayOrder",
-       pat.archived,
-       case when (select psat.id
-                    from flow.process_step_attachment_type psat
-                    inner join flow.process_step ps on psat.process_step_id = ps.id
-                    where psat.attachment_type_id = pat.attachment_type_id
-                      and psat.archived is false
-                      and ps.archived is false
-                    limit 1
-                  ) is null then false else true end as "includesPsType",
-       pat.read_only
-    FROM flow.project_attachment_type pat
-           inner join flow.attachment_type at on at.id = pat.attachment_type_id
-    where pat.company_id = :companyId
-      and pat.archived is not true
-    order by pat.display_order
-  ]]></attachmentType.getProjectTypes>
-
-  <attachmentType.insertProjectType><![CDATA[
-insert into flow.project_attachment_type (attachment_type_id, company_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
-values (:attachmentTypeId, :companyId, (select coalesce(max(display_order) + 1, 0)
-                                        from flow.project_attachment_type
-                                        where company_id = :companyId
-                                          and archived is not true), :createdById, now(), :createdById, now())
-  ]]></attachmentType.insertProjectType>
-
-  <attachmentType.deleteProjectType>
-    <![CDATA[
-        update flow.project_attachment_type
-        set archived = true,
-          modified_by_id = :modifiedById,
-          date_modified = now()
-        where id = :id
-    ]]>
-  </attachmentType.deleteProjectType>
-
-  <attachmentType.getProcessStepTypes><![CDATA[
-    select psat.id,
-       at.attachment_type,
-       psat.attachment_type_id,
-       psat.process_step_id,
-       psat.date_created,
-       psat.date_modified,
-       psat.created_by_id,
-       psat.modified_by_id,
-       psat.archived
-    from flow.process_step_attachment_type psat
-    inner join flow.attachment_type at on at.id = psat.attachment_type_id
-    where
-      psat.process_step_id = :processStepId and
-      psat.archived is not true
-    order by psat.display_order
-  ]]></attachmentType.getProcessStepTypes>
-
   <attachmentType.getProcessStepTypesByPps><![CDATA[
     select psat.id,
            at.attachment_type,
@@ -336,50 +159,6 @@ values (:attachmentTypeId, :companyId, (select coalesce(max(display_order) + 1, 
       at.company_id = :companyId
     order by psat.display_order
   ]]></attachmentType.getProcessStepTypesByPps>
-
-  <attachmentType.updateTypeOrderInProcessStep><![CDATA[
-    update flow.process_step_attachment_type
-        set display_order = :displayOrder,
-            modified_by_id = :modifiedById,
-            date_modified = now()
-    where id = :id
-  ]]></attachmentType.updateTypeOrderInProcessStep>
-
-  <attachmentType.updateTypeOrderInProject><![CDATA[
-    update flow.project_attachment_type
-        set display_order = :displayOrder,
-            modified_by_id = :modifiedById,
-            date_modified = now()
-    where id = :id
-  ]]></attachmentType.updateTypeOrderInProject>
-
-  <attachmentType.updateReadyOnly>
-    <![CDATA[
-      update flow.project_attachment_type
-        set read_only = :readOnly,
-            modified_by_id = :modifiedById,
-            date_modified = now()
-      where id = :id
-    ]]>
-  </attachmentType.updateReadyOnly>
-
-  <attachmentType.getEventTypes><![CDATA[
-      select eat.id,
-       at.attachment_type,
-       eat.attachment_type_id,
-       eat.event_id,
-       eat.date_created,
-       eat.date_modified,
-       eat.created_by_id,
-       eat.modified_by_id,
-       eat.archived
-    from flow.event_attachment_type eat
-    inner join flow.attachment_type at on at.id = eat.attachment_type_id
-    where
-      eat.event_id = :eventId and
-      eat.archived is not true
-    order by eat.display_order
-  ]]></attachmentType.getEventTypes>
 
   <attachmentType.getEventTypesByPpsEventId><![CDATA[
       select eat.id,
@@ -419,24 +198,6 @@ values (:attachmentTypeId, :companyId, (select coalesce(max(display_order) + 1, 
       where  eat.archived is not true
       order by eat.display_order
   ]]></attachmentType.getEventTypesByPpsEventIdAndPps>
-
-  <attachmentType.getEventTypes><![CDATA[
-      select eat.id,
-       at.attachment_type,
-       eat.attachment_type_id,
-       eat.event_id,
-       eat.date_created,
-       eat.date_modified,
-       eat.created_by_id,
-       eat.modified_by_id,
-       eat.archived
-    from flow.event_attachment_type eat
-    inner join flow.attachment_type at on at.id = eat.attachment_type_id
-    where
-      eat.event_id = :eventId and
-      eat.archived is not true
-    order by eat.display_order
-  ]]></attachmentType.getEventTypes>
 
   <attachmentType.getEventAndPsTypes><![CDATA[
       select eat.id,
@@ -518,50 +279,512 @@ values (:attachmentTypeId, :companyId, (select coalesce(max(display_order) + 1, 
 
   ]]></attachmentType.getEventAndPsTypesByPpsEventId>
 
-  <attachmentType.getAvailableTypesForEvent><![CDATA[
-    select at.*
+  <attachmentType.contact.getTypes><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           oat.archived,
+           at.attachment_type,
+           oat.display_order
+    from flow.contact_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.company_id = :companyId
+      and oat.archived is not true
+    order by oat.display_order
+  ]]></attachmentType.contact.getTypes>
+
+  <attachmentType.contact.getAvailableTypes><![CDATA[
+      select at.id,
+             at.attachment_type,
+             at.archived
       from flow.attachment_type at
-    where at.archived is not true
-      and at.company_id = :companyId
-      and at.is_system is not true
-      and not exists (
-        select event_id
-        from flow.event_attachment_type eat
-        where eat.attachment_type_id = at.id
-          and eat.event_id = :id
-          and eat.archived is not true
-          and at.is_system is not true
-      )
-     order by at.attachment_type
+      where at.archived is not true
+        and at.company_id = :companyId
+        and at.is_system is false
+        and not exists (
+          select oat.attachment_type_id
+          from flow.contact_attachment_type oat
+          where oat.company_id = :companyId
+            and oat.attachment_type_id = at.id
+            and oat.archived is not true
+        )
+      order by at.attachment_type
+  ]]></attachmentType.contact.getAvailableTypes>
 
-  ]]></attachmentType.getAvailableTypesForEvent>
+  <attachmentType.contact.get><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           at.attachment_type,
+           oat.archived,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(cfGroups)))
+                      FROM (
+                             SELECT cfg.id,
+                                    cfg.group_name as "groupName",
+                                    cot.object_type_id as "objectTypeId",
+                                    cot.id as "companyObjectTypeId",
+                                    cfg.archived,
+                                    cfg.group_order as "groupOrder",
+                                    cfg.process_step_id as "processStepId",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(customFields)))
+                                               FROM (
+                                                      SELECT cfga.id,
+                                                             cfga.custom_field_group_id as "customFieldGroupId",
+                                                             cfga.custom_field_id as "customFieldId",
+                                                             cfga.use_parent_data as "useParentData",
+                                                             cfga.id as "customFieldGroupAssignmentId",
+                                                             cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                             cfga.field_order as "fieldOrder",
+                                                             cfga.archived,
+                                                             cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                             cfga.schedule_field_type_id as "scheduleFieldTypeId",
+                                                             cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                             cfga.detail_view as "detailView",
+                                                             cf.field_name as "fieldName",
+                                                             cf.system_readonly as "systemReadonly",
+                                                             cfg1.group_name as "groupName",
+                                                             null as "eventName",
+                                                             ps.process_step_name as "processStepName",
+                                                             ot.object_type as "objectType",
+                                                             '[]' as whiteListedPositions,
+                                                             coalesce((
+                                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                        FROM (
+                                                                               SELECT wlp.id,
+                                                                                      wlp.position_id as "positionId",
+                                                                                      wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                      wlp.created_by_id as "createdById",
+                                                                                      wlp.modified_by_id as "modifiedById",
+                                                                                      wlp.archived
+                                                                               FROM flow.white_listed_position wlp
+                                                                               WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                 AND wlp.white_list_type_id = 2
+                                                                                 AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                      FROM flow.custom_field_group_assignment cfga
+                                                             inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                                             inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                                             inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
+                                                             left join flow.process_step ps on ps.id = cfg1.process_step_id
+                                                             inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
+                                                             inner join flow.object_type ot on ot.id = cot.object_type_id
+                                                      WHERE cfga.custom_field_group_id = cfg.id
+                                                        AND cfga.archived is not true
+                                                        and cf.archived is not true
+                                                      ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+                             FROM flow.custom_field_group cfg
+                                    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                             WHERE cfg.contact_attachment_type_id = oat.id AND cfg.archived is not true
+                             order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
+    from flow.contact_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.id = :id
+    and oat.company_id = :companyId
+  ]]></attachmentType.contact.get>
 
-  <attachmentType.getEventType><![CDATA[
-    SELECT eat.id,
-       eat.attachment_type_id as "attachmentTypeId",
-       eat.created_by_id as "createdById",
-       eat.event_id as "eventId",
-       eat.modified_by_id as "modifiedById",
-       eat.display_order as "displayOrder",
-       at.attachment_type as "attachmentType",
-       eat.archived
-    FROM flow.event_attachment_type eat
-           inner join flow.attachment_type at on at.id = eat.attachment_type_id
-    where eat.id = :id
-  ]]></attachmentType.getEventType>
+  <attachmentType.contact.addType><![CDATA[
+    insert into flow.contact_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+    values (:companyId, :attachmentTypeId, :createdById,
+            (select coalesce(max(display_order) + 1, 0) from flow.contact_attachment_type
+             where company_id = :companyId and archived is false))
+  ]]></attachmentType.contact.addType>
 
-  <attachmentType.insertEventType><![CDATA[
-insert into flow.event_attachment_type (attachment_type_id, event_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
-values (:attachmentTypeId, :eventId, (select coalesce(max(display_order) + 1, 0) from flow.event_attachment_type where event_id = :eventId and archived is not true), :createdById, now(), :createdById, now())
-  ]]></attachmentType.insertEventType>
-
-  <attachmentType.deleteEventType>
-    <![CDATA[
-        update flow.event_attachment_type
-        set archived = true,
-          modified_by_id = :modifiedById,
-          date_modified = now()
+  <attachmentType.contact.updateDisplayOrder><![CDATA[
+      update flow.contact_attachment_type
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
         where id = :id
-    ]]>
-  </attachmentType.deleteEventType>
+  ]]></attachmentType.contact.updateDisplayOrder>
+
+  <attachmentType.contact.deleteType><![CDATA[
+    update flow.contact_attachment_type
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></attachmentType.contact.deleteType>
+
+  <attachmentType.org.getTypes><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           oat.archived,
+           at.attachment_type,
+           oat.display_order
+    from flow.org_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.company_id = :companyId
+      and oat.archived is not true
+    order by oat.display_order
+  ]]></attachmentType.org.getTypes>
+
+  <attachmentType.org.getAvailableTypes><![CDATA[
+      select at.id,
+             at.attachment_type,
+             at.archived
+      from flow.attachment_type at
+      where at.archived is not true
+        and at.company_id = :companyId
+        and at.is_system is false
+        and not exists (
+          select oat.attachment_type_id
+          from flow.org_attachment_type oat
+          where oat.company_id = :companyId
+            and oat.attachment_type_id = at.id
+            and oat.archived is not true
+        )
+      order by at.attachment_type
+  ]]></attachmentType.org.getAvailableTypes>
+
+  <attachmentType.org.get><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           at.attachment_type,
+           oat.archived,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(cfGroups)))
+                      FROM (
+                             SELECT cfg.id,
+                                    cfg.group_name as "groupName",
+                                    cot.object_type_id as "objectTypeId",
+                                    cot.id as "companyObjectTypeId",
+                                    cfg.archived,
+                                    cfg.group_order as "groupOrder",
+                                    cfg.process_step_id as "processStepId",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(customFields)))
+                                               FROM (
+                                                      SELECT cfga.id,
+                                                             cfga.custom_field_group_id as "customFieldGroupId",
+                                                             cfga.custom_field_id as "customFieldId",
+                                                             cfga.use_parent_data as "useParentData",
+                                                             cfga.id as "customFieldGroupAssignmentId",
+                                                             cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                             cfga.field_order as "fieldOrder",
+                                                             cfga.archived,
+                                                             cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                             cfga.schedule_field_type_id as "scheduleFieldTypeId",
+                                                             cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                             cfga.detail_view as "detailView",
+                                                             cf.field_name as "fieldName",
+                                                             cf.system_readonly as "systemReadonly",
+                                                             cfg1.group_name as "groupName",
+                                                             null as "eventName",
+                                                             ps.process_step_name as "processStepName",
+                                                             ot.object_type as "objectType",
+                                                             '[]' as whiteListedPositions,
+                                                             coalesce((
+                                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                        FROM (
+                                                                               SELECT wlp.id,
+                                                                                      wlp.position_id as "positionId",
+                                                                                      wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                      wlp.created_by_id as "createdById",
+                                                                                      wlp.modified_by_id as "modifiedById",
+                                                                                      wlp.archived
+                                                                               FROM flow.white_listed_position wlp
+                                                                               WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                 AND wlp.white_list_type_id = 2
+                                                                                 AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                      FROM flow.custom_field_group_assignment cfga
+                                                             inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                                             inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                                             inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
+                                                             left join flow.process_step ps on ps.id = cfg1.process_step_id
+                                                             inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
+                                                             inner join flow.object_type ot on ot.id = cot.object_type_id
+                                                      WHERE cfga.custom_field_group_id = cfg.id
+                                                        AND cfga.archived is not true
+                                                        and cf.archived is not true
+                                                      ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+                             FROM flow.custom_field_group cfg
+                                    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                             WHERE cfg.org_attachment_type_id = oat.id AND cfg.archived is not true
+                             order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
+    from flow.org_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.id = :id
+    and oat.company_id = :companyId
+  ]]></attachmentType.org.get>
+
+  <attachmentType.org.addType><![CDATA[
+    insert into flow.org_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+    values (:companyId, :attachmentTypeId, :createdById,
+            (select coalesce(max(display_order) + 1, 0) from flow.contact_attachment_type
+             where company_id = :companyId and archived is false))
+  ]]></attachmentType.org.addType>
+
+  <attachmentType.org.updateDisplayOrder><![CDATA[
+      update flow.org_attachment_type
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.org.updateDisplayOrder>
+
+  <attachmentType.org.deleteType><![CDATA[
+    update flow.org_attachment_type
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></attachmentType.org.deleteType>
+
+  <attachmentType.user.getTypes><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           oat.archived,
+           at.attachment_type,
+           oat.display_order
+    from flow.user_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.company_id = :companyId
+      and oat.archived is not true
+    order by oat.display_order
+  ]]></attachmentType.user.getTypes>
+
+  <attachmentType.user.getAvailableTypes><![CDATA[
+      select at.id,
+             at.attachment_type,
+             at.archived
+      from flow.attachment_type at
+      where at.archived is not true
+        and at.company_id = :companyId
+        and at.is_system is false
+        and not exists (
+          select oat.attachment_type_id
+          from flow.user_attachment_type oat
+          where oat.company_id = :companyId
+            and oat.attachment_type_id = at.id
+            and oat.archived is not true
+        )
+      order by at.attachment_type
+  ]]></attachmentType.user.getAvailableTypes>
+
+  <attachmentType.user.get><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           at.attachment_type,
+           oat.archived,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(cfGroups)))
+                      FROM (
+                             SELECT cfg.id,
+                                    cfg.group_name as "groupName",
+                                    cot.object_type_id as "objectTypeId",
+                                    cot.id as "companyObjectTypeId",
+                                    cfg.archived,
+                                    cfg.group_order as "groupOrder",
+                                    cfg.process_step_id as "processStepId",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(customFields)))
+                                               FROM (
+                                                      SELECT cfga.id,
+                                                             cfga.custom_field_group_id as "customFieldGroupId",
+                                                             cfga.custom_field_id as "customFieldId",
+                                                             cfga.use_parent_data as "useParentData",
+                                                             cfga.id as "customFieldGroupAssignmentId",
+                                                             cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                             cfga.field_order as "fieldOrder",
+                                                             cfga.archived,
+                                                             cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                             cfga.schedule_field_type_id as "scheduleFieldTypeId",
+                                                             cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                             cfga.detail_view as "detailView",
+                                                             cf.field_name as "fieldName",
+                                                             cf.system_readonly as "systemReadonly",
+                                                             cfg1.group_name as "groupName",
+                                                             null as "eventName",
+                                                             ps.process_step_name as "processStepName",
+                                                             ot.object_type as "objectType",
+                                                             '[]' as whiteListedPositions,
+                                                             coalesce((
+                                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                        FROM (
+                                                                               SELECT wlp.id,
+                                                                                      wlp.position_id as "positionId",
+                                                                                      wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                      wlp.created_by_id as "createdById",
+                                                                                      wlp.modified_by_id as "modifiedById",
+                                                                                      wlp.archived
+                                                                               FROM flow.white_listed_position wlp
+                                                                               WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                 AND wlp.white_list_type_id = 2
+                                                                                 AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                      FROM flow.custom_field_group_assignment cfga
+                                                             inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                                             inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                                             inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
+                                                             left join flow.process_step ps on ps.id = cfg1.process_step_id
+                                                             inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
+                                                             inner join flow.object_type ot on ot.id = cot.object_type_id
+                                                      WHERE cfga.custom_field_group_id = cfg.id
+                                                        AND cfga.archived is not true
+                                                        and cf.archived is not true
+                                                      ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+                             FROM flow.custom_field_group cfg
+                                    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                             WHERE cfg.user_attachment_type_id = oat.id AND cfg.archived is not true
+                             order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
+    from flow.user_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.id = :id
+    and oat.company_id = :companyId
+  ]]></attachmentType.user.get>
+
+  <attachmentType.user.addType><![CDATA[
+    insert into flow.user_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+    values (:companyId, :attachmentTypeId, :createdById,
+            (select coalesce(max(display_order) + 1, 0) from flow.contact_attachment_type
+             where company_id = :companyId and archived is false))
+  ]]></attachmentType.user.addType>
+
+  <attachmentType.user.updateDisplayOrder><![CDATA[
+      update flow.user_attachment_type
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.user.updateDisplayOrder>
+
+  <attachmentType.user.deleteType><![CDATA[
+    update flow.user_attachment_type
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></attachmentType.user.deleteType>
+
+  <attachmentType.project.getTypes><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           oat.archived,
+           at.attachment_type,
+           oat.display_order
+    from flow.project_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.company_id = :companyId
+      and oat.archived is not true
+    order by oat.display_order
+  ]]></attachmentType.project.getTypes>
+
+  <attachmentType.project.getAvailableTypes><![CDATA[
+      select at.id,
+             at.attachment_type,
+             at.archived
+      from flow.attachment_type at
+      where at.archived is not true
+        and at.company_id = :companyId
+        and at.is_system is false
+        and not exists (
+          select oat.attachment_type_id
+          from flow.project_attachment_type oat
+          where oat.company_id = :companyId
+            and oat.attachment_type_id = at.id
+            and oat.archived is not true
+        )
+      order by at.attachment_type
+  ]]></attachmentType.project.getAvailableTypes>
+
+  <attachmentType.project.get><![CDATA[
+    select oat.id,
+           oat.company_id,
+           oat.attachment_type_id,
+           at.attachment_type,
+           oat.archived,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(cfGroups)))
+                      FROM (
+                             SELECT cfg.id,
+                                    cfg.group_name as "groupName",
+                                    cot.object_type_id as "objectTypeId",
+                                    cot.id as "companyObjectTypeId",
+                                    cfg.archived,
+                                    cfg.group_order as "groupOrder",
+                                    cfg.process_step_id as "processStepId",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(customFields)))
+                                               FROM (
+                                                      SELECT cfga.id,
+                                                             cfga.custom_field_group_id as "customFieldGroupId",
+                                                             cfga.custom_field_id as "customFieldId",
+                                                             cfga.use_parent_data as "useParentData",
+                                                             cfga.id as "customFieldGroupAssignmentId",
+                                                             cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                             cfga.field_order as "fieldOrder",
+                                                             cfga.archived,
+                                                             cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                             cfga.schedule_field_type_id as "scheduleFieldTypeId",
+                                                             cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                             cfga.detail_view as "detailView",
+                                                             cf.field_name as "fieldName",
+                                                             cf.system_readonly as "systemReadonly",
+                                                             cfg1.group_name as "groupName",
+                                                             null as "eventName",
+                                                             ps.process_step_name as "processStepName",
+                                                             ot.object_type as "objectType",
+                                                             '[]' as whiteListedPositions,
+                                                             coalesce((
+                                                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                        FROM (
+                                                                               SELECT wlp.id,
+                                                                                      wlp.position_id as "positionId",
+                                                                                      wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                      wlp.created_by_id as "createdById",
+                                                                                      wlp.modified_by_id as "modifiedById",
+                                                                                      wlp.archived
+                                                                               FROM flow.white_listed_position wlp
+                                                                               WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                 AND wlp.white_list_type_id = 2
+                                                                                 AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                      FROM flow.custom_field_group_assignment cfga
+                                                             inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                                             inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                                             inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
+                                                             left join flow.process_step ps on ps.id = cfg1.process_step_id
+                                                             inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
+                                                             inner join flow.object_type ot on ot.id = cot.object_type_id
+                                                      WHERE cfga.custom_field_group_id = cfg.id
+                                                        AND cfga.archived is not true
+                                                        and cf.archived is not true
+                                                      ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+                             FROM flow.custom_field_group cfg
+                                    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                             WHERE cfg.project_attachment_type_id = oat.id AND cfg.archived is not true
+                             order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
+    from flow.project_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.id = :id
+    and oat.company_id = :companyId
+  ]]></attachmentType.project.get>
+
+  <attachmentType.project.addType><![CDATA[
+    insert into flow.project_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+    values (:companyId, :attachmentTypeId, :createdById,
+            (select coalesce(max(display_order) + 1, 0) from flow.contact_attachment_type
+             where company_id = :companyId and archived is false))
+  ]]></attachmentType.project.addType>
+
+  <attachmentType.project.updateDisplayOrder><![CDATA[
+      update flow.project_attachment_type
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.project.updateDisplayOrder>
+
+  <attachmentType.project.deleteType><![CDATA[
+    update flow.project_attachment_type
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></attachmentType.project.deleteType>
+
 </sql>

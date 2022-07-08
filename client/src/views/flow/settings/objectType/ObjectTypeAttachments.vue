@@ -36,6 +36,12 @@
                 <v-list-item-content>
                   {{ a.attachmentType }}
                 </v-list-item-content>
+                <router-link class="no-text-decoration pr-3"
+                             :to="`/settings/project/attachmentType/${a.id}?companyObjectTypeId=${companyObjectTypeId}`">
+                  <v-btn small text >
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                </router-link>
                 <v-dialog
                   v-if="userCanEdit"
                   v-model="a.deleteConfirm"
@@ -97,12 +103,17 @@ export default {
   components: {
     draggable
   },
+  props: {
+    objectTypeValue: String,
+    showReadOnly: Boolean
+  },
   data () {
     return {
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       addNewType: false,
-      companyObjectTypeId: this.$route.params.id,
+      companyObjectTypeId: this.$route.query.companyObjectTypeId,
+      objectType: this.objectTypeValue || this.$route?.query?.objectType?.toLowerCase(),
       newType: {},
       availableAttachmentTypes: [],
       attachmentTypes: []
@@ -116,8 +127,7 @@ export default {
     async assignNewType() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.newType.companyObjectTypeId = this.$route.params.id
-        const {data, status} = await postRequest(`/attachmentType/objectType`, this.newType)
+        const {data, status} = await postRequest(`/attachmentType/${this.objectType}`, this.newType)
         this.attachmentTypes.push(data)
         // reset fields
         this.addNewType = false
@@ -137,7 +147,7 @@ export default {
       try {
         this.addNewType = !this.addNewType
         if (this.addNewType) {
-          const {data} = await getRequest(`/attachmentType/typesForObjectType/${this.$route.params.id}`)
+          const {data} = await getRequest(`/attachmentType/${this.objectType}/available`)
           this.availableAttachmentTypes = data
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -151,7 +161,7 @@ export default {
     async getAssignedAttachmentTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/attachmentType/objectTypes/${this.$route.params.id}`)
+        const {data, status} = await getRequest(`/attachmentType/${this.objectType}`)
         this.attachmentTypes = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -176,7 +186,7 @@ export default {
         // save them here
         if (typesToSave.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {status} = await putRequest(`/attachmentType/updateOrderInObjectType`, typesToSave)
+          const {status} = await putRequest(`/attachmentType/${this.objectType}/order`, typesToSave)
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
@@ -192,7 +202,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false
-        const {status} = await deleteRequest(`/attachmentType/objectType/${id}`)
+        const {status} = await deleteRequest(`/attachmentType/${this.objectType}/${id}`)
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -209,8 +219,4 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-#proj-attachment-draggable .v-list {
-  padding-top: 0;
-  padding-bottom: 0;
-}
 </style>

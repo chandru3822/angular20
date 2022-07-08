@@ -71,7 +71,7 @@
                                       o.flowTypeId === 5 ? `/settings/attachments` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
                          @click="setTitle"
                          class="dense-setting-row"
-                         :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
+                         :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || ($route.query && $route.query.companyObjectTypeId && parseInt($route.query.companyObjectTypeId) === o.id)}">
               <v-list-item-content>
                 <v-list-item-title>{{o.objectType}}</v-list-item-title>
               </v-list-item-content>

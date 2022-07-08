@@ -1,10 +1,11 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.FieldInUse;
+import com.albatross.api.v1.flow.model.ObjectTypeAttachmentType;
 import com.albatross.api.v1.flow.model.event.EventAttachmentType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAttachmentType;
-import com.albatross.api.v1.flow.model.project.ProjectAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,88 +40,6 @@ public class AttachmentTypeController {
     return attachmentTypeService.getSystemAttachmentTypes();
   }
 
-  @PutMapping(value = "/updateOrderInProject", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateOrderInProject(@RequestBody List<ProjectAttachmentType> attachmentTypes) {
-    attachmentTypeService.updateOrderInProject(attachmentTypes);
-  }
-
-  @PutMapping(value = "/updateReadOnly", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateReadOnly(@RequestBody ProjectAttachmentType projectAttachmentType) {
-    attachmentTypeService.updateReadOnly(projectAttachmentType);
-  }
-
-  @GetMapping(value = "/typesForObjectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAvailableTypesForObjectType (@PathVariable Long id) {
-    return attachmentTypeService.getAvailableTypesForObjectType(id);
-  }
-
-  @GetMapping(value = "/objectTypes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectTypeAttachmentType> getObjectTypes(@PathVariable Long id) {
-    return attachmentTypeService.getObjectTypes(id);
-  }
-
-  @GetMapping(value = "/objectTypes/user", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectTypeAttachmentType> getObjectTypesForUserByCompany(@RequestParam Long companyId) {
-    return attachmentTypeService.getObjectTypesByCompany(ObjectType.USER.id, companyId);
-  }
-
-  @GetMapping(value = "/objectTypes/contact", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectTypeAttachmentType> getObjectTypesForContactByCompany(@RequestParam Long companyId) {
-    return attachmentTypeService.getObjectTypesByCompany(ObjectType.CONTACT.id, companyId);
-  }
-
-  @GetMapping(value = "/objectTypes/org", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectTypeAttachmentType> getObjectTypesForOrgByCompany(@RequestParam Long companyId) {
-    return attachmentTypeService.getObjectTypesByCompany(ObjectType.ORGANIZATION.id, companyId);
-  }
-
-  @PutMapping(value = "/updateOrderInObjectType", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateOrderObjectType(@RequestBody List<ObjectTypeAttachmentType> attachmentTypes) {
-    attachmentTypeService.updateOrderInObjectType(attachmentTypes);
-  }
-
-  @DeleteMapping(value = "/objectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteObjectType(@PathVariable Long id) {
-    attachmentTypeService.deleteObjectType(id);
-  }
-
-  @PostMapping(value = "/objectType", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ObjectTypeAttachmentType> insertObjectType(@RequestBody ObjectTypeAttachmentType attachmentType) {
-    return attachmentTypeService.insertObjectType(attachmentType);
-  }
-
-  @GetMapping(value = "/typesForStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAvailableTypesForStep (@PathVariable Long id) {
-    return attachmentTypeService.getAvailableTypesForProcessStep(id);
-  }
-
-  @GetMapping(value = "/typesForProjects", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAttachmentTypesForProject () {
-    return attachmentTypeService.getAttachmentTypesForProject();
-  }
-
-  //this loads by projectProcessStepId - we include projectId so we can verify that the request is valid
-  @GetMapping(value = "/project/{projectId}/processStepTypes/{ppsId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypesByPps(@PathVariable Long projectId,
-                                                                                  @PathVariable Long ppsId) {
-    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypesByPps(projectId, ppsId), HttpStatus.OK);
-  }
-
-  @DeleteMapping(value = "/projectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteProjectType(@PathVariable Long id) {
-    attachmentTypeService.deleteProjectType(id);
-  }
-
-  @PostMapping(value = "/projectType", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProjectAttachmentType> insertProjectType(@RequestBody ProjectAttachmentType attachmentType) {
-    return attachmentTypeService.insertProjectType(attachmentType);
-  }
-
-  @GetMapping(value = "/projectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProjectAttachmentType> getProjectTypes(@RequestParam(required = false) Long projectId) {
-    return attachmentTypeService.getProjectTypes(projectId);
-  }
-
   @DeleteMapping(value = "/delete/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<FieldInUse>> deleteType(@PathVariable Long typeId) {
     return attachmentTypeService.deleteType(typeId);
@@ -141,10 +60,11 @@ public class AttachmentTypeController {
     return attachmentTypeService.getType(id);
   }
 
-  //event types
-  @GetMapping(value = "/eventTypes/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<EventAttachmentType>> getEventTypes(@PathVariable Long eventId) {
-    return new ResponseEntity<>(attachmentTypeService.getEventTypes(eventId), HttpStatus.OK);
+  //endpoints for displaying attachment types for uploading to (non-admin side)
+  @GetMapping(value = "/project/{projectId}/processStepTypes/{ppsId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypesByPps(@PathVariable Long projectId,
+                                                                                  @PathVariable Long ppsId) {
+    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypesByPps(projectId, ppsId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/eventTypesByPpsEventId/{ppsEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -170,18 +90,128 @@ public class AttachmentTypeController {
     return new ResponseEntity<>(attachmentTypeService.getEventAndPsTypesByPpsEventId(ppsEventId), HttpStatus.OK);
   }
 
-  @PostMapping(value = "/eventType", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<EventAttachmentType> insertEventType(@RequestBody EventAttachmentType attachmentType) {
-    return attachmentTypeService.insertEventType(attachmentType);
+  //these endpoints are for the admin side of things
+  //CONTACT
+  @GetMapping(value = "/contact", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getTypesForContact() {
+    return attachmentTypeService.getTypes(ObjectType.CONTACT);
   }
 
-  @GetMapping(value = "/typesForEvent/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAvailableTypesForEvent (@PathVariable Long id) {
-    return attachmentTypeService.getAvailableTypesForEvent(id);
+  @GetMapping(value = "/contact/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> getAttachmentTypeForContact(@PathVariable Long attachmentTypeId) {
+    return attachmentTypeService.getAttachmentType(attachmentTypeId, ObjectType.CONTACT);
   }
 
-  @DeleteMapping(value = "/eventType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteEventType(@PathVariable Long id) {
-    attachmentTypeService.deleteEventType(id);
+  @GetMapping(value = "/contact/available", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAvailableTypesForContact() {
+    return attachmentTypeService.getAvailableTypes(ObjectType.CONTACT);
+  }
+
+  @PostMapping(value = "/contact", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> addTypeForContact(@RequestBody ObjectTypeAttachmentType objectTypeAttachmentType) {
+    return attachmentTypeService.addType(objectTypeAttachmentType, ObjectType.CONTACT);
+  }
+
+  @PutMapping(value = "/contact/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeOrderForContact(@RequestBody List<ObjectTypeAttachmentType> types) {
+    attachmentTypeService.updateTypeOrder(types, ObjectType.CONTACT);
+  }
+
+  @DeleteMapping(value = "/contact/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteTypeForContact(@PathVariable Long attachmentTypeId) {
+    attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.CONTACT);
+  }
+
+  //ORGANIZATION
+  @GetMapping(value = "/organization", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getTypesForOrg() {
+    return attachmentTypeService.getTypes(ObjectType.ORGANIZATION);
+  }
+
+  @GetMapping(value = "/organization/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> getAttachmentTypeForOrg(@PathVariable Long attachmentTypeId) {
+    return attachmentTypeService.getAttachmentType(attachmentTypeId, ObjectType.ORGANIZATION);
+  }
+
+  @GetMapping(value = "/organization/available", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAvailableTypesForOrg() {
+    return attachmentTypeService.getAvailableTypes(ObjectType.ORGANIZATION);
+  }
+
+  @PostMapping(value = "/organization", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> addTypeForOrg(@RequestBody ObjectTypeAttachmentType objectTypeAttachmentType) {
+    return attachmentTypeService.addType(objectTypeAttachmentType, ObjectType.ORGANIZATION);
+  }
+
+  @PutMapping(value = "/organization/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeOrderForOrg(@RequestBody List<ObjectTypeAttachmentType> types) {
+    attachmentTypeService.updateTypeOrder(types, ObjectType.ORGANIZATION);
+  }
+
+  @DeleteMapping(value = "/organization/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteTypeForOrg(@PathVariable Long attachmentTypeId) {
+    attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.ORGANIZATION);
+  }
+
+  //USER
+  @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getTypesForUser() {
+    return attachmentTypeService.getTypes(ObjectType.USER);
+  }
+
+  @GetMapping(value = "/user/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> getAttachmentTypeForUser(@PathVariable Long attachmentTypeId) {
+    return attachmentTypeService.getAttachmentType(attachmentTypeId, ObjectType.USER);
+  }
+
+  @GetMapping(value = "/user/available", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAvailableTypesForUser() {
+    return attachmentTypeService.getAvailableTypes(ObjectType.USER);
+  }
+
+  @PostMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> addTypeForUser(@RequestBody ObjectTypeAttachmentType objectTypeAttachmentType) {
+    return attachmentTypeService.addType(objectTypeAttachmentType, ObjectType.USER);
+  }
+
+  @PutMapping(value = "/user/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeOrderForUser(@RequestBody List<ObjectTypeAttachmentType> types) {
+    attachmentTypeService.updateTypeOrder(types, ObjectType.USER);
+  }
+
+  @DeleteMapping(value = "/user/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteTypeForUser(@PathVariable Long attachmentTypeId) {
+    attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.USER);
+  }
+
+  //PROJECT
+  @GetMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getTypesForProject() {
+    return attachmentTypeService.getTypes(ObjectType.PROJECT);
+  }
+
+  @GetMapping(value = "/project/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> getAttachmentTypeForProject(@PathVariable Long attachmentTypeId) {
+    return attachmentTypeService.getAttachmentType(attachmentTypeId, ObjectType.PROJECT);
+  }
+
+  @GetMapping(value = "/project/available", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAvailableTypesForProject() {
+    return attachmentTypeService.getAvailableTypes(ObjectType.PROJECT);
+  }
+
+  @PostMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ObjectTypeAttachmentType> addTypeForProject(@RequestBody ObjectTypeAttachmentType objectTypeAttachmentType) {
+    return attachmentTypeService.addType(objectTypeAttachmentType, ObjectType.PROJECT);
+  }
+
+  @PutMapping(value = "/project/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeOrderForProject(@RequestBody List<ObjectTypeAttachmentType> types) {
+    attachmentTypeService.updateTypeOrder(types, ObjectType.PROJECT);
+  }
+
+  @DeleteMapping(value = "/project/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteTypeForProject(@PathVariable Long attachmentTypeId) {
+    attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.PROJECT);
   }
 }

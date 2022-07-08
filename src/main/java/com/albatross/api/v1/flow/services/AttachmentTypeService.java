@@ -4,21 +4,19 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.event.EventAttachmentType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAttachmentType;
-import com.albatross.api.v1.flow.model.project.ProjectAttachmentType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -46,162 +44,13 @@ public class AttachmentTypeService {
         "attachmentType.getSystemTypes", Collections.emptyMap(), AttachmentType.class);
   }
 
-  public void updateTypeOrderInProcessStep(ProcessStepAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.trueUserId());
-    params.put("displayOrder", attachmentType.getDisplayOrder());
-
-    sqlCache.update("attachmentType.updateTypeOrderInObjectType", params);
-  }
-
-  public void updateOrderInProject(List<ProjectAttachmentType> attachmentTypes) {
-    for (ProjectAttachmentType at : attachmentTypes) {
-      updateTypeOrderInProject(at);
-    }
-  }
-
-  public void updateTypeOrderInProject(ProjectAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.trueUserId());
-    params.put("displayOrder", attachmentType.getDisplayOrder());
-
-    sqlCache.update("attachmentType.updateTypeOrderInProject", params);
-  }
-
-  public void updateReadOnly(ProjectAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.trueUserId());
-    params.put("readOnly", attachmentType.getReadOnly());
-
-    sqlCache.update("attachmentType.updateReadyOnly", params);
-  }
-
-  public Optional<ObjectTypeAttachmentType> getObjectType(Long id) {
-
-    return sqlCache.get(
-        "attachmentType.getObjectType", ImmutableMap.of("id", id), ObjectTypeAttachmentType.class);
-  }
-
-  public void deleteObjectType(Long id) {
-    User currentUser = securityService.getCurrentUser();
-
-    sqlCache.update(
-        "attachmentType.deleteObjectType",
-        ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
-  }
-
-  public void updateOrderInObjectType(List<ObjectTypeAttachmentType> attachmentTypes) {
-    for (ObjectTypeAttachmentType at : attachmentTypes) {
-      updateTypeOrderInObjectType(at);
-    }
-  }
-
-  public void updateTypeOrderInObjectType(ObjectTypeAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.trueUserId());
-    params.put("displayOrder", attachmentType.getDisplayOrder());
-
-    sqlCache.update("attachmentType.updateTypeOrderInObjectType", params);
-  }
-
-  public List<ObjectTypeAttachmentType> getObjectTypesByCompany(Long objectTypeId, Long companyId) {
-
-    Optional<ObjectTypeAttachmentType> result =
-        sqlCache.get(
-            "objectType.getCompanyObjectTypeSimple",
-            ImmutableMap.of("objectTypeId", objectTypeId, "companyId", companyId),
-            ObjectTypeAttachmentType.class);
-
-    return result.isEmpty() ? null : getObjectTypes(result.get().getCompanyObjectTypeId());
-  }
-
-  public List<ObjectTypeAttachmentType> getObjectTypes(Long companyObjectTypeId) {
-
-    return sqlCache.query(
-        "attachmentType.getObjectTypes",
-        ImmutableMap.of("companyObjectTypeId", companyObjectTypeId),
-        ObjectTypeAttachmentType.class);
-  }
-
-  public List<AttachmentType> getAvailableTypesForObjectType(Long id) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("id", id);
-
-    return sqlCache.query(
-        "attachmentType.getAvailableTypesForObjectType", params, AttachmentType.class);
-  }
-
-  public Optional<ObjectTypeAttachmentType> insertObjectType(
-      ObjectTypeAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    Long id =
-        sqlCache
-            .updateReturningId(
-                "attachmentType.insertObjectType",
-                ImmutableMap.of(
-                    "createdById",
-                    currentUser.trueUserId(),
-                    "attachmentTypeId",
-                    attachmentType.getAttachmentTypeId(),
-                    "companyObjectTypeId",
-                    attachmentType.getCompanyObjectTypeId()),
-                "id")
-            .longValue();
-
-    return getObjectType(id);
-  }
-
-  public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {
-    User user = securityService.getCurrentUser();
-    Map<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("id", id);
-
-    return sqlCache.query(
-        "attachmentType.getAvailableTypesForProcessStep", params, AttachmentType.class);
-  }
-
-  public List<AttachmentType> getAttachmentTypesForProject() {
-    User user = securityService.getCurrentUser();
-    Map<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-
-    return sqlCache.query(
-        "attachmentType.getAttachmentTypesForProject", params, AttachmentType.class);
-  }
-
   public Optional<AttachmentType> getType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
-    return getType(currentUser.getCompanyId(), typeId);
-  }
 
-  public Optional<AttachmentType> getType(Long companyId, Long typeId) {
     return sqlCache.get(
         "attachmentType.getType",
-        ImmutableMap.of("companyId", companyId, "typeId", typeId),
+        ImmutableMap.of("companyId", currentUser.getCompanyId(), "typeId", typeId),
       new AttachmentTypeMapper<>(AttachmentType.class, om));
-  }
-
-  public List<ProcessStepAttachmentType> getProcessStepTypes(Long processStepId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("processStepId", processStepId);
-    return sqlCache.query(
-        "attachmentType.getProcessStepTypes", params, ProcessStepAttachmentType.class);
   }
 
   public List<ProcessStepAttachmentType> getProcessStepTypesByPps(Long projectId, Long ppsId) {
@@ -214,65 +63,6 @@ public class AttachmentTypeService {
     params.put("companyId", user.getCompanyId());
     return sqlCache.query(
       "attachmentType.getProcessStepTypesByPps", params, ProcessStepAttachmentType.class);
-  }
-
-  public void deleteProjectType(Long id) {
-    User currentUser = securityService.getCurrentUser();
-
-    sqlCache.update(
-        "attachmentType.deleteProjectType",
-        ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
-  }
-
-  public Optional<ProjectAttachmentType> getProjectType(Long id) {
-
-    return sqlCache.get(
-        "attachmentType.getProjectType", ImmutableMap.of("id", id), ProjectAttachmentType.class);
-  }
-
-  public List<ProjectAttachmentType> getProjectTypes(Long projectId) {
-    User currentUser = securityService.getCurrentUser();
-    Long companyId = currentUser.getCompanyId();
-
-    if (null != projectId) {
-      // had to change this so that a parent looking at a child project could still see attachments
-      Map<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      Optional<Long> overrideCompanyId =
-          sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
-      if (overrideCompanyId.isPresent()) {
-        companyId = overrideCompanyId.get();
-      } else {
-        log.error("ATTACHMENT: No Company ID found for project. {}", projectId);
-        throw new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
-      }
-    }
-
-    return sqlCache.query(
-        "attachmentType.getProjectTypes",
-        ImmutableMap.of("companyId", companyId),
-        ProjectAttachmentType.class);
-  }
-
-  public Optional<ProjectAttachmentType> insertProjectType(ProjectAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    Long id =
-        sqlCache
-            .updateReturningId(
-                "attachmentType.insertProjectType",
-                ImmutableMap.of(
-                    "createdById",
-                    currentUser.trueUserId(),
-                    "attachmentTypeId",
-                    attachmentType.getAttachmentTypeId(),
-                    "companyId",
-                    currentUser.getCompanyId()),
-                "id")
-            .longValue();
-
-    return getProjectType(id);
   }
 
   public ResponseEntity<List<FieldInUse>> deleteType(Long typeId) {
@@ -334,13 +124,7 @@ public class AttachmentTypeService {
                 "id")
             .longValue();
 
-    return getType(type.getCompanyId(), id);
-  }
-
-  public List<EventAttachmentType> getEventTypes(Long eventId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("eventId", eventId);
-    return sqlCache.query("attachmentType.getEventTypes", params, EventAttachmentType.class);
+    return getType(id);
   }
 
   public List<EventAttachmentType> getEventTypesByPpsEventId(Long ppsEventId) {
@@ -374,52 +158,94 @@ public class AttachmentTypeService {
         "attachmentType.getEventAndPsTypesByPpsEventId", params, EventAttachmentType.class);
   }
 
-  public List<AttachmentType> getAvailableTypesForEvent(Long id) {
-    User user = securityService.getCurrentUser();
-    Map<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+  //these endpoints are for the admin side of things
+  public List<ObjectTypeAttachmentType> getTypes(ObjectType objectType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".getTypes";
+    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
+  }
+
+  public Optional<ObjectTypeAttachmentType> getAttachmentType(Long id, ObjectType objectType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-
-    return sqlCache.query("attachmentType.getAvailableTypesForEvent", params, AttachmentType.class);
+    params.put("companyId", currentUser.getCompanyId());
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".get";
+    Optional<ObjectTypeAttachmentType> result = sqlCache.get(sqlKey, params, new ObjectTypeAttachmentTypeMapper<>(ObjectTypeAttachmentType.class, om));
+    return result;
   }
 
-  public Optional<EventAttachmentType> insertEventType(EventAttachmentType attachmentType) {
+  public List<ObjectTypeAttachmentType> getAvailableTypes(ObjectType objectType) {
     User currentUser = securityService.getCurrentUser();
 
-    Long id =
-        sqlCache
-            .updateReturningId(
-                "attachmentType.insertEventType",
-                ImmutableMap.of(
-                    "createdById",
-                    currentUser.getId(),
-                    "attachmentTypeId",
-                    attachmentType.getAttachmentTypeId(),
-                    "eventId",
-                    attachmentType.getEventId()),
-                "id")
-            .longValue();
-
-    return getEventType(id);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".getAvailableTypes";
+    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
   }
 
-  public Optional<EventAttachmentType> getEventType(Long id) {
-    return sqlCache.get(
-        "attachmentType.getEventType", ImmutableMap.of("id", id), EventAttachmentType.class);
-  }
-
-  public void deleteEventType(Long id) {
+  public Optional<ObjectTypeAttachmentType> addType(ObjectTypeAttachmentType objectTypeAttachmentType, ObjectType objectType) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update(
-        "attachmentType.deleteEventType",
-        ImmutableMap.of("id", id, "modifiedById", currentUser.getId()));
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("createdById", currentUser.trueUserId());
+    params.put("attachmentTypeId", objectTypeAttachmentType.getAttachmentTypeId());
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".addType";
+    Long id = sqlCache.updateReturningId(sqlKey, params, "id").longValue();
+    return getAttachmentType(id, objectType);
+  }
+
+  public void updateTypeOrder(List<ObjectTypeAttachmentType> attachmentTypes, ObjectType objectType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    for (ObjectTypeAttachmentType at : attachmentTypes) {
+      params.put("displayOrder", at.getDisplayOrder());
+      params.put("modifiedById", currentUser.trueUserId());
+      params.put("id", at.getId());
+      // save each display_order
+      String sqlKey = "attachmentType." + objectType.tablePrefix + ".updateDisplayOrder";
+      sqlCache.update(sqlKey, params);
+    }
+  }
+
+  public void deleteTypeForObjectType(Long id, ObjectType objectType) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("userId", currentUser.trueUserId());
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".deleteType";
+    sqlCache.update(sqlKey, params);
   }
 
   public static class AttachmentTypeMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
     public AttachmentTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "customFieldGroups",
+        new JsonCollectionDeserializer(customFieldGroupRef, objectMapper));
+    }
+  }
+
+  public static class ObjectTypeAttachmentTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ObjectTypeAttachmentTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
       this.objectMapper = objectMapper;
     }

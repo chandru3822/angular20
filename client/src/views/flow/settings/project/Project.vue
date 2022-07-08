@@ -16,7 +16,7 @@
               <v-tab :to="`/settings/project/tabs?companyObjectTypeId=${companyObjectTypeId}`">
                 Tabs
               </v-tab>
-              <v-tab :to="`/settings/project/attachments?companyObjectTypeId=${companyObjectTypeId}`">
+              <v-tab :to="`/settings/project/attachmentTypes?companyObjectTypeId=${companyObjectTypeId}`">
                 Attachment Types
               </v-tab>
               <v-tab :to="`/settings/project/system?companyObjectTypeId=${companyObjectTypeId}`">

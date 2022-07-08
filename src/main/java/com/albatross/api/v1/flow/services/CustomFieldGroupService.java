@@ -268,6 +268,10 @@ public class CustomFieldGroupService {
     params.put("eventId", customFieldGroup.getEventId());
     params.put("attachmentTypeId", customFieldGroup.getAttachmentTypeId());
     params.put("processStepAttachmentTypeId", customFieldGroup.getProcessStepAttachmentTypeId());
+    params.put("userAttachmentTypeId", customFieldGroup.getUserAttachmentTypeId());
+    params.put("projectAttachmentTypeId", customFieldGroup.getProjectAttachmentTypeId());
+    params.put("contactAttachmentTypeId", customFieldGroup.getContactAttachmentTypeId());
+    params.put("orgAttachmentTypeId", customFieldGroup.getOrgAttachmentTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
 
@@ -338,7 +342,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("objectTypeId", ObjectType.ATTACHMENT.id);
+    params.put("objectTypeId", ObjectType.ATTACHMENT_TYPE.id);
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId =
       sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
@@ -350,7 +354,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("objectTypeId", ObjectType.ATTACHMENT.id);
+    params.put("objectTypeId", ObjectType.ATTACHMENT_TYPE.id);
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId =
       sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);

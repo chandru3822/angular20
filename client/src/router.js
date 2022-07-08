@@ -941,9 +941,13 @@ const router = new Router({
                   component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectTabs.vue'),
                 },
                 {
-                  path: 'attachments',
+                  path: 'attachmentTypes',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachments.vue'),
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachmentTypes.vue'),
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachmentType.vue'),
                 },
                 {
                   path: 'system',

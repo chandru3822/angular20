@@ -1,17 +1,23 @@
 <sql>
   <customFieldGroup.insertCustomFieldGroup><![CDATA[
-    insert into flow.custom_field_group(group_name, company_object_type_id, group_order, process_step_id, event_id, attachment_type_id, process_step_attachment_type_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:groupName, :companyObjectTypeId,
-    (select coalesce(max(group_order) + 1, 0)
-                          from flow.custom_field_group cfg
-                          left join flow.process_step_attachment_type psat on psat.id = :processStepAttachmentTypeId::int
-        where case when :processStepId::int is not null then cfg.process_step_id = :processStepId::int
-                               when :eventId::int is not null then event_id = :eventId::int
-                               when :attachmentTypeId::int is not null then cfg.attachment_type_id = :attachmentTypeId::int
-                               when :processStepAttachmentTypeId::int is not null then
-                                 (process_step_attachment_type_id = :processStepAttachmentTypeId::int OR cfg.attachment_type_id = psat.attachment_type_id)
-                               else company_object_type_id = :companyObjectTypeId end),
-    :processStepId, :eventId, :attachmentTypeId, :processStepAttachmentTypeId, :createdById, now(), :createdById, now())
+    insert into flow.custom_field_group(group_name, company_object_type_id, process_step_id,
+                                        event_id, attachment_type_id, process_step_attachment_type_id,
+                                        project_attachment_type_id, contact_attachment_type_id, user_attachment_type_id, org_attachment_type_id,
+                                        created_by_id, date_created, modified_by_id, date_modified, group_order)
+    values (:groupName, :companyObjectTypeId, :processStepId, :eventId, :attachmentTypeId,
+            :processStepAttachmentTypeId, :projectAttachmentTypeId, :contactAttachmentTypeId, :userAttachmentTypeId, :orgAttachmentTypeId,
+            :createdById, now(), :createdById, now(),
+            (select coalesce(max(group_order) + 1, 0)
+             from flow.custom_field_group cfg
+             where case when :processStepId::int is not null then cfg.process_step_id = :processStepId::int
+                        when :eventId::int is not null then event_id = :eventId::int
+                        when :attachmentTypeId::int is not null then cfg.attachment_type_id = :attachmentTypeId::int
+                        when :processStepAttachmentTypeId::int is not null then process_step_attachment_type_id = :processStepAttachmentTypeId::int
+                        when :projectAttachmentTypeId::int is not null then project_attachment_type_id = :projectAttachmentTypeId::int
+                        when :userAttachmentTypeId::int is not null then user_attachment_type_id = :userAttachmentTypeId::int
+                        when :orgAttachmentTypeId::int is not null then org_attachment_type_id = :orgAttachmentTypeId::int
+                        when :contactAttachmentTypeId::int is not null then contact_attachment_type_id = :contactAttachmentTypeId::int
+                        else company_object_type_id = :companyObjectTypeId end))
   ]]></customFieldGroup.insertCustomFieldGroup>
 
   <customFieldGroup.getCompanyObjectTypeId><![CDATA[
