@@ -2,25 +2,15 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-toolbar color="white" flat>
-          <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-        </v-toolbar>
         <v-toolbar flat class="app-toolbar">
           <h3>Projects</h3>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
-            <v-tabs>
-              <v-tab :to="`/settings/project/customFieldGroups?companyObjectTypeId=${companyObjectTypeId}`">
-                Custom Field Groups
-              </v-tab>
-              <v-tab :to="`/settings/project/tabs?companyObjectTypeId=${companyObjectTypeId}`">
-                Tabs
-              </v-tab>
-              <v-tab :to="`/settings/project/attachmentTypes?companyObjectTypeId=${companyObjectTypeId}`">
-                Attachment Types
-              </v-tab>
-              <v-tab :to="`/settings/project/system?companyObjectTypeId=${companyObjectTypeId}`">
-                System
+            <v-tabs class="tabs-bar" v-model="activeTab">
+              <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
+                     class="text-capitalize ma-0"
+                     :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+                {{ tab.label }}
               </v-tab>
             </v-tabs>
           </v-toolbar-items>
@@ -38,7 +28,7 @@
   import constants from '@/helpers/constants'
 
   export default {
-    name: 'ProcessStep',
+    name: 'ProjectSettings',
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -48,17 +38,40 @@
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         companyObjectTypeId: this.$route.query.companyObjectTypeId,
-        breadcrumbs: [
+        tabs: [
           {
-            text: 'Back',
-            disabled: false,
-            exact: true,
-            to: `/settings`
+            id: 1,
+            label: 'Custom Field Groups',
+            path: `/settings/project/customFieldGroups?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
           },
+          {
+            id: 2,
+            label: 'Tabs',
+            path: `/settings/project/tabs?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
+          },
+          {
+            id: 3,
+            label: 'Attachment Types',
+            path: `/settings/project/attachmentTypes?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
+          },
+          {
+            id: 4,
+            label: 'System',
+            path: `/settings/project/system?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
+          }
         ]
       }
     },
     computed: {
+      //this should not be so hard
+      activeTab: {
+        get: function() {
+          return this.$route?.path?.includes('/attachmentType') ? `/settings/project/attachmentTypes?companyObjectTypeId=${this.companyObjectTypeId}` : null
+        },
+        set: function(val) {
+          return val
+        }
+      }
     },
     async created () {
     },

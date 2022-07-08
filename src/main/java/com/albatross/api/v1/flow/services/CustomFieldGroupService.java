@@ -272,6 +272,7 @@ public class CustomFieldGroupService {
     params.put("projectAttachmentTypeId", customFieldGroup.getProjectAttachmentTypeId());
     params.put("contactAttachmentTypeId", customFieldGroup.getContactAttachmentTypeId());
     params.put("orgAttachmentTypeId", customFieldGroup.getOrgAttachmentTypeId());
+    params.put("eventAttachmentTypeId", customFieldGroup.getEventAttachmentTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
 

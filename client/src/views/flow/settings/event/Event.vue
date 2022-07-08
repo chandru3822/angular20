@@ -27,12 +27,11 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-tabs class="tabs-bar">
-          <v-tab :to="`/settings/event/${eventId}/components`">
-            Components
-          </v-tab>
-          <v-tab :to="`/settings/event/${eventId}/customFieldGroups`">
-            Custom Field Groups
+        <v-tabs class="tabs-bar" v-model="activeTab">
+          <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
+                 class="text-capitalize ma-0"
+                 :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+            {{ tab.label }}
           </v-tab>
         </v-tabs>
         <router-view/>
@@ -66,6 +65,34 @@ export default {
     }
   },
   computed: {
+    //this should not be so hard
+    activeTab: {
+      get: function() {
+        return this.$route?.path?.includes('/attachmentType') ? `/settings/event/${this.eventId}/attachmentTypes` : null
+      },
+      set: function(val) {
+        return val
+      }
+    },
+    tabs() {
+      return [
+        {
+          id: 1,
+          label: 'Components',
+          path: `/settings/event/${this.eventId}/components`,
+        },
+        {
+          id: 2,
+          label: 'Custom Field Groups',
+          path: `/settings/event/${this.eventId}/customFieldGroups`,
+        },
+        {
+          id: 3,
+          label: 'Attachment Types',
+          path: `/settings/event/${this.eventId}/attachmentTypes`,
+        }
+      ]
+    }
   },
   async created () {
     await this.getEvent()

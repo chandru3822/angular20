@@ -1,6 +1,6 @@
 <template>
   <v-container class="pt-0">
-    <ObjectTypeAttachment object-type-value="project" :show-read-only="true"></ObjectTypeAttachment>
+    <ObjectTypeAttachment object-type-value="event"></ObjectTypeAttachment>
   </v-container>
 </template>
 
@@ -8,7 +8,7 @@
 import ObjectTypeAttachment from "@/views/flow/settings/objectType/ObjectTypeAttachment";
 
 export default {
-  name: 'ProjectAttachmentType',
+  name: 'EventAttachmentType',
   components: {
     ObjectTypeAttachment
   },

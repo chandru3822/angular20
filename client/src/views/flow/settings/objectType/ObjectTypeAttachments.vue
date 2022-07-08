@@ -37,7 +37,7 @@
                   {{ a.attachmentType }}
                 </v-list-item-content>
                 <router-link class="no-text-decoration pr-3"
-                             :to="`/settings/project/attachmentType/${a.id}?companyObjectTypeId=${companyObjectTypeId}`">
+                             :to="getAttachmentTypeUrl(a.id)">
                   <v-btn small text >
                     <v-icon>edit</v-icon>
                   </v-btn>
@@ -105,7 +105,8 @@ export default {
   },
   props: {
     objectTypeValue: String,
-    showReadOnly: Boolean
+    showReadOnly: Boolean,
+    primaryId: Number //used to load objects types that have more than one value
   },
   data () {
     return {
@@ -124,9 +125,22 @@ export default {
     this.getAssignedAttachmentTypes()
   },
   methods: {
+    getAttachmentTypeUrl (attachmentTypeId) {
+      switch(this.objectTypeValue) {
+        case 'project':
+          return `/settings/project/attachmentType/${attachmentTypeId}?companyObjectTypeId=${this.companyObjectTypeId}`
+        case 'event':
+          return `/settings/event/${this.primaryId}/attachmentType/${attachmentTypeId}`
+        default:
+          return `/settings/objectType/${this.$route.params.id}/attachmentType/${attachmentTypeId}?objectType=${this.objectType}`
+      }
+    },
     async assignNewType() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        if(null != this.primaryId) {
+          this.newType.primaryId = this.primaryId
+        }
         const {data, status} = await postRequest(`/attachmentType/${this.objectType}`, this.newType)
         this.attachmentTypes.push(data)
         // reset fields
@@ -147,7 +161,8 @@ export default {
       try {
         this.addNewType = !this.addNewType
         if (this.addNewType) {
-          const {data} = await getRequest(`/attachmentType/${this.objectType}/available`)
+          let url = this.primaryId ? `/attachmentType/${this.objectType}/${this.primaryId}/available` : `/attachmentType/${this.objectType}/available`
+          const {data} = await getRequest(url)
           this.availableAttachmentTypes = data
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -161,7 +176,8 @@ export default {
     async getAssignedAttachmentTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/attachmentType/${this.objectType}`)
+        let url = this.primaryId ? `/attachmentType/${this.objectType}/${this.primaryId}` : `/attachmentType/${this.objectType}`
+        const {data, status} = await getRequest(url)
         this.attachmentTypes = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {

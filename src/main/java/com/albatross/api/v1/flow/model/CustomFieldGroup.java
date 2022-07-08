@@ -15,7 +15,8 @@ public class CustomFieldGroup {
 
   private Long id, companyObjectTypeId, objectTypeId, companyObjectTypeTabId, groupOrder,
     processStepId, eventId, uniqueBehaviorTypeId, companyObjectTypeTabDisplayOrder,
-    attachmentTypeId, processStepAttachmentTypeId, projectAttachmentTypeId, contactAttachmentTypeId, orgAttachmentTypeId, userAttachmentTypeId;
+    attachmentTypeId, processStepAttachmentTypeId, projectAttachmentTypeId, contactAttachmentTypeId,
+    orgAttachmentTypeId, userAttachmentTypeId, eventAttachmentTypeId;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)
   private String groupName, objectType, originalGroupName, eventType, tabName;
   private Boolean archived;

@@ -6,7 +6,9 @@
             <v-toolbar-title class="app-title">{{ selectedAttachment.attachmentType }}</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-
+              <div class="mt-4">
+                <v-checkbox v-if="showReadOnly" style="display: flex; justify-content: flex-end" v-model="selectedAttachment.readOnly" label="Read-Only" @change="updateReadOnly(selectedAttachment)"></v-checkbox>
+              </div>
             </v-toolbar-items>
           </v-toolbar>
         </v-col>
@@ -108,7 +110,7 @@
                           :item-to-delete="item.groupName"
                           @confirm-delete="deleteWithChecks(item, item.id, null)"
                         ><span class="error--text">WARNING:</span>
-                          By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                          By deleting a Custom Field Group you will lose all data associated with native fields in the group.<br/><br/>
                         </confirm-delete-dialog>
                       </div>
                     </td>
@@ -152,27 +154,6 @@
                             <v-list-item-content>
                               {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                             </v-list-item-content>
-                            <v-menu offset-y
-                                    v-if="localCustomFieldGroups.length > 1 && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                              <template v-slot:activator="{ on: menu }">
-                                <v-tooltip bottom>
-                                  <template v-slot:activator="{ on: tooltip }">
-                                    <v-btn text small v-on="{...tooltip, ...menu}"
-                                           v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
-                                      <v-icon>mdi-cursor-move</v-icon>
-                                    </v-btn>
-                                  </template>
-                                  <span>Move to Other Group</span>
-                                </v-tooltip>
-                              </template>
-                              <v-list>
-                                <v-list-item
-                                  v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.attachmentTypeId })"
-                                  :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
-                                  <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
-                                </v-list-item>
-                              </v-list>
-                            </v-menu>
 
                             <v-dialog
                               v-if="userCanEdit"
@@ -271,8 +252,7 @@ export default {
       selectedAttachment: {},
       attachmentLoading: true,
       selectedIndex: null,
-      objectType: this.objectTypeValue || 'contact',
-      companyObjectTypeId: parseInt(this.$route.query.companyObjectTypeId),
+      companyObjectTypeId: parseInt(this.$route.query.companyObjectTypeId) || parseInt(this.$route.params.id),
       attachmentTypeId: parseInt(this.$route.params.attachmentTypeId),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
@@ -299,7 +279,17 @@ export default {
         return orderBy(val, v => v.groupOrder)
       }
     },
-
+    objectType () {
+      if(null != this.objectTypeValue) {
+        return this.objectTypeValue
+      } else {
+        switch(this.companyObjectTypeId) {
+          case 3: return 'user'
+          case 2: return 'contact'
+          case 5: return 'organization'
+        }
+      }
+    },
   },
   async created () {
     await this.getTypeDetails()
@@ -338,7 +328,7 @@ export default {
     async getTypeDetails() {
       try {
         this.attachmentLoading = true
-        const {data} = await getRequest(`/attachmentType/${this.objectType}/${this.attachmentTypeId}`)
+        const {data} = await getRequest(`/attachmentType/${this.attachmentTypeId}/${this.objectType}`)
         this.selectedAttachment = data
         this.attachmentLoading = false
       } catch (e) {
@@ -362,8 +352,11 @@ export default {
           case 'user':
             this.newGroup.userAttachmentTypeId = this.attachmentTypeId
             break
-          case 'org':
+          case 'organization':
             this.newGroup.orgAttachmentTypeId = this.attachmentTypeId
+            break
+          case 'event':
+            this.newGroup.eventAttachmentTypeId = this.attachmentTypeId
             break
         }
 
@@ -535,6 +528,20 @@ export default {
         return !cfg.archived
       })
     },
+    async updateReadOnly(attachmentType) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/attachmentType/project/updateReadOnly`, attachmentType)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
 }
 </script>

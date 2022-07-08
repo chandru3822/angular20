@@ -159,11 +159,12 @@ public class AttachmentTypeService {
   }
 
   //these endpoints are for the admin side of things
-  public List<ObjectTypeAttachmentType> getTypes(ObjectType objectType) {
+  public List<ObjectTypeAttachmentType> getTypes(ObjectType objectType, Long eventId) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("eventId", eventId);
     String sqlKey = "attachmentType." + objectType.tablePrefix + ".getTypes";
     return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
   }
@@ -179,11 +180,12 @@ public class AttachmentTypeService {
     return result;
   }
 
-  public List<ObjectTypeAttachmentType> getAvailableTypes(ObjectType objectType) {
+  public List<ObjectTypeAttachmentType> getAvailableTypes(ObjectType objectType, Long eventId) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("eventId", eventId);
     String sqlKey = "attachmentType." + objectType.tablePrefix + ".getAvailableTypes";
     return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
   }
@@ -195,6 +197,7 @@ public class AttachmentTypeService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("createdById", currentUser.trueUserId());
     params.put("attachmentTypeId", objectTypeAttachmentType.getAttachmentTypeId());
+    params.put("eventId", objectTypeAttachmentType.getPrimaryId());
     String sqlKey = "attachmentType." + objectType.tablePrefix + ".addType";
     Long id = sqlCache.updateReturningId(sqlKey, params, "id").longValue();
     return getAttachmentType(id, objectType);
@@ -221,6 +224,17 @@ public class AttachmentTypeService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("userId", currentUser.trueUserId());
     String sqlKey = "attachmentType." + objectType.tablePrefix + ".deleteType";
+    sqlCache.update(sqlKey, params);
+  }
+
+  public void updateReadOnly(ObjectTypeAttachmentType attachmentType, ObjectType objectType) {
+    User currentUser = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", attachmentType.getId());
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("readOnly", attachmentType.getReadOnly());
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".updateReadOnly";
     sqlCache.update(sqlKey, params);
   }
 

@@ -786,10 +786,14 @@ const router = new Router({
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "objectType" */ './views/flow/settings/objectType/CustomFieldGroup.vue'),
                 }, {
-                  path: 'attachments',
+                  path: 'attachmentTypes',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "objectType" */ './views/flow/settings/objectType/ObjectTypeAttachments.vue'),
-                }
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/objectType/ObjectTypeAttachment.vue'),
+                },
               ]
             }, {
               path: 'links',
@@ -987,7 +991,16 @@ const router = new Router({
                   path: 'components',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventComponents.vue'),
-                }
+                },
+                {
+                  path: 'attachmentTypes',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/event/EventAttachmentTypes.vue'),
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/event/EventAttachmentType.vue'),
+                },
               ]
             }, {
               path: 'smsTeams',

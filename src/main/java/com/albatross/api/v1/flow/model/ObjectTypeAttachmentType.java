@@ -14,9 +14,9 @@ import java.util.List;
 @Setter
 public class ObjectTypeAttachmentType {
 
-  private Long id, attachmentTypeId, createdById, modifiedById, companyId, displayOrder;
+  private Long id, attachmentTypeId, createdById, modifiedById, companyId, displayOrder, primaryId;
   private String attachmentType;
-  private Boolean archived;
+  private Boolean archived, readOnly;
   private Date dateCreated, dateModified;
   private List<CustomFieldGroup> customFieldGroups;
 }
