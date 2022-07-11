@@ -622,7 +622,6 @@ declare
   v_event_status_type_id integer;
   v_company_process_id integer;
 BEGIN
-
   select pps.project_id, c.company_id,p.company_process_id
   into v_project_id,v_company_id,v_company_process_id
   from flow.project_process_step_event ppse
@@ -741,9 +740,7 @@ BEGIN
                                                 'UPDATE_APPOINTMENT_DATA',
                                                 new.start_time);
     end if;
-    if
-      ((old.resource_id is null and new.resource_id is not null) or
-       (old.resource_id != new.resource_id)) then
+    if new.resource_id is not null then
       perform flow.company_event_specific_tasks(v_company_id,
                                                 new.resource_id,
                                                 new.id,
