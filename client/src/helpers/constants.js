@@ -10,7 +10,7 @@ constants.PROD_COLOR = 'primaryCustom' //this is the dark blue prod color
 constants.VUE_APP_ENV = VUE_APP_ENV
 constants.VUE_APP_BASE_API = VUE_APP_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'
-constants.MAPBOX_ACCESS_TOKEN = VUE_APP_MAPBOX_ACCESS_TOKEN || '***REMOVED***' //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
+constants.MAPBOX_ACCESS_TOKEN = VUE_APP_MAPBOX_ACCESS_TOKEN //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
 constants.MAPBOX_STYLE = VUE_APP_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 constants.IS_MOBILE = window.innerWidth <= 768
 constants.SCREEN_WIDTH = window.innerWidth
