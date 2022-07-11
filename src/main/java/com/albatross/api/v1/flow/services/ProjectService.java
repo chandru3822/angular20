@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
@@ -38,6 +39,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -582,6 +584,12 @@ public class ProjectService {
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);
     return sqlCache.query("project.getEventsByProjectId", params, ProjectProcessStepEvent.class);
+  }
+
+  public CommunicationController.ProjectDetails getProjectDetailTemplateFields(Long projectId) {
+    return sqlCache
+      .get("project.getProjectDetailTemplateFields", Map.of("projectId", projectId), CommunicationController.ProjectDetails.class)
+      .orElse(null);
   }
 
   public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {

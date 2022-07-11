@@ -4,6 +4,7 @@
     :header-hidden="true"
     :right-hidden="!$route.params.projectId"
     :left-hidden="true"
+    :auto-overflow-left="true"
     @closeRight="$router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>
@@ -44,7 +45,7 @@
                             :menu-props="{offsetY:true}"
                             multiple
                             clearable
-                            @input="reloadProjects"
+                            @input="teamSelectionChanged"
                             v-if="teamFilterOptions.length > 1">
               <v-list-item
                 slot="prepend-item"
@@ -596,6 +597,10 @@ export default {
       })
       return alreadyAdded
     },
+    teamSelectionChanged() {
+      this.options.page = 1
+      this.reloadProjects()
+    },
     searchProjects: debounce(function() {
       //don't allow searchQuery to be null - causes issues
       this.searchQuery = this.searchQuery || ''
@@ -632,7 +637,6 @@ export default {
 </style>
 
 <style scoped lang="scss">
-
 .sticky-toolbar {
   position: sticky;
   top: 0;

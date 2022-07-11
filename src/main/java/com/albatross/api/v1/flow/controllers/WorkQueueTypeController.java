@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.DurationType;
+import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
@@ -8,6 +9,7 @@ import com.albatross.api.v1.flow.services.WorkQueueTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,9 +43,16 @@ public class WorkQueueTypeController {
     return workQueueTypeService.getType(id);
   }
 
-  @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteType(@PathVariable Long typeId) {
-    workQueueTypeService.deleteType(typeId);
+  @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                     @RequestBody WorkQueueType workQueueType) {
+    //will only savePositions if they changed
+    workQueueTypeService.saveHiddenAndWhiteList(workQueueType, savePositions);
+  }
+
+  @PutMapping(value = "/delete/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<FieldInUse>> deleteType(@PathVariable Long typeId) {
+    return workQueueTypeService.deleteType(typeId);
   }
 
   @PutMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)

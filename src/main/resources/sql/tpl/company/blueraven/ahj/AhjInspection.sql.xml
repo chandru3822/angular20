@@ -438,10 +438,9 @@
       FROM brs.ahj_inspection i
                INNER JOIN brs.ahj ahj ON ahj.id = i.ahj_id
                INNER JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
-               LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
-               left join flow.company_state cs on cs.id = ahj.company_state_id
+               LEFT JOIN flow.company_state cs on cs.id = ahj.company_state_id
       WHERE cs.state_id = :stateId
-        AND ahj.archived IS FALSE`
+        AND ahj.archived IS FALSE
     ]]>
   </ahj.inspection.searchAhjsByState>
 

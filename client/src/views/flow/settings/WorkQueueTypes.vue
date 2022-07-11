@@ -1,5 +1,36 @@
 <template>
   <v-container id="work-queue-types-container">
+    <v-dialog width="700"
+              v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2 error--text">
+          Error Deleting Work Queue Type
+        </v-card-title>
+
+        <v-card-text class="pt-5">
+          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
+            <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events.  You must remove those before deleting this work queue type.</div>
+            <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
+              <strong>{{ a.processStepName }}</strong>
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar toolbar-z-index-override">
@@ -92,7 +123,7 @@
                         v-if="userCanDelete"
                         label="this work queue type: "
                         :item-to-delete="item.workQueueType"
-                        @confirm-delete="[item.archived = true, deleteType(item.id)]"
+                        @confirm-delete="[item.archived = true, deleteType(item)]"
                     ></confirm-delete-dialog>
                   </div>
                 </td>
@@ -156,6 +187,8 @@
       return {
         snackbar: {},
         constants,
+        deleteError: false,
+        cannotDeleteReasons: {},
         search: '',
         masterWorkQueueTypes: [],
         workQueueTypes: [],
@@ -217,15 +250,21 @@
       filterCategories() {
         this.workQueueTypes = this.selectedWorkQueueCategoryId === -1 ? this.masterWorkQueueTypes : this.masterWorkQueueTypes.filter(wqt => wqt.workQueueCategoryId === this.selectedWorkQueueCategoryId)
       },
-      async deleteType(typeId) {
+      async deleteType(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/workQueueType/type/${typeId}`)
+          const {status} = await putRequest(`/workQueueType/delete/${item.id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
+
+          if (e.status === 400) {
+            item.deleteConfirm = false
+            this.deleteError = true
+            this.cannotDeleteReasons = e.data
+          }
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

@@ -96,7 +96,7 @@ public class AhjPermitService {
     params.put("nonStandardNote", permit.getNonStandardNote());
     params.put("deliveryNote", permit.getDeliveryNote());
 
-    if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState()) {
+    if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState() && permit.getAhjIds().size() > 0) {
       params.put("ahjIds", permit.getAhjIds());
       sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(

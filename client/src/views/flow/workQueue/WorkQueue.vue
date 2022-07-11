@@ -5,12 +5,11 @@
         <v-card color="white" class="square-card work-queue-container-top">
           <v-row>
             <v-col cols="6" class="">
-              <v-autocomplete v-model="selectedWorkQueueCategory"
+              <v-autocomplete v-model="selectedWorkQueueCategoryId"
                               :items="workQueueCategories"
                               label="Work Queue Category"
                               item-text="workQueueCategory"
                               item-value="id"
-                              return-object
                               solo
                               hide-details
                               :loading="categoriesLoading"
@@ -71,7 +70,7 @@
         <v-card color="white" class="square-card work-queue-container-bottom mt-3">
           <v-row class="cards my-0">
             <v-card flat color="transparent" class="ml-8"
-                    v-if="!selectedWorkQueueCategory || !selectedWorkQueueCategory.id">
+                    v-if="!selectedWorkQueueCategoryId && !categoriesLoading">
               Please select a Work Queue Category
             </v-card>
             <div v-if="cardsLoading" class="one-hunned text-center">
@@ -216,7 +215,7 @@ export default {
       hideFutureFollowUps: false,
       hideFutureEvents: false,
       showAll: false,
-      selectedWorkQueueCategory: {},
+      selectedWorkQueueCategoryId: null,
       workQueueCategories: [],
       workQueues: [],
       selectedViewType: 0,
@@ -229,12 +228,17 @@ export default {
   },
   computed: {},
   async created() {
-    this.getWorkQueueCategories()
-    this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
-    this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-    this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
-    if (this.selectedWorkQueueCategory.id) {
-      this.getWorkQueues()
+    await this.getWorkQueueCategories()
+    this.selectedWorkQueueCategoryId = parseInt(localStorage.getItem('wqCategoryId'))
+    let matchingCategory = this.workQueueCategories.find(wqc => wqc.id === this.selectedWorkQueueCategoryId)
+    if(matchingCategory) {
+      this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
+      this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
+      if (this.selectedWorkQueueCategoryId) {
+        this.getWorkQueues()
+      }
+    } else {
+      this.selectedWorkQueueCategoryId = null
     }
   },
   methods: {
@@ -280,10 +284,10 @@ export default {
     //   }
     // },
     async getWorkQueues(isFilteredReload) {
-      localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
+      localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategoryId))
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
       localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
-      if (this.selectedWorkQueueCategory?.id || this.showAll) {
+      if (this.selectedWorkQueueCategoryId || this.showAll) {
         if (this.source) {
           this.source.cancel()
         }
@@ -296,7 +300,7 @@ export default {
             source: this.source,
             cancelToken: this.source.token,
             params: {
-              workQueueCategoryId: this.selectedWorkQueueCategory.id,
+              workQueueCategoryId: this.selectedWorkQueueCategoryId,
               filterFutureFollowUps: this.hideFutureFollowUps,
               filterFutureEvents: this.hideFutureEvents
             }
@@ -316,7 +320,7 @@ export default {
           //after cards are loaded then load metrics
           //do not reload metrics if re-filtering for future follow up dates.
           if (!isFilteredReload) {
-            this.loadMetrics(this.selectedWorkQueueCategory.id)
+            this.loadMetrics(this.selectedWorkQueueCategoryId)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -336,14 +340,18 @@ export default {
           source: this.source,
           cancelToken: this.source.token,
           params: {
-            workQueueCategoryId: this.selectedWorkQueueCategory.id
+            workQueueCategoryId: this.selectedWorkQueueCategoryId
           }
         })
         //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
         if (status === 200) {
           //assign each metric to the appropriate card
           data.forEach(d => {
-            this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId).metrics = d
+            let match = this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
+            //if a wqt is hidden from a user then no match will be found
+            if(match) {
+              match.metrics = d
+            }
           })
           this.metricsLoading = false
         }

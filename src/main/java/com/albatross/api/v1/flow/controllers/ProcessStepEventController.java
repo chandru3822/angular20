@@ -81,6 +81,11 @@ public class ProcessStepEventController {
     return processStepEventService.getActionLogicString(actionId);
   }
 
+  @PutMapping(value = "/{eventId}/action/{actionId}/duplicate", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepEventAction>  duplicateAction (@PathVariable Long actionId) {
+    return processStepEventService.duplicateAction(actionId);
+  }
+
   @PutMapping(value = "/{eventId}/action/order", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateEventActionOrder(@RequestBody List<ProcessStepEventAction> actions) {
     processStepEventService.updateEventActionOrder(actions);

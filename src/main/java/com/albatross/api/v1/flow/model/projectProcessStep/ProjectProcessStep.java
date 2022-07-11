@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.model.projectProcessStep;
 
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public class ProjectProcessStep {
 
   private LocalDate lastUpdated, processStepCompleteDate;
 
-  private Boolean main;
+  private Boolean main, readonly; //readonly comes from process_step.readonly
 
   private List<ProjectProcessStepAction> actions, banners;
 
@@ -34,4 +35,5 @@ public class ProjectProcessStep {
 
   private List<ProjectProcessStepRequirement> autoTriggeredActionRequirements;
   private List<ProjectProcessStepEvent> projectProcessStepEvents;
+  private List<WhiteListedPosition> whiteListedPositions;
 }

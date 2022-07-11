@@ -220,6 +220,56 @@ BEGIN
               and n.parent_id is null
               and un.user_id = p_primary_id
             order by n.date_created desc;
+      when p_object_type_id = 5 then
+        RETURN QUERY
+          select n.id,
+                 n.note,
+                 n.archived,
+                 n.parent_id,
+                 n.date_created,
+                 n.date_modified,
+                 n.created_by_id,
+                 concat(creator.first_name, ' ', creator.last_name) as created_by,
+                 n.modified_by_id,
+                 un.org_id as primary_id,
+                 (SELECT row_to_json(pp)
+                  FROM (select distinct upv.user_position_id as id,
+                                        upv.primary_flag as "primaryFlag",
+                                        upv.position,
+                                        uphv.hierarchy
+                        from flow.user_positions_vw upv
+                               inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
+                        where upv.user_id = creator.id
+                          and upv.archived is not true
+                          and upv.primary_flag is true
+                          and upv.company_id = p_company_id
+                          and upv.archived is false limit 1) pp) AS "createdByPrimaryPosition",
+                 coalesce((
+                            SELECT array_to_json(array_agg(row_to_json(childNotes)))
+                            FROM (
+                                   select n2.id,
+                                          n2.note,
+                                          n2.archived,
+                                          n2.date_created as "dateCreated",
+                                          n2.date_modified as "dateModified",
+                                          n2.created_by_id as "createdById",
+                                          concat(creator2.first_name, ' ', creator2.last_name) "createdBy",
+                                          n2.modified_by_id as "modifiedById",
+                                          cn2.contact_id as primaryId
+                                   from flow.note n2
+                                          inner join flow.contact_note cn2 on cn2.note_id = n2.id
+                                          inner join flow.user creator2 on creator2.id = n2.created_by_id
+                                   where n2.archived is not true
+                                     and n2.parent_id = n.id
+                                   order by n2.date_created
+                                 ) childNotes), '[]') AS "child_notes"
+          from flow.note n
+                 inner join flow.org_note un on un.note_id = n.id
+                 inner join flow.user creator on creator.id = n.created_by_id
+          where n.archived is not true
+            and n.parent_id is null
+            and un.org_id = p_primary_id
+          order by n.date_created desc;
       end case;
 
 END;

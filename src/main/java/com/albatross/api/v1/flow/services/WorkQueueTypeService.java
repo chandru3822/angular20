@@ -4,7 +4,11 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.enums.WhiteListType;
+import com.albatross.api.v1.flow.model.DurationType;
+import com.albatross.api.v1.flow.model.FieldInUse;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.*;
@@ -14,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
@@ -59,11 +65,63 @@ public class WorkQueueTypeService {
         new WorkQueueTypeMapper<>(WorkQueueType.class, om));
   }
 
-  public void deleteType(Long typeId) {
+  public void saveHiddenAndWhiteList(WorkQueueType workQueueType, Boolean savePositions) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("hidden", workQueueType.getHidden());
+    params.put("wqtId", workQueueType.getId());
+    params.put("whiteListTypeId", WhiteListType.WORK_QUEUE_TYPE_HIDDEN.id);
+
+    sqlCache.update("workQueueType.saveHidden", params);
+
+    if (!workQueueType.getHidden()) {
+      // if ps is not readonly archive any white listed positions for it
+      sqlCache.update("workQueueType.archiveWhiteListPositions", params);
+    } else if (null != savePositions && savePositions) {
+      // if field IS read_only archive any white listed positions no longer in the body sent in
+      List<WhiteListedPosition> positionsToUse = workQueueType.getHiddenWhiteListedPositions();
+      List<Long> positionIdsUsed = workQueueType.getHiddenWhiteListedPositions().stream()
+                                              .map(WhiteListedPosition::getPositionId)
+                                              .collect(Collectors.toList());
+      params.put("positionIdsUsed", positionIdsUsed);
+      if (positionIdsUsed.size() > 0) {
+        sqlCache.update("workQueueType.archiveWhiteListPositionsNoLongerUsed", params);
+      } else {
+        // this means they removed ALL white listed positions
+        sqlCache.update("workQueueType.archiveWhiteListPositions", params);
+      }
+
+      for (WhiteListedPosition wlp : positionsToUse) {
+        params.put("positionId", wlp.getPositionId());
+        // this insert checks if there is already a non-archived row with the same values
+        sqlCache.update("workQueueType.insertWhiteListPosition", params);
+      }
+    }
+  }
+
+  public ResponseEntity<List<FieldInUse>> deleteType(Long typeId) {
     User user = securityService.getCurrentUser();
-    sqlCache.update(
+
+    List<FieldInUse> fields = getProcessStepsUsingWqt(typeId);
+    if (!fields.isEmpty()) {
+      return ResponseEntity.badRequest().body(fields);
+    } else {
+      sqlCache.update(
         "workQueueType.deleteType",
         ImmutableMap.of("id", typeId, "modifiedById", user.trueUserId()));
+      return ResponseEntity.ok().build();
+    }
+  }
+
+  public List<FieldInUse> getProcessStepsUsingWqt(Long wqtId) {
+    //this actually returns process steps and events using the wqtId
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("wqtId", wqtId);
+    List<FieldInUse> fieldsInUse = sqlCache.query("workQueueType.getProcessStepsUsingWqt", params, FieldInUse.class);
+    return fieldsInUse;
   }
 
   public Optional<WorkQueueType> updateType(WorkQueueType type) {
@@ -465,6 +523,12 @@ public class WorkQueueTypeService {
           List.class,
           "schedule",
           new JsonCollectionDeserializer(wrkQueueTypeScheduleRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "hiddenWhiteListedPositions",
+        new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
     }
   }
 }

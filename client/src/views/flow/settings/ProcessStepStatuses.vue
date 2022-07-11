@@ -1,29 +1,20 @@
 <template>
   <v-container id="ps-container" class="custom-field-group-container">
-    <v-dialog
-      v-model="deleteError"
+    <v-dialog width="700"
+              v-model="deleteError"
     >
       <v-card>
-        <v-card-title class="text-h5 error--text">
-          Error Deleting Process Step Status
+        <v-card-title class="text-h5 grey lighten-2 error--text">
+          Error Deleting Work Queue Type
         </v-card-title>
 
-        <v-card-text>
-          You cannot delete a process step status that are currently in use.  Please remove from the following locations before deleting.
-          <v-list v-for="(item, index) in fieldsInUse.projectSteps" :key="index">
-            <v-list-item-content>
-              Project Process Step
-              <div v-if="item.projectId">Project ID {{ item.projectId }}<span v-if="item.processStepName"> - {{ item.processStepName }}</span></div>
-            </v-list-item-content>
-          </v-list>
-
-          <v-list v-for="(item, index) in fieldsInUse.steps" :key="index">
-            <v-list-item-content>
-              Process Step
-              <div v-if="item.processStepName">{{ item.processStepName }}</div>
-            </v-list-item-content>
-          </v-list>
-
+        <v-card-text class="pt-5">
+          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
+            <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events.  You must remove those before deleting this work queue type.</div>
+            <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
+              <strong>{{ a.processStepName }}</strong>
+            </div>
+          </div>
         </v-card-text>
 
         <v-card-actions>
@@ -31,7 +22,6 @@
 
           <v-btn
             color="primaryCustom"
-            text
             dark
             class="white--text"
             @click="deleteError = false"

@@ -238,6 +238,70 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col cols="12" class="pa-0 mt-4">
+            <v-toolbar flat class="access-header-bar">
+              <v-toolbar-title class="app-title">Process Step Access Control</v-toolbar-title>
+            </v-toolbar>
+            <v-card flat color="rowShadeCustom" class="square-card mt-2">
+              <v-card-title style="height: 40px" class="py-0">
+                Read Only
+                <v-checkbox type="checkbox" class="ml-3"
+                            v-model="processStep.readonly"></v-checkbox>
+              </v-card-title>
+              <v-card-text>
+                <v-autocomplete
+                  v-if="processStep.readonly"
+                  v-model="processStep.whiteListedPositions"
+                  :items="positions"
+                  :loading="positionsLoading"
+                  multiple
+                  clearable
+                  label="White Listed Positions"
+                  item-text="position"
+                  item-value="positionId"
+                  return-object
+                  height="35px"
+                  class="d-inline-block mr-3"
+                  @change="readOnlyPositionsChanged = true">
+                  <v-list-item
+                    slot="prepend-item"
+                    ripple
+                    @click="toggleSelectAllPositionsOwner()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ iconOwner() }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    slot="prepend-item"
+                    class="mt-2"
+                  ></v-divider>
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                    <v-chip small
+                            v-if="index === 0 && processStep.whiteListedPositions && processStep.whiteListedPositions.length < 2">
+                      <span>{{ item.position }}</span>
+                    </v-chip>
+                    <span
+                      v-if="index === 1 && processStep.whiteListedPositions && processStep.whiteListedPositions.length >= 2"
+                      class="primary--text text-caption"
+                    >{{ processStep.whiteListedPositions.length }} selected</span>
+                  </template>
+                </v-autocomplete>
+                <br/>
+                <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                       @click="saveReadOnlyAndWhiteList()">
+                  <v-icon class="mr-2">save</v-icon>
+                  Save
+                </v-btn>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-col>
 
     </v-row>
@@ -298,6 +362,9 @@ export default {
       processStepId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
       processStep: {},
+      positions: [],
+      positionsLoading: false,
+      readOnlyPositionsChanged: false,
       companyStatusesLoading: false,
       availableAttachmentTypes: [],
       availableCompanyProcessStepStatusTypes: [],
@@ -330,8 +397,68 @@ export default {
   },
   async created() {
     await this.getProcessStepDetails()
+    this.getPositions()
   },
   methods: {
+    selectAllReadOnly () {
+      return this.processStep.whiteListedPositions?.length === this.positions?.length
+    },
+    selectSomeReadOnly (f) {
+      return this.processStep.hiteListedPositions?.length > 0 && !this.selectAllReadOnly(f)
+    },
+    iconOwner () {
+      if (this.selectAllReadOnly()) {
+        return 'check_box'
+      }
+      if (this.selectSomeReadOnly()) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
+    toggleSelectAllPositionsOwner () {
+      this.$nextTick(() => {
+        if (this.selectAllReadOnly()) {
+          this.processStep.whiteListedPositions = []
+          this.readOnlyPositionsChanged = true
+        } else {
+          this.processStep.whiteListedPositions = cloneDeep(this.positions)
+          this.readOnlyPositionsChanged = true
+        }
+      })
+    },
+    async getPositions() {
+      if(this.positions?.length === 0) {
+        try {
+          this.positionsLoading = true
+          const {data, status} = await getRequest(`/position/withParent`)
+          this.positions = data
+          this.positionsLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          this.positionsLoading = false
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async saveReadOnlyAndWhiteList () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/processStep/saveReadOnlyAndWhiteList?savePositions=${this.readOnlyPositionsChanged ?? false}`, this.processStep)
+        this.readOnlyPositionsChanged = false
+        if(!this.processStep.readonly) {
+          this.processStep.whiteListedPositions = []
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCompanyProcessStepStatusTypes() {
       if (this.addNewProcessStepStatusType) {
         this.companyStatusesLoading = true
@@ -598,13 +725,11 @@ export default {
   padding-bottom: 0;
 }
 
-.link-header-bar {
+.link-header-bar,
+.attach-header-bar,
+.access-header-bar {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
 }
 
-.attach-header-bar {
-  border-top: 1px solid #E6E6E6;
-  border-bottom: 1px solid #E6E6E6;
-}
 </style>

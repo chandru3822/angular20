@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -10,12 +11,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,12 +40,57 @@ public class ProcessStepService {
         "processStep.getAllForCompany", params, new ProcessStepMapper<>(ProcessStep.class, om));
   }
 
-  public ProcessStep getProcessStep(Long id) {
+  public Optional<ProcessStep> getProcessStep(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache
-        .get("processStep.get", params, new ProcessStepMapper<>(ProcessStep.class, om))
-        .orElse(null);
+    params.put("companyId", currentUser.getCompanyId());
+
+    Optional<ProcessStep> result = sqlCache.get("processStep.get", params, new ProcessStepMapper<>(ProcessStep.class, om));
+
+    if(result.isPresent()) {
+      return result;
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Process Step Not Found.", new Exception());
+    }
+  }
+
+  public void saveReadOnlyAndWhiteList(ProcessStep processStep, Boolean savePositions) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("readOnly", processStep.getReadonly());
+    params.put("psId", processStep.getId());
+    params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_READ_ONLY.id);
+
+    sqlCache.update("processStep.saveReadOnly", params);
+
+    if (!processStep.getReadonly()) {
+      // if ps is not readonly archive any white listed positions for it
+      sqlCache.update("processStep.archiveWhiteListPositions", params);
+    } else if (null != savePositions && savePositions) {
+      // if field IS read_only archive any white listed positions no longer in the body sent in
+      List<WhiteListedPosition> positionsToUse = processStep.getWhiteListedPositions();
+      List<Long> positionIdsUsed = processStep.getWhiteListedPositions().stream()
+                   .map(WhiteListedPosition::getPositionId)
+                   .collect(Collectors.toList());
+      params.put("positionIdsUsed", positionIdsUsed);
+      if (positionIdsUsed.size() > 0) {
+        sqlCache.update("processStep.archiveWhiteListPositionsNoLongerUsed", params);
+      } else {
+        // this means they removed ALL white listed positions
+        sqlCache.update("processStep.archiveWhiteListPositions", params);
+      }
+
+      for (WhiteListedPosition wlp : positionsToUse) {
+        params.put("positionId", wlp.getPositionId());
+        // this insert checks if there is already a non-archived row with the same values
+        sqlCache.update("processStep.insertWhiteListPosition", params);
+      }
+    }
   }
 
   public List<FieldInUse> deleteStep(Long id) {
@@ -69,7 +119,7 @@ public class ProcessStepService {
     sqlCache.update("processStep.update", params);
   }
 
-  public ProcessStep insertStep(ProcessStep processStep) {
+  public Optional<ProcessStep> insertStep(ProcessStep processStep) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
@@ -136,11 +186,18 @@ public class ProcessStepService {
           new TypeReference<List<ProcessStepWorkQueueType>>() {};
       TypeReference<List<ProcessStepCompanyProcessStepStatusType>> companyProcessStepStatusTypeRef =
           new TypeReference<List<ProcessStepCompanyProcessStepStatusType>>() {};
+      TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef =
+        new TypeReference<List<WhiteListedPosition>>() {};
 
       bw.registerCustomEditor(
           List.class,
           "customFieldGroups",
           new JsonCollectionDeserializer(customFieldGroupRef, objectMapper));
+
+      bw.registerCustomEditor(
+        List.class,
+        "whiteListedPositions",
+        new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class,

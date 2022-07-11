@@ -59,14 +59,27 @@ public class EventService {
     sqlCache.update("event.saveChangesToDefaultFields", params);
   }
 
-  public void deleteEvent(Long id) {
+  public ResponseEntity<List<FieldInUse>> deleteEvent(Long id) {
     User currentUser = securityService.getCurrentUser();
 
-    Map<String, Object> params = new HashMap<>();
-    params.put("eventId", id);
-    params.put("modifiedById", currentUser.trueUserId());
+    List<FieldInUse> fields = getProcessStepsUsingEvent(id);
+    if (!fields.isEmpty()) {
+      return ResponseEntity.badRequest().body(fields);
+    } else {
+      Map<String, Object> params = new HashMap<>();
+      params.put("eventId", id);
+      params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("event.delete", params);
+      sqlCache.update("event.delete", params);
+      return ResponseEntity.ok().build();
+    }
+  }
+
+  public List<FieldInUse> getProcessStepsUsingEvent(Long eventId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("eventId", eventId);
+    List<FieldInUse> fieldsInUse = sqlCache.query("event.getProcessStepsUsingEvent", params, FieldInUse.class);
+    return fieldsInUse;
   }
 
   public void updateEvent(Event event) {

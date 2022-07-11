@@ -4,6 +4,8 @@ import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.State;
+import com.albatross.api.v1.flow.model.Contact;
+import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -26,6 +28,7 @@ import java.util.Optional;
 public class SunpowerService {
 
   private final SqlCache sqlCache;
+  private final ContactService contactService;
 
   @Value(value = "${sunpower.api.token}")
   private String basicToken;
@@ -85,6 +88,8 @@ public class SunpowerService {
 
     quotesArray.put(quoteDetails);
 
+    Contact contact = contactService.getContactByProjectId(projectId);
+
     if (propLogDetail.getSalesRepresentativeEmail() != null
         && propLogDetail.getSalesRepresentativeEmail().contains("@")) {
       projectDetails.put("salesRepresentativeEmail", propLogDetail.getSalesRepresentativeEmail());
@@ -95,44 +100,42 @@ public class SunpowerService {
         "salesRepresentativeLastName", propLogDetail.getSalesRepresentativeLastName());
     projectDetails.put("term", Integer.parseInt(propLogDetail.getLoanTerm()) * 12);
     projectDetails.put("productType", "Solar");
-    projectDetails.put("installStreet", propLogDetail.getAddress());
-    projectDetails.put("installCity", propLogDetail.getCity());
+    projectDetails.put("installStreet", contact.getStreet1());
+    projectDetails.put("installCity", contact.getCity());
 
-    String state = propLogDetail.getState();
+    String state = contact.getState();
     if (state.length() != 2) {
       State stateObj = State.valueOfName(state);
       state = stateObj.getAbbreviation();
     }
 
     projectDetails.put("installStateName", state);
-    projectDetails.put("installZipCode", propLogDetail.getZip());
+    projectDetails.put("installZipCode", contact.getPostalCode());
     applicantDetails.put("isPrimary", true);
 
-    int idx = propLogDetail.getFullName().lastIndexOf(' ');
-    if (idx != -1) {
-      applicantDetails.put("firstName", propLogDetail.getFullName().substring(0, idx));
-      applicantDetails.put("lastName", propLogDetail.getFullName().substring(idx + 1));
-    }
 
-    String phone = propLogDetail.getPhone();
+    applicantDetails.put("firstName", contact.getFirstName());
+    applicantDetails.put("lastName", contact.getLastName());
+
+    String phone = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
     if (!phone.isEmpty() && phone.startsWith("+1")) {
       phone = phone.substring(2);
     }
 
     applicantDetails.put("phone", phone);
 
-    if (propLogDetail.getEmail() != null && propLogDetail.getEmail().contains("@")) {
-      applicantDetails.put("email", propLogDetail.getEmail());
+    if (contact.getEmail() != null && contact.getEmail().contains("@")) {
+      applicantDetails.put("email", contact.getEmail());
     }
 
-    applicantDetails.put("mailingStreet", propLogDetail.getAddress());
-    applicantDetails.put("mailingCity", propLogDetail.getCity());
+    applicantDetails.put("mailingStreet", contact.getStreet1());
+    applicantDetails.put("mailingCity", contact.getCity());
     applicantDetails.put("mailingStateName", state);
-    applicantDetails.put("mailingZipCode", propLogDetail.getZip());
-    applicantDetails.put("residenceStreet", propLogDetail.getAddress());
-    applicantDetails.put("residenceCity", propLogDetail.getCity());
+    applicantDetails.put("mailingZipCode", contact.getPostalCode());
+    applicantDetails.put("residenceStreet", contact.getStreet1());
+    applicantDetails.put("residenceCity", contact.getCity());
     applicantDetails.put("residenceStateName", state);
-    applicantDetails.put("residenceZipCode", propLogDetail.getZip());
+    applicantDetails.put("residenceZipCode", contact.getPostalCode());
 
     applicantsArray.put(applicantDetails);
 
@@ -168,6 +171,10 @@ public class SunpowerService {
     } else {
       String message = status.getString("message");
       log.error("SUNPWR: Error opening or updating Loan Application for SunPower: {}", message);
+      if (message.equalsIgnoreCase("Quote is expired")) {
+        throw new Exception("This quote is expired, please renew the quote in order to proceed by tapping the Update or Renew Quote button");
+      }
+
       throw new Exception("Error opening or updating Loan Application for SunPower: " + message);
     }
 
