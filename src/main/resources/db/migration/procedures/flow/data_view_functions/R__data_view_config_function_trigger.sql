@@ -681,7 +681,7 @@ BEGIN
         loop
           execute format('SELECT $1.%I', x.column_name)
             into v_value using new;
-raise notice 'v_value %',v_value;
+--raise notice 'v_value %',v_value;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
