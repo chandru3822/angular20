@@ -33,6 +33,11 @@ public class ProcessStepActionController {
     processStepActionService.deleteAction(actionId);
   }
 
+  @PutMapping(value = "/{id}/duplicate", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepAction duplicateAction(@PathVariable Long id) {
+    return processStepActionService.duplicateAction(id);
+  }
+
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStepAction updateAction(@RequestBody ProcessStepAction action) {
     return processStepActionService.updateAction(action);

@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
@@ -585,12 +586,10 @@ public class ProjectService {
     return sqlCache.query("project.getEventsByProjectId", params, ProjectProcessStepEvent.class);
   }
 
-  public Optional<String> getPrimaryFinancierName(Long projectId) {
-    return
-      sqlCache.get(
-        "project.getPrimaryFinancierName",
-        Map.of("projectId", projectId),
-        new SingleColumnRowMapper<>(String.class));
+  public CommunicationController.ProjectDetails getProjectDetailTemplateFields(Long projectId) {
+    return sqlCache
+      .get("project.getProjectDetailTemplateFields", Map.of("projectId", projectId), CommunicationController.ProjectDetails.class)
+      .orElse(null);
   }
 
   public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {

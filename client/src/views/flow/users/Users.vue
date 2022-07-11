@@ -17,6 +17,7 @@
               class="mt-5"
               prepend-inner-icon="search"
               text
+              clearable
               label="Search users..."
               v-model="filters.search"
               @input="debounceGetUsers"

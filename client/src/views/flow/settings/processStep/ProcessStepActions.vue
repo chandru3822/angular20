@@ -844,6 +844,10 @@
                 <td class="text-left">{{ item.projectStatusType || 'N/A' }}</td>
                 <td>
                   <div style="display: flex; float: right;">
+                    <v-btn small text v-if="userCanEdit"
+                           @click="duplicateAction(item.id)">
+                      <v-icon>mdi-content-copy</v-icon>
+                    </v-btn>
                     <v-btn small text
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
@@ -1203,6 +1207,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async duplicateAction(actionId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/processStep/${this.processStepId}/action/${actionId}/duplicate`)
+        this.actions.push(data)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Duplicating Action')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

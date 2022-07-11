@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -33,8 +34,15 @@ public class ProcessStepController {
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProcessStep getProcessStep(@PathVariable Long id) {
+  public Optional<ProcessStep> getProcessStep(@PathVariable Long id) {
     return processStepService.getProcessStep(id);
+  }
+
+  @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveReadOnlyAndWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                       @RequestBody ProcessStep processStep) {
+    //will only savePositions if they changed
+    processStepService.saveReadOnlyAndWhiteList(processStep, savePositions);
   }
 
   @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -48,7 +56,7 @@ public class ProcessStepController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProcessStep insertStep(@RequestBody ProcessStep processStep) {
+  public Optional<ProcessStep> insertStep(@RequestBody ProcessStep processStep) {
     return processStepService.insertStep(processStep);
   }
 

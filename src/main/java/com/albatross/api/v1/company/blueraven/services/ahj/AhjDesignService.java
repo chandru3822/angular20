@@ -72,9 +72,10 @@ public class AhjDesignService {
     params.put("windSpeed", design.getWindSpeed());
     params.put("roofSnowLoad", design.getRoofSnowLoad());
 
-    if (design.getUpdateAllInState() != null && design.getUpdateAllInState()) {
+    if (design.getUpdateAllInState() != null && design.getUpdateAllInState() && design.getAhjIds().size() > 0) {
       params.put("ahjIds", design.getAhjIds());
       sqlCache.update("ahj.design.updateAllAhjDesignsInState", params);
+      //todo: this is very slow. needs to be fixed.
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
           ObjectType.AHJ_DESIGN.textValue(), design.getCustomFieldGroups(), design.getDesignIds());
     } else {

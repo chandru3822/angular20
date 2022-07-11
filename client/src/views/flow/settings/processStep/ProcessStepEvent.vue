@@ -690,6 +690,10 @@
               <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
+                  <v-btn text v-if="userCanEdit"
+                         @click="duplicateAction(action.id)">
+                    <v-icon>mdi-content-copy</v-icon>
+                  </v-btn>
                   <v-btn text @click="[expanded = [action]]" v-if="!expanded.includes(action)">
                     <v-icon>edit</v-icon>
                   </v-btn>
@@ -1079,6 +1083,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async duplicateAction(actionId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action/${actionId}/duplicate`)
+        this.selectedEvent.processStepEventActions.push(data)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Duplicating Action')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

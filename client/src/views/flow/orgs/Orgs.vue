@@ -6,18 +6,13 @@
           <v-toolbar-title class="app-title">Organizations</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn text @click="exportCsv">
+              <v-icon>mdi-cloud-download</v-icon>
+              <span class="ml-2" v-if="!constants.IS_MOBILE">Export</span>
+            </v-btn>
             <v-btn text to="/newOrg" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
               <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add Organization</span>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-toolbar color="white" class="elevation-1 mt-3">
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="exportCsv">
-              <v-icon v-if="constants.IS_MOBILE">mdi-cloud-download</v-icon>
-              <span v-else>Export</span>
+              <span class="ml-2" v-if="!constants.IS_MOBILE">Add Organization</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -30,7 +25,7 @@
             :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
-            class="elevation-1 fix-column-width-bug org-table"
+            class="elevation-1 fix-column-width-bug org-table square-card"
         >
           <template #no-data>
             No available organizations
@@ -239,7 +234,7 @@
 
 <style lang="scss">
   #orgs-container .v-data-table__wrapper {
-    height: calc(100vh - 290px);
+    height: calc(100vh - 190px);
     min-height: 300px;
   }
 </style>

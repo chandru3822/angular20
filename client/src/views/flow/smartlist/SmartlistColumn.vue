@@ -233,7 +233,7 @@ export default {
     }
   },
   created() {
-    this.getAssignedFields()
+    // this.getAssignedFields()
   },
   computed: {
     filteredProjectDetailsColumns () {

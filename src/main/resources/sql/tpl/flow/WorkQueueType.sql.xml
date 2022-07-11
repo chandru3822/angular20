@@ -47,6 +47,20 @@
            wqc.color as work_queue_category_color,
            wqc.display_order as work_queue_category_display_order,
            wqt.short_window,
+           wqt.hidden,
+          coalesce((
+                              SELECT array_to_json(array_agg(row_to_json(wlp)))
+                              FROM (
+                                       SELECT wlp.id,
+                                              wlp.position_id as "positionId",
+                                              wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                              wlp.created_by_id as "createdById",
+                                              wlp.modified_by_id as "modifiedById",
+                                              wlp.archived
+                                       FROM flow.white_listed_position wlp
+                                       WHERE wlp.white_list_type_id = 10
+                                         AND wlp.archived is not true
+                                         AND wlp.work_queue_type_id = :id) wlp), '[]') AS "hiddenWhiteListedPositions",
            wqt.short_window_duration_type_id,
            (select duration_type from flow.duration_type dt where dt.id = wqt.short_window_duration_type_id) as short_window_duration_type,
            wqt.long_window,
@@ -78,6 +92,67 @@
         date_modified = now()
     where id = :id
   ]]></workQueueType.deleteType>
+
+  <workQueueType.saveHidden><![CDATA[
+      update flow.work_queue_type
+      set hidden = :hidden,
+          modified_by_id = :userId,
+          date_modified = now()
+      where id = :wqtId
+  ]]></workQueueType.saveHidden>
+
+  <workQueueType.archiveWhiteListPositions><![CDATA[
+    update flow.white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where work_queue_type_id = :wqtId
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
+  ]]></workQueueType.archiveWhiteListPositions>
+
+  <workQueueType.insertWhiteListPosition><![CDATA[
+    insert into flow.white_listed_position(position_id, work_queue_type_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+    select :positionId, :wqtId, :whiteListTypeId, :companyId, :userId, now(), :userId, now()
+    where not exists (  select id
+                        from flow.white_listed_position
+                        where work_queue_type_id = :wqtId
+                          and position_id = :positionId
+                          and company_id = :companyId
+                          and white_list_type_id = :whiteListTypeId
+                           and archived is not true)
+  ]]></workQueueType.insertWhiteListPosition>
+
+  <workQueueType.archiveWhiteListPositionsNoLongerUsed><![CDATA[
+    update flow.white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where work_queue_type_id = :wqtId
+      and position_id not in (:positionIdsUsed)
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
+  ]]></workQueueType.archiveWhiteListPositionsNoLongerUsed>
+
+  <workQueueType.getProcessStepsUsingWqt><![CDATA[
+    select ps.process_step_name
+    from flow.process_step_work_queue_type pswqt
+      inner join flow.process_step ps on pswqt.process_step_id = ps.id
+    where pswqt.work_queue_type_id = :wqtId
+    and pswqt.archived is false
+    and ps.archived is false
+    union
+    select concat(ps.process_step_name, ' - ', e.event_name, ' (event)') as process_step_name
+    from flow.process_step_event_work_queue_type pswqt
+           inner join flow.process_step_event pse on pswqt.process_step_event_id = pse.id
+           inner join flow.event e on pse.event_id = e.id
+           inner join flow.process_step ps on pse.process_step_id = ps.id
+    where pswqt.work_queue_type_id = :wqtId
+      and pswqt.archived is false
+      and pse.archived is false
+      and ps.archived is false
+    order by process_step_name
+  ]]></workQueueType.getProcessStepsUsingWqt>
 
   <workQueueType.updateType><![CDATA[
     update flow.work_queue_type

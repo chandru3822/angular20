@@ -84,7 +84,7 @@
           :required="required"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly}"
+          :class="{'error--text': readonly || required}"
           placeholder=" "
           :rules="rules"
           :filled="filledStyle"
@@ -122,7 +122,7 @@
           :clearable="!readonly"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly}"
+          :class="{'error--text': readonly || required}"
           :loading="isLoading"
           placeholder=" "
           :filled="filledStyle"
@@ -329,10 +329,31 @@ export default {
       return field.values
     }
   },
-  created() {
-    this.getRules()
-  },
+  created() {},
   computed: {
+    //before this was a computed value it wasn't updating the ui for all field types when they were required
+    rules() {
+      let rules = []
+      //handle required rule
+      if(this.required && [7, 10].includes(this.field.dataTypeId)) {
+        //dont do push here cuz arrayRequiredRules is already an array
+        rules = this.arrayRequiredRules
+      } else if (this.required) {
+        //dont do push here cuz requiredRules is already an array
+        rules = this.requiredRules
+      }
+
+      //handle min/max validation (currently only used in brs - proposal design fields
+      if (this.field.minValue) {
+        // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
+        rules.push(v => ( (!v && v !== 0) || (v >= this.field.minValue )) || `Value must be greater than or equal to ${this.field.minValue}`)
+      }
+      if(this.field.maxValue) {
+        rules.push(v => ( (!v && v !== 0) || (v <= this.field.maxValue) ) || `Value must be less than or equal to ${this.field.maxValue}`)
+      }
+      // this.rules = rules
+      return rules
+    },
     fieldAncillaryName() {
       if (this.field.ancillaryCustomFieldHint) {
         return this.field.fieldName + ' ' + this.field.ancillaryCustomFieldHint
@@ -349,7 +370,6 @@ export default {
     return {
       search: null,
       isLoading: false,
-      rules: [],
       toolbarOptions: {
         modules: {
           toolbar: [
@@ -389,48 +409,6 @@ export default {
     getFieldName() {
       return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
     },
-    getRules() {
-      let rules = []
-      //handle required rule
-      if(this.required && [7, 10].includes(this.field.dataTypeId)) {
-        //dont do push here cuz arrayRequiredRules is already an array
-        rules = this.arrayRequiredRules
-      } else if (this.required) {
-        //dont do push here cuz requiredRules is already an array
-        rules = this.requiredRules
-      }
-
-      //handle min/max validation (currently only used in brs - proposal design fields
-      if (this.field.minValue) {
-        // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-        rules.push(v => ( (!v && v !== 0) || (v >= this.field.minValue )) || `Value must be greater than or equal to ${this.field.minValue}`)
-      }
-      if(this.field.maxValue) {
-        rules.push(v => ( (!v && v !== 0) || (v <= this.field.maxValue) ) || `Value must be less than or equal to ${this.field.maxValue}`)
-      }
-      this.rules = rules
-    },
-    // getRequiredRule(dataTypeId) {
-    //   if (this.required && [7, 10].includes(this.field.dataTypeId)) {
-    //     return this.arrayRequiredRules
-    //   } else if (this.required) {
-    //     return this.requiredRules
-    //   } else {
-    //     return []
-    //   }
-    // },
-    // getMinMaxRule() {
-    //   let rules = []
-    //   if (this.field.minValue) {
-    //     // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-    //     rules.push(v => ( (!v && v !== 0) || (v >= this.field.minValue )) || `Value must be greater than or equal to ${this.field.minValue}`)
-    //   }
-    //   if(this.field.maxValue) {
-    //     rules.push(v => ( (!v && v !== 0) || (v <= this.field.maxValue) ) || `Value must be less than or equal to ${this.field.maxValue}`)
-    //   }
-    //   return rules
-    // },
-
     getItems: debounce(async function (query = "") {
       try {
         if (query) {

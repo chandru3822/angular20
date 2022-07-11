@@ -132,9 +132,73 @@
         <v-divider></v-divider>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col cols="12" class="pa-0 mt-4">
+        <v-toolbar flat class="wqt-header-bar">
+          <v-toolbar-title class="app-title">Work Queue Access Control</v-toolbar-title>
+        </v-toolbar>
+        <v-card flat color="rowShadeCustom" class="square-card my-2">
+          <v-card-title style="height: 40px" class="py-0">
+            Hidden
+            <v-checkbox type="checkbox" class="ml-3"
+                        v-model="workQueueType.hidden"></v-checkbox>
+          </v-card-title>
+          <v-card-text>
+            <v-autocomplete
+              v-if="workQueueType.hidden"
+              v-model="workQueueType.hiddenWhiteListedPositions"
+              :items="positions"
+              :loading="positionsLoading"
+              multiple
+              clearable
+              label="White Listed Positions"
+              item-text="position"
+              item-value="positionId"
+              return-object
+              height="35px"
+              class="d-inline-block mr-3"
+              @change="hiddenPositionsChanged = true">
+              <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllPositions()"
+              >
+                <v-list-item-action>
+                  <v-icon>{{ iconOwner() }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                slot="prepend-item"
+                class="mt-2"
+              ></v-divider>
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+                <v-chip small
+                        v-if="index === 0 && workQueueType.hiddenWhiteListedPositions && workQueueType.hiddenWhiteListedPositions.length < 2">
+                  <span>{{ item.position }}</span>
+                </v-chip>
+                <span
+                  v-if="index === 1 && workQueueType.hiddenWhiteListedPositions && workQueueType.hiddenWhiteListedPositions.length >= 2"
+                  class="primary--text text-caption"
+                >{{ workQueueType.hiddenWhiteListedPositions.length }} selected</span>
+              </template>
+            </v-autocomplete>
+            <br/>
+            <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                   @click="saveHiddenAndWhiteList()">
+              <v-icon class="mr-2">save</v-icon>
+              Save
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
     <v-row v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
       <v-col cols="12" class="pt-0">
-        <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title>Set Queue Schedule</v-toolbar-title>
           <v-spacer/>
           <v-toolbar-items>
@@ -232,6 +296,7 @@ import constants from '@/helpers/constants'
 import draggable from 'vuedraggable'
 import ZonelessTimePickerInput from './availability/ZonelessTimePickerInput'
 import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
+import cloneDeep from 'lodash.clonedeep'
 
 export default {
   name: 'WorkQueueType',
@@ -253,6 +318,9 @@ export default {
       expectedTargetRule: getMinMaxRule(0, 1),
       workQueueTypeId: this.$route.params.id,
       workQueueType: {},
+      positions: [],
+      positionsLoading: false,
+      hiddenPositionsChanged: false,
       sql: '',
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userId: this.$store.state.user.details.id,
@@ -308,9 +376,69 @@ export default {
     this.getWorkQueueCategories()
     this.getCompanyObjectTypes()
     this.getDurationTypes()
+    this.getPositions()
     await this.getWorkQueueType()
   },
   methods: {
+    selectAllHidden () {
+      return this.workQueueType.hiddenWhiteListedPositions?.length === this.positions?.length
+    },
+    selectSomeHidden (f) {
+      return this.workQueueType.hiddenWhiteListedPositions?.length > 0 && !this.selectAllHidden(f)
+    },
+    iconOwner () {
+      if (this.selectAllHidden()) {
+        return 'check_box'
+      }
+      if (this.selectSomeHidden()) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
+    toggleSelectAllPositions () {
+      this.$nextTick(() => {
+        if (this.selectAllHidden()) {
+          this.workQueueType.hiddenWhiteListedPositions = []
+          this.hiddenPositionsChanged = true
+        } else {
+          this.workQueueType.hiddenWhiteListedPositions = cloneDeep(this.positions)
+          this.hiddenPositionsChanged = true
+        }
+      })
+    },
+    async getPositions() {
+      if(this.positions?.length === 0) {
+        try {
+          this.positionsLoading = true
+          const {data, status} = await getRequest(`/position/withParent`)
+          this.positions = data
+          this.positionsLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          this.positionsLoading = false
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async saveHiddenAndWhiteList () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/workQueueType/saveHiddenAndWhiteList?savePositions=${this.hiddenPositionsChanged ?? false}`, this.workQueueType)
+        this.hiddenPositionsChanged = false
+        if(!this.workQueueType.hidden) {
+          this.workQueueType.hiddenWhiteListedPositions = []
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async buildSql() {
       try {
         const {data} = await getRequestWithParams(`/workQueue/smartlist/${this.workQueueType.smartlistId}/buildSql`, {params: {
@@ -490,5 +618,10 @@ export default {
   margin-right: 5px;
   margin-left: 5px;
   border: 2px solid #DBE0E3;
+}
+
+.wqt-header-bar {
+  border-bottom: 1px solid #E6E6E6;
+  border-top: 1px solid #E6E6E6;
 }
 </style>

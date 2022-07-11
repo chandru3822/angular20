@@ -26,6 +26,10 @@ BEGIN
         insert into flow.project_process_step_note(project_process_step_id, note_id)
         values (p_primary_id, p_note_id);
         return true;
+    when p_object_type_id = 5 then
+      insert into flow.org_note(org_id, note_id)
+      values (p_primary_id, p_note_id);
+      return true;
     end case;
 
 END;

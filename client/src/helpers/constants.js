@@ -10,7 +10,7 @@ constants.PROD_COLOR = 'primaryCustom' //this is the dark blue prod color
 constants.VUE_APP_ENV = VUE_APP_ENV
 constants.VUE_APP_BASE_API = VUE_APP_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'
-constants.MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN || '***REMOVED***'
+constants.MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
 constants.MAPBOX_STYLE = VUE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 constants.IS_MOBILE = window.innerWidth <= 768
 constants.SCREEN_WIDTH = window.innerWidth
@@ -48,6 +48,10 @@ constants.CITY_RULES = [
 constants.ADDRESS_RULES = [
   v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
   v => (!v || /^[-#'.a-zA-Z0-9&\s]+$/.test(v)) || "Address must only contain alphanumeric, whitespace, or [-#'.&] characters"
+]
+
+constants.PASSWORD_RULES = [
+  v => (!v || (v && (v.length >= 8))) || 'Must be at least 8 characters',
 ]
 
 constants.PHONE_RULES = [

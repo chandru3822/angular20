@@ -149,6 +149,10 @@
         where id = :id
   ]]></processStepAction.updateActionDisplayOrder>
 
+  <processStepAction.duplicateAction><![CDATA[
+    select * from flow.duplicate_action(:actionId::int, :userId::int, :companyId::int);
+  ]]></processStepAction.duplicateAction>
+
   <processStepAction.updateAction><![CDATA[
     update flow.process_step_action
     set action_name = :actionName,

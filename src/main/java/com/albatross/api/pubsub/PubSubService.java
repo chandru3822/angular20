@@ -6,6 +6,7 @@ import com.albatross.api.pubsub.model.Subscriber;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -102,10 +103,12 @@ public class PubSubService {
     return redisTemplate.opsForValue().get(LAST_MESSAGE_RECV);
   }
 
+//  TODO (scholeskk): fix this
   /**
-   * there really isn't a greate way to know if a client closes a connection so we broadcast a
+   * there really isn't a great way to know if a client closes a connection so we broadcast a
    * simple ping message periodically allowing us to close the connection on the server side
    */
+  @Profile("!cron")
   @Scheduled(fixedDelay = 90, initialDelay = 90, timeUnit = TimeUnit.SECONDS)
   protected void broadcastKeepAlive() {
     try {
@@ -119,7 +122,7 @@ public class PubSubService {
             sub -> {
               try {
                 this.sendKeepAlive(sub);
-              } catch (IOException e) {
+              } catch (Exception e) {
                 log.debug(
                     "[PubSub] Error sending keepalive ping (likely client closed connection)", e);
                 deadEmitters.add(sub);

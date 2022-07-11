@@ -86,6 +86,19 @@ public class ProcessStepActionService {
     }
   }
 
+  public ProcessStepAction duplicateAction(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("actionId", id);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+
+    Long newActionId = sqlCache.queryForObject("processStepAction.duplicateAction", params, Long.class);
+    return getActionById(newActionId);
+  }
+
+
   public ProcessStepAction updateAction(ProcessStepAction action) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
