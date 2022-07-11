@@ -11,12 +11,13 @@ BEGIN
     v_value = null;
   elsif p_unique_behavior_type = 'EVENT_RESOURCE_TRIGGER' then
 
-    select flow.get_system_list_option_value(cf.company_system_list_id, p_value::integer)
+    select t.name
     into v_value
     from flow.project_process_step_event ppse
            inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
            inner join flow.event e on pse.event_id = e.id
            inner join flow.custom_field cf on e.resource_custom_field_id = cf.id
+           inner join lateral  (select * from flow.get_system_list_option_value(cf.company_system_list_id, p_value::integer)) t on true
     where ppse.id = p_id;
 
   elsif p_unique_behavior_type = 'STATE_FIELD_TRIGGER' then
