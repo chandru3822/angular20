@@ -16,7 +16,7 @@ import java.util.List;
 public class CustomField {
 
   private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById,
-      customFieldGroupId, customFieldGroupAssignmentId, customFieldObjectTypeId, ancillaryCustomFieldGroupAssignmentId, dataTypeId;
+      customFieldGroupId, customFieldGroupAssignmentId, customFieldObjectTypeId, ancillaryCustomFieldGroupAssignmentId, dataTypeId, conditionalOnId;
   private String fieldName, objectType, groupName, processStepName;
   private Double minValue, maxValue;
   private Boolean archived, showOnInsert, requireOnInsert, required, showOnUserProfile, hasListValues, allowMultiple, useParentData;

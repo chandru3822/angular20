@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
@@ -167,6 +168,10 @@ public class BlueravenProposalService {
     Long proposalVersionId =
         sqlCache.queryForObject("proposal.getCurrentVersion", params, Long.class);
 
+    if (proposalVersionId == null) {
+      throw new ApiException("No published proposals available");
+    }
+
     params.put("proposalVersionId", proposalVersionId);
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
     params.put("userId", user.getId());
@@ -195,11 +200,7 @@ public class BlueravenProposalService {
                     this::mapAttachmentTypeToProposalType,
                     attachment ->
                         "%s/public/attachment/%s/%s"
-                            .formatted(
-                                propertiesConfiguration.getApplicationHostUrl(),
-                                attachment.getId(),
-                                attachment.getUuid())));
-
+                            .formatted(propertiesConfiguration.getApplicationHostUrl(), attachment.getId(), attachment.getUuid()), (img1, img2) -> img1));
     context.putAll(proposalAttachments);
 
     return context;
