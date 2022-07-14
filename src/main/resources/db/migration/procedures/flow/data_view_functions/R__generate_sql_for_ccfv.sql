@@ -33,7 +33,7 @@ BEGIN
         array_append(p_text_array_alias_columns, (v_value || z.field_to_update)::character varying);
       p_text_array_columns  = array_append(p_text_array_columns , z.field_to_update);
       for x in select dvcfc.field_to_update,
-                      quote_literal(ubt.unique_behavior_type) as unique_behavior_type,
+                      quote_literal(ubt.unique_behavior_code) as unique_behavior_code,
                       ubt.return_data_type_id as data_type_id,
                       dt.data_type
                from flow.data_view_child_field_config dvcfc
@@ -44,7 +44,7 @@ BEGIN
           p_text_array_columns  = array_append(p_text_array_columns , x.field_to_update);
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
-          p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_type || $$, ccfv.$$
+          p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, ccfv.$$
                     || flow.get_value_based_on_data_type(z.data_type_id) || $$, ccfv.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;

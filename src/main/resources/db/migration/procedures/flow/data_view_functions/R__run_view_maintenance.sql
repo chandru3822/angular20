@@ -99,7 +99,7 @@ BEGIN
     where processed = false;
   end if;
   return query
-    select * from sql_statements;
+    select distinct * from sql_statements;
 
 END
 $BODY$
