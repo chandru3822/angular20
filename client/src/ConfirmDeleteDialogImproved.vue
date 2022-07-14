@@ -60,7 +60,7 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm-delete')
-      this.show.set(false)
+      this.show=false
     },
     no() {
       this.$emit('closeConfirmDeleteDialog', false)

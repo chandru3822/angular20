@@ -1,8 +1,5 @@
 <template>
   <v-container class="pa-0" id="override-container">
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteReceivingUser" @closeConfirmDeleteDialog="closeDeleteDialog">
-      Are you sure you want to delete <strong>{{ itemToDelete.name }}</strong>?
-    </ConfirmDeleteDialogImproved>
     <v-toolbar flat color="transparent">
       <v-toolbar-title>
         <span v-if="overrideId">{{override.name}}</span>
@@ -63,7 +60,7 @@
               v-model="inactivateConfirm"
               width="500">
             <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
+              <v-btn color="error" dark class="mr-2" v-on="on">
                 Inactivate
               </v-btn>
             </template>
@@ -378,7 +375,7 @@
                        v-if="expanded.includes(item)">
                   cancel
                 </v-btn>
-                <v-btn color="primary" text @click="openDeleteDialog(item)">
+                <v-btn color="primary" text @click="openDeleteDialog(item, deleteTypes.RECEIVING)">
                   <v-icon>delete</v-icon>
                 </v-btn>
               </td>
@@ -552,51 +549,22 @@
                 <v-btn small text @click="assignedUserExpanded = []"
                        v-if="assignedUserExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
+                <v-btn
                   v-if="override.status === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{ item.name }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteAssignedUser(item.id)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                  small text color="primary" @click="openDeleteDialog(item, deleteTypes.ASSIGNED)">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteConfirmed" @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete <strong>{{itemToDeleteName}}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmDeleteDialogImproved>
   </v-container>
 </template>
 
@@ -608,6 +576,12 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
+
+  const deleteTypes={
+    OVERRIDE:0,
+    RECEIVING:1,
+    ASSIGNED:2
+  }
 
   export default {
     name: 'Override',
@@ -627,6 +601,9 @@
     computed: {
       visibleReceivingHeaders() {
         return this.receivingHeaders.filter(header => header.show === true)
+      },
+      itemToDeleteName() {
+        return this.itemToDelete ? this.itemToDelete.name : ''
       },
     },
     watch: {
@@ -724,7 +701,9 @@
         userHistory: [],
         customFieldGroups: [],
         showDeleteDialog: false,
-        itemToDelete: {}
+        itemToDelete: null,
+        deleteType: null,
+        deleteTypes
       }
     },
     methods: {
@@ -1012,7 +991,9 @@
           }
         }
       },
-      async deleteAssignedUser (assignedUserId) {
+      async deleteAssignedUser () {
+        const assignedUserId = this.itemToDelete.id
+        console.log(assignedUserId)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/assignedUsers/${assignedUserId}`, 'blueraven')
@@ -1114,13 +1095,31 @@
         }
         this.closeDeleteDialog()
       },
-      openDeleteDialog(item) {
+      deleteConfirmed(){
+        debugger
+        switch (this.deleteType){
+          case deleteTypes.OVERRIDE:
+            this.deleteOverride()
+            break
+          case deleteTypes.RECEIVING:
+            this.deleteReceivingUser()
+            break
+          case deleteTypes.ASSIGNED:
+            this.deleteAssignedUser()
+            break
+          default:
+        }
+        this.closeDeleteDialog()
+      },
+      openDeleteDialog(item, type) {
         this.itemToDelete = item
+        this.deleteType=type
         this.showDeleteDialog = true
       },
       closeDeleteDialog(){
         this.showDeleteDialog = false
         this.itemToDelete = null
+        this.deleteType=null
       }
     }
   }
