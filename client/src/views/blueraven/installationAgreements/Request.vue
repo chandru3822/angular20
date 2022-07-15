@@ -84,6 +84,9 @@
                 <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
                   <span>Finance Application</span>
                 </v-btn>
+                <v-btn :disabled="!requestItem.proposalNbr" v-if="requestItem.sunpowerUrlExists" color="primaryButton" raised @click="updateSunpowerApp()" class="white--text mt-5">
+                  <span>Update / Renew Spwr Quote</span>
+                </v-btn>
               </v-col>
               <v-col>
                 <v-select attach label="Proposal Number"
@@ -165,6 +168,7 @@ export default {
       sendLoanDocs: true,
       sendInstallationAgreement: false,
       isSpanish: false,
+      sunpowerUrlExists: false,
       projectId: ''
     },
     currentEmail: '',
@@ -221,6 +225,7 @@ export default {
       this.requestItem.email = it.email
       this.currentEmail = it.email
       this.requestItem.projectId = it.project_id
+      this.requestItem.sunpowerUrlExists = it.sunpower_url_exists
 
       // get proposal numbers
       try {
@@ -277,6 +282,26 @@ export default {
           this.snackbar = getSnackbar('ERROR', e.data.message)
         } else {
           this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
+        }
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        console.error('*** ERROR ***', e)
+      }
+    },
+    async updateSunpowerApp() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {status} = await postRequest('/install-agreement/updateSunpowerApp/' + this.requestItem.projectId + '/' + this.requestItem.proposalNbr, {}, 'blueraven')
+        this.requestDialog = false;
+        handleHidingGlobalLoader(this, status)
+        this.snackbar = getSnackbar('SUCCESS', 'SunPower loan application updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        if (e?.data?.message) {
+          this.snackbar = getSnackbar('ERROR', e.data.message)
+        } else {
+          this.snackbar = getSnackbar('ERROR', 'Error updating SunPower loan application')
         }
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         console.error('*** ERROR ***', e)
