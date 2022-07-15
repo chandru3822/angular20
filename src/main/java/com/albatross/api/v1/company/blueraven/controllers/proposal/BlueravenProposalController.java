@@ -1,7 +1,9 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.exception.ApiException;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalValueFilter;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.company.blueraven.models.Proposal;
 import com.albatross.api.v1.company.blueraven.models.ProposalDesign;
@@ -37,6 +39,7 @@ public class BlueravenProposalController {
 
   private final BlueravenProposalService proposalService;
   private final ProposalTemplateService proposalTemplateService;
+  private final ProposalVersionService proposalVersionService;
 
   @GetMapping(value = "/projects")
   public Page<ProposalProject> getProposalProjects(@RequestParam String query, Pageable pageable) {
@@ -61,7 +64,8 @@ public class BlueravenProposalController {
       @RequestParam(required = false) List<MultipartFile> attachments,
       @RequestParam(required = false) List<MultipartFile> utilityBillAttachments)
       throws IOException {
-    return proposalService.requestNewDesign(projectId, description, dueDate, attachments, utilityBillAttachments);
+    return proposalService.requestNewDesign(
+        projectId, description, dueDate, attachments, utilityBillAttachments);
   }
 
   @GetMapping(value = "/{proposalId}")
@@ -122,6 +126,18 @@ public class BlueravenProposalController {
   public Optional<Proposal> addProposal(@RequestBody Proposal proposal) {
     return proposalService.addProposal(proposal);
   }
+
+  @GetMapping(value="/{proposalId}/filter")
+  public ProposalFilterResponse getFilterableOptions(
+      @PathVariable Long proposalId, ProposalValueFilter filter) {
+    final Proposal proposal =
+        proposalService.getProposal(proposalId).orElseThrow(NotFoundException::new);
+
+    final List<Long> filterIds = proposalVersionService.getProposalValuesFilterIds(proposal.getProposalVersionId(), filter);
+    return new ProposalFilterResponse(filterIds);
+  }
+
+  public record ProposalFilterResponse (List<Long> ids){ }
 
   @Data
   public static class DesignRequest {

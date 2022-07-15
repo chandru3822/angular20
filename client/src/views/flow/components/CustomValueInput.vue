@@ -76,7 +76,7 @@
           autocomplete="off"
         />
 
-<!--        12 is the new SYSTEM_readonly field. but i think we can use this same field as id=10 will ALWAYS be readonly and (never required i think)-->
+        <!--        12 is the new SYSTEM_readonly field. but i think we can use this same field as id=10 will ALWAYS be readonly and (never required i think)-->
         <v-textarea
           v-if="field.dataTypeId === 5 || field.dataTypeId === 12"
           auto-grow
@@ -128,18 +128,18 @@
           :filled="filledStyle"
           item-disabled="archived"
           :rules="rules"
-          :items="field.listOfValues"
+          :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
           item-value="id"
           item-text="name"
-          @input="callback(field)"
+          @input="handleInput"
           autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
-              <v-list-item-title v-text="item.name"/>
-              <v-list-item-subtitle v-if="item.description" v-text="item.description"/>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
         </v-autocomplete>
@@ -154,7 +154,7 @@
           :hide-no-data="field.lazyLoadValues"
           :search-input.sync="search"
           :filled="filledStyle"
-          :items="field.listOfValues"
+          :items="getListOfValues()"
           item-disabled="archived"
           :clearable="!readonly"
           :readonly="readonly"
@@ -165,13 +165,13 @@
           :hide-details="hideDetails"
           item-value="id"
           item-text="name"
-          @input="callback(field)"
+          @input="handleInput"
           autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
-              <v-list-item-title v-text="item.name"/>
-              <v-list-item-subtitle v-if="item.description" v-text="item.description"/>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
         </v-autocomplete>
@@ -189,20 +189,20 @@
           :readonly="readonly"
           :disabled="readonly"
           :class="{'error--text': readonly}"
-          :items="field.listOfValues"
+          :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
           :rules="rules"
           placeholder=" "
           item-value="id"
           item-text="name"
-          @input="callback(field)"
+          @input="handleInput"
           autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
-              <v-list-item-title v-text="item.name"/>
-              <v-list-item-subtitle v-if="item.description" v-text="item.description"/>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
         </v-autocomplete>
@@ -217,7 +217,7 @@
           :required="required"
           :clearable="!readonly"
           item-disabled="archived"
-          :items="field.listOfValues"
+          :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
           :readonly="readonly"
@@ -227,13 +227,13 @@
           placeholder=" "
           item-value="id"
           item-text="name"
-          @input="callback(field)"
+          @input="handleInput"
           autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
-              <v-list-item-title v-text="item.name"/>
-              <v-list-item-subtitle v-if="item.description" v-text="item.description"/>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
         </v-autocomplete>
@@ -259,11 +259,10 @@
             Field is required
           </div>
         </div>
-
       </v-col>
     </v-row>
     <v-row v-if="field.lazyLoadValues && field.values">
-      <v-col/>
+      <v-col />
       <v-col>
         Current Value(s): {{ field | fieldValues }}
       </v-col>
@@ -272,19 +271,19 @@
 </template>
 
 <script>
-import debounce from "lodash.debounce"
-import DatetimePickerInput from "@/components/DatetimePickerInput.vue"
-import constants from "@/helpers/constants"
+import debounce from 'lodash.debounce'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import constants from '@/helpers/constants'
 import 'quill/dist/quill.snow.css'
-import {quillEditor} from 'vue-quill-editor'
-import {getRequestWithParams} from "@/helpers/helpers"
+import { quillEditor } from 'vue-quill-editor'
+import { getRequestWithParams } from '@/helpers/helpers'
 
 export default {
-  name: "CustomValueInput",
+  name: 'CustomValueInput',
   props: {
     apiPath: {
       type: String,
-      default: "flow"
+      default: 'flow'
     },
     required: {
       type: Boolean,
@@ -311,6 +310,10 @@ export default {
       type: Boolean,
       default: false
     },
+    listOfValueFilter: {
+      type: Function,
+      required: false
+    },
     minDate: String,
     maxDate: String,
     //had to add filledStyle to allow the AHJ screens to use the custom value input but keep its same style. that makes me super happy
@@ -319,23 +322,22 @@ export default {
   },
   components: {
     DatetimePickerInput,
-    QuillEditor: quillEditor,
+    QuillEditor: quillEditor
   },
   filters: {
-    fieldValues: function (field) {
+    fieldValues: function(field) {
       if (Array.isArray(field.values)) {
         return field?.values?.join(', ')
       }
       return field.values
     }
   },
-  created() {},
   computed: {
     //before this was a computed value it wasn't updating the ui for all field types when they were required
     rules() {
       let rules = []
       //handle required rule
-      if(this.required && [7, 10].includes(this.field.dataTypeId)) {
+      if (this.required && [7, 10].includes(this.field.dataTypeId)) {
         //dont do push here cuz arrayRequiredRules is already an array
         rules = this.arrayRequiredRules
       } else if (this.required) {
@@ -346,10 +348,10 @@ export default {
       //handle min/max validation (currently only used in brs - proposal design fields
       if (this.field.minValue) {
         // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-        rules.push(v => ( (!v && v !== 0) || (v >= this.field.minValue )) || `Value must be greater than or equal to ${this.field.minValue}`)
+        rules.push(v => ((!v && v !== 0) || (v >= this.field.minValue)) || `Value must be greater than or equal to ${this.field.minValue}`)
       }
-      if(this.field.maxValue) {
-        rules.push(v => ( (!v && v !== 0) || (v <= this.field.maxValue) ) || `Value must be less than or equal to ${this.field.maxValue}`)
+      if (this.field.maxValue) {
+        rules.push(v => ((!v && v !== 0) || (v <= this.field.maxValue)) || `Value must be less than or equal to ${this.field.maxValue}`)
       }
       // this.rules = rules
       return rules
@@ -364,7 +366,7 @@ export default {
       } else {
         return this.field.fieldName
       }
-    },
+    }
   },
   data() {
     return {
@@ -375,11 +377,11 @@ export default {
           toolbar: [
             ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
             //without the color array then black = false which just un-sets color. in our case our default is navy blue, so unsetting the color goes back to navy blue and not to black.  by setting the black value to #000000 it fixes this issue.  when our default color changes to black then we could just remove the colors in this array to use the defaults from quill
-            [ { 'color': ["#000000", "#e60000", "#ff9900", "#ffff00", "#008a00", "#0066cc", "#9933ff", "#ffffff", "#facccc", "#ffebcc", "#ffffcc", "#cce8cc", "#cce0f5", "#ebd6ff", "#bbbbbb", "#f06666", "#ffc266", "#ffff66", "#66b966", "#66a3e0", "#c285ff", "#888888", "#a10000", "#b26b00", "#b2b200", "#006100", "#0047b2", "#6b24b2", "#444444", "#5c0000", "#663d00", "#666600", "#003700", "#002966", "#3d1466"] },
+            [{ 'color': ['#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'] },
               { 'background': [] }],          // dropdown with defaults from theme
             [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
             ['clean']                                         // remove all formatting button
-          ],
+          ]
         }
       },
       requiredRules: constants.BASIC_REQUIRED_RULE,
@@ -409,42 +411,52 @@ export default {
     getFieldName() {
       return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
     },
-    getItems: debounce(async function (query = "") {
+    getItems: debounce(async function(query = '') {
       try {
         if (query) {
           this.isLoading = false
-          const {data = []} = await getRequestWithParams(`/customField/${this.field.id}/values`, {params: {query}}, this.apiPath, [])
+          const { data = [] } = await getRequestWithParams(`/customField/${this.field.id}/values`, { params: { query } }, this.apiPath, [])
           this.field.listOfValues = [...data]
         }
       } finally {
         this.isLoading = false
       }
-    }, 250)
+    }, 250),
+
+    getListOfValues() {
+      if (this.listOfValueFilter) {
+        return this.field?.listOfValues?.filter(this.listOfValueFilter)
+      }
+      return this.field?.listOfValues || []
+    },
+    handleInput(val) {
+      this.callback(this.field, val === null)
+    }
   }
 }
 </script>
 
 <style lang="scss">
- .rich-text-editor .ql-container {
-   height: auto !important;
- }
+.rich-text-editor .ql-container {
+  height: auto !important;
+}
 
- .rich-text-editor-readonly .ql-toolbar {
-   display: none;
- }
+.rich-text-editor-readonly .ql-toolbar {
+  display: none;
+}
 
- .rich-text-editor-readonly .ql-container {
-   border-top: solid 1px #ccc !important;
- }
+.rich-text-editor-readonly .ql-container {
+  border-top: solid 1px #ccc !important;
+}
 
- .rich-text-editor-required {
-   border: solid 2px red !important;
- }
+.rich-text-editor-required {
+  border: solid 2px red !important;
+}
 
- .rich-text-label {
-   font-size: 11px;
-   font-family: Lato, sans-serif;
- }
+.rich-text-label {
+  font-size: 11px;
+  font-family: Lato, sans-serif;
+}
 
 </style>
 

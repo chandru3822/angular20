@@ -8,8 +8,8 @@
         <v-toolbar dense flat color="transparent">
           <v-toolbar-title class="new-proposal-header">New Proposal</v-toolbar-title>
           <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
-          <v-spacer></v-spacer>
-          <v-toolbar-items></v-toolbar-items>
+          <v-spacer />
+          <v-toolbar-items />
         </v-toolbar>
       </v-col>
     </v-row>
@@ -31,9 +31,10 @@
                   :key="idx"
                   :required="field.required"
                   :callback="populateDirtyCfvs"
-                  :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+                  :readonly="!isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || field.ancillaryCustomFieldGroupAssignmentId !== null"
                   :field="field"
                   :show-field-name="false"
+                  :list-of-value-filter="filters[field.customFieldId]"
                 />
               </v-card>
             </div>
@@ -46,7 +47,7 @@
               </v-btn>
               <!--todo: above button requires @click and accompanying function-->
               <!--todo: fix disabled logic-->
-              <v-spacer></v-spacer>
+              <v-spacer />
               <v-btn color="primaryButton"
                      depressed
                      :dark="dirtyCfvs.length !== 0"
@@ -83,7 +84,7 @@
               <!--todo: fix disabled logic-->
             </div>
             <div class="proposal-container">
-              <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="false" :editable="false"/>
+              <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="false" :editable="false" />
             </div>
           </v-card>
         </v-col>
@@ -94,12 +95,20 @@
 
 <script>
 
-import {apiRequest, getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {
+  apiRequest,
+  getRequest,
+  getRequestWithParams,
+  getSnackbar,
+  handleHidingGlobalLoader,
+  logError,
+  postRequest
+} from '@/helpers/helpers'
+import { AppMutations } from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import ProposalTemplate from '@/views/blueraven/settings/proposalDesigner/ProposalTemplate'
-import {ProposalActions} from '@/views/blueraven/settings/proposalDesigner/store'
-import {mapState} from 'vuex'
+import { ProposalActions } from '@/views/blueraven/settings/proposalDesigner/store'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Proposal',
@@ -109,16 +118,18 @@ export default {
   },
   data() {
     return {
+      loading: false,
       proposalId: this.$route.params.proposalId,
       proposal: {
         customFieldGroups: []
       },
-      dirtyCfvs: []
+      dirtyCfvs: [],
+      filters: {}
     }
   },
   created() {
     this.getProposalDetails()
-    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
+    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
   },
   computed: {
     pages() {
@@ -144,7 +155,7 @@ export default {
     async getProposalDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
+        const { data, status } = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
         this.proposal = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -166,12 +177,12 @@ export default {
     async saveCustomFieldValues() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
+        const { data, status } = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
         this.proposal = data
         this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
         this.dirtyCfvs = []
 
-        this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
+        this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
 
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -182,25 +193,39 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    populateDirtyCfvs(field) {
+    async populateDirtyCfvs(field, remove = false) {
       //some fields are for unique behavior and they dont need to be saved. this check should filter them out
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+
+      if (match && remove) {
+        //remove any from the array where the selected field is a marked as conditional field
+        const removeIds = this.proposal?.customFieldGroups
+          ?.map(cfg => cfg.customFieldValues)
+          ?.flat()
+          ?.filter(f => f.conditionalOnId === field.customFieldGroupAssignmentId)
+          ?.map(f => f.customFieldGroupAssignmentId)
+
+        removeIds.push(match.customFieldGroupAssignmentId)
+        this.dirtyCfvs = this.dirtyCfvs.filter(x => !removeIds.includes(x.customFieldGroupAssignmentId))
+      }
+
       if (!match) {
         this.dirtyCfvs.push(field)
       }
+      await this.buildFilters(field)
     },
     async downloadPdf() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        const {data} = await apiRequest('blueraven', {
+        const { data } = await apiRequest('blueraven', {
           method: 'get',
           url: `/proposal/${this.proposalId}/pdf`,
           responseType: 'blob'
         })
 
         if (data) {
-          const pdfFile = URL.createObjectURL(new Blob([data], {type: 'application/pdf'}))
+          const pdfFile = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
           const docUrl = document.createElement('a')
           docUrl.href = pdfFile
           docUrl.setAttribute('download', `proposal-${this.proposalId}.pdf`)
@@ -214,6 +239,65 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async buildFilters(field) {
+      if (!field.hasListValues) {
+        return
+      }
+
+      try {
+        const selectedFieldValue = this.dirtyCfvs.find(cfv => cfv.customFieldId === field.customFieldId)?.intValue
+        const conditionalOn = this.proposal?.customFieldGroups
+          ?.map(cfg => cfg.customFieldValues)
+          ?.flat()
+          ?.filter(f => f?.conditionalOnId === field.customFieldGroupAssignmentId)
+
+        if (conditionalOn.length > 0) {
+
+          //clear out any already selected fields when data changes for conditional fields
+          const existingFieldIds = conditionalOn.map(c => c.customFieldId)
+          this.dirtyCfvs = this.dirtyCfvs.filter(cfv => !existingFieldIds.includes(cfv.customFieldId))
+
+          this.loading = true
+          const allFilters = conditionalOn.map(({ customFieldId, flowCustomFieldId }) => {
+
+            //reset filter for customFieldId
+            this.filters[customFieldId] = undefined
+
+            if (selectedFieldValue != null) {
+              const params = {
+                targetFieldId: customFieldId,
+                //used when the custom field ids don't match but are tied to the same backing flow custom field
+                targetFlowCustomFieldId: flowCustomFieldId,
+                parentFieldId: field.customFieldId,
+                parentFieldValue: selectedFieldValue
+              }
+
+              return getRequestWithParams(`/proposal/${this.proposalId}/filter`, { params }, 'blueraven')
+                .then(({ data }) => {
+                  const { ids: filterValues } = data
+                  this.filters[customFieldId] = (val) => filterValues?.indexOf(val?.id) > -1
+                })
+            }
+
+            return Promise.resolve()
+          })
+
+          await Promise.all(allFilters)
+        }
+      } catch (e) {
+        logError(e)
+        const snackbar = getSnackbar('ERROR', e?.data?.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+      } finally {
+        this.loading = false
+      }
+    },
+    isConditionalFieldPopulated({ conditionalOnId }) {
+      if (conditionalOnId === null || conditionalOnId === undefined) {
+        return true
+      }
+      return this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
     }
   }
 }
@@ -267,7 +351,6 @@ tr:nth-of-type(even) {
 
 .proposal-container {
   padding: 28px;
-  //height: calc(100vh - 180px);
 }
 
 .proposal-container-header {

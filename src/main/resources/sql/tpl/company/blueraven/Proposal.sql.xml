@@ -184,6 +184,7 @@
                                                      cfga.field_order                                                   as "fieldOrder",
                                                      cfga.required                                                      as "required",
                                                      cfga.use_parent_data                                               as "useParentData",
+                                                     cfga.conditional_on_cfga_id                                        as "conditionalOnId",
                                                      coalesce(cf.list_of_value_id, flowCf.list_of_value_id)             as "listOfValueId",
                                                      coalesce(cf.field_name, flowCf.field_name)                         as "fieldName",
                                                      coalesce(cf.sort_list_values_alphabetically,
@@ -264,7 +265,9 @@
                                               order by cfga.field_order) cfvs), '[]') AS "customFieldValues"
                        from brs.custom_field_group cfg
                        where cfg.object_type_id = 10
-                         and cfg.archived is not true) cfgs), '[]') AS "customFieldGroups"
+                         and cfg.archived is not true
+                      order by cfg.group_order
+                     ) cfgs), '[]') AS "customFieldGroups"
 from brs.proposal p
          inner join flow.project_process_step pps on p.project_process_step_id = pps.id
          inner join brs.proposal_version pv on pv.id = p.proposal_version_id

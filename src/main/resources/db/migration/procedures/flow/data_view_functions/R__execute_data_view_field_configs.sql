@@ -39,7 +39,7 @@ BEGIN
       select dvcvc.field_to_update,
              ubt.return_data_type_id,
              flow.get_prepared_value(ubt.return_data_type_id,
-                                     flow.get_unique_behavior_value(ubt.unique_behavior_type,
+                                     flow.get_unique_behavior_value(ubt.unique_behavior_code,
                                                                     p_value::text, p_id,v_object_code))  as value
       from flow.data_view_child_field_config dvcvc
              inner join flow.unique_behavior_type ubt on dvcvc.unique_behavior_type_id = ubt.id
