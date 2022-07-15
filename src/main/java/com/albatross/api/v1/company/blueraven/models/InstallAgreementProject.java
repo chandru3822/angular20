@@ -6,4 +6,5 @@ import lombok.Data;
 public class InstallAgreementProject {
   private Long project_id;
   private String customer_name, email, address, financier;
+  private boolean sunpower_url_exists;
 }
