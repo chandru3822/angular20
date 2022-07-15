@@ -52,6 +52,7 @@ public class BirdeyeReviewController {
     }
     try {
       birdeye.sendInvitation(invitation);
+      birdeye.saveCfgaValue(invitation.getProjectId());
       result.put("message", "Invite sent.");
       return ResponseEntity.ok(result.toString());
     } catch (Exception e) {

@@ -23,7 +23,9 @@ public class CustomFieldValue {
       companyDataTypeId,
       dataTypeId,
       companySystemListId,
-      flowCustomFieldId;
+      flowCustomFieldId,
+      conditionalOnId;
+
   private Boolean valueWasChanged, required;
 
   // not sure on these types

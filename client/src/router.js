@@ -1590,7 +1590,7 @@ async function getUser() {
 }
 
 function accessDenied() {
-  if(process.env.VUE_MAINTENANCE_MODE) {
+  if(process.env.VUE_APP_MAINTENANCE_MODE) {
     return import(/* webpackChunkName: "accessDenied" */ './views/SiteUnderMaintenance.vue')
   } else {
     return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
