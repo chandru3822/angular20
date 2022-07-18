@@ -112,12 +112,6 @@
                   <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
                     <v-icon>delete</v-icon>
                   </v-btn>
-                  <ConfirmationDialog
-                      :open-confirm-delete-dialog = deleteConfirm
-                      @confirm-delete=deleteReimbursementRequest(itemToDelete)
-                      @closeConfirmDeleteDialog="closeDeleteDialog">
-                    Are you sure you want to delete this Reimbursement Request for <strong>{{ item.createdBy }}:
-                    {{ item.amount | currency('$', 2) }}</strong>?</ConfirmationDialog>
                 </div>
               </td>
             </tr>
@@ -317,6 +311,15 @@
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmationDialog
+        :open-confirm-delete-dialog = deleteConfirm
+        @confirm-delete=deleteReimbursementRequest(itemToDelete)
+        @closeConfirmDeleteDialog="closeDeleteDialog">
+      Are you sure you want to delete this Reimbursement Request for <strong>{{ itemToDeleteCreatedBy }}:
+      {{ itemToDeleteAmount | currency('$', 2) }}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -334,7 +337,14 @@ export default {
     ConfirmationDialog,
     DatetimePickerInput
   },
-  computed: {},
+  computed: {
+    itemToDeleteCreatedBy() {
+      return this.itemToDelete ? this.itemToDelete.createdBy : ''
+    },
+    itemToDeleteAmount() {
+      return this.itemToDelete ? this.itemToDelete.amount : 0
+    }
+  },
   data() {
     return {
       snackbar: {},
