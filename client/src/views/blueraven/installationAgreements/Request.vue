@@ -42,12 +42,15 @@
                         item-value="proposalNbr"
               ></v-select>
               <v-checkbox label="Send English Installation Agreement"
+                          class="default-text-color"
                           v-model="requestItem.sendInstallationAgreement"
               ></v-checkbox>
               <v-checkbox label="Send Spanish Installation Agreement"
+                          class="default-text-color"
                           v-model="requestItem.isSpanish"
               ></v-checkbox>
               <v-checkbox label="Send Finance Docs (Finance Products Only)"
+                          class="default-text-color"
                           v-model="requestItem.sendLoanDocs"
               ></v-checkbox>
             </v-col>
@@ -297,4 +300,8 @@ export default {
     color: var(--v-primaryText-base);
   }
 }
+
+.default-text-color .theme--light.v-label{
+    color: rgba(0,0,0,0.87)
+  }
 </style>

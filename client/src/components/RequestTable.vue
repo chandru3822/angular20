@@ -60,7 +60,7 @@
                 @click="closeDialog"
                 color="primary" text
                 class="text-capitalize mr-2 mb-2">
-              Back
+              cancel
             </v-btn>
             <v-btn
                 @click="[$emit('submitRequest'), closeDialog()]"
