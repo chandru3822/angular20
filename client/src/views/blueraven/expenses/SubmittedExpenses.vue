@@ -89,7 +89,7 @@
                       bottom offset-y min-width="350"
                       :close-on-content-click="false">
                 <template #activator="{on}">
-                  <v-btn v-on="on" small dark color="red" class="ml-3">Reject</v-btn>
+                  <v-btn v-on="on" small dark color="error" class="ml-3">Reject</v-btn>
                 </template>
                 <v-card class="pa-5">
                   <label>Reason for Rejection: (required)</label>
@@ -102,7 +102,7 @@
                   <v-btn class="mr-3" @click="rejectDropdown = false">Cancel</v-btn>
                   <v-btn @click="confirmRejection()"
                          :disabled="!rejectionReason || rejectConfirmLoading"
-                         class="white--text" color="red">Reject
+                         class="white--text" color="error">Reject
                   </v-btn>
                 </v-card>
               </v-menu>
@@ -211,7 +211,7 @@
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar" dense>
           <v-toolbar-title class="app-title">
-            <v-btn text @click="selectedExpense = {}">Back</v-btn>
+            <v-btn text color="primary" @click="selectedExpense = {}">Back</v-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -305,7 +305,7 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="secondaryButton" text @click="selectedExpense = {}">Cancel</v-btn>
+            <v-btn color="primary" text @click="selectedExpense = {}">Cancel</v-btn>
             <v-btn color="primary" class="white--text" raised
                    :disabled="selectedExpense.approvalDate !== null || !selectedExpense.expenseDate || !selectedExpense.glCodeId
                             || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.expenseAmount"
@@ -321,6 +321,8 @@
         @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this Submitted Expense for <strong>{{ itemToDeleteCreatedBy }}:
       {{ itemToDeleteAmount | currency('$', 2) }}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
     </ConfirmationDialog>
   </v-container>
 </template>
