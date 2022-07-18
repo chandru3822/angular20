@@ -269,7 +269,7 @@ public class GenesysService {
 
     List<DialerContact> dc =
         apiInstance.postOutboundContactlistContacts(
-            contactListId, List.of(wdc), false, false, false);
+            contactListId, List.of(wdc), true, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
   }
