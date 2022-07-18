@@ -69,22 +69,22 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                                  @confirm-delete="deleteCodeFromZone"
                                  @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to remove this postal code: <strong>{{ itemToDeletePostalCode }}</strong>?
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Codes',
-    components: {ConfirmDeleteDialogImproved},
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},

@@ -19,180 +19,81 @@
                  :disabled="errorMessages.length > 0"
                  @click="approveOverride()">
             Approve
+          </v-btn><v-btn color="error" class="white--text mr-2"
+                 v-if="overrideId && override.status !== 'ACTIVE' && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+                 :disabled="errorMessages.length > 0"
+                 @click="openDeleteDialog(override, deleteTypes.OVERRIDE)">
+            Delete
           </v-btn>
-          <v-dialog v-if="overrideId && override.status !== 'ACTIVE' && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-                    v-model="deleteConfirm"
-                    width="500">
-            <template #activator="{ on }">
-              <v-btn color="error" class="white--text mr-2" v-on="on">
-                Delete
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to delete this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="deleteConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  text
-                  @click="[deleteConfirm = true, deleteOverride()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-          <v-dialog v-else-if="overrideId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-              v-model="inactivateConfirm"
-              width="500">
-            <template #activator="{ on }">
-              <v-btn color="error" dark class="mr-2" v-on="on">
-                Inactivate
-              </v-btn>
-            </template>
-            <v-card v-if="planHasActiveUsers()">
-              <v-card-title
-                  class="text-h5 grey lighten-2"
-                  primary-title>
-                Error
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                You cannot set this plan to inactive with active users.
-                <table class="table mt-2">
-                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
-                    <td class="pr-3">{{u.name}}</td>
-                    <td>{{u.position}}</td>
-                  </tr>
-                </table>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  Cancel
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-            <v-card v-else>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to inactivate this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  text
-                  @click="[inactivateConfirm = true, inactivateOverride()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-          <v-dialog v-if="overrideId && override && userCanAdd"
-                    v-model="cloneDialog"
-                    width="600"
+          <v-btn color="error" class="mr-2" v-else-if="overrideId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')" @click="inactivateConfirm=true">
+            Inactivate
+          </v-btn>
+          <MultiOptionDialog
+              :open-dialog="inactivateConfirm"
+              :options="inactivateOptions"
+              @cancel="inactivateConfirm=false"
+              @option-0="[inactivateConfirm = true, inactivateOverride()]"
           >
-            <template v-slot:activator="{ on }">
-              <v-btn color="primary" dark v-on="on">
-                Clone
-              </v-btn>
+            <template v-slot:title>
+              <span v-if="planHasActiveUsers()">Error</span>
+              <span v-else>Confirm</span>
             </template>
-
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
-              >
-                Clone {{override.name}}
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                <div class="mb-2">
-                  This option allows you to copy an entire plan over. <br/>
-                  By default, no users are copied over.
-                </div>
-                Receiving Users to Copy:
-                <div v-for="u in override.receivingUsers">
+            <div v-if="planHasActiveUsers()">
+              You cannot set this plan to inactive with active users.
+              <table class="table mt-2">
+                <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                  <td class="pr-3">{{u.name}}</td>
+                  <td>{{u.position}}</td>
+                </tr>
+              </table>
+            </div>
+            <div v-else>
+              Are you sure you want to inactivate this plan?
+            </div>
+          </MultiOptionDialog>
+          <v-btn color="primary" v-if="overrideId && override && userCanAdd" @click="showCloneDialog=true">Clone</v-btn>
+          <ConfirmationDialog
+              :open-confirm-delete-dialog="showCloneDialog"
+              @confirm-delete="validateStartDates"
+              @closeConfirmDeleteDialog="[showCloneDialog=false, cloneStartDate=null]"
+              :disable-confirm="(override.assignedUsers.filter(u => u.selected).length > 0 && !cloneStartDate) ||
+                             (override.assignedUsers.filter(u => u.selected).length === 0 && cloneStartDate != null)"
+          >
+            <template v-slot:title>{{cloneDialogTitle}}</template>
+            <div class="mb-2">
+                This option allows you to copy an entire plan over. <br/>
+                By default, no users are copied over.
+              </div>
+              Receiving Users to Copy:
+              <div v-for="u in override.receivingUsers">
+                <input type="checkbox" class="mr-2" v-model="u.selected">
+                {{ u.name }}
+              </div>
+              <div class="mt-3">
+                Assigned Users to Copy:
+                <div v-for="u in override.assignedUsers">
                   <input type="checkbox" class="mr-2" v-model="u.selected">
-                  {{ u.name }}
+                  {{ u.name }}: {{u.startDate | formatDate('date')}}
                 </div>
-                <div class="mt-3">
-                  Assigned Users to Copy:
-                  <div v-for="u in override.assignedUsers">
-                    <input type="checkbox" class="mr-2" v-model="u.selected">
-                    {{ u.name }}: {{u.startDate | formatDate('date')}}
-                  </div>
-                  <div class="mt-3" v-if="override.assignedUsers && override.assignedUsers.filter(u => u.selected).length > 0">
-                    <DatetimePickerInput
+                <div class="mt-3" v-if="override.assignedUsers && override.assignedUsers.filter(u => u.selected).length > 0">
+                  <DatetimePickerInput
                       v-model="cloneStartDate"
                       :timezone="timezone"
                       :type="'date'"
                       :format="'MMMM DD, YYYY'"
                       label="Start Date"
-                    />
-                    <div v-if="cloneStartDate">
-                      * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
-                    </div>
-                    <div v-if="cloneDateError" class="error--text">
-                      You cannot select a start date that is before or equal to any other user's plan start date.
-                    </div>
+                  />
+                  <div v-if="cloneStartDate">
+                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
+                  </div>
+                  <div v-if="cloneDateError" class="error--text">
+                    You cannot select a start date that is before or equal to any other user's plan start date.
                   </div>
                 </div>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  text
-                  @click="[cloneDialog = false, cloneStartDate = null]"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  class="white--text"
-                  :disabled="(override.assignedUsers.filter(u => u.selected).length > 0 && !cloneStartDate) ||
-                             (override.assignedUsers.filter(u => u.selected).length === 0 && cloneStartDate != null)"
-                  @click="validateStartDates()"
-                >
-                  Clone
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+              </div>
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>clone</template>
+          </ConfirmationDialog>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -560,11 +461,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteConfirmed" @closeConfirmDeleteDialog="closeDeleteDialog">
-      Are you sure you want to delete <strong>{{itemToDeleteName}}</strong>?
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteConfirmed" @closeConfirmDeleteDialog="closeDeleteDialog">
+      <div v-if="deleteType==deleteTypes.OVERRIDE">Are you sure you want to delete this plan?</div>
+      <div v-else>Are you sure you want to delete <strong>{{itemToDeleteName}}</strong>?</div>
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -575,7 +477,8 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-  import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "../../../ConfirmationDialog";
+  import MultiOptionDialog from "@/components/MultiOptionDialog";
 
   const deleteTypes={
     OVERRIDE:0,
@@ -587,7 +490,8 @@
     name: 'Override',
     mixins: [Vue2Filters.mixin],
     components: {
-      ConfirmDeleteDialogImproved,
+      MultiOptionDialog,
+      ConfirmationDialog,
       CustomValueInput,
       DatetimePickerInput
     },
@@ -605,6 +509,12 @@
       itemToDeleteName() {
         return this.itemToDelete ? this.itemToDelete.name : ''
       },
+      cloneDialogTitle(){
+        return this.override ? `Clone ${this.override.name}` : "Clone"
+      },
+      inactivateOptions(){
+        return this.planHasActiveUsers() ? [] : ['inactivate']
+      }
     },
     watch: {
       '$store.state.brs.commissionPositionId': function () {
@@ -703,7 +613,8 @@
         showDeleteDialog: false,
         itemToDelete: null,
         deleteType: null,
-        deleteTypes
+        deleteTypes,
+        showCloneDialog: false
       }
     },
     methods: {
@@ -1096,7 +1007,7 @@
         this.closeDeleteDialog()
       },
       deleteConfirmed(){
-        debugger
+        console.log("deleteConfirmed")
         switch (this.deleteType){
           case deleteTypes.OVERRIDE:
             this.deleteOverride()

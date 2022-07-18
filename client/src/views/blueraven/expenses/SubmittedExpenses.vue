@@ -315,13 +315,13 @@
         </v-card>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved
+    <ConfirmationDialog
         :open-confirm-delete-dialog = deleteConfirm
         @confirm-delete=deleteSubmittedExpense(itemToDelete)
         @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this Submitted Expense for <strong>{{ itemToDeleteCreatedBy }}:
       {{ itemToDeleteAmount | currency('$', 2) }}</strong>?
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -341,12 +341,12 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import moment from 'moment'
 import {saveAs} from 'file-saver'
 import cloneDeep from 'lodash.clonedeep'
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'SubmittedExpenses',
   components: {
-    ConfirmDeleteDialogImproved,
+    ConfirmationDialog,
     DatetimePickerInput
   },
   data() {

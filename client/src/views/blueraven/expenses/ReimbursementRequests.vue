@@ -112,12 +112,12 @@
                   <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
                     <v-icon>delete</v-icon>
                   </v-btn>
-                  <ConfirmDeleteDialogImproved
+                  <ConfirmationDialog
                       :open-confirm-delete-dialog = deleteConfirm
                       @confirm-delete=deleteReimbursementRequest(itemToDelete)
                       @closeConfirmDeleteDialog="closeDeleteDialog">
                     Are you sure you want to delete this Reimbursement Request for <strong>{{ item.createdBy }}:
-                    {{ item.amount | currency('$', 2) }}</strong>?</ConfirmDeleteDialogImproved>
+                    {{ item.amount | currency('$', 2) }}</strong>?</ConfirmationDialog>
                 </div>
               </td>
             </tr>
@@ -326,12 +326,12 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, getRequestWithParam
 import constants from "@/helpers/constants";
 import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ReimbursementRequests',
   components: {
-    ConfirmDeleteDialogImproved,
+    ConfirmationDialog,
     DatetimePickerInput
   },
   computed: {},

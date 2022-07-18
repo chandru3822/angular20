@@ -301,11 +301,11 @@
           </td>
         </template>
       </v-data-table>
-    <ConfirmDeleteDialogImproved
+    <ConfirmationDialog
         :open-confirm-delete-dialog="showDeleteNoteDialog"
         @confirm-delete="deleteNote"
         @closeConfirmDeleteDialog="closeNoteDelete"
-    >{{ deleteDialogBody }}</ConfirmDeleteDialogImproved>
+    >{{ deleteDialogBody }}</ConfirmationDialog>
   </div>
 </template>
 
@@ -315,11 +315,11 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from "vue2-filters"
 import {Mentionable} from 'vue-mention'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'NotesAndActivityContent',
-  components: {ConfirmDeleteDialogImproved, Mentionable, DatetimePickerInput},
+  components: {ConfirmationDialog, Mentionable, DatetimePickerInput},
   mixins: [Vue2Filters.mixin],
   props: {
     showNotes: Boolean,

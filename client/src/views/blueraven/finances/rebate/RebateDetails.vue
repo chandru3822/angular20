@@ -198,9 +198,9 @@
             </template>
           </v-data-table>
 
-          <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="deleteConfirm" @confirm-delete="deletePayment" @closeConfirmDeleteDialog="deleteConfirm=false">
+          <ConfirmationDialog :open-confirm-delete-dialog="deleteConfirm" @confirm-delete="deletePayment" @closeConfirmDeleteDialog="deleteConfirm=false">
             Are you sure you want to delete this payment?
-          </ConfirmDeleteDialogImproved>
+          </ConfirmationDialog>
 
               <v-dialog v-model="notesDialog" max-width="600px">
                 <v-card class="pt-4 pb-2">
@@ -314,11 +314,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
   import {getCompanyStates} from '@/services/stateService'
-  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'RebateDetails',
-    components: {ConfirmDeleteDialogImproved},
+    components: {ConfirmationDialog},
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)

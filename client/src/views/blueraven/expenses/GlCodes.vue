@@ -93,12 +93,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved
+    <ConfirmationDialog
         :open-confirm-delete-dialog = deleteConfirm
         @confirm-delete=deleteGlCode(itemToDelete)
         @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this GL Code <strong>{{codeToDelete}}</strong>?
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -106,11 +106,11 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {getGlCodes} from './expenseService'
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'GlCodes',
-  components: {ConfirmDeleteDialogImproved},
+  components: {ConfirmationDialog},
   computed: {
     codeToDelete(){
       return this.itemToDelete ? this.itemToDelete.code : ''

@@ -34,10 +34,10 @@
               <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="[itemToDelete=a, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
             </v-list-item>
           </v-list>
-          <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+          <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                                        @confirm-delete = deleteType
                                        @closeConfirmDeleteDialog="closeDeleteDialog"
-          >Are you sure you want to delete this attachment type: <strong>{{itemToDeleteAttachmentType}}</strong></ConfirmDeleteDialogImproved>
+          >Are you sure you want to delete this attachment type: <strong>{{itemToDeleteAttachmentType}}</strong></ConfirmationDialog>
         </v-container>
       </v-col>
     </v-row>
@@ -54,11 +54,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Attachments',
-    components: {ConfirmDeleteDialogImproved, ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data() {

@@ -301,13 +301,13 @@
         </v-card>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                                  @confirm-delete="deleteField"
                                  @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>
       <template v-slot:no >Cancel</template>
       <template v-slot:yes >Delete</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -329,7 +329,7 @@ import {
 } from "@/helpers/helpers";
 import constants from "@/helpers/constants";
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: "CustomFields",
@@ -338,7 +338,7 @@ export default {
     apiPath: {type: String}
   },
   components: {
-    ConfirmDeleteDialogImproved,
+    ConfirmationDialog,
     ConfirmDeleteDialog,
     draggable
   },

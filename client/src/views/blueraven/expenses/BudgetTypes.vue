@@ -77,23 +77,23 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved
+    <ConfirmationDialog
         :open-confirm-delete-dialog = deleteConfirm
         @confirm-delete=deleteBudgetType(itemToDelete)
         @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this Budget Type <strong>{{itemToDeleteName}}</strong>?
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ExpenseBudgetTypes',
-  components: {ConfirmDeleteDialogImproved},
+  components: {ConfirmationDialog},
   computed: {
     itemToDeleteName() {
       return this.itemToDelete ? this.itemToDelete.name : ''

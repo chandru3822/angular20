@@ -557,13 +557,13 @@
         </v-row>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                                  @confirm-delete="deleteRequirement"
                                  @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this requirement?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -579,11 +579,11 @@ import {
   getRequestWithParams,
   getSnackbar
 } from '@/helpers/helpers'
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepRequirements',
-  components: {ConfirmDeleteDialogImproved},
+  components: {ConfirmationDialog},
   mixins: [Vue2Filters.mixin],
   props: {
     eventRequirements: Boolean,

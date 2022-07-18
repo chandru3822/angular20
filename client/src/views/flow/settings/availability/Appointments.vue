@@ -216,7 +216,7 @@
   import orderBy from "lodash.orderby"
   import moment from 'moment-timezone'
   import constants from "@/helpers/constants"
-  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "@/ConfirmationDialog";
   import MultiOptionDialog from "@/components/MultiOptionDialog";
 
   const { VUE_APP_ENV } = process.env
@@ -225,7 +225,7 @@
     name: 'Appointments',
     components: {
       MultiOptionDialog,
-      ConfirmDeleteDialogImproved,
+      ConfirmationDialog,
 
       RRule,
       DatetimePickerInput

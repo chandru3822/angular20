@@ -862,11 +862,11 @@
         </v-card>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteAction" @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteAction" @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this action?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -891,13 +891,13 @@ import {
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepActions',
   mixins: [Vue2Filters.mixin],
   components: {
-    ConfirmDeleteDialogImproved,
+    ConfirmationDialog,
     ProcessStepRequirements
   },
 

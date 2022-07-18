@@ -157,13 +157,13 @@
       </v-col>
 
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                                  @confirm-delete="deleteType"
                                  @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this status type: <strong>{{itemToDeleteEventStatusType}}</strong>?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -181,13 +181,13 @@ import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventS
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "../../../ConfirmationDialog";
 
 export default {
   name: 'EventStatuses',
   mixins: [Vue2Filters.mixin],
   components: {
-    ConfirmDeleteDialogImproved,
+    ConfirmationDialog,
     ConfirmDeleteDialog,
     draggable,
   },

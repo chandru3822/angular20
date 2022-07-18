@@ -75,9 +75,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteOrgCalendarFromUser(itemToDelete)" @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteOrgCalendarFromUser(itemToDelete)" @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete <strong>{{itemToDeleteOrgName}}</strong> from this user?
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -94,12 +94,12 @@
     getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers'
-  import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "../../../ConfirmationDialog";
 
   export default {
     name: 'UserAccess',
     components: {
-      ConfirmDeleteDialogImproved,
+      ConfirmationDialog,
 
       AccessControl
     },

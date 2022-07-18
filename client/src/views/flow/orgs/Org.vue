@@ -1,10 +1,10 @@
 <template>
   <v-container>
-    <confirm-delete-dialog-improved :open-confirm-delete-dialog="unsavedFieldsModal" @closeConfirmDeleteDialog="unsavedFieldsModal = false" @confirm-delete="[navigationOverride = true, goToPath(toPath)]">
+    <confirmation-dialog :open-confirm-delete-dialog="unsavedFieldsModal" @closeConfirmDeleteDialog="unsavedFieldsModal = false" @confirm-delete="[navigationOverride = true, goToPath(toPath)]">
       You have unsaved fields.  Are you sure you want to continue without saving?
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Don't Save</template>
-    </confirm-delete-dialog-improved>
+    </confirmation-dialog>
     <v-breadcrumbs color="primary lighten-1" :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="org-header elevation-1">
       <v-col cols="12" class="text-left">
@@ -218,12 +218,12 @@ import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import Attachments from '@/views/flow/components/Attachments'
 import constants from "@/helpers/constants";
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Org',
     components: {
-      ConfirmDeleteDialogImproved,
+      ConfirmationDialog,
 
     CustomValueInput,
     Attachments

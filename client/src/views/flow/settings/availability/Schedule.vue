@@ -328,12 +328,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-<ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+<ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                              @confirm-delete="archiveSchedule"
                              @closeConfirmDeleteDialog="closeDeleteDialog">
   Are you sure you want to archive this schedule?<br>
   <strong>{{ scheduleToDeleteString }}</strong>
-</ConfirmDeleteDialogImproved>
+</ConfirmationDialog>
   </v-container>
 </template>
 
@@ -343,12 +343,12 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
-  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Schedule',
     components: {
-      ConfirmDeleteDialogImproved,
+      ConfirmationDialog,
 
       DatetimePickerInput
     },

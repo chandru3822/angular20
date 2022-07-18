@@ -105,10 +105,10 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                                  @confirm-delete="deleteSchedule"
                                  @closeConfirmDeleteDialog="closeDeleteDialog"
-    >Are you sure you want to delete this schedule: <strong>{{itemToDeleteName}}</strong></ConfirmDeleteDialogImproved>
+    >Are you sure you want to delete this schedule: <strong>{{itemToDeleteName}}</strong></ConfirmationDialog>
   </v-container>
 </template>
 
@@ -119,7 +119,7 @@
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'SlotSchedules',
@@ -130,7 +130,7 @@
       }
     },
     components: {
-      ConfirmDeleteDialogImproved,
+      ConfirmationDialog,
       ConfirmDeleteDialog,
       ZonelessTimePickerInput
     },

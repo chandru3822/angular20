@@ -87,14 +87,14 @@
         </v-container>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved
+    <ConfirmationDialog
         :open-confirm-delete-dialog="showDeleteDialog"
         @confirm-delete="deletePostalCodeZone"
         @closeConfirmDeleteDialog="closeDeleteDialog">
       Are you sure you want to delete this round robin: <strong>{{itemToDeleteName}}</strong>
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Delete</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -105,11 +105,11 @@
   import cloneDeep from 'lodash.clonedeep'
   import {  handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-  import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'PostalCodes',
-    components: {ConfirmDeleteDialogImproved, ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {

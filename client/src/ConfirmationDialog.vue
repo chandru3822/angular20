@@ -27,6 +27,7 @@
         <v-btn
             color="primary"
             class="white--text elevation-2 text-capitalize mr-2 mb-2"
+            :disabled="disableConfirm"
             @click="yes">
           <slot name="yes">Yes</slot>
         </v-btn>
@@ -37,11 +38,12 @@
 
 <script>
 export default {
-  name: "ConfirmDeleteDialogImproved",
+  name: "ConfirmationDialog",
   props: {
     openConfirmDeleteDialog: Boolean,
     hideTitle:Boolean,
-    itemToDelete: Object
+    itemToDelete: Object,
+    disableConfirm: Boolean
   },
   data() {
     return {

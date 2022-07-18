@@ -1,6 +1,6 @@
 <template>
   <v-container id="hierarchy-container">
-    <ConfirmDeleteDialogImproved
+    <ConfirmationDialog
         :open-confirm-delete-dialog="showDeleteDialog"
         hide-title
         @closeConfirmDeleteDialog="clearDeleteItem"
@@ -10,7 +10,7 @@
         <span>Are you sure you want to remove <b>{{itemToDelete.name || itemToDelete.teamName}}</b>?</span>
       </template>
       <template v-slot:default>Make sure this team has resolved associated conversations</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar flat>
@@ -282,11 +282,11 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'smsTeam',
-  components: {ConfirmDeleteDialogImproved, ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   data () {
     return {
       DeleteTypeEnum: Object.freeze({

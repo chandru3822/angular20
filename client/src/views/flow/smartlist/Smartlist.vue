@@ -59,10 +59,10 @@
                   <v-icon>delete</v-icon>
                   <span v-if="!constants.IS_MOBILE">Delete</span>
                 </v-btn>
-                <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="[showDeleteDialog = false, deleteSmartlist()]" @closeConfirmDeleteDialog="showDeleteDialog=false">
+                <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="[showDeleteDialog = false, deleteSmartlist()]" @closeConfirmDeleteDialog="showDeleteDialog=false">
                   <template v-slot:title>Confirm</template>
                   Are you sure you want to delete this smartlist?
-                </ConfirmDeleteDialogImproved>
+                </ConfirmationDialog>
               </v-toolbar-items>
             </v-toolbar>
           </v-col>
@@ -331,12 +331,12 @@ import SmartlistRequirement from './SmartlistRequirement'
 import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Smartlist',
   components: {
-    ConfirmDeleteDialogImproved,
+    ConfirmationDialog,
     SmartlistRequirement,
     SmartlistColumn
   },

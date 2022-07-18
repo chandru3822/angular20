@@ -140,14 +140,14 @@
       </v-col>
 
     </v-row>
-    <ConfirmDeleteDialogImproved :open-confirm-delete-dialog="showDeleteDialog"
+    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
                                  @confirm-delete="deleteType"
                                  @closeConfirmDeleteDialog="closeDeleteDialog"
     >
       Are you sure you want to delete this status type: <strong>{{toDeleteProcessStepStatusType}}</strong>?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -160,11 +160,11 @@
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmDeleteDialogImproved from "../../../ConfirmDeleteDialogImproved";
+  import ConfirmationDialog from "../../../ConfirmationDialog";
 
   export default {
     name: 'Statuses',
-    components: {ConfirmDeleteDialogImproved},
+    components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {

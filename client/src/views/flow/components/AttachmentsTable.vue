@@ -38,12 +38,12 @@
         <v-btn small text color="primary" @click="startDelete(item)" class="px-0" v-if="!item.edit">
           <v-icon>delete</v-icon>
         </v-btn>
-        <ConfirmDeleteDialogImproved
+        <ConfirmationDialog
             :open-confirm-delete-dialog="attachmentDeleteConfirm"
             @confirm-delete="deleteAttachment"
             @closeConfirmDeleteDialog="closeDeleteDialog"
 
-        >Are you sure you want to delete {{attachmentToDeleteName}}?</ConfirmDeleteDialogImproved>
+        >Are you sure you want to delete {{attachmentToDeleteName}}?</ConfirmationDialog>
       </v-col>
     </v-row>
   </v-container>
@@ -53,11 +53,11 @@
 import {getFileIcon, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import {deleteAttachment} from "@/services/attachmentService";
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: "AttachmentsTable",
-  components: {ConfirmDeleteDialogImproved},
+  components: {ConfirmationDialog},
   props: {
     attachments: Array,
     displayType: Object,

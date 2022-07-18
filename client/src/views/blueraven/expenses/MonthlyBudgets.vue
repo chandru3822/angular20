@@ -151,12 +151,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmDeleteDialogImproved
+    <ConfirmationDialog
         :open-confirm-delete-dialog = deleteConfirm
         @confirm-delete="[itemToDelete.archived=true,deleteBudget(itemToDeleteId)]"
         @closeConfirmDeleteDialog="closeDeleteDialog">
       There may already be expenses assigned to this budget. Are you sure you want to delete?
-    </ConfirmDeleteDialogImproved>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -167,12 +167,12 @@ import {getBudgetTypes} from './expenseService'
 import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import ConfirmDeleteDialogImproved from "@/ConfirmDeleteDialogImproved";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'MonthlyBudgets',
   components: {
-    ConfirmDeleteDialogImproved,
+    ConfirmationDialog,
     DatetimePickerInput
   },
   computed: {
