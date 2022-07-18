@@ -149,44 +149,22 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-            <v-btn color="primaryButton" raised @click="submitPay" class="white--text">
+            <v-btn color="primary" text @click="close">Cancel</v-btn>
+            <v-btn color="primary" raised @click="submitPay" class="white--text">
               Submit
             </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
     </v-col>
-    <v-dialog v-model="approveDialog" max-width="600px">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Confirm
-        </v-card-title>
-
-        <v-card-text>
-          This will approve and create a batch for the selected payments, would you like to proceed?
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="approveDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primaryButton"
-            text
-            @click="passwordDialog = true">
-            Confirm
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmationDialog :open-confirm-delete-dialog="approveDialog"
+                        @closeConfirmDeleteDialog="approveDialog = false"
+                        @confirm-delete="[approveDialog=false, passwordDialog=true]">
+      <template v-slot:title>Confirm</template>
+      This will approve and create a batch for the selected payments, would you like to proceed?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>confirm</template>
+    </ConfirmationDialog>
 
     <v-dialog v-model="passwordDialog" max-width="600px">
       <v-card>
@@ -233,10 +211,11 @@ import {AppMutations} from '@/stores/AppStore'
 import {saveAs} from 'file-saver'
 import moment from "moment";
 import debounce from "lodash.debounce";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Payments',
-  components: {Snackbar},
+  components: {ConfirmationDialog, Snackbar},
   data() {
     return {
       snackbar: {},
@@ -257,7 +236,8 @@ export default {
         {text: 'Payment Amount', value: 'paymentAmount', show: false},
         {text: 'Total Paid', value: 'totalPaid', show: false},
         {text: 'Last Payment Date', value: 'lastPaymentDate', show: false},
-        {text: 'Balance Owed', value: 'balanceOwed', show: false}
+        {text: 'Balance Owed', value: 'balanceOwed', show: false},
+        {text: '', show: false}
       ],
       statuses: [
         {
@@ -351,6 +331,8 @@ export default {
           this.headers[9].show = true;
           // Balance Owed
           this.headers[10].show = true;
+          //empty header
+          this.headers[11].show=false
 
           this.payments = data;
           this.filteredPayments = data;
@@ -374,6 +356,8 @@ export default {
           this.headers[9].show = false;
           // Balance Owed
           this.headers[10].show = false;
+          //empty header
+          this.headers[11].show = this.userCanEdit;
 
           handleHidingGlobalLoader(this, status)
         } else if (this.status === 'invalid') {
@@ -394,6 +378,8 @@ export default {
           this.headers[10].show = false;
           // Balance Owed
           this.headers[10].show = true;
+          //empty header
+          this.headers[11].show = false;
           handleHidingGlobalLoader(this, status)
         }
       } catch (e) {
@@ -533,12 +519,11 @@ export default {
 
 <style lang="scss" scoped>
 .pay-link {
-  color: var(--v-brBlue-base);
+  color: var(--v-primary-lighten1);
   text-decoration: none;
 
   &:hover {
     text-decoration: underline;
-    color: var(--v-primaryText-base);
   }
 }
 
@@ -560,7 +545,7 @@ export default {
 }
 
 .pending {
-  outline: 2px solid orange;
+  outline: 2px solid var(--v-warning-base);
 }
 
 .approval {
@@ -568,7 +553,7 @@ export default {
 }
 
 .invalid {
-  outline: 2px solid red;
+  outline: 2px solid var(--v-error-lighten1);
 }
 
 .approvalDiv {

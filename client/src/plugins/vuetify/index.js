@@ -33,7 +33,14 @@ export default new Vuetify({
               },
               secondary: '#F6F7F8',
               accent: '#3c79b6',
-              error:'#B4221F',
+              error:{
+                  base:'#B4221F',
+                  lighten1:'#D03331',
+                  lighten2:'#EC5552',
+                  lighten3:'#ED9B9B',
+                  lighten4:'#FECDD2'
+              },
+              warning:'#FB8C00',
               success:'#1B5E20',
               active:'#e3eff7',
               anchor: '#2c5893'
