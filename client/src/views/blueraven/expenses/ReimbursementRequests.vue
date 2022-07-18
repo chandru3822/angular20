@@ -123,7 +123,7 @@
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-title class="app-title">
-            <v-btn text @click="selectedRequest = {}">Back</v-btn>
+            <v-btn text @click="selectedRequest = {}" color="primary">Back</v-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -138,7 +138,7 @@
                       bottom offset-y min-width="350"
                       :close-on-content-click="false">
                 <template #activator="{on}">
-                  <v-btn v-on="on" dark color="red" class="ml-3">Reject</v-btn>
+                  <v-btn v-on="on" dark color="error" class="ml-3">Reject</v-btn>
                 </template>
                 <v-card class="pa-5">
                   <label>Reason for Rejection: (required)</label>
@@ -150,12 +150,12 @@
                   </v-textarea>
                   <v-btn @click="rejectRequest(selectedRequest.notes)"
                          :disabled="!selectedRequest.notes"
-                         class="white--text" color="red">Reject
+                         class="white--text" color="error">Reject
                   </v-btn>
-                  <v-btn class="ml-3" @click="rejectDropdown = false">Cancel</v-btn>
+                  <v-btn class="ml-3" @click="rejectDropdown = false" text color="primary">Cancel</v-btn>
                 </v-card>
               </v-menu>
-              <v-btn class="ml-3" @click="selectedRequest = {}">Cancel</v-btn>
+              <v-btn class="ml-3" @click="selectedRequest = {}" text color="primary">Cancel</v-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -236,7 +236,7 @@
               >
                 <template #header.icons="{}">
                   <div class="text-right mr-2">
-                    <v-btn text x-small @click="[selectedRequest.expenses.push({
+                    <v-btn text color="primary" x-small @click="[selectedRequest.expenses.push({
                             tempId: tempIdCount,
                             glCode: null,
                             budgets: []
