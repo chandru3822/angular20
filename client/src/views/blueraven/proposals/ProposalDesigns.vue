@@ -9,9 +9,9 @@
         <div class="project-subtitle">
           Project ID:
           <router-link :to="`/project/${project.id}/details`">{{ project.id }}</router-link>
-          <br/>
+          <br />
           Address: {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
-          <br/>
+          <br />
           <span v-if="project.mobile">
             Phone: {{ formatPhoneNumber(project.mobile) }}
           </span>
@@ -26,10 +26,14 @@
       <v-card v-for="(d, idx) in designs" :key="idx"
               width="355" height="535" class="pa-4 proposal-card">
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
-          <v-img name="designImg"
-                 class="design-image"
-                 :src="d.attachments[d.imageIndex].presignedUrl"></v-img>
-          <div class="design-image image-selection-container" :style="{'justify-content': d.imageIndex === 0 ? 'end' : d.imageIndex !== 0 ? 'space-between' : ''}">
+          <img-proxy
+            name="designImg"
+            class="design-image"
+            :quality="80"
+            :uuid="d.attachments[d.imageIndex].uuid" />
+
+          <div class="design-image image-selection-container"
+               :style="{'justify-content': d.imageIndex === 0 ? 'end' : d.imageIndex !== 0 ? 'space-between' : ''}">
             <v-btn x-small v-if="d.imageIndex !== 0"
                    @click="d.imageIndex--"
                    color="black" fab class="image-selection-icon">
@@ -48,15 +52,16 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
-        <v-btn color="primaryCustom" dark class="mt-4 one-hunned text-capitalize font-weight-bold" @click="addProposal(d)">
+        <v-btn color="primaryCustom" dark class="mt-4 one-hunned text-capitalize font-weight-bold"
+               @click="addProposal(d)">
           Create new proposal
         </v-btn>
         <v-list v-if="d.proposals.length > 0">
           <v-list-item
-              v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
-              :key="index" two-line
-              class="proposal-container"
-              @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
+            v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
+            :key="index" two-line
+            class="proposal-container"
+            @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
               <v-list-item-title class="proposal-title">Proposal {{ proposal.id }}</v-list-item-title>
               <v-list-item-subtitle>
@@ -95,19 +100,19 @@
           Request New Design
         </div>
         <div class="request-new-details" v-if="activeDesign && null != activeDesign.projectId">
-          Last Requested: {{activeDesign.dateCreated | formatDate('date')}} <br/>
-          Current Status: {{activeDesign.companyProcessStepStatusType}}
+          Last Requested: {{ activeDesign.dateCreated | formatDate('date') }} <br />
+          Current Status: {{ activeDesign.companyProcessStepStatusType }}
         </div>
       </v-card>
     </v-row>
     <v-dialog width="500" v-model="showNewDesignRequestForm">
       <v-card class="pa-6">
         <v-card-title
-            color="blackText"
-            class="text-h6 text-capitalize pa-0 font-weight-bold"
-            primary-title
+          color="blackText"
+          class="text-h6 text-capitalize pa-0 font-weight-bold"
+          primary-title
         >Request New design
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <v-icon color="black" large @click="showNewDesignRequestForm = false">mdi-close</v-icon>
         </v-card-title>
         <v-card-text class="pt-4 px-0">
@@ -117,49 +122,48 @@
                       outlined
                       counter="250"
                       color="#808588"
-                      v-model="newDesignRequest.description">
-          </v-textarea>
+                      v-model="newDesignRequest.description"/>
 
           <v-file-input
-              dense
-              class="mb-5"
-              multiple
-              :accept="acceptedFileTypes"
-              ref="fileInput"
-              hide-details
-              label="Attach utility bill"
-              @change="uploadUtilityBillFiles"
+            dense
+            class="mb-5"
+            multiple
+            :accept="acceptedFileTypes"
+            ref="fileInput"
+            hide-details
+            label="Attach utility bill"
+            @change="uploadUtilityBillFiles"
           />
 
           <v-file-input
-              dense
-              class="mb-3"
-              multiple
-              :accept="acceptedFileTypes"
-              ref="fileInput"
-              hide-details
-              label="Attach supporting files"
-              @change="uploadFiles"
+            dense
+            class="mb-3"
+            multiple
+            :accept="acceptedFileTypes"
+            ref="fileInput"
+            hide-details
+            label="Attach supporting files"
+            @change="uploadFiles"
           />
 
           <DatetimePickerInput
-              v-model="newDesignRequest.dueDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              :min-date="minDate"
-              label="Pick a due date and time (Required)"
+            v-model="newDesignRequest.dueDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            :min-date="minDate"
+            label="Pick a due date and time (Required)"
           />
 
         </v-card-text>
 
         <v-card-actions class="pa-0">
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <v-btn
-              color="primaryCustom"
-              class="white--text text-capitalize font-weight-bold"
-              :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
-              @click="requestNewDesign()">
+            color="primaryCustom"
+            class="white--text text-capitalize font-weight-bold"
+            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
+            @click="requestNewDesign()">
             Request
           </v-btn>
         </v-card-actions>
@@ -171,21 +175,24 @@
 <script>
 
 import {
+  formatPhoneNumber,
+  getRequest,
+  getSnackbar,
   handleHidingGlobalLoader,
   logError,
-  getRequest,
-  postRequest,
-  formatPhoneNumber
+  postRequest
 } from '@/helpers/helpers'
-import {AppMutations} from "@/stores/AppStore";
+import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
-import DatetimePickerInput from "@/components/DatetimePickerInput";
-import constants from "@/helpers/constants";
+import DatetimePickerInput from '@/components/DatetimePickerInput'
+import constants from '@/helpers/constants'
+import ImgProxy from '@/components/ImgProxy'
 
 export default {
-  name: "ProposalDesigns",
+  name: 'ProposalDesigns',
   components: {
     DatetimePickerInput,
+    ImgProxy
   },
   data() {
     return {
@@ -213,19 +220,19 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const formData = new FormData()
-        formData.append('projectId', this.projectId);
-        formData.append('description', this.newDesignRequest.description);
-        formData.append('dueDate', this.newDesignRequest.dueDate);
+        formData.append('projectId', this.projectId)
+        formData.append('description', this.newDesignRequest.description)
+        formData.append('dueDate', this.newDesignRequest.dueDate)
 
         this.newDesignRequest?.attachments?.forEach(a => {
-          formData.append('attachments', a);
-        });
+          formData.append('attachments', a)
+        })
 
         this.newDesignRequest?.utilityBillAttachments?.forEach(a => {
-          formData.append('utilityBillAttachments', a);
-        });
+          formData.append('utilityBillAttachments', a)
+        })
 
-        const {data, status} = await postRequest(`/proposal/design`, formData, 'blueraven')
+        const { data, status } = await postRequest(`/proposal/design`, formData, 'blueraven')
         //this endpoint returns all of the designs because adding a new one could possible remove (cancel) an existing one
         this.designs = data
         await this.getActiveDesign()
@@ -248,7 +255,7 @@ export default {
     async getProposalProject() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/project/${this.projectId}`)
+        const { data, status } = await getRequest(`/project/${this.projectId}`)
         this.project = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -259,7 +266,7 @@ export default {
     async getCompletedProposalDesigns() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven', [])
+        const { data, status } = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven', [])
         this.designs = data
         //get the active one (there should only ever be one of these)
         this.activeDesign = data.find(d => d.processStepStatusTypeId === 1)
@@ -272,7 +279,7 @@ export default {
     async getActiveDesign() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
+        const { data, status } = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
         this.activeDesign = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -286,21 +293,23 @@ export default {
         let params = {
           projectProcessStepId: design.projectProcessStepId
         }
-        const {data, status} = await postRequest(`/proposal`, params, 'blueraven')
-        this.$router.push({name: 'proposal', params: {proposalId: data.id}})
+        const { data, status } = await postRequest(`/proposal`, params, 'blueraven')
+        this.$router.push({ name: 'proposal', params: { proposalId: data.id } })
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
+        const snackbar = getSnackbar('ERROR', `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`, true)
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    uploadFiles: function (files) {
+    uploadFiles: function(files) {
       this.newDesignRequest.attachments = files
     },
     //cuz i am dumb and can't figure out how to pass in "files"
-    uploadUtilityBillFiles: function (files) {
+    uploadUtilityBillFiles: function(files) {
       this.newDesignRequest.utilityBillAttachments = files
-    },
+    }
   }
 }
 </script>
@@ -362,7 +371,7 @@ export default {
 }
 
 .subtitle-container {
-  padding:0;
+  padding: 0;
 }
 
 .proposal-container {

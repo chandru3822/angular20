@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.config.CachingConfig;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
@@ -7,14 +8,18 @@ import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -75,8 +80,22 @@ public class AttachmentService {
    * @param a
    */
   private void setAttachmentPresignedUrl(String bucket, Attachment a, Boolean isMobile) {
-    if (null != a.getS3Key()) {
-      GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, a.getS3Key());
+    getPresignedUrl(bucket, a, isMobile).ifPresent(uri -> a.setPresignedUrl(uri.toString()));
+  }
+
+  public Optional<URI> getPresignedUrl(@NonNull Attachment attachment, boolean isMobile) {
+    return getPresignedUrl(storageBucket, attachment, isMobile);
+  }
+
+  private Optional<URI> getPresignedUrl(
+      @NonNull String bucket, @NonNull Attachment attachment, boolean isMobile) {
+    try {
+
+      if (attachment.getS3Key() == null) {
+        return Optional.empty();
+      }
+      GeneratePresignedUrlRequest request =
+          new GeneratePresignedUrlRequest(bucket, attachment.getS3Key());
 
       // Set expiration to 24hrs
       LocalDateTime expiration = LocalDateTime.now().plusDays(1);
@@ -86,15 +105,18 @@ public class AttachmentService {
       responseHeaders.setCacheControl("No-cache");
       if (isMobile) {
         responseHeaders.setContentDisposition("inline");
-        responseHeaders.setContentType(a.getContentType());
+        responseHeaders.setContentType(attachment.getContentType());
       } else {
-        responseHeaders.setContentDisposition("attachment; filename=" + a.getFilename());
+        responseHeaders.setContentDisposition("attachment; filename=" + attachment.getFilename());
       }
 
       // Add the ResponseHeaderOverrides to the request.
       request.setResponseHeaders(responseHeaders);
 
-      a.setPresignedUrl(s3.generatePresignedUrl(request).toString());
+      return Optional.of(s3.generatePresignedUrl(request).toURI());
+    } catch (URISyntaxException e) {
+      log.error("[Attachment] Error generating URI for presigned URL", e);
+      return Optional.empty();
     }
   }
 
@@ -332,6 +354,11 @@ public class AttachmentService {
     // all project attachments are considered "main"
     attachment.setMain(true);
     return attachment;
+  }
+
+  @Cacheable(value = CachingConfig.ATTACHMENT)
+  public Optional<Attachment> findAttachmentByUUID(@NonNull UUID uuid) {
+    return sqlCache.get("attachment.getAttachmentByUUID", Map.of("uuid", uuid), Attachment.class);
   }
 
   /**

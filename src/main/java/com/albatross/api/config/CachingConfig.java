@@ -15,6 +15,7 @@ import java.time.Duration;
 public class CachingConfig {
   public static final String PROPOSAL_TEMPLATE = "proposalTemplate";
   public static final String NOTIFICATION = "notification";
+  public static final String ATTACHMENT = "attachment";
 
   @Bean
   public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
@@ -33,7 +34,14 @@ public class CachingConfig {
                   .serializeValuesWith(
                       RedisSerializationContext.SerializationPair.fromSerializer(
                           new GenericJackson2JsonRedisSerializer()))
-                  .entryTtl(Duration.ofMinutes(5L)));
+                  .entryTtl(Duration.ofMinutes(5L)))
+          .withCacheConfiguration(
+              ATTACHMENT,
+              RedisCacheConfiguration.defaultCacheConfig()
+                  .serializeValuesWith(
+                      RedisSerializationContext.SerializationPair.fromSerializer(
+                          new GenericJackson2JsonRedisSerializer()))
+                  .entryTtl(Duration.ofHours(24L)));
     };
   }
 }

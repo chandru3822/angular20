@@ -6,6 +6,7 @@ import com.albatross.api.convert.JsonObjectDeserializer;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplateBlock;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTheme;
@@ -35,11 +36,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -50,7 +53,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3)")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 public class ProposalTemplateService {
   private final SqlCache sqlCache;
   private final ObjectMapper objectMapper;
@@ -76,20 +79,25 @@ public class ProposalTemplateService {
             .build();
   }
 
-  public ProposalTemplate getTemplateById(Long templateId, Map<String, Object> context) {
+  public ProposalTemplate getTemplateById(Long templateId, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType) {
+    return getTemplateById(templateId, context, proposalGeneratedType , false);
+  }
 
+  public ProposalTemplate getTemplateById(Long templateId, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType, boolean isDebug){
     final ProposalTemplate template =
-        sqlCache.get(
-            "proposalTemplate.findById",
-            Map.of("id", templateId),
-            new ProposalTemplateMapper(objectMapper))
-          .orElseThrow(NotFoundException::new);
+      sqlCache.get(
+          "proposalTemplate.findById",
+          Map.of("id", templateId),
+          new ProposalTemplateMapper(objectMapper))
+        .orElseThrow(NotFoundException::new);
 
     final List<ProposalTemplateBlock> mergedBlocks =
-        template.getBlocks().stream()
-            .map(block -> replaceVarFromContext(block, context))
-            .map(block -> replaceImagePlaceholderFromContext(block, context))
-            .toList();
+      template.getBlocks().stream()
+        .map(block -> replaceVarFromContext(block, context, isDebug))
+        .map(block -> replaceImageBlockWithURL(block, context, proposalGeneratedType, isDebug))
+        .map(block -> replaceImagePlaceholderFromContext(block, context, isDebug))
+        .map(block -> replaceStylePlaceholder(block, context, proposalGeneratedType, isDebug))
+        .toList();
 
     template.setBlocks(mergedBlocks);
     return template;
@@ -97,7 +105,7 @@ public class ProposalTemplateService {
 
   @SuppressWarnings("unchecked")
   private ProposalTemplateBlock replaceVarFromContext(
-      ProposalTemplateBlock block, Map<String, Object> context) {
+      ProposalTemplateBlock block, Map<String, Object> context, boolean isDebug) {
     // there isn't anything to process so just return as is
     if (block.getBlockValue() == null) {
       return block;
@@ -126,10 +134,14 @@ public class ProposalTemplateService {
         return val;
       });
 
+      if (!isDebug){
+        documentContext.delete(replacementPath);
+      }
+
     return block;
   }
 
-  private ProposalTemplateBlock replaceImagePlaceholderFromContext(ProposalTemplateBlock block, Map<String, Object> context){
+  private ProposalTemplateBlock replaceImagePlaceholderFromContext(ProposalTemplateBlock block, Map<String, Object> context, boolean isDebug){
     if (block.getBlockKind() == null){
       return block;
     }
@@ -140,6 +152,50 @@ public class ProposalTemplateService {
       block.setBlockValue(Map.of("url", actualImageUrl));
     }
     return block;
+  }
+
+  private ProposalTemplateBlock replaceStylePlaceholder(ProposalTemplateBlock block, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType, boolean isDebug){
+    if (block.getBlockStyle() == null){
+      return block;
+    }
+
+    if (block.getBlockStyle() instanceof Map style){
+      final String backgroundImageKey = "@backgroundImage";
+      final Object valueKey = style.getOrDefault(backgroundImageKey, null);
+      if (valueKey != null){
+        style.put("backgroundImage", String.format("url(%s)", buildUri(valueKey.toString(), proposalGeneratedType )));
+        style.remove(backgroundImageKey);
+      }
+      block.setBlockStyle(style);
+    }
+
+    return block;
+  }
+
+  private ProposalTemplateBlock replaceImageBlockWithURL(ProposalTemplateBlock block, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType, boolean isDebug){
+    if ( !Objects.equals( block.getBlockType(), "ImageBlock") ){
+      return block;
+    }
+
+    if ( block.getBlockValue() instanceof Map value){
+      final var uuid = value.getOrDefault("uuid", null);
+      if (uuid != null){
+        final URI uri = buildUri(uuid.toString(), proposalGeneratedType);
+        block.setBlockValue(Map.of("url", uri.toString()));
+      }
+    }
+
+    return block;
+  }
+
+  private URI buildUri(String uuid, ProposalGeneratedType proposalGeneratedType){
+    final var params = ProposalGeneratedType.getOptions(proposalGeneratedType);
+
+    return UriComponentsBuilder.fromUri(appProperties.getHost())
+      .pathSegment("public", "image", uuid)
+      .queryParams(params)
+      .build()
+      .toUri();
   }
 
   private <T> T getNestedValue(Map map, String... keys){
@@ -206,7 +262,7 @@ public class ProposalTemplateService {
   }
 
   public void generatePdf(Long templateId, Map<String, Object> context, OutputStream outputStream, HandleContentLength func) throws IOException, TemplateException {
-    final ProposalTemplate proposalTemplate = getTemplateById(templateId, context);
+    final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT);
     generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle(), outputStream, func);
   }
 
