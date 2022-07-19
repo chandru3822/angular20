@@ -88,9 +88,9 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-confirm-delete-dialog="showDeleteDialog"
-        @confirm-delete="deletePostalCodeZone"
-        @closeConfirmDeleteDialog="closeDeleteDialog">
+        :open-dialog="showDeleteDialog"
+        @confirm="deletePostalCodeZone"
+        @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this round robin: <strong>{{itemToDeleteName}}</strong>
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Delete</template>

@@ -557,9 +557,9 @@
         </v-row>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
-                                 @confirm-delete="deleteRequirement"
-                                 @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteRequirement"
+                                 @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this requirement?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>

@@ -69,9 +69,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
-                                 @confirm-delete="deleteCodeFromZone"
-                                 @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteCodeFromZone"
+                                 @close-dialog="closeDeleteDialog">
       Are you sure you want to remove this postal code: <strong>{{ itemToDeletePostalCode }}</strong>?
     </ConfirmationDialog>
   </v-container>

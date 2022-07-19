@@ -39,9 +39,9 @@
           <v-icon>delete</v-icon>
         </v-btn>
         <ConfirmationDialog
-            :open-confirm-delete-dialog="attachmentDeleteConfirm"
-            @confirm-delete="deleteAttachment"
-            @closeConfirmDeleteDialog="closeDeleteDialog"
+            :open-dialog="attachmentDeleteConfirm"
+            @confirm="deleteAttachment"
+            @close-dialog="closeDeleteDialog"
 
         >Are you sure you want to delete {{attachmentToDeleteName}}?</ConfirmationDialog>
       </v-col>

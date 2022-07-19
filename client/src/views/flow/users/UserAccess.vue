@@ -75,7 +75,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteOrgCalendarFromUser(itemToDelete)" @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteOrgCalendarFromUser(itemToDelete)" @close-dialog="closeDeleteDialog">
       Are you sure you want to delete <strong>{{itemToDeleteOrgName}}</strong> from this user?
     </ConfirmationDialog>
   </v-container>

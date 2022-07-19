@@ -328,9 +328,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-<ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
-                             @confirm-delete="archiveSchedule"
-                             @closeConfirmDeleteDialog="closeDeleteDialog">
+<ConfirmationDialog :open-dialog="showDeleteDialog"
+                             @confirm="archiveSchedule"
+                             @close-dialog="closeDeleteDialog">
   Are you sure you want to archive this schedule?<br>
   <strong>{{ scheduleToDeleteString }}</strong>
 </ConfirmationDialog>

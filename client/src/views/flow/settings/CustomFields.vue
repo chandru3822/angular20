@@ -301,9 +301,9 @@
         </v-card>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
-                                 @confirm-delete="deleteField"
-                                 @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteField"
+                                 @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>
       <template v-slot:no >Cancel</template>
       <template v-slot:yes >Delete</template>

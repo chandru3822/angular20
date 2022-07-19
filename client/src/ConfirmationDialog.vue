@@ -40,7 +40,7 @@
 export default {
   name: "ConfirmationDialog",
   props: {
-    openConfirmDeleteDialog: Boolean,
+    openDialog: Boolean,
     hideTitle:Boolean,
     itemToDelete: Object,
     disableConfirm: Boolean
@@ -52,20 +52,20 @@ export default {
   computed: {
     show: {
       get () {
-        return this.openConfirmDeleteDialog
+        return this.openDialog
       },
       set (value) {
-        this.$emit('closeConfirmDeleteDialog', value)
+        this.$emit('close-dialog', value)
       }
     }
   },
   methods: {
     yes(){
-      this.$emit('confirm-delete')
+      this.$emit('confirm')
       this.show=false
     },
     no() {
-      this.$emit('closeConfirmDeleteDialog', false)
+      this.$emit('close-dialog', false)
       this.show=false
     }
   }

@@ -157,18 +157,18 @@
         </v-card>
       </v-dialog>
     </v-col>
-    <ConfirmationDialog :open-confirm-delete-dialog="approveDialog"
-                        @closeConfirmDeleteDialog="approveDialog = false"
-                        @confirm-delete="[approveDialog=false, passwordDialog=true]">
+    <ConfirmationDialog :open-dialog="approveDialog"
+                        @close-dialog="approveDialog = false"
+                        @confirm="[approveDialog=false, passwordDialog=true]">
       <template v-slot:title>Confirm</template>
       This will approve and create a batch for the selected payments, would you like to proceed?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>confirm</template>
     </ConfirmationDialog>
 
-    <ConfirmationDialog :open-confirm-delete-dialog="passwordDialog"
-                        @closeConfirmDeleteDialog="passwordDialog = false"
-                        @confirm-delete="confirmPassword()"
+    <ConfirmationDialog :open-dialog="passwordDialog"
+                        @close-dialog="passwordDialog = false"
+                        @confirm="confirmPassword()"
     >
       <template v-slot:title>Please confirm payment approval</template>
       <v-text-field class="passwordTextfield"
@@ -469,7 +469,6 @@ export default {
       })
     },
     async confirmPassword() {
-      debugger
       try {
         const params = {password: this.passwordInput}
         const resp = await postRequest('/user/validate', params)

@@ -87,9 +87,9 @@
         </v-row>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
-                                 @confirm-delete="deleteEventFromStep"
-                                 @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteEventFromStep"
+                                 @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this event?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>

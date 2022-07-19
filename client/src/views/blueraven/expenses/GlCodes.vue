@@ -94,9 +94,9 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-confirm-delete-dialog = deleteConfirm
-        @confirm-delete=deleteGlCode(itemToDelete)
-        @closeConfirmDeleteDialog="closeDeleteDialog">
+        :open-dialog = deleteConfirm
+        @confirm=deleteGlCode(itemToDelete)
+        @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this GL Code <strong>{{codeToDelete}}</strong>?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>

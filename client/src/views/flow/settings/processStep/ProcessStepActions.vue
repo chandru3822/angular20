@@ -862,7 +862,7 @@
         </v-card>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteAction" @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAction" @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this action?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>

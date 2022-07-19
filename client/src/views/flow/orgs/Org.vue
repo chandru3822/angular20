@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <confirmation-dialog :open-confirm-delete-dialog="unsavedFieldsModal" @closeConfirmDeleteDialog="unsavedFieldsModal = false" @confirm-delete="[navigationOverride = true, goToPath(toPath)]">
+    <confirmation-dialog :open-dialog="unsavedFieldsModal" @@close-dialog="unsavedFieldsModal = false" @confirm="[navigationOverride = true, goToPath(toPath)]">
       You have unsaved fields.  Are you sure you want to continue without saving?
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Don't Save</template>

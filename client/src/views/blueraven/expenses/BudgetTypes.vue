@@ -78,9 +78,9 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-confirm-delete-dialog = deleteConfirm
-        @confirm-delete=deleteBudgetType(itemToDelete)
-        @closeConfirmDeleteDialog="closeDeleteDialog">
+        :open-dialog = deleteConfirm
+        @confirm=deleteBudgetType(itemToDelete)
+        @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this Budget Type <strong>{{itemToDeleteName}}</strong>?
     </ConfirmationDialog>
   </v-container>

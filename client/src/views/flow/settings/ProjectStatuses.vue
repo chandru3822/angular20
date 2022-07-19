@@ -231,9 +231,9 @@
       </v-col>
 
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
-                                 @confirm-delete="deleteType"
-                                 @closeConfirmDeleteDialog="closeDeleteDialog"
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteType"
+                                 @close-dialog="closeDeleteDialog"
     >
       Are you sure you want to delete this status type: <strong>{{toDeleteStatusType}}</strong>?
       <template v-slot:no>cancel</template>

@@ -59,7 +59,7 @@
                   <v-icon>delete</v-icon>
                   <span v-if="!constants.IS_MOBILE">Delete</span>
                 </v-btn>
-                <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="[showDeleteDialog = false, deleteSmartlist()]" @closeConfirmDeleteDialog="showDeleteDialog=false">
+                <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="[showDeleteDialog = false, deleteSmartlist()]" @close-dialog="showDeleteDialog=false">
                   <template v-slot:title>Confirm</template>
                   Are you sure you want to delete this smartlist?
                 </ConfirmationDialog>

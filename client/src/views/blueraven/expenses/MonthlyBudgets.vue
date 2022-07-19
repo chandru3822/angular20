@@ -152,9 +152,9 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-confirm-delete-dialog = deleteConfirm
-        @confirm-delete="[itemToDelete.archived=true,deleteBudget(itemToDeleteId)]"
-        @closeConfirmDeleteDialog="closeDeleteDialog">
+        :open-dialog = deleteConfirm
+        @confirm="[itemToDelete.archived=true,deleteBudget(itemToDeleteId)]"
+        @close-dialog="closeDeleteDialog">
       There may already be expenses assigned to this budget. Are you sure you want to delete?
       <template v-slot:no>cancel</template>
       <template v-slot:yes>delete</template>

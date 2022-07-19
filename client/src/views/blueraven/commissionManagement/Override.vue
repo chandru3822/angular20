@@ -53,9 +53,9 @@
           </MultiOptionDialog>
           <v-btn color="primary" v-if="overrideId && override && userCanAdd" @click="showCloneDialog=true">Clone</v-btn>
           <ConfirmationDialog
-              :open-confirm-delete-dialog="showCloneDialog"
-              @confirm-delete="validateStartDates"
-              @closeConfirmDeleteDialog="[showCloneDialog=false, cloneStartDate=null]"
+              :open-dialog="showCloneDialog"
+              @confirm="validateStartDates"
+              @@close-dialog="[showCloneDialog=false, cloneStartDate=null]"
               :disable-confirm="(override.assignedUsers.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                              (override.assignedUsers.filter(u => u.selected).length === 0 && cloneStartDate != null)"
           >
@@ -461,7 +461,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog" @confirm-delete="deleteConfirmed" @closeConfirmDeleteDialog="closeDeleteDialog">
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteConfirmed" @@close-dialog="closeDeleteDialog">
       <div v-if="deleteType==deleteTypes.OVERRIDE">Are you sure you want to delete this plan?</div>
       <div v-else>Are you sure you want to delete <strong>{{itemToDeleteName}}</strong>?</div>
       <template v-slot:no>cancel</template>

@@ -198,7 +198,7 @@
             </template>
           </v-data-table>
 
-          <ConfirmationDialog :open-confirm-delete-dialog="deleteConfirm" @confirm-delete="deletePayment" @closeConfirmDeleteDialog="deleteConfirm=false">
+          <ConfirmationDialog :open-dialog="deleteConfirm" @confirm="deletePayment" @close-dialog="deleteConfirm=false">
             Are you sure you want to delete this payment?
           </ConfirmationDialog>
 

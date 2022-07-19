@@ -75,7 +75,7 @@ export default {
   },
   methods: {
     yes(){
-      this.$emit('confirm-delete')
+      this.$emit('confirm')
       this.openDialog = false
     },
     no() {

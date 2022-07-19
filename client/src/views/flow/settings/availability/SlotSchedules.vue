@@ -105,9 +105,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-confirm-delete-dialog="showDeleteDialog"
-                                 @confirm-delete="deleteSchedule"
-                                 @closeConfirmDeleteDialog="closeDeleteDialog"
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteSchedule"
+                                 @close-dialog="closeDeleteDialog"
     >Are you sure you want to delete this schedule: <strong>{{itemToDeleteName}}</strong></ConfirmationDialog>
   </v-container>
 </template>

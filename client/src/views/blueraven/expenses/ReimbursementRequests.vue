@@ -312,9 +312,9 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-confirm-delete-dialog = deleteConfirm
-        @confirm-delete=deleteReimbursementRequest(itemToDelete)
-        @closeConfirmDeleteDialog="closeDeleteDialog">
+        :open-dialog = deleteConfirm
+        @confirm=deleteReimbursementRequest(itemToDelete)
+        @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this Reimbursement Request for <strong>{{ itemToDeleteCreatedBy }}:
       {{ itemToDeleteAmount | currency('$', 2) }}</strong>?
       <template v-slot:no>cancel</template>

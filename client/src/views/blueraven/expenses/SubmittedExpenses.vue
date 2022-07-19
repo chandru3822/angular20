@@ -316,9 +316,9 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-confirm-delete-dialog = deleteConfirm
-        @confirm-delete=deleteSubmittedExpense(itemToDelete)
-        @closeConfirmDeleteDialog="closeDeleteDialog">
+        :open-dialog = deleteConfirm
+        @confirm=deleteSubmittedExpense(itemToDelete)
+        @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this Submitted Expense for <strong>{{ itemToDeleteCreatedBy }}:
       {{ itemToDeleteAmount | currency('$', 2) }}</strong>?
       <template v-slot:no>cancel</template>

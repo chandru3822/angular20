@@ -1,10 +1,10 @@
 <template>
   <v-container id="hierarchy-container">
     <ConfirmationDialog
-        :open-confirm-delete-dialog="showDeleteDialog"
+        :open-dialog="showDeleteDialog"
         hide-title
-        @closeConfirmDeleteDialog="clearDeleteItem"
-        @confirm-delete="deleteItem"
+        @close-dialog="clearDeleteItem"
+        @confirm="deleteItem"
     >
       <template v-slot:title class="albatross-body-1">
         <span>Are you sure you want to remove <b>{{itemToDelete.name || itemToDelete.teamName}}</b>?</span>

@@ -302,9 +302,9 @@
         </template>
       </v-data-table>
     <ConfirmationDialog
-        :open-confirm-delete-dialog="showDeleteNoteDialog"
-        @confirm-delete="deleteNote"
-        @closeConfirmDeleteDialog="closeNoteDelete"
+        :open-dialog="showDeleteNoteDialog"
+        @confirm="deleteNote"
+        @close-dialog="closeNoteDelete"
     >{{ deleteDialogBody }}</ConfirmationDialog>
   </div>
 </template>
