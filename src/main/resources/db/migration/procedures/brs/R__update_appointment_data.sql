@@ -76,8 +76,6 @@ BEGIN
   v_prioritized_closer_appointment_outcome = coalesce(v_pitched_id, v_missed_id, v_not_either_id);
   v_prioritized_closer_appointment_outcome_date = coalesce(v_pitched, v_missed, v_not_either);
 
-raise notice '12222222 %',v_first_appointment_start_time;
-  raise notice '55555555 %',v_first_appointment_ppse_id;
   update brs.project_details
   set first_appointment_missed_id                     = v_missed_id,
       first_appointment_missed                        = v_missed,
