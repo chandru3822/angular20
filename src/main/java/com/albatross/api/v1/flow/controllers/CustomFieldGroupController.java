@@ -168,9 +168,4 @@ public class CustomFieldGroupController {
   public void updateFieldShowOrRequire(@RequestBody CustomField customField) {
     customFieldGroupService.updateFieldShowOrRequire(customField);
   }
-
-  @Data
-  public static class DeleteWithRequirementParams {
-    private Long customFieldGroupId, customFieldGroupAssignmentId;
-  }
 }
