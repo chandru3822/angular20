@@ -5,7 +5,7 @@ name: Albatross Build [Flux]
 on:
       push:
           branches:
-              - "project_details_refactor"
+              - "document-center"
 
 jobs:
     build:
