@@ -8,7 +8,7 @@
       <div class="previews">
         <div class="preview-image" :class="{'selected' : selected && selected.id === image.id }" v-for="image in images"
              @click="select(image)">
-          <img :src="image.publicUrl" loading="lazy" :alt="image.filename" />
+          <img-proxy :uuid="image.uuid" :alt="image.filename" />
         </div>
       </div>
 
@@ -77,7 +77,9 @@
 import { getRequestWithParams, getSnackbar, handleHidingGlobalLoader, logError } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import { Actions } from '@/store'
+import ImgProxy from '@/components/ImgProxy'
 
+const PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID = 939
 const IMAGE_REGEX = /^(jpe?g|png|gif|webp)$/i
 
 export default {
@@ -91,6 +93,7 @@ export default {
       dialog: false
     }
   },
+  components: {ImgProxy},
   methods: {
     async _fetchProposalImages() {
       try {
@@ -106,8 +109,8 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        const snackbar = getSnackbar('ERROR', 'Error retrieving data')
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -124,7 +127,7 @@ export default {
       this.selected = attachment
     },
     ok() {
-      this.resolve({ url: this.selected.publicUrl })
+      this.resolve({ uuid: this.selected.uuid })
       this.dialog = false
       this.selected = null
     },
@@ -144,7 +147,7 @@ export default {
           const filesToUpload = files?.map(file => {
             return {
               file,
-              attachmentTypeId: 939, //hard-coded for proposal template images
+              attachmentTypeId: PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID,
               sourceId: null,
               deleteFirst: false
             }

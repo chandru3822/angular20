@@ -44,6 +44,7 @@
                   from (
                          SELECT
                            a.id,
+                           a.uuid,
                            a.attachment_type_id as "attachmentTypeId",
                            a.content_type as "contentType",
                            a.filename,

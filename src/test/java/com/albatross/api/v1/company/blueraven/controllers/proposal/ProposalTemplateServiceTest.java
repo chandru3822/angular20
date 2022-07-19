@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplateBlock;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -51,7 +52,7 @@ class ProposalTemplateServiceTest {
 
     final Map<String, Object> context = Map.of("first_name", "Darth", "last_name", "Vader");
     final ProposalTemplate templateByIdWithContext =
-        proposalTemplateService.getTemplateById(1L, context);
+        proposalTemplateService.getTemplateById(1L, context, ProposalGeneratedType.MOBILE);
 
     assertNotNull(templateByIdWithContext);
 
