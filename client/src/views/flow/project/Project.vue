@@ -174,8 +174,10 @@
                 {{ project.city }} {{ project.stateAbbreviation }} {{ project.postalCode }}
               </div>
             </div>
-            <span class="project-detail-label">Contact:</span>
-            <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
+            <span class="project-detail-label">Phone:</span>
+            <span class="project-detail-item">{{ formatPhoneNumber(project.phone) }}</span> <br/>
+            <span class="project-detail-label">Mobile:</span>
+            <span class="project-detail-item">{{ formatPhoneNumber(project.mobile) }}</span> <br/>
             <span class="project-detail-label">Email:</span>
             <span class="project-detail-item">{{ project.email }}</span> <br/>
             <div class="mt-2">
