@@ -198,81 +198,47 @@
             </template>
           </v-data-table>
 
-          <ConfirmationDialog :open-dialog="deleteConfirm" @confirm="deletePayment" @close-dialog="deleteConfirm=false">
+          <ConfirmationDialog :open-dialog="deleteConfirm"
+                              @confirm="deletePayment"
+                              @close-dialog="deleteConfirm=false">
             Are you sure you want to delete this payment?
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>delete</template>
           </ConfirmationDialog>
 
-              <v-dialog v-model="notesDialog" max-width="600px">
-                <v-card class="pt-4 pb-2">
-                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
-                    <span class="font-weight-bold">Notes</span>
-                  </v-card-title>
+          <ConfirmationDialog :open-dialog="notesDialog"
+                              @confirm="updatePaymentNote"
+                              @close-dialog="cancelNotesDialog"
+                              :disable-confirm="!userCanEdit">
+            <template v-slot:title>Notes</template>
+            <v-text-field v-model="notesItem.void_note" outlined auto-grow rows="5">
+            </v-text-field>
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>save</template>
+          </ConfirmationDialog>
 
-                  <template>
-                  <v-card-text>
-                    <v-row>
-                      <v-col>
-                        <v-text-field v-model="notesItem.void_note" outlined auto-grow rows="5">
-                        </v-text-field>
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
-                  </template>
-
-                  <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn text color="primary" v-if="userCanEdit" @click="cancelNotesDialog()">Cancel</v-btn>
-                    <v-btn color="primary" v-if="userCanEdit" @click="updatePaymentNote()">Save</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
-            <v-dialog v-model="voidDialog" max-width="600px" v-if="userCanEdit">
-                <v-card class="pt-4 pb-2">
-                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
-                    <span class="font-weight-bold">Confirm</span>
-                  </v-card-title>
-
-                  <template>
-                    <v-card-text>
-                      <v-row>
-                        <v-col>
-                          Are you sure you want to void this payment?
-                          <v-text-field v-model="notesItem.void_note" outlined auto-grow>
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-card-text>
-                  </template>
-
-                  <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn @click="voidPayment(notesItem)">Yes</v-btn>
-                    <v-btn @click="cancelVoidDialog()">Close</v-btn>
-                  </v-card-actions>
-                </v-card>
-            </v-dialog>
-
-            <v-dialog v-model="unvoidDialog" max-width="600px" v-if="userCanEdit">
-                <v-card class="pt-4 pb-2">
-                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
-                    <span class="font-weight-bold">Confirm</span>
-                  </v-card-title>
-
-                  <template>
-                    <v-card-text>
-                      <v-row>
-                        <v-col>
-                          Are you sure you want to unvoid this payment?
-                        </v-col>
-                      </v-row>
-                    </v-card-text>
-                  </template>
-
-                  <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn @click="unvoidPayment(notesItem)">Yes</v-btn>
-                    <v-btn @click="cancelUnvoidDialog()">Close</v-btn>
-                  </v-card-actions>
-                </v-card>
-            </v-dialog>
+          <ConfirmationDialog
+              :open-dialog="voidDialog"
+              @confirm="voidPayment"
+              @close-dialog="cancelVoidDialog"
+          >
+            <template v-slot:title>Confirm</template>
+            Are you sure you want to void this payment?
+            <v-text-field v-model="notesItem.void_note" outlined auto-grow>
+            </v-text-field>
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>void</template>
+          </ConfirmationDialog>
+          <ConfirmationDialog
+              :open-dialog="unvoidDialog"
+              @confirm="unvoidPayment"
+              @close-dialog="cancelUnvoidDialog"
+          >
+            <template v-slot:title>Confirm</template>
+            Are you sure you want to unvoid this payment?
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>Unvoid</template>
+          </ConfirmationDialog>
 
         </v-col>
       </v-row>
@@ -336,7 +302,9 @@
           { text: 'Amount', value: 'payment_amount', show: true },
           { text: 'Status', value: 'name', show: true },
           { text: 'Check Number', value: 'check_number', show: true },
-          { text: 'Notes', value: 'void_note', show: true }
+          { text: 'Notes', value: 'void_note', show: true },
+          { text: '', value: 'status', show: true },
+          { text: '', value: 'delete', show: true }
         ],
         rebateDetails: {},
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
@@ -602,7 +570,8 @@
 
         this.notesDialog = false
       },
-      async voidPayment(item) {
+      async voidPayment() {
+        const item = this.notesItem
         try {
           let params = {
             paymentId: item.id,
@@ -620,7 +589,8 @@
         this.voidDialog = false;
         await this.fetchPayments();
       },
-      async unvoidPayment(item) {
+      async unvoidPayment() {
+        const item = this.notesItem
         try {
           let params = {
             paymentId: item.id
