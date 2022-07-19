@@ -60,7 +60,7 @@ body {
 /* required to make autocomplete dropdowns not get covered up */
 // 202 = dialog modals, we dont want to be on top of those
 .toolbar-z-index-override {
-  z-index: 201;
+  z-index: 5;
 }
 
 .app-toolbar {

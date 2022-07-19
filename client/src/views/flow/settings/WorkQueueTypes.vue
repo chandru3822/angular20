@@ -88,12 +88,9 @@
                     <v-btn class="clickable" small text color="primary" v-if="userCanEdit || userIsAdmin">
                       <v-icon @click="goToDetails(item)">edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="userCanDelete"
-                        label="this work queue type: "
-                        :item-to-delete="item.workQueueType"
-                        @confirm-delete="[item.archived = true, deleteType(item.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn class="clickable" small text color="primary" v-if="userCanDelete">
+                      <v-icon @click="workQueueToDelete=item">delete</v-icon>
+                    </v-btn>
                   </div>
                 </td>
               </tr>
@@ -103,7 +100,11 @@
         </v-container>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!workQueueToDelete" @confirm="[workQueueToDelete.archived = true, deleteType(workQueueToDelete.id)]" @close-dialog="workQueueToDelete=null">
+      Are you sure you want to delete this work queue type: <strong>{{workQueueToDeleteType}}</strong>
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -119,10 +120,11 @@
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'WorkQueueTypes',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmDeleteDialog, ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     mounted() {
@@ -179,9 +181,14 @@
           { text: 'Uses Event Data', value: 'useEventData', show: true },
           { text: null, value: 'icons', show: true, width: 150 }
         ],
+        workQueueToDelete:null
       }
     },
-    computed: {},
+    computed: {
+      workQueueToDeleteType(){
+        return this.workQueueToDelete ? this.workQueueToDelete.workQueueType : ''
+      }
+    },
     methods: {
       async getWorkQueueTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
