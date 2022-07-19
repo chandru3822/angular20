@@ -1,3 +1,16 @@
+insert into flow.flow_type(flow_type)
+select 'Attachments' where not exists (select id
+from flow.flow_type where flow_type = 'Attachments');
+
+insert into flow.object_type(object_type, object_code, flow_type_id, archived, reference_table)
+select 'Attachments', 'ATTACHMENTS', 5, false, null
+  where not exists(select id from flow.object_type where object_code = 'ATTACHMENTS');
+
+insert into flow.company_object_type(object_type_id, company_id, archived, date_created, date_modified, created_by_id, status_read_only, owner_read_only)
+select (select id from flow.object_type where object_code = 'ATTACHMENTS'), 3, false, now(), now(), 2417170, false, false
+  where not exists (select id from flow.company_object_type where company_id = 3 and object_type_id = (select id from flow.object_type where object_code = 'ATTACHMENTS'));
+
+
 alter table flow.custom_field_group
 add column if not exists attachment_type_id int references flow.attachment_type(id);
 CREATE INDEX if not exists cfg_attachment_type_id_idx ON flow.custom_field_group (attachment_type_id);
