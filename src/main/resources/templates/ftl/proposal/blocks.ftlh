@@ -71,8 +71,8 @@
 <#macro hardBreak node=""><br /></#macro>
 <#macro text node>${addMarks(node.text, node.marks![])}</#macro>
 <#macro mention node>
-<#--  <#local fallback>#### ${node.attrs.id} #### </#local>-->
-  <#local fallback></#local>
+  <#local fallback>## ${node.attrs.id} ## </#local>
+<#--  <#local fallback></#local>-->
   ${addMarks(node.text!fallback, node.marks![])}
 </#macro>
 
