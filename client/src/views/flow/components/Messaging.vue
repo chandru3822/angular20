@@ -254,6 +254,10 @@ export default {
           e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
         this.snackbar = getSnackbar('ERROR', message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        let textInput = document.querySelector('.sc-user-input--text')
+        // This line fails, but accomplishes what I want - stops the plugin from clearing the message box
+        // when there's an error sending a message
+        textInput.innerHTML = message.data.text
       }
     },
     openChat() {
@@ -300,7 +304,7 @@ export default {
                 file: {
                   name: u.message,
                   url: u.mediaUrls[0],
-                  meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
+                  meta: u.fullName ? u.fullName + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
                 }
               }
             }
@@ -310,7 +314,7 @@ export default {
               author: msgFrom,
               data: {
                 text: u.message,
-                meta: u.full_name ? u.full_name + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
+                meta: u.fullName ? u.fullName + ' ' + this.$filters.formatDate(u.created, 'timestamp') : this.$filters.formatDate(u.created, 'timestamp')
               }
             }
           }

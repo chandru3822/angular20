@@ -22,7 +22,7 @@ const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
 
-Vue.use(NotificationPlugin, `${VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`, {
+Vue.use(NotificationPlugin,  {
   store
 })
 Vue.use(Vue2Filters)
@@ -140,6 +140,9 @@ axios.interceptors.response.use(
         //dont do this reroute on local, it is super annoying
         if (VUE_APP_ENV !== 'local') {
           router.push({ path: `/serverError?code=${response.status}` })
+        } else {
+          //if local we dont reroute, but throw the error so we can see if failed
+          throw { data: response?.data, status }
         }
       } else if (![200, 201, 204].includes(status)) {
         //dont take this out, it makes axios await errors work correctly

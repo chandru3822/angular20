@@ -484,6 +484,13 @@
 
   ]]></project.getEventsByProjectId>
 
+  <project.getPrimaryFinancierName><![CDATA[
+     select pd.primary_financier_name as financier
+      from flow.project p
+             inner join brs.project_details pd on p.id = pd.project_id
+    where p.id = :projectId
+  ]]></project.getPrimaryFinancierName>
+
   <project.getAttachments><![CDATA[
     select
       a.id,

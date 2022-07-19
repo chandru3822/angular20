@@ -67,7 +67,7 @@ public class UserController {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
     }
-    if (user.getUsername().length() < 3) {
+    if (user.getUsername() != null && user.getUsername().length() < 3) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Invalid Username", new Exception());
     }

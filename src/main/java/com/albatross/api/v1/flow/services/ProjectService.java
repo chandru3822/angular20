@@ -38,6 +38,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -582,6 +583,14 @@ public class ProjectService {
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);
     return sqlCache.query("project.getEventsByProjectId", params, ProjectProcessStepEvent.class);
+  }
+
+  public Optional<String> getPrimaryFinancierName(Long projectId) {
+    return
+      sqlCache.get(
+        "project.getPrimaryFinancierName",
+        Map.of("projectId", projectId),
+        new SingleColumnRowMapper<>(String.class));
   }
 
   public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {

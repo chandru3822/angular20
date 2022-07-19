@@ -1,0 +1,305 @@
+<sql>
+  <dataView.getAllForCompany><![CDATA[
+    select id,
+           company_id,
+           view_name,
+           display_name,
+           date_created,
+           date_modified,
+           created_by_id,
+           modified_by_id,
+           archived,
+           array_to_json(company_process_ids) as company_process_ids
+    from flow.data_view
+    where company_id = :companyId
+      and archived is false
+  ]]></dataView.getAllForCompany>
+
+  <dataView.getUniqueBehaviorTypes><![CDATA[
+    select *
+    from flow.unique_behavior_type
+    where archived is false
+    and data_view is true
+    order by unique_behavior_type
+  ]]></dataView.getUniqueBehaviorTypes>
+
+  <dataView.getOne><![CDATA[
+    select dv.id,
+           dv.company_id,
+           dv.view_name,
+           dv.display_name,
+           dv.date_created,
+           dv.date_modified,
+           dv.created_by_id,
+           dv.modified_by_id,
+           dv.archived,
+           array_to_json(dv.company_process_ids) as company_process_ids,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(fields)))
+                      FROM (
+                             select dvfc.id,
+                             dvfc.display_name as "displayName",
+                             coalesce(df.field_name, cf.field_name) as "fieldName",
+                             coalesce(df.object_type_id, cot.object_type_id) as "objectTypeId",
+                             coalesce(ps2.process_step_name, ps.process_step_name, ot.object_type) as "parentObjectName",
+                             coalesce(e.event_name, e2.event_name) as "processStepEventName",
+                             ps3.process_step_name as "processStepName",
+                             dvfc.default_field_id as "defaultFieldId",
+                             dvfc.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                             dvfc.process_step_event_id as "processStepEventId",
+                             dvfc.process_step_id as "processStepId",
+                             dvfc.field_to_update as "fieldToUpdate",
+                             dvfc.update_first_value_only as "updateFirstValueOnly",
+                             dvfc.reset_on_new as "resetOnNew",
+                             dvfc.archived,
+                             coalesce((
+                                        SELECT array_to_json(array_agg(row_to_json(childFields)))
+                                        FROM (
+                                               select dvcfc.id,
+                                                      dvcfc.display_name as "displayName",
+                                                      dvcfc.data_view_field_config_id as "dataViewFieldConfigId",
+                                                      dvcfc.unique_behavior_type_id as "uniqueBehaviorTypeId",
+                                                      ubt.unique_behavior_type as "uniqueBehaviorType",
+                                                      ubt.description as "uniqueBehaviorTypeDescription",
+                                                      dvcfc.field_to_update as "fieldToUpdate",
+                                                      ubt.return_data_type_id as "dataTypeId",
+                                                      dt.data_type as "dataType",
+                                                      dvcfc.archived
+                                               from flow.data_view_child_field_config dvcfc
+                                                      inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
+                                                      inner join flow.data_type dt on ubt.return_data_type_id = dt.id
+                                               where dvcfc.archived is false
+                                                 and dvcfc.data_view_field_config_id = dvfc.id
+                                               order by dvcfc.field_to_update
+                                             ) childFields), '[]') AS "childFieldConfigs"
+                      from flow.data_view_field_config dvfc
+                        left join flow.default_field df on dvfc.default_field_id = df.id
+                        left join flow.process_step ps3 on ps3.id = dvfc.process_step_id
+                        left join flow.process_step_event pse on dvfc.process_step_event_id = pse.id
+                        left join flow.event e on pse.event_id = e.id
+                        left join flow.process_step ps2 on pse.process_step_id = ps2.id
+                        left join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+                        left join flow.custom_field cf on cfga.custom_field_id = cf.id
+                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                        left join flow.event e2 on cfg.event_id = e2.id
+                        left join flow.process_step ps on cfg.process_step_id = ps.id
+                        left join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+                        left join flow.object_type ot on cot.object_type_id = ot.id
+                      where dvfc.archived is false
+                        and dvfc.data_view_id = dv.id
+                      order by lower(dvfc.display_name)
+                           ) fields), '[]') AS "dataViewFieldConfigs",
+                           coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(fields)))
+                  FROM (
+                         select cp.id,
+                                cp.process_id as "processId",
+                                cp.archived,
+                                p.process_name as "processName"
+                         from flow.company_process cp
+                          inner join flow.process p on cp.process_id = p.id
+                         where cp.id = any(dv.company_process_ids)
+                       ) fields), '[]') AS "companyProcesses"
+    from flow.data_view dv
+    where dv.id = :viewId
+      and dv.company_id = :companyId
+  ]]></dataView.getOne>
+
+  <dataView.addFieldConfig><![CDATA[
+    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id)
+    values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId)
+  ]]></dataView.addFieldConfig>
+
+  <dataView.updateFieldConfig><![CDATA[
+    update flow.data_view_field_config
+      set display_name = :displayName,
+          modified_by_id = :userId,
+          date_modified = now()
+    where id = :id
+  ]]></dataView.updateFieldConfig>
+
+  <dataView.addColumnToTable><![CDATA[
+    select from flow.add_column_to_data_view(:id::int, null::int)
+  ]]></dataView.addColumnToTable>
+
+  <dataView.getFieldConfig><![CDATA[
+    select dvfc.id,
+           dvfc.display_name as "displayName",
+           coalesce(df.field_name, cf.field_name) as "fieldName",
+           coalesce(df.object_type_id, cot.object_type_id) as "objectTypeId",
+           coalesce(ps2.process_step_name, ps.process_step_name, ot.object_type) as "parentObjectName",
+           coalesce(e.event_name, e2.event_name) as "processStepEventName",
+           ps3.process_step_name as "processStepName",
+           dvfc.default_field_id as "defaultFieldId",
+           dvfc.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+           dvfc.process_step_event_id as "processStepEventId",
+           dvfc.process_step_id as "processStepId",
+           dvfc.field_to_update as "fieldToUpdate",
+           dvfc.update_first_value_only as "updateFirstValueOnly",
+           dvfc.reset_on_new as "resetOnNew",
+           dvfc.archived,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(childFields)))
+                      FROM (
+                             select dvcfc.id,
+                                    dvcfc.display_name as "displayName",
+                                    dvcfc.data_view_field_config_id as "dataViewFieldConfigId",
+                                    dvcfc.unique_behavior_type_id as "uniqueBehaviorTypeId",
+                                    ubt.unique_behavior_type as "uniqueBehaviorType",
+                                    ubt.description as "uniqueBehaviorTypeDescription",
+                                    dvcfc.field_to_update as "fieldToUpdate",
+                                    ubt.return_data_type_id as "dataTypeId",
+                                    dt.data_type as "dataType",
+                                    dvcfc.archived
+                             from flow.data_view_child_field_config dvcfc
+                                    inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
+                                    inner join flow.data_type dt on ubt.return_data_type_id = dt.id
+                             where dvcfc.archived is false
+                               and dvcfc.data_view_field_config_id = dvfc.id
+                             order by dvcfc.field_to_update
+                           ) childFields), '[]') AS "childFieldConfigs"
+    from flow.data_view_field_config dvfc
+           left join flow.default_field df on dvfc.default_field_id = df.id
+           left join flow.process_step ps3 on ps3.id = dvfc.process_step_id
+           left join flow.process_step_event pse on dvfc.process_step_event_id = pse.id
+           left join flow.event e on pse.event_id = e.id
+           left join flow.process_step ps2 on pse.process_step_id = ps2.id
+           left join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+           left join flow.custom_field cf on cfga.custom_field_id = cf.id
+           left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+           left join flow.event e2 on cfg.event_id = e2.id
+           left join flow.process_step ps on cfg.process_step_id = ps.id
+           left join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+           left join flow.object_type ot on cot.object_type_id = ot.id
+    where dvfc.id = :id
+      and dvfc.archived is false
+  ]]></dataView.getFieldConfig>
+
+  <dataView.getAvailableDefaultFields><![CDATA[
+    select *
+    from flow.default_field df
+    where archived is not true
+    and not exists (
+      select dvfc.id
+      from flow.data_view_field_config dvfc
+        inner join flow.default_field df2 on dvfc.default_field_id = df2.id
+      where dvfc.archived is false
+        and dvfc.data_view_id = :viewId
+      and df2.object_type_id in (1,2)
+      and df.id = dvfc.default_field_id
+      )
+    and df.object_type_id in (1,2,4,6)
+    order by df.field_name
+  ]]></dataView.getAvailableDefaultFields>
+
+  <dataView.getAllDefaultFields><![CDATA[
+    select *
+    from flow.default_field df
+    where archived is not true
+      and df.object_type_id in (1,2,4,6)
+    order by df.field_name
+  ]]></dataView.getAllDefaultFields>
+
+  <dataView.getAvailablePsEventsForDefaultField><![CDATA[
+    select pse.id,
+           process_step_id,
+           event_id,
+           e.event_name,
+           ps.process_step_name
+    from flow.process_step_event pse
+    inner join flow.event e on pse.event_id = e.id
+    inner join flow.process_step ps on pse.process_step_id = ps.id
+    where pse.archived is not true
+    and ps.company_id = :companyId
+    and not exists (
+      select dvfc.id
+      from flow.data_view_field_config dvfc
+      where dvfc.archived is not true
+      and dvfc.process_step_event_id = pse.id
+      and dvfc.data_view_id = :viewId
+      and dvfc.default_field_id = :defaultFieldId
+      )
+    order by ps.process_step_name, e.event_name
+  ]]></dataView.getAvailablePsEventsForDefaultField>
+
+  <dataView.getAvailablePsForDefaultField><![CDATA[
+    select ps.id,
+           ps.process_step_name
+    from flow.process_step ps
+    where ps.archived is not true
+      and ps.company_id = :companyId
+      and not exists (
+        select dvfc.id
+        from flow.data_view_field_config dvfc
+        where dvfc.archived is not true
+          and dvfc.process_step_id = ps.id
+          and dvfc.data_view_id = :viewId
+          and dvfc.default_field_id = :defaultFieldId
+      )
+    order by ps.process_step_name
+  ]]></dataView.getAvailablePsForDefaultField>
+
+  <dataView.addChildFieldConfig><![CDATA[
+    insert into flow.data_view_child_field_config(display_name, data_view_field_config_id, unique_behavior_type_id, field_to_update, created_by_id)
+    values (:displayName, :fieldId, :uniqueBehaviorTypeId, :fieldToUpdate, :userId)
+  ]]></dataView.addChildFieldConfig>
+
+  <dataView.updateChildFieldConfig><![CDATA[
+    update flow.data_view_child_field_config
+    set display_name = :displayName,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+  ]]></dataView.updateChildFieldConfig>
+
+  <dataView.addChildColumnToTable><![CDATA[
+    select from flow.add_column_to_data_view(:fieldId::int, :id::int)
+  ]]></dataView.addChildColumnToTable>
+
+  <dataView.getChildFieldConfig><![CDATA[
+    select dvcfc.*,
+           ubt.unique_behavior_type as "uniqueBehaviorType",
+           ubt.description as "uniqueBehaviorTypeDescription",
+           dt.data_type as "dataType"
+    from flow.data_view_child_field_config dvcfc
+           inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
+           inner join flow.data_type dt on ubt.return_data_type_id = dt.id
+    where dvcfc.archived is false
+      and dvcfc.id = :id
+  ]]></dataView.getChildFieldConfig>
+
+  <dataView.add><![CDATA[
+    insert into flow.data_view(company_id, view_name, display_name, company_process_ids, created_by_id)
+     values (:companyId, :viewName, :displayName, :companyProcessIds, :userId)
+  ]]></dataView.add>
+
+  <dataView.update><![CDATA[
+    update flow.data_view
+    set display_name = :displayName,
+        modified_by_id = :userId,
+        company_process_ids = :companyProcessIds,
+        date_modified = now()
+    where id = :id
+  ]]></dataView.update>
+
+  <dataView.addTableForView><![CDATA[
+    select from flow.initialize_data_view_table(:companyId::int, :viewName::character varying, :companyProcessIds::int[])
+  ]]></dataView.addTableForView>
+
+  <dataView.getDataView><![CDATA[
+    select id,
+           company_id,
+           view_name,
+           display_name,
+           date_created,
+           date_modified,
+           created_by_id,
+           modified_by_id,
+           archived,
+           array_to_json(company_process_ids) as company_process_ids
+    from flow.data_view
+    where archived is false
+      and company_id = :companyId
+      and display_name = :tableName
+  ]]></dataView.getDataView>
+</sql>

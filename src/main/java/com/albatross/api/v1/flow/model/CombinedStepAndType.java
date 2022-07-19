@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class CombinedStepAndType {
 
-  private Long id;
+  private Long id, objectTypeId;
   private String name;
   private Boolean isProcessStep;
 }

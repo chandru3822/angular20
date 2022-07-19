@@ -311,6 +311,9 @@ export default {
           useEventData: this.workQueueType.useEventData
           }})
         this.sql = data
+        navigator.clipboard.writeText(this.sql);
+        this.snackbar = getSnackbar('SUCCESS', 'Copied query to clipboard')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching sql')
