@@ -166,46 +166,24 @@
       <template v-slot:yes>confirm</template>
     </ConfirmationDialog>
 
-    <v-dialog v-model="passwordDialog" max-width="600px">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Please confirm payment approval
-        </v-card-title>
-
-        <v-text-field class="passwordTextfield"
-                      label="Please confirm your password:"
-                      v-model="passwordInput"
-                      type="password"
-                      required
-        ></v-text-field>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="passwordDialog = false, approveDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primaryButton"
-            text
-            @click="confirmPassword()">
-            Confirm
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+    <ConfirmationDialog :open-confirm-delete-dialog="passwordDialog"
+                        @closeConfirmDeleteDialog="passwordDialog = false"
+                        @confirm-delete="confirmPassword()"
+    >
+      <template v-slot:title>Please confirm payment approval</template>
+      <v-text-field class="passwordTextfield"
+                    label="Please confirm your password:"
+                    v-model="passwordInput"
+                    type="password"
+      ></v-text-field>
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>confirm</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import Snackbar from '@/components/Snackbar.vue'
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
 import {saveAs} from 'file-saver'
@@ -215,7 +193,7 @@ import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Payments',
-  components: {ConfirmationDialog, Snackbar},
+  components: {ConfirmationDialog},
   data() {
     return {
       snackbar: {},
@@ -491,6 +469,7 @@ export default {
       })
     },
     async confirmPassword() {
+      debugger
       try {
         const params = {password: this.passwordInput}
         const resp = await postRequest('/user/validate', params)
@@ -498,18 +477,19 @@ export default {
 
         if (status === 200) {
           let param = {paymentIds: this.paymentIdsToApprove}
-          await postRequest('/rebate/approve', param, 'blueraven')
-          window.location.reload()
+          // await postRequest('/rebate/approve', param, 'blueraven')
+          // window.location.reload()
+          this.snackbar = getSnackbar('SUCCESS', 'Payment approved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-
         this.passwordDialog = false;
-        this.approveDialog = false;
+        this.passwordInput = '';
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Failed to approve payment')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.passwordDialog = false;
-        this.approveDialog = false;
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -559,11 +539,6 @@ export default {
 .approvalDiv {
   color: black;
   font-size: 14px
-}
-
-.passwordTextfield {
-  width: 500px;
-  margin-left: 40px;
 }
 
 .pay-header {
