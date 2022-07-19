@@ -1,7 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.exception.ApiException;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplateBlock;
 import freemarker.template.TemplateException;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 
 @Slf4j
 @RestController
@@ -24,9 +22,9 @@ public class ProposalPreviewController {
   private final ProposalTemplateService proposalTemplateService;
 
   @Timed
-  @PostMapping(value = "", produces = MediaType.APPLICATION_PDF_VALUE)
+  @PostMapping(value = "/{templateId}", produces = MediaType.APPLICATION_PDF_VALUE)
   public ResponseEntity<StreamingResponseBody> getProposalPreview(
-      @RequestBody PreviewPayload payload,
+    @PathVariable Long templateId,
       @RequestParam(value = "inline", defaultValue = "false") boolean inline,
       final HttpServletResponse response) {
 
@@ -39,12 +37,10 @@ public class ProposalPreviewController {
     final StreamingResponseBody responseBody =
         outputStream -> {
           try {
-            proposalTemplateService.generatePdf(
-                payload.template,
-                payload.theme,
-                outputStream,
-                contentLength ->
-                    response.addHeader(HttpHeaders.CONTENT_LENGTH, contentLength.toString()));
+            proposalTemplateService.generatePdf(templateId, new HashMap<>(), outputStream,
+              contentLength ->
+              response.addHeader(HttpHeaders.CONTENT_LENGTH, contentLength.toString()), true);
+
           } catch (TemplateException e) {
             log.error("[Proposal] Error generating preview PDF", e);
             throw new ApiException("Error generating preview");
@@ -52,6 +48,4 @@ public class ProposalPreviewController {
         };
     return ResponseEntity.ok(responseBody);
   }
-
-  public record PreviewPayload(List<ProposalTemplateBlock> template, Map<String, Object> theme) {}
 }

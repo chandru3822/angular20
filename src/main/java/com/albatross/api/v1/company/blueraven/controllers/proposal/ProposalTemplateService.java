@@ -219,7 +219,9 @@ public class ProposalTemplateService {
   @Transactional
   @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE, key = "#templateId")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
-  public void updateTemplate(Long templateId) {}
+  public void updateTemplate(Long templateId) {
+    throw new ApiException("Not implemented");
+  }
 
   @Transactional
   @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE,  key = "#templateId")
@@ -261,12 +263,13 @@ public class ProposalTemplateService {
     return sqlCache.queryForList("proposalTemplate.availableTags", Map.of(), String.class);
   }
 
-  public void generatePdf(Long templateId, Map<String, Object> context, OutputStream outputStream, HandleContentLength func) throws IOException, TemplateException {
-    final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT);
+
+  public void generatePdf(Long templateId, Map<String, Object> context, OutputStream outputStream, HandleContentLength func, boolean isDebug) throws IOException, TemplateException {
+    final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT, isDebug);
     generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle(), outputStream, func);
   }
 
-  public void generatePdf(List<ProposalTemplateBlock> blocks, Object theme, OutputStream outputStream, HandleContentLength func) throws IOException, TemplateException {
+  private void generatePdf(List<ProposalTemplateBlock> blocks, Object theme, OutputStream outputStream, HandleContentLength func) throws IOException, TemplateException {
 
     final String generatedHtml = generateHtml(blocks, theme);
 
