@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalValueFilter;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
@@ -83,9 +84,14 @@ public class BlueravenProposalController {
   public ProposalTemplate getProposalTemplate(
       @PathVariable Long proposalId,
       @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1")
-          Long templateId) {
-    final var context = proposalService.getCalculatedProposalValues(proposalId, false);
-    return proposalTemplateService.getTemplateById(templateId, context);
+          Long templateId,
+      @Parameter(hidden = true) @RequestParam(value = "type", defaultValue = "MOBILE")
+          ProposalGeneratedType proposalGeneratedType,
+      @Parameter(hidden = true) @RequestParam(value = "debug", defaultValue = "false")
+          boolean isDebug) {
+    final var context = proposalService.getCalculatedProposalValues(proposalId, proposalGeneratedType , false);
+    return proposalTemplateService.getTemplateById(
+        templateId, context, proposalGeneratedType, isDebug);
   }
 
   @Timed
@@ -105,7 +111,7 @@ public class BlueravenProposalController {
 
     final StreamingResponseBody responseBody =
         outputStream -> {
-          final var context = proposalService.getCalculatedProposalValues(proposalId, false);
+          final var context = proposalService.getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT , false);
           try {
             proposalTemplateService.generatePdf(
                 templateId,

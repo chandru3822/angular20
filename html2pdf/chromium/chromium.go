@@ -56,7 +56,7 @@ func (chromium Chromium) Convert(content string, result *[]byte) error {
 			buf, _, err := page.PrintToPDF().
 				WithPreferCSSPageSize(true).
 				WithPrintBackground(false).
-				WithDisplayHeaderFooter(false).
+				WithDisplayHeaderFooter(true).
 				WithHeaderTemplate("").
 				WithFooterTemplate("").
 				Do(ctx)
