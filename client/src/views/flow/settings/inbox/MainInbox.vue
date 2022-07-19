@@ -26,7 +26,7 @@
               v-model="showUnreadOnly"
               @change="reloadProjects"
               label="Show unread only"
-              class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0"
+              class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0 default-text-color"
               :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
             >
             </v-checkbox>
@@ -128,11 +128,11 @@
         class="elevation-1"
       >
         <template #no-data>
-          No available conversations
+          <div class="default-text-color">No available conversations</div>
         </template>
 
-        <template #no-results>
-          No available conversations
+        <template #no-results class="default-text-color">
+          <div class="default-text-color">No available conversations</div>
         </template>
 
         <template #item="{ item, index }">
