@@ -1,6 +1,6 @@
 <template>
   <v-container class="custom-field-group-container">
-    <ObjectTypeAttachments object-type-value="event" :primary-id="primaryId"></ObjectTypeAttachments>
+    <ObjectTypeAttachments object-type-value="event" :primary-id="primaryId" :show-linkable="true"></ObjectTypeAttachments>
   </v-container>
 </template>
 

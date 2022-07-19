@@ -146,6 +146,8 @@
            psat.attachment_type_id,
            psat.process_step_id,
            psat.date_created,
+           psat.linkable,
+           psat.focused,
            psat.date_modified,
            psat.created_by_id,
            psat.modified_by_id,
@@ -167,6 +169,8 @@
              eat.event_id,
              eat.date_created,
              eat.date_modified,
+             eat.linkable,
+             eat.focused,
              eat.created_by_id,
              eat.modified_by_id,
              eat.archived
@@ -187,6 +191,8 @@
              eat.date_created,
              eat.date_modified,
              eat.created_by_id,
+             eat.linkable,
+             eat.focused,
              eat.modified_by_id,
              eat.archived
       from flow.event_attachment_type eat
@@ -210,7 +216,9 @@
            eat.created_by_id,
            eat.modified_by_id,
            eat.archived,
-           eat.display_order
+           eat.display_order,
+           eat.linkable,
+           eat.focused
     from flow.event_attachment_type eat
            inner join flow.attachment_type at on at.id = eat.attachment_type_id
     where
@@ -227,7 +235,9 @@
            psat.created_by_id,
            psat.modified_by_id,
            psat.archived,
-           psat.display_order
+           psat.display_order,
+           psat.linkable,
+           psat.focused
     from flow.process_step_attachment_type psat
            inner join flow.attachment_type at on at.id = psat.attachment_type_id
     where
@@ -254,7 +264,9 @@
              eat.created_by_id,
              eat.modified_by_id,
              eat.archived,
-             eat.display_order
+             eat.display_order,
+             eat.linkable,
+             eat.focused
       from flow.event_attachment_type eat
         inner join flow.attachment_type at on at.id = eat.attachment_type_id
         inner join details d on d.event_id = eat.event_id
@@ -270,7 +282,9 @@
              psat.created_by_id,
              psat.modified_by_id,
              psat.archived,
-             psat.display_order
+             psat.display_order,
+             psat.linkable,
+             psat.focused
       from flow.process_step_attachment_type psat
         inner join flow.attachment_type at on at.id = psat.attachment_type_id
         inner join details d on d.process_step_id = psat.process_step_id
@@ -284,6 +298,8 @@
            oat.company_id,
            oat.attachment_type_id,
            oat.archived,
+           oat.focused,
+           oat.linkable,
            at.attachment_type,
            oat.display_order
     from flow.contact_attachment_type oat
@@ -316,6 +332,8 @@
            oat.company_id,
            oat.attachment_type_id,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.archived,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(cfGroups)))
@@ -398,6 +416,14 @@
         where id = :id
   ]]></attachmentType.contact.updateDisplayOrder>
 
+  <attachmentType.contact.updateFocused><![CDATA[
+      update flow.contact_attachment_type
+        set focused = :focused,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.contact.updateFocused>
+
   <attachmentType.contact.deleteType><![CDATA[
     update flow.contact_attachment_type
     set archived = true,
@@ -412,6 +438,8 @@
            oat.attachment_type_id,
            oat.archived,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.display_order
     from flow.org_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
@@ -443,6 +471,8 @@
            oat.company_id,
            oat.attachment_type_id,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.archived,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(cfGroups)))
@@ -525,6 +555,14 @@
         where id = :id
   ]]></attachmentType.org.updateDisplayOrder>
 
+  <attachmentType.org.updateFocused><![CDATA[
+      update flow.org_attachment_type
+        set focused = :focused,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.org.updateFocused>
+
   <attachmentType.org.deleteType><![CDATA[
     update flow.org_attachment_type
     set archived = true,
@@ -539,6 +577,8 @@
            oat.attachment_type_id,
            oat.archived,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.display_order
     from flow.user_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
@@ -570,6 +610,8 @@
            oat.company_id,
            oat.attachment_type_id,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.archived,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(cfGroups)))
@@ -652,6 +694,14 @@
         where id = :id
   ]]></attachmentType.user.updateDisplayOrder>
 
+  <attachmentType.user.updateFocused><![CDATA[
+      update flow.user_attachment_type
+        set focused = :focused,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.user.updateFocused>
+
   <attachmentType.user.deleteType><![CDATA[
     update flow.user_attachment_type
     set archived = true,
@@ -666,6 +716,8 @@
            oat.attachment_type_id,
            oat.archived,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.display_order
     from flow.project_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
@@ -697,8 +749,12 @@
            oat.company_id,
            oat.attachment_type_id,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.archived,
            oat.read_only,
+           oat.linkable,
+           oat.focused,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(cfGroups)))
                       FROM (
@@ -772,6 +828,22 @@
              where company_id = :companyId and archived is false))
   ]]></attachmentType.project.addType>
 
+  <attachmentType.project.updateLinkable><![CDATA[
+      update flow.project_attachment_type
+        set linkable = :linkable,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.project.updateLinkable>
+
+  <attachmentType.project.updateFocused><![CDATA[
+      update flow.project_attachment_type
+        set focused = :focused,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.project.updateFocused>
+
   <attachmentType.project.updateDisplayOrder><![CDATA[
       update flow.project_attachment_type
         set display_order = :displayOrder,
@@ -804,6 +876,8 @@
            oat.attachment_type_id,
            oat.archived,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.display_order
     from flow.event_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
@@ -835,6 +909,8 @@
            oat.event_id,
            oat.attachment_type_id,
            at.attachment_type,
+           oat.focused,
+           oat.linkable,
            oat.archived,
            oat.read_only,
            coalesce((
@@ -917,6 +993,22 @@
             date_modified = now()
         where id = :id
   ]]></attachmentType.event.updateDisplayOrder>
+
+  <attachmentType.event.updateLinkable><![CDATA[
+      update flow.event_attachment_type
+        set linkable = :linkable,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.event.updateLinkable>
+
+  <attachmentType.event.updateFocused><![CDATA[
+      update flow.event_attachment_type
+        set focused = :focused,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></attachmentType.event.updateFocused>
 
   <attachmentType.event.deleteType><![CDATA[
     update flow.event_attachment_type

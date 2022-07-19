@@ -16,7 +16,7 @@ public class ObjectTypeAttachmentType {
 
   private Long id, attachmentTypeId, createdById, modifiedById, companyId, displayOrder, primaryId;
   private String attachmentType;
-  private Boolean archived, readOnly;
+  private Boolean archived, readOnly, linkable, focused;
   private Date dateCreated, dateModified;
   private List<CustomFieldGroup> customFieldGroups;
 }

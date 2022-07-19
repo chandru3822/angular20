@@ -203,6 +203,28 @@ public class AttachmentTypeService {
     return getAttachmentType(id, objectType);
   }
 
+  public void updateTypeLinkable(ObjectTypeAttachmentType attachmentType, ObjectType objectType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+      params.put("linkable", attachmentType.getLinkable());
+      params.put("modifiedById", currentUser.trueUserId());
+      params.put("id", attachmentType.getId());
+      String sqlKey = "attachmentType." + objectType.tablePrefix + ".updateLinkable";
+      sqlCache.update(sqlKey, params);
+  }
+
+  public void updateTypeFocused(ObjectTypeAttachmentType attachmentType, ObjectType objectType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("focused", attachmentType.getFocused());
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("id", attachmentType.getId());
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".updateFocused";
+    sqlCache.update(sqlKey, params);
+  }
+
   public void updateTypeOrder(List<ObjectTypeAttachmentType> attachmentTypes, ObjectType objectType) {
     User currentUser = securityService.getCurrentUser();
 

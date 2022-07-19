@@ -17,7 +17,7 @@ public class ProcessStepAttachmentType {
 
   private Long id, attachmentTypeId, createdById, modifiedById, processStepId, displayOrder;
   private String attachmentType;
-  private Boolean archived;
+  private Boolean archived, linkable, focused;
   private Date dateCreated, dateModified;
   private List<CustomFieldGroup> customFieldGroups;
 }

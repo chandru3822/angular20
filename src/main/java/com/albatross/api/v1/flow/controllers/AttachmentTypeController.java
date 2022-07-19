@@ -117,6 +117,16 @@ public class AttachmentTypeController {
     attachmentTypeService.updateTypeOrder(types, ObjectType.CONTACT);
   }
 
+  @PutMapping(value = "/contact/linkable", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeLinkableForContact(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeLinkable(type, ObjectType.CONTACT);
+  }
+
+  @PutMapping(value = "/contact/focused", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeFocusedForContact(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeFocused(type, ObjectType.CONTACT);
+  }
+
   @DeleteMapping(value = "/contact/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteTypeForContact(@PathVariable Long attachmentTypeId) {
     attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.CONTACT);
@@ -146,6 +156,11 @@ public class AttachmentTypeController {
   @PutMapping(value = "/organization/order", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateTypeOrderForOrg(@RequestBody List<ObjectTypeAttachmentType> types) {
     attachmentTypeService.updateTypeOrder(types, ObjectType.ORGANIZATION);
+  }
+
+  @PutMapping(value = "/organization/focused", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeFocusedForOrg(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeFocused(type, ObjectType.ORGANIZATION);
   }
 
   @DeleteMapping(value = "/organization/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -179,6 +194,11 @@ public class AttachmentTypeController {
     attachmentTypeService.updateTypeOrder(types, ObjectType.USER);
   }
 
+  @PutMapping(value = "/user/focused", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeFocusedForUser(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeFocused(type, ObjectType.USER);
+  }
+
   @DeleteMapping(value = "/user/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteTypeForUser(@PathVariable Long attachmentTypeId) {
     attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.USER);
@@ -203,6 +223,16 @@ public class AttachmentTypeController {
   @PostMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ObjectTypeAttachmentType> addTypeForProject(@RequestBody ObjectTypeAttachmentType objectTypeAttachmentType) {
     return attachmentTypeService.addType(objectTypeAttachmentType, ObjectType.PROJECT);
+  }
+
+  @PutMapping(value = "/project/linkable", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeLinkableForProject(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeLinkable(type, ObjectType.PROJECT);
+  }
+
+  @PutMapping(value = "/project/focused", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeFocusedForProject(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeFocused(type, ObjectType.PROJECT);
   }
 
   @PutMapping(value = "/project/order", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -244,6 +274,16 @@ public class AttachmentTypeController {
   @PutMapping(value = "/event/order", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateTypeOrderForEvent(@RequestBody List<ObjectTypeAttachmentType> types) {
     attachmentTypeService.updateTypeOrder(types, ObjectType.EVENT);
+  }
+
+  @PutMapping(value = "/event/linkable", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeLinkableForEvent(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeLinkable(type, ObjectType.EVENT);
+  }
+
+  @PutMapping(value = "/event/focused", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeFocusedForEvent(@RequestBody ObjectTypeAttachmentType type) {
+    attachmentTypeService.updateTypeFocused(type, ObjectType.EVENT);
   }
 
   @DeleteMapping(value = "/event/{attachmentTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)

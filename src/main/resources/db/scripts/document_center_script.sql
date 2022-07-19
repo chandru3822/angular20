@@ -10,6 +10,31 @@ insert into flow.company_object_type(object_type_id, company_id, archived, date_
 select (select id from flow.object_type where object_code = 'ATTACHMENTS'), 3, false, now(), now(), 2417170, false, false
   where not exists (select id from flow.company_object_type where company_id = 3 and object_type_id = (select id from flow.object_type where object_code = 'ATTACHMENTS'));
 
+--make project, ps, and event linkable and focusable
+alter table flow.project_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.project_attachment_type
+  add column if not exists focused boolean not null default false;
+alter table flow.process_step_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.process_step_attachment_type
+  add column if not exists focused boolean not null default false;
+alter table flow.event_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.event_attachment_type
+  add column if not exists focused boolean not null default false;
+alter table flow.contact_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.contact_attachment_type
+  add column if not exists focused boolean not null default false;
+alter table flow.org_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.org_attachment_type
+  add column if not exists focused boolean not null default false;
+alter table flow.user_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.user_attachment_type
+  add column if not exists focused boolean not null default false;
 
 alter table flow.custom_field_group
 add column if not exists attachment_type_id int references flow.attachment_type(id);

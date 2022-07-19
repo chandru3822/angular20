@@ -22,70 +22,94 @@
                           attach
           ></v-autocomplete>
         </v-card>
-        <v-card flat v-if="attachmentTypes && attachmentTypes.length > 0">
-          <draggable v-model="attachmentTypes" group="attachmentTypes"
-                     :disabled="!userCanEdit"
-                     id="attachment-draggable"
-                     @change="saveAttachmentTypeOrder(attachmentTypes)"
-                     @start="drag=true" @end="drag=false">
-            <v-list v-for="(a, index) in filterBy(attachmentTypes, false, 'archived')" :key="index">
-              <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
-                <v-list-item-action>
-                  <v-icon>drag_handle</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  {{ a.attachmentType }}
-                </v-list-item-content>
-                <router-link class="no-text-decoration pr-3"
-                             :to="getAttachmentTypeUrl(a.id)">
-                  <v-btn small text >
-                    <v-icon>edit</v-icon>
+
+          <v-data-table
+            :headers="visibleHeaders()"
+            :items="filterTypes()"
+            :items-per-page="-1"
+            :sort-desc="[false]"
+            :sort-by="['displayOrder']"
+            :mobile-breakpoint="0"
+            hide-default-footer
+            disable-sort
+            class="attachment-type-table elevation-1 fix-column-width-bug square-card"
+          >
+            <template #no-data>
+              No attachment types found
+            </template>
+
+            <template #no-results>
+              No attachment types found
+            </template>
+
+            <template #item="{ item, index }">
+              <tr :class="{'shaded-row': index % 2}">
+                <td style="width: 50px">
+                  <v-btn text v-if="userCanEdit" icon small class="handle">
+                    <v-icon>drag_handle</v-icon>
                   </v-btn>
-                </router-link>
-                <v-dialog
-                  v-if="userCanEdit"
-                  v-model="a.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-list-item-action class="clickable" v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-list-item-action>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this attachment type: <strong>{{
-                        a.attachmentType
-                      }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="a.deleteConfirm = false">
-                        No
+                </td>
+                <td class="text-left">{{item.attachmentType}}</td>
+                <td v-if="showLinkable">
+                  <v-checkbox type="checkbox" class="ml-3" v-model="item.linkable"
+                    @change="saveLinkable(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
+                  </v-checkbox>
+                </td>
+                <td v-if="showFocused">
+                  <v-checkbox type="checkbox" class="ml-3" v-model="item.focused"
+                              @change="saveFocused(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
+                  </v-checkbox>
+                </td>
+                <td>
+                  <div style="display: flex; justify-content: flex-end">
+                    <router-link class="no-text-decoration pr-3"
+                                 :to="getAttachmentTypeUrl(item.id)">
+                      <v-btn small text >
+                        <v-icon>edit</v-icon>
                       </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="[a.archived = true, deleteTypeFromObject(a.id)]">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </v-list-item>
-            </v-list>
-          </draggable>
-        </v-card>
+                    </router-link>
+                    <v-dialog
+                      v-if="userCanEdit"
+                      v-model="item.deleteConfirm"
+                      width="500">
+                      <template #activator="{ on }">
+                        <v-btn small text v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="text-h5 grey lighten-2"
+                          primary-title>
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text class="pt-4">
+                          Are you sure you want to delete this attachment type?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="item.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primaryCustom"
+                            text
+                            @click="[item.archived = true, deleteTypeFromObject(a.id)]">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
       </v-col>
     </v-row>
   </v-container>
@@ -95,7 +119,10 @@
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
-import Vue2Filters from "vue2-filters";
+import Vue2Filters from "vue2-filters"
+import Sortable from "sortablejs"
+import cloneDeep from 'lodash.clonedeep'
+import orderBy from 'lodash.orderby'
 
 export default {
   name: 'ObjectTypeAttachments',
@@ -106,7 +133,50 @@ export default {
   props: {
     objectTypeValue: String,
     showReadOnly: Boolean,
+    showLinkable: Boolean,
+    showFocused: { //pretty sure that all types will be "focusable"
+      type: Boolean,
+      default: true
+    },
     primaryId: Number //used to load objects types that have more than one value
+  },
+  mounted() {
+    let table = document.querySelector('.attachment-type-table tbody')
+    const _self = this
+    Sortable.create(table, {
+      handle: '.handle',
+      onEnd({newIndex, oldIndex}) {
+        const rowSelected = _self.attachmentTypes.splice(oldIndex, 1)[0]
+        _self.attachmentTypes.splice(newIndex, 0, rowSelected)
+        let rowsClone = cloneDeep(_self.attachmentTypes)
+
+        let rowsToSave = []
+        rowsClone.forEach((r, idx) => {
+          //check if the row needs to be saved before updating display order
+          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+          //update display order
+          r.displayOrder = idx
+          //save only rows that changed
+          if (save) {
+            _self.attachmentTypes[idx].newDisplayOrder = idx
+            rowsToSave.push(r)
+          }
+        })
+        _self.saveAttachmentTypeOrder(rowsToSave)
+      }
+    })
+  },
+  computed: {
+    headers() {
+      return [
+        {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+        {text: 'Attachment Type', value: 'attachmentType', show: true},
+        {text: 'Linkable', value: 'linkable', show: this.showLinkable, width: 100},
+        {text: 'Focused', value: 'focused', show: this.showFocused, width: 100},
+        {text: null, value: 'icons', show: true, width: 150}
+      ]
+    }
   },
   data () {
     return {
@@ -117,7 +187,7 @@ export default {
       objectType: this.objectTypeValue || this.$route?.query?.objectType?.toLowerCase(),
       newType: {},
       availableAttachmentTypes: [],
-      attachmentTypes: []
+      attachmentTypes: [],
     }
   },
   watch: {},
@@ -125,6 +195,37 @@ export default {
     this.getAssignedAttachmentTypes()
   },
   methods: {
+    async saveLinkable(item) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {status} = await putRequest(`/attachmentType/${this.objectType}/linkable`, item)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Linkable Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Linkable')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveFocused(item) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {status} = await putRequest(`/attachmentType/${this.objectType}/focused`, item)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Focused Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Focused')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    visibleHeaders() {
+      return this.headers.filter(header => header.show === true)
+    },
     getAttachmentTypeUrl (attachmentTypeId) {
       switch(this.objectTypeValue) {
         case 'project':
@@ -187,31 +288,20 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveAttachmentTypeOrder(attachmentTypes) {
-      try {
-        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-        // pull those needing to be saved out of list
-        let typesToSave = []
-        attachmentTypes.forEach((f, idx) => {
-          let order = idx + 1
-          if (f.displayOrder !== order) {
-            f.displayOrder = order
-            typesToSave.push(f)
-          }
-        })
-        // save them here
-        if (typesToSave.length > 0) {
+    async saveAttachmentTypeOrder(rows) {
+      if(rows?.length > 0) {
+        try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {status} = await putRequest(`/attachmentType/${this.objectType}/order`, typesToSave)
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
+          const {status} = await putRequest(`/attachmentType/${this.objectType}/order`, rows)
+          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Order Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Order')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async deleteTypeFromObject(id) {
@@ -228,6 +318,9 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    filterTypes() {
+      return orderBy(this.attachmentTypes.filter(e => { return !e.archived}), [e => e.displayOrder])
     },
   }
 }

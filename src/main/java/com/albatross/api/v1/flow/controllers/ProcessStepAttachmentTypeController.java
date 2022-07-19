@@ -45,6 +45,16 @@ public class ProcessStepAttachmentTypeController {
     return processStepAttachmentTypeService.addTypeToStep(stepId, processStepAttachmentType);
   }
 
+  @PutMapping(value = "/linkable", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeLinkable(@RequestBody ProcessStepAttachmentType type) {
+    processStepAttachmentTypeService.updateTypeLinkable(type);
+  }
+
+  @PutMapping(value = "/focused", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeFocused(@RequestBody ProcessStepAttachmentType type) {
+    processStepAttachmentTypeService.updateTypeFocused(type);
+  }
+
   @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateTypeOrder(@RequestBody List<ProcessStepAttachmentType> types) {
     processStepAttachmentTypeService.updateTypeOrder(types);
