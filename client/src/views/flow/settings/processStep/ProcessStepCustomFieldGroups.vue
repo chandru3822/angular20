@@ -128,50 +128,17 @@
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
                       </v-btn>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="item.deleteConfirm"
-                        width="500">
-                        <template #activator="{ on }">
-                          <v-btn small text v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title>
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text class="pt-4">
-                            <span class="error--text">WARNING:</span>
-                            By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
-
-                            Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName
-                            }}</strong>?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="item.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                              color="primary"
-                              text
-                              @click="deleteWithChecks(item, item.id, null)">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
+                      <v-btn v-if="userCanEdit" small text color="primary" @click="customFieldGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
                     </div>
                   </td>
                 </tr>
+                <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete" @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
+                  <span class="error--text">WARNING:</span>
+                  By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                  Are you sure you want to delete this Custom Field Group: <strong>{{ itemToDeleteGroupName }}</strong>?
+                  <template v-slot:no>cancel</template>
+                  <template v-slot:yes>delete</template>
+                </ConfirmationDialog>
               </template>
 
               <template #expanded-item="{ headers, item }">
@@ -414,49 +381,7 @@
                           <v-btn text color="primary" small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
                             <v-icon>edit</v-icon>
                           </v-btn>
-
-                          <v-dialog
-                            v-if="userCanEdit"
-                            v-model="cf.deleteConfirm"
-                            width="500">
-                            <template v-slot:activator="{ on }">
-                              <v-list-item-action class="clickable" v-on="on">
-                                <v-icon>delete</v-icon>
-                              </v-list-item-action>
-                            </template>
-                            <v-card>
-                              <v-card-title
-                                class="text-h5 grey lighten-2"
-                                primary-title>
-                                Confirm
-                              </v-card-title>
-
-                              <v-card-text class="mt-2">
-                                <span class="error--text">WARNING:</span>
-                                By deleting a field you will lose all data associated with the field. If you meant to
-                                "move" the field to another group please cancel and move the field. <br/><br/>
-
-                                Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
-                                item.groupName }}</strong>?
-                              </v-card-text>
-
-                              <v-divider></v-divider>
-
-                              <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                  @click="cf.deleteConfirm = false">
-                                  No
-                                </v-btn>
-                                <v-btn
-                                  color="primary"
-                                  text
-                                  @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
-                                  Yes
-                                </v-btn>
-                              </v-card-actions>
-                            </v-card>
-                          </v-dialog>
+                          <v-btn v-if="userCanEdit" text color="primary" small @click="[assignmentToDelete=cf, customFieldGroupToDelete=item]"><v-icon>delete</v-icon></v-btn>
                         </v-list-item>
                         <v-divider v-if="cf.edit"></v-divider>
                       </v-list>
@@ -470,6 +395,15 @@
 
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!assignmentToDelete" @confirm="[addField=false, newField={}, deleteWithChecks()]" @close-dialog="[customFieldGroupToDelete = null, assignmentToDelete = null]">
+      <span class="error--text">WARNING:</span>
+      By deleting a field you will lose all data associated with the field. If you meant to
+      "move" the field to another group please cancel and move the field. <br/><br/>
+
+      Are you sure you want to delete <strong>{{ assignmentToDeleteFieldName }}</strong> from <strong>{{itemToDeleteGroupName}}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -490,12 +424,14 @@
   import Sortable from "sortablejs";
   import cloneDeep from 'lodash.clonedeep'
   import orderBy from "lodash.orderby"
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmationDialog,
       draggable,
     },
     props: {
@@ -565,7 +501,9 @@
           {text: null, value: 'icons', show: true}
         ],
         expanded: [],
-        eventTypes: []
+        eventTypes: [],
+        customFieldGroupToDelete: null,
+        assignmentToDelete: null
       }
     },
     computed: {
@@ -580,7 +518,12 @@
           return orderBy(val, v => v.groupOrder)
         }
       },
-
+      itemToDeleteGroupName(){
+        return this.customFieldGroupToDelete ? this.customFieldGroupToDelete.groupName : ''
+      },
+      assignmentToDeleteFieldName() {
+        return this.assignmentToDelete ? this.assignmentToDelete.fieldName : ''
+      }
     },
     methods: {
       selectAll(f) {
@@ -618,7 +561,15 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
+      async deleteWithChecks() {
+        let item, customFieldGroupId, customFieldGroupAssignmentId;
+        if(this.assignmentToDelete){
+          item = this.assignmentToDelete
+          customFieldGroupAssignmentId = this.assignmentToDelete.id
+        } else {
+          item = this.customFieldGroupToDelete
+          customFieldGroupId = this.customFieldGroupToDelete.id
+        }
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
@@ -653,6 +604,8 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.assignmentToDelete = null
+        this.customFieldGroupToDelete = null
       },
       async saveGroupName(group) {
         this.$store.commit(AppMutations.SET_LOADING, true)
