@@ -19,7 +19,6 @@ public enum ProposalGeneratedType {
       }
       case PRINT -> {
         params.add("q", "100");
-        params.add("dpr", "2");
         params.add("w", "1080");
       }
     }
