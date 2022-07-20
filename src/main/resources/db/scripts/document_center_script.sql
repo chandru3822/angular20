@@ -14,25 +14,37 @@ select (select id from flow.object_type where object_code = 'ATTACHMENTS'), 3, f
 alter table flow.project_attachment_type
   add column if not exists linkable boolean not null default false;
 alter table flow.project_attachment_type
+  add column if not exists allow_upload boolean not null default false;
+alter table flow.project_attachment_type
   add column if not exists focused boolean not null default false;
 alter table flow.process_step_attachment_type
   add column if not exists linkable boolean not null default false;
+alter table flow.process_step_attachment_type
+  add column if not exists allow_upload boolean not null default false;
 alter table flow.process_step_attachment_type
   add column if not exists focused boolean not null default false;
 alter table flow.event_attachment_type
   add column if not exists linkable boolean not null default false;
+alter table flow.event_attachment_type
+  add column if not exists allow_upload boolean not null default false;
 alter table flow.event_attachment_type
   add column if not exists focused boolean not null default false;
 alter table flow.contact_attachment_type
   add column if not exists linkable boolean not null default false;
+alter table flow.contact_attachment_type
+  add column if not exists allow_upload boolean not null default false;
 alter table flow.contact_attachment_type
   add column if not exists focused boolean not null default false;
 alter table flow.org_attachment_type
   add column if not exists linkable boolean not null default false;
+alter table flow.org_attachment_type
+  add column if not exists allow_upload boolean not null default false;
 alter table flow.org_attachment_type
   add column if not exists focused boolean not null default false;
 alter table flow.user_attachment_type
   add column if not exists linkable boolean not null default false;
+alter table flow.user_attachment_type
+  add column if not exists allow_upload boolean not null default false;
 alter table flow.user_attachment_type
   add column if not exists focused boolean not null default false;
 

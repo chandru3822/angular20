@@ -5,6 +5,7 @@
            psat.attachment_type_id,
            psat.archived,
            psat.linkable,
+           psat.allow_upload,
            psat.focused,
            at.attachment_type,
            psat.display_order
@@ -39,6 +40,7 @@
            psat.attachment_type_id,
            at.attachment_type,
            psat.linkable,
+           psat.allow_upload,
            psat.focused,
            psat.archived,
            coalesce((
@@ -121,21 +123,15 @@
         where id = :id
   ]]></processStepAttachmentType.updateDisplayOrder>
 
-  <processStepAttachmentType.updateLinkable><![CDATA[
+  <processStepAttachmentType.update><![CDATA[
       update flow.process_step_attachment_type
         set linkable = :linkable,
+            focused = :focused,
+            allow_upload = :allowUpload,
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id
-  ]]></processStepAttachmentType.updateLinkable>
-
-  <processStepAttachmentType.updateFocused><![CDATA[
-      update flow.process_step_attachment_type
-        set focused = :focused,
-            modified_by_id = :modifiedById,
-            date_modified = now()
-        where id = :id
-  ]]></processStepAttachmentType.updateFocused>
+  ]]></processStepAttachmentType.update>
 
   <processStepAttachmentType.deleteTypeFromStep><![CDATA[
     update flow.process_step_attachment_type

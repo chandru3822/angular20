@@ -1,7 +1,7 @@
 <template>
   <v-container class="custom-field-group-container">
     <ObjectTypeAttachments object-type-value="project" :show-read-only="true"
-    :show-linkable="true" :show-focused="true"></ObjectTypeAttachments>
+    :show-uploadable="true" :show-linkable="true" :show-focused="true"></ObjectTypeAttachments>
   </v-container>
 </template>
 

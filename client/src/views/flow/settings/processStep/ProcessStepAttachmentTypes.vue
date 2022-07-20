@@ -63,13 +63,18 @@
                   </td>
                   <td class="text-left">{{item.attachmentType}}</td>
                   <td>
+                    <v-checkbox type="checkbox" class="ml-3" v-model="item.allowUpload"
+                                @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
+                    </v-checkbox>
+                  </td>
+                  <td>
                     <v-checkbox type="checkbox" class="ml-3" v-model="item.linkable"
-                                @change="saveLinkable(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
+                                @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
                     </v-checkbox>
                   </td>
                   <td>
                     <v-checkbox type="checkbox" class="ml-3" v-model="item.focused"
-                                @change="saveFocused(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
+                                @change="updateType(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
                     </v-checkbox>
                   </td>
                   <td>
@@ -183,6 +188,7 @@ export default {
       headers: [
         {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Attachment Type', value: 'attachmentType', show: true},
+        {text: 'Allow Upload', value: 'allowUpload', show: this.showUploadable, width: 100},
         {text: 'Linkable', value: 'linkable', show: this.showLinkable, width: 100},
         {text: 'Focused', value: 'focused', show: this.showFocused, width: 100},
         {text: null, value: 'icons', show: true, width: 150}
@@ -198,30 +204,16 @@ export default {
     await this.getAttachmentTypes()
   },
   methods: {
-    async saveLinkable(item) {
+    async updateType(item) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/processStep/${this.processStepId}/attachmentType/linkable`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Linkable Saved')
+        const {status} = await putRequest(`/processStep/${this.processStepId}/attachmentType/update`, item)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Linkable')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveFocused(item) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/processStep/${this.processStepId}/attachmentType/focused`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Focused Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Focused')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

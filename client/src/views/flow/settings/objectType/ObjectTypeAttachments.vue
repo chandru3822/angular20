@@ -50,14 +50,19 @@
                   </v-btn>
                 </td>
                 <td class="text-left">{{item.attachmentType}}</td>
+                <td v-if="showUploadable">
+                  <v-checkbox type="checkbox" class="ml-3" v-model="item.allowUpload"
+                              @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
+                  </v-checkbox>
+                </td>
                 <td v-if="showLinkable">
                   <v-checkbox type="checkbox" class="ml-3" v-model="item.linkable"
-                    @change="saveLinkable(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
+                    @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
                   </v-checkbox>
                 </td>
                 <td v-if="showFocused">
                   <v-checkbox type="checkbox" class="ml-3" v-model="item.focused"
-                              @change="saveFocused(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
+                              @change="updateType(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
                   </v-checkbox>
                 </td>
                 <td>
@@ -134,6 +139,10 @@ export default {
     objectTypeValue: String,
     showReadOnly: Boolean,
     showLinkable: Boolean,
+    showUploadable: {
+      type: Boolean,
+      default: false
+    },
     showFocused: { //pretty sure that all types will be "focusable"
       type: Boolean,
       default: true
@@ -172,6 +181,7 @@ export default {
       return [
         {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Attachment Type', value: 'attachmentType', show: true},
+        {text: 'Allow Upload', value: 'allowUpload', show: this.showUploadable, width: 100},
         {text: 'Linkable', value: 'linkable', show: this.showLinkable, width: 100},
         {text: 'Focused', value: 'focused', show: this.showFocused, width: 100},
         {text: null, value: 'icons', show: true, width: 150}
@@ -195,30 +205,16 @@ export default {
     this.getAssignedAttachmentTypes()
   },
   methods: {
-    async saveLinkable(item) {
+    async updateType(item) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/attachmentType/${this.objectType}/linkable`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Linkable Saved')
+        const {status} = await putRequest(`/attachmentType/${this.objectType}/update`, item)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Linkable')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveFocused(item) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/attachmentType/${this.objectType}/focused`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Focused Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Focused')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

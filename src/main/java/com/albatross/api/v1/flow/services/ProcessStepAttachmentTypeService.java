@@ -73,25 +73,16 @@ public class ProcessStepAttachmentTypeService {
     }
   }
 
-  public void updateTypeLinkable(ProcessStepAttachmentType attachmentType) {
+  public void updateType(ProcessStepAttachmentType attachmentType) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("linkable", attachmentType.getLinkable());
+    params.put("focused", null != attachmentType.getFocused() && attachmentType.getFocused());
+    params.put("linkable", null != attachmentType.getLinkable() && attachmentType.getLinkable());
+    params.put("allowUpload", null != attachmentType.getAllowUpload() && attachmentType.getAllowUpload());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", attachmentType.getId());
-    String sqlKey = "processStepAttachmentType.updateLinkable";
-    sqlCache.update(sqlKey, params);
-  }
-
-  public void updateTypeFocused(ProcessStepAttachmentType attachmentType) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("focused", attachmentType.getFocused());
-    params.put("modifiedById", currentUser.trueUserId());
-    params.put("id", attachmentType.getId());
-    String sqlKey = "processStepAttachmentType.updateFocused";
+    String sqlKey = "processStepAttachmentType.update";
     sqlCache.update(sqlKey, params);
   }
 
