@@ -141,15 +141,19 @@
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                     <v-icon v-else>expand_more</v-icon>
                   </v-btn>
-                  <confirm-delete-dialog :label="`this process step from the ${process.processName} process: `" :item-to-delete="item.processStepName" @confirm-delete="[item.archived = true, deleteStepFromProcess(item.id)]"></confirm-delete-dialog>
+                  <v-btn text color="primary" @click="processStepToDelete=item"><v-icon>delete</v-icon></v-btn>
                 </div>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
-
     </v-row>
+    <ConfirmationDialog :open-dialog="!!processStepToDelete" @confirm="deleteStepFromProcess" @close-dialog="processStepToDelete = null">
+      Are you sure you want to delete this process step from the {{process.processName}} process: <strong>{{processStepToDeleteName}}</strong>
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -162,10 +166,11 @@ import cloneDeep from 'lodash.clonedeep'
 import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Process',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   mixins: [Vue2Filters.mixin],
 
   data () {
@@ -206,7 +211,8 @@ export default {
         'items-per-page-options': [25, 50, 100, 1000]
       },
       expanded: [],
-      selectedIndex: null
+      selectedIndex: null,
+      processStepToDelete: null,
     }
   },
   created () {
@@ -214,6 +220,9 @@ export default {
     this.getProcessDetails()
   },
   computed: {
+    processStepToDeleteName(){
+      return this.processStepToDelete ? this.processStepToDelete.processStepName : ''
+    }
   },
   methods: {
     filterProcesses () {
@@ -284,8 +293,9 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteStepFromProcess (id) {
-      //reset the addNew field in case they delete one while it is open
+    async deleteStepFromProcess () {
+      const id = this.processStepToDelete.id
+      // reset the addNew field in case they delete one while it is open
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNew = false
@@ -299,6 +309,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.processStepToDelete.archived = true
+      this.processStepToDelete = null
     },
     async getPositions() {
       try {

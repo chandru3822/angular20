@@ -30,12 +30,17 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-list-item-action>
-              <confirm-delete-dialog
+              <v-btn
                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                  label="this process: "
-                  :item-to-delete="p.processName"
-                  @confirm-delete="[p.archived = true, deleteProcess(p.id)]"
-              ></confirm-delete-dialog>
+                  @click="processToDelete=p" color="primary" text
+              >
+                <v-icon>delete</v-icon>
+              </v-btn>
+              <ConfirmationDialog :open-dialog="!!processToDelete" @confirm="deleteProcess" @close-dialog="processToDelete = null">
+                Are you sure you want to delete this process: <strong>{{ processToDeleteName }}</strong>?
+                <template v-slot:no>cancel</template>
+                <template v-slot:yes>delete</template>
+              </ConfirmationDialog>
             </v-list-item>
           </v-list>
           <!--<v-btn v-else-if="groupOrderChanged" @click="saveGroupChanges">Save Changes</v-btn>-->
@@ -53,10 +58,11 @@ import Vue2Filters from 'vue2-filters'
 import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Processes',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   mixins: [Vue2Filters.mixin],
 
   data () {
@@ -69,10 +75,14 @@ export default {
       companyId: this.$store.state.user.details.companyId,
       parentCompanyId: this.$store.state.user.details.highestParentCompanyId,
       userId: this.$store.state.user.details.id,
-      processes: []
+      processes: [],
+      processToDelete: null
     }
   },
   computed: {
+    processToDeleteName() {
+      return this.processToDelete ? this.processToDelete.processName : ''
+    }
   },
   methods: {
     goToProcess(processId) {
@@ -91,7 +101,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteProcess (processId) {
+    async deleteProcess() {
+      const processId = this.processToDelete.id
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/processes/${processId}`)
@@ -104,6 +115,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.processToDelete.archived = true
+      this.processToDelete = null
     },
     async addNewProcess () {
       this.$store.commit(AppMutations.SET_LOADING, true)
