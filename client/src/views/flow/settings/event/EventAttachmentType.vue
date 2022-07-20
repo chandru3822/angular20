@@ -1,6 +1,6 @@
 <template>
   <v-container class="pt-0">
-    <ObjectTypeAttachment object-type-value="event"></ObjectTypeAttachment>
+    <ObjectTypeAttachment object-type-value="event" :primary-key="eventId"></ObjectTypeAttachment>
   </v-container>
 </template>
 
@@ -13,9 +13,14 @@ export default {
     ObjectTypeAttachment
   },
   data () {
-    return {}
+    return {
+      eventId: parseInt(this.$route.params.id)
+    }
   },
   watch: {},
+  created() {
+    console.log('randaLogger', this.eventId)
+  },
   methods: {}
 }
 </script>

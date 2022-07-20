@@ -238,7 +238,8 @@ export default {
   },
   props: {
     objectTypeValue: String,
-    showReadOnly: Boolean
+    showReadOnly: Boolean,
+    primaryKey: Number //used for getting attachments for events
   },
   data () {
     return {
@@ -470,7 +471,11 @@ export default {
     async loadFieldsByParent() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/customField/getByParentType/${this.companyObjectTypeId}`)
+        let url = `/customField/getByParentType/${this.companyObjectTypeId}`
+        if(this.objectTypeValue === 'event') {
+          url = `/customField/getByEvent/${this.primaryKey}`
+        }
+        const {data, status} = await getRequest(url)
         this.ancillaryCustomFields = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
