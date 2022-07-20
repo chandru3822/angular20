@@ -14,10 +14,11 @@
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
-            <div>
-              <label class="mt-4">Allow Non-Admin to Add to Project:</label>
-              <input class="ml-3" type="checkbox" :readonly="!userCanEdit" @input="saveProcessStep($event,false)"
-                     :disabled="!userCanEdit" v-model="processStep.nonAdminAdd">
+            <div class="non-admin-container">
+              <label class="mr-3">Allow Non-Admin to Add to Project:</label>
+              <v-checkbox class="ma-0 pa-0 shrink" type="checkbox" :readonly="!userCanEdit"
+                          @change="saveProcessStep(false)"
+                          :disabled="!userCanEdit" v-model="processStep.nonAdminAdd"></v-checkbox>
             </div>
           </div>
           <div class="text-right" v-if="userCanEdit">
@@ -136,11 +137,9 @@
           this.processStepLoading = false
         }
       },
-      async saveProcessStep(e, closeEditor) {
+      async saveProcessStep(closeEditor) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          //vue is weird and doesn't update this value before the @input is called
-          this.processStep.nonAdminAdd = e.target.checked || false
           const {status} = await putRequest(`/processStep`, this.processStep)
           this.editName = false
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
@@ -159,6 +158,11 @@
 </script>
 
 <style scoped lang="scss">
+.non-admin-container {
+  display: flex;
+  flex-direction: row;
+}
+
 .name-container {
   background-color: var(--v-rowShadeCustom-base) !important;
   border-radius: 5px;

@@ -405,11 +405,11 @@ public class ProjectProcessStepService {
 
   @Transactional
   public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
-    return performAutoTriggerActions(ppsId, userDetails, null, null, new ArrayList<>());
+    return performAutoTriggerActions(ppsId, userDetails, null, null, null, new ArrayList<>());
   }
 
   @Transactional
-  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, List<Long> performedActions) {
+  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, Long callingPpsId, List<Long> performedActions) {
       // Set the security context so we have user details in the async downline
       securityService.setCurrentUserDetails(userDetails);
 
@@ -421,9 +421,10 @@ public class ProjectProcessStepService {
 
       if (pps.getProcessStepStatusTypeId() == 1) {
           for(ProjectProcessStepAction action: pps.getActions()) {
-              final boolean isSameAction = (callingProcessStepActionId != null && callingProcessStepActionId.equals(action.getId()));
-              final boolean isSameProcessStep = (callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId()));
-              if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && !isSameProcessStep && !performedActions.contains(action.getId())) {
+              final boolean isSameAction = callingProcessStepActionId != null && callingProcessStepActionId.equals(action.getId());
+              final boolean isSameProcessStep = callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId());
+              final boolean isSamePps = callingPpsId != null && callingPpsId.equals(ppsId);
+              if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && (!isSameProcessStep || !isSamePps) && !performedActions.contains(action.getId())) {
                   try {
                     // Added this to get fresh pps values when looking at each action. Possible performance hit. Might want to lighten the previous getProjectProcessStep call,
                     // which might potentially enable this one to get lighter also
@@ -465,7 +466,7 @@ public class ProjectProcessStepService {
               for (Long checkingPpsId : ppsIds) {
                 // Don't re-check the ppsId we are in currently
                 if (!checkingPpsId.equals(ppsId))  {
-                  performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), performedActions);
+                  performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), ppsId, performedActions);
                 }
               }
             }
@@ -525,13 +526,13 @@ public class ProjectProcessStepService {
 
     //run autotriggers on parent pps if any functions were performed
     if (childFunctionsRan) {
-      this.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), performedActions);
+      this.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
     }
 
     //run autotriggers for all created child PPSs which have any auto trigger actions
     createdPps.stream()
       .filter(childStep -> Boolean.parseBoolean(childStep.get("shouldAutoTrigger").toString()))
-      .forEach(childStep -> this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), performedActions));
+      .forEach(childStep -> this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
 
     //run autotriggers for actions which use the new child PPSs status
     if (!createdPps.isEmpty()) {
@@ -540,7 +541,7 @@ public class ProjectProcessStepService {
       for(ProjectProcessStep step : steps) {
         //only run if the referring PPS is active, not the parent PPS, and not a new child PPS (since we already ran through those autotriggers)
         if(step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId()) && !ids.contains(step.getProjectProcessStepId())) {
-          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), performedActions);
+          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
         }
       }
     }
@@ -552,7 +553,7 @@ public class ProjectProcessStepService {
       for(ProjectProcessStep step : steps) {
         //only run if the referring PPS is active and not the parent PPS
         if(step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
-          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), performedActions);
+          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
         }
       }
     }

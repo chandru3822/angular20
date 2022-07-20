@@ -118,7 +118,8 @@ public class BlueravenProposalController {
                 context,
                 outputStream,
                 contentLength ->
-                    response.addHeader(HttpHeaders.CONTENT_LENGTH, contentLength.toString()));
+                    response.addHeader(HttpHeaders.CONTENT_LENGTH, contentLength.toString()),
+              false);
           } catch (TemplateException e) {
             log.error("[Proposal] Error generating PDF", e);
             throw new ApiException("Error generating PDF");
