@@ -565,7 +565,11 @@
                             <v-checkbox
                               v-else-if="fp.dataTypeId === 3"
                               type="checkbox"
-                              v-model="fp.dynamicValue"
+                              :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                              :value="fp.dynamicValue === 'true'"
+                              @change="changeBooleanValue($event, fp)"
                               :label="fp.parameterName"
                             />
                             <v-text-field
@@ -646,7 +650,11 @@
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     type="checkbox"
-                                    v-model="fp.dynamicValue"
+                                    :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                                    :value="fp.dynamicValue === 'true'"
+                                    @change="changeBooleanValue($event, fp)"
                                     :label="fp.parameterName"
                                   />
                                   <v-text-field
@@ -1090,6 +1098,9 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     //populate requirements so that actions can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.requirements = reqs
