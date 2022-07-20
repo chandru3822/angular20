@@ -79,50 +79,20 @@
                       <v-icon v-if="selectedWorkQueueCategoryId === item.id" @click="saveCategory(item)">save</v-icon>
                       <v-icon v-else @click="selectedWorkQueueCategoryId = item.id">edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                        v-model="item.deleteConfirm"
-                        v-if="userCanDelete"
-                        width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this work queue category: <strong>{{ item.workQueueCategory }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                              @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                              color="primary"
-                              text
-                              @click="[item.archived = true, deleteCategory(item.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn small text color="primary" class="clickable" @click="categoryToDelete=item">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </div>
                 </td>
               </tr>
             </template>
 
           </v-data-table>
+          <ConfirmationDialog :open-dialog="!!categoryToDelete" @confirm="[deleteCategory, categoryToDelete.archived = true]" @close-dialog="categoryToDelete=null">
+            Are you sure you want to delete this work queue category: <strong>{{ categoryToDeleteName }}</strong>?
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>delete</template>
+          </ConfirmationDialog>
         </v-container>
       </v-col>
     </v-row>
@@ -141,9 +111,11 @@
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'WorkQueueCategories',
+    components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     mounted() {
@@ -200,9 +172,14 @@
           { text: 'Color', value: 'color', show: true },
           { text: null, value: 'icons', show: true }
         ],
+        categoryToDelete:null
       }
     },
-    computed: {},
+    computed: {
+      categoryToDeleteName(){
+        return this.categoryToDelete ? this.categoryToDelete.workQueueCategory : ''
+      }
+    },
     methods: {
       updateItemValue (item) {
         if(this.selectedWorkQueueCategoryId === item.id) {
@@ -223,7 +200,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteCategory(typeId) {
+      async deleteCategory() {
+        const typeId = this.categoryToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/workQueueCategory/${typeId}`)
@@ -236,6 +214,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.categoryToDelete = null
       },
       async addNewCategory() {
         this.$store.commit(AppMutations.SET_LOADING, true)

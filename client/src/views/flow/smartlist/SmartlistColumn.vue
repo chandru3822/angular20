@@ -157,7 +157,7 @@
         </v-list-item-content>
 
         <v-list-item-action class="clickable">
-          <v-icon v-if="canEdit" @click="deleteField(index)">delete</v-icon>
+          <v-icon v-if="canEdit" color="primary" @click="deleteField(index)">delete</v-icon>
           <v-icon v-else></v-icon>
         </v-list-item-action>
       </v-list-item>
