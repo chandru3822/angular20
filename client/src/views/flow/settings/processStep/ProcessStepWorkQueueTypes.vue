@@ -329,11 +329,7 @@
                     </v-btn>
                     <v-btn text color="primary" @click="expanded = []" v-else>cancel
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="userCanEdit"
-                        :item-to-delete="item.workQueueType"
-                        @confirm-delete="deleteWorkQueueTypeFromStep(item)"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanEdit" text color="primary" @click="workQueueTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -342,6 +338,11 @@
         </v-card>
       </div>
     </v-col>
+    <ConfirmationDialog :open-dialog="!!workQueueTypeToDelete" @confirm="deleteWorkQueueTypeFromStep" @close-dialog="workQueueTypeToDelete=null">
+      Are you sure you want to delete <strong>{{workQueueTypeToDeleteName}}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-row>
 </template>
 
@@ -360,11 +361,12 @@ import {
   getRequestWithParams
 } from '@/helpers/helpers'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepWorkQueueTypes',
   mixins: [Vue2Filters.mixin],
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   props: {
     processStep: Object,
     event: Object
@@ -408,12 +410,16 @@ export default {
       showShit: true,
       showPsShit: true,
       showEventShit: true, //dom key crap
-      showEventFields: false
+      showEventFields: false,
+      workQueueTypeToDelete: null
     }
   },
   computed: {
     displayedHeaders () {
       return this.headers.filter(h => h.show)
+    },
+    workQueueTypeToDeleteName(){
+      return this.workQueueTypeToDelete ? this.workQueueTypeToDelete.workQueueType : ''
     }
   },
   async created() {
@@ -865,7 +871,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteWorkQueueTypeFromStep(item) {
+    async deleteWorkQueueTypeFromStep() {
+      const item = this.workQueueTypeToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewWorkQueueType = false

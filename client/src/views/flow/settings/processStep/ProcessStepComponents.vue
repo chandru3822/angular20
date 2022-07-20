@@ -118,11 +118,7 @@
                     </td>
                     <td class="text-right">
                       <div class="flex-display">
-                        <confirm-delete-dialog
-                          v-if="userCanEdit"
-                          :item-to-delete="item.processStepStatusType"
-                          @confirm-delete="deleteStatusTypeFromStep(item)"
-                        ></confirm-delete-dialog>
+                        <v-btn v-if="userCanEdit" small text color="primary" @click="deleteProcessStepStatusType=item"><v-icon>delete</v-icon></v-btn>
                       </div>
                     </td>
                   </tr>
@@ -173,12 +169,7 @@
                     <v-list-item-content>
                       {{ a.link }} | {{ a.url }}
                     </v-list-item-content>
-                    <confirm-delete-dialog
-                      v-if="userCanEdit"
-                      label="this link: "
-                      :item-to-delete="a.link"
-                      @confirm-delete="[a.archived = true, deleteLinkFromStep(a.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="deleteLink=a"><v-icon>delete</v-icon></v-btn>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -226,12 +217,7 @@
                     <v-list-item-content>
                       {{ a.attachmentType }}
                     </v-list-item-content>
-                    <confirm-delete-dialog
-                      v-if="userCanEdit"
-                      label="this attachment type: "
-                      :item-to-delete="a.attachmentType"
-                      @confirm-delete="[a.archived = true, deleteTypeFromStep(a.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="deleteAttachment=a"><v-icon>delete</v-icon></v-btn>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -239,8 +225,12 @@
           </v-col>
         </v-row>
       </v-col>
-
     </v-row>
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="confirmDelete" @close-dialog="[deleteProcessStepStatusType = null, deleteLink = null, deleteAttachment = null]">
+      Are you sure you want to delete {{deleteDialogText}}<strong>{{deleteDialogItemText}}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -264,11 +254,13 @@ import {
   getRequestWithParams
 } from '@/helpers/helpers'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepComponents',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmationDialog,
     ConfirmDeleteDialog,
     ProcessStepWorkQueueTypes,
     ProcessStepCustomFieldGroups,
@@ -312,6 +304,9 @@ export default {
           to: `/settings/processSteps`
         },
       ],
+      deleteProcessStepStatusType: null,
+      deleteLink: null,
+      deleteAttachment: null
     }
   },
   computed: {
@@ -327,6 +322,30 @@ export default {
       ]
       return headers.filter(h => h.show)
     },
+    showDeleteDialog(){
+      return Boolean(this.deleteProcessStepStatusType || this.deleteAttachment || this.deleteLink)
+    },
+    deleteDialogText(){
+      if(this.deleteLink){
+        return `this link: `
+      }
+      if(this.deleteAttachment){
+        return `this attachment: `
+      }
+      return ''
+    },
+    deleteDialogItemText(){
+      if(this.deleteProcessStepStatusType){
+        return this.deleteProcessStepStatusType.processStepStatusType
+      }
+      if(this.deleteLink){
+        return this.deleteLink.link
+      }
+      if(this.deleteAttachment){
+        return this.deleteAttachment.attachmentType
+      }
+      return ''
+    }
   },
   async created() {
     await this.getProcessStepDetails()
@@ -580,6 +599,20 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Updating Links')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    confirmDelete(){
+      if(this.deleteProcessStepStatusType){
+        this.deleteStatusTypeFromStep(this.deleteProcessStepStatusType)
+        this.deleteProcessStepStatusType = null
+      }else if(this.deleteLink){
+        this.deleteLink.archived = true
+        this.deleteLinkFromStep(this.deleteLink.id)
+        this.deleteLink = null
+      }else if(this.deleteAttachment){
+        this.deleteAttachment.archived = true
+        this.deleteTypeFromStep(this.deleteAttachment.id)
+        this.deleteAttachment = null
       }
     }
   }
