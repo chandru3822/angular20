@@ -71,8 +71,7 @@
                         @confirm="[tabToDelete.archived = true, deleteTab()]"
                         @close-dialog="tabToDelete=null">
       Are you sure you want to delete this tab: <strong>{{tabToDeleteName}}</strong>?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

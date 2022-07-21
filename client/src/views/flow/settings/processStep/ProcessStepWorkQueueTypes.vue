@@ -340,8 +340,7 @@
     </v-col>
     <ConfirmationDialog :open-dialog="!!workQueueTypeToDelete" @confirm="deleteWorkQueueTypeFromStep" @close-dialog="workQueueTypeToDelete=null">
       Are you sure you want to delete <strong>{{workQueueTypeToDeleteName}}</strong>?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-row>
 </template>

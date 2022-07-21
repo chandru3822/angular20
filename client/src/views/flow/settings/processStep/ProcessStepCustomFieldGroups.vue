@@ -401,8 +401,7 @@
       "move" the field to another group please cancel and move the field. <br/><br/>
 
       Are you sure you want to delete <strong>{{ assignmentToDeleteFieldName }}</strong> from <strong>{{itemToDeleteGroupName}}</strong>?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

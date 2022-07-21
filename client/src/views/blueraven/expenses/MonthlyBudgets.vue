@@ -156,8 +156,7 @@
         @confirm="[itemToDelete.archived=true,deleteBudget(itemToDeleteId)]"
         @close-dialog="closeDeleteDialog">
       There may already be expenses assigned to this budget. Are you sure you want to delete?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

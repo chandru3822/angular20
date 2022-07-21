@@ -464,8 +464,7 @@
     <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteConfirmed" @@close-dialog="closeDeleteDialog">
       <div v-if="deleteType==deleteTypes.OVERRIDE">Are you sure you want to delete this plan?</div>
       <div v-else>Are you sure you want to delete <strong>{{itemToDeleteName}}</strong>?</div>
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

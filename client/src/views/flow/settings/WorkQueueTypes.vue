@@ -133,8 +133,7 @@
     </v-row>
     <ConfirmationDialog :open-dialog="!!workQueueToDelete" @confirm="[workQueueToDelete.archived = true, deleteType(workQueueToDelete)]" @close-dialog="workQueueToDelete=null">
       Are you sure you want to delete this work queue type: <strong>{{workQueueToDeleteType}}</strong>
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

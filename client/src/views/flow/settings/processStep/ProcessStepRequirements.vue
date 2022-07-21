@@ -561,8 +561,7 @@
                                  @confirm="deleteRequirement"
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this requirement?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

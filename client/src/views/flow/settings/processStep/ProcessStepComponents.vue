@@ -292,8 +292,7 @@
     </v-row>
     <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="confirmDelete" @close-dialog="[deleteProcessStepStatusType = null, deleteLink = null, deleteAttachment = null]">
       Are you sure you want to delete {{deleteDialogText}}<strong>{{deleteDialogItemText}}</strong>?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

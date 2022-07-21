@@ -47,8 +47,7 @@
                         @confirm="[attachmentTypeToDelete.archived = true, deleteTypeFromObject()]"
                         @close-dialog="attachmentTypeToDelete=null">
       Are you sure you want to delete this attachment type: <strong>{{attachmentTypeToDeleteName}}</strong>?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

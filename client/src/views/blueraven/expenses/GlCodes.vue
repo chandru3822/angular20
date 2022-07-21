@@ -98,8 +98,7 @@
         @confirm=deleteGlCode(itemToDelete)
         @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this GL Code <strong>{{codeToDelete}}</strong>?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

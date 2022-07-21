@@ -139,8 +139,7 @@
     </v-row>
     <ConfirmationDialog :open-dialog="!!ahjToDelete" @confirm="deleteAhj" @close-dialog="ahjToDelete=null">
       Are you sure you want to delete the AHJ for {{ ahjToDeleteName }}?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

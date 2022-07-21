@@ -91,8 +91,7 @@
                                  @confirm="deleteEventFromStep"
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this event?
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

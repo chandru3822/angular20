@@ -151,8 +151,7 @@
     </v-row>
     <ConfirmationDialog :open-dialog="!!processStepToDelete" @confirm="deleteStepFromProcess" @close-dialog="processStepToDelete = null">
       Are you sure you want to delete this process step from the {{process.processName}} process: <strong>{{processStepToDeleteName}}</strong>
-      <template v-slot:no>cancel</template>
-      <template v-slot:yes>delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>
