@@ -1,5 +1,19 @@
 <template>
   <v-container id="proposals-container">
+    <v-row justify="center" no-gutters>
+      <v-col md="auto">
+        <v-alert
+          color="brYellow"
+          dense
+          tile
+          :value="dirtyCfvs.length > 0"
+          transition="scale-transition"
+        >
+          Changes haven't been reflected on proposal
+        </v-alert>
+      </v-col>
+    </v-row>
+
     <v-row>
       <v-col cols="12" class="py-0">
         <router-link v-if="proposal && proposal.projectId"
@@ -13,15 +27,16 @@
         </v-toolbar>
       </v-col>
     </v-row>
+
     <v-form ref="proposalForm">
       <v-row>
         <v-col cols="12" sm="4">
-          <v-card class="configuration-container square-card">
+          <v-card class="proposal-container">
             <div>
-              <div class="configuration-title">Configurations</div>
-              <v-card
-                flat
-                class="pt-0"
+              <div class="proposal-container-header">
+                <div class="proposal-title">Configurations</div>
+              </div>
+              <div
                 v-for="(cfg, index) in sortedCustomFieldGroups"
                 :key="index"
               >
@@ -36,17 +51,16 @@
                   :show-field-name="false"
                   :list-of-value-filter="filters[field.customFieldId]"
                 />
-              </v-card>
+              </div>
             </div>
             <div class="configuration-save-container">
               <v-btn depressed
                      :disabled="dirtyCfvs.length === 0"
-                     class="text-capitalize font-weight-bold"
+                     class="text-capitalize"
+                     @click="resetToDefault"
               >
                 Reset to Default
               </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
-              <!--todo: fix disabled logic-->
               <v-spacer />
               <v-btn color="primaryButton"
                      depressed
@@ -61,35 +75,34 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="8">
-          <v-card class="proposal-container square-card">
-            <div class="proposal-container-header">
-              <div class="configuration-title">Proposal</div>
-              <v-spacer></v-spacer>
+          <v-card class="proposal-container">
+            <div class="proposal-container-header sticky-header">
+              <div class="proposal-title">Proposal</div>
+              <v-spacer/>
+              <!--              <v-btn depressed-->
+              <!--                     :disabled="dirtyCfvs.length === 0"-->
+              <!--                     class="proposal-container-buttons text-capitalize font-weight-bold">Present-->
+              <!--              </v-btn>-->
               <v-btn depressed
-                     :disabled="dirtyCfvs.length === 0"
-                     class="proposal-container-buttons text-capitalize font-weight-bold">Present
+                     disabled
+                     class="proposal-container-buttons text-capitalize font-weight-bold">
+                Save Proposal
               </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
-              <!--todo: fix disabled logic-->
-              <v-btn depressed
-                     :disabled="dirtyCfvs.length === 0"
-                     class="proposal-container-buttons text-capitalize font-weight-bold">Save Proposal
-              </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
               <v-btn class="proposal-container-buttons text-capitalize font-weight-bold"
                      @click="downloadPdf">
                 Download
               </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
-              <!--todo: fix disabled logic-->
             </div>
-            <div class="proposal-container">
+            <div>
               <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="false" :editable="false" />
             </div>
           </v-card>
         </v-col>
       </v-row>
     </v-form>
+    <confirm-navigation-dialog ref="confirmDialog">
+      <p>You still have unsaved changes are you sure you want to change?</p>
+    </confirm-navigation-dialog>
   </v-container>
 </template>
 
@@ -108,13 +121,15 @@ import { AppMutations } from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import ProposalTemplate from '@/views/blueraven/settings/proposalDesigner/ProposalTemplate'
 import { ProposalActions } from '@/views/blueraven/settings/proposalDesigner/store'
+import ConfirmNavigationDialog from '@/views/blueraven/proposals/ConfirmNavigationDialog'
 import { mapState } from 'vuex'
 
 export default {
   name: 'Proposal',
   components: {
     CustomValueInput,
-    ProposalTemplate
+    ProposalTemplate,
+    ConfirmNavigationDialog
   },
   data() {
     return {
@@ -130,6 +145,11 @@ export default {
   created() {
     this.getProposalDetails()
     this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
+
+    window.addEventListener('beforeunload', this.beforeWindowUnload)
+  },
+  beforeDestroy() {
+    window.removeEventListener('beforeunload', this.beforeWindowUnload)
   },
   computed: {
     pages() {
@@ -152,44 +172,54 @@ export default {
     })
   },
   methods: {
+    _showSnackbar(type, msg) {
+      const snackbar = getSnackbar(type, msg)
+      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+    },
     async getProposalDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
+
+      //reset cfvs
+      this.dirtyCfvs = []
+
       try {
         const { data, status } = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
         this.proposal = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this._showSnackbar('ERROR', 'Error retrieving data')
+      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async resetToDefault() {
+      await this.getProposalDetails()
+      this.$refs.proposalForm.resetValidation()
     },
     validateForm() {
       //checks for required fields prior to opening the save dialog
       if (this.$refs.proposalForm.validate()) {
         this.saveCustomFieldValues()
       } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this._showSnackbar('ERROR', 'Missing Required Fields')
       }
     },
     async saveCustomFieldValues() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
         const { data, status } = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
         this.proposal = data
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
         this.dirtyCfvs = []
+        this._showSnackbar('SUCCESS', 'Fields Updated')
+        await this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
 
-        this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
-
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this._showSnackbar('ERROR', 'Error Saving Fields')
+      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -235,6 +265,8 @@ export default {
             docUrl.remove()
             URL.revokeObjectURL(pdfFile)
           }, 100)
+
+          this._showSnackbar('INFO', 'Proposal Downloaded')
         }
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -297,44 +329,51 @@ export default {
       if (conditionalOnId === null || conditionalOnId === undefined) {
         return true
       }
-      return this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
+
+      //does it come back from the server prepopulated
+      const isPrepopulated = this.proposal?.customFieldGroups
+        ?.map(cfg => cfg.customFieldValues)
+        ?.flat()
+        ?.find(f => f.customFieldGroupAssignmentId === conditionalOnId)
+        ?.intValue !== undefined
+
+      //has it been changed in this session
+      const isDirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
+      return isDirtyCfv || isPrepopulated
+    },
+    beforeWindowUnload(e) {
+      if (this.dirtyCfvs?.length > 0) {
+        e.preventDefault()
+        // Chrome requires returnValue to be set to anything -- it doesn't display it
+        e.returnValue = ''
+        return false
+      }
     }
+  },
+  async beforeRouteLeave(to, from, next) {
+    if (this.dirtyCfvs?.length > 0) {
+      const confirmNavigation = await this.$refs.confirmDialog.open()
+      return confirmNavigation ? next() : false
+    }
+    next()
   }
 }
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/main.scss";
-
 .new-proposal-header {
   font-size: 18px;
   font-weight: 700;
 }
 
-::v-deep {
-  .v-data-table__wrapper {
-    height: calc(100vh - 290px);
-    min-height: 300px;
-  }
-}
-
-tr:nth-of-type(even) {
-  @extend .shaded-row;
-}
-
-.configuration-container {
-  position: relative;
+.proposal-container {
   padding: 24px;
-  //height: calc(100vh - 180px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  border-radius: 0;
 }
 
-.configuration-title {
+.proposal-title {
   font-size: 14px;
   font-weight: 700;
-  margin-bottom: 24px;
   color: var(--v-blackText-base);
 }
 
@@ -349,19 +388,21 @@ tr:nth-of-type(even) {
   display: flex;
 }
 
-.proposal-container {
-  padding: 28px;
-}
-
 .proposal-container-header {
   display: flex;
-  align-items: baseline;
+  padding: 10px 0;
+  margin-bottom: 24px;
+
+  &.sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    padding: 10px;
+    z-index: 200;
+  }
 }
 
 .proposal-container-buttons {
   margin-left: 36px;
-  color: var(--v-blackText-base);
 }
-
 </style>
-
