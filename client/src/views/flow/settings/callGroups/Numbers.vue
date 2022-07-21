@@ -71,30 +71,27 @@
                 <v-select attach style="width: 120px" v-model="item.active" :items="items" @change="updatePhoneNumber(item)"></v-select>
               </td>
               <td>
-                <confirm-delete-dialog
-                    v-if="userCanDelete"
-                    label="this phone number: "
-                    :item-to-delete="item.phoneNumber"
-                    @confirm-delete="deleteNumber(item)"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary" v-if="userCanDelete" @click="phoneNumberToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!phoneNumberToDelete" @confirm="deleteNumber" @close-dialog="phoneNumberToDelete = null">
+      Are you sure you want to delete this call group: <strong>{{phoneNumberToDeleteNumber}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Numbers',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},
@@ -119,7 +116,13 @@
         items: [
           {text: 'Active', value: true},
           {text: 'Disabled', value: false}
-        ]
+        ],
+        phoneNumberToDelete: null
+      }
+    },
+    computed:{
+      phoneNumberToDeleteNumber(){
+        return this.phoneNumberToDelete ? this.phoneNumberToDelete.phoneNumber : ''
       }
     },
     created () {
@@ -143,7 +146,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteNumber (number) {
+      async deleteNumber () {
+        const number = this.phoneNumberToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/callGroup/number/${number.id}`, 'blueraven')

@@ -62,30 +62,27 @@
             <tr>
               <td class="text-left">{{item.postalCode}}</td>
               <td class="text-right">
-                <confirm-delete-dialog
-                    v-if="userCanDelete"
-                    label="this postal code: "
-                    :item-to-delete="item.postalCode"
-                    @confirm-delete="deleteGroupFromZone(item)"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary" v-if="userCanDelete" @click="postalCodeToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!postalCodeToDelete" @confirm="deleteGroupFromZone" @close-dialog="postalCodeToDelete = null">
+      Are you sure you want to delete this call group: <strong>{{postalCodeToDeleteCode}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Codes',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},
@@ -104,6 +101,12 @@
           {text: 'Postal Code', value: 'postalCode', show: true},
           {text: '', value: 'icons', show: true},
         ],
+        postalCodeToDelete: null
+      }
+    },
+    computed: {
+      postalCodeToDeleteCode(){
+        return this.postalCodeToDelete ? this.postalCodeToDelete.postalCode : ''
       }
     },
     created () {
@@ -127,7 +130,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteGroupFromZone (code) {
+      async deleteGroupFromZone () {
+        const code = this.postalCodeToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/callGroup/code/${code.id}`, 'blueraven')
@@ -139,6 +143,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.postalCodeToDelete = null
       },
       async addCodeToZone () {
         if(this.newCode?.toString()?.length === 5) {

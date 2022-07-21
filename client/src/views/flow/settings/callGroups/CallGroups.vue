@@ -85,12 +85,7 @@
                     <v-btn small text color="primary" @click="goToCallGroup(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="userCanDelete"
-                        label="this call group: "
-                        :item-to-delete="item.callGroupName"
-                        @confirm-delete="[item.archived = true, deleteCallGroup(item.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanDelete" small text color="primary" @click="callGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </td>
                 </tr>
               </template>
@@ -99,6 +94,9 @@
         </v-container>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!callGroupToDelete" @confirm="[callGroupToDelete.archived = true, deleteCallGroup()]" @close-dialog="callGroupToDelete = null">
+      Are you sure you want to delete this call group: <strong>{{callGroupToDeleteName}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -107,11 +105,11 @@
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
   import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'CallGroups',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -140,10 +138,14 @@
         items: [
           {text: 'Active', value: true},
           {text: 'Disabled', value: false}
-        ]
+        ],
+        callGroupToDelete: null
       }
     },
     computed: {
+      callGroupToDeleteName(){
+        return this.callGroupToDelete ? this.callGroupToDelete.callGroupName : ''
+      }
     },
     methods: {
       debounceSearch: debounce( function () {
@@ -175,7 +177,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteCallGroup (groupId) {
+      async deleteCallGroup () {
+        const groupId = this.callGroupToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
@@ -188,6 +191,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.callGroupToDelete = null
       },
       async addCallGroup () {
         this.$store.commit(AppMutations.SET_LOADING, true)

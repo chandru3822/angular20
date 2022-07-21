@@ -52,30 +52,27 @@
                 <v-btn small fab text color="primary" class="d-inline-block" @click="clickRow(item.id)">
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <confirm-delete-dialog
-                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    label="this position: "
-                    :item-to-delete="item.position"
-                    @confirm-delete="deletePosition(item)"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deletePosition" @close-dialog="positionToDelete=null">
+      Are you sure you want to delete this position <strong>{{positionToDeleteName}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Positions',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     data() {
       return {
         delay: 500,
@@ -89,7 +86,13 @@
           {text: 'Position Name', value: 'position', show: true},
           {text: 'Org Type', value: 'orgType', show: true},
           {text: '', value: 'icons', show: false, width: '100px'},
-        ]
+        ],
+        positionToDelete: null
+      }
+    },
+    computed:{
+      positionToDeleteName(){
+        return this.positionToDelete ? this.positionToDelete.position : ''
       }
     },
     created () {
@@ -112,7 +115,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deletePosition(p) {
+      async deletePosition() {
+        const p = this.positionToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/position/${p.id}`)
