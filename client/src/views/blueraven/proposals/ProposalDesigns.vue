@@ -90,8 +90,8 @@
         </div>
       </v-card>
       <v-card width="355" height="535" class="proposal-card request-new"
-              :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
-        <v-btn :disabled="activeDesign && null != activeDesign.projectId"
+              :class="{'disable-new': (activeDesign && null != activeDesign.projectId) || !requestSuccessful}">
+        <v-btn :disabled="(activeDesign && null != activeDesign.projectId) || !requestSuccessful"
                text @click="showNewDesignRequestForm = true">
           <v-icon :size="60">add</v-icon>
         </v-btn>
@@ -204,6 +204,7 @@ export default {
       showNewDesignRequestForm: false,
       project: {},
       activeDesign: {},
+      requestSuccessful: false,
       projectId: this.$route.params.projectId,
       timezone: this.$store.state.user.details.timezone?.value,
       formatPhoneNumber
@@ -276,12 +277,15 @@ export default {
       }
     },
     async getActiveDesign() {
+      this.requestSuccessful = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { data, status } = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
         this.activeDesign = data
+        this.requestSuccessful = true
         handleHidingGlobalLoader(this, status)
       } catch (e) {
+        this.requestSuccessful = false
         logError(e)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

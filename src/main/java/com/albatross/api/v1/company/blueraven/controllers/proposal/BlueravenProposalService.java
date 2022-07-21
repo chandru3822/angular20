@@ -29,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -85,12 +84,12 @@ public class BlueravenProposalService {
     return results;
   }
 
-  public Optional<ProposalDesign> getActiveDesign(Long projectId) {
+  public ProposalDesign getActiveDesign(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
-    return sqlCache.get(
-        "proposal.getActiveDesign", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
+    Optional<ProposalDesign> result = sqlCache.get("proposal.getActiveDesign", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
+    return result.orElse(null);
   }
 
   public List<ProposalDesign> requestNewDesign(
