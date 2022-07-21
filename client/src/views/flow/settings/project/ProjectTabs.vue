@@ -18,7 +18,7 @@
                           placeholder=" "
                           label="Tab Label">
             </v-text-field>
-            <v-btn :disabled="!newTab.tabName" @click="saveTab(newTab)">Save</v-btn>
+            <v-btn :disabled="!newTab.tabName" color="primary" @click="saveTab(newTab)">Save</v-btn>
           </div>
           <v-data-table
               :headers="headers"
@@ -43,7 +43,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': tabs.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text v-if="userCanEdit" icon small class="handle">
+                  <v-btn text v-if="userCanEdit" icon small color="primary" class="handle">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -53,48 +53,11 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text v-if="userCanEdit">
+                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
                       <v-icon v-if="selectedTabId === item.id" @click="saveTab(item)">save</v-icon>
                       <v-icon v-else @click="selectedTabId = item.id">edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                        v-if="userCanEdit"
-                        v-model="item.deleteConfirm"
-                        width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this tab: <strong>{{ item.tabName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                              @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                              color="primary"
-                              text
-                              @click="[item.archived = true, deleteTab(item.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit" @click="tabToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -104,7 +67,13 @@
         </v-container>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!tabToDelete"
+                        @confirm="[tabToDelete.archived = true, deleteTab()]"
+                        @close-dialog="tabToDelete=null">
+      Are you sure you want to delete this tab: <strong>{{tabToDeleteName}}</strong>?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -116,9 +85,11 @@
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'ProjectTabs',
+    components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     mounted() {
@@ -166,9 +137,14 @@
           { text: 'Tab Label', value: 'tabName', show: true },
           { text: null, value: 'icons', show: true }
         ],
+        tabToDelete: null
       }
     },
-    computed: {},
+    computed: {
+      tabToDeleteName(){
+        return this.tabToDelete ? this.tabToDelete.tabName : ''
+      }
+    },
     methods: {
       async getTabs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -184,7 +160,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteTab(tabId) {
+      async deleteTab() {
+        const tabId= this.tabToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/objectTypeTab/${tabId}`)
