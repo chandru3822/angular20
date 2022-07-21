@@ -4,7 +4,7 @@
       <v-col cols="12" class="pt-0">
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-            <v-btn id="back-btn" text class="pl-1 pr-2" :to="'/ahj'">
+            <v-btn id="back-btn" text color="primary" class="pl-1 pr-2" :to="'/ahj'">
               <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
             </v-btn>
 

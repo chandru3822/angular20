@@ -135,27 +135,13 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-
-        <v-dialog v-model="ahjDeleteDialog" max-width="500px">
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">Confirm</span>
-            </v-card-title>
-
-            <v-card-text>
-              Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
-            </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-              <v-btn color="brRed" class="white--text" raised
-                     @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!ahjToDelete" @confirm="deleteAhj" @close-dialog="ahjToDelete=null">
+      Are you sure you want to delete the AHJ for {{ ahjToDeleteName }}?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>delete</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -165,6 +151,7 @@
   import constants from '@/helpers/constants'
   import {getActiveStates} from '@/services/stateService'
   import { AppMutations } from '@/stores/AppStore'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   const FILTER_DEFAULTS = {
     name: {value: '', type: 'text', model: 'name'},
@@ -174,7 +161,7 @@
 
   export default {
     name: 'ahjs',
-
+    components: {ConfirmationDialog},
     data: () => ({
       snackbar: {},
       constants,
@@ -208,7 +195,7 @@
       ahjFilters: [],
       states: [],
       metroAreas: [],
-      ahjToDelete: {},
+      ahjToDelete: null,
       footerProps: {
         showFirstLastPage: !constants.IS_MOBILE,
         firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
@@ -246,6 +233,9 @@
       },
       ahjBtnTxt () {
         return this.addMode ? 'Add' : 'Update'
+      },
+      ahjToDeleteName(){
+        return this.ahjToDelete ? this.ahjToDelete.name : ''
       }
     },
     watch: {
@@ -301,7 +291,6 @@
           id: item.id,
           name: item.name
         }
-        this.ahjDeleteDialog = true
       },
       close () {
         this.ahjDialog = false
@@ -341,21 +330,21 @@
         await this.fetchAhjs().then(() => this.fetchStates())
         this.editedItem = {}
       },
-      async deleteAhj (id) {
+      async deleteAhj () {
+        const id = this.ahjToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/ahj/${id}`, 'blueraven')
           this.close()
           this.initFilters()
           await this.fetchAhjs().then(() => this.fetchStates())
-          this.ahjToDelete = {}
           this.snackbar = getSnackbar('SUCCESS', 'AHJ deleted')
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting AHJ')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-
+        this.ahjToDelete = null
       },
       async fetchStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
