@@ -25,6 +25,8 @@
     <v-row class="mx-2">
       <v-card v-for="(d, idx) in designs" :key="idx"
               width="355" height="535" class="pa-4 proposal-card">
+
+        <div style="font-size: 8pt;">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
           <img-proxy
             name="designImg"
@@ -77,7 +79,6 @@
         </v-list>
         <div class="mt-6 ml-4" v-else>No Proposals Available</div>
         <div class="slice-selectors" v-if="d.proposals.length > numberToDisplay">
-
           <v-icon dense
                   class="pr-1 pb-3"
                   :disabled="d.offset === 0"
@@ -86,9 +87,7 @@
                   class="pl-1 pb-3"
                   :disabled="disableAddSlice(d.proposals.length, d.offset)"
                   @click="d.offset++">mdi-chevron-right</v-icon>
-
         </div>
-        <div style="position:absolute; top: 0">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
       </v-card>
       <v-card width="355" height="535" class="proposal-card request-new"
               :class="{'disable-new': activeDesign && null != activeDesign.projectId}">
