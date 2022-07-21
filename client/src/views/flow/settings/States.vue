@@ -34,7 +34,7 @@
         </v-card>
         <v-data-table
             :headers="headers"
-            :items="filterStates()"
+            :items="filterStates"
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
@@ -52,7 +52,7 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': companyStates.indexOf(item) % 2}">
+            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterStates.indexOf(item) % 2}">
               <h3>Edit State</h3>
               <div class="mb-3">
                 <v-text-field text v-model="item.mapLatitude"
@@ -73,7 +73,7 @@
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': companyStates.indexOf(item) % 2}">
+            <tr  class="text-left" :class="{'shaded-row': filterStates.indexOf(item) % 2}">
               <td class="text-left">{{ item.state }}</td>
               <td class="text-left">{{ item.abbreviation }}</td>
               <td class="text-left">
@@ -84,12 +84,7 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <confirm-delete-dialog
-                    v-if="userCanDelete"
-                    label="this state: "
-                    :item-to-delete="item.state"
-                    @confirm-delete="deleteCompanyState(item)"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary" v-if="userCanDelete" @click="stateToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -97,7 +92,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!stateToDelete" @confirm="deleteCompanyState" @close-dialog="stateToDelete=null">
+      Are you sure you want to delete this state: <strong>{{stateToDeleteName}}</strong>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -109,10 +106,11 @@
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'CompanyStates',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     data() {
       return {
         snackbar: {},
@@ -134,8 +132,17 @@
           { text: 'Active', value: 'active', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
-        expanded: []
+        expanded: [],
+        stateToDelete: null
       }
+    },
+    computed:{
+      stateToDeleteName() {
+        return this.stateToDelete ? this.stateToDelete.state : ''
+      },
+      filterStates () {
+        return orderBy(this.companyStates.filter(cs => { return !cs.archived}), [cs => cs.state.toLowerCase()])
+      },
     },
     async created () {
       this.getCompanyStates()
@@ -196,7 +203,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteCompanyState(companyState) {
+      async deleteCompanyState() {
+        const companyState = this.stateToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
@@ -210,10 +218,9 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.stateToDelete = null
       },
-      filterStates () {
-        return orderBy(this.companyStates.filter(cs => { return !cs.archived}), [cs => cs.state.toLowerCase()])
-      },
+
     }
   }
 </script>

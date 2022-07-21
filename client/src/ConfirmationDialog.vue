@@ -22,14 +22,14 @@
             color="primary"
             class="text-capitalize mr-2 mb-2"
         >
-          <slot name="no">No</slot>
+          <slot name="no">Cancel</slot>
         </v-btn>
         <v-btn
             color="primary"
             class="white--text elevation-2 text-capitalize mr-2 mb-2"
             :disabled="disableConfirm"
             @click="yes">
-          <slot name="yes">Yes</slot>
+          <slot name="yes">Delete</slot>
         </v-btn>
       </v-card-actions>
     </v-card>
