@@ -28,6 +28,20 @@ BEGIN
          select
              ps.id as "processStepId",
              ps.company_id as "companyId",
+             ps.readonly,
+             coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                        FROM (
+                               SELECT wlp.id,
+                                      wlp.position_id as "positionId",
+                                      wlp.process_step_id as "processStepId",
+                                      wlp.created_by_id as "createdById",
+                                      wlp.modified_by_id as "modifiedById",
+                                      wlp.archived
+                               FROM flow.white_listed_position wlp
+                               WHERE wlp.white_list_type_id = 9
+                                 AND wlp.archived is not true
+                                 and wlp.process_step_id = ps.id) wlp), '[]') AS "whiteListedPositions",
              pps.id as "projectProcessStepId",
              pps.project_id as "projectId",
              pps.process_step_complete_date as "processStepCompleteDate",
@@ -210,6 +224,7 @@ BEGIN
                                                                        where dfp.db_function_id = cf.db_function_id
                                                                          and dfp.parameter_type_id = 2
                                                                          and apdv.archived is not true
+                                                                       order by dfp.display_order
                                                                    ) params), '[]') AS "actionParamDynamicValues"
                                           FROM flow.process_step_action_company_function psacf
                                                    inner join flow.company_function cf on cf.id = psacf.company_function_id

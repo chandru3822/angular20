@@ -1,10 +1,12 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
@@ -16,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 
@@ -261,6 +264,31 @@ public class ProposalVersionService {
             new ColumnMapRowMapper());
 
     return query.stream().map(getMapper(objectMapper)).filter(Objects::nonNull).toList();
+  }
+
+  public List<Long> getProposalValuesFilterIds(
+      @NonNull Long versionId, ProposalValueFilter filter) {
+    try {
+
+      final ProposalVersion proposalVersion =
+          getProposalVersion(versionId)
+              .filter(pv -> !ProposalVersionStatus.DRAFT.equals(pv.getStatus()))
+              .orElseThrow(
+                  () ->
+                      new ApiException("Proposal version not found or has not been published"));
+
+      final PGobject varsObject = new PGobject();
+      varsObject.setType("jsonb");
+      varsObject.setValue(objectMapper.writeValueAsString(filter));
+
+    return sqlCache.queryForList(
+          "propTool.findFilterableValues",
+          Map.of("versionId", proposalVersion.getId(), "vars", varsObject),
+          Long.class);
+
+    } catch (SQLException | JsonProcessingException e) {
+      throw new ApiException(e);
+    }
   }
 
   private Function<Map<String, Object>, ProposalCustomValuesRow> getMapper(ObjectMapper om) {

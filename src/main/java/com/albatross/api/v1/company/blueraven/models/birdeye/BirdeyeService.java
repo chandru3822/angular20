@@ -1,8 +1,10 @@
 package com.albatross.api.v1.company.blueraven.models.birdeye;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,10 +32,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -44,6 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @RequiredArgsConstructor
 public class BirdeyeService {
 
+  private final SecurityService securityService;
   private final SqlCache sqlCache;
   private final ObjectMapper om;
 
@@ -135,6 +135,14 @@ public class BirdeyeService {
       log.error("BIRDEYE: Birdeye unavailable", e);
       throw new RuntimeException("Birdeye unavailable at this time.");
     }
+  }
+
+  public void saveCfgaValue(int projectId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.query("birdeye.saveReviewInviteSentValue", params, String.class);
   }
 
   public BirdeyeReviewInvitation sendInvitation(BirdeyeReviewInvitation invitation) {

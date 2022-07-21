@@ -50,7 +50,7 @@ BEGIN
   into v_position_ids
   from flow.user_position up
   where user_id = p_user_id;
-
+  --It doesn't make sense to orphan contacts by adding the archived condition to the query above.
   case
     when p_searchterm is not null and p_searchterm != '' then
       RETURN QUERY

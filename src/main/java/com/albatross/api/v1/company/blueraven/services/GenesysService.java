@@ -213,7 +213,8 @@ public class GenesysService {
     }
 
     WritableDialerContact wdc = new WritableDialerContact();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     HashMap<String, Object> contactMap = new HashMap<>();
     wdc.setId(contact.getId().toString());
     contactMap.put("id", contact.getId());
@@ -227,8 +228,8 @@ public class GenesysService {
         "mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put(
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("Total Call Attempts", "");
-    contactMap.put("Contacted Call Attempts", "");
+    contactMap.put("Total Call Attempts", 0);
+    contactMap.put("Contacted Call Attempts", 0);
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("Call Scheduled", "");
@@ -236,7 +237,7 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
+    contactMap.put("date_created", formatterDate.format(contact.getDateCreated()) + "T" + formatterTime.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, false);
 
@@ -268,7 +269,7 @@ public class GenesysService {
 
     List<DialerContact> dc =
         apiInstance.postOutboundContactlistContacts(
-            contactListId, List.of(wdc), false, false, false);
+            contactListId, List.of(wdc), true, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
   }
@@ -326,7 +327,8 @@ public class GenesysService {
     }
 
     Contact contact = contactService.getContact(contactId);
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
@@ -347,7 +349,7 @@ public class GenesysService {
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
     contactMap.put("email", contact.getEmail() != null ? contact.getEmail() : "");
-    contactMap.put("date_created", formatter.format(contact.getDateCreated()));
+    contactMap.put("date_created", formatterDate.format(contact.getDateCreated()) + "T" + formatterTime.format(contact.getDateCreated()));
 
     addTextelParameters(contactMap, true);
 
@@ -406,8 +408,8 @@ public class GenesysService {
         contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts"));
         contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts"));
       } catch (Exception e) {
-        contactMap.put("Total Call Attempts", "");
-        contactMap.put("Contacted Call Attempts", "");
+        contactMap.put("Total Call Attempts", 0);
+        contactMap.put("Contacted Call Attempts", 0);
       }
 
       dc.setData(contactMap);

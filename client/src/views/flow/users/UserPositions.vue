@@ -111,8 +111,8 @@
               />
               <v-autocomplete v-model="item.positionId"
                               :items="positions"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
+                              :readonly="true"
+                              :disabled="true"
                               label="Positions"
                               @input="populateHierarchy(item, false)"
                               item-text="position"
@@ -125,18 +125,22 @@
                           v-if="item.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, item)"
                           v-model="item.keyedHierarchy[f.orgLevelId]['orgId']"
                           :items="getOrgsMatchingPositionOrgType(f.orgs, item)"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="true"
+                          :disabled="true"
                           :rules="requiredRules"
                           :label="f.levelName"
                           item-text="orgName"
                           item-value="id"
                 >
                   <template slot="selection" slot-scope="{ item }">
-                    {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
+                    <div style="color: #9E9E9E;">
+                      {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
+                    </div>
                   </template>
                   <template slot='item' slot-scope='{ item }'>
-                    {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
+                    <div style="color: #9E9E9E;">
+                      {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
+                    </div>
                   </template>
                 </v-autocomplete>
               </div>

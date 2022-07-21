@@ -1,4 +1,4 @@
-const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE} = process.env
+const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_APP_MAPBOX_ACCESS_TOKEN, VUE_APP_MAPBOX_STYLE} = process.env
 
 let constants = {}
 
@@ -10,8 +10,8 @@ constants.PROD_COLOR = 'primary' //this is the dark blue prod color
 constants.VUE_APP_ENV = VUE_APP_ENV
 constants.VUE_APP_BASE_API = VUE_APP_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'
-constants.MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN || '***REMOVED***'
-constants.MAPBOX_STYLE = VUE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
+constants.MAPBOX_ACCESS_TOKEN = VUE_APP_MAPBOX_ACCESS_TOKEN //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
+constants.MAPBOX_STYLE = VUE_APP_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 constants.IS_MOBILE = window.innerWidth <= 768
 constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
@@ -48,6 +48,10 @@ constants.CITY_RULES = [
 constants.ADDRESS_RULES = [
   v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
   v => (!v || /^[-#'.a-zA-Z0-9&\s]+$/.test(v)) || "Address must only contain alphanumeric, whitespace, or [-#'.&] characters"
+]
+
+constants.PASSWORD_RULES = [
+  v => (!v || (v && (v.length >= 8))) || 'Must be at least 8 characters',
 ]
 
 constants.PHONE_RULES = [
@@ -122,6 +126,15 @@ constants.SNACKBARS = {
     timeout: 5000,
     text: '',
     color: 'amber',
+    fontClass: 'secondary--text'
+  },
+  INFO: {
+    y: 'top',
+    x: null,
+    mode: '',
+    timeout: 5000,
+    text: '',
+    color: 'primaryText',
     fontClass: 'secondary--text'
   }
 }

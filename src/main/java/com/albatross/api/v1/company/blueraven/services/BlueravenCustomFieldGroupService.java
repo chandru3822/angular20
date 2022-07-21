@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -259,6 +260,20 @@ public class BlueravenCustomFieldGroupService {
     params.put("maxValue", customField.getMaxValue());
 
     sqlCache.update("blueravenCustomFieldGroup.assignment.saveMinMax", params);
+  }
+
+
+  public void updateConditionalOnId(CustomField customField){
+    User user = securityService.getCurrentUser();
+
+    if(!Objects.equals(customField.getCustomFieldGroupId(), customField.getConditionalOnId())){
+      final HashMap<String, Object> params = new HashMap<>();
+      params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+      params.put("modifiedById", user.trueUserId());
+      params.put("conditionalOnId", customField.getConditionalOnId());
+
+      sqlCache.update("blueravenCustomFieldGroup.assignment.updateConditionalOnId", params);
+    }
   }
 
   public String getCfgaSql(String objectType) {

@@ -1,5 +1,36 @@
 <template>
   <v-container class="custom-field-group-container">
+    <v-dialog width="700"
+              v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2 error--text">
+          Error Deleting Attachment Type
+        </v-card-title>
+
+        <v-card-text class="pt-5">
+          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
+            <div class="mb-3">* This attachment type is currently in use.  You must remove it from the following locations before deleting.</div>
+            <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
+              <strong>{{ a.processStepName }}</strong>
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -71,6 +102,8 @@
         selectedAttachmentTypeId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
+        cannotDeleteReasons: {},
+        deleteError: false,
         showDeleteDialog: false,
         itemToDelete: null
       }
@@ -96,20 +129,25 @@
         }
       },
       async deleteType() {
-        const typeId = this.itemToDelete.id
+        const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/attachmentType/type/${typeId}`)
+          const {status} = await deleteRequest(`/attachmentType/delete/${item.id}`)
+          item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Attachment Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
+          if (e.status === 400) {
+            item.deleteConfirm = false
+            this.deleteError = true
+            this.cannotDeleteReasons = e.data
+          }
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.itemToDelete.archived = true
         this.closeDeleteDialog()
       },
       async addNewType() {

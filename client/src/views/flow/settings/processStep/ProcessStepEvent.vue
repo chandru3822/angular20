@@ -349,6 +349,16 @@
                               placeholder="Enter a dynamic value (number)"
                               v-model="fp.dynamicValue"
                               :label="fp.parameterName"></v-text-field>
+                            <v-checkbox
+                              v-else-if="fp.dataTypeId === 3"
+                              type="checkbox"
+                              :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                              :value="fp.dynamicValue === 'true'"
+                              @change="changeBooleanValue($event, fp)"
+                              :label="fp.parameterName"
+                            />
                             <v-text-field
                               v-else
                               :key="index"
@@ -422,13 +432,17 @@
                                     :disabled="!cp.edit || !userCanEdit"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
-                                  <v-text-field
+                                  <v-checkbox
                                     v-else-if="fp.dataTypeId === 3"
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter a boolean"
-                                    v-model="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
+                                    :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                                    :value="fp.dynamicValue === 'true'"
+                                    @change="changeBooleanValue($event, fp)"
+                                    :label="fp.parameterName"></v-checkbox>
                                   <v-text-field
                                     v-else-if="fp.dataTypeId === 4"
                                     :readonly="!cp.edit || !userCanEdit"
@@ -689,7 +703,11 @@
               <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn text color="primary" @click="[expanded = [action]]" v-if="!expanded.includes(action)">
+                  <v-btn text color="primary" v-if="userCanEdit"
+                         @click="duplicateAction(action.id)">
+                    <v-icon>mdi-content-copy</v-icon>
+                  </v-btn>
+                  <v-btn text @click="[expanded = [action]]" v-if="!expanded.includes(action)">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn text @click="expanded = []" v-else>cancel
@@ -888,6 +906,9 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     //populate requirements so that events can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.selectedEventRequirements = reqs
@@ -1078,6 +1099,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async duplicateAction(actionId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action/${actionId}/duplicate`)
+        this.selectedEvent.processStepEventActions.push(data)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Duplicating Action')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

@@ -96,12 +96,12 @@
         </v-toolbar>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col cols="12" style="padding-top: 0">
+<!--    <v-row>-->
+<!--      <v-col cols="12" style="padding-top: 0">-->
         <router-view ref="userRouterViewContainer"/>
-      </v-col>
-
-    </v-row>
+<!--      </v-col>-->
+<!---->
+<!--    </v-row>-->
   </v-container>
 </template>
 

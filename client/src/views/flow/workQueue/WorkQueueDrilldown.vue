@@ -1,6 +1,6 @@
 <template>
   <v-container id="work-queue-drilldown-container">
-    <v-row>
+    <v-row v-if="!dataLoading && !errorLoading">
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-btn text small :to="`/workQueue`" class="mr-3" color="primary">
@@ -210,6 +210,7 @@ export default {
       userFullName: this.$store.state.user.details.fullName,
       showPropCustom: false,
       dataLoading: true,
+      errorLoading: false,
       workQueue: {},
       workQueueTypeId: this.$route.params.id,
       userPositionId: this.$route.query.upId,
@@ -330,6 +331,7 @@ export default {
     },
     async getWorkDetails() {
       this.dataLoading = true
+      this.errorLoading = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let path = ''
@@ -462,7 +464,9 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.dataLoading = false
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
+        this.errorLoading = true
+        let msg = e?.data?.message || 'Error Retrieving Results'
+        this.snackbar = getSnackbar('ERROR', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

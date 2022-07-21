@@ -565,7 +565,11 @@
                             <v-checkbox
                               v-else-if="fp.dataTypeId === 3"
                               type="checkbox"
-                              v-model="fp.dynamicValue"
+                              :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                              :value="fp.dynamicValue === 'true'"
+                              @change="changeBooleanValue($event, fp)"
                               :label="fp.parameterName"
                             />
                             <v-text-field
@@ -646,7 +650,11 @@
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     type="checkbox"
-                                    v-model="fp.dynamicValue"
+                                    :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                                    :value="fp.dynamicValue === 'true'"
+                                    @change="changeBooleanValue($event, fp)"
                                     :label="fp.parameterName"
                                   />
                                   <v-text-field
@@ -844,6 +852,11 @@
                 <td class="text-left">{{ item.projectStatusType || 'N/A' }}</td>
                 <td>
                   <div style="display: flex; float: right;">
+                    <v-btn small text color="primary"
+                           v-if="userCanEdit"
+                           @click="duplicateAction(item.id)">
+                      <v-icon>mdi-content-copy</v-icon>
+                    </v-btn>
                     <v-btn small text color="primary"
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
@@ -1059,6 +1072,9 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     //populate requirements so that actions can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.requirements = reqs
@@ -1176,6 +1192,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async duplicateAction(actionId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/processStep/${this.processStepId}/action/${actionId}/duplicate`)
+        this.actions.push(data)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Duplicating Action')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

@@ -1,107 +1,149 @@
 <template>
-  <v-container class="py-0">
-    <div v-if="user.id">
-      <v-row>
-        <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
-          <v-form ref="userForm">
+  <div id="user-detail-container">
+    <!--    modal for editing user fields -->
+    <v-dialog width="500"
+              v-if="user && user.id"
+              v-model="showEditModal" content-class="square-card">
+      <v-card class="px-6 py-4 square-card">
+        <v-form ref="userEditForm">
+          <v-card-title
+            color="blackText"
+            class="albatross-header-3 text-capitalize pa-0"
+            primary-title>
+            User Overview
+          </v-card-title>
+          <v-card-text class="pt-4 px-0">
             <div>
-              <v-toolbar color="transparent" class="elevation-0">
-                <v-toolbar-title>Summary</v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-toolbar-items>
-                  <v-btn text color="primary" :disabled="fieldsSaving"
-                         :loading="fieldsLoading"
-                         @click="[fieldsSaving=true, saveUser()]" v-if="userCanEdit">Save
-                  </v-btn>
-                </v-toolbar-items>
-              </v-toolbar>
-              <v-card class="pa-4">
-                <v-select attach v-model="user.userStatusTypeId"
-                          :items="userStatusTypes"
-                          label="User Status"
-                          :rules="requiredRules"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          placeholder="Select a status..."
-                          @change="dirtySystemFields = true"
-                          item-text="userStatusType"
-                          item-value="id"
-                          autocomplete="off">
-                </v-select>
-                <v-text-field text
-                              label="First Name"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="dirtySystemFields = true"
-                              placeholder=" "
-                              :rules="requiredRules"
-                              v-model="user.firstName"></v-text-field>
-                <v-text-field text
-                              label="Last Name"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :rules="requiredRules"
-                              @change="dirtySystemFields = true"
-                              placeholder=" "
-                              v-model="user.lastName"></v-text-field>
-                <v-text-field text
-                              label="Phone"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :rules="userPhoneRule"
-                              @change="dirtySystemFields = true"
-                              placeholder=" "
-                              v-model="user.phoneNumber"></v-text-field>
-                <v-text-field text
-                              label="Phone Extension"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="dirtySystemFields = true"
-                              placeholder=" "
-                              v-model="user.phoneExtension"></v-text-field>
-                <v-text-field text
-                              label="E-Mail"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :rules="emailRule"
-                              @change="dirtySystemFields = true"
-                              placeholder=" "
-                              v-model="user.email"></v-text-field>
-                <v-text-field text
-                              label="Username"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :rules="usernameRule"
-                              @change="dirtySystemFields = true"
-                              placeholder=" "
-                              v-model="user.username"></v-text-field>
-                <!--            <div class="mt-2" v-if="companies.length > 1">-->
-                <v-text-field text class="mt-4"
-                              v-if="userIsAdmin"
-                              label="Password"
-                              @change="dirtySystemFields = true"
-                              placeholder=" "
-                              v-model="user.newPassword"></v-text-field>
-                <v-card color="#ffcac7" class="pa-4" v-if="user.loginAttempts >= 9">
-                  <label>Too Many Attempts, User Account Locked</label><br/>
-                  <v-btn v-if="userIsAdmin" @click="unlockUserAccount" color="primaryCustom" class="white--text mt-2">
-                    Unlock
-                  </v-btn>
-                </v-card>
-                <div class="mt-2">
-                  <v-toolbar color="transparent" class="elevation-0" id="company-access-toolbar">
-                    <v-toolbar-title>Company Access:</v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items>
-                      <v-btn
-                        v-if="userIsAdmin"
-                        text color="primary"
-                        @click="addUserCompany = !addUserCompany">Add
-                      </v-btn>
-                    </v-toolbar-items>
-                  </v-toolbar>
-                  <v-divider :class="{'mb-2': !addUserCompany}"></v-divider>
-                  <v-card flat color="transparent" class="px-3" v-if="addUserCompany">
+              <v-select attach v-model="tempUser.userStatusTypeId"
+                        :items="userStatusTypes"
+                        label="User Status"
+                        :rules="requiredRules"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        placeholder="Select a status..."
+                        item-text="userStatusType"
+                        item-value="id"
+                        autocomplete="off">
+              </v-select>
+              <v-text-field text
+                            label="User First Name"
+                            placeholder=" "
+                            :rules="requiredRules"
+                            :readonly="!userCanEdit"
+                            v-model="tempUser.firstName"
+              ></v-text-field>
+              <v-text-field text
+                            label="User Last Name"
+                            :rules="requiredRules"
+                            :readonly="!userCanEdit"
+                            v-model="tempUser.lastName"
+              ></v-text-field>
+              <v-text-field text
+                            label="Phone"
+                            placeholder=" "
+                            :rules="userPhoneRule"
+                            :readonly="!userCanEdit"
+                            v-model="tempUser.phoneNumber"></v-text-field>
+              <v-text-field text
+                            label="Phone Extension"
+                            placeholder=" "
+                            :readonly="!userCanEdit"
+                            v-model="tempUser.phoneExtension"></v-text-field>
+              <v-text-field text
+                            label="E-Mail"
+                            placeholder=" "
+                            :rules="emailRule"
+                            :readonly="!userCanEdit"
+                            v-model="tempUser.email"></v-text-field>
+              <v-text-field text
+                            label="Username"
+                            placeholder=" "
+                            :rules="usernameRule"
+                            :readonly="!userCanEdit"
+                            v-model="tempUser.username"></v-text-field>
+              <v-text-field text class="mt-4"
+                            v-if="userIsAdmin"
+                            :rules="passwordRule"
+                            label="Password"
+                            placeholder=" "
+                            v-model="tempUser.newPassword"></v-text-field>
+            </div>
+          </v-card-text>
+        </v-form>
+
+        <v-card-actions class="pa-0">
+          <v-btn text color="primary" @click="showEditModal = false" class="text-capitalize">
+            cancel
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            class="white--text text-capitalize font-weight-bold"
+            @click="validateForm()">
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!--    end dialog -->
+    <ThreeColumnLayout :header-hidden="true"
+                       :auto-overflow-left="false">
+      <template v-slot:left-column>
+        <div v-if="!$store.state.project.leftSideSplit && user && user.id"
+             class="px-2 height-one-hunned overflow-y-auto">
+          <v-toolbar flat color="transparent">
+            <v-toolbar-title class="albatross-header-3">User Overview</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn
+                text color="primary" x-small
+                @click="[getUserStatusTypes(), tempUser = cloneDeep(user), showEditModal = true]"
+                v-if="user && user.id && userCanEdit">
+                <v-icon>edit</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <div class="mx-4 address-details">
+            <span class="detail-label">User Status:</span>
+            <span class="detail-item" :class="{'status-cancelled': !user.hasAccess,
+                                               'status-active': user.hasAccess}">{{ user.userStatusType }}</span> <br/>
+            <span class="detail-label">Phone:</span>
+            <span class="detail-item">{{ formatPhoneNumber(user.phoneNumber) }}</span> <br/>
+            <span class="detail-label">Phone Extension:</span>
+            <span class="detail-item">{{ user.phoneExtension }}</span> <br/>
+            <span class="detail-label">Email:</span>
+            <span class="detail-item">{{ user.email }}</span> <br/>
+            <span class="detail-label">Username:</span>
+            <span class="detail-item">{{ user.username }}</span> <br/>
+          </div>
+          <v-divider class="mt-4" v-if="user.loginAttempts >= 9"></v-divider>
+          <v-card color="#ffcac7" class="pa-4 mx-2 mt-2" v-if="user.loginAttempts >= 9">
+            <label>Too Many Attempts, User Account Locked</label><br/>
+            <v-btn v-if="userIsAdmin" @click="unlockUserAccount" color="primary" class="white--text mt-2">
+              Unlock
+            </v-btn>
+          </v-card>
+          <v-divider class="mt-4"></v-divider>
+          <div class="mt-2">
+            <v-toolbar color="transparent" flat>
+              <v-toolbar-title class="albatross-header-3">Company Access</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-menu
+                  v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                  bottom
+                  offset-y
+                  :close-on-content-click="false"
+                >
+                  <template v-slot:activator="{ on: menu }">
+                    <v-btn text color="primary"
+                           v-on="{ ...menu }"
+                           v-if="userIsAdmin"
+                           @click="addUserCompany = !addUserCompany">
+                      <v-icon>add</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card class="pa-5">
                     <v-select
                       v-model="newCompany.id"
                       :items="filterUserCompanies()"
@@ -119,120 +161,173 @@
                     ></v-select>
                     <v-btn
                       v-if="userIsAdmin"
-                      color="primaryCustom"
+                      color="primary"
                       class="white--text mb-2"
                       :disabled="!newCompany.id || !newCompany.companyUserStatusTypeId"
                       text
                       @click="saveUserCompany">Add User to Company
                     </v-btn>
                   </v-card>
-                  <v-divider v-if="addUserCompany" class="mb-2"></v-divider>
+                </v-menu>
+              </v-toolbar-items>
+            </v-toolbar>
+            <div class="mx-2">
+              <v-card flat v-for="uc in user.companies"
+                      class="user-company-button albatross-body-1">
+                {{ uc.companyName }}
+                <v-dialog
+                  v-if="userIsAdmin"
+                  v-model="uc.deleteConfirm"
+                  width="500">
+                  <template #activator="{ on }">
+                    <v-btn fab small text v-on="on">
+                      <v-icon color="primary">delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title
+                      class="text-h5 grey lighten-2"
+                      primary-title>
+                      Confirm
+                    </v-card-title>
 
-                  <div v-for="uc in user.companies">
-                    {{ uc.companyName }}
-                    <v-dialog
-                      v-if="userIsAdmin"
-                      v-model="uc.deleteConfirm"
-                      width="500">
-                      <template #activator="{ on }">
-                        <v-btn x-small text color="primary" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                          Confirm
-                        </v-card-title>
+                    <v-card-text class="pt-4">
+                      Are you sure you want to delete {{ uc.companyName }} from this user?
+                    </v-card-text>
 
-                        <v-card-text class="pt-4">
-                          Are you sure you want to delete {{ uc.companyName }} from this user?
-                        </v-card-text>
+                    <v-divider></v-divider>
 
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="uc.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primary"
-                            text
-                            @click="removeUserCompany(uc)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </div>
-
-                </div>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="uc.deleteConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primary"
+                        text
+                        @click="removeUserCompany(uc)">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </v-card>
             </div>
-            <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
-              <v-toolbar color="transparent" class="elevation-0">
-                <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-toolbar-items>
-                  <!--              <v-btn text @click="saveUser">Save</v-btn>-->
-                </v-toolbar-items>
-              </v-toolbar>
-              <v-card class="pa-4">
-                <CustomValueInput v-for="(cf, index) in cfg.customFieldValues"
-                                  :key="index"
-                                  :required="cf.required"
-                                  :readonly="getReadOnly(cf)"
-                                  :callback="populateDirtyCfvs" :field="cf"></CustomValueInput>
-              </v-card>
-            </div>
-          </v-form>
-        </v-col>
-        <v-col cols="12" md="6" class="text-left pa-0">
-          <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>Notes</v-toolbar-title>
+          </div>
+        </div>
+      </template>
+      <template v-slot:main-column>
+        <div v-if="user && user.id && !fieldsLoading" style="overflow-x: hidden">
+          <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
+            <v-toolbar-title class="albatross-header-3">
+              User Summary
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text @click="setSplitColumnValue()" class="px-0">
+                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
+              </v-btn>
+              <div>
+                <v-btn color="primary"
+                       class="white--text mt-3"
+                       v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="saveUser()">
+                  Save Fields
+                </v-btn>
+              </div>
+            </v-toolbar-items>
           </v-toolbar>
-          <NotesAndActivityContent ref="notes" :showNotes="true" :showActivity="false"
-                                   :notes="notes" :primaryId="parseInt(userId)"
-                                   type="User"
-          ></NotesAndActivityContent>
+          <v-row class="px-5">
+            <v-col cols="12" class="text-left py-0 px-0">
+              <!--    process field groups-->
+              <v-form ref="userForm">
+                <v-col
+                  class="pt-0"
+                  v-for="(cfg, index) in customFieldGroups"
+                  :key="index"
+                >
+                  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+                    <v-toolbar-title>
+                      {{ cfg.groupName }}
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                    </v-toolbar-items>
+                  </v-toolbar>
 
-          <Attachments :object-type-id="3" :user-id="userId"/>
-        </v-col>
+                  <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+                    <v-row>
+                      <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                                          :key="idx"
+                                          :required="cf.required"
+                                          :readonly="getReadOnly(cf)"
+                                          :callback="populateDirtyCfvs"
+                                          :field="cf"
+                                          :show-field-name="false"></CustomValueInput>
+                      </v-col>
+                      <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                                          :key="idx"
+                                          :required="cf.required"
+                                          :readonly="getReadOnly(cf)"
+                                          :callback="populateDirtyCfvs"
+                                          :field="cf"
+                                          :show-field-name="false"></CustomValueInput>
+                      </v-col>
+                    </v-row>
 
-      </v-row>
+                  </v-card>
+                </v-col>
 
-    </div>
+              </v-form>
+            </v-col>
+          </v-row>
+        </div>
+        <div v-else>
+          <SpinnerInline centered :size="50" color="primary"/>
+        </div>
+      </template>
+      <template v-slot:right-column>
+        <ProjectActivity v-if="user && user.id"
+                         :user-id="userId"
+                         :show-sms-tab="false"></ProjectActivity>
+      </template>
+    </ThreeColumnLayout>
 
-  </v-container>
+  </div>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-
+import {ProjectMutations} from '@/stores/ProjectStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent.vue'
 import {
   handleHidingGlobalLoader,
   getRequest,
   putRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar
+  getSnackbar, formatPhoneNumber, logError
 } from '@/helpers/helpers'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import cloneDeep from 'lodash.clonedeep'
-import Attachments from '@/views/flow/components/Attachments'
+import ThreeColumnLayout from '@/views/ThreeColumnLayout'
+import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import constants from "@/helpers/constants";
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: 'User',
   components: {
     CustomValueInput,
-    NotesAndActivityContent,
-    Attachments
+    ThreeColumnLayout,
+    SpinnerInline,
+    ProjectActivity
   },
   data() {
     return {
@@ -251,15 +346,19 @@ export default {
         v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"
       ],
       usernameRule: constants.USERNAME_RULES,
+      passwordRule: constants.PASSWORD_RULES,
       emailRule: constants.EMAIL_RULES,
       snackbar: {},
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'),
       companies: [],
       dirtyCfvs: [],
+      tempUser: {},
       user: {},
+      formatPhoneNumber,
+      showEditModal: false,
+      cloneDeep,
       requiredRules: constants.BASIC_REQUIRED_RULE,
-      dirtySystemFields: false,
       fieldsSaving: false,
       fieldsLoading: true,
       customFieldGroups: [],
@@ -276,18 +375,49 @@ export default {
   },
   async created() {
     this.fieldsLoading = true
-    let requests = [this.getUser(), this.getCompanies(), this.getCustomFieldGroups(), this.getNotes(), this.getUserStatusTypes()]
+    let requests = [this.getUser(), this.getCompanies(), this.getCustomFieldGroups()]
     await Promise.all(requests).then(async () => {
       this.$store.commit(AppMutations.SET_LOADING, false)
       this.fieldsLoading = false
     })
   },
   methods: {
-    hasDirtyFields() {
-      return this.dirtyCfvs.length > 0 || this.dirtySystemFields
+    setSplitColumnValue() {
+      //flip the flag
+      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
     },
-    hasDirtyNotes() {
-      return this.$refs.notes?.hasUnsavedNotes()
+    getCustomFieldValuesToDisplay(values, columnNum) {
+      if (this.$store.state.project.manualColumnSplit) {
+        return values.filter(function (element, index, values) {
+          return (index % 2 === (columnNum === 1 ? 0 : 1));
+        });
+      } else {
+        return values
+      }
+    },
+    async validateForm() {
+      if (this.$refs.userEditForm.validate()) {
+        this.saveUserSystemFields()
+      }
+    },
+    saveUserSystemFields: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //temp user holds all the changes in case they cancel. use those values
+        const {data, status} = await putRequest(`/user`, this.tempUser)
+        this.user = cloneDeep(this.tempUser)
+        this.user.userStatusType = data.userStatusType
+        this.user.hasAccess = data.hasAccess
+        this.showEditModal = false
+        this.snackbar = getSnackbar('SUCCESS', 'User Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async saveUser() {
       if (this.$refs.userForm.validate()) {
@@ -296,15 +426,13 @@ export default {
         // this.user.customFieldGroups = this.customFieldGroups
         this.fieldsSaving = true
         try {
-          //save user
-          await putRequest(`/user`, this.user)
           // save dirty custom field values
           const {data, status} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
           this.dirtyCfvs = []
-          this.dirtySystemFields = false
-          this.user.newPassword = null
           this.customFieldGroups = data
           this.fieldsSaving = false
+          this.snackbar = getSnackbar('SUCCESS', 'User Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -476,8 +604,45 @@ export default {
   padding-left: 0;
   padding-top: 0;
 }
+
+.cfg-name-toolbar .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-name-toolbar .v-toolbar__title {
+  font-size: 14px;
+}
+
+.cfg-detail-header .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.cfg-detail-header .v-toolbar__title {
+  font-size: 16px;
+}
+
 </style>
+
 <style lang="scss" scoped>
+#user-detail-container {
+  width: calc(100vw);
+  height: calc(100% - 81px);
+  max-height: calc(100% - 81px);
+  padding: 0 !important;
+  overflow: hidden;
+  margin-left: -15px;
+}
+
+.cfg-detail-header {
+  background-color: var(--v-secondary-base) !important;
+  margin-left: -10px;
+  margin-right: -10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .user-header {
   background-color: white;
 }
@@ -512,5 +677,26 @@ export default {
 .v-select ::v-deep .v-select__selection {
   color: var(--v-primaryText-base);
 }
+
+.detail-label {
+  font-size: 12px;
+  color: #9E9C9C;
+}
+
+.detail-item {
+  font-size: 0.875rem;
+  margin-left: 5px;
+  overflow-wrap: break-word;
+}
+
+.user-company-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: solid 1px #C4C4C4;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
 </style>
 

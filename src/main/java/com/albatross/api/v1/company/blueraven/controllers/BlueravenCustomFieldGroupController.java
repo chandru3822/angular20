@@ -4,8 +4,8 @@ import com.albatross.api.v1.company.blueraven.models.CustomField;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import io.swagger.v3.oas.annotations.Hidden;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,81 +19,86 @@ import java.util.List;
 @Slf4j
 @RestController
 @Hidden
-@RequestMapping(value = "/api/v1/company/blueraven/customFieldGroup")
+@RequestMapping(value = "/api/v1/company/blueraven/customFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
 public class BlueravenCustomFieldGroupController {
 
-  @Autowired
-  private BlueravenCustomFieldGroupService customFieldGroupService;
+  private final BlueravenCustomFieldGroupService customFieldGroupService;
 
-  @GetMapping(value = "/getCustomFieldGroupAssignmentsByObjectType", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getCustomFieldGroupAssignmentsByObjectType")
   public List<CustomFieldGroup> getCustomFieldGroupAssignmentsByObjectTypeId (@RequestParam Long sourceId,
                                                                               @RequestParam Long objectTypeId) {
     return customFieldGroupService.getCustomFieldGroupAssignmentsByObjectTypeId(sourceId, objectTypeId);
   }
 
-  @GetMapping(value = "/getCustomFieldGroupsByObjectTypeId", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getCustomFieldGroupsByObjectTypeId")
   public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId (@RequestParam Long companyObjectTypeId) {
     return customFieldGroupService.getCustomFieldGroupsByObjectTypeId(companyObjectTypeId);
   }
 
-  @PostMapping(value = "/addCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/addCustomFieldGroup")
   public CustomFieldGroup addCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
     return customFieldGroupService.addCustomFieldGroup(customFieldGroup, customFieldGroup.getObjectTypeId());
   }
 
   // to update just one:
-  @PutMapping(value = "/updateCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/updateCustomFieldGroup")
   public CustomFieldGroup updateCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
     return customFieldGroupService.updateCustomFieldGroup(customFieldGroup);
   }
 
   // to update a list of them:
-  @PutMapping(value = "/updateCustomFieldGroups", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/updateCustomFieldGroups")
   public void updateCustomFieldGroups(@RequestBody List<CustomFieldGroup> customFieldGroups) {
     customFieldGroupService.updateCustomFieldGroups(customFieldGroups);
   }
 
   //delete a group
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}")
   public void deleteCfg(@PathVariable Long id) {
     customFieldGroupService.deleteFieldGroup(id);
   }
 
   //delete a field assignment in a group
-  @DeleteMapping(value = "/assignment/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/assignment/{id}")
   public void deleteCfga(@PathVariable Long id) {
     customFieldGroupService.deleteFieldFromGroup(id);
   }
 
-  @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getAvailableCustomFields")
   public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long objectTypeId,
                                                             @RequestParam Long groupId) {
     return customFieldGroupService.getAvailableCustomFieldsInGroup(objectTypeId, groupId);
   }
 
-  @PostMapping(value = "/addFieldToGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/addFieldToGroup")
   public CustomField addFieldToGroup (@RequestBody CustomField customField) {
     return customFieldGroupService.addFieldToGroup(customField);
   }
 
   // to update a list of them - (currently used when updating field order):
-  @PutMapping(value = "/updateFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/updateFieldsInGroup")
   public void updateFieldsInGroup(@RequestBody List<CustomField> customFields) {
     customFieldGroupService.updateFieldsInGroup(customFields);
   }
 
-  @PutMapping(value = "/saveUseParentData", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/saveUseParentData")
   public void saveUseParentData(@RequestBody CustomField customField) {
     customFieldGroupService.saveUseParentData(customField);
   }
 
-  @PutMapping(value = "/updateRequired", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/updateRequired")
   public void updateRequired(@RequestBody CustomField customField) {
     customFieldGroupService.updateRequired(customField);
   }
 
-  @PutMapping(value = "/saveMinMax", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/saveMinMax")
   public void saveMinMax(@RequestBody CustomField customField) {
     customFieldGroupService.saveMinMax(customField);
+  }
+
+  @PutMapping(value="/updateConditionalId")
+  public void updateConditionalOnId(@RequestBody CustomField customField){
+    customFieldGroupService.updateConditionalOnId(customField);
   }
 }

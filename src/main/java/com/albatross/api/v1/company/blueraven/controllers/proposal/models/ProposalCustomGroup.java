@@ -4,7 +4,6 @@ import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 
-//todo: needs a better name
 public record ProposalCustomGroup(
   @Size(min = 1) List<ProposalCustomFieldValue> values, UUID rowId) {
 }

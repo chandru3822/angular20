@@ -7,6 +7,7 @@
            wqc.display_order as work_queue_category_display_order,
            wqt.short_window,
            wqt.long_window,
+           wqt.hidden,
            wqt.expected_cycle,
            wqt.inverse_expectation,
            wqt.use_event_data,
@@ -46,6 +47,11 @@
       and wqt.company_id = :companyId
       and wqt.archived is not true
       and wqt.use_event_data is false
+      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
+                                                      FROM flow.white_listed_position wlp
+                                                      WHERE wlp.white_list_type_id = 10
+                                                        AND wlp.archived is not true
+                                                        AND wlp.work_queue_type_id = wqt.id) else 1=1 end
     union all
     select wqt.id as work_queue_type_id,
            wqt.work_queue_type,
@@ -54,6 +60,7 @@
            wqc.display_order as work_queue_category_display_order,
            wqt.short_window,
            wqt.long_window,
+           wqt.hidden,
            wqt.expected_cycle,
            wqt.inverse_expectation,
            wqt.use_event_data,
@@ -98,6 +105,11 @@
       and wqt.company_id = :companyId
       and wqt.archived is not true
       and wqt.use_event_data is true
+      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
+                                                      FROM flow.white_listed_position wlp
+                                                      WHERE wlp.white_list_type_id = 10
+                                                        AND wlp.archived is not true
+                                                        AND wlp.work_queue_type_id = wqt.id) else 1=1 end
     order by work_queue_category_display_order, work_queue_type_display_order
   ]]></workQueue.getWorkQueueCards>
 
@@ -118,6 +130,16 @@
       and wqt.archived is not true
       and wqt.use_event_data is true
   ]]></workQueue.getWorkQueueMetrics>
+
+  <workQueue.userCanAccessData><![CDATA[
+    select case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
+                                                          FROM flow.white_listed_position wlp
+                                                          WHERE wlp.white_list_type_id = 10
+                                                            AND wlp.archived is not true
+                                                            AND wlp.work_queue_type_id = wqt.id) else true end
+    from flow.work_queue_type wqt
+    where wqt.id = :workQueueTypeId
+  ]]></workQueue.userCanAccessData>
 
   <workQueue.getWorkQueueOwners><![CDATA[
     select distinct pps.user_position_id,

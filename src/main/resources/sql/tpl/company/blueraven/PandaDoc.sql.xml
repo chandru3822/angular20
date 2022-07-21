@@ -2,12 +2,12 @@
     <pandaDoc.getProjectDetails>
         <![CDATA[
             SELECT
-              pl.project_id,
-              pl.proposal_nbr,
+              plh.project_id,
+              plh.proposal_nbr,
               s.state,
               (select lov.name
-                from flow.list_of_value lov
-                where lov.id = pd.primary_financier) as financier,
+               from flow.list_of_value lov
+               where lov.id = pd.primary_financier) as financier,
               (select first_name from flow.user where id = pd.closer_user_id)            AS closer_first_name,
               (select last_name from flow.user where id = pd.closer_user_id)             AS closer_last_name,
               (select email from flow.user where id = pd.closer_user_id) AS closer_email,
@@ -33,16 +33,15 @@
               plh.loan_type,
               plh.loan_amount
             FROM flow.project p
-              JOIN brs.project_details pd on p.id = pd.project_id
-              JOIN brs.proposal_log pl on pl.project_id = p.id
-              JOIN brs.proposal_log_history plh on p.id = plh.project_id and pl.id = plh.proposal_log_id
-              JOIN flow.contact c ON c.id = p.contact_id
-              join flow.company_state cs on cs.id = p.company_state_id
-              join flow.state s on s.id = cs.state_id
-              join flow.company_country cc on cc.id = p.company_country_id
-              JOIN flow.country cy on cy.id = cc.country_id
-              JOIN flow.company_process cp on cp.id = p.company_process_id
-            WHERE p.id = :projectId and pl.proposal_nbr = :proposalNbr
+                   JOIN brs.project_details pd on p.id = pd.project_id
+                   JOIN brs.proposal_log_history plh on p.id = plh.project_id
+                   JOIN flow.contact c ON c.id = p.contact_id
+                   join flow.company_state cs on cs.id = p.company_state_id
+                   join flow.state s on s.id = cs.state_id
+                   join flow.company_country cc on cc.id = p.company_country_id
+                   JOIN flow.country cy on cy.id = cc.country_id
+                   JOIN flow.company_process cp on cp.id = p.company_process_id
+            WHERE p.id = :projectId and plh.proposal_nbr = :proposalNbr
         ]]>
     </pandaDoc.getProjectDetails>
 </sql>

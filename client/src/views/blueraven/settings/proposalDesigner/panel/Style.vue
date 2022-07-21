@@ -30,11 +30,11 @@
     <!--    TODO: width -->
     <!--    TODO: more flex options (esp when parent is flex container) -->
 
-<!--    -->
+    <!--    -->
     <fragment v-if="type === 'PageBlock' || type === 'ContainerBlock'">
-      <image-selector-widget ref="imageSelector"/>
-      <v-btn @click="openSelectImage('backgroundImage')">Open Image</v-btn>
-      <v-btn text @click="doUpdateStyles({'backgroundImage' : undefined })">Clear Image</v-btn>
+      <image-selector-widget ref="imageSelector" />
+      <v-btn @click="openSelectImage('@backgroundImage')">Open Image</v-btn>
+      <v-btn text @click="doUpdateStyles({'@backgroundImage' : undefined })">Clear Image</v-btn>
 
       <v-col cols="12" sm="12" v-if="cssStyle.backgroundImage">
         <v-select
@@ -44,7 +44,7 @@
           @change="doUpdateStyles({'backgroundSize': $event})"
         />
       </v-col>
-<!--      TODO: backgroundPosition-->
+      <!--      TODO: backgroundPosition-->
     </fragment>
 
     <v-col cols="12" sm="12">
@@ -102,7 +102,7 @@
   </v-row>
 </template>
 <script>
-import ImageSelectorWidget  from './ImageSelectorWidget'
+import ImageSelectorWidget from './ImageSelectorWidget'
 import FontSizeWidget from './FontSizeWidget'
 import ColorWidget from './ColorWidget'
 import { Fragment } from 'vue-frag'
@@ -145,10 +145,10 @@ export default {
     doUpdateStyles(styles) {
       this.$emit('input', { ...this.cssStyle, ...styles })
     },
-    async openSelectImage(attribute = 'backgroundImage'){
+    async openSelectImage(attribute = '@backgroundImage') {
       const result = await this.$refs.imageSelector.open()
-      if (result && result.url !== undefined){
-        this.doUpdateStyles({[attribute]: `url(${result.url})`})
+      if (result?.uuid !== undefined) {
+        this.doUpdateStyles({ [attribute]: result.uuid })
       }
     }
   }

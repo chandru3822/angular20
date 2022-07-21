@@ -20,13 +20,14 @@ export default {
   name: 'ActionButton',
   props: {
     actionResult: Object,
+    blockPerform: Boolean, //this value can stop an otherwise performable action. used when an entire process step is marked as readonly for a user
     projectProcessStepId: Number,
     handleOnComplete: Function,
     handleOnCompleteError: Function
   },
   data () {
     return {
-      proceed: !this.actionResult.triggerAutomatically && this.actionResult.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
+      proceed: !this.actionResult.triggerAutomatically && (this.actionResult.canPerform && !this.blockPerform) && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
     }
   },
   methods: {

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="custom-field-group-container">
+  <v-container class="custom-field-group-container" v-if="processStep && processStep.id">
     <v-row>
       <v-col cols="12">
         <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/processSteps'">
@@ -14,10 +14,11 @@
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
-            <div>
-              <label class="mt-4">Allow Non-Admin to Add to Project:</label>
-              <input class="ml-3" type="checkbox" :readonly="!userCanEdit" @input="saveProcessStep($event,false)"
-                     :disabled="!userCanEdit" v-model="processStep.nonAdminAdd">
+            <div class="non-admin-container">
+              <label class="mr-3">Allow Non-Admin to Add to Project:</label>
+              <v-checkbox class="ma-0 pa-0 shrink" type="checkbox" :readonly="!userCanEdit"
+                          @change="saveProcessStep(false)"
+                          :disabled="!userCanEdit" v-model="processStep.nonAdminAdd"></v-checkbox>
             </div>
           </div>
           <div class="text-right" v-if="userCanEdit">
@@ -45,6 +46,9 @@
 
     </v-row>
   </v-container>
+  <v-container class="custom-field-group-container" v-else-if="!processStepLoading">
+    Process Step Not Found
+  </v-container>
 </template>
 
 <script>
@@ -66,6 +70,7 @@
         snackbar: {},
         constants,
         editName: false,
+        processStepLoading: true,
         oldName: null,
         processStepId: this.$route.params.id,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
@@ -111,23 +116,25 @@
     },
     methods: {
       async getProcessStepDetails () {
+        this.processStepLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
           this.processStep = data
+          this.processStepLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          let msg = e?.data?.message || 'Error Retrieving Data'
+          this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.processStepLoading = false
         }
       },
-      async saveProcessStep(e, closeEditor) {
+      async saveProcessStep(closeEditor) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          //vue is weird and doesn't update this value before the @input is called
-          this.processStep.nonAdminAdd = e.target.checked || false
           const {status} = await putRequest(`/processStep`, this.processStep)
           this.editName = false
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
@@ -146,6 +153,11 @@
 </script>
 
 <style scoped lang="scss">
+.non-admin-container {
+  display: flex;
+  flex-direction: row;
+}
+
 .name-container {
   background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;

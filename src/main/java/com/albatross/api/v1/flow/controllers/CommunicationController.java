@@ -258,113 +258,76 @@ public class CommunicationController {
   }
 
   private ProjectDetails getProjectTemplateFields(Long projectId, String projectTimeZone) {
-    ProjectDetails projectDetails = new ProjectDetails();
-    Optional<String> primaryFinancierName = projectService.getPrimaryFinancierName(projectId);
-    String financier = "";
-    if (primaryFinancierName.isPresent()) {
-      financier = primaryFinancierName.get();
-      projectDetails.setPrimaryFinancier(financier);
-    }
+    ProjectDetails projectDetails = projectService.getProjectDetailTemplateFields(projectId);
 
-    // If the project has no Time Zone set
-    if (projectTimeZone == null) {
-      return projectDetails;
-    }
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]");
+    if (projectTimeZone != null && !projectTimeZone.isEmpty()) {
+      LocalDateTime timestampFunctionResult;
+      ZonedDateTime zoneTimestampFunctionResult;
 
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
-    Optional<ProjectProcessStepEvent> activeCloserAppointment =
-        projectProcessStepEventService.getActiveCloserAppointment(projectId);
-
-    String closerAppointmentTime = "";
-    String ahjInspectionTime = "";
-
-    if (activeCloserAppointment.isPresent()) {
-      closerAppointmentTime = activeCloserAppointment.get().getStartTime().toString();
-      LocalDateTime timestampFunctionResult =
-          (closerAppointmentTime != null)
-              ? LocalDateTime.parse(closerAppointmentTime, dateTimeFormatter)
-              : null;
-      ZonedDateTime zoneTimestampFunctionResult =
-          (timestampFunctionResult != null)
-              ? timestampFunctionResult
-                  .atZone(ZoneId.of("UTC"))
-                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
-              : null;
-      closerAppointmentTime =
-          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
-      projectDetails.setLocalCloserAppointmentStartTime(closerAppointmentTime);
-    }
-
-    Optional<ProjectProcessStepEvent> activeAhjInspectionWork =
-        projectProcessStepEventService.getActiveAhjInspectionWork(projectId);
-    if (activeAhjInspectionWork.isPresent()) {
-      ahjInspectionTime = activeAhjInspectionWork.get().getStartTime().toString();
-      LocalDateTime timestampFunctionResult =
-          (ahjInspectionTime != null)
-              ? LocalDateTime.parse(ahjInspectionTime, dateTimeFormatter)
-              : null;
-      ZonedDateTime zoneTimestampFunctionResult =
-          (timestampFunctionResult != null)
-              ? timestampFunctionResult
-                  .atZone(ZoneId.of("UTC"))
-                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
-              : null;
-      ahjInspectionTime =
-          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
-      projectDetails.setAhjInspectionWorkStartTime(ahjInspectionTime);
-    }
-
-    Optional<ProjectProcessStepEvent> activeInstallation =
-        projectProcessStepEventService.getActiveInstallation(projectId);
-    String installationStartDate = "";
-    String installationStartTime = "";
-    String installationLatestStartTime = "";
-    String installationEndTime = "";
-    if (activeInstallation.isPresent()) {
-      installationStartTime = activeInstallation.get().getStartTime().toString();
-      LocalDateTime timestampFunctionStartTimeResult =
-          (installationStartTime != null)
-              ? LocalDateTime.parse(installationStartTime, dateTimeFormatter)
-              : null;
-      ZonedDateTime zoneStartTimestampFunctionResult =
-          (timestampFunctionStartTimeResult != null)
-              ? timestampFunctionStartTimeResult
-                  .atZone(ZoneId.of("UTC"))
-                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
-              : null;
-      installationStartDate =
-          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-      installationStartTime =
-          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
-      zoneStartTimestampFunctionResult = zoneStartTimestampFunctionResult.plusHours(1L);
-      installationLatestStartTime =
-          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
-
-      installationEndTime = activeInstallation.get().getEndTime().toString();
-      LocalDateTime timestampFunctionEndTimeResult =
-          (installationEndTime != null)
-              ? LocalDateTime.parse(installationEndTime, dateTimeFormatter)
-              : null;
-      ZonedDateTime zoneEndTimestampFunctionResult =
-          (timestampFunctionEndTimeResult != null)
-              ? timestampFunctionEndTimeResult
-                  .atZone(ZoneId.of("UTC"))
-                  .withZoneSameInstant(ZoneId.of(projectTimeZone))
-              : null;
-      installationEndTime =
-          zoneEndTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
-
-      projectDetails.setInstallationDate(installationStartDate);
-      projectDetails.setInstallationStartTime(installationStartTime);
-      projectDetails.setInstallationLatestStartTime(installationLatestStartTime);
-      projectDetails.setInstallationEndTime(installationEndTime);
-
-      Optional<String> scopeOfWork =
-          projectProcessStepService.getInstallationScopeOfWork(
-              activeInstallation.get().getProjectProcessStepId());
-      if (scopeOfWork.isPresent()) {
-        projectDetails.setInstallationScopeOfWork(scopeOfWork.get());
+      if (projectDetails.getLocalCloserAppointmentStartTime() != null) {
+        timestampFunctionResult = LocalDateTime.parse(projectDetails.getLocalCloserAppointmentStartTime(), dateTimeFormatter);
+        zoneTimestampFunctionResult =
+          timestampFunctionResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String closerAppointmentTime =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        projectDetails.setLocalCloserAppointmentStartTime(closerAppointmentTime);
       }
+
+      if (projectDetails.getAhjInspectionWorkStartTime() != null) {
+        timestampFunctionResult = LocalDateTime.parse(projectDetails.getAhjInspectionWorkStartTime(), dateTimeFormatter);
+        zoneTimestampFunctionResult =
+          timestampFunctionResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String ahjInspectionDate =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        String ahjInspectionTime =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        projectDetails.setAhjInspectionWorkDate(ahjInspectionDate);
+        projectDetails.setAhjInspectionWorkStartTime(ahjInspectionTime);
+      }
+
+      if (projectDetails.getInstallationStartTime() != null) {
+        LocalDateTime timestampFunctionStartTimeResult = LocalDateTime.parse(projectDetails.getInstallationStartTime(), dateTimeFormatter);
+        ZonedDateTime zoneStartTimestampFunctionResult =
+          timestampFunctionStartTimeResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String installationStartDate =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        String installationStartTime =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        zoneStartTimestampFunctionResult = zoneStartTimestampFunctionResult.plusHours(1L);
+        String installationLatestStartTime =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        projectDetails.setInstallationDate(installationStartDate);
+        projectDetails.setInstallationStartTime(installationStartTime);
+        projectDetails.setInstallationLatestStartTime(installationLatestStartTime);
+      }
+
+
+      if (projectDetails.getInstallationEndTime() != null) {
+        LocalDateTime timestampFunctionEndTimeResult =
+          LocalDateTime.parse(projectDetails.getInstallationEndTime(), dateTimeFormatter);
+        ZonedDateTime zoneEndTimestampFunctionResult =
+          timestampFunctionEndTimeResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String installationEndTime =
+          zoneEndTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+        projectDetails.setInstallationEndTime(installationEndTime);
+      }
+
+    }
+
+    Optional<String> scopeOfWork =
+      projectProcessStepService.getInstallationScopeOfWork(projectId);
+
+    if (scopeOfWork.isPresent()) {
+      projectDetails.setInstallationScopeOfWork(scopeOfWork.get());
     }
 
     return projectDetails;
@@ -379,6 +342,7 @@ public class CommunicationController {
   public static class ProjectDetails {
     private String primaryFinancier,
         localCloserAppointmentStartTime,
+        ahjInspectionWorkDate,
         ahjInspectionWorkStartTime,
         installationDate,
         installationStartTime,

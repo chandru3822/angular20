@@ -12,7 +12,7 @@ export default {
   methods: {
     async openSelectImage(){
       const result = await this.$refs.imageSelector.open()
-      if (result && result.url !== undefined){
+      if (result && result.uuid !== undefined){
         this.$emit('input', result)
       }
     }

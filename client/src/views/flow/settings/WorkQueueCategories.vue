@@ -73,6 +73,65 @@
                   </v-avatar>
                   <v-color-picker v-if="item.showColor" class="my-3" v-model="item.color" :canvas-height="colorOptions.height" :width="colorOptions.width" :mode="colorOptions.mode" :hide-mode-switch="colorOptions.hideModeSwitch"></v-color-picker>
                 </td>
+                <td class="text-left">
+                  <v-card flat color="transparent" class="square-card my-2" v-if="selectedWorkQueueCategoryId === item.id">
+                    <v-card-title style="height: 40px" class="py-0">
+                      Hidden
+                      <v-checkbox type="checkbox" class="ml-3"
+                                  v-model="item.hidden"></v-checkbox>
+                    </v-card-title>
+                    <v-card-text>
+                      <v-autocomplete
+                        v-if="item.hidden"
+                        v-model="item.hiddenWhiteListedPositions"
+                        :items="positions"
+                        :loading="positionsLoading"
+                        multiple
+                        clearable
+                        label="White Listed Positions"
+                        item-text="position"
+                        item-value="positionId"
+                        return-object
+                        height="35px"
+                        class="d-inline-block mr-3"
+                        @change="item.hiddenPositionsChanged = true">
+                        <v-list-item
+                          slot="prepend-item"
+                          ripple
+                          @click="toggleSelectAllPositions(item)"
+                        >
+                          <v-list-item-action>
+                            <v-icon>{{ iconOwner(item) }}</v-icon>
+                          </v-list-item-action>
+                          <v-list-item-title>Select All</v-list-item-title>
+                        </v-list-item>
+                        <v-divider
+                          slot="prepend-item"
+                          class="mt-2"
+                        ></v-divider>
+                        <template
+                          slot="selection"
+                          slot-scope="{ item: selectItem, index }"
+                        >
+                          <v-chip small
+                                  v-if="index === 0 && item.hiddenWhiteListedPositions && item.hiddenWhiteListedPositions.length < 2">
+                            <span>{{ selectItem.position }}</span>
+                          </v-chip>
+                          <span
+                            v-if="index === 1 && item.hiddenWhiteListedPositions && item.hiddenWhiteListedPositions.length >= 2"
+                            class="primary--text text-caption"
+                          >{{ item.hiddenWhiteListedPositions.length }} selected</span>
+                        </template>
+                      </v-autocomplete>
+                      <br/>
+                      <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                             @click="saveHiddenAndWhiteList(item)">
+                        <v-icon class="mr-2">save</v-icon>
+                        Save Hidden
+                      </v-btn>
+                    </v-card-text>
+                  </v-card>
+                </td>
                 <td class="text-right">
                   <div class="item-icons">
                     <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
@@ -107,7 +166,14 @@
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
 
-  import { handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {
+    handleHidingGlobalLoader,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    getSnackbar,
+    getRequest
+  } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
@@ -156,6 +222,9 @@
           hideModeSwitch: true
         },
         workQueueCategories: [],
+        positions: [],
+        positionsLoading: false,
+        hiddenPositionsChanged: false,
         addNew: false,
         showColor: false,
         newCategory: { color: '#ffffff'},
@@ -170,6 +239,7 @@
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Category', value: 'workQueueCategory', show: true },
           { text: 'Color', value: 'color', show: true },
+          { text: null, value: 'hidden', show: true },
           { text: null, value: 'icons', show: true }
         ],
         categoryToDelete:null
@@ -181,6 +251,65 @@
       }
     },
     methods: {
+      selectAllHidden (wqc) {
+        return wqc.hiddenWhiteListedPositions?.length === this.positions?.length
+      },
+      selectSomeHidden (wqc) {
+        return wqc.hiddenWhiteListedPositions?.length > 0 && !this.selectAllHidden(wqc)
+      },
+      iconOwner (wqc) {
+        if (this.selectAllHidden(wqc)) {
+          return 'check_box'
+        }
+        if (this.selectSomeHidden(wqc)) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      toggleSelectAllPositions (wqc) {
+        this.$nextTick(() => {
+          if (this.selectAllHidden(wqc)) {
+            wqc.hiddenWhiteListedPositions = []
+            wqc.hiddenPositionsChanged = true
+          } else {
+            wqc.hiddenWhiteListedPositions = cloneDeep(this.positions)
+            wqc.hiddenPositionsChanged = true
+          }
+        })
+      },
+      async getPositions() {
+        if(this.positions?.length === 0) {
+          try {
+            this.positionsLoading = true
+            const {data, status} = await getRequest(`/position/withParent`)
+            this.positions = data
+            this.positionsLoading = false
+            handleHidingGlobalLoader(this, status)
+          } catch (e) {
+            this.positionsLoading = false
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async saveHiddenAndWhiteList (item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${item.hiddenPositionsChanged ?? false}`, item)
+          this.hiddenPositionsChanged = false
+          if(!item.hidden) {
+            item.hiddenWhiteListedPositions = []
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       updateItemValue (item) {
         if(this.selectedWorkQueueCategoryId === item.id) {
           this.$set(item, 'showColor', !item.showColor)
@@ -189,7 +318,7 @@
       async getWorkQueueCategories() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getWorkQueueCategories()
+          const {data, status} = await getWorkQueueCategories(true)
           this.workQueueCategories = data
 
           handleHidingGlobalLoader(this, status)
@@ -279,6 +408,7 @@
     },
     async created() {
       this.getWorkQueueCategories()
+      this.getPositions()
     }
   }
 </script>

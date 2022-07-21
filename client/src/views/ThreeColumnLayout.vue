@@ -2,34 +2,48 @@
   <v-container class="pa-0" id="three-column-container">
     <v-row>
       <slot name="header">
-      <v-toolbar v-if="!headerHidden" flat color="#E3E3E3" class="three-column-header px-4">
-        <v-toolbar-title class="albatross-header-1 d-flex align-center mr-6">{{headerText}}</v-toolbar-title>
-        <slot name="search"></slot>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <div v-if="showHeaderBtn">
-            <v-btn v-if="constants.IS_MOBILE" class="mt-3 no-text-transform" @click="">
-              <v-icon >mdi-cloud-download</v-icon>
-            </v-btn>
-            <v-btn v-else class="mt-3 no-text-transform" @click="">
-              {{headerBtnText}}
-            </v-btn>
-          </div>
-        </v-toolbar-items>
-      </v-toolbar>
+        <v-toolbar v-if="!headerHidden" flat color="#E3E3E3" class="three-column-header px-4">
+          <v-toolbar-title class="albatross-header-1 d-flex align-center mr-6">
+            <slot name="back-btn"></slot>
+            {{ headerText }}
+          </v-toolbar-title>
+          <slot name="search"></slot>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <slot name="header-btn">
+            </slot>
+          </v-toolbar-items>
+        </v-toolbar>
       </slot>
     </v-row>
     <v-row class="split-container" :class="{'full-height':headerHidden}">
-      <v-col cols="6" md="1" :width="leftWidth" class=" project-section text-left py-0 px-0 left-column" :class="leftWidth">
+      <v-col id="left-column" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
+                                                                                            'collapsed': this.$store.state.project.leftSideSplit,
+                                                                                            'narrow': this.leftSmall,
+                                                                                            'auto-overflow': this.autoOverflowLeft,
+                                                                                            'white-bg': this.leftSideWhiteBg}">
+        <div :class="{'title-collapsed': $store.state.project.leftSideSplit,
+                      'ml-3': !$store.state.project.leftSideSplit}">
+          <v-btn small text @click="collapseSide('left')">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </div>
         <slot name="left-column"></slot>
       </v-col>
-      <v-col class="project-section center-panel pt-0 px-0">
+      <v-col class="project-section center-panel pt-0 px-0 auto-overflow" :class="{'white-bg': this.centerWhiteBg}">
         <slot name="main-column"></slot>
       </v-col>
-      <v-col id="right-column" class="project-section right-column px-0 pb-0 white-bg" :class="rightWidth"
-      >
-        <slot  name="right-column">
-          <ProjectActivity v-if="!projectLoading && projectId !== 0"
+      <v-col id="right-column" class="project-section right-column px-0 pb-0" :class="{'hidden': this.rightHidden,
+                                                                                                  'collapsed': this.$store.state.project.rightSideSplit,
+                                                                                                  'white-bg': this.rightSideWhiteBg}">
+        <div v-if="showRightCollapseBtn" :class="{'title-collapsed': $store.state.project.rightSideSplit,
+                      'mr-3': !$store.state.project.rightSideSplit}">
+          <v-btn small text @click="collapseSide('right')">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </div>
+        <slot name="right-column">
+          <ProjectActivity v-if="!projectLoading && projectId !== 0" :show-sms-tab="true"
                            @closeRight="closeRight()"
                            @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
         </slot>
@@ -53,31 +67,46 @@ export default {
   },
   props: {
     headerText: String,
-    headerBtnText:String,
+    headerBtnText: String,
     headerHidden: Boolean,
-    showHeaderBtn: Boolean,
     leftCollapsed: Boolean,
     leftSmall: Boolean,
     leftHidden: Boolean,
     rightCollapsed: Boolean,
-    rightHidden: Boolean
+    rightHidden: Boolean,
+    rightSideWhiteBg: {
+      type: Boolean,
+      default: true
+    },
+    leftSideWhiteBg: {
+      type: Boolean,
+      default: true
+    },
+    autoOverflowLeft: Boolean,
+    centerWhiteBg: Boolean,
+    showRightCollapseBtn: {
+      type: Boolean,
+      default: false
+    },
   },
-  computed:{
+  computed: {
     leftWidth() {
-      if(this.leftHidden){
+      if (!this.leftHidden) {
         return {
           'hidden': this.leftHidden,
-          'collapsed': this.leftCollapsed,
+          'collapsed': this.$store.state.project.leftSideSplit,
           'narrow': this.leftSmall
         }
       }
     },
     rightWidth() {
+      if (!this.rightHidden) {
         return {
           'hidden': this.rightHidden,
-          'collapsed': this.rightCollapsed
+          'collapsed': this.$store.state.project.rightSideSplit,
         }
-    }
+      }
+    },
   },
   watch: {
     // whenever userImage changes, this function will run
@@ -85,8 +114,8 @@ export default {
       this.projectId = parseInt(this.$route.params.projectId) | null
       this.getProject()
     }
-    },
-  data () {
+  },
+  data() {
     return {
       constants,
       projectLoading: false,
@@ -120,7 +149,14 @@ export default {
     },
     closeRight() {
       this.$emit('closeRight')
-    }
+    },
+    collapseSide(side) {
+      if (side === 'left') {
+        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+      } else {
+        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+      }
+    },
   }
 }
 </script>
@@ -138,8 +174,8 @@ export default {
   height: 64px;
 }
 
-.split-container{
-  height: calc(100% - 50px);
+.split-container {
+  height: calc(100% - 65px);
   max-width: 100%;
   width: 100%;
   margin-right: 0 !important;
@@ -150,40 +186,6 @@ export default {
   }
 }
 
-.expand-left {
-
-}
-
-.collapse-left {
-  width: 72px;
-  padding: 12px;
-}
-
-.collapse-right {
-  width: 72px;
-  padding: 12px;
-}
-
-.center-width-left-side-collapse {
-  width: calc(50% - 36px);
-  padding: 10px !important;
-}
-
-.right-width-left-side-collapse {
-  width: calc(50% - 36px);
-  padding: 24px 10px 10px 10px !important;
-}
-
-.center-width-right-side-collapse {
-  width: calc(83.33% - 72px);
-  padding: 10px !important;
-}
-
-.center-width-both-collapse {
-  width: calc(100% - 144px);
-  padding: 10px !important;
-}
-
 .project-section {
   max-height: 100%;
   padding-top: 24px;
@@ -191,33 +193,53 @@ export default {
 
 .project-section.left-column,
 .project-section.center-panel {
-border-right: solid #C4C4C4 1px;
-  overflow:auto;
+  border-right: solid #C4C4C4 1px;
+}
+
+.auto-overflow {
+  overflow: auto;
 }
 
 .white-bg {
   background-color: #fff;
 }
+
+.title-collapsed {
+  text-align: center;
+}
+
 .left-column {
-  width: calc((2/12)*1%);//col-2
+  width: calc((2 / 12) * 100%); //col-2
+  max-width: calc((2 / 12) * 100%); //col-2
   &.hidden {
     display: none;
   }
+
   &.collapsed {
-    width: calc((1/24)*1%);// half a col
+    width: 72px;
+    max-width: 72px;
+    //width: calc((1 / 24) * 100%); // half a col
+    //max-width: calc((1 / 24) * 100%); // half a col
   }
+
   &.narrow {
-    width:calc((1/12)*1%) //col-1
+    width: calc((1 / 12) * 100%); //col-1
+    max-width: calc((1 / 12) * 100%); //col-1
   }
 }
 
 #right-column {
-  width: calc((5/12)*1%);//col-5
+  width: calc((5 / 12) * 100%); //col-5
+  max-width: calc((5 / 12) * 100%); //col-5
   &.hidden {
     display: none;
   }
+
   &.collapsed {
-    width: calc((1/24)*1%);//half a col
+    width: 72px;
+    max-width: 72px;
+    //width: calc((1 / 24) * 100%); //half a col
+    //max-width: calc((1 / 24) * 100%); //half a col
   }
 }
 </style>
