@@ -455,6 +455,7 @@
         cpsst.process_step_status_type_id,
         coalesce(ppse.date_modified, ppse.date_created) as last_updated,
         cest.event_status_type,
+        pse.unique_behavior_type_id,
         e.id as event_id,
         e.event_name,
         ppse.resource_id,
