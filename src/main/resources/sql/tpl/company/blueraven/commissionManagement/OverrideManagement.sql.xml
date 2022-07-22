@@ -6,6 +6,17 @@
     RETURNING id
     ]]></overridePlan.create>
 
+  <overridePlan.assignProject><![CDATA[
+    insert into brs.project_override(project_id, override_plan_id, date_created)
+    values (:projectId, :planId, now())
+  ]]></overridePlan.assignProject>
+
+  <overridePlan.checkProjectAssignment><![CDATA[
+    select id
+    from brs.project_override
+    where project_id = :projectId
+  ]]></overridePlan.checkProjectAssignment>
+
   <overridePlan.deletePlan><![CDATA[
     DELETE
       FROM brs.override_plan_assigned_user
