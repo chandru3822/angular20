@@ -53,16 +53,13 @@
             <v-toolbar-title class="app-title">Winner Background Image</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
+              <v-btn text color="primary" v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
                      @click="addImage = !addImage">
                 <v-icon v-if="addImage">remove</v-icon>
                 <v-icon v-else>add</v-icon>
               </v-btn>
-              <confirm-delete-dialog
-                  v-else-if="userCanEdit"
-                  label="the Winner Background Image"
-                  @confirm-delete="deleteAttachment(pool.backgroundAttachmentId)"
-              ></confirm-delete-dialog>
+              <v-btn v-else-if="userCanEdit" text color="primary" @click="deleteWinnerBackgroundDialog = true"><v-icon>delete</v-icon></v-btn>
+              <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog" @confirm="deleteAttachment(pool.backgroundAttachmentId)" @close-dialog="deleteWinnerBackgroundDialog = false">Are you sure you want to delete the Winner Background Image?</ConfirmationDialog>
             </v-toolbar-items>
           </v-toolbar>
           <label></label>
@@ -203,11 +200,7 @@
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
                 <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
-                  <confirm-delete-dialog
-                      label="this user: "
-                      :item-to-delete="item.fullName"
-                      @confirm-delete="deleteUserFromPool(item)"
-                  ></confirm-delete-dialog>
+                  <v-btn text color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
                 </td>
               </tr>
             </template>
@@ -217,6 +210,9 @@
       </v-col>
 
     </v-row>
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPool" @close-dialog="userToDelete=null">
+      Are you sure you want to delete this user: <strong>{{userToDeleteName}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -234,13 +230,13 @@
     postRequest,
     getSnackbar
   } from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'PoolAdmin',
     mixins: [Vue2Filters.mixin],
     components: {
-      ConfirmDeleteDialog,
+      ConfirmationDialog,
       DatetimePickerInput
     },
     data() {
@@ -274,7 +270,9 @@
         userHeaders: [
           {text: 'User', value: 'fullName', show: true},
           {text: null, value: 'icons', show: true}
-        ]
+        ],
+        deleteWinnerBackgroundDialog: false,
+        userToDelete: null
       }
     },
     async created() {
@@ -291,7 +289,11 @@
         this.getTournamentPool()
       }
     },
-    computed: {},
+    computed: {
+      userToDeleteName(){
+        return this.userToDelete ? this.userToDelete.fullName : ''
+      }
+    },
     methods: {
       async savePoolDates() {
         try {
@@ -392,7 +394,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUserFromPool(user) {
+      async deleteUserFromPool() {
+        const user = this.userToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deleteUser/${user.id}`, 'blueraven')
@@ -404,6 +407,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.userToDelete=null
       },
       filterUsers () {
         return this.pool?.users?.filter(p => { return !p.archived})
@@ -458,6 +462,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.deleteWinnerBackgroundDialog = false
       },
     },
 

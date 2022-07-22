@@ -91,17 +91,15 @@
                     <v-btn small text color="primary" @click="goToTournament(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="userCanDelete"
-                        label="this tournament: "
-                        :item-to-delete="item.tournamentName"
-                        @confirm-delete="[item.archived = true, deleteTournament(item.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanDelete" small text color="primary" @click="tournamentToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </td>
                 </tr>
               </template>
             </v-data-table>
           </v-card>
+          <ConfirmationDialog :open-dialog="!!tournamentToDelete" @confirm="[tournamentToDelete.archived = true, deleteTournament()]" @close-dialog="tournamentToDelete=null">
+            Are you sure you want to delete this tournament: <strong>{{tournamentToDeleteName}}</strong>?
+          </ConfirmationDialog>
         </v-container>
       </v-col>
 
@@ -114,14 +112,14 @@
   import Vue2Filters from 'vue2-filters'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
   import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'TournamentsAdmin',
     mixins: [Vue2Filters.mixin],
     components: {
-      ConfirmDeleteDialog,
+      ConfirmationDialog,
       DatetimePickerInput,
       TournamentCustomField
     },
@@ -149,10 +147,14 @@
           {text: 'End', value: 'endDate', show: true},
           {text: 'Active', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
-        ]
+        ],
+        tournamentToDelete: null
       }
     },
     computed: {
+      tournamentToDeleteName(){
+        return this.tournamentToDelete ? this.tournamentToDelete.tournamentName : ''
+      }
     },
     methods: {
       validateCustomFields() {
@@ -235,7 +237,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteTournament (id) {
+      async deleteTournament () {
+        const id = this.tournamentToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
@@ -248,6 +251,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.tournamentToDelete=null
       },
       async addTournament () {
         this.$store.commit(AppMutations.SET_LOADING, true)
