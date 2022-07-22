@@ -38,8 +38,7 @@
               </v-btn>
               <ConfirmationDialog :open-dialog="!!processToDelete" @confirm="deleteProcess" @close-dialog="processToDelete = null">
                 Are you sure you want to delete this process: <strong>{{ processToDeleteName }}</strong>?
-                <template v-slot:no>cancel</template>
-                <template v-slot:yes>delete</template>
+
               </ConfirmationDialog>
             </v-list-item>
           </v-list>

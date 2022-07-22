@@ -438,8 +438,6 @@
               @confirm="deleteWithChecks(cfgToDelete, cfgToDelete.id, null)"
               @close-dialog="cfgToDelete=null">
             Are you sure you want to delete this Custom Field Group: <strong>{{cfgToDeleteName}}</strong>?
-            <template v-slot:no>cancel</template>
-            <template v-slot:yes>delete</template>
           </ConfirmationDialog>
           <ConfirmationDialog
               :open-dialog="!!cFieldToDelete"
@@ -448,8 +446,6 @@
             <span class="error--text">WARNING:</span>
             By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
             Are you sure you want to delete this field from {{cfgToDeleteName}}: <strong>{{cFieldToDeleteName}}</strong>?
-            <template v-slot:no>cancel</template>
-            <template v-slot:yes>delete</template>
           </ConfirmationDialog>
       </v-container>
     </v-col>

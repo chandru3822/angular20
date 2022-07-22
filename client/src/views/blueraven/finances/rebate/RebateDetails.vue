@@ -202,8 +202,6 @@
                               @confirm="deletePayment"
                               @close-dialog="deleteConfirm=false">
             Are you sure you want to delete this payment?
-            <template v-slot:no>cancel</template>
-            <template v-slot:yes>delete</template>
           </ConfirmationDialog>
 
           <ConfirmationDialog :open-dialog="notesDialog"

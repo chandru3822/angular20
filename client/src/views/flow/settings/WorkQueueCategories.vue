@@ -149,8 +149,6 @@
           </v-data-table>
           <ConfirmationDialog :open-dialog="!!categoryToDelete" @confirm="[deleteCategory, categoryToDelete.archived = true]" @close-dialog="categoryToDelete=null">
             Are you sure you want to delete this work queue category: <strong>{{ categoryToDeleteName }}</strong>?
-            <template v-slot:no>cancel</template>
-            <template v-slot:yes>delete</template>
           </ConfirmationDialog>
         </v-container>
       </v-col>

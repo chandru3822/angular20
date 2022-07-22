@@ -305,8 +305,7 @@
                                  @confirm="deleteField"
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>
-      <template v-slot:no >Cancel</template>
-      <template v-slot:yes >Delete</template>
+
     </ConfirmationDialog>
   </v-container>
 </template>

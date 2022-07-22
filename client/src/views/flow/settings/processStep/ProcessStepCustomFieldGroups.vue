@@ -136,8 +136,6 @@
                   <span class="error--text">WARNING:</span>
                   By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
                   Are you sure you want to delete this Custom Field Group: <strong>{{ itemToDeleteGroupName }}</strong>?
-                  <template v-slot:no>cancel</template>
-                  <template v-slot:yes>delete</template>
                 </ConfirmationDialog>
               </template>
 

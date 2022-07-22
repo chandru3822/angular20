@@ -43,7 +43,7 @@ export default {
     openDialog: Boolean,
     hideTitle:Boolean,
     itemToDelete: Object,
-    disableConfirm: Boolean
+    disableConfirm: Boolean,
   },
   data() {
     return {
@@ -58,6 +58,9 @@ export default {
         this.$emit('close-dialog', value)
       }
     }
+  },
+  created(){
+    console.log(this.confirmColor)
   },
   methods: {
     yes(){
