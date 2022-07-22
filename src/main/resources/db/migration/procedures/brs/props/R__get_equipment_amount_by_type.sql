@@ -1,9 +1,10 @@
 drop function if exists brs.get_equipment_amount_by_type(
-  p_equipment_type_id integer,
-  p_system_size numeric);
+  p_adder_id integer,
+  p_system_size numeric,
+  p_object_code varchar);
 CREATE OR REPLACE FUNCTION brs.get_equipment_amount_by_type(
-  p_equipment_type_id integer,
-  p_system_size numeric)
+  p_system_size numeric,
+  p_object_code varchar)
   returns numeric
 AS
 $BODY$
@@ -15,8 +16,8 @@ BEGIN
   with equipment_type as (
     select *
     from proposal_value
-    where int_value::integer = p_equipment_type_id
-      and object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
+    where field_id = 97
+      and object_code = p_object_code
   )
   select pv.int_value
   into v_unit_type_id
@@ -27,8 +28,8 @@ BEGIN
   with equipment_type as (
     select *
     from proposal_value
-    where int_value::integer = p_equipment_type_id
-      and object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
+    where field_id = 119
+      and object_code = p_object_code
   )
   select pv.value::numeric
   into v_adder_amount
