@@ -57,14 +57,11 @@
           <v-toolbar-title class="app-title">Company Logo</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn text v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
+            <v-btn text color="primary" v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
               <v-icon v-if="addImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <confirm-delete-dialog
-            label="the company logo"
-            @confirm-delete="deleteAttachment(companyLogo.id)"
-            ></confirm-delete-dialog>
+            <v-btn text color="primary" v-else @click="logoToDelete=LogoTypeEnum.Company"><v-icon>delete</v-icon></v-btn>
           </div>
         </v-toolbar>
         <div class="text-center">
@@ -99,15 +96,11 @@
           <v-toolbar-title class="app-title">Home Page Logo</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn text v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
+            <v-btn text color="primary" v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
               <v-icon v-if="addHomePageImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <confirm-delete-dialog
-                v-else
-                label="the home page logo"
-                @confirm-delete="deleteAttachment(homePageLogo.id)"
-            ></confirm-delete-dialog>
+            <v-btn text color="primary" v-else @click="logoToDelete=LogoTypeEnum.HomePage"><v-icon>delete</v-icon></v-btn>
           </div>
         </v-toolbar>
         <div class="text-center">
@@ -133,7 +126,9 @@
         </div>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!logoToDelete" @confirm="deleteAttachment(logoToDeleteId)" @close-dialog="logoToDelete=null">
+      {{deleteLogoDialogText}}
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -143,11 +138,16 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
+
+const LogoTypeEnum = Object.freeze({
+  Company: "CompanyLogo",
+  HomePage: "HomePageLogo"
+})
 
 export default {
   name: 'CompanySettings',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog},
   data () {
     return {
       loadComplete: false,
@@ -172,10 +172,32 @@ export default {
       homePageLogo: {},
       //todo: 333 = home page logo - do this on backend?
       homePageAttachmentTypeId: 333,
-      damnKeyThing: 0
+      damnKeyThing: 0,
+      LogoTypeEnum,
+      logoToDelete: null
     }
   },
   computed: {
+    deleteLogoDialogText() {
+      switch (this.logoToDelete) {
+        case LogoTypeEnum.Company:
+          return "Are you sure you want to delete the company logo?"
+        case LogoTypeEnum.HomePage:
+          return "Are you sure you want to delete the home page logo?"
+        default:
+          return ""
+      }
+    },
+    logoToDeleteId() {
+      switch (this.logoToDelete) {
+        case LogoTypeEnum.Company:
+          return this.companyLogo.id
+        case LogoTypeEnum.HomePage:
+          return this.homePageLogo.id
+        default:
+          return null
+      }
+    }
   },
   methods: {
     forceInteger() {
@@ -225,7 +247,11 @@ export default {
         await this.$store.dispatch(Actions.FILE_DELETE, {
           id,
           callback: async () => {
-            this.companyLogo = {}
+            if(this.logoToDelete == LogoTypeEnum.Company){
+              this.companyLogo = {}
+            } else {
+              this.homePageLogo = {}
+            }
             // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
             this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
