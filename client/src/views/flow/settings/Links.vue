@@ -65,6 +65,11 @@
                   </v-btn>
                   <v-icon v-else color="primary" @click="selectedLinkId = a.id">edit</v-icon>
                 </v-list-item-action>
+                <v-btn small text color="primary"
+                       v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                       @click="linkToDelete=a">
+                  <v-icon>delete</v-icon>
+                </v-btn>
                 <confirm-delete-dialog
                     v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     label="this link: "
@@ -74,6 +79,9 @@
               </v-list-item>
             </v-list>
           </div>
+          <ConfirmationDialog :open-dialog="!!linkToDelete" @confirm="deleteLink" @close-dialog="linkToDelete=null">
+            Are you sure you want to delete this link: <strong>{{linkToDeleteValue}}</strong>?
+          </ConfirmationDialog>
         </v-container>
       </v-col>
 
@@ -90,10 +98,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Links',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -113,10 +122,14 @@
         ],
         selectedLinkId: null,
         userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        linkToDelete: null
       }
     },
     computed: {
+      linkToDeleteValue(){
+        return this.linkToDelete ? this.linkToDelete.link : ''
+      }
     },
     methods: {
       updateUrl(item, code) {
@@ -135,12 +148,15 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteLink (typeId) {
+      async deleteLink () {
+        const link = this.linkToDelete
+       const typeId= this.linkToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/links/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          link.archived = true
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -148,6 +164,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.linkToDelete = null
       },
       async addNewLink () {
         this.$store.commit(AppMutations.SET_LOADING, true)
