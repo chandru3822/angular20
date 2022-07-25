@@ -228,8 +228,8 @@ public class GenesysService {
         "mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put(
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("Total Call Attempts", "");
-    contactMap.put("Contacted Call Attempts", "");
+    contactMap.put("Total Call Attempts", 0);
+    contactMap.put("Contacted Call Attempts", 0);
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("Call Scheduled", "");
@@ -408,8 +408,8 @@ public class GenesysService {
         contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts"));
         contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts"));
       } catch (Exception e) {
-        contactMap.put("Total Call Attempts", "");
-        contactMap.put("Contacted Call Attempts", "");
+        contactMap.put("Total Call Attempts", 0);
+        contactMap.put("Contacted Call Attempts", 0);
       }
 
       dc.setData(contactMap);

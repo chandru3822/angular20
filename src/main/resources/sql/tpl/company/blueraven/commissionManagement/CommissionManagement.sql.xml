@@ -810,6 +810,17 @@ FROM (SELECT cp.id,
     RETURNING id
     ]]></commissionPlan.create>
 
+  <commissionPlan.assignProject><![CDATA[
+    insert into brs.project_commission(project_id, commission_plan_id, date_created)
+    values (:projectId, :planId, now())
+  ]]></commissionPlan.assignProject>
+
+  <commissionPlan.checkProjectAssignment><![CDATA[
+    select id
+    from brs.project_commission
+    where project_id = :projectId
+  ]]></commissionPlan.checkProjectAssignment>
+
     <commissionPlan.update><![CDATA[
     UPDATE brs.commission_plan
     SET name      = :name,
