@@ -210,10 +210,10 @@ export default {
       formatPhoneNumber
     }
   },
-  created() {
+  async created() {
     this.getProposalProject()
     this.getCompletedProposalDesigns()
-    this.getActiveDesign()
+    await this.getActiveDesign()
   },
   methods: {
     async requestNewDesign() {
@@ -268,8 +268,8 @@ export default {
       try {
         const { data, status } = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven', [])
         this.designs = data
-        //get the active one (there should only ever be one of these)
-        this.activeDesign = data.find(d => d.processStepStatusTypeId === 1)
+        //this was causing a race condition sometimes when refreshing the screen. and i dont think we need this here since we do a separate request to get the active one
+        // this.activeDesign = data.find(d => d.processStepStatusTypeId === 1) || {}
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -281,6 +281,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { data, status } = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
+        console.log('active design here',data)
         this.activeDesign = data
         this.requestSuccessful = true
         handleHidingGlobalLoader(this, status)
