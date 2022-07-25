@@ -6,11 +6,11 @@
           <v-toolbar-title class="app-title">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]" v-if="userCanAdd">
               <v-icon v-if="!addNewEventStatusType">add</v-icon>
               {{ addNewEventStatusType ? 'Cancel' : 'Add Event Status Type' }}
             </v-btn>
-            <v-btn text @click="expandEsst = !expandEsst">
+            <v-btn text color="primary" @click="expandEsst = !expandEsst">
               <v-icon v-if="!expandEsst">mdi-chevron-down</v-icon>
               <v-icon v-else>mdi-chevron-up</v-icon>
             </v-btn>
@@ -56,47 +56,8 @@
                 <td class="text-left">{{ item.eventStatusType }}</td>
                 <td class="text-left">{{ item.rootEventStatusType }}</td>
                 <td class="text-right">
-                  <div class="flex-display">
-<!--                    todo: I can't add an event status so I can't test that this dialog works-->
-<!--                    <confirm-delete-dialog :item-to-delete="item.eventStatusType" @confirm-delete="deleteStatusTypeFromEvent(item)"></confirm-delete-dialog>-->
-                    <v-dialog
-                      v-if="userCanEdit"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete <strong>{{ item.eventStatusType }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primary"
-                            text
-                            @click="deleteStatusTypeFromEvent(item)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                  <div class="flex-display align-center">
+                    <v-btn small text color="primary" v-if="userCanEdit" @click="eventStatusTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -111,7 +72,7 @@
           <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAttachmentTypesForEvents" v-if="userCanAdd">
+            <v-btn text color="primary" @click="getAttachmentTypesForEvents" v-if="userCanAdd">
               <v-icon v-if="!addNewType">add</v-icon>
               {{ addNewType ? 'Cancel' : 'Add Type'}}
             </v-btn>
@@ -140,13 +101,19 @@
                 <v-list-item-content>
                   {{a.attachmentType}}
                 </v-list-item-content>
-                <confirm-delete-dialog label="this attachment type: " :item-to-delete="a.attachmentType" @confirm-delete="[a.archived = true, deleteAttachmentType(a.id)]"></confirm-delete-dialog>
+                <v-btn text color="primary" @click="attachmentTypeToDelete = a"><v-icon>delete</v-icon></v-btn>
               </v-list-item>
             </v-list>
           </draggable>
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!eventStatusTypeToDelete" @confirm="deleteStatusTypeFromEvent" @close-dialog="eventStatusTypeToDelete=null">
+      Are you sure you want to delete this event status type: <strong>{{ eventStatusTypeToDeleteName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!attachmentTypeToDelete" @confirm="deleteAttachmentType" @close-dialog="attachmentTypeToDelete=null">
+      Are you sure you want to delete this attachment type: <strong>{{ attachmentTypeToDeleteType }}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -158,11 +125,13 @@ import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@
 import Vue2Filters from "vue2-filters"
 import orderBy from "lodash.orderby"
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'EventComponents',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmationDialog,
     ConfirmDeleteDialog,
     draggable
   },
@@ -189,6 +158,16 @@ export default {
         {text: 'Category', value: 'category', show: true},
         {text: '', value: 'icons', show: false, width: '100px'},
       ],
+      eventStatusTypeToDelete: null,
+      attachmentTypeToDelete: null
+    }
+  },
+  computed: {
+    eventStatusTypeToDeleteName(){
+      return this.eventStatusTypeToDelete ? this.eventStatusTypeToDelete.eventStatusType : ''
+    },
+    attachmentTypeToDeleteType(){
+      return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
     }
   },
   watch: {},
@@ -260,12 +239,14 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteAttachmentType (id) {
+    async deleteAttachmentType () {
+      const attachmentType = this.attachmentTypeToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false
-        await deleteRequest(`/attachmentType/eventType/${id}`)
+        await deleteRequest(`/attachmentType/eventType/${attachmentType.id}`)
         // this.availableAttachmentTypes = data
+        attachmentType.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -275,6 +256,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.attachmentTypeToDelete = null
     },
     async saveAttachmentTypeOrder (attachmentTypes) {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -343,7 +325,8 @@ export default {
       }
 
     },
-    async deleteStatusTypeFromEvent (item) {
+    async deleteStatusTypeFromEvent () {
+      const item = this.eventStatusTypeToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         item.archived = true
@@ -357,6 +340,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.eventStatusTypeToDelete = null
     },
   }
 }

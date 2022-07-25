@@ -2,7 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/events'">
+        <v-btn text class="pl-1 pr-2 anchor" :to="'/settings/events'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
@@ -19,10 +19,10 @@
             <v-btn text color="primary" v-if="userCanEdit && !editName" class="" @click="[oldName = event.eventName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else-if="userCanEdit" @click="saveEventName()">
+            <v-btn text color="primary" class="" v-else-if="userCanEdit" @click="saveEventName()">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text  v-if="userCanEdit && editName" class="" @click="[event.eventName = oldName, editName = !editName]">
+            <v-btn text color="primary" v-if="userCanEdit && editName" class="" @click="[event.eventName = oldName, editName = !editName]">
               cancel
             </v-btn>
           </v-toolbar-items>
