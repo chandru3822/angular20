@@ -284,22 +284,23 @@ where case when :isParent
   ]]></schedule.getProject>
 
   <schedule.searchProjectsByName><![CDATA[
-        select c.first_name as contact_first_name,
-               c.last_name as contact_last_name,
-               c.id as contact_id,
-               concat(c.first_name, ' ', c.last_name) as contact_full_name,
-               p.project_name,
-               p.id as project_id
-        from flow.project p
-            inner join flow.contact c on c.id = p.contact_id
-        where c.archived is not true
-          and case when :isParent
-            then c.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
-            else c.company_id = :companyId end
-          and (concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
-                  OR p.id::text = :search OR p.project_name ILIKE '%' || :search || '%')
-        order by c.first_name, c.last_name
-        limit 100
+      select c.first_name as contact_first_name,
+           c.last_name as contact_last_name,
+           c.id as contact_id,
+           concat(c.first_name, ' ', c.last_name) as contact_full_name,
+           p.project_name,
+           p.id as project_id
+    from flow.project p
+           inner join flow.contact c on c.id = p.contact_id
+    where c.archived is not true
+      and p.archived is not true
+      and case when :isParent
+                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+               else c.company_id = :companyId end
+      and ((p.id::text like '%' || :search || '%') or
+           (p.project_name_search like '%' || lower(trim(translate(:search, '*,.& ', ''))) || '%'))
+    order by c.first_name, c.last_name
+    limit 50
   ]]></schedule.searchProjectsByName>
 
 </sql>
