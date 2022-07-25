@@ -41,13 +41,12 @@
               >{{ newTemplate.teamIds.length }} selected</span>
             </template>
           </v-autocomplete>
-
+          <v-btn text color="primary" @click="[addTemplate = !addTemplate, newTemplate = {}]">Cancel</v-btn>
           <v-btn :disabled="!newTemplate.title || !newTemplate.message"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="saveTemplate(newTemplate, true)">
             Save
           </v-btn>
-          <v-btn @click="[addTemplate = !addTemplate, newTemplate = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -110,24 +109,23 @@
             <tr  class="text-left" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
               <td class="text-left">{{ item.title }}</td>
               <td class="">{{getTeamsForTemplate(item)}}</td>
-              <td class="text-right">
+              <td class="text-right flex-display align-center">
                 <v-btn small text color="primary" v-if="!expanded.includes(item) && userCanEdit" @click="expanded = [item]; expandedItem = item; getAttachments()">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <confirm-delete-dialog
-                    v-if="!expanded.includes(item) && userCanEdit"
-                    label="this template"
-                    @confirm-delete="deleteTemplate(item)"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary" v-if="!expanded.includes(item) && userCanEdit" @click="templateToDelete=item">
+                  <v-icon>delete</v-icon>
+                </v-btn>
                 <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>
             </tr>
           </template>
-
         </v-data-table>
       </v-col>
-
     </v-row>
+    <ConfirmationDialog :open-dialog="!!templateToDelete" @confirm="deleteTemplate" @close-dialog="templateToDelete=null">
+      Are you sure you want to delete this template?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -141,10 +139,11 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'MessageTemplate',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   data () {
     return {
       snackbar: {},
@@ -172,6 +171,7 @@ export default {
       showDeleteDialog: false,
       teams: [],
       selectableTeams: [],
+      templateToDelete: null
     }
   },
   computed: {
@@ -219,7 +219,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteTemplate(template) {
+    async deleteTemplate() {
+      const template = this.templateToDelete
       try {
         const {status} = await putRequest(`/messaging/template/delete/${template.id}`)
         this.showDeleteDialog = false

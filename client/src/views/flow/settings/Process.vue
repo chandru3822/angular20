@@ -137,7 +137,7 @@
               <td class="text-left">{{ item.processStepStatusType }}</td>
               <td>
                 <div style="display: flex; float: right;">
-                  <v-btn text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getActiveAssignedToProcessStep(item)]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                  <v-btn text color="primary" @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getActiveAssignedToProcessStep(item)]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                     <v-icon v-else>expand_more</v-icon>
                   </v-btn>

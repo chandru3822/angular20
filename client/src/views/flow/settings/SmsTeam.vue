@@ -7,9 +7,10 @@
         @confirm="deleteItem"
     >
       <template v-slot:title class="albatross-body-1">
-        <span>Are you sure you want to remove <b>{{itemToDelete.name || itemToDelete.teamName}}</b>?</span>
+        Confirm
       </template>
-      <template v-slot:default>Make sure this team has resolved associated conversations</template>
+      <span>Are you sure you want to remove <b>{{itemToDelete.name || itemToDelete.teamName}}</b>?</span> <br/>
+      Please ensure this team has resolved associated conversations.
     </ConfirmationDialog>
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
@@ -29,11 +30,11 @@
                         label="Team Name" />
 
           <v-btn :disabled="!newTeam.teamName"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="mr-2"
                  @click="saveTeam(newTeam, true)">
             Save
           </v-btn>
-          <v-btn @click="[addTeam = !addTeam, newTeam = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addTeam = !addTeam, newTeam = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -62,26 +63,25 @@
                 <v-toolbar flat dense color="transparent" class="wqt-header-bar">
                   <v-toolbar-title class="albatross-header-4"><b>Positions</b></v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn text @click="addPosition = !addPosition">
+                  <v-btn text color="primary" @click="addPosition = !addPosition">
                     <v-icon>add</v-icon>
                   </v-btn>
                 </v-toolbar>
-                <v-card flat v-if="addPosition" color="transparent">
+                <v-card flat v-if="addPosition" color="transparent" class="px-4">
                   <v-select
                     v-model="positionId"
                     :items="positions"
                     label="Positions"
                     item-text="position"
                     item-value="id"
-                    class="px-4"
                   ></v-select>
 
-                  <v-btn text :disabled="!positionId"
+                  <v-btn color="primary" :disabled="!positionId"
                          @click="addPositionToTeam"
                   class="mb-6">
                     Save
                   </v-btn>
-                  <v-btn text @click="[addPosition = !addPosition, positionId = null]" class="mb-6">
+                  <v-btn text color="primary" @click="[addPosition = !addPosition, positionId = null]" class="mb-6">
                     Cancel
                   </v-btn>
                 </v-card>
@@ -109,7 +109,7 @@
                     <tr class="text-left" :class="{'shaded-row': expandedItem.positions.indexOf(item) % 2}">
                       <td class="text-left">{{ item.name }}</td>
                       <td class="text-right">
-                        <v-btn small text @click="startDelete(DeleteTypeEnum.POSITION, item)">
+                        <v-btn small text color="primary" @click="startDelete(DeleteTypeEnum.POSITION, item)">
                           <v-icon>delete</v-icon>
                         </v-btn>
                       </td>
@@ -123,11 +123,11 @@
                 <v-toolbar dense flat color="transparent" class="wqt-header-bar">
                   <v-toolbar-title class="albatross-header-4"><b>Users</b></v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn text @click="addUser = !addUser">
+                  <v-btn text color="primary" @click="addUser = !addUser">
                     <v-icon>add</v-icon>
                   </v-btn>
                 </v-toolbar>
-                <v-card flat v-if="addUser" color="transparent">
+                <v-card flat v-if="addUser" color="transparent" class="px-4 mb-6">
                   <v-autocomplete
                     v-model="userId"
                     :items="users"
@@ -135,14 +135,13 @@
                     item-text="fullName"
                     item-value="id"
                     attach
-                    class="px-4"
                   ></v-autocomplete>
 
-                  <v-btn text :disabled="!userId"
+                  <v-btn color="primary" :disabled="!userId"
                          @click="addUserToTeam">
                     Save
                   </v-btn>
-                  <v-btn text @click="[addUser = !addUser, userId = null]">
+                  <v-btn text color="primary" @click="[addUser = !addUser, userId = null]">
                     Cancel
                   </v-btn>
                 </v-card>
@@ -168,7 +167,7 @@
                     <tr class="text-left" :class="{'shaded-row': expandedItem.users.indexOf(item) % 2}">
                       <td class="text-left">{{ item.name }}</td>
                       <td class="text-right">
-                        <v-btn small text @click="startDelete(DeleteTypeEnum.USER, item)">
+                        <v-btn small text color="primary" @click="startDelete(DeleteTypeEnum.USER, item)">
                           <v-icon>delete</v-icon>
                         </v-btn>
                       </td>
@@ -182,11 +181,11 @@
                 <v-toolbar color="transparent" dense flat class="wqt-header-bar">
                   <v-toolbar-title class="albatross-header-4"><b>Organizations</b></v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn text @click="addOrg = !addOrg">
+                  <v-btn text color="primary" @click="addOrg = !addOrg">
                     <v-icon>add</v-icon>
                   </v-btn>
                 </v-toolbar>
-                <v-card flat v-if="addOrg" color="transparent">
+                <v-card flat v-if="addOrg" color="transparent" class="px-4 mb-6">
                   <v-autocomplete
                     v-model="orgId"
                     :items="orgs"
@@ -194,14 +193,13 @@
                     item-text="orgName"
                     item-value="id"
                     attach
-                    class="px-4"
                   ></v-autocomplete>
 
-                  <v-btn text :disabled="!orgId"
+                  <v-btn color="primary" :disabled="!orgId"
                          @click="addOrgToTeam">
                     Save
                   </v-btn>
-                  <v-btn text @click="[addOrg = !addOrg, orgId = null]">
+                  <v-btn text color="primary" @click="[addOrg = !addOrg, orgId = null]">
                     Cancel
                   </v-btn>
                 </v-card>
@@ -227,7 +225,7 @@
                     <tr class="text-left" :class="{'shaded-row': expandedItem.orgs.indexOf(item) % 2}">
                       <td class="text-left">{{ item.name }}</td>
                       <td class="text-right">
-                        <v-btn small text @click="startDelete(DeleteTypeEnum.ORG, item)">
+                        <v-btn small text color="primary" @click="startDelete(DeleteTypeEnum.ORG, item)">
                           <v-icon>delete</v-icon>
                         </v-btn>
                       </td>
@@ -237,7 +235,7 @@
                 </v-data-table>
               </div>
               <v-row class="justify-start pl-7">
-              <v-btn color="primaryCustom" class="white--text mr-2 mb-6" :disabled="!item.teamName" @click="saveTeam(item, false)">Save</v-btn>
+              <v-btn color="primary" class="mr-2 mb-6" :disabled="!item.teamName" @click="saveTeam(item, false)">Save</v-btn>
               </v-row>
             </td>
           </template>
@@ -254,10 +252,10 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'DELETE')"
-                       :disabled="item.isDefault" small text @click="startDelete(DeleteTypeEnum.TEAM, item)">
+                       :disabled="item.isDefault" small text color="primary" @click="startDelete(DeleteTypeEnum.TEAM, item)">
                   <v-icon>delete</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>
 
             </tr>

@@ -87,14 +87,16 @@
                     <v-btn small text color="primary" :to="`/settings/processStep/${item.id}/components`">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                                           label="this process step: "
-                                           :item-to-delete="item.processStepName"
-                                           :is-disabled="item.workQueueTypes.length > 0"
-                                           :show-tooltip="item.workQueueTypes.length > 0"
-                                           tooltip-text="Cannot delete a Process Step with assigned Work Queue Types"
-                                           @confirm-delete="deleteProcessStep(item)"
-                    ></confirm-delete-dialog>
+                    <v-tooltip top :disabled="item.workQueueTypes.length <= 0">
+                      <template v-slot:activator="{ on: tooltip }">
+                        <div v-on="{ ...tooltip }" class="d-inline-block">
+                          <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" :disabled="item.workQueueTypes.length > 0" @click="psToDelete=item">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
+                        </div>
+                      </template>
+                      <span>Cannot delete a Process Step with assigned Work Queue Types</span>
+                    </v-tooltip>
                   </td>
                 </tr>
               </template>
@@ -102,8 +104,10 @@
           </v-card>
         </v-container>
       </v-col>
-
     </v-row>
+    <ConfirmationDialog :open-dialog="!!psToDelete" @confirm="deleteProcessStep" @close-dialog="psToDelete=null">
+      Are you sure you want to delete this process step: <b>{{psToDeleteName}}</b>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -114,10 +118,11 @@
   import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'ProcessSteps',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -140,6 +145,7 @@
           'items-per-page-options': [25, 50, 100, 1000],
           'items-per-page-text': 'Rows per page:'
         },
+        psToDelete: null
       }
     },
     watch: {
@@ -151,6 +157,9 @@
       },
     },
     computed: {
+      psToDeleteName(){
+        return this.psToDelete ? this.psToDelete.processStepName : ''
+      }
     },
     methods: {
       debounceGetSteps: debounce( function () {
@@ -169,7 +178,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteProcessStep (processStep) {
+      async deleteProcessStep () {
+       const processStep = this.psToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await putRequest(`/processStep/delete/${processStep.id}`, null, null, [])
@@ -192,6 +202,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.psToDelete = null
       },
       async addProcessStep () {
         this.$store.commit(AppMutations.SET_LOADING, true)

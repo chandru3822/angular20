@@ -70,12 +70,6 @@
                        @click="linkToDelete=a">
                   <v-icon>delete</v-icon>
                 </v-btn>
-                <confirm-delete-dialog
-                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    label="this link: "
-                    :item-to-delete="a.link"
-                    @confirm-delete="[a.archived = true, deleteLink(a.id)]"
-                ></confirm-delete-dialog>
               </v-list-item>
             </v-list>
           </div>

@@ -96,7 +96,7 @@
                 <v-btn small text color="primary" v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>
             </tr>
           </template>

@@ -279,7 +279,7 @@
                   </template>
                 </v-autocomplete>
                 <br/>
-                <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                <v-btn color="primary" class="d-inline-block"
                        @click="saveReadOnlyAndWhiteList()">
                   <v-icon class="mr-2">save</v-icon>
                   Save
