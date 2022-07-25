@@ -1,5 +1,5 @@
 <template>
-  <v-container id="proposals-container">
+  <v-container id="proposals-container" v-if="proposalExists">
     <v-row justify="center" no-gutters>
       <v-col md="auto">
         <v-alert
@@ -23,7 +23,9 @@
           <v-toolbar-title class="new-proposal-header">New Proposal</v-toolbar-title>
           <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
           <v-spacer />
-          <v-toolbar-items />
+          <v-toolbar-items v-if="proposal.locked">
+            <next-step-menu />
+          </v-toolbar-items>
         </v-toolbar>
       </v-col>
     </v-row>
@@ -46,14 +48,14 @@
                   :key="idx"
                   :required="field.required"
                   :callback="populateDirtyCfvs"
-                  :readonly="!isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || field.ancillaryCustomFieldGroupAssignmentId !== null"
+                  :readonly="proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || field.ancillaryCustomFieldGroupAssignmentId !== null"
                   :field="field"
                   :show-field-name="false"
                   :list-of-value-filter="filters[field.customFieldId]"
                 />
               </div>
             </div>
-            <div class="configuration-save-container">
+            <div class="configuration-save-container" v-if="!proposal.locked">
               <v-btn depressed
                      :disabled="dirtyCfvs.length === 0"
                      class="text-capitalize"
@@ -76,22 +78,37 @@
         </v-col>
         <v-col cols="12" sm="8">
           <v-card class="proposal-container">
-            <div class="proposal-container-header sticky-header">
-              <div class="proposal-title">Proposal</div>
-              <v-spacer/>
-              <!--              <v-btn depressed-->
-              <!--                     :disabled="dirtyCfvs.length === 0"-->
-              <!--                     class="proposal-container-buttons text-capitalize font-weight-bold">Present-->
-              <!--              </v-btn>-->
-              <v-btn depressed
-                     disabled
-                     class="proposal-container-buttons text-capitalize font-weight-bold">
-                Save Proposal
-              </v-btn>
-              <v-btn class="proposal-container-buttons text-capitalize font-weight-bold"
-                     @click="downloadPdf">
-                Download
-              </v-btn>
+            <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
+                 v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
+              <v-alert
+                v-if="isIntersecting"
+                color="brYellow"
+                dense
+                tile
+                :value="dirtyCfvs.length > 0"
+                transition="scale-transition"
+              >
+                Changes haven't been reflected on proposal
+              </v-alert>
+
+              <div class="d-flex">
+                <div class="proposal-title">Proposal</div>
+                <v-spacer />
+                <!--              <v-btn depressed-->
+                <!--                     :disabled="dirtyCfvs.length === 0"-->
+                <!--                     class="proposal-container-buttons text-capitalize font-weight-bold">Present-->
+                <!--              </v-btn>-->
+                <v-btn class="proposal-container-buttons text-capitalize"
+                       :disabled="proposal.locked || dirtyCfvs.length > 0"
+                       @click="saveProposal"
+                >
+                  Save Proposal
+                </v-btn>
+                <v-btn class="proposal-container-buttons text-capitalize"
+                       @click="downloadPdf">
+                  Download
+                </v-btn>
+              </div>
             </div>
             <div>
               <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="false" :editable="false" />
@@ -100,10 +117,15 @@
         </v-col>
       </v-row>
     </v-form>
-    <confirm-navigation-dialog ref="confirmDialog">
-      <p>You still have unsaved changes are you sure you want to change?</p>
-    </confirm-navigation-dialog>
+    <confirm-dialog ref="confirmDialog" />
+    <confirm-dialog ref="saveProposalConfirm"
+                    cancel-button-text="Continue editing"
+                    ok-button-text="Save and Lock">
+      <template #title>Are you sure you want to save and lock this proposal?</template>
+      <p>Saving proposal will lock the proposal and you will not be able to make changes to the current proposal.</p>
+    </confirm-dialog>
   </v-container>
+  <v-container v-else>This isn't the proposal you are looking for...</v-container>
 </template>
 
 <script>
@@ -121,7 +143,8 @@ import { AppMutations } from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import ProposalTemplate from '@/views/blueraven/settings/proposalDesigner/ProposalTemplate'
 import { ProposalActions } from '@/views/blueraven/settings/proposalDesigner/store'
-import ConfirmNavigationDialog from '@/views/blueraven/proposals/ConfirmNavigationDialog'
+import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
+import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import { mapState } from 'vuex'
 
 export default {
@@ -129,10 +152,13 @@ export default {
   components: {
     CustomValueInput,
     ProposalTemplate,
-    ConfirmNavigationDialog
+    ConfirmDialog,
+    NextStepMenu
   },
   data() {
     return {
+      proposalExists: true,
+      isIntersecting: false,
       loading: false,
       proposalId: this.$route.params.proposalId,
       proposal: {
@@ -176,19 +202,41 @@ export default {
       const snackbar = getSnackbar(type, msg)
       this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
     },
+    onStickyHeader(entries) {
+      const ratio = entries[0].intersectionRatio
+      this.isIntersecting = ratio < 1
+    },
     async getProposalDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
 
-      //reset cfvs
-      this.dirtyCfvs = []
-
       try {
+        //assume the proposal exists
+        this.proposalExists = true
+
+        //reset cfvs
+        this.dirtyCfvs = []
+
         const { data, status } = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
         this.proposal = data
+
+        // build filters on load for any field with a conditional property
+        const fields = this.proposal?.customFieldGroups
+          ?.map(cfg => cfg.customFieldValues)
+          ?.flat()
+
+        const conditionalOnFields = fields
+          ?.filter(f => f.conditionalOnId !== null)
+          ?.map(f => f.conditionalOnId)
+
+        fields
+          ?.filter(f => conditionalOnFields.includes(f.customFieldGroupAssignmentId))
+          ?.forEach(this.buildFilters)
+
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this._showSnackbar('ERROR', 'Error retrieving data')
+        this.proposalExists = false
+        this._showSnackbar('ERROR', `Error retrieving proposal #${this.proposalId}`)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -278,11 +326,20 @@ export default {
       }
 
       try {
-        const selectedFieldValue = this.dirtyCfvs.find(cfv => cfv.customFieldId === field.customFieldId)?.intValue
-        const conditionalOn = this.proposal?.customFieldGroups
+        const fields = this.proposal?.customFieldGroups
           ?.map(cfg => cfg.customFieldValues)
           ?.flat()
-          ?.filter(f => f?.conditionalOnId === field.customFieldGroupAssignmentId)
+
+        //value is either going to come from a local change
+        const dirtyCfvValue = this.dirtyCfvs.find(cfv => cfv.customFieldId === field.customFieldId)?.intValue
+
+        //or it's coming from the server
+        const prePopulatedValue = fields.find(f => f.customFieldId === field.customFieldId)?.intValue
+
+        //local changes take precedence over server
+        const selectedFieldValue = dirtyCfvValue || prePopulatedValue || null
+
+        const conditionalOn = fields?.filter(f => f?.conditionalOnId === field.customFieldGroupAssignmentId)
 
         if (conditionalOn.length > 0) {
 
@@ -319,8 +376,7 @@ export default {
         }
       } catch (e) {
         logError(e)
-        const snackbar = getSnackbar('ERROR', e?.data?.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+        this._showSnackbar('ERROR', e?.data?.message)
       } finally {
         this.loading = false
       }
@@ -340,6 +396,15 @@ export default {
       //has it been changed in this session
       const isDirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
       return isDirtyCfv || isPrepopulated
+    },
+    async saveProposal() {
+
+      const confirmLock = await this.$refs.saveProposalConfirm.open()
+      if (confirmLock) {
+        //todo; actually save it
+        this.proposal = { ...this.proposal, locked: true }
+        this._showSnackbar('SUCCESS', 'Proposal Saved and Locked!')
+      }
     },
     beforeWindowUnload(e) {
       if (this.dirtyCfvs?.length > 0) {
@@ -389,16 +454,20 @@ export default {
 }
 
 .proposal-container-header {
-  display: flex;
   padding: 10px 0;
   margin-bottom: 24px;
 
   &.sticky-header {
     position: sticky;
-    top: 0;
+    top: -1px;
     background-color: white;
     padding: 10px;
     z-index: 200;
+
+    &.is-pinned {
+      border-bottom: 1px solid #ccc;
+      box-shadow: 0 3px 2px 0 rgb(0 0 0 / 10%);
+    }
   }
 }
 
