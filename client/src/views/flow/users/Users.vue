@@ -485,7 +485,7 @@
         positions: [],
         descending: true,
         footerProps: {
-          'items-per-page-options': [10, 50, 100, 1000],
+          'items-per-page-options': [10, 50, 100, 1000, 3000],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
