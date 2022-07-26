@@ -39,7 +39,8 @@ BEGIN
         adder_amount,
         date_created,
         design_log_date,
-        bom
+        bom,
+        bom_with_part_number
     )
     VALUES (new.id,
             new.project_id,
@@ -75,7 +76,8 @@ BEGIN
             new.design->>'Adder Amount',
             new.design_date,
             new.design_date,
-            new.bom
+            new.bom,
+            new.bom_with_part_number
            );
     RETURN NEW;
 END;
