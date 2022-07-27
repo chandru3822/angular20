@@ -93,7 +93,7 @@
                                            :is-disabled="item.workQueueTypes.length > 0 || item.usedByProcess"
                                            :show-tooltip="item.workQueueTypes.length > 0 || item.usedByProcess"
                                            :tooltip-text="getDeleteTooltip(item)"
-                                           @confirm-delete="deleteProcessStep()"
+                                           @confirm-delete="deleteProcessStep(item)"
                     ></confirm-delete-dialog>
                   </td>
                 </tr>
