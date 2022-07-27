@@ -38,15 +38,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
+                              auto-grow
+                              :rows="1"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               class="other-field"
-                ></v-text-field>
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.requiredInspectionTypes"
                             @change="dataWasChanged = true"
@@ -103,15 +105,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
+                              :rows="1"
+                              auto-grow
                               class="other-field"
-                ></v-text-field>
+                ></v-textarea>
               </div>
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
@@ -245,15 +249,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
+                              :rows="1"
+                              auto-grow
                               class="other-field"
-                ></v-text-field>
+                ></v-textarea>
               </div>
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
@@ -303,15 +309,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
+                              :rows="1"
+                              auto-grow
                               class="other-field"
-                ></v-text-field>
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.inspectionFee"
                             @change="dataWasChanged = true"
