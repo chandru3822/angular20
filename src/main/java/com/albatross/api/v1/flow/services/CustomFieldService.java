@@ -287,4 +287,14 @@ public class CustomFieldService {
 
     return null;
   }
+
+  public List<CustomField> getCustomFieldsByPositionId(Long positionId) {
+    User user = securityService.getCurrentUser();
+    final Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("positionId", positionId);
+
+    return sqlCache.query(
+      "customField.getAllByPositionId", params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
+  }
 }
