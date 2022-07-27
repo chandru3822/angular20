@@ -46,7 +46,7 @@
                               filled
                               auto-grow
                               :rows="1"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.depositAmount"
@@ -248,7 +248,7 @@
                               filled
                               auto-grow
                               :rows="1"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.revisionFeeAmount"
@@ -313,7 +313,7 @@
                               filled
                               auto-grow
                               :rows="1"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-card flat class="mt-1 pa-0">
@@ -374,7 +374,7 @@
                               filled
                               auto-grow
                               :rows="1"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
@@ -439,7 +439,7 @@
                               filled
                               auto-grow
                               :rows="1"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <AhjChecklist v-if="dataReady"
@@ -516,7 +516,7 @@
                               filled
                               auto-grow
                               :rows="1"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.documentsAvailable"
@@ -571,7 +571,7 @@
                               filled
                               auto-grow
                               :rows="1"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.deliveryFeeAmount"
