@@ -90,10 +90,10 @@
                     <confirm-delete-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                                            label="this process step: "
                                            :item-to-delete="item.processStepName"
-                                           :is-disabled="item.workQueueTypes.length > 0"
-                                           :show-tooltip="item.workQueueTypes.length > 0"
-                                           tooltip-text="Cannot delete a Process Step with assigned Work Queue Types"
-                                           @confirm-delete="deleteProcessStep(item)"
+                                           :is-disabled="item.workQueueTypes.length > 0 || item.usedByProcess"
+                                           :show-tooltip="item.workQueueTypes.length > 0 || item.usedByProcess"
+                                           :tooltip-text="getDeleteTooltip(item)"
+                                           @confirm-delete="deleteProcessStep()"
                     ></confirm-delete-dialog>
                   </td>
                 </tr>
@@ -167,6 +167,13 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getDeleteTooltip(item) {
+        if(item.usedByProcess) {
+          return 'Cannot delete a Process Step that is assigned to a process'
+        } else if (item.workQueueTypes.length > 0 ) {
+          return 'Cannot delete a Process Step with assigned Work Queue Types'
         }
       },
       async deleteProcessStep (processStep) {
