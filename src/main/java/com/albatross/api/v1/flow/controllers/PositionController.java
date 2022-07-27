@@ -48,6 +48,11 @@ public class PositionController {
     return positionService.insertPosition(p);
   }
 
+  @PostMapping(value = "/clone/{cloneId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Position clonePosition(@PathVariable Long cloneId, @RequestBody Position p) {
+    return positionService.clonePosition(p, cloneId);
+  }
+
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Position updatePosition(@RequestBody Position p) {
     return positionService.updatePosition(p);
