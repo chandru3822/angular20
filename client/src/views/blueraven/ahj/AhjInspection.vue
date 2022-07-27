@@ -47,7 +47,7 @@
                               :rows="1"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.requiredInspectionTypes"
@@ -115,7 +115,7 @@
                               filled
                               :rows="1"
                               auto-grow
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-card flat class="pa-0">
@@ -262,7 +262,7 @@
                               filled
                               :rows="1"
                               auto-grow
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-card flat class="pa-0">
@@ -323,7 +323,7 @@
                               filled
                               :rows="1"
                               auto-grow
-                              class="other-field"
+                              class="other-field override-readonly-font-color"
                 ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.inspectionFee"
