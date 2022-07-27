@@ -1,7 +1,7 @@
 <template>
   <div id="org-container">
     <!--    modal for leaving with unsaved fields -->
-    <confirmation-dialog :open-dialog="unsavedFieldsModal" @@close-dialog="unsavedFieldsModal = false" @confirm="[navigationOverride = true, goToPath(toPath)]">
+    <confirmation-dialog :open-dialog="unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false" @confirm="[navigationOverride = true, goToPath(toPath)]">
       You have unsaved fields.  Are you sure you want to continue without saving?
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Don't Save</template>
@@ -89,7 +89,7 @@
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             class="white--text text-capitalize font-weight-bold"
             @click="validateForm()">
             Save
@@ -101,7 +101,7 @@
     <ThreeColumnLayout :header-text="org.orgName"
                        :auto-overflow-left="false">
       <template v-slot:back-btn>
-        <v-btn fab text small class="mr-2" @click="goToPath('/orgs')">
+        <v-btn fab text small color="primary" class="mr-2" @click="goToPath('/orgs')">
           <v-icon>mdi-view-list</v-icon>
         </v-btn>
       </template>
@@ -152,12 +152,12 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="setSplitColumnValue()" class="px-0">
+              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
                 <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
               <div>
-                <v-btn color="primaryCustom"
+                <v-btn color="primary"
                        class="white--text mt-3"
                        v-if="userCanEdit"
                        :loading="fieldsLoading"
@@ -169,11 +169,11 @@
             </v-toolbar-items>
           </v-toolbar>
           <div class="px-4">
-            <v-btn @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]" small>
+            <v-btn @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]" :text="showChildOrgs" color="primary" small>
               {{ showChildOrgs ? 'Hide' : 'Show' }} Child Organizations
             </v-btn>
             <br/>
-            <v-btn @click="[showUsersAssignedToOrg = !showUsersAssignedToOrg, showChildOrgs = false]" small
+            <v-btn @click="[showUsersAssignedToOrg = !showUsersAssignedToOrg, showChildOrgs = false]" :text="showUsersAssignedToOrg" color="primary" small
                    class="mt-3">
               {{ showUsersAssignedToOrg ? 'Hide' : 'Show' }} Assigned Users
             </v-btn>
@@ -310,7 +310,7 @@
           </v-row>
         </div>
         <div v-else>
-          <SpinnerInline centered :size="50" color="primaryCustom"/>
+          <SpinnerInline centered :size="50" color="primary"/>
         </div>
       </template>
       <template v-slot:right-column>
