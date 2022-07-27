@@ -8,6 +8,9 @@
           <v-toolbar-title class="app-title">Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn @click="logicStringToggle = !logicStringToggle" text>
+              View Logic as Text
+            </v-btn>
             <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
               {{ addNewAction ? 'Cancel' : 'Add Action' }}
@@ -784,19 +787,34 @@
                   <v-toolbar-items
                     v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
                     <v-btn text
-                           @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = false]">
+                           @click="[item.logicListChanged = true, item.logicMargin = 0, item.processStepLogicList = [], item.alwaysEnabled = false]">
                       <v-icon>clear</v-icon>
                       Clear All
                     </v-btn>
                   </v-toolbar-items>
                 </v-toolbar>
                 <v-card flat class="text-left px-3" color="transparent">
+                  <div v-if="logicStringToggle">
+                    <div v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')"
+
+                         :style="{'margin-left': getLogicMargin(l, item, index)}"
+                         :key="index">
+                      <v-btn small class="ml-1 mr-1 mt-1"
+                             :disabled="!userCanEdit"
+                             @click="[l.archived = true, item.logicListChanged = true]">
+                        {{ getLogicButtonText(l) }}
+                      </v-btn>
+                    </div>
+                  </div>
+                  <div v-else>
                   <v-btn small class="ml-1 mr-1 mt-1"
+                         v-for="(l, idx) in filterBy(item.processStepLogicList, false, 'archived')"
+                         :key="idx"
                          :disabled="!userCanEdit"
-                         v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
                          @click="[l.archived = true, item.logicListChanged = true]">
                     {{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}
                   </v-btn>
+                  </div>
                   <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled"
                          :disabled="!userCanEdit"
                          @click="[item.logicListChanged = true, item.alwaysEnabled = !item.alwaysEnabled]">
@@ -822,10 +840,11 @@
                   <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
                 </v-toolbar>
                 <v-card flat class="text-left mb-4 px-3" color="transparent">
-                  <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
+                  <v-btn :class="{'d-block': logicStringToggle}"
+                          small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
                          :disabled="!userCanEdit"
-                         @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })]">
-                    {{ r.requirementNbr }}
+                         @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString })]">
+                    {{ getLogicButtonText(r) }}
                   </v-btn>
                 </v-card>
                 <v-divider></v-divider>
@@ -1037,7 +1056,7 @@ export default {
       requirements: [],
       availableFunctions: [],
 
-
+      logicStringToggle: false,
       addNewAction: false,
       newAction: {},
       actions: [],
@@ -1127,6 +1146,82 @@ export default {
       navigator.clipboard.writeText(this.actionLogicString);
       this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    getLogicMargin(item, parentItem, index) {
+      parentItem.logicMargin = parentItem.logicMargin || 0
+      if(item.operationTypeId === 1) {
+        if(parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
+          parentItem.logicMargin += 25
+        }
+        parentItem.indexOfPreviousAdd = index
+        return parentItem.logicMargin + 'px'
+      } else if(item.operationTypeId === 2) {
+        parentItem.indexOfPreviousSubtract = index
+        let placeholder = parentItem.logicMargin - 25
+        parentItem.logicMargin -= 25
+        return placeholder + 'px'
+      } else {
+        if(parentItem.indexOfPreviousAdd === index - 1) {
+          parentItem.logicMargin += 25
+        }
+        return parentItem.logicMargin + 'px'
+      }
+    },
+    getLogicButtonText(item) {
+      if(this.logicStringToggle) {
+
+        if(item.logicString) {
+          //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
+          return item.logicString
+        } else {
+          if(null != item.requirementNbr) {
+            //if not a system requirement (like AND, NOT, OR, etc)
+            let value = ''
+            if(item.dataTypeRequirement?.dataTypeValue) {
+              value = item.dataTypeRequirement?.dataTypeValue
+            } else if (item.listOfValue?.name) {
+              value = item.listOfValue?.name
+            } else if (item.listOfValues?.length > 0){
+              item.listOfValues.forEach((lv, idx) => {
+                if(idx !== 0) {
+                  value = value + ', '
+                }
+                value = value + lv.name
+              })
+            } else if(item.requirementValue) {
+              value = item.requirementValue
+            } else {
+              value = 'UNKNOWN CONTACT ADMIN'
+            }
+            if(null != item.secondaryRequirementValue) {
+              value = value + ` (${item.secondaryRequirementValue})`
+            }
+            if([1,3,4].includes(item.processStepRequirementTypeId)) {
+              //custom field
+              let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
+              let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
+              item.logicString = logicString
+              return logicString
+            } else if(item.processStepRequirementTypeId === 2) {
+              //function
+              let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' '  + item.operatorType + ' ' + value
+              item.logicString = logicString
+              return logicString
+            } else if([7,8,9,10].includes(item.processStepRequirementTypeId)){
+              //status (project or process step)
+              let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
+              let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
+              item.logicString = logicString
+              return logicString
+            }
+          } else {
+            //this returns if AND, OR, NOT, etc
+            return item.operationType
+          }
+        }
+      } else {
+        return item.requirementNbr
+      }
     },
     async getActionLogicString(actionId) {
       try {

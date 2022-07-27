@@ -25,7 +25,7 @@ public class ProcessStepRequirementController {
   private ProcessStepRequirementService processStepRequirementService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepRequirement> getRequirementsForEvent (@PathVariable Long stepId) {
+  public List<ProcessStepRequirement> getRequirementsForStep (@PathVariable Long stepId) {
     return processStepRequirementService.getRequirementsForStep(stepId);
   }
 
