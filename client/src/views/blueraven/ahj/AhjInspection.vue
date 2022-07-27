@@ -71,6 +71,7 @@
                               :disabled="!userCanEdit || !editSchedulingNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -131,6 +132,7 @@
                               :disabled="!userCanEdit || !editInstructionsForBRSTech"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -148,6 +150,7 @@
                               :disabled="!userCanEdit || !editDocumentationNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -211,6 +214,7 @@
                               :disabled="!userCanEdit || !editCustomerNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -275,6 +279,7 @@
                               :disabled="!userCanEdit || !editObtainingResultsNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -350,6 +355,7 @@
                               :disabled="!userCanEdit || !editReinspectionNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -404,6 +410,7 @@
                               :disabled="!userCanEdit || !editMPUNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
