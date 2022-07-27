@@ -48,6 +48,7 @@
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           auto-grow
+                          class="override-readonly-font-color"
               ></v-textarea>
             </v-card-text>
           </v-card>
