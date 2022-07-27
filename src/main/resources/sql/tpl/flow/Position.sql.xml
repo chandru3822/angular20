@@ -155,5 +155,29 @@ values (:companyId, :position, :orgTypeId, :schedulable, :availableToChildren, :
     where id = :id
   ]]></position.updatePositionFeatureAccessControl>
 
+  <position.getWhiteListedPositionsByPosition>
+    <![CDATA[
+     SELECT *
+     FROM flow.white_listed_position wlp
+     WHERE wlp.archived is not true and wlp.position_id = :positionId
+    ]]>
+  </position.getWhiteListedPositionsByPosition>
+
+  <position.insertWhiteListPosition>
+    <![CDATA[
+    insert into flow.white_listed_position(custom_field_group_assignment_id, position_id, process_step_id, white_list_type_id, work_queue_type_id, event_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+    select :customFieldGroupAssignmentId, :positionId, :processStepId, :whiteListTypeId, :workQueueTypeId, :eventId, :companyId, :userId, now(), :userId, now()
+    where not exists (select id
+                        from flow.white_listed_position
+                        where custom_field_group_assignment_id = :customFieldGroupAssignmentId
+                          and position_id = :positionId
+                          and process_step_id = :processStepId
+                          and white_list_type_id = :whiteListTypeId
+                          and work_queue_type_id = :workQueueTypeId
+                          and event_id = :eventId
+                          and company_id = :companyId
+                           and archived is not true)
+    ]]>
+  </position.insertWhiteListPosition>
 
 </sql>
