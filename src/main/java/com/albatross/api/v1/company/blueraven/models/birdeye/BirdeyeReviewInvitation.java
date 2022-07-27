@@ -17,6 +17,6 @@ public class BirdeyeReviewInvitation {
     private String id, birdeyeBusinessId;
     private String customerName, customerEmail, customerPhone, customerId, birdeyeCustomerId;
     private int projectId;
-    private Boolean sendSms;
+    private Boolean sendSms, saveCfv;
     private List<String> requestersEmails;
 }
