@@ -52,7 +52,10 @@ public class BirdeyeReviewController {
     }
     try {
       birdeye.sendInvitation(invitation);
-      birdeye.saveCfgaValue(invitation.getProjectId());
+      //only save the cfga value if the invite request told us to.  mobile has made this change on their side.
+      if(null != invitation.getSaveCfv() && invitation.getSaveCfv()) {
+        birdeye.saveCfgaValue(invitation.getProjectId());
+      }
       result.put("message", "Invite sent.");
       return ResponseEntity.ok(result.toString());
     } catch (Exception e) {
