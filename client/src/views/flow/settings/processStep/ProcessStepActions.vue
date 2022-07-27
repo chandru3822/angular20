@@ -9,7 +9,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text>
-              View Logic as Text
+              {{logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
             </v-btn>
             <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
@@ -807,13 +807,19 @@
                     </div>
                   </div>
                   <div v-else>
-                  <v-btn small class="ml-1 mr-1 mt-1"
-                         v-for="(l, idx) in filterBy(item.processStepLogicList, false, 'archived')"
-                         :key="idx"
-                         :disabled="!userCanEdit"
-                         @click="[l.archived = true, item.logicListChanged = true]">
-                    {{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}
-                  </v-btn>
+                    <v-tooltip top max-width="300px"
+                               v-for="(l, idx) in filterBy(item.processStepLogicList, false, 'archived')"
+                               :key="idx">
+                      <template v-slot:activator="{ on:tooltip }">
+                        <v-btn small class="ml-1 mr-1 mt-1"
+                               v-on="{ ...tooltip }"
+                               :disabled="!userCanEdit"
+                               @click="[l.archived = true, item.logicListChanged = true]">
+                          {{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}
+                        </v-btn>
+                      </template>
+                      <span>{{ getLogicButtonText(l) }}</span>
+                    </v-tooltip>
                   </div>
                   <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled"
                          :disabled="!userCanEdit"
@@ -840,12 +846,20 @@
                   <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
                 </v-toolbar>
                 <v-card flat class="text-left mb-4 px-3" color="transparent">
-                  <v-btn :class="{'d-block': logicStringToggle}"
-                          small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
-                         :disabled="!userCanEdit"
-                         @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString })]">
-                    {{ getLogicButtonText(r) }}
-                  </v-btn>
+                  <v-tooltip top max-width="300px"
+                             :disabled="logicStringToggle"
+                             v-for="r in requirements" :key="r.id">
+                    <template v-slot:activator="{ on:tooltip }">
+                      <v-btn :class="{'d-block': logicStringToggle}"
+                             small class="ml-1 mr-1 mt-1"
+                             :disabled="!userCanEdit"
+                             v-on="{ ...tooltip }"
+                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString })]">
+                        {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
+                      </v-btn>
+                    </template>
+                    <span>{{ getLogicButtonText(r) }}</span>
+                  </v-tooltip>
                 </v-card>
                 <v-divider></v-divider>
                 <div v-if="actionLogicError" class="error-text ml-3 mt-3">
@@ -1168,7 +1182,6 @@ export default {
       }
     },
     getLogicButtonText(item) {
-      if(this.logicStringToggle) {
 
         if(item.logicString) {
           //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
@@ -1219,9 +1232,6 @@ export default {
             return item.operationType
           }
         }
-      } else {
-        return item.requirementNbr
-      }
     },
     async getActionLogicString(actionId) {
       try {
