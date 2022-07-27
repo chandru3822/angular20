@@ -1,213 +1,129 @@
 <template>
   <div id="contact-container">
     <!--    modal for leaving with unsaved fields -->
-    <v-dialog width="500" v-model="unsavedFieldsModal">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Confirm
-        </v-card-title>
-
-        <v-card-text class="pt-4">
-          You have unsaved fields. <br/>
-          Are you sure you want to continue without saving?
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="unsavedFieldsModal = false">
-            No
-          </v-btn>
-          <v-btn
-            color="primary"
-            text
-            @click="[navigationOverride = true, goToPath(toPath)]">
-            Yes
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!--    end unsaved fields modal -->
-
+    <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath)]" @close-dialog="unsavedFieldsModal = false">
+      <template v-slot:title>Confirm</template>
+      You have unsaved fields. <br/>
+      Are you sure you want to continue without saving?
+      <template v-slot:yes>Continue and Don't Save</template>
+    </ConfirmationDialog>
     <!--    modal for editing contact fields -->
-    <v-dialog width="500"
-              v-if="contact && contact.id"
-              v-model="showEditModal" content-class="square-card">
-      <v-card class="px-6 py-4 square-card">
-        <v-form ref="contactEditForm">
-          <v-card-title
-            color="blackText"
-            class="albatross-header-3 text-capitalize pa-0"
-            primary-title>
-            Contact Overview
-          </v-card-title>
-          <v-card-text class="pt-4 px-0">
-            <div>
-              <v-text-field
-                v-model="tempContact.firstName"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                label="Contact First Name"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempContact.lastName"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                label="Contact Last Name"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempContact.street1"
-                label="Street"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempContact.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempContact.city"
-                label="City"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempContact.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                type="text"
-                v-model="tempContact.postalCode"
-                counter
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                maxlength="10"
-                @keypress="isNumberOrHyphen"
-                :rules="postalCodeRules"
-                @change="tempContact.reloadCoordinates = true"
-                label="Postal Code"
-              ></v-text-field>
-              <v-autocomplete v-model="tempContact.companyStateId"
-                              :items="states"
-                              label="State"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :loading="statesLoading"
-                              item-text="state"
-                              item-value="id"
-                              @input="tempContact.reloadCoordinates = true"
-              ></v-autocomplete>
-              <v-select v-model="tempContact.companyCountryId"
-                        :items="countries"
-                        label="Country"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        :loading="countriesLoading"
-                        @input="tempContact.reloadCoordinates = true"
-                        item-text="country"
-                        item-value="id"
-              ></v-select>
-              <v-text-field text
-                            label="Phone"
-                            placeholder=" "
-                            :rules="contactPhoneRule"
+    <ConfirmationDialog :open-dialog="showEditModal" :disable-confirm="!contact.firstName || !contact.lastName" @confirm="validateForm()" @close-dialog="showEditModal = false">
+      <template v-slot:title>Contact Overview</template>
+      <v-form ref="contactEditForm">
+        <v-card-text class="pt-4 px-0">
+          <div>
+            <v-text-field
+              v-model="tempContact.firstName"
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
+              label="Contact First Name"
+            ></v-text-field>
+            <v-text-field
+              v-model="tempContact.lastName"
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
+              label="Contact Last Name"
+            ></v-text-field>
+            <v-text-field
+              v-model="tempContact.street1"
+              label="Street"
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
+              @change="tempContact.reloadCoordinates = true"
+            ></v-text-field>
+            <v-text-field
+              v-model="tempContact.city"
+              label="City"
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
+              @change="tempContact.reloadCoordinates = true"
+            ></v-text-field>
+            <v-text-field
+              type="text"
+              v-model="tempContact.postalCode"
+              counter
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
+              maxlength="10"
+              @keypress="isNumberOrHyphen"
+              :rules="postalCodeRules"
+              @change="tempContact.reloadCoordinates = true"
+              label="Postal Code"
+            ></v-text-field>
+            <v-autocomplete v-model="tempContact.companyStateId"
+                            :items="states"
+                            label="State"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
-                            v-model="tempContact.phone"></v-text-field>
-              <v-text-field text
-                            label="Mobile"
-                            placeholder=" "
-                            :rules="contactPhoneRule"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            v-model="tempContact.mobile"></v-text-field>
-              <v-text-field text
-                            label="E-Mail"
-                            id="qa-email-field"
-                            placeholder=" "
-                            :rules="emailRules"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            v-model="tempContact.email"></v-text-field>
-            </div>
-            <v-autocomplete v-model="tempContact.owner"
-                            :readonly="contactOwnerFieldIsReadOnly()"
-                            :disabled="contactOwnerFieldIsReadOnly()"
-                            :items="availableOwners"
-                            :loading="ownersLoading"
-                            label="Contact Owner"
-                            clearable
-                            item-text="fullName"
-                            return-object
-                            autocomplete="off">
-            </v-autocomplete>
-          </v-card-text>
-        </v-form>
-
-        <v-card-actions class="pa-0">
-          <v-btn @click="showEditModal = false" class="text-capitalize">
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primary"
-            class="white--text text-capitalize font-weight-bold"
-            :disabled="!contact.firstName || !contact.lastName"
-            @click="validateForm()">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!--    end dialog -->
+                            :loading="statesLoading"
+                            item-text="state"
+                            item-value="id"
+                            @input="tempContact.reloadCoordinates = true"
+            ></v-autocomplete>
+            <v-select v-model="tempContact.companyCountryId"
+                      :items="countries"
+                      label="Country"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      :loading="countriesLoading"
+                      @input="tempContact.reloadCoordinates = true"
+                      item-text="country"
+                      item-value="id"
+            ></v-select>
+            <v-text-field text
+                          label="Phone"
+                          placeholder=" "
+                          :rules="contactPhoneRule"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          v-model="tempContact.phone"></v-text-field>
+            <v-text-field text
+                          label="Mobile"
+                          placeholder=" "
+                          :rules="contactPhoneRule"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          v-model="tempContact.mobile"></v-text-field>
+            <v-text-field text
+                          label="E-Mail"
+                          id="qa-email-field"
+                          placeholder=" "
+                          :rules="emailRules"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          v-model="tempContact.email"></v-text-field>
+          </div>
+          <v-autocomplete v-model="tempContact.owner"
+                          :readonly="contactOwnerFieldIsReadOnly()"
+                          :disabled="contactOwnerFieldIsReadOnly()"
+                          :items="availableOwners"
+                          :loading="ownersLoading"
+                          label="Contact Owner"
+                          clearable
+                          item-text="fullName"
+                          return-object
+                          autocomplete="off">
+          </v-autocomplete>
+        </v-card-text>
+      </v-form>
+      <template v-slot:yes>Save</template>
+    </ConfirmationDialog>
+    <!-- modal for deleting contact -->
+    <ConfirmationDialog :open-dialog="deleteContactConfirm" @confirm="deleteContact" @close-dialog="deleteContactConfirm = false">
+      <span class="bold error-text">WARNING:</span> This cannot be undone. Are you sure you want to delete this contact?
+    </ConfirmationDialog>
+    <!--    end dialogs -->
     <ThreeColumnLayout :header-text="contact.fullName"
                        :auto-overflow-left="false">
-
-
       <template v-slot:back-btn>
-        <v-btn fab text small class="mr-2" @click="goToPath('/contacts')">
+        <v-btn fab text small color="primary" class="mr-2" @click="goToPath('/contacts')">
           <v-icon>mdi-view-list</v-icon>
         </v-btn>
       </template>
       <template v-slot:header-btn>
         <div class="mt-3">
-          <v-dialog
-            v-if="userCanDelete"
-            v-model="deleteContactConfirm"
-            width="500">
-            <template #activator="{ on }">
-              <v-btn text class="mr-2 " v-on="on" id="qa-delete-contact">
-                <v-icon>delete</v-icon>
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this contact?</span>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="deleteContactConfirm = false" id="qa-delete-contact-no">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  text
-                  @click="deleteContact"
-                  id="qa-delete-contact-yes">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+          <v-btn text color="primary" v-if="userCanDelete" @click="deleteContactConfirm = true"><v-icon>delete</v-icon></v-btn>
         </div>
       </template>
       <template v-slot:left-column>
@@ -218,7 +134,7 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn
-                text x-small
+                text x-small color="primary"
                 @click="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
                 v-if="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())">
                 <v-icon>edit</v-icon>
@@ -325,12 +241,12 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="setSplitColumnValue()" class="px-0">
+              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
                 <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
               <div>
-                <v-btn color="primaryCustom"
+                <v-btn color="primary"
                        class="white--text mt-3"
                        v-if="userCanEdit"
                        :loading="fieldsLoading"
@@ -389,7 +305,7 @@
           </v-row>
         </div>
         <div v-else>
-          <SpinnerInline centered :size="50" color="primaryCustom"/>
+          <SpinnerInline centered :size="50" color="primary"/>
         </div>
       </template>
       <template v-slot:right-column>
@@ -427,10 +343,12 @@ import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
 import {getStatusClass} from "@/services/processStepStatusTypeService";
 import SpinnerInline from '@/components/SpinnerInline'
+import ConfirmationDialog from "../../../ConfirmationDialog";
 
 export default {
   name: 'Contact',
   components: {
+    ConfirmationDialog,
     CustomValueInput,
     // NotesAndActivityContent,
     DatetimePickerInput,
@@ -871,6 +789,7 @@ export default {
   font-size: 0.875rem;
   margin-left: 5px;
   overflow-wrap: break-word;
+  color: var(--v-grey-darken2) !important;
 }
 
 .project-button {

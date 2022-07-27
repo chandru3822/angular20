@@ -2,7 +2,7 @@
   <v-container class="pa-0" id="three-column-container">
     <v-row>
       <slot name="header">
-        <v-toolbar v-if="!headerHidden" flat color="#E3E3E3" class="three-column-header px-4">
+        <v-toolbar v-if="!headerHidden" flat class="three-column-header px-4">
           <v-toolbar-title class="albatross-header-1 d-flex align-center mr-6">
             <slot name="back-btn"></slot>
             {{ headerText }}
@@ -24,7 +24,7 @@
                                                                                             'white-bg': this.leftSideWhiteBg}">
         <div :class="{'title-collapsed': $store.state.project.leftSideSplit,
                       'ml-3': !$store.state.project.leftSideSplit}">
-          <v-btn small text @click="collapseSide('left')">
+          <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
@@ -172,6 +172,7 @@ export default {
 
 .three-column-header {
   height: 64px;
+  background-color: var(--v-grey-lighten2) !important;
 }
 
 .split-container {

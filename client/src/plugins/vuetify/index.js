@@ -43,7 +43,19 @@ export default new Vuetify({
               warning:'#FB8C00',
               success:'#1B5E20',
               active:'#e3eff7',
-              anchor: '#2c5893'
+              anchor: '#2c5893',
+              grey: {
+                base: '#9E9E9E',
+                lighten1: '#BDBDBD',
+                lighten2:'#E0E0E0',
+                lighten3:'#EEEEEE',
+                lighten4:'#F5F5F5',
+                lighten5:'#FAFAFA',
+                darken1:'#757575',
+                darken2:'#616161',
+                darken3:'#424242',
+                darken4:'#212121',
+              }
           },
       // dark: {
       //   primary: '#1F3C73',
