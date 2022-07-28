@@ -108,6 +108,7 @@
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && org && org.id"
              class="px-2 height-one-hunned overflow-y-auto">
+          <PageOverview page-name="Organization"></PageOverview>
           <v-toolbar flat color="transparent">
             <v-toolbar-title class="albatross-header-3">Organization Overview</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -345,10 +346,12 @@ import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import cloneDeep from 'lodash.clonedeep'
 import Style from "@/views/blueraven/settings/proposalDesigner/panel/Style";
 import {ProjectMutations} from "@/stores/ProjectStore";
+import PageOverview from "../PageOverview";
 
 export default {
   name: 'Org',
   components: {
+    PageOverview,
     ConfirmationDialog,
     Style,
     SpinnerInline,

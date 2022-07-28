@@ -129,11 +129,10 @@
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto">
-            <PageOverview :page-name="Contact"
+            <PageOverview page-name="Contact"
                           :show-edit-btn="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())"
                           @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
                           :details="overviewDetails"
-                          :owner="contact.owner"
             ></PageOverview>
           <v-divider class="mt-4"></v-divider>
           <v-toolbar color="transparent" flat>
@@ -394,25 +393,40 @@ export default {
       return [
         {
           label: 'Date Created',
-          value: this.$filters.formatDate(this.contact.dateCreated, 'date')
+          type: constants.OVERVIEW_FIELD_TYPES.DATE,
+          value: this.contact.dateCreated
         },
         {
           label: 'Address',
-          value: `${this.contact.street1} \n ${this.contact.city}, ${this.contact.state} ${this.contact.postalCode}`
+          type: constants.OVERVIEW_FIELD_TYPES.ADDRESS,
+          value: {
+            street: this.contact.street1,
+            city: this.contact.city,
+            state: this.contact.state,
+            zip: this.contact.postalCode
+          }
         },
         {
           label: 'Phone',
-          value: formatPhoneNumber(this.contact.phone)
+          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+          value: this.contact.phone
         },
         {
           label: 'Mobile',
+          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
           value: formatPhoneNumber(this.contact.mobile)
         },
         {
           label: 'Email',
+          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
           value: this.contact.email
+        },
+        {
+          label: 'Owner',
+          type: constants.OVERVIEW_FIELD_TYPES.OWNER,
+          value: this.contact.owner
         }
-      ]
+        ]
     }
   },
   async created() {
