@@ -5,7 +5,6 @@ import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.FieldInUse;
-import com.albatross.api.v1.flow.model.ScheduleFieldType;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -87,11 +86,6 @@ public class CustomFieldGroupController {
   @GetMapping(value = "/getNonEventCustomFieldGroupsByProcessStep/{id}")
   public List<CustomFieldGroup> getNonEventCustomFieldGroupsByProcessStep (@PathVariable Long id) {
     return customFieldGroupService.getNonEventCustomFieldGroupsByProcessStep(id);
-  }
-
-  @GetMapping(value = "/getEventTypesAndFields/{flowTypeId}")
-  public List<ScheduleFieldType> getEventTypesAndFields (@PathVariable Long flowTypeId) {
-    return customFieldGroupService.getEventTypesAndFields(flowTypeId);
   }
 
   @GetMapping(value = "/getAvailableCustomFields")

@@ -211,22 +211,10 @@ public class CustomFieldGroupService {
         CustomFieldGroup.class);
   }
 
-  public List<ScheduleFieldType> getEventTypesAndFields(Long flowTypeId) {
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId) {
     User currentUser = securityService.getCurrentUser();
-
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
-    params.put("flowTypeId", flowTypeId);
-
-    return sqlCache.query(
-        "customFieldGroupAssignment.getEventTypesAndFields",
-        params,
-        new ScheduleFieldTypeMapper<>(ScheduleFieldType.class, om));
-  }
-
-  public List<CustomField> getAvailableCustomFieldsInGroup(
-      Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId) {
-    Map<String, Object> params = new HashMap<>();
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupId", groupId);
 
@@ -295,16 +283,6 @@ public class CustomFieldGroupService {
 
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 
-    if (null != customFieldGroup.getEventId() && null != customFieldGroup.getSchedulingFields()) {
-      List<CustomField> newFieldList = new ArrayList<>();
-      for (CustomField cf : customFieldGroup.getSchedulingFields()) {
-        cf.setCustomFieldGroupId(cfg.getId());
-        CustomField newCf = addFieldToGroup(cf);
-        newFieldList.add(newCf);
-      }
-      cfg.setCustomFields(newFieldList);
-    }
-
     return cfg;
   }
 
@@ -318,16 +296,6 @@ public class CustomFieldGroupService {
         sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
 
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
-
-    if (null != customFieldGroup.getSchedulingFields()) {
-      List<CustomField> newFieldList = new ArrayList<>();
-      for (CustomField cf : customFieldGroup.getSchedulingFields()) {
-        cf.setCustomFieldGroupId(cfg.getId());
-        CustomField newCf = addFieldToGroup(cf);
-        newFieldList.add(newCf);
-      }
-      cfg.setCustomFields(newFieldList);
-    }
 
     return cfg;
   }

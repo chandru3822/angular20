@@ -173,13 +173,11 @@
           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
           inner join flow.custom_field_group cfg2 on cfg2.id = cfga.custom_field_group_id
           inner join flow.company_object_type cot on cfg2.company_object_type_id = cot.id
-          inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg2.company_object_type_id
           inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
           left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :userId
     where cfga.show_on_user_profile is true
      and cfga.archived is not true
      and cot.object_type_id = :objectTypeId
-     and cfot.archived is not true
     order by cfga.field_order, cf.field_name
 
   ]]></customFieldValues.user.getUserProfileFields>
@@ -268,12 +266,10 @@
                                                                    AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                              from flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                       left join flow.contact_custom_field_value ccv on ccv.custom_field_group_assignment_id = cfga.id and ccv.contact_id = :sourceId
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
-                               and cfot.archived is not true
                                and case when cfga.hidden and :systemAdmin::boolean is false
                                     then cfga.id = ( select wlp2.custom_field_group_assignment_id from flow.white_listed_position wlp2
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
@@ -377,12 +373,10 @@
                                                                    AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                              from flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                       left join flow.organization_custom_field_value ocv on ocv.custom_field_group_assignment_id = cfga.id and ocv.org_id = :sourceId
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
-                               and cfot.archived is not true
                                and case when cfga.hidden and :systemAdmin::boolean is false
                                     then cfga.id = ( select wlp2.custom_field_group_assignment_id from flow.white_listed_position wlp2
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
@@ -860,12 +854,10 @@
                                                                    AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                              from flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg.company_object_type_id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                       left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :sourceId
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
-                               and cfot.archived is not true
                                and case when cfga.hidden and :systemAdmin::boolean is false
                                     then cfga.id = ( select wlp2.custom_field_group_assignment_id from flow.white_listed_position wlp2
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
