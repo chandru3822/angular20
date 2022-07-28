@@ -199,6 +199,10 @@ public class ProjectProcessStepEventService {
       return false;
     }
 
+    if (action.getAlwaysEnabled()) {
+      return true;
+    }
+
     // if there is logic, then check it all bitch
     if (!action.getProcessStepEventLogicList().isEmpty()) {
 
@@ -244,9 +248,10 @@ public class ProjectProcessStepEventService {
       } else {
         return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
       }
+    } else {
+      return false;
     }
 
-    return true;
   }
 
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(Long ppsId,
