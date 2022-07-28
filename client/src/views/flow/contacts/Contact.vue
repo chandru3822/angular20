@@ -129,44 +129,12 @@
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto">
-          <v-toolbar flat color="transparent">
-            <v-toolbar-title class="albatross-header-3">Contact Overview</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn
-                text x-small color="primary"
-                @click="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
-                v-if="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())">
-                <v-icon>edit</v-icon>
-              </v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
-          <div class="mx-4 address-details">
-            <span class="detail-label">Date Created:</span>
-            <span class="detail-item">{{ contact.dateCreated | formatDate('date') }}</span> <br/>
-            <div class="mt-2">
-              <span class="vertical-top detail-label">Address:</span>
-              <div class="d-inline-block detail-item">
-                {{ contact.street1 }} <br/>
-                {{ contact.city }} {{ contact.state }} {{ contact.postalCode }}
-              </div>
-            </div>
-            <span class="detail-label">Phone:</span>
-            <span class="detail-item">{{ formatPhoneNumber(contact.phone) }}</span> <br/>
-            <span class="detail-label">Mobile:</span>
-            <span class="detail-item">{{ formatPhoneNumber(contact.mobile) }}</span> <br/>
-            <span class="detail-label">Email:</span>
-            <span class="detail-item">{{ contact.email }}</span> <br/>
-            <div class="mt-2">
-              <span class="vertical-top detail-label">Owner:</span>
-              <div class="d-inline-block detail-item" v-if="contact && contact.owner">
-                <span :class="{'error-text': !contact.owner.hasAccess}">{{
-                    contact.owner.fullName
-                  }} - {{ contact.owner.position }} <br/></span>
-                <span v-if="contact.owner.hasAccess">{{ formatPhoneNumber(contact.owner.phoneNumber) }}<br/></span>
-              </div>
-            </div>
-          </div>
+            <PageOverview :page-name="Contact"
+                          :show-edit-btn="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())"
+                          @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
+                          :details="overviewDetails"
+                          :owner="contact.owner"
+            ></PageOverview>
           <v-divider class="mt-4"></v-divider>
           <v-toolbar color="transparent" flat>
             <v-toolbar-title class="albatross-header-3">Associated Projects</v-toolbar-title>
@@ -344,13 +312,14 @@ import cloneDeep from 'lodash.clonedeep'
 import {getStatusClass} from "@/services/processStepStatusTypeService";
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "../../../ConfirmationDialog";
+import PageOverview from "../PageOverview";
 
 export default {
   name: 'Contact',
   components: {
+    PageOverview,
     ConfirmationDialog,
     CustomValueInput,
-    // NotesAndActivityContent,
     DatetimePickerInput,
     ThreeColumnLayout,
     ProjectActivity,
@@ -420,6 +389,30 @@ export default {
         country: [!(!this.contact.companyCountryId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
         zip: [!(!this.contact.postalCode && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId))) || "Required when other address fields are populated"]
       }
+    },
+    overviewDetails (){
+      return [
+        {
+          label: 'Date Created',
+          value: this.$filters.formatDate(this.contact.dateCreated, 'date')
+        },
+        {
+          label: 'Address',
+          value: `${this.contact.street1} \n ${this.contact.city}, ${this.contact.state} ${this.contact.postalCode}`
+        },
+        {
+          label: 'Phone',
+          value: formatPhoneNumber(this.contact.phone)
+        },
+        {
+          label: 'Mobile',
+          value: formatPhoneNumber(this.contact.mobile)
+        },
+        {
+          label: 'Email',
+          value: this.contact.email
+        }
+      ]
     }
   },
   async created() {
@@ -782,14 +775,13 @@ export default {
 
 .detail-label {
   font-size: 12px;
-  color: #9E9C9C;
+  color: var(--v-grey-darken2);
 }
 
 .detail-item {
   font-size: 0.875rem;
   margin-left: 5px;
   overflow-wrap: break-word;
-  color: var(--v-grey-darken2) !important;
 }
 
 .project-button {
