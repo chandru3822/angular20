@@ -154,33 +154,7 @@ public class CustomFieldService {
       id = sqlCache.updateReturningId("customField.insertField", params, "id").longValue();
     }
 
-    // add / delete custom field object types
-    if (null != customField.getCustomFieldObjectTypes()) {
-      for (CustomFieldObjectType cfot : customField.getCustomFieldObjectTypes()) {
-        handleCustomFieldObjectTypes(id, cfot);
-      }
-    }
-
     return findCustomFieldById(id);
-  }
-
-  private void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("archived", cfot.getArchived());
-    params.put("customFieldId", customFieldId);
-    params.put("userId", currentUser.trueUserId());
-    params.put("companyObjectTypeId", cfot.getCompanyObjectTypeId());
-
-    // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here
-    if (null != cfot.getId() && null != cfot.getCustomFieldId()) {
-      params.put("id", cfot.getId());
-      sqlCache.update("customField.updateCustomFieldObjectType", params);
-    } else if (null != cfot.getArchived() && !cfot.getArchived()) {
-      // do not need to insert new row if it is archived / not selected
-      sqlCache.update("customField.insertCustomFieldObjectType", params);
-    }
   }
 
   public List<CustomField> deleteField(Long id) {
@@ -304,5 +278,15 @@ public class CustomFieldService {
     }
 
     return null;
+  }
+
+  public List<CustomField> getCustomFieldsByPositionId(Long positionId) {
+    User user = securityService.getCurrentUser();
+    final Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("positionId", positionId);
+
+    return sqlCache.query(
+      "customField.getAllByPositionId", params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
 }

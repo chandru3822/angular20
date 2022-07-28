@@ -58,7 +58,6 @@ public class CustomField {
     sortListValuesAlphabetically,
     lazyLoadValues,
     allowNow;
-  private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
   private Date dateCreated, dateModified;
@@ -86,13 +85,6 @@ public class CustomField {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef =
-          new TypeReference<>() {};
-      bw.registerCustomEditor(
-          List.class,
-          "customFieldObjectTypes",
-          new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
       TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(

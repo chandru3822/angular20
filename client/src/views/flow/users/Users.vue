@@ -1023,7 +1023,7 @@
           csv = `${csv.slice(0, -1)}\n`
 
           data.content.forEach(u => {
-            csv += `${u.firstName},${u.lastName},${u.email},${u.phoneNumber || ''},${u.phoneExtention || ''},${u.userStatusType},${u.position || ''},`
+            csv += `${u.firstName},${u.lastName},${u.email},${u.phoneNumber || ''},${u.phoneExtension || ''},${u.userStatusType},${u.position || ''},`
 
             this.orgFilters.forEach(f => {
               csv += `${this.getOrgNameForFilter(u.hierarchy, f.orgLevelId, true)},`

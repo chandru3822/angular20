@@ -49,8 +49,8 @@
     <excel.import.design.insert>
       <![CDATA[
               WITH t1 AS (
-                INSERT INTO brs.design_log (design_date, source, design, design_nbr, project_id, bom)
-                VALUES (:designDate, :source, :design, nextval('brs.design_nbr_seq'), :projectId, :bom)
+                INSERT INTO brs.design_log (design_date, source, design, design_nbr, project_id, bom, bom_with_part_number)
+                VALUES (:designDate, :source, :design, nextval('brs.design_nbr_seq'), :projectId, :originalBom, :bomWithPartNumber::jsonb)
                 RETURNING *
               )
               SELECT t.*, t.design_nbr AS design_id

@@ -618,7 +618,6 @@ export default {
 
   },
   async created() {
-    this.getSchedulingFields()
     this.getPositions()
     await this.getEvent()
   },
@@ -952,19 +951,6 @@ export default {
       return this.localCustomFieldGroups?.filter(cfg => {
         return !cfg.archived
       })
-    },
-    async getSchedulingFields() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
-        this.schedulingFields = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
     },
     async getEventTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
