@@ -165,8 +165,8 @@ values (:companyId, :position, :orgTypeId, :schedulable, :availableToChildren, :
 
   <position.insertWhiteListPosition>
     <![CDATA[
-    insert into flow.white_listed_position(custom_field_group_assignment_id, position_id, process_step_id, white_list_type_id, work_queue_type_id, event_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
-    select :customFieldGroupAssignmentId, :positionId, :processStepId, :whiteListTypeId, :workQueueTypeId, :eventId, :companyId, :userId, now(), :userId, now()
+    insert into flow.white_listed_position(custom_field_group_assignment_id, position_id, process_step_id, white_list_type_id, work_queue_type_id, work_queue_category_id, event_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+    select :customFieldGroupAssignmentId, :positionId, :processStepId, :whiteListTypeId, :workQueueTypeId, :workQueueCategoryId, :eventId, :companyId, :userId, now(), :userId, now()
     where not exists (select id
                         from flow.white_listed_position
                         where custom_field_group_assignment_id = :customFieldGroupAssignmentId
