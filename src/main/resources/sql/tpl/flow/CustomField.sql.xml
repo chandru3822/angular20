@@ -18,30 +18,6 @@
      cf.company_system_list_id,
      array_to_json(cf.system_list_option_ids) as system_list_option_ids,
      coalesce((
-                  select array_to_json(array_agg(rows))
-                  from (
-                         select cot.id as "companyObjectTypeId",
-                                cot.object_type_id as "objectTypeId",
-                                ot.object_type as "objectType",
-                                cfot.id,
-                                cfot.custom_field_id as "customFieldId",
-                                cfot.archived
-                         from flow.company_object_type cot
-                                inner join flow.object_type ot on ot.id = cot.object_type_id
-                                left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id
-                              where cot.company_id = cf.company_id
-                                and cot.archived is not true
-                                and ot.archived is not true
-                                and cfot.archived is not true
-                                 and not exists (
-                                   select company_object_type_id
-                                   from flow.custom_field_excluded_object_type cfeot
-                                   where custom_field_id = cf.id
-                                     and cfeot.company_object_type_id = cot.id
-                                     and cfeot.archived is false
-                                 )
-                       ) rows), '[]') AS custom_field_object_types,
-     coalesce((
                    select array_to_json(array_agg(rows))
                    from (
                              select lv.id,
@@ -84,30 +60,6 @@
        cf.custom_field_sql_reference_table,
        cf.company_system_list_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
-       coalesce((
-                  select array_to_json(array_agg(rows))
-                  from (
-                         select cot.id as "companyObjectTypeId",
-                                cot.object_type_id as "objectTypeId",
-                                ot.object_type as "objectType",
-                                cfot.id,
-                                cfot.custom_field_id as "customFieldId",
-                                cfot.archived
-                         from flow.company_object_type cot
-                              inner join flow.object_type ot on ot.id = cot.object_type_id
-                                left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id and cfot.archived is not true
-                         where cot.company_id = :companyId
-                                and cot.archived is not true
-                                and ot.archived is not true
-                                and cfot.archived is not true
-                                 and not exists (
-                                   select company_object_type_id
-                                   from flow.custom_field_excluded_object_type cfeot
-                                   where custom_field_id = cf.id
-                                     and cfeot.company_object_type_id = cot.id
-                                     and cfeot.archived is false
-                                 )
-                       ) rows), '[]') AS custom_field_object_types,
        coalesce((
                      select array_to_json(array_agg(rows))
                      from (
@@ -161,30 +113,6 @@
        cf.custom_field_sql_reference_table,
        cf.company_system_list_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
-       coalesce((
-                  select array_to_json(array_agg(rows))
-                  from (
-                         select cot.id as "companyObjectTypeId",
-                                cot.object_type_id as "objectTypeId",
-                                ot.object_type as "objectType",
-                                cfot.id,
-                                cfot.custom_field_id as "customFieldId",
-                                cfot.archived
-                         from flow.company_object_type cot
-                              inner join flow.object_type ot on ot.id = cot.object_type_id
-                                left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id and cfot.archived is not true
-                         where cot.company_id = :companyId
-                                and cot.archived is not true
-                                and ot.archived is not true
-                                and cfot.archived is not true
-                                 and not exists (
-                                   select company_object_type_id
-                                   from flow.custom_field_excluded_object_type cfeot
-                                   where custom_field_id = cf.id
-                                     and cfeot.company_object_type_id = cot.id
-                                     and cfeot.archived is false
-                                 )
-                       ) rows), '[]') AS custom_field_object_types,
        coalesce((
                      select array_to_json(array_agg(rows))
                      from (
@@ -286,20 +214,6 @@
       date_modified = now()
     where id = :id
   ]]></customField.archiveListOfValue>
-
-  <customField.updateCustomFieldObjectType><![CDATA[
-    update flow.custom_field_object_type
-    set archived = :archived,
-      modified_by_id = :userId,
-      date_modified = now()
-    where id = :id
-  ]]></customField.updateCustomFieldObjectType>
-
-  <customField.insertCustomFieldObjectType><![CDATA[
-    insert into flow.custom_field_object_type(custom_field_id, company_object_type_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:customFieldId, :companyObjectTypeId, :userId, now(), :userId, now())
-    ON CONFLICT do nothing;
-  ]]></customField.insertCustomFieldObjectType>
 
   <customField.getByProcessStepEvent><![CDATA[
     select cf.id,

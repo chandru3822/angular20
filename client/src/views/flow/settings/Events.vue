@@ -37,7 +37,7 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newStep = {}, getSchedulingFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -163,21 +163,6 @@ export default {
     }, 500),
     goToEvent(eventId) {
       this.$router.push({path: `/settings/event/${eventId}/components`})
-    },
-    async getSchedulingFields() {
-      if(this.addNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
-          this.schedulingFields = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
     },
     async getEvents () {
       this.$store.commit(AppMutations.SET_LOADING, true)
