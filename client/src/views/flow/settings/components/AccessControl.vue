@@ -41,7 +41,7 @@
               <input type="checkbox" :readonly="!userCanEdit" color="primary"
                      :disabled="!userCanEdit" v-model="acl.enabled" @input="[acl.dirty = true, item.dirty = true, callback(companyFeatureList)]">
 
-              <v-icon class="ml-2 mb-1" small color="primary"
+              <v-icon class="ml-2 mb-1" small color="grey darken-1"
                       v-if="secondaryFeatureAccess.length > 0 && secondaryHasAccess(item, acl)">
                 mdi-alpha-p-box-outline
               </v-icon>
