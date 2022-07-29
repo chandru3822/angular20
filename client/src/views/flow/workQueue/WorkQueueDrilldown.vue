@@ -70,12 +70,12 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left underline" v-if="useProcessStepHeaders">
-                <v-btn text small class="primary--text"
-                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+            <tr :class="{'shaded-row': index % 2}" class="clickable" @click="$router.push(`/project/${item.projectId}/processStep/${item.projectProcessStepId}`)">
+              <td class="text-left" v-if="useProcessStepHeaders">
+<!--                <v-btn text small class="primary&#45;&#45;text"-->
+<!--                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepIdStepId}`">-->
                   {{ item['Project Name'] }}
-                </v-btn>
+<!--                </v-btn>-->
               </td>
               <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Name'] }}</td>
               <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Status Type'] }}</td>
@@ -638,4 +638,5 @@ export default {
   list-style-type: none;
   padding-left: 0;
 }
+
 </style>
