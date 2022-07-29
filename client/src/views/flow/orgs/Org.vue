@@ -108,40 +108,13 @@
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && org && org.id"
              class="px-2 height-one-hunned overflow-y-auto">
-          <PageOverview page-name="Organization"></PageOverview>
-          <v-toolbar flat color="transparent">
-            <v-toolbar-title class="albatross-header-3">Organization Overview</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn
-                text x-small
-                @click="[tempOrg = cloneDeep(org), showEditModal = true]"
-                v-if="org && org.id && userCanEdit">
-                <v-icon>edit</v-icon>
-              </v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
-          <div class="mx-4 address-details">
-            <span class="detail-label">Status:</span>
-            <span class="detail-item" :class="{'status-active': org.activeFlag,
-                                               'status-cancelled': !org.activeFlag}">
-              {{ org.activeFlag ? 'Active' : 'Inactive' }}
-            </span> <br/>
-            <span class="detail-label">Type:</span>
-            <span class="detail-item">{{ org.orgType }}</span> <br/>
-            <span class="detail-label">Parent:</span>
-            <span class="detail-item underline clickable" @click="goToPath(`/org/${org.parentOrgId}`, true)">
-              {{ org.parentOrgName }}
-            </span> <br/>
-            <span class="detail-label">State:</span>
-            <span class="detail-item">{{ org.state }}</span> <br/>
-            <span class="detail-label">Timezone:</span>
-            <span class="detail-item">{{ org.timezone }}</span> <br/>
-            <span class="detail-label">Show in Scheduling Tool:</span>
-            <span class="detail-item">
-              {{ org.schedulable ? 'Yes' : 'No' }}
-            </span> <br/>
-          </div>
+          <PageOverview v-if="org && org.id"
+            page-name="Organization"
+                        :show-edit-btn="userCanEdit"
+                        @clickEdit="[tempOrg = cloneDeep(org), showEditModal = true]"
+                        :details="overviewDetails"
+                        @click-detail="goToPath(`/org/${org.parentOrgId}`, true)"
+          ></PageOverview>
           <v-divider class="mt-4"></v-divider>
         </div>
       </template>
@@ -399,6 +372,48 @@ export default {
       parentId: this.$store.state.user.details.parentCompanyId,
     }
   },
+  computed:{
+    overviewDetails() {
+      if(this.org) {
+        return [
+          {
+            label: 'Status',
+            type: constants.OVERVIEW_FIELD_TYPES.STATUS,
+            value: this.org.activeFlag ? 'Active' : 'Inactive',
+            active: this.org.activeFlag
+          },
+          {
+            label: 'Type',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.orgType
+          },
+          {
+            label: 'Parent',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.parentOrgName,
+            clickable: true
+          },
+          {
+            label: 'State',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.state
+          },
+          {
+            label: 'Timezone',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.timezone
+          },
+          {
+            label: 'Show in Scheduling Tool',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.schedulable ? 'Yes' : 'No'
+          }
+        ];
+      }
+      return []
+    }
+  },
+
   async created() {
     let requests = [
       this.getCustomFieldGroups(),

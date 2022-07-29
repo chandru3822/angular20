@@ -16,7 +16,11 @@
     <div v-for="detail in details">
       <div v-if="!detail.type || detail.type === constants.OVERVIEW_FIELD_TYPES.DEFAULT">
         <span class="detail-label">{{detail.label}}: </span>
-        <span v-if="detail.value" class="detail-item">{{detail.value}}</span>
+        <span v-if="detail.value" @click="detail.clickable ? $emit(`click-detail`, detail) : null"
+              class="detail-item"
+              :class="{'clickable underline primary--text text--lighten-1':detail.clickable}" >
+          {{detail.value}}
+        </span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.DATE">
         <span class="detail-label">{{detail.label}}: </span>
