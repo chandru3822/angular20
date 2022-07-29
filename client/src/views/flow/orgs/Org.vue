@@ -8,95 +8,72 @@
     </confirmation-dialog>
     <!--    end unsaved fields modal -->
     <!--    modal for editing contact fields -->
-    <v-dialog width="500"
-              v-if="org && org.id"
-              v-model="showEditModal" content-class="square-card">
-      <v-card class="px-6 py-4 square-card">
-        <v-form ref="orgEditForm">
-          <v-card-title
-            color="blackText"
-            class="albatross-header-3 text-capitalize pa-0"
-            primary-title>
-            Organization Overview
-          </v-card-title>
-          <v-card-text class="pt-4 px-0">
-            <v-text-field
-              v-model="tempOrg.orgName"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              label="Organization Name"
-            ></v-text-field>
-            <v-select attach v-model="tempOrg.orgTypeId"
-                      :items="orgTypes"
-                      label="Organization Type"
-                      :rules="requiredRules"
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      item-text="orgType"
-                      item-value="id"
-                      @input="getOrgsByType(tempOrg.orgTypeId)"
-            ></v-select>
-            <v-autocomplete attach v-model="tempOrg.parentOrgId"
-                            :items="parents"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Parent Organization"
-                            item-text="orgName"
-                            item-value="id"
-            ></v-autocomplete>
-            <v-select attach v-model="tempOrg.companyStateId"
-                      :items="states"
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      label="State"
-                      item-text="state"
-                      item-value="id"
-            ></v-select>
-            <v-autocomplete v-model="tempOrg.companyTimezoneId"
-                            :items="companyTimezones"
-                            label="Time Zone"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            hide-details
-                            item-text="timezone"
-                            item-value="id"
-                            attach
-            ></v-autocomplete>
-            <h6 class="mt-1 red-text" v-if="tempOrg.schedulable && !tempOrg.companyTimezoneId">* Required when
-              Schedulable
-              Organization</h6>
-            <div class="mb-3 mt-3">
-              <label>Active:</label>
-              <input type="checkbox" :disabled="!userIsAdmin" :readonly="!userIsAdmin" class="ml-2"
-                     v-model="tempOrg.activeFlag">
-            </div>
-            <div class="mb-3">
-              <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2"
-                     v-model="tempOrg.schedulable">
-            </div>
-            <div class="mb-3" v-if="$store.getters.isParent(parentId)">
-              <label>Make available in children:</label>
-              <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
-                     class="ml-3" v-model="tempOrg.availableToChildren">
-            </div>
-          </v-card-text>
-        </v-form>
-
-        <v-card-actions class="pa-0">
-          <v-btn @click="showEditModal = false" class="text-capitalize">
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primary"
-            class="white--text text-capitalize font-weight-bold"
-            @click="validateForm()">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <confirmation-dialog :open-dialog="showEditModal" @close-dialog="showEditModal = false" @confirm="validateForm">
+      <template v-slot:title>Organization Overview</template>
+      <v-form ref="orgEditForm">
+          <v-text-field
+            v-model="tempOrg.orgName"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            label="Organization Name"
+          ></v-text-field>
+          <v-select attach v-model="tempOrg.orgTypeId"
+                    :items="orgTypes"
+                    label="Organization Type"
+                    :rules="requiredRules"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit"
+                    item-text="orgType"
+                    item-value="id"
+                    @input="getOrgsByType(tempOrg.orgTypeId)"
+          ></v-select>
+          <v-autocomplete attach v-model="tempOrg.parentOrgId"
+                          :items="parents"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          label="Parent Organization"
+                          item-text="orgName"
+                          item-value="id"
+          ></v-autocomplete>
+          <v-select attach v-model="tempOrg.companyStateId"
+                    :items="states"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit"
+                    label="State"
+                    item-text="state"
+                    item-value="id"
+          ></v-select>
+          <v-autocomplete v-model="tempOrg.companyTimezoneId"
+                          :items="companyTimezones"
+                          label="Time Zone"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          hide-details
+                          item-text="timezone"
+                          item-value="id"
+                          attach
+          ></v-autocomplete>
+          <h6 class="mt-1 red-text" v-if="tempOrg.schedulable && !tempOrg.companyTimezoneId">* Required when
+            Schedulable
+            Organization</h6>
+          <div class="mb-3 mt-3">
+            <label>Active:</label>
+            <input type="checkbox" :disabled="!userIsAdmin" :readonly="!userIsAdmin" class="ml-2"
+                   v-model="tempOrg.activeFlag">
+          </div>
+          <div class="mb-3">
+            <label>Show in Scheduling Tool:</label>
+            <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2"
+                   v-model="tempOrg.schedulable">
+          </div>
+          <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+            <label>Make available in children:</label>
+            <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
+                   class="ml-3" v-model="tempOrg.availableToChildren">
+          </div>
+      </v-form>
+      <template v-slot:yes>save</template>
+    </confirmation-dialog>
     <!--    end dialog -->
     <ThreeColumnLayout :header-text="org.orgName"
                        :auto-overflow-left="false">
