@@ -27,9 +27,14 @@
         <span v-if="detail.value" class="detail-item">{{formatDate(detail.value)}}</span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.STATUS">
-          <span class="detail-label">{{detail.label}}: </span>
-          <span v-if="detail.value" class="detail-item" :class="{'status-active': detail.active,
-                                               'status-cancelled': !detail.active}">{{detail.value}}</span>
+        <span class="vertical-top detail-label">{{detail.label}}: </span>
+        <span class="d-inline-block detail-item vertical-top"
+              v-if="detail.value"
+              :class="{'status-active': detail.active,'status-cancelled': !detail.active}">
+        {{detail.value}}
+        <br/>
+        <span v-if="detail.statusType">({{detail.statusType}})</span>
+        </span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS">
           <span class="detail-label">{{detail.label}}: </span>
