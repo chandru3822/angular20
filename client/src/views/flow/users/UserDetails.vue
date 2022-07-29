@@ -1,121 +1,77 @@
 <template>
   <div id="user-detail-container">
     <!--    modal for editing user fields -->
-    <v-dialog width="500"
-              v-if="user && user.id"
-              v-model="showEditModal" content-class="square-card">
-      <v-card class="px-6 py-4 square-card">
-        <v-form ref="userEditForm">
-          <v-card-title
-            color="blackText"
-            class="albatross-header-3 text-capitalize pa-0"
-            primary-title>
-            User Overview
-          </v-card-title>
-          <v-card-text class="pt-4 px-0">
-            <div>
-              <v-select attach v-model="tempUser.userStatusTypeId"
-                        :items="userStatusTypes"
-                        label="User Status"
-                        :rules="requiredRules"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        placeholder="Select a status..."
-                        item-text="userStatusType"
-                        item-value="id"
-                        autocomplete="off">
-              </v-select>
-              <v-text-field text
-                            label="User First Name"
-                            placeholder=" "
-                            :rules="requiredRules"
-                            :readonly="!userCanEdit"
-                            v-model="tempUser.firstName"
-              ></v-text-field>
-              <v-text-field text
-                            label="User Last Name"
-                            :rules="requiredRules"
-                            :readonly="!userCanEdit"
-                            v-model="tempUser.lastName"
-              ></v-text-field>
-              <v-text-field text
-                            label="Phone"
-                            placeholder=" "
-                            :rules="userPhoneRule"
-                            :readonly="!userCanEdit"
-                            v-model="tempUser.phoneNumber"></v-text-field>
-              <v-text-field text
-                            label="Phone Extension"
-                            placeholder=" "
-                            :readonly="!userCanEdit"
-                            v-model="tempUser.phoneExtension"></v-text-field>
-              <v-text-field text
-                            label="E-Mail"
-                            placeholder=" "
-                            :rules="emailRule"
-                            :readonly="!userCanEdit"
-                            v-model="tempUser.email"></v-text-field>
-              <v-text-field text
-                            label="Username"
-                            placeholder=" "
-                            :rules="usernameRule"
-                            :readonly="!userCanEdit"
-                            v-model="tempUser.username"></v-text-field>
-              <v-text-field text class="mt-4"
-                            v-if="userIsAdmin"
-                            :rules="passwordRule"
-                            label="Password"
-                            placeholder=" "
-                            v-model="tempUser.newPassword"></v-text-field>
-            </div>
-          </v-card-text>
-        </v-form>
-
-        <v-card-actions class="pa-0">
-          <v-btn text color="primary" @click="showEditModal = false" class="text-capitalize">
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primary"
-            class="white--text text-capitalize font-weight-bold"
-            @click="validateForm()">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmationDialog :open-dialog="showEditModal" @confirm="validateForm" @close-dialog="showEditModal = false">
+      <template v-slot:title>User Overview</template>
+      <v-form ref="userEditForm">
+        <v-select attach v-model="tempUser.userStatusTypeId"
+                  :items="userStatusTypes"
+                  label="User Status"
+                  :rules="requiredRules"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
+                  placeholder="Select a status..."
+                  item-text="userStatusType"
+                  item-value="id"
+                  autocomplete="off">
+        </v-select>
+        <v-text-field text
+                      label="User First Name"
+                      placeholder=" "
+                      :rules="requiredRules"
+                      :readonly="!userCanEdit"
+                      v-model="tempUser.firstName"
+        ></v-text-field>
+        <v-text-field text
+                      label="User Last Name"
+                      :rules="requiredRules"
+                      :readonly="!userCanEdit"
+                      v-model="tempUser.lastName"
+        ></v-text-field>
+        <v-text-field text
+                      label="Phone"
+                      placeholder=" "
+                      :rules="userPhoneRule"
+                      :readonly="!userCanEdit"
+                      v-model="tempUser.phoneNumber"></v-text-field>
+        <v-text-field text
+                      label="Phone Extension"
+                      placeholder=" "
+                      :readonly="!userCanEdit"
+                      v-model="tempUser.phoneExtension"></v-text-field>
+        <v-text-field text
+                      label="E-Mail"
+                      placeholder=" "
+                      :rules="emailRule"
+                      :readonly="!userCanEdit"
+                      v-model="tempUser.email"></v-text-field>
+        <v-text-field text
+                      label="Username"
+                      placeholder=" "
+                      :rules="usernameRule"
+                      :readonly="!userCanEdit"
+                      v-model="tempUser.username"></v-text-field>
+        <v-text-field text class="mt-4"
+                      v-if="userIsAdmin"
+                      :rules="passwordRule"
+                      label="Password"
+                      placeholder=" "
+                      v-model="tempUser.newPassword"></v-text-field>
+      </v-form>
+      <template v-slot:yes>Save</template>
+    </ConfirmationDialog>
     <!--    end dialog -->
     <ThreeColumnLayout :header-hidden="true"
                        :auto-overflow-left="false">
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && user && user.id"
              class="px-2 height-one-hunned overflow-y-auto">
-          <v-toolbar flat color="transparent">
-            <v-toolbar-title class="albatross-header-3">User Overview</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn
-                text color="primary" x-small
-                @click="[getUserStatusTypes(), tempUser = cloneDeep(user), showEditModal = true]"
-                v-if="user && user.id && userCanEdit">
-                <v-icon>edit</v-icon>
-              </v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
-          <div class="mx-4 address-details">
-            <span class="detail-label">User Status:</span>
-            <span class="detail-item" :class="{'status-cancelled': !user.hasAccess,
-                                               'status-active': user.hasAccess}">{{ user.userStatusType }}</span> <br/>
-            <span class="detail-label">Phone:</span>
-            <span class="detail-item">{{ formatPhoneNumber(user.phoneNumber) }}</span> <br/>
-            <span class="detail-label">Phone Extension:</span>
-            <span class="detail-item">{{ user.phoneExtension }}</span> <br/>
-            <span class="detail-label">Email:</span>
-            <span class="detail-item">{{ user.email }}</span> <br/>
-            <span class="detail-label">Username:</span>
-            <span class="detail-item">{{ user.username }}</span> <br/>
-          </div>
+          <PageOverview
+            page-name="User"
+            :show-edit-btn="userCanEdit"
+            @clickEdit="[getUserStatusTypes(), tempUser = cloneDeep(user), showEditModal = true]"
+            :details="overviewDetails"
+          ></PageOverview>
           <v-divider class="mt-4" v-if="user.loginAttempts >= 9"></v-divider>
           <v-card color="#ffcac7" class="pa-4 mx-2 mt-2" v-if="user.loginAttempts >= 9">
             <label>Too Many Attempts, User Account Locked</label><br/>
@@ -225,7 +181,7 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="setSplitColumnValue()" class="px-0">
+              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
                 <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
@@ -320,10 +276,14 @@ import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import constants from "@/helpers/constants";
 import SpinnerInline from '@/components/SpinnerInline'
+import ConfirmationDialog from "../../../ConfirmationDialog";
+import PageOverview from "../PageOverview";
 
 export default {
   name: 'User',
   components: {
+    PageOverview,
+    ConfirmationDialog,
     CustomValueInput,
     ThreeColumnLayout,
     SpinnerInline,
@@ -371,6 +331,38 @@ export default {
       addUserCompany: false,
       newCompany: {},
       companyUserStatusTypes: [],
+    }
+  },
+  computed: {
+    overviewDetails() {
+      return [
+        {
+          label: 'User Status',
+          type: constants.OVERVIEW_FIELD_TYPES.STATUS,
+          value: this.user.userStatusType,
+          active: this.user.hasAccess
+        },
+        {
+          label: 'Phone',
+          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+          value: this.user.phoneNumber
+        },
+        {
+          label: 'Phone Extension',
+          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          value: this.user.phoneExtension
+        },
+        {
+          label: 'Email',
+          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          value: this.user.email
+        },
+        {
+          label: 'Username',
+          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          value: this.user.username
+        }
+      ]
     }
   },
   async created() {

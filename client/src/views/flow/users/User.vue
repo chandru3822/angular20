@@ -32,7 +32,7 @@
       </v-card>
     </v-dialog>
     <v-row>
-      <v-col cols="12" style="padding-bottom: 0; padding-top: 0;" class="text-left">
+      <v-col cols="12" style="padding-bottom: 0; padding-top: 0;" class="text-left user-header-breadcrumbs">
         <v-btn small text color="primary" :to="`/users`">
           <v-icon small>mdi-chevron-left</v-icon>
           Back to users
@@ -265,8 +265,13 @@
 </script>
 
 <style lang="scss" scoped>
+
+.user-header-breadcrumbs {
+  background-color: var(--v-grey-lighten2);
+}
 .user-header {
-  border-bottom: solid 1px #EAEAF4
+  border-bottom: solid 1px #EAEAF4;
+  background-color: var(--v-grey-lighten2);
 }
 .user-image-hover-container {
   max-width: 100%;
