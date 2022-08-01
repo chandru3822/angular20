@@ -253,9 +253,9 @@
          pd.product_name as product,
          pd.total_promotion_amount
          from flow.project p
-         where p.archived is false
            inner join brs.project_rebate_payment prp on p.id = prp.project_id
            left join brs.project_details pd on pd.project_id = p.id
+         where p.archived is false
            group by p.id,
            pd.contact_name,
            pd.substantial_completion_date,
