@@ -135,6 +135,14 @@
                       v-model="fp.dynamicValue"
                       @input="validateRequirementForm()"
                       :label="fp.parameterName"></v-text-field>
+                    <v-checkbox
+                      v-else-if="fp.dataTypeId === 3"
+                      :label="fp.parameterName"
+                      :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                      :value="fp.dynamicValue === 'true'"
+                      @change="changeBooleanValue($event, fp)"></v-checkbox>
                     <v-text-field
                       :key="index"
                       v-else
@@ -341,28 +349,31 @@
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                           <v-text-field
-                            v-if="fp.dataTypeId === 2"
+                            v-else-if="fp.dataTypeId === 2"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
                             placeholder="Enter a timestamp"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
-                          <v-text-field
-                            v-if="fp.dataTypeId === 3"
+                          <v-checkbox
+                            v-else-if="fp.dataTypeId === 3"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
-                            placeholder="Enter a boolean"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                            :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                            :value="fp.dynamicValue === 'true'"
+                            @change="changeBooleanValue($event, fp)"
+                            :label="fp.parameterName"></v-checkbox>
                           <v-text-field
-                            v-if="fp.dataTypeId === 4"
+                            v-else-if="fp.dataTypeId === 4"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
                             placeholder="Enter a number"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                           <v-text-field
-                            v-if="fp.dataTypeId === 6"
+                            v-else-if="fp.dataTypeId === 6"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
                             placeholder="Enter an integer"
@@ -684,6 +695,9 @@ export default {
   },
   methods: {
     //requirements
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     async getRequirements() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

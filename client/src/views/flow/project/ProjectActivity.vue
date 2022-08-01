@@ -6,11 +6,12 @@
                     'title-no-collapse': !$store.state.project.rightSideSplit}">
         <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
           <template v-slot:activator="{on, attrs}">
-            <div v-if="!$store.state.project.rightSideSplit"
-                 v-bind="attrs" v-on="on"
-                 class="d-inline-block clickable"
-                 @click="clickRightSideTitle">{{ projectMessageProperties.projectName }}
-            </div>
+            <a v-if="!$store.state.project.rightSideSplit"
+               v-bind="attrs" v-on="on"
+               class="d-inline-block clickable project-name-link"
+              :href="`/project/${projectId}/details`">
+              {{ projectMessageProperties.projectName }}
+            </a>
           </template>
           <span class="albatross-body-3">Go to project</span>
         </v-tooltip>
@@ -239,11 +240,6 @@ export default {
     collapseSide() {
       this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
     },
-    clickRightSideTitle() {
-      if (this.$route.path.includes('inboxConversation')) {
-        this.$router.push(`/project/${this.projectId}/details`)
-      }
-    },
     selectView: function(viewOption) {
       this.$store.commit(ProjectMutations.SET_SELECTED_TAB, viewOption)
       this.selectedOption = viewOption
@@ -411,6 +407,10 @@ export default {
   display: flex !important;
   justify-content: space-between;
   margin-right: 11px;
+}
+
+.project-name-link {
+  text-decoration: none;
 }
 </style>
 

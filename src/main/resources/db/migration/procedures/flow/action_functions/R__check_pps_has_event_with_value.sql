@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION flow.check_pps_has_event_with_value(p_project_process_step_id integer, p_cfga integer,
-                                                               p_value_to_check text)
+                                                               p_value_to_check text, p_not_null boolean default false)
   returns boolean AS
 $BODY$
 declare
@@ -49,7 +49,9 @@ BEGIN
                                           ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
-                       and ppsecfv.date_value = p_value_to_check::date
+                       and case when p_not_null is true then
+                             ppsecfv.date_value is not null
+                        else ppsecfv.date_value = p_value_to_check::date end
                      limit 1) is not null then true
                else false end
       into v_function_result;
@@ -62,7 +64,9 @@ BEGIN
                                           ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
-                       and ppsecfv.timestamp_value = p_value_to_check::timestamp
+                       and case when p_not_null is true then
+                                  ppsecfv.timestamp_value is not null
+                                else ppsecfv.timestamp_value = p_value_to_check::timestamp end
                      limit 1) is not null then true
                else false end
       into v_function_result;
@@ -75,7 +79,9 @@ BEGIN
                                           ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
-                       and ppsecfv.boolean_value = p_value_to_check::boolean
+                       and case when p_not_null is true then
+                                  ppsecfv.boolean_value is not null
+                                else ppsecfv.boolean_value = p_value_to_check::boolean end
                      limit 1) is not null then true
                else false end
       into v_function_result;
@@ -88,7 +94,9 @@ BEGIN
                                           ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
-                       and ppsecfv.numeric_value = p_value_to_check::numeric
+                       and case when p_not_null is true then
+                                  ppsecfv.numeric_value is not null
+                                else ppsecfv.numeric_value = p_value_to_check::numeric end
                      limit 1) is not null then true
                else false end
       into v_function_result;
@@ -101,7 +109,9 @@ BEGIN
                                           ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
-                       and ppsecfv.text_value = p_value_to_check
+                       and case when p_not_null is true then
+                                  ppsecfv.text_value is not null
+                                else ppsecfv.text_value = p_value_to_check end
                      limit 1) is not null then true
                else false end
       into v_function_result;
@@ -114,7 +124,9 @@ BEGIN
                                           ppse.project_process_step_id = p_project_process_step_id
                      where ppse.archived is false
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
-                       and ppsecfv.int_value = p_value_to_check::integer
+                       and case when p_not_null is true then
+                                  ppsecfv.int_value is not null
+                                else ppsecfv.int_value = p_value_to_check::integer end
                      limit 1) is not null then true
                else false end
       into v_function_result;
