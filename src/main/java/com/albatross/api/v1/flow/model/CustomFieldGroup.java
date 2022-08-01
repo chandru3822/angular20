@@ -22,7 +22,7 @@ public class CustomFieldGroup {
   private Boolean archived;
 
   // This list is used when looking at custom field ASSIGNMENTS to a group
-  private List<CustomField> customFields;
+  private List<CustomFieldWithDefault> customFields;
 
   // This list is used when looking at custom field VALUES in a group
   //@TODO: @randa, maybe CustomFieldValue should inherit from CustomField to keep it more DRY?

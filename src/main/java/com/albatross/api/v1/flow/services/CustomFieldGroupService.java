@@ -30,14 +30,14 @@ public class CustomFieldGroupService {
   private final ProcessStepRequirementService processStepRequirementService;
   private final ObjectMapper om;
 
-  public CustomField addFieldToGroup(CustomField customField) {
+  public CustomField addFieldToGroup(CustomFieldWithDefault customField) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("customFieldGroupId", customField.getCustomFieldGroupId());
+    params.put("defaultFieldId", customField.getDefaultFieldId());
     params.put("customFieldId", customField.getId());
     params.put("createdById", currentUser.trueUserId());
-    params.put("scheduleFieldTypeId", customField.getScheduleFieldTypeId());
     params.put(
         "ancillaryCustomFieldGroupAssignmentId",
         customField.getAncillaryCustomFieldGroupAssignmentId());
@@ -48,7 +48,7 @@ public class CustomFieldGroupService {
             .updateReturningId("customFieldGroupAssignment.addFieldToGroup", params, "id")
             .longValue();
 
-    return getCustomField(id);
+    return null == customField.getDefaultFieldId() ? getDefaultCustomField(id) : getCustomField(id);
   }
 
   public CustomField moveFieldToOtherGroup(CustomField customField, Long newGroupId) {
@@ -64,11 +64,19 @@ public class CustomFieldGroupService {
     return getCustomField(customField.getCustomFieldGroupAssignmentId());
   }
 
-  public CustomField getCustomField(Long id) {
+  public CustomFieldWithDefault getDefaultCustomField(Long cfgaId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("cfgaId", cfgaId);
+    Optional<CustomFieldWithDefault> result =
+      sqlCache.get("customFieldGroupAssignment.getDefaultField", params, CustomFieldWithDefault.class);
+    return result.orElse(null);
+  }
+
+  public CustomFieldWithDefault getCustomField(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<CustomField> result =
-        sqlCache.get("customFieldGroupAssignment.getCustomField", params, CustomField.class);
+    Optional<CustomFieldWithDefault> result =
+        sqlCache.get("customFieldGroupAssignment.getCustomField", params, CustomFieldWithDefault.class);
     return result.orElse(null);
   }
 
@@ -170,7 +178,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", customField.getId());
+    params.put("id", customField.getCustomFieldGroupAssignmentId());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("fieldOrder", customField.getFieldOrder());
 

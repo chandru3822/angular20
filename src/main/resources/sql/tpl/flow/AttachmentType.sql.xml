@@ -950,7 +950,6 @@
                                                              cfga.field_order as "fieldOrder",
                                                              cfga.archived,
                                                              cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                                             cfga.schedule_field_type_id as "scheduleFieldTypeId",
                                                              cfga.hidden as "customFieldGroupAssignmentHidden",
                                                              cfga.detail_view as "detailView",
                                                              cf.field_name as "fieldName",
@@ -972,7 +971,8 @@
                                                                                FROM flow.white_listed_position wlp
                                                                                WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                                  AND wlp.white_list_type_id = 2
-                                                                                 AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                                                 AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions",
+                                                             null::int as "defaultFieldId"
                                                       FROM flow.custom_field_group_assignment cfga
                                                              inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
                                                              inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
@@ -983,6 +983,16 @@
                                                       WHERE cfga.custom_field_group_id = cfg.id
                                                         AND cfga.archived is not true
                                                         and cf.archived is not true
+                                                    union all
+                                                     select null, cfga.custom_field_group_id, null, false, cfga.id, null, cfga.field_order, cfga.archived, false, false,
+                                                             false, df.field_name, false, cfg3.group_name, null, null, ot2.object_type, '[]' as whiteListedPositions, '[]' as hiddenWhiteListedPositions,
+                                                             df.id as "defaultFieldId"
+                                                      from flow.custom_field_group_assignment cfga
+                                                        inner join flow.default_field df on cfga.default_field_id = df.id
+                                                        inner join flow.custom_field_group cfg3 on cfg3.id = cfga.custom_field_group_id
+                                                        inner join flow.object_type ot2 on ot2.id = df.object_type_id
+                                                      where cfga.archived is false
+                                                        and cfga.custom_field_group_id = cfg.id
                                                       ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
                              FROM flow.custom_field_group cfg
                                     inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id

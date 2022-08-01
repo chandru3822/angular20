@@ -306,7 +306,8 @@
                              order by
                                case when cf.sort_list_values_alphabetically is true  then lv.name end,
                                case when cf.sort_list_values_alphabetically is false then lv.display_order end
-                           ) rows), '[]') AS list_of_values
+                           ) rows), '[]') AS list_of_values,
+           null as default_field_id
     from flow.event e
            inner join flow.custom_field_group cfg on e.id = cfg.event_id
            inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
@@ -316,7 +317,15 @@
       and cfg.archived is not true
       and cfga.archived is not true
       and cf.archived is not null
-    order by cf.field_name
+    union all
+    select null, null, null, null, null, null, df.field_name, null, null, null,
+           null, null, null, null, null, null, null, null, null, null,
+           df.id as default_field_id
+    from flow.default_field df
+    where object_type_id = 6
+      and archived is false
+      and df.id in (10,11,12)
+    order by field_name
   ]]></customField.getByEvent>
 
   <customField.getByParentProcessStep><![CDATA[

@@ -30,7 +30,6 @@ public class CustomField {
       customFieldObjectTypeId,
       dataTypeId,
       companySystemListId,
-      scheduleFieldTypeId,
       flowCustomFieldId;
   private List<Long> systemListOptionIds;
   private String fieldName,

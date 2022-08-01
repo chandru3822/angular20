@@ -152,7 +152,12 @@
                               <v-icon v-if="userCanEdit">drag_handle</v-icon>
                             </v-list-item-action>
                             <v-list-item-content>
-                              {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                              <div v-if="null != cf.defaultFieldId">
+                                {{ cf.objectType }}: {{ cf.fieldName }}
+                              </div>
+                              <div v-else>
+                                {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                              </div>
                             </v-list-item-content>
 
                             <v-dialog
@@ -380,6 +385,7 @@ export default {
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
+        console.log('randaLogger',fields)
         let fieldsToSave = []
         fields.forEach((f, idx) => {
           let order = idx + 1
@@ -491,6 +497,7 @@ export default {
         const params = {
           customFieldGroupId: item.id,
           id: null,
+          defaultFieldId: this.selectedAncillaryField.defaultFieldId,
           ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId
         }
         const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)

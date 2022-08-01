@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CustomField;
+import com.albatross.api.v1.flow.model.CustomFieldWithDefault;
 import com.albatross.api.v1.flow.model.CustomFiledFilterCriteria;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ public class CustomFieldController {
   }
 
   @GetMapping(value = "/getByEvent/{id}")
-  public List<CustomField> getByEvent(@PathVariable Long id) {
+  public List<CustomFieldWithDefault> getByEvent(@PathVariable Long id) {
     return customFieldService.getByEvent(id);
   }
 
