@@ -835,7 +835,7 @@ owner-toolbar-tools {
 }
 
 .owner-position {
-  color: #9E9C9C;
+  color: var(--v-grey-darken2);
 }
 
 .banner-card-swatch {

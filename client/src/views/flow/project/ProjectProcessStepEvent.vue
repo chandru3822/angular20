@@ -188,12 +188,12 @@
 
       <v-form ref="eventFieldForm" class="px-6" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
-          <v-btn small text v-if="$store.getters.userHasFeature('SCHEDULE')"
+          <a small text color="anchor" v-if="$store.getters.userHasFeature('SCHEDULE')"
                  class="px-0 d-flex align-baseline" target="_blank"
                  :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
-            <span class="albatross-header-5 pl-2 scheduler-button-text primary--text">Open Scheduler</span>
-            <v-icon color="primary" class="scheduler-button-icon">mdi-open-in-new</v-icon>
-          </v-btn>
+            <span color="anchor" class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
+            <v-icon color="anchor" class="scheduler-button-icon">mdi-open-in-new</v-icon>
+          </a>
         </div>
         <v-card class="square-card px-4 pt-4 mt-4">
           <v-autocomplete
@@ -1093,10 +1093,11 @@ export default {
 .scheduler-button-icon {
   text-decoration: none;
   font-size: 12px;
+  color: var(--v-anchor-base);
 }
 
 .scheduled-time {
-  color: #9E9C9C;
+  color: var(--v-grey-darken2);;
   font-size: 12px;
   font-weight: normal;
 }
