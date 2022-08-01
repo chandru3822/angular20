@@ -201,6 +201,16 @@ public class CustomFieldGroupService {
         "customFieldGroupAssignment.getCustomFieldsInGroup", params, CustomField.class);
   }
 
+  public List<CustomField> getEventResourceFields() {
+    User currentUser = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+
+    return sqlCache.query(
+      "customFieldGroupAssignment.getEventResourceFields", params, CustomField.class);
+  }
+
   public List<CustomFieldGroup> getNonEventCustomFieldGroupsByProcessStep(Long processStepId) {
     Map<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);

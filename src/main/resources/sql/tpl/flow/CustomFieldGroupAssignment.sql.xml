@@ -156,6 +156,21 @@
     order by cfg.group_name
   ]]></customFieldGroupAssignment.getNonEventCustomFieldGroupsByProcessStep>
 
+  <customFieldGroupAssignment.getEventResourceFields><![CDATA[
+      select cf.id,
+            cf.field_name as "fieldName"
+      from flow.custom_field cf
+            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+            left join flow.company_system_list csl on csl.id = cf.company_system_list_id
+      where cf.company_id = :companyId
+       and cf.archived is not true
+       and cdt.data_type_id = (select required_data_type_id
+        from flow.schedule_field_type
+        where field_code = 'EVENT_RESOURCE')
+       and case when cf.company_system_list_id is not null then csl.schedulable is true else 1=1 end
+      order by cf.field_name
+  ]]></customFieldGroupAssignment.getEventResourceFields>
+
   <customFieldGroupAssignment.getAvailableCustomFieldsInGroup><![CDATA[
     select cf.id, cf.field_name
     from flow.custom_field cf

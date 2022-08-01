@@ -88,6 +88,11 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getNonEventCustomFieldGroupsByProcessStep(id);
   }
 
+  @GetMapping(value = "/getEventResourceFields")
+  public List<CustomField> getEventResourceFields () {
+    return customFieldGroupService.getEventResourceFields();
+  }
+
   @GetMapping(value = "/getAvailableCustomFields")
   public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long companyObjectTypeId,
                                                             @RequestParam Long groupId,
