@@ -127,7 +127,13 @@ create type brs.calculated_proposal_value as
   financier                                        varchar,
   financier_id                                     integer,
   loan_price_storage                               numeric,
-  cash_price_storage                               numeric
+  cash_price_storage                               numeric,
+  main_panel_upgrade_cost                          numeric,
+  structural_upgrade_cost                          numeric,
+  reroof_cost                                      numeric,
+  tree_trimming_cost                               numeric,
+  trenching_cost                                   numeric,
+  ac_unit_relocation_cost                          numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -191,7 +197,13 @@ create type brs.excluded_proposal_value as
   financier                                      varchar,
   financier_id                                   integer,
   loan_price_storage                             numeric,
-  cash_price_storage                             numeric
+  cash_price_storage                             numeric,
+  main_panel_upgrade_cost                        numeric,
+  structural_upgrade_cost                        numeric,
+  reroof_cost                                    numeric,
+  tree_trimming_cost                             numeric,
+  trenching_cost                                 numeric,
+  ac_unit_relocation_cost                        numeric
 );
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
@@ -334,10 +346,14 @@ declare
   v_financier_id                                     integer;
   v_cash_price_storage                               numeric;
   v_loan_price_storage                               numeric;
+  v_main_panel_upgrade_cost                          numeric;
+  v_structural_upgrade_cost                          numeric;
+  v_reroof_cost                                      numeric;
+  v_tree_trimming_cost                               numeric;
+  v_trenching_cost                                   numeric;
+  v_ac_unit_relocation_cost                          numeric;
 BEGIN
 
-  select nextval('brs.proposal_excel_id_seq')
-  into v_proposal_nbr;
   select prop.id        as proposal_id,
          proposal_version_id,
          prop.project_process_step_id,
@@ -361,11 +377,24 @@ BEGIN
          pcfv7.numeric_value,
          pcfv6.text_value,
          pcfv8.int_value,
-         lov2.name
+         lov2.name,
+         pcfv10.numeric_value,
+         pcfv11.numeric_value,
+         pcfv12.numeric_value,
+         pcfv13.numeric_value,
+         pcfv14.numeric_value,
+         pcfv15.numeric_value,
+         prop.proposal_nbr
   into v_proposal_id,v_version_id,v_project_process_step_id,v_friends_and_family,v_down_payment_amount,v_product_id,v_product_name,
     v_project_id,v_proposal_archived,v_contact_first_name,v_contact_last_name,v_project_name,v_project_street1,
     v_project_street2,v_city,v_postal_code,v_project_state,v_project_state_abbrev,v_contact_phone,v_contact_email,
-    v_other_adder_and_discount_amount,v_other_adder_and_discount,v_storage_type_id,v_storage_type
+    v_other_adder_and_discount_amount,v_other_adder_and_discount,v_storage_type_id,v_storage_type,v_main_panel_upgrade_cost,
+    v_structural_upgrade_cost,
+    v_reroof_cost,
+    v_tree_trimming_cost,
+    v_trenching_cost,
+    v_ac_unit_relocation_cost,
+    v_proposal_nbr
   from brs.proposal prop
          inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
          inner join flow.project p on pps.project_id = p.id
@@ -387,6 +416,18 @@ BEGIN
          left join brs.proposal_custom_field_value pcfv8 on prop.id = pcfv8.proposal_id and
                                                             pcfv8.custom_field_group_assignment_id = 200
          left join brs.list_of_value lov2 on lov2.id = pcfv8.int_value
+         left join brs.proposal_custom_field_value pcfv10 on prop.id = pcfv10.proposal_id and
+                                                             pcfv10.custom_field_group_assignment_id = 201
+         left join brs.proposal_custom_field_value pcfv11 on prop.id = pcfv11.proposal_id and
+                                                             pcfv11.custom_field_group_assignment_id = 202
+         left join brs.proposal_custom_field_value pcfv12 on prop.id = pcfv12.proposal_id and
+                                                             pcfv12.custom_field_group_assignment_id = 203
+         left join brs.proposal_custom_field_value pcfv13 on prop.id = pcfv13.proposal_id and
+                                                             pcfv13.custom_field_group_assignment_id = 204
+         left join brs.proposal_custom_field_value pcfv14 on prop.id = pcfv14.proposal_id and
+                                                             pcfv14.custom_field_group_assignment_id = 205
+         left join brs.proposal_custom_field_value pcfv15 on prop.id = pcfv15.proposal_id and
+                                                             pcfv15.custom_field_group_assignment_id = 206
   where prop.id = p_proposal_id;
 
   select string_agg(lov.name, ',')
@@ -1172,6 +1213,14 @@ BEGIN
   raise notice 'v_panel_brand_id = % ',v_panel_brand_id;
   raise notice 'v_state_id = % ',v_state_id;
 
+  raise notice 'v_main_panel_upgrade_cost = % ',v_main_panel_upgrade_cost;
+  raise notice 'v_structural_upgrade_cost = % ',v_structural_upgrade_cost;
+  raise notice 'v_reroof_cost = % ',v_reroof_cost;
+  raise notice 'v_tree_trimming_cost = % ',v_tree_trimming_cost;
+  raise notice 'v_trenching_cost = % ',v_trenching_cost;
+  raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
+
+
   select value::numeric / 100
   into v_apr
   from proposal_value pv
@@ -1430,13 +1479,17 @@ BEGIN
   if v_product_id = 293 then
     v_promotion_cost =
         ((v_initial_system_cost + v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
-          v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder) * v_initial_payment_factor * 18)
+          v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder + coalesce(v_main_panel_upgrade_cost,0)::numeric +
+          coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
+          coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric) * v_initial_payment_factor * 18)
         /
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
   elsif v_product_id = 19424 then
     v_promotion_cost =
         ((v_initial_system_cost + v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
-          v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder) *
+          v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder + coalesce(v_main_panel_upgrade_cost,0)::numeric +
+          coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
+          coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric) *
          (v_reamortization_factor - v_initial_payment_factor) * 42) /
         (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
                             42);
@@ -1449,6 +1502,9 @@ BEGIN
   v_total_loan_amount_before_rebate = ((v_initial_system_cost - v_down_payment_amount) + v_equipment_inverter_adder +
                                        v_equipment_panel_adder + v_equipment_storage_adder +
                                        v_smart_thermostat_adder + v_led_light_bulbs_adder +
+                                       coalesce(v_main_panel_upgrade_cost,0)::numeric +
+                                       coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
+                                       coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric +
                                        v_misc_adders + v_promotion_cost +
                                        (select value::numeric
                                         from proposal_value
@@ -1767,7 +1823,9 @@ BEGIN
   raise notice 'v_non_solar_cap = %',v_non_solar_cap;
 
   v_required_down_payment =
-      (v_misc_adders + v_other_adder_and_discount_amount) - (v_total_system_cost * v_non_solar_cap);
+      (v_misc_adders + v_other_adder_and_discount_amount + coalesce(v_main_panel_upgrade_cost,0)::numeric +
+       coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
+       coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric) - (v_total_system_cost * v_non_solar_cap);
 
   if p_insert_prop_log_history is true then
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
@@ -1807,7 +1865,9 @@ BEGIN
             v_estimated_annual_energy_consumption_kwh, v_equipment_panel_adder,
             v_equipment_panel_adder * (v_system_size * 1000),
             (v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
-             v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder), v_adjusted_price_per_wat,
+             v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder + coalesce(v_main_panel_upgrade_cost,0)::numeric +
+             coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
+             coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric), v_adjusted_price_per_wat,
             v_total_loan_amount,
             v_total_system_cost, v_estimated_offset, v_dealer_fee, v_utility_cost_escalator, v_panel_degradation_factor,
             v_production_factor,
@@ -1954,8 +2014,15 @@ BEGIN
            v_financier,
            v_financier_id,
            v_loan_price_storage,
-           v_cash_price_storage;
-   drop table proposal_value;
+           v_cash_price_storage,
+           v_main_panel_upgrade_cost,
+           v_structural_upgrade_cost,
+           v_reroof_cost,
+           v_tree_trimming_cost,
+           v_trenching_cost,
+           v_ac_unit_relocation_cost;
+
+  drop table proposal_value;
 
 END
 $BODY$
