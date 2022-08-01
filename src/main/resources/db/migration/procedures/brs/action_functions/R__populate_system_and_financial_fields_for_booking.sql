@@ -43,6 +43,14 @@ BEGIN
                                             from flow.custom_field cf
                                                    inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
                                                    inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 11786
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id = v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.eighteen_plus_payments_all_incentives::numeric,
+                                            (select cfga.id
+                                            from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                                             where cf.id = 344
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
@@ -345,8 +353,8 @@ BEGIN
                  where plh.id = v_proposal_history_id) as t
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
-        --raise notice 'cfga% value %',_key,_value;
-        perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
+        raise notice 'cfga% value %',_key,_value;
+        --perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
     END LOOP;
 
 
