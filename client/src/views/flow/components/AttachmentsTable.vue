@@ -170,10 +170,6 @@ export default {
 
 }
 
-.primary-row{
-  background-color: #ebf5ff !important;
-}
-
 .no-attach {
   color: var(--v-primaryText-base);
 }
