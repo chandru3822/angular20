@@ -1590,12 +1590,10 @@ async function getUser() {
 }
 
 function accessDenied() {
-  console.log('MAINT MODE', process.env.VUE_APP_MAINTENANCE_MODE)
-  if(process.env.VUE_APP_MAINTENANCE_MODE) {
-    console.log('denied via maint mode', process.env.VUE_APP_MAINTENANCE_MODE)
+  let maintenanceMode = process.env.VUE_APP_MAINTENANCE_MODE?.toLowerCase() === 'true' || process.env.VUE_APP_MAINTENANCE_MODE === true
+  if(maintenanceMode) {
     return import(/* webpackChunkName: "accessDenied" */ './views/SiteUnderMaintenance.vue')
   } else {
-    console.log('denied via access levels')
     return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
   }
 }
