@@ -69,6 +69,6 @@ export default {
 
 .event-resource {
   font-size: 0.875rem;
-  color: #9E9C9C;
+  color: var(--v-grey-darken2);
 }
 </style>

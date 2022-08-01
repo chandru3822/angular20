@@ -82,7 +82,7 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
-    <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
+    <v-toolbar flat color="grey lighten-2" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title albatross-header-1 d-flex align-center">
         <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
         <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">

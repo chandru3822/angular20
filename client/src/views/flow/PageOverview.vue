@@ -37,8 +37,8 @@
         </span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS">
-          <span class="detail-label">{{detail.label}}: </span>
-          <div v-if="detail.value" class="detail-item">
+          <span class=" vertical-top detail-label">{{detail.label}}: </span>
+          <div v-if="detail.value" class="d-inline-block vertical-top detail-item">
             <span>{{detail.value.street}}</span><br/>
             <span>{{detail.value.city}}, {{detail.value.state}} {{detail.value.zip}}</span>
           </div>
@@ -49,7 +49,7 @@
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.OWNER" class="mt-2">
         <span class="vertical-top detail-label">{{detail.label}}:</span>
-        <div v-if="detail.value" class="d-inline-block detail-item">
+        <div v-if="detail.value" class="d-inline-block detail-item vertical-top">
                 <span :class="{'error-text': detail.value.hasAccess}">{{
                     detail.value.fullName
                   }} - {{detail.value.position }} <br/></span>
@@ -97,5 +97,9 @@ export default {
   font-size: 0.875rem;
   margin-left: 5px;
   overflow-wrap: break-word;
+}
+
+.vertical-top {
+  margin-top: -2px;
 }
 </style>
