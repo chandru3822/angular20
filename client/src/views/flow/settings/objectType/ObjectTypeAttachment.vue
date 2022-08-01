@@ -385,7 +385,6 @@ export default {
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
-        console.log('randaLogger',fields)
         let fieldsToSave = []
         fields.forEach((f, idx) => {
           let order = idx + 1

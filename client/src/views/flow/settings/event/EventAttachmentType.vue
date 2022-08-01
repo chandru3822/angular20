@@ -19,7 +19,6 @@ export default {
   },
   watch: {},
   created() {
-    console.log('randaLogger', this.eventId)
   },
   methods: {}
 }
