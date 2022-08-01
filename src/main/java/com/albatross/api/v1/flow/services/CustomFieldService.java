@@ -195,14 +195,14 @@ public class CustomFieldService {
         .toList();
   }
 
-  public List<CustomFieldWithDefault> getByEvent(Long id) {
+  public List<CustomField> getByEvent(Long id) {
     User user = securityService.getCurrentUser();
     //for now i am only returning start, end and resource from the default field list. will prob add the rest in later
     return sqlCache
       .query(
         "customField.getByEvent",
         Map.of("companyId", user.getCompanyId(), "id", id),
-        new CustomField.CustomFieldMapper<>(CustomFieldWithDefault.class, om))
+        new CustomField.CustomFieldMapper<>(CustomField.class, om))
       .stream()
       .peek(
         cf -> {

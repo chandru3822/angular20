@@ -30,7 +30,7 @@ public class CustomFieldGroupService {
   private final ProcessStepRequirementService processStepRequirementService;
   private final ObjectMapper om;
 
-  public CustomField addFieldToGroup(CustomFieldWithDefault customField) {
+  public CustomField addFieldToGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -48,7 +48,7 @@ public class CustomFieldGroupService {
             .updateReturningId("customFieldGroupAssignment.addFieldToGroup", params, "id")
             .longValue();
 
-    return null == customField.getDefaultFieldId() ? getDefaultCustomField(id) : getCustomField(id);
+    return null != customField.getDefaultFieldId() ? getDefaultCustomField(id) : getCustomField(id);
   }
 
   public CustomField moveFieldToOtherGroup(CustomField customField, Long newGroupId) {
@@ -64,19 +64,19 @@ public class CustomFieldGroupService {
     return getCustomField(customField.getCustomFieldGroupAssignmentId());
   }
 
-  public CustomFieldWithDefault getDefaultCustomField(Long cfgaId) {
+  public CustomField getDefaultCustomField(Long cfgaId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("cfgaId", cfgaId);
-    Optional<CustomFieldWithDefault> result =
-      sqlCache.get("customFieldGroupAssignment.getDefaultField", params, CustomFieldWithDefault.class);
+    Optional<CustomField> result =
+      sqlCache.get("customFieldGroupAssignment.getDefaultField", params, CustomField.class);
     return result.orElse(null);
   }
 
-  public CustomFieldWithDefault getCustomField(Long id) {
+  public CustomField getCustomField(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<CustomFieldWithDefault> result =
-        sqlCache.get("customFieldGroupAssignment.getCustomField", params, CustomFieldWithDefault.class);
+    Optional<CustomField> result =
+        sqlCache.get("customFieldGroupAssignment.getCustomField", params, CustomField.class);
     return result.orElse(null);
   }
 

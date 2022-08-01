@@ -4,7 +4,6 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.CustomFieldWithDefault;
 import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.Data;
@@ -29,7 +28,7 @@ public class CustomFieldGroupController {
   private final CustomFieldGroupService customFieldGroupService;
 
   @PostMapping(value = "/addFieldToGroup")
-  public CustomField addFieldToGroup (@RequestBody CustomFieldWithDefault customField) {
+  public CustomField addFieldToGroup (@RequestBody CustomField customField) {
     return customFieldGroupService.addFieldToGroup(customField);
   }
 

@@ -284,8 +284,8 @@
   ]]></customFieldGroupAssignment.getCustomField>
 
   <customFieldGroupAssignment.addFieldToGroup><![CDATA[
-    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, schedule_field_type_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :scheduleFieldTypeId, :createdById, now(), :createdById, now())
+    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified)
+    values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now())
   ]]></customFieldGroupAssignment.addFieldToGroup>
 
   <customFieldGroupAssignment.moveFieldToOtherGroup><![CDATA[

@@ -16,7 +16,7 @@ public class CustomFieldValue {
 
   private Long id, contactId, customFieldGroupAssignmentId, customFieldGroupId,
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId, uniqueBehaviorTypeId,
-      companySystemListId, projectProcessStepId, scheduleFieldTypeId, ancillaryCustomFieldGroupAssignmentId;
+      companySystemListId, projectProcessStepId, ancillaryCustomFieldGroupAssignmentId;
 
   private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, ancillaryCustomFieldHint;
   private Long intValue;

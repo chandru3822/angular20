@@ -21,6 +21,7 @@ public class CustomField {
       companyDataTypeId,
       listOfValueId,
       companyId,
+      defaultFieldId,
       fieldOrder,
       createdById,
       modifiedById,
