@@ -673,7 +673,7 @@ export default {
 }
 
 .selected {
-  background-color: #EDF5FE;
+  background-color: var(--v-primary-lighten9);
 }
 
 a {

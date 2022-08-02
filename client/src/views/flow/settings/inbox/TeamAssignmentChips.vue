@@ -262,7 +262,7 @@ export default {
 }
 
 .unassigned-team-chip {
-  background: #F8DDDD !important;
+  background-color: var(--v-error-lighten4) !important;
   color: #BD2828 !important;
   cursor: default;
 
@@ -272,7 +272,7 @@ export default {
 }
 
 .other-team-chip {
-  background: #eaeaea !important;
+  background: var(--v-grey-lighten3) !important;
   cursor: default;
 
   &.selected {
@@ -281,7 +281,7 @@ export default {
 }
 
 .assigned-team-chip {
-  background: darken(#EDF5FE, 2%) !important;
+  background: var(--v-primary-lighten9) !important;
   //color: white !important;
   cursor: default;
   &.selected {

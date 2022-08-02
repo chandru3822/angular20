@@ -87,6 +87,7 @@
   }
   .performed-span {
     font-size: 0.70rem;
+    color: var(--v-grey-darken1);
   }
 </style>
 
