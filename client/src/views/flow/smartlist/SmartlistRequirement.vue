@@ -226,7 +226,7 @@
 <!--          Vuetify keeps its own copy of requirements, so we can't just send `requirement` to functions for form reset 💩 -->
           <v-icon
             v-if="expandedRequirement && expandedRequirement.id !== requirement.id"
-            class="action-icon"
+            class="action-icon" color="primary"
             @click="[cancelEditRequirement(), editRequirement(requirements.find(r => r.id === requirement.id))]"
           >
             edit
@@ -236,6 +236,7 @@
             v-else
             small
             text
+            color="primary"
             @click="cancelEditRequirement"
           >
             Cancel
@@ -243,7 +244,8 @@
 
           <v-icon
             class="action-icon"
-            @click="deleteRequirement(requirement)"
+            color="primary"
+            @click="reqToDelete=requirement"
           >
             delete
           </v-icon>
@@ -397,6 +399,9 @@
       </tr>
     </template>
   </v-data-table>
+  <ConfirmationDialog :open-dialog="!!reqToDelete" @confirm="deleteRequirement" @close-dialog="reqToDelete=null">
+    Are you sure you want to delete this requirement: <b>{{reqToDeleteFieldName}}</b>?
+  </ConfirmationDialog>
 </v-col>
 </template>
 
@@ -405,6 +410,7 @@
 import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 
 const newRequirementStructure = {
@@ -423,12 +429,12 @@ const newRequirementStructure = {
   companySystemListId: null,
   availableListOfValues: [],
   listOfValueId: null,
-  listOfValueIds: []
+  listOfValueIds: [],
 }
 
 export default {
   name: "SmartlistRequirement",
-
+  components: {ConfirmationDialog},
   props: {
     requirements: {
       type: Array,
@@ -493,8 +499,7 @@ export default {
       },
       projectStatusTypes: [],
       companyProjectStatusTypes: [],
-      // processStepStatusTypes: [],
-      // companyProcessStepStatusTypes: []
+      reqToDelete: null
     }
   },
   created () {
@@ -543,6 +548,9 @@ export default {
       } else {
         return this.expandedRequirement.dataTypeRequirementId === null && this.expandedRequirement.listOfValueId === null && this.expandedRequirement.listOfValueIds.length === 0
       }
+    },
+    reqToDeleteFieldName(){
+      return this.reqToDelete ? this.reqToDelete.name : '';
     }
   },
   methods: {
@@ -750,8 +758,8 @@ export default {
     cancelEditRequirement () {
       this.expandedRequirement = {}
     },
-    deleteRequirement (requirement) {
-      this.$emit('delete', requirement)
+    deleteRequirement () {
+      this.$emit('delete', this.reqToDelete)
     },
     calculateAvailableFields () {
       this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
