@@ -180,6 +180,12 @@ label[for="adminOriginatorSelect"] {
   margin-left: 10px;
 }
 
+//globally set all table headers to lighter grey
+div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
+  color: var(--v-grey-base) !important;
+}
+
+//globally remove background color for active table headers
 .v-data-table--dense.v-data-table--fixed-header.theme--light > div > table > thead > tr > th.active {
   background-color: transparent !important;
 }
