@@ -5,48 +5,19 @@
         <router-link :to="`/project/${projectId}/details`">{{ project.projectName }}</router-link>
       </div>
       <v-spacer></v-spacer>
-      <v-dialog
-        v-if="userCanDelete"
-        class="d-inline-block"
-        v-model="deleteProjectConfirm"
-        width="500">
-        <template #activator="{ on }">
-          <v-btn color="primary" dark class=" float-right white--text" v-on="on">
-            Delete Project
-          </v-btn>
-        </template>
-        <v-card>
-          <v-card-title
-            class="text-h5 grey lighten-2"
-            primary-title>
-            Confirm
-          </v-card-title>
-
-          <v-card-text class="pt-4">
-            <span
-              class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this project?</span>
-          </v-card-text>
-
-          <v-divider></v-divider>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              @click="deleteProjectConfirm = false">
-              No
-            </v-btn>
-            <v-btn
-              color="primary"
-              text
-              @click="deleteProject">
-              Yes
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      <v-btn color="primary" dark class=" float-right white--text" @click="deleteProjectConfirm=true">
+        Delete Project
+      </v-btn>
+      <ConfirmationDialog
+          :open-dialog="deleteProjectConfirm"
+          @confirm="deleteProject"
+          @close-dialog="deleteProjectConfirm = false"
+      >
+        <span class="error--text">WARNING:</span>
+        This cannot be undone. Are you sure you want to delete this project?
+      </ConfirmationDialog>
     </v-toolbar>
     <v-row v-if="userIsAdmin">
-
 
       <v-col cols="12">
 
@@ -239,6 +210,7 @@ import {v4 as uuid} from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -283,6 +255,7 @@ export default {
     }
   },
   components: {
+    ConfirmationDialog,
     ProjectProcessStepStatus,
     AddProcessStep,
     PpsHistoryTable
