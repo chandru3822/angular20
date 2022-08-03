@@ -5,36 +5,11 @@
     </div>
   </v-main>
   <v-main ref="ppseFieldsContainer" class="pa-0 relative height-one-hunned overflow-y-auto" v-else-if="!eventDetailsLoading">
-    <v-dialog width="500" v-model="unsavedFieldsModal">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Confirm
-        </v-card-title>
-
-        <v-card-text class="pt-4">
-          You have unsaved fields. Are you sure you want to continue without saving?
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="unsavedFieldsModal = false">
-            No
-          </v-btn>
-          <v-btn
-            color="primary"
-            text
-            @click="[navigationOverride = true, goToPath(toPath, query)]">
-            Yes
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath, query)]" @close-dialog="unsavedFieldsModal = false">
+      <template v-slot:title>Confirm</template>
+      You have unsaved fields. Are you sure you want to continue without saving?
+      <template v-slot:yes>Continue and Don't Save</template>
+    </ConfirmationDialog>
     <div v-if="selectedEvent.id" class="pt-6">
       <v-toolbar color="transparent" height="auto"
                  class="elevation-0 cfg-name-toolbar px-6" id="event-header">
@@ -49,44 +24,11 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-dialog
-            v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
-            v-model="selectedEvent.deleteConfirm"
-            width="500">
-            <template v-slot:activator="{ on }">
-              <v-btn text color="primary" small class="clickable mt-1" v-on="on">
-                <v-icon>delete</v-icon>
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title
-                class="headline grey lighten-2"
-                primary-title
-              >
-                Confirm
-              </v-card-title>
-
-              <v-card-text>
-                Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="selectedEvent.deleteConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  text
-                  @click="[selectedEvent.archived = true, deleteEvent(selectedEvent.id)]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+          <v-btn v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+                 small text color="primary" class="align-self-end" @click="showDeleteDialog = true"><v-icon>delete</v-icon></v-btn>
+          <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteEvent" @close-dialog="showDeleteDialog=false">
+            Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
+          </ConfirmationDialog>
         </v-toolbar-items>
       </v-toolbar>
       <div class="pb-4 px-6">
@@ -391,10 +333,12 @@ import {ProjectMutations} from "@/stores/ProjectStore";
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import {getStatusClass} from '@/services/eventStatusTypeService'
 import Vue2Filters from 'vue2-filters'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProjectProcessStepEvent',
   components: {
+    ConfirmationDialog,
     CustomValueInput,
     Attachments,
     DatetimePickerInput,
@@ -462,7 +406,8 @@ export default {
       eventDetailsLoading: true,
       // windowWidth: window.innerWidth,
       // splitColumnMinWidth: 1700,
-      getStatusClass
+      getStatusClass,
+      showDeleteDialog: false
     }
   },
   async created() {
@@ -833,8 +778,10 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    deleteEvent: async function (ppseId) {
+    deleteEvent: async function () {
+      const ppseId = this.selectedEvent.id
       this.$store.commit(AppMutations.SET_LOADING, true)
+      this.selectedEvent.archived = true
       try {
         await deleteRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppseId}`)
         //set navigation override so that if there were unsaved fields it won't ask you to try and save
@@ -842,7 +789,8 @@ export default {
         this.$emit('refresh-upcoming-events')
         //go to the process step
         this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
-      } catch (e) {
+      }
+      catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
