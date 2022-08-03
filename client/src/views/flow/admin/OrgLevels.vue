@@ -20,12 +20,12 @@
             <v-text-field text v-model="newOrgLevel.level" type="number"
                           label="Level" />
           </div>
+          <v-btn text color="primary" @click="[addNew = !addNew, newOrgLevel = {}]">Cancel</v-btn>
           <v-btn :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
-                 color="primary" class="white--text mr-2"
+                 color="primary" class="mr-2"
                  @click="saveOrgLevel(newOrgLevel, true)">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, newOrgLevel = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -68,49 +68,11 @@
               <td class="text-left">{{ item.levelName }}</td>
               <td class="text-left">{{ item.level }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text class="pt-4">
-                      <div class="error-text">
-                        WARNING: This action can cause issues with many other screens.
-                      </div>
-                      Are you sure you want to delete this org level: {{ item.levelName }}?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                          @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                          color="primary"
-                          text
-                          @click="deleteOrgLevel(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" @click="levelToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -118,7 +80,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!levelToDelete" @confirm="deleteOrgLevel" @close-dialog="levelToDelete=null">
+      <div>
+        <span class="error-text">WARNING:</span> This action can cause issues with many other screens.
+      </div>
+      Are you sure you want to delete this org level: <b>{{ levelToDeleteName }}</b>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -127,10 +94,11 @@
   import {getOrgLevels} from '@/services/orgService'
   import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'OrgLevels',
-
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},
@@ -147,7 +115,13 @@
           { text: 'Level', value: 'level', width: 80, show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
-        expanded: []
+        expanded: [],
+        levelToDelete: null
+      }
+    },
+    computed:{
+      levelToDeleteName(){
+        return this.levelToDelete ? this.levelToDelete.levelName : ''
       }
     },
     async created () {
@@ -190,7 +164,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteOrgLevel(level) {
+      async deleteOrgLevel() {
+        const level = this.levelToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/orgType/level/${level.id}`)

@@ -25,6 +25,7 @@
           <slot name="no">Cancel</slot>
         </v-btn>
         <v-btn
+            v-if="!hideConfirm"
             color="primary"
             class="white--text elevation-2 text-capitalize mr-2 mb-2"
             :disabled="disableConfirm"
@@ -44,6 +45,7 @@ export default {
     hideTitle:Boolean,
     itemToDelete: Object,
     disableConfirm: Boolean,
+    hideConfirm: Boolean
   },
   data() {
     return {
@@ -60,7 +62,6 @@ export default {
     }
   },
   created(){
-    console.log(this.confirmColor)
   },
   methods: {
     yes(){

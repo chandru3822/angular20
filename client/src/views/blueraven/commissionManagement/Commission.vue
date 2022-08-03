@@ -30,176 +30,78 @@
                  @click="approvePlan()">
             Approve
           </v-btn>
-          <v-dialog v-if="planId && !commission.approved && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-                    v-model="deleteConfirm"
-                    width="500">
-            <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
-                Delete
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to delete this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="deleteConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  text
-                  @click="[deleteConfirm = true, deletePlan()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <v-dialog v-else-if="planId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-              v-model="inactivateConfirm"
-              width="500">
-            <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
-                Inactivate
-              </v-btn>
-            </template>
-            <v-card v-if="planHasActiveUsers()">
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Error
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                You cannot set this plan to inactive with active users.
-                <table class="table mt-2">
-                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
-                    <td class="pr-3">{{u.name}}</td>
-                    <td>{{u.position}}</td>
-                  </tr>
-                </table>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  Cancel
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-            <v-card v-else>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to inactivate this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  text
-                  @click="[inactivateConfirm = true, inactivatePlan()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-
-          <v-dialog v-if="planId && commission && commission.users
+          <ConfirmationDialog :open-dialog="showDeleteConfirm" @confirm="[deleteConfirm = true, deletePlan()]" @close-dialog="showDeleteConfirm=false">
+            Are you sure you want to delete this plan?
+          </ConfirmationDialog>
+          <v-btn v-if="planId && !commission.approved && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+                 @click="showDeleteConfirm = true"
+                 color="error"
+          >
+            delete
+          </v-btn>
+          <v-btn v-else-if="planId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+                 @click="inactivateConfirm = true"
+                 color="error"
+                 class="mr-2"
+          >
+            inactivate
+          </v-btn>
+          <ConfirmationDialog :open-dialog="inactivateConfirm" :hide-confirm="planHasActiveUsers()" @confirm="inactivatePlan" @close-dialog="inactivateConfirm = false">
+              <template v-if="planHasActiveUsers()" v-slot:title>Error</template>
+              <template v-else v-slot:title>Confirm</template>
+            <div v-if="planHasActiveUsers()">
+            You cannot set this plan to inactive with active users.
+              <table class="table mt-2">
+                <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                  <td class="pr-3">{{u.name}}</td>
+                  <td>{{u.position}}</td>
+                </tr>
+              </table>
+            </div>
+            <div v-if="!planHasActiveUsers()">
+              Are you sure you want to inactivate this plan?
+            </div>
+            <template v-if="!planHasActiveUsers()" v-slot:yes>Inactivate</template>
+          </ConfirmationDialog>
+          <v-btn v-if="planId && commission && commission.users
                         && userCanAdd
                         && commission.users.filter(u => {return u.endDate == null}).length > 0"
-            v-model="cloneDialog"
-            width="600"
+                 color="primary" @click="cloneDialog = true">
+            Clone
+          </v-btn>
+          <ConfirmationDialog :open-dialog="cloneDialog"
+                              :disable-confirm="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
+                              (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
+                              @confirm="validateStartDates"
+                              @close-dialog="[cloneDialog = false, cloneStartDate = null]"
           >
-            <template v-slot:activator="{ on }">
-              <v-btn color="primary" dark v-on="on" class="mr-2">
-                Clone
-              </v-btn>
-            </template>
-
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
-              >
-                Clone {{commission.name}}
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                <div class="mb-2">
-                  This option allows you to copy an entire plan over. <br/>
-                  By default, no users are copied over.
-                </div>
-                Users to Copy:
-                <div v-for="u in filterBy(commission.users, (u) => { return u.endDate == null })">
-                  <input type="checkbox" class="mr-2" v-model="u.selected">
-                  {{ u.name }}: {{u.startDate | formatDate('date')}}
-                </div>
-                <div class="mt-3" v-if="commission.users && commission.users.filter(u => u.selected).length > 0">
-                  <DatetimePickerInput
-                    v-model="cloneStartDate"
-                    :timezone="timezone"
-                    :type="'date'"
-                    :format="'MMMM DD, YYYY'"
-                    label="Start Date"
-                  />
-                  <div v-if="cloneStartDate">
-                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
-                  </div>
-                  <div v-if="cloneDateError" class="error--text">
-                    You cannot select a start date that is before or equal to any other user's plan start date.
-                  </div>
-                </div>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  text
-                  @click="[cloneDialog = false, cloneStartDate = null]"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  :disabled="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
-                            (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
-                  class="white--text"
-                  @click="validateStartDates()">
-                  Clone
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+            <template v-slot:title>Clone {{commission.name}}</template>
+            <div class="mb-2">
+              This option allows you to copy an entire plan over. <br/>
+              By default, no users are copied over.
+            </div>
+            Users to Copy:
+            <div v-for="u in filterBy(commission.users, (u) => { return u.endDate == null })">
+              <input type="checkbox" class="mr-2" v-model="u.selected">
+              {{ u.name }}: {{u.startDate | formatDate('date')}}
+            </div>
+            <div class="mt-3" v-if="commission.users && commission.users.filter(u => u.selected).length > 0">
+              <DatetimePickerInput
+                  v-model="cloneStartDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="Start Date"
+              />
+              <div v-if="cloneStartDate">
+                * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
+              </div>
+              <div v-if="cloneDateError" class="error--text">
+                You cannot select a start date that is before or equal to any other user's plan start date.
+              </div>
+            </div>
+            <template v-slot:yes>Clone</template>
+          </ConfirmationDialog>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -813,11 +715,13 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
   import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Commission',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmationDialog,
       ProjectAssignmentModal,
       DatetimePickerInput
     },
@@ -928,7 +832,8 @@
         commission: {
           users: [],
           positionId: null
-        }
+        },
+        showDeleteConfirm: false
       }
     },
 
