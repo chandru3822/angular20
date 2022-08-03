@@ -53,7 +53,7 @@ public class BlueravenProposalController {
   }
 
   @GetMapping(value = "/design/{projectId}/active")
-  public Optional<ProposalDesign> getActiveDesign(@PathVariable Long projectId) {
+  public ProposalDesign getActiveDesign(@PathVariable Long projectId) {
     return proposalService.getActiveDesign(projectId);
   }
 

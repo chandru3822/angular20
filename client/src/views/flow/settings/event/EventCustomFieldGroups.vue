@@ -129,9 +129,8 @@
           <v-row>
             <v-col cols="6">
               <v-autocomplete
-                v-if="schedulingFields && schedulingFields[0]"
                 v-model="event.resourceCustomFieldId"
-                :items="schedulingFields[0].availableCustomFields"
+                :items="eventResourceFields"
                 label="Resource"
                 @change="resourceFieldChanged = true"
                 item-text="fieldName"
@@ -564,7 +563,7 @@ export default {
         {text: null, value: 'icons', show: true}
       ],
       expanded: [],
-      schedulingFields: [],
+      eventResourceFields: [],
       eventTypes: [],
       cfgToDelete: null,
       cFieldToDelete: null
@@ -590,11 +589,24 @@ export default {
     }
   },
   async created() {
-    this.getSchedulingFields()
+    this.getEventResourceFields()
     this.getPositions()
     await this.getEvent()
   },
   methods: {
+    async getEventResourceFields() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/customFieldGroup/getEventResourceFields`)
+        this.eventResourceFields = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getEvent() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -926,19 +938,6 @@ export default {
       return this.localCustomFieldGroups?.filter(cfg => {
         return !cfg.archived
       })
-    },
-    async getSchedulingFields() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
-        this.schedulingFields = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
     },
     async getEventTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)

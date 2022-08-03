@@ -38,15 +38,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              auto-grow
+                              :rows="1"
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.depositAmount"
                             @change="dataWasChanged = true"
@@ -238,15 +240,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              auto-grow
+                              :rows="1"
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.revisionFeeAmount"
                             @change="dataWasChanged = true"
@@ -301,15 +305,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              auto-grow
+                              :rows="1"
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-card flat class="mt-1 pa-0">
                 <v-card-title class="px-0 pb-0">
@@ -360,15 +366,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              auto-grow
+                              :rows="1"
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
                             @change="dataWasChanged = true"
@@ -423,15 +431,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              auto-grow
+                              :rows="1"
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <AhjChecklist v-if="dataReady"
                             title="Non Standard Submission Checklist"
@@ -498,15 +508,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              auto-grow
+                              :rows="1"
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.documentsAvailable"
                             @change="dataWasChanged = true"
@@ -551,15 +563,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              auto-grow
+                              :rows="1"
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjPermit.deliveryFeeAmount"
                             @change="dataWasChanged = true"

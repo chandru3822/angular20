@@ -87,15 +87,15 @@
                     <v-btn small text color="primary" :to="`/settings/processStep/${item.id}/components`">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-tooltip top :disabled="item.workQueueTypes.length <= 0">
+                    <v-tooltip top :disabled="!(item.workQueueTypes.length > 0 || item.usedByProcess)">
                       <template v-slot:activator="{ on: tooltip }">
                         <div v-on="{ ...tooltip }" class="d-inline-block">
-                          <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" :disabled="item.workQueueTypes.length > 0" @click="psToDelete=item">
+                          <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" :disabled="item.workQueueTypes.length > 0 || item.usedByProcess" @click="psToDelete=item">
                             <v-icon>delete</v-icon>
                           </v-btn>
                         </div>
                       </template>
-                      <span>Cannot delete a Process Step with assigned Work Queue Types</span>
+                      <span>getDeleteTooltip(item)</span>
                     </v-tooltip>
                   </td>
                 </tr>
@@ -176,6 +176,13 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getDeleteTooltip(item) {
+        if(item.usedByProcess) {
+          return 'Cannot delete a Process Step that is assigned to a process'
+        } else if (item.workQueueTypes.length > 0 ) {
+          return 'Cannot delete a Process Step with assigned Work Queue Types'
         }
       },
       async deleteProcessStep () {

@@ -5,6 +5,7 @@
     :right-hidden="!$route.params.projectId"
     :left-hidden="true"
     :auto-overflow-left="true"
+    :show-right-collapse-btn="false"
     @closeRight="$router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>
@@ -177,6 +178,12 @@
           </v-col>
         </template>
       </v-data-table>
+    </template>
+    <template v-slot:collapse-button>
+      <v-btn class="d-inline-block align-self-center" small text
+             @click="$router.push({path: `/inbox`})">
+        <v-icon>close</v-icon>
+      </v-btn>
     </template>
   </ThreeColumnLayout>
 </template>

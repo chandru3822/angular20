@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary" v-if="userCanEdit || userCanEditAccessControl">
+            <v-btn text :disabled="!position.position || (!position.orgTypeId && !clonePositionId)" @click="savePosition" color="primary" v-if="userCanEdit || userCanEditAccessControl">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -28,49 +28,79 @@
                         label="Position Name">
           </v-text-field>
           <v-autocomplete
-              v-model="position.orgTypeId"
-              :items="orgTypes"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              label="Organization Type"
-              item-text="orgType"
-              item-value="id"
+            v-if="!positionId"
+            v-model="clonePositionId"
+            :items="positions"
+            label="Position to Clone (optional)"
+            item-text="position"
+            item-value="id"
           ></v-autocomplete>
-          <div class="mb-3">
-            <label>Show in Scheduling Tool:</label>
-            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable">
-<!--            removing from UI for now since we dont know how to handle the schedule data if they change this manually -->
-<!--            <div class="ml-5" v-if="position.schedulable">-->
-<!--              <label>Use Slot Schedules:</label>-->
-<!--              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.useSlotSchedule">-->
-<!--            </div>-->
+          <div v-show="!clonePositionId">
+            <v-autocomplete
+                v-model="position.orgTypeId"
+                :items="orgTypes"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                label="Organization Type"
+                item-text="orgType"
+                item-value="id"
+            ></v-autocomplete>
+            <div class="mb-3">
+              <label>Show in Scheduling Tool:</label>
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable">
+  <!--            removing from UI for now since we dont know how to handle the schedule data if they change this manually -->
+  <!--            <div class="ml-5" v-if="position.schedulable">-->
+  <!--              <label>Use Slot Schedules:</label>-->
+  <!--              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.useSlotSchedule">-->
+  <!--            </div>-->
+            </div>
+            <div class="mb-3">
+              <label>Can Schedule Round Robins:</label>
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.scheduler">
+            </div>
+            <div class="mb-3">
+              <label>Can Own Contacts:</label>
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.contactOwner">
+            </div>
+            <div class="mb-3">
+              <label>Can Own Projects:</label>
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.projectOwner">
+            </div>
+            <div class="mb-3">
+              <label>Can Own SMS Tickets:</label>
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsOwner">
+            </div>
+            <div v-if="$store.getters.isParent(parentId)">
+              <label>Make Available in Children</label>
+              <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
+            </div>
           </div>
-          <div class="mb-3">
-            <label>Can Schedule Round Robins:</label>
-            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.scheduler">
+          <div v-show="!positionId && clonePositionId">
+            <div class="mb-3">
+              <label>Clone access control permissions:</label>
+              <input type="checkbox" class="ml-3" v-model="position.cloneAccess">
+            </div>
+            <div class="mb-3">
+              <label>Clone process step ownership:</label>
+              <input type="checkbox" class="ml-3" v-model="position.cloneOwnership">
+            </div>
+            <div class="mb-3">
+              <label>Clone system-list dropdown fields:</label>
+              <input type="checkbox" class="ml-3" v-model="position.cloneSystemList">
+            </div>
+            <div class="mb-3">
+              <label>Clone position white list:</label>
+              <input type="checkbox" class="ml-3" v-model="position.cloneWhitelist">
+            </div>
           </div>
-          <div class="mb-3">
-            <label>Can Own Contacts:</label>
-            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.contactOwner">
+          <div v-show="!clonePositionId || (clonePositionId && !position.cloneAccess)">
+            <v-divider class="my-2"></v-divider>
+            <h3>Access Control</h3>
+            <AccessControl v-if="positionLoaded"
+                           :key="accessControlKey"
+                           :user-can-edit="userCanEditAccessControl"
+                           :companyFeatures="getCompanyFeatures()" :callback="this.companyFeatureCallback"></AccessControl>
           </div>
-          <div class="mb-3">
-            <label>Can Own Projects:</label>
-            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.projectOwner">
-          </div>
-          <div class="mb-3">
-            <label>Can Own SMS Tickets:</label>
-            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsOwner">
-          </div>
-          <div v-if="$store.getters.isParent(parentId)">
-            <label>Make Available in Children</label>
-            <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
-          </div>
-          <v-divider class="my-2"></v-divider>
-          <h3>Access Control</h3>
-          <AccessControl v-if="positionLoaded"
-                         :key="accessControlKey"
-                         :user-can-edit="userCanEditAccessControl"
-                         :companyFeatures="getCompanyFeatures()" :callback="this.companyFeatureCallback"></AccessControl>
         </v-card>
 
       </v-col>
@@ -89,7 +119,6 @@
   export default {
     name: 'Position',
     components: {
-
       AccessControl
     },
     watch: {
@@ -103,18 +132,19 @@
         position: {
           companyFeatures: []
         },
+        positions: [],
         selectedRows: [],
         positionLoaded: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         userCanEditAccessControl: this.$store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'),
         orgTypes: [],
         positionId: this.$route.params.id,
+        clonePositionId: '',
         features: [],
         accessControlList: [],
         parentId: this.$store.state.user.details.parentCompanyId,
         headers: [
           { text: 'Feature', value: 'featureName', show: true },
-
         ],
         accessControlKey: 0
       }
@@ -124,6 +154,7 @@
         this.getPosition()
       } else {
         this.positionLoaded = true
+        this.getPositions()
       }
       this.getOrgTypes()
     },
@@ -161,10 +192,20 @@
             // this.$router.push({name: 'position', params: {id: this.positionId}})
             handleHidingGlobalLoader(this, status)
           } else {
-            const {data, status} = await postRequest(`/position/`, this.position)
-            this.positionId = data.id
-            this.$router.push({name: 'position', params: {id: this.positionId}})
-            handleHidingGlobalLoader(this, status)
+            if (this.clonePositionId) {
+              const {data, status} = await postRequest('/position/clone/' + this.clonePositionId, this.position)
+              this.positionId = data.id
+              this.clonePositionId = ''
+              this.$router.push({name: 'position', params: {id: this.positionId}})
+              handleHidingGlobalLoader(this, status)
+              window.location.reload()
+            }
+            else {
+              const {data, status} = await postRequest(`/position/`, this.position)
+              this.positionId = data.id
+              this.$router.push({name: 'position', params: {id: this.positionId}})
+              handleHidingGlobalLoader(this, status)
+            }
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -184,6 +225,19 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Position')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getPositions() {
+        try {
+          const {data, status} = await getRequest(`/position`)
+          this.positions = data
+          this.dataLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

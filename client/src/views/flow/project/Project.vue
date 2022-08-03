@@ -114,8 +114,8 @@
     <v-row class="project-split-container">
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
-        <div class="left-expander-button" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
-          <v-btn small text color="primary" @click="collapseSide('left')" :class="{'ml-3': !$store.state.project.leftSideSplit}">
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
+          <v-btn small text color="primary" @click="collapseSide('left')" >
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>

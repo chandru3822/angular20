@@ -115,7 +115,9 @@
     </ConfirmationDialog>
     <!--    end dialogs -->
     <ThreeColumnLayout :header-text="contact.fullName"
-                       :auto-overflow-left="false">
+                       :auto-overflow-left="false" :show-right-collapse-btn="true">
+
+
       <template v-slot:back-btn>
         <v-btn fab text small color="primary" class="mr-2" @click="goToPath('/contacts')">
           <v-icon>mdi-view-list</v-icon>
@@ -341,10 +343,10 @@ export default {
       nameRules: constants.NAME_RULES,
       nameRequiredRules: constants.NAME_REQUIRED_RULES,
       contactPhoneRule: [
-        () => ((this.contact.phone != null && this.contact.phone !== '') || (this.contact.mobile != null && this.contact.mobile !== '')) || "Phone or Mobile is required",
+        () => ((this.tempContact.phone != null && this.tempContact.phone !== '') || (this.tempContact.mobile != null && this.tempContact.mobile !== '')) || "Phone or Mobile is required",
         v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
         v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
-        v => ((!v || (this.contact.phone !== this.contact.mobile))) || 'Phone and Mobile Cannot be the same',
+        v => ((!v || (this.tempContact.phone !== this.tempContact.mobile))) || 'Phone and Mobile Cannot be the same',
       ],
       deleteContactConfirm: false,
       isNumberOrHyphen,

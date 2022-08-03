@@ -1,5 +1,10 @@
 <template>
   <v-container class="pa-0" id="commission-container">
+    <v-dialog :width="600" v-model="showProjectAssignmentModal">
+      <ProjectAssignmentModal @cancel="showProjectAssignmentModal = false"
+                           :plan-id="parseInt(planId)"
+                           :plan-name="commission.name"></ProjectAssignmentModal>
+    </v-dialog>
     <v-toolbar flat color="transparent">
       <v-toolbar-title>
         <span v-if="planId">{{commission.name}}</span>
@@ -8,6 +13,11 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
+          <v-btn color="primary" class="white--text mr-2"
+                 v-if="userIsAdmin && planId"
+                 @click="showProjectAssignmentModal = true">
+            Admin
+          </v-btn>
           <v-btn color="primary" class="white--text mr-2"
                  :disabled="!commission.name || !commission.positionId"
                  v-if="userCanEdit"
@@ -802,12 +812,13 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
+  import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
 
   export default {
     name: 'Commission',
     mixins: [Vue2Filters.mixin],
     components: {
-
+      ProjectAssignmentModal,
       DatetimePickerInput
     },
     computed: {
@@ -845,6 +856,7 @@
     data() {
       return {
         snackbar: {},
+        showProjectAssignmentModal: false,
         cloneDialog: false,
         payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         levelText: this.$store.state.brs.commissionPositionId === 4 ? 'Tier' : 'Milestone',
@@ -855,6 +867,7 @@
         userHistory: [],
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN'),
         usersLoading: false,
         moment,
         cloneStartDate: null,

@@ -30,6 +30,12 @@ public class CommissionManagementController {
     return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
   }
 
+  @PostMapping(value = "/{id}/assignToPlan")
+  public void saveProjectToPlan(@PathVariable Long id,
+                                @RequestParam Long projectId) {
+    commissionManagementService.saveProjectToPlan(id, projectId);
+  }
+
   @PostMapping(value = "/{id}/clone")
   public ResponseEntity cloneOverridePlanById(
       @PathVariable Long id, @RequestBody CommissionPlan commissionPlan) {

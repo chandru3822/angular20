@@ -17,9 +17,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -175,7 +177,11 @@ public class ScheduleService {
       params.put("saveVersion", ev.getSaveVersion());
       params.put("modifiedById", user.getId());
       //i am lazy and didn't want to re-code the frontend so this this calls the right function even though that seems weird
-      sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+      int countUpdatedRows = sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+      if (countUpdatedRows == 0) {
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Save Version Mismatch", new Exception());
+      }
     }
 
   }

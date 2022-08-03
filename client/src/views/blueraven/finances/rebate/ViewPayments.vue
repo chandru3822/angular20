@@ -369,7 +369,8 @@ export default {
     debounceFilterPayments: debounce(function () {
       this.filteredPayments = this.payments.filter(pay => {
         return (pay['projectName'].toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase())
+          pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          pay['product'].toString().toLowerCase().includes(this.searchQuery.toLowerCase())
         )
       })
 

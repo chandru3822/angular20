@@ -32,6 +32,13 @@ public class OverridePlanController {
     return overridePlanService.findOverridePlans(positionId, false);
   }
 
+  @PostMapping(value = "/plan/{id}/assignToPlan")
+  public void saveProjectToPlan(@PathVariable Long id,
+                                @RequestParam Long projectId) {
+    overridePlanService.saveProjectToPlan(id, projectId);
+  }
+
+
   @GetMapping(value = "/plans/{positionId}/active")
   public String getActiveOverridePlans(@PathVariable Long positionId) {
     return overridePlanService.findOverridePlans(positionId, true);
