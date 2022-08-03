@@ -38,15 +38,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
+                              auto-grow
+                              :rows="1"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
-                              class="other-field"
-                ></v-text-field>
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.requiredInspectionTypes"
                             @change="dataWasChanged = true"
@@ -69,6 +71,7 @@
                               :disabled="!userCanEdit || !editSchedulingNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -103,15 +106,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              :rows="1"
+                              auto-grow
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
@@ -127,6 +132,7 @@
                               :disabled="!userCanEdit || !editInstructionsForBRSTech"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -144,6 +150,7 @@
                               :disabled="!userCanEdit || !editDocumentationNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -207,6 +214,7 @@
                               :disabled="!userCanEdit || !editCustomerNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -245,15 +253,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              :rows="1"
+                              auto-grow
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
@@ -269,6 +279,7 @@
                               :disabled="!userCanEdit || !editObtainingResultsNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -303,15 +314,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              :rows="1"
+                              auto-grow
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.inspectionFee"
                             @change="dataWasChanged = true"
@@ -342,6 +355,7 @@
                               :disabled="!userCanEdit || !editReinspectionNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -396,6 +410,7 @@
                               :disabled="!userCanEdit || !editMPUNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>

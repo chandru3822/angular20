@@ -493,6 +493,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
+          //if saved successfully then increase the "saveVersion" so they can make a 2nd change too
+          this.selectedProject.saveVersion++
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
           this.$refs.calendar.getEvents(false, true)
           handleHidingGlobalLoader(this, status)
@@ -501,7 +503,9 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Scheduling Project')
+          let saveMismatch = e.data?.message === 'Save Version Mismatch'
+          let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
+          this.snackbar = getSnackbar('ERROR', msg)
           this.fieldsSaving = false
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

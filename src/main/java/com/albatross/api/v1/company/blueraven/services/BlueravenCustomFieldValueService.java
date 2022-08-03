@@ -7,6 +7,7 @@ import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.SqlArrayService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class BlueravenCustomFieldValueService {
   // todo: maybe a generic return type can be added for object types without special requirements
   // but i dont need that atm so im not doing it. wah
   public void updateCustomFieldValues(
-      List<CustomFieldValue> values, Long sourceId, String objectType) {
+    List<CustomFieldValue> values, Long sourceId, @NonNull ObjectType objectType) {
     try {
       User currentUser = securityService.getCurrentUser();
       for (CustomFieldValue cfv : values) {
@@ -61,7 +62,7 @@ public class BlueravenCustomFieldValueService {
         params.put("id", cfv.getId());
 
         // this is actually doing an upsert
-        String sql = getInsertSqlStatement(objectType);
+        String sql = getInsertSqlStatement(objectType.textValue());
         sqlCache.updateBySql(sql, params);
       }
     } catch (Exception e) {

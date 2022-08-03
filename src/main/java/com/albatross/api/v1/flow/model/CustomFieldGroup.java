@@ -25,9 +25,6 @@ public class CustomFieldGroup {
   //@TODO: @randa, maybe CustomFieldValue should inherit from CustomField to keep it more DRY?
   private List<CustomFieldValue> customFieldValues;
 
-  // This list is used when saving a new group as a schedulable group, which by default will have a specified set of fields
-  private List<CustomField> schedulingFields;
-
   // todo: ask unicorn boy about this - can't update dom value of key not already stored on object. re: object types -> custom field groups -> edit group name
   private Boolean edit = false;
   private Boolean showColor = false;

@@ -37,7 +37,7 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newStep = {}, getSchedulingFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newStep = {}, getEventResourceFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -51,9 +51,8 @@
             ></v-text-field>
 
             <v-autocomplete
-              v-if="schedulingFields && schedulingFields[0]"
               v-model="newEvent.resourceCustomFieldId"
-              :items="schedulingFields[0].availableCustomFields"
+              :items="eventResourceFields"
               label="Resource"
               item-text="fieldName"
               item-value="id"
@@ -136,7 +135,7 @@ export default {
       companyId: this.$store.state.user.details.companyId,
       userId: this.$store.state.user.details.id,
       events: [],
-      schedulingFields: [],
+      eventResourceFields: [],
       headers: [
         {text: 'Event Name', value: 'eventName', show: true},
         {text: '', value: 'icons', show: true},
@@ -164,12 +163,12 @@ export default {
     goToEvent(eventId) {
       this.$router.push({path: `/settings/event/${eventId}/components`})
     },
-    async getSchedulingFields() {
+    async getEventResourceFields() {
       if(this.addNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
-          this.schedulingFields = data
+          const {data} = await getRequest(`/customFieldGroup/getEventResourceFields`)
+          this.eventResourceFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

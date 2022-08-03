@@ -60,3 +60,10 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.proposal-text > p {
+  padding: 0;
+  margin: 0;
+}
+</style>

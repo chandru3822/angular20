@@ -124,7 +124,7 @@
                                       dfp.db_function_id as "dbFunctionId",
                                       dfp.parameter_name as "parameterName",
                                       dfp.data_type_id as "dataTypeId",
-                                      rpdv.db_function_param_id as "dbFunctionParamId",
+                                      dfp.id as "dbFunctionParamId",
                                       rpdv.process_step_event_requirement_id as "processStepEventRequirementId",
                                       rpdv.dynamic_value as "dynamicValue"
                                from flow.db_function_param dfp
@@ -344,7 +344,7 @@
                                       dfp.db_function_id as "dbFunctionId",
                                       dfp.parameter_name as "parameterName",
                                       dfp.data_type_id as "dataTypeId",
-                                      rpdv.db_function_param_id as "dbFunctionParamId",
+                                      dfp.id as "dbFunctionParamId",
                                       rpdv.process_step_event_requirement_id as "processStepEventRequirementId",
                                       rpdv.dynamic_value as "dynamicValue"
                                from flow.db_function_param dfp

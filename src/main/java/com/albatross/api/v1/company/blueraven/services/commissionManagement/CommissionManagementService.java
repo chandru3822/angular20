@@ -16,9 +16,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import java.sql.Array;
@@ -60,6 +62,29 @@ public class CommissionManagementService {
     long planId = sqlCache.updateReturningId(key, params, "id").longValue();
 
     return getCommissionPlanDetails(planId);
+  }
+
+  public void saveProjectToPlan(Long planId, Long projectId) {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("planId", planId);
+    params.put("projectId", projectId);
+
+    //see if project is valid.  this is the smallest pre-existing query even though it returns the company id
+    Optional<Long> companyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+
+    //see if project is already assigned
+    Optional<Long> commissionPlanId = sqlCache.queryForObjectOptional("commissionPlan.checkProjectAssignment", params, Long.class);
+
+    if(companyId.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Project ID", new Exception());
+    } else if(commissionPlanId.isPresent()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project is already assigned to a plan.", new Exception());
+    } else {
+      sqlCache.update("commissionPlan.assignProject", params);
+    }
+
+
   }
 
   public List<MilestoneType> findActiveMilestones() {

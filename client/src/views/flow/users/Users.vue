@@ -485,7 +485,7 @@
         positions: [],
         descending: true,
         footerProps: {
-          'items-per-page-options': [10, 50, 100, 1000],
+          'items-per-page-options': [10, 50, 100, 1000, 3000],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
@@ -1023,7 +1023,7 @@
           csv = `${csv.slice(0, -1)}\n`
 
           data.content.forEach(u => {
-            csv += `${u.firstName},${u.lastName},${u.email},${u.phoneNumber || ''},${u.phoneExtention || ''},${u.userStatusType},${u.position || ''},`
+            csv += `${u.firstName},${u.lastName},${u.email},${u.phoneNumber || ''},'${u.phoneExtension || ''},${u.userStatusType},${u.position || ''},`
 
             this.orgFilters.forEach(f => {
               csv += `${this.getOrgNameForFilter(u.hierarchy, f.orgLevelId, true)},`

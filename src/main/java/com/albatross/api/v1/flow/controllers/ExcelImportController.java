@@ -33,6 +33,7 @@ import java.util.*;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
+// @TODO: This class should probably be in brs and not flow
 /** Created by John on 6/8/20. */
 @Slf4j
 @RestController
@@ -213,15 +214,12 @@ public class ExcelImportController {
         String.format("%s – %s – %s", user.getEmail(), design.getSource(), req.getRemoteAddr());
     design.setSource(source);
 
-    Map<String, Object> bomJson = design.getBom();
-    Iterator it = bomJson.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry entry = (Map.Entry) it.next();
-      String key = entry.getKey().toString();
-      if (key.trim().isEmpty()) {
-        it.remove();
-      }
-    }
+    List<Map<String, Object>> bom = design.getBom();
+
+    Map<String, Object> originalBom = new HashMap<>();
+
+    bom.forEach(i -> originalBom.put(i.get("name").toString(), i.get("quantity")));
+
     // todo: verify that the project exists and return a pretty error if it doesnt
     Long blueRavenCorporateCompanyId = 3L;
     Boolean projectExists =
@@ -235,7 +233,13 @@ public class ExcelImportController {
       params.putIfAbsent("designDate", new Date());
       params.putIfAbsent("designId", design.getDesignId());
       params.putIfAbsent("projectId", design.getProjectId());
-      params.putIfAbsent("bom", bomJson);
+      params.putIfAbsent("originalBom", originalBom);
+      try {
+          params.putIfAbsent("bomWithPartNumber", om.writeValueAsString(bom));
+      } catch (Exception e) {
+          //noop
+          log.error("EXCEL_IMPORT: " + e.getMessage());
+      }
       // this is the id of the design log that got created
       Optional<DesignResponse> designLogId =
           cache.get(
@@ -249,7 +253,8 @@ public class ExcelImportController {
                   dr.setProjectId(rs.getInt("project_id"));
                   dr.setDesignDate(rs.getDate("design_date"));
                   dr.setDesignId(rs.getInt("design_nbr"));
-                  dr.setBom(om.readValue(rs.getString("bom"), new TypeReference<>() {}));
+                  dr.setOriginalBom(om.readValue(rs.getString("bom"), new TypeReference<>() {}));
+                  dr.setBom(om.readValue(rs.getString("bom_with_part_number"), new TypeReference<>() {}));
                   return dr;
                 } catch (IOException e) {
                   throw new SQLException(e);
@@ -301,7 +306,8 @@ public class ExcelImportController {
     private String source;
     private Integer designId, projectId;
     private Map<String, Object> design;
-    private Map<String, Object> bom;
+    private List<Map<String, Object>> bom;
+    private Map<String, Object> originalBom;
   }
 
   @Data

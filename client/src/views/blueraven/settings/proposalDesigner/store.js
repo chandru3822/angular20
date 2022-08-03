@@ -3,7 +3,7 @@ import { getRequestWithParams, postRequest } from '@/helpers/helpers'
 
 export const ProposalActions = {
   FETCH_TEMPLATE: 'fetchTemplate',
-  FETCH_TEMPLATE_CONTEXT : 'fetchTemplateContext',
+  FETCH_TEMPLATE_CONTEXT: 'fetchTemplateContext',
   SAVE_TEMPLATE: 'saveTemplate'
 }
 
@@ -12,6 +12,20 @@ export const ProposalMutations = {
   SET_SELECTED: 'proposal::setSelected',
   SET_STYLE: 'proposal::setStyle',
   SET_VALUE: 'proposal::setValue'
+}
+
+const removedUndefined = (object) => {
+  if (!object){
+    return object
+  }
+
+  return Object.keys(object)
+    //remove the keys if they are cleared out
+    .filter(key => object[key] !== undefined)
+    .reduce((obj, key) => {
+      obj[key] = object[key]
+      return obj
+    }, {})
 }
 
 const blocksToJson = (blocks = []) => {
@@ -80,13 +94,17 @@ export default {
       const { data } = await getRequestWithParams(`/proposal/template/1`, {}, 'blueraven', {})
       commit('setTemplate', { template: data?.blocks, theme: data?.theme?.themeStyle })
     },
-    [ProposalActions.FETCH_TEMPLATE_CONTEXT]: async ({commit}, { proposalId })=>{
+    [ProposalActions.FETCH_TEMPLATE_CONTEXT]: async ({ commit }, { proposalId }) => {
       const { data } = await getRequestWithParams(`/proposal/${proposalId}/template`, {}, 'blueraven', {})
       commit('setTemplate', { template: data?.blocks, theme: data?.theme?.themeStyle })
     },
     //TODO: handle errors better
     [ProposalActions.SAVE_TEMPLATE]: async ({ commit, state, getters }) => {
-      const modifiedBlocks = getters.modifiedBlocks
+      const modifiedBlocks = getters.modifiedBlocks?.map(block => {
+        block.blockStyle = removedUndefined(block.blockStyle)
+        return block
+      })
+
       if (modifiedBlocks.length > 0) {
         const { data } = await postRequest(`/proposal/template/1/blocks`, { blocks: modifiedBlocks }, 'blueraven')
         if (data) {

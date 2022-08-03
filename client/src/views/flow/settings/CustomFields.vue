@@ -36,18 +36,6 @@
       <v-col cols="12">
         <v-toolbar flat>
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
-          <v-spacer v-if="!constants.IS_MOBILE"></v-spacer>
-          <v-toolbar-items>
-            <v-select
-              class="mt-4"
-              v-model="selectedObjectType"
-              :items="objectFilters"
-              label="Filter by Object Type"
-              item-text="objectType"
-              return-object
-              @input="changeSelectedObjectType()"
-            ></v-select>
-          </v-toolbar-items>
         </v-toolbar>
         <v-card class="square-card">
           <v-card-title class="pt-0">
@@ -267,29 +255,6 @@
                         Add Option
                       </v-btn>
                     </v-col>
-                    <v-col class="options-container">
-                      <div>Included Object Types</div>
-                      <v-container v-if="item.custom">
-                        <v-checkbox v-for="(ot, index) in customFieldObjectTypes"
-                                    :key="index"
-                                    :readonly="!userCanEdit"
-                                    :disabled="!userCanEdit"
-                                    class="fix-opacity"
-                                    v-model="ot.archived"
-                                    :false-value="true" :true-value="false"
-                                    :label="ot.objectType"/>
-                      </v-container>
-                      <v-container v-else>
-                        <v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"
-                                    :key="index"
-                                    flat
-                                    :readonly="!userCanEdit"
-                                    :disabled="!userCanEdit"
-                                    v-model="ot.archived"
-                                    :false-value="true" :true-value="false"
-                                    :label="ot.objectType"></v-checkbox>
-                      </v-container>
-                    </v-col>
                     <v-btn
                       v-if="userCanEdit"
                       :disabled="invalid(item)"
@@ -363,8 +328,6 @@ export default {
       systemListOptions: [],
       dataTypes: [],
       companyId: this.$store.state.user.details.companyId,
-      selectedObjectType: {id: -1, objectType: "All"},
-      customFieldObjectTypes: [],
       objectFilters: [],
       fieldsLoading: true,
       userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
@@ -376,7 +339,6 @@ export default {
         createdById: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         listOfValues: [],
-        customFieldObjectTypes: []
       }
     };
   },
@@ -384,8 +346,6 @@ export default {
     this.fieldsLoading = true
     Promise.all([
       this.getCompanyDataTypes(),
-      //todo @randa do this so that if there are exclusions they will load correctly
-      this.getCustomFieldObjectTypes(),
       this.getCustomFields(),
       this.getSystemLists()
     ]).then(() => {
@@ -485,20 +445,6 @@ export default {
         }
       }
     },
-    async getCustomFieldObjectTypes() {
-      try {
-        const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`, this.apiPath, null, []);
-        data?.forEach(d => d.archived = true);
-        this.customFieldObjectTypes = cloneDeep(data);
-        this.objectFilters = data;
-        this.objectFilters.unshift({id: -2, objectType: "Unassigned"});
-        this.objectFilters.unshift({id: -1, objectType: "All"});
-      } catch (e) {
-        console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-      }
-    },
     async getCompanyDataTypes() {
       try {
         const {data, status} = await getRequest(`/dataType/getCompanyDataTypes`);
@@ -536,25 +482,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false);
       }
     },
-    changeSelectedObjectType() {
-      if (this.selectedObjectType.id === -1) {
-        this.customFields = cloneDeep(this.allCustomFields);
-      } else if (this.selectedObjectType.id === -2) {
-        this.customFields = this.allCustomFields.filter(cf => {
-          return !cf.customFieldObjectTypes.some(cfot => (!cfot.archived && null != cfot.archived));
-        });
-      } else {
-        this.customFields = this.allCustomFields.filter(cf => {
-          const match = cf.customFieldObjectTypes.find(cfot => {
-            return cfot.objectTypeId === this.selectedObjectType.id && (!cfot.archived && null != cfot.archived);
-          });
-          return !!match;
-        });
-      }
-      if (this.userCanEdit) {
-        this.customFields.unshift(cloneDeep(this.blankNewObject));
-      }
-    },
     async saveChanges(editMode, object) {
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
@@ -570,14 +497,6 @@ export default {
         object.companyDataTypeId = object.companyDataType.id;
         object.modifiedById = this.$store.state.user.details.id;
 
-        // set the values of customFieldObjectTypes to be saved in db
-        if (object.custom) {
-          object.customFieldObjectTypes = this.customFieldObjectTypes.filter(cfot => {
-            cfot.objectTypeId = cfot.id;
-            return !cfot.archived;
-          });
-        }
-
         object.fieldName = object.newFieldName ?? object.fieldName;
         const {data, status} = await postRequest(`/customField`, object, this.apiPath);
         data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId);
@@ -591,9 +510,6 @@ export default {
             this.customFields[0] = object;
             this.allCustomFields.push(data);
             this.customFields.push(data);
-            this.customFieldObjectTypes.forEach(ot => {
-              ot.archived = true;
-            });
           }
         }
 

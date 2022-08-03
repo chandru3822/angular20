@@ -48,7 +48,7 @@
                           v-on="{ ...tooltip }"
                           :size="50"
                           color="grey lighten-4"
-                          @click="changePhoto = !changePhoto"
+                          @click="doChangePhoto()"
                           class="clickable account-img mr-3"
                 >
                   <v-img name="userImg" alt="user-image" v-if="loadComplete && userImage && userImage.presignedUrl && !imageFailed" v-on:error="onImgError()" :src="userImage.presignedUrl"></v-img>
@@ -134,6 +134,7 @@
         userId: parseInt(this.$route.params.id),
         companyId: this.$store.state.user.details.companyId,
         loggedInUserId: this.$store.state.user.details.id,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
         userCanMasquerade: this.$store.getters.userHasFeatureAccessLevel('MASQUERADE', 'ADMIN'),
         userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
         userImage: {},
@@ -173,6 +174,11 @@
       }
     },
     methods: {
+      doChangePhoto() {
+        if(this.userCanEdit) {
+          this.changePhoto = !this.changePhoto
+        }
+      },
       getDirtyText() {
         return this.hasDirtyNotes && this.hasDirtyFields ?
           'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
@@ -275,6 +281,7 @@
 .user-img-tooltip {
   background-color: transparent;
   opacity: 1 !important;
+  z-index: 200 !important;
 }
 </style>
 

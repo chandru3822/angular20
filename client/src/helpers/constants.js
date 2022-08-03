@@ -127,6 +127,15 @@ constants.SNACKBARS = {
     text: '',
     color: 'brYellow',
     fontClass: 'secondary--text'
+  },
+  INFO: {
+    y: 'top',
+    x: null,
+    mode: '',
+    timeout: 5000,
+    text: '',
+    color: 'primaryText',
+    fontClass: 'secondary--text'
   }
 }
 

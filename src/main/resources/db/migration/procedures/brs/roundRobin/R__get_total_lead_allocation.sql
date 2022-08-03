@@ -166,7 +166,7 @@ BEGIN
                             when p_run_manual_allocation is true then
                                 coalesce(foo2.manual_allocation,
                                          foo2.total_lead_allocation *
-                                         (1 - foo2.sum_manual_allocation::numeric)::numeric)::numeric
+                                         (1 - coalesce(foo2.sum_manual_allocation::numeric,0::numeric))::numeric)::numeric
                             else foo2.total_lead_allocation end                  as total_lead_allocation,
                         foo2.actual_lead_allocation,
                         foo2.score,

@@ -139,7 +139,7 @@
     <v-row class="project-split-container">
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
-        <div class="left-expander-button" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
           <v-btn small text @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
@@ -174,8 +174,10 @@
                 {{ project.city }} {{ project.stateAbbreviation }} {{ project.postalCode }}
               </div>
             </div>
-            <span class="project-detail-label">Contact:</span>
-            <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
+            <span class="project-detail-label">Phone:</span>
+            <span class="project-detail-item">{{ formatPhoneNumber(project.phone) }}</span> <br/>
+            <span class="project-detail-label">Mobile:</span>
+            <span class="project-detail-item">{{ formatPhoneNumber(project.mobile) }}</span> <br/>
             <span class="project-detail-label">Email:</span>
             <span class="project-detail-item">{{ project.email }}</span> <br/>
             <div class="mt-2">

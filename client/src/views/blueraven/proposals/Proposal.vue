@@ -1,5 +1,19 @@
 <template>
-  <v-container id="proposals-container">
+  <v-container id="proposals-container" v-if="proposalExists">
+    <v-row justify="center" no-gutters>
+      <v-col md="auto">
+        <v-alert
+          color="brYellow"
+          dense
+          tile
+          :value="dirtyCfvs.length > 0"
+          transition="scale-transition"
+        >
+          Changes haven't been reflected on proposal
+        </v-alert>
+      </v-col>
+    </v-row>
+
     <v-row>
       <v-col cols="12" class="py-0">
         <router-link v-if="proposal && proposal.projectId"
@@ -9,19 +23,22 @@
           <v-toolbar-title class="new-proposal-header">New Proposal</v-toolbar-title>
           <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
           <v-spacer />
-          <v-toolbar-items />
+          <v-toolbar-items v-if="proposal.locked">
+            <next-step-menu />
+          </v-toolbar-items>
         </v-toolbar>
       </v-col>
     </v-row>
+
     <v-form ref="proposalForm">
       <v-row>
         <v-col cols="12" sm="4">
-          <v-card class="configuration-container square-card">
+          <v-card class="proposal-container">
             <div>
-              <div class="configuration-title">Configurations</div>
-              <v-card
-                flat
-                class="pt-0"
+              <div class="proposal-container-header">
+                <div class="proposal-title">Configurations</div>
+              </div>
+              <div
                 v-for="(cfg, index) in sortedCustomFieldGroups"
                 :key="index"
               >
@@ -31,22 +48,21 @@
                   :key="idx"
                   :required="field.required"
                   :callback="populateDirtyCfvs"
-                  :readonly="!isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || field.ancillaryCustomFieldGroupAssignmentId !== null"
+                  :readonly="proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || field.ancillaryCustomFieldGroupAssignmentId !== null"
                   :field="field"
                   :show-field-name="false"
                   :list-of-value-filter="filters[field.customFieldId]"
                 />
-              </v-card>
+              </div>
             </div>
-            <div class="configuration-save-container">
+            <div class="configuration-save-container" v-if="!proposal.locked">
               <v-btn depressed
                      :disabled="dirtyCfvs.length === 0"
-                     class="text-capitalize font-weight-bold"
+                     class="text-capitalize"
+                     @click="resetToDefault"
               >
                 Reset to Default
               </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
-              <!--todo: fix disabled logic-->
               <v-spacer />
               <v-btn color="primaryButton"
                      depressed
@@ -61,36 +77,55 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="8">
-          <v-card class="proposal-container square-card">
-            <div class="proposal-container-header">
-              <div class="configuration-title">Proposal</div>
-              <v-spacer></v-spacer>
-              <v-btn depressed
-                     :disabled="dirtyCfvs.length === 0"
-                     class="proposal-container-buttons text-capitalize font-weight-bold">Present
-              </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
-              <!--todo: fix disabled logic-->
-              <v-btn depressed
-                     :disabled="dirtyCfvs.length === 0"
-                     class="proposal-container-buttons text-capitalize font-weight-bold">Save Proposal
-              </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
-              <v-btn class="proposal-container-buttons text-capitalize font-weight-bold"
-                     @click="downloadPdf">
-                Download
-              </v-btn>
-              <!--todo: above button requires @click and accompanying function-->
-              <!--todo: fix disabled logic-->
+          <v-card class="proposal-container">
+            <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
+                 v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
+              <v-alert
+                v-if="isIntersecting"
+                color="brYellow"
+                dense
+                tile
+                :value="dirtyCfvs.length > 0"
+                transition="scale-transition"
+              >
+                Changes haven't been reflected on proposal
+              </v-alert>
+
+              <div class="d-flex">
+                <div class="proposal-title">Proposal</div>
+                <v-spacer />
+                <!--              <v-btn depressed-->
+                <!--                     :disabled="dirtyCfvs.length === 0"-->
+                <!--                     class="proposal-container-buttons text-capitalize font-weight-bold">Present-->
+                <!--              </v-btn>-->
+                <v-btn class="proposal-container-buttons text-capitalize"
+                       :disabled="proposal.locked || dirtyCfvs.length > 0"
+                       @click="saveProposal"
+                >
+                  Save Proposal
+                </v-btn>
+                <v-btn class="proposal-container-buttons text-capitalize"
+                       @click="downloadPdf">
+                  Download
+                </v-btn>
+              </div>
             </div>
-            <div class="proposal-container">
+            <div>
               <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="false" :editable="false" />
             </div>
           </v-card>
         </v-col>
       </v-row>
     </v-form>
+    <confirm-dialog ref="confirmDialog" />
+    <confirm-dialog ref="saveProposalConfirm"
+                    cancel-button-text="Continue editing"
+                    ok-button-text="Save and Lock">
+      <template #title>Are you sure you want to save and lock this proposal?</template>
+      <p>Saving proposal will lock the proposal and you will not be able to make changes to the current proposal.</p>
+    </confirm-dialog>
   </v-container>
+  <v-container v-else>This isn't the proposal you are looking for...</v-container>
 </template>
 
 <script>
@@ -108,16 +143,22 @@ import { AppMutations } from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import ProposalTemplate from '@/views/blueraven/settings/proposalDesigner/ProposalTemplate'
 import { ProposalActions } from '@/views/blueraven/settings/proposalDesigner/store'
+import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
+import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import { mapState } from 'vuex'
 
 export default {
   name: 'Proposal',
   components: {
     CustomValueInput,
-    ProposalTemplate
+    ProposalTemplate,
+    ConfirmDialog,
+    NextStepMenu
   },
   data() {
     return {
+      proposalExists: true,
+      isIntersecting: false,
       loading: false,
       proposalId: this.$route.params.proposalId,
       proposal: {
@@ -130,6 +171,11 @@ export default {
   created() {
     this.getProposalDetails()
     this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
+
+    window.addEventListener('beforeunload', this.beforeWindowUnload)
+  },
+  beforeDestroy() {
+    window.removeEventListener('beforeunload', this.beforeWindowUnload)
   },
   computed: {
     pages() {
@@ -152,44 +198,76 @@ export default {
     })
   },
   methods: {
+    _showSnackbar(type, msg) {
+      const snackbar = getSnackbar(type, msg)
+      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+    },
+    onStickyHeader(entries) {
+      const ratio = entries[0].intersectionRatio
+      this.isIntersecting = ratio < 1
+    },
     async getProposalDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
+
       try {
+        //assume the proposal exists
+        this.proposalExists = true
+
+        //reset cfvs
+        this.dirtyCfvs = []
+
         const { data, status } = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
         this.proposal = data
+
+        // build filters on load for any field with a conditional property
+        const fields = this.proposal?.customFieldGroups
+          ?.map(cfg => cfg.customFieldValues)
+          ?.flat()
+
+        const conditionalOnFields = fields
+          ?.filter(f => f.conditionalOnId !== null)
+          ?.map(f => f.conditionalOnId)
+
+        fields
+          ?.filter(f => conditionalOnFields.includes(f.customFieldGroupAssignmentId))
+          ?.forEach(this.buildFilters)
+
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.proposalExists = false
+        this._showSnackbar('ERROR', `Error retrieving proposal #${this.proposalId}`)
+      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async resetToDefault() {
+      await this.getProposalDetails()
+      this.$refs.proposalForm.resetValidation()
     },
     validateForm() {
       //checks for required fields prior to opening the save dialog
       if (this.$refs.proposalForm.validate()) {
         this.saveCustomFieldValues()
       } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this._showSnackbar('ERROR', 'Missing Required Fields')
       }
     },
     async saveCustomFieldValues() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
         const { data, status } = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
         this.proposal = data
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
         this.dirtyCfvs = []
+        this._showSnackbar('SUCCESS', 'Fields Updated')
+        await this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
 
-        this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
-
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this._showSnackbar('ERROR', 'Error Saving Fields')
+      } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -235,6 +313,8 @@ export default {
             docUrl.remove()
             URL.revokeObjectURL(pdfFile)
           }, 100)
+
+          this._showSnackbar('INFO', 'Proposal Downloaded')
         }
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -246,11 +326,20 @@ export default {
       }
 
       try {
-        const selectedFieldValue = this.dirtyCfvs.find(cfv => cfv.customFieldId === field.customFieldId)?.intValue
-        const conditionalOn = this.proposal?.customFieldGroups
+        const fields = this.proposal?.customFieldGroups
           ?.map(cfg => cfg.customFieldValues)
           ?.flat()
-          ?.filter(f => f?.conditionalOnId === field.customFieldGroupAssignmentId)
+
+        //value is either going to come from a local change
+        const dirtyCfvValue = this.dirtyCfvs.find(cfv => cfv.customFieldId === field.customFieldId)?.intValue
+
+        //or it's coming from the server
+        const prePopulatedValue = fields.find(f => f.customFieldId === field.customFieldId)?.intValue
+
+        //local changes take precedence over server
+        const selectedFieldValue = dirtyCfvValue || prePopulatedValue || null
+
+        const conditionalOn = fields?.filter(f => f?.conditionalOnId === field.customFieldGroupAssignmentId)
 
         if (conditionalOn.length > 0) {
 
@@ -287,8 +376,7 @@ export default {
         }
       } catch (e) {
         logError(e)
-        const snackbar = getSnackbar('ERROR', e?.data?.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+        this._showSnackbar('ERROR', e?.data?.message)
       } finally {
         this.loading = false
       }
@@ -297,44 +385,60 @@ export default {
       if (conditionalOnId === null || conditionalOnId === undefined) {
         return true
       }
-      return this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
+
+      //does it come back from the server prepopulated
+      const isPrepopulated = this.proposal?.customFieldGroups
+        ?.map(cfg => cfg.customFieldValues)
+        ?.flat()
+        ?.find(f => f.customFieldGroupAssignmentId === conditionalOnId)
+        ?.intValue !== undefined
+
+      //has it been changed in this session
+      const isDirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
+      return isDirtyCfv || isPrepopulated
+    },
+    async saveProposal() {
+
+      const confirmLock = await this.$refs.saveProposalConfirm.open()
+      if (confirmLock) {
+        //todo; actually save it
+        this.proposal = { ...this.proposal, locked: true }
+        this._showSnackbar('SUCCESS', 'Proposal Saved and Locked!')
+      }
+    },
+    beforeWindowUnload(e) {
+      if (this.dirtyCfvs?.length > 0) {
+        e.preventDefault()
+        // Chrome requires returnValue to be set to anything -- it doesn't display it
+        e.returnValue = ''
+        return false
+      }
     }
+  },
+  async beforeRouteLeave(to, from, next) {
+    if (this.dirtyCfvs?.length > 0) {
+      const confirmNavigation = await this.$refs.confirmDialog.open()
+      return confirmNavigation ? next() : false
+    }
+    next()
   }
 }
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/main.scss";
-
 .new-proposal-header {
   font-size: 18px;
   font-weight: 700;
 }
 
-::v-deep {
-  .v-data-table__wrapper {
-    height: calc(100vh - 290px);
-    min-height: 300px;
-  }
-}
-
-tr:nth-of-type(even) {
-  @extend .shaded-row;
-}
-
-.configuration-container {
-  position: relative;
+.proposal-container {
   padding: 24px;
-  //height: calc(100vh - 180px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  border-radius: 0;
 }
 
-.configuration-title {
+.proposal-title {
   font-size: 14px;
   font-weight: 700;
-  margin-bottom: 24px;
   color: var(--v-blackText-base);
 }
 
@@ -349,19 +453,25 @@ tr:nth-of-type(even) {
   display: flex;
 }
 
-.proposal-container {
-  padding: 28px;
-}
-
 .proposal-container-header {
-  display: flex;
-  align-items: baseline;
+  padding: 10px 0;
+  margin-bottom: 24px;
+
+  &.sticky-header {
+    position: sticky;
+    top: -1px;
+    background-color: white;
+    padding: 10px;
+    z-index: 200;
+
+    &.is-pinned {
+      border-bottom: 1px solid #ccc;
+      box-shadow: 0 3px 2px 0 rgb(0 0 0 / 10%);
+    }
+  }
 }
 
 .proposal-container-buttons {
   margin-left: 36px;
-  color: var(--v-blackText-base);
 }
-
 </style>
-

@@ -1,5 +1,11 @@
 <template>
   <v-container class="pa-0" id="override-container">
+    <v-dialog :width="600" v-model="showProjectAssignmentModal">
+      <ProjectAssignmentModal @cancel="showProjectAssignmentModal = false"
+                              :plan-id="parseInt(overrideId)"
+                              :override="true"
+                              :plan-name="override.name"></ProjectAssignmentModal>
+    </v-dialog>
     <v-toolbar flat color="transparent">
       <v-toolbar-title>
         <span v-if="overrideId">{{override.name}}</span>
@@ -8,6 +14,11 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
+          <v-btn color="primaryCustom" class="white--text mr-2"
+                 v-if="userIsAdmin && overrideId"
+                 @click="showProjectAssignmentModal = true">
+            Admin
+          </v-btn>
           <v-btn color="primaryCustom" class="white--text mr-2"
                  :disabled="!override.name || !override.positionId || !override.total"
                  v-if="userCanEdit"
@@ -637,6 +648,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
   export default {
@@ -644,7 +656,8 @@
     mixins: [Vue2Filters.mixin],
     components: {
       CustomValueInput,
-      DatetimePickerInput
+      DatetimePickerInput,
+      ProjectAssignmentModal
     },
     created() {
       if(this.overrideId) {
@@ -694,12 +707,14 @@
         snackbar: {},
         dataLoading: true,
         cloneDialog: false,
+        showProjectAssignmentModal: false,
         moment,
         positionId: this.$store.state.brs.commissionPositionId,
         payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         cloneStartDate: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN'),
         cloneDateError: false,
         timezone: this.$store.state.user.details.timezone.value,
         inactivateConfirm: false,

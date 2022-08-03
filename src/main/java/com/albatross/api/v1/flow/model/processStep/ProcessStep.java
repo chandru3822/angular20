@@ -20,7 +20,7 @@ public class ProcessStep {
   private Long id, companyProcessId, companyId, createdById, modifiedById;
   // originalProcessStepName used for frontend validation (without having to loop to populate it on frontend)
   private String processStepName, originalProcessStepName;
-  private Boolean archived, nonAdminAdd, readonly;
+  private Boolean archived, nonAdminAdd, readonly, usedByProcess;
   private Date dateCreated, dateModified;
 
   private List<CustomFieldGroup> customFieldGroups;

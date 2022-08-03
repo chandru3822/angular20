@@ -350,6 +350,16 @@
                               placeholder="Enter a dynamic value (number)"
                               v-model="fp.dynamicValue"
                               :label="fp.parameterName"></v-text-field>
+                            <v-checkbox
+                              v-else-if="fp.dataTypeId === 3"
+                              type="checkbox"
+                              :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                              :value="fp.dynamicValue === 'true'"
+                              @change="changeBooleanValue($event, fp)"
+                              :label="fp.parameterName"
+                            />
                             <v-text-field
                               v-else
                               :key="index"
@@ -423,13 +433,17 @@
                                     :disabled="!cp.edit || !userCanEdit"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
-                                  <v-text-field
+                                  <v-checkbox
                                     v-else-if="fp.dataTypeId === 3"
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter a boolean"
-                                    v-model="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
+                                    :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                                    :value="fp.dynamicValue === 'true'"
+                                    @change="changeBooleanValue($event, fp)"
+                                    :label="fp.parameterName"></v-checkbox>
                                   <v-text-field
                                     v-else-if="fp.dataTypeId === 4"
                                     :readonly="!cp.edit || !userCanEdit"
@@ -893,6 +907,9 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     //populate requirements so that events can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.selectedEventRequirements = reqs
