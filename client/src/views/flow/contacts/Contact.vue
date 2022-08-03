@@ -160,7 +160,7 @@
     </v-dialog>
     <!--    end dialog -->
     <ThreeColumnLayout :header-text="contact.fullName"
-                       :auto-overflow-left="false">
+                       :auto-overflow-left="false" :show-right-collapse-btn="true">
 
 
       <template v-slot:back-btn>

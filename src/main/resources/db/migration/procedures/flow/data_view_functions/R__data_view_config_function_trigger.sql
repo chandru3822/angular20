@@ -222,6 +222,22 @@ BEGIN
       update flow.contact
       set date_modified = now()
     where id = new.contact_id;
+
+    with update_data as (
+      select ccfv2.id
+      from flow.data_view_field_config dvfc
+             inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+             inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id in (2)
+             inner join flow.contact_custom_field_value ccfv2 on cfga.id = ccfv2.custom_field_group_assignment_id
+             inner join flow.contact c on ccfv2.contact_id = c.id and c.id = new.contact_id
+    )
+    update flow.contact_custom_field_value ccfv
+    set id = ud.id
+    from update_data ud
+    where ud.id= ccfv.id;
+
+
   end if;
 
   select quote_literal(array_agg(new.id)::text)
