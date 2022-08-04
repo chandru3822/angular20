@@ -62,23 +62,17 @@
               <v-col>
                 <v-text-field label="Customer Name"
                               v-model="customer_name"
+                              class="customer-name-width"
                               disabled
                 ></v-text-field>
-                <v-text-field
-                              v-show="selectedDocIds.length === 1"
-                              label="Document Name"
-                              v-model="document_name"
-                ></v-text-field>
-              </v-col>
-              <v-col>
                 <v-select label="Template type"
                           v-model="selectedTempType"
                           :items="templateTypes"
                           @change="fetchTemplates"
                           item-text="text"
                           item-value="text"
+                          class="template-type-width"
                 ></v-select>
-
                 <v-autocomplete label="Documents"
                                 v-model="selectedDocIds"
                                 :items="documents"
@@ -89,8 +83,13 @@
                                 item-value="id"
                                 @change="populateDocName"
                 ></v-autocomplete>
+                <v-text-field
+                  v-show="selectedDocIds.length === 1"
+                  label="Document Name"
+                  v-model="document_name"
+                ></v-text-field>
               </v-col>
-            </v-row>
+              </v-row>
           </v-card-text>
 
           <v-card-actions>
@@ -329,5 +328,13 @@ export default {
     text-decoration: underline;
     color: var(--v-primaryText-base);
   }
+}
+
+.customer-name-width {
+  width: 300px;
+}
+
+.template-type-width {
+  width: 150px;
 }
 </style>
