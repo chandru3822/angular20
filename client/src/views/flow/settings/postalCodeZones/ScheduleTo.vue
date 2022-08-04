@@ -134,12 +134,7 @@
                 <span v-else>--</span>
               </td>
               <td class="text-right">
-                <confirm-delete-dialog
-                    v-if="userCanDelete"
-                    label="this user: "
-                    :item-to-delete="item.fullName"
-                    @confirm-delete="deleteUserFromZone(item)"
-                ></confirm-delete-dialog>
+                <v-btn v-if="userCanDelete" small text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -179,6 +174,9 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromZone" @close-dialog="userToDelete = null">
+      Are you sure you want to delete this user: <strong>{{ userToDeleteName }}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -186,11 +184,11 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import sumBy from "lodash.sumby"
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ScheduleTo',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog},
   data() {
     return {
       snackbar: {},
@@ -216,6 +214,7 @@ export default {
       zone: {},
       userHeaders: [],
       companyTimezones: [],
+      userToDelete: null
     }
   },
   async created() {
@@ -238,6 +237,9 @@ export default {
     filterHeaders () {
       return this.userHeaders.filter(header => header.show === true)
     },
+    userToDeleteName(){
+      return this.userToDelete ? this.userToDelete.fullName : ''
+    }
   },
   methods: {
     getAllocationValue(value) {
@@ -317,7 +319,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteUserFromZone(user) {
+    async deleteUserFromZone() {
+      const user = this.userToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await putRequest(`/postalCode/zone/${this.zoneId}/user/${user.postalCodeZoneUserId}/delete`)

@@ -118,7 +118,6 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
   import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
@@ -131,7 +130,6 @@
     },
     components: {
       ConfirmationDialog,
-      ConfirmDeleteDialog,
       ZonelessTimePickerInput
     },
     data() {

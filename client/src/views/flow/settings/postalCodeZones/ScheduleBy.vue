@@ -65,54 +65,27 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.fullName}}</td>
               <td>
-                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text color="primary" v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to remove this user: <strong>{{ item.fullName }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteUserFromZone(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn v-if="userCanDelete" text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromZone" @close-dialog="userToDelete = null">
+      Are you sure you want to remove this user: <strong>{{ userToDeleteName }}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'ScheduleBy',
-
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},
@@ -131,6 +104,12 @@
           {text: 'Name', value: 'fullName', show: true},
           {text: '', value: 'icons', show: true},
         ],
+        userToDelete: null
+      }
+    },
+    computed: {
+      userToDeleteName(){
+        return this.userToDelete ? this.userToDelete.fullName : ''
       }
     },
     created () {
@@ -154,7 +133,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUserFromZone (user) {
+      async deleteUserFromZone () {
+        const user = this.userToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/postalCode/zone/user/${user.id}`)
