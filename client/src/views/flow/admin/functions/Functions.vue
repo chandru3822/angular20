@@ -57,11 +57,11 @@
             />
           </div>
           <v-btn :disabled="!newFunction || !newFunction.functionName || !newFunction.displayName || !newFunction.dbFunctionTypeId || (newFunction.dbFunctionTypeId === 1 && !newFunction.returnDataTypeId)"
-                 color="primary" class="white--text mr-2"
+                 color="primary" class="mr-2"
                  @click="addFunction()">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, newFunction = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addNew = !addNew, newFunction = {}]">Cancel</v-btn>
         </v-card>
         <v-text-field
           v-model="search"
@@ -97,41 +97,10 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.functionType }}</td>
               <td>
-                <v-btn small text @click="goToFunction(item.id)">
+                <v-btn small text color="primary" @click="goToFunction(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-dialog
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text color="primary"
-                           v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text class="pt-4">
-                      Are you sure you want to delete this function <strong>{{item.functionName}}</strong>?
-                    </v-card-text>
-                    <v-divider></v-divider>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="[item.deleteConfirm = false, deleteFunction(item)]">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" @click="functionToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -139,7 +108,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!functionToDelete" @confirm="deleteFunction" @close-dialog="functionToDelete = null">
+      Are you sure you want to delete this function <strong>{{functionToDeleteName}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -147,10 +118,11 @@
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'DbFunctions',
-
+    components: {ConfirmationDialog},
     data() {
       return {
         constants,
@@ -168,7 +140,13 @@
           { text: 'Type', value: 'functionType', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
-        expanded: []
+        expanded: [],
+        functionToDelete: null
+      }
+    },
+    computed:{
+      functionToDeleteName(){
+        return this.functionToDelete ? this.functionToDelete.functionName : ''
       }
     },
     async created () {
@@ -233,12 +211,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteFunction(item) {
+      async deleteFunction() {
+        const item = this.functionToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/dbFunction/${item.id}`)
           item.archived = true
           handleHidingGlobalLoader(this, status)
+          this.snackbar = getSnackbar('SUCCESS', 'Function Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Functions')

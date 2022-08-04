@@ -72,11 +72,11 @@
           </div>
           <v-btn :disabled="!newParam || !newParam.parameterName || !newParam.dataTypeId
                     || !newParam.parameterTypeId || (newParam.parameterTypeId === 1 && !newParam.systemValueId)"
-                 color="primary" class="white--text mr-2"
+                 color="primary" class="mr-2"
                  @click="[addNew = false, addParam()]">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, newParam = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addNew = !addNew, newParam = {}]">Cancel</v-btn>
         </v-card>
         <v-divider></v-divider>
         <v-card flat class="px-3">
