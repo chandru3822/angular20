@@ -209,8 +209,8 @@
             break
           case 'APPROVED':
             this.payrollStatus.message = 'This payroll has been Approved for Pay.'
-            this.payrollStatus.color = 'green'
-            this.payrollStatus.textColor = '#155724'
+            this.payrollStatus.color = 'success'
+            this.payrollStatus.textColor = 'white'
             break
           case 'SUBMITTED':
             this.payrollStatus.message = 'This payroll has been Submitted for Approval.'
@@ -218,7 +218,7 @@
             break
           case 'REJECTED':
             this.payrollStatus.message = 'This payroll has been Rejected.'
-            this.payrollStatus.color = 'red'
+            this.payrollStatus.color = 'error'
             this.payrollStatus.textColor = 'white'
             break
           default:

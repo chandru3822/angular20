@@ -24,7 +24,7 @@
                  @click="savePlan()">
             Save
           </v-btn>
-          <v-btn color="green" class="white--text mr-2"
+          <v-btn color="success" class="white--text mr-2"
                  v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approvePlan()">
