@@ -181,7 +181,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]">
+            <v-btn text color="primary" v-if="commission.statusType === 'PENDING'" @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]">
               <v-icon v-if="addMilestone">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -281,66 +281,14 @@
               <td class="text-left" v-if="commission.positionId === 4">{{item.max}}</td>
               <td class="text-left">{{item.allocation}}</td>
               <td>
-                <v-btn small text @click="milestoneExpanded = [item]"
+                <v-btn small text color="primary" @click="milestoneExpanded = [item]"
                        v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="milestoneExpanded = []"
+                <v-btn small text color="primary" @click="milestoneExpanded = []"
                        v-if="milestoneExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card v-if="checkIfMilestoneUsed(item.milestoneId)">
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Error
-                    </v-card-title>
-                    <v-card-text>
-                      Cannot delete milestones that are in use by sources.
-                    </v-card-text>
-                    <v-divider></v-divider>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn @click="item.deleteConfirm = false">
-                        Ok
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                  <v-card v-else>
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text v-if="commission.positionId === 1">
-                      Are you sure you want to delete this milestone: <strong>{{ item.milestoneType }}</strong>?
-                    </v-card-text>
-                    <v-card-text v-else>
-                      Are you sure you want to delete this tier: <strong>{{ item.milestoneType }}: {{item.min}} - {{item.max}}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteMilestone(item.commissionPlanAllocationId)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" @click="milestoneToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -355,7 +303,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
+            <v-btn text color="primary" v-if="commission.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
               <v-icon v-if="addSource">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -445,51 +393,18 @@
               <td class="text-left">{{item.feeType}}</td>
               <td class="text-left">{{item.milestoneType}}</td>
               <td>
-                <v-btn small text @click="sourceExpanded = [item]"
+                <v-btn small text color="primary" @click="sourceExpanded = [item]"
                        v-if="commission.statusType === 'PENDING' && !sourceExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="sourceExpanded = []"
+                <v-btn small text color="primary" @click="sourceExpanded = []"
                        v-if="sourceExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this source: <strong>{{ item.sourceName }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteSource(item.id)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn v-if="commission.statusType === 'PENDING'"
+                       small text color="primary"
+                       @click="sourceToDelete=item">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
@@ -504,7 +419,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]"
+            <v-btn text color="primary" @click="[addUser = !addUser, newUser = {}, userHistory = []]"
                    v-if="userCanAdd">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
@@ -652,59 +567,37 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
-
-                <v-btn small text @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                       v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
+                <v-btn v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)"
+                       small text color="primary" @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
+                       >
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="assignedUserExpanded = []"
+                <v-btn small text color="primary" @click="assignedUserExpanded = []"
                        v-if="assignedUserExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{ item.name }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteUserFromPlan(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn v-if="commission.statusType === 'PENDING'" small text color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPlan" @close-dialog="userToDelete=null">
+      Are you sure you want to delete <strong>{{ userToDeleteName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!sourceToDelete" @confirm="deleteSource" @close-dialog="sourceToDelete=null">
+      Are you sure you want to delete this source: <strong>{{ sourceToDeleteName }}</strong>??
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!milestoneToDelete" :hide-confirm="milestoneToDeleteIsUsed" @confirm="deleteMilestone" @close-dialog="milestoneToDelete=null">
+      <template v-slot:title v-if="milestoneToDeleteIsUsed">Error</template>
+      <div v-if="milestoneToDeleteIsUsed">Cannot delete milestones that are in use by sources.</div>
+      <div v-else-if="commission.positionId === 1">
+      Are you sure you want to delete this milestone: <strong>{{ milestoneToDeleteType }}</strong>?
+      </div>
+      <div v-else>
+        Are you sure you want to delete this tier: <strong>{{ milestoneToDeleteType }}: {{milestoneToDeleteMin}} - {{milestoneToDeleteMax}}</strong>?
+      </div>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -728,6 +621,27 @@
     computed: {
       displayedMilestoneHeaders () {
         return this.milestoneHeaders.filter(h => h.show || h.positionId === this.commission?.positionId)
+      },
+      milestoneToDeleteType(){
+        return this.milestoneToDelete ? this.milestoneToDelete.milestoneType : ''
+      },
+      milestoneToDeleteIsUsed(){
+        if(this.milestoneToDelete){
+         return this.checkIfMilestoneUsed(this.milestoneToDelete.milestoneId)
+        }
+        return false
+      },
+      milestoneToDeleteMin(){
+        return this.milestoneToDelete ? this.milestoneToDelete.min : ''
+      },
+      milestoneToDeleteMax(){
+        return this.milestoneToDelete ? this.milestoneToDelete.max : ''
+      },
+      sourceToDeleteName(){
+        return this.sourceToDelete ? this.sourceToDelete.sourceName : ''
+      },
+      userToDeleteName(){
+        return this.userToDelete ? this.userToDelete.name : ''
       }
     },
     created() {
@@ -833,10 +747,12 @@
           users: [],
           positionId: null
         },
-        showDeleteConfirm: false
+        showDeleteConfirm: false,
+        milestoneToDelete: null,
+        sourceToDelete: null,
+        userToDelete: null,
       }
     },
-
 
     methods: {
       checkMinMaxMilestones (item) {
@@ -1115,7 +1031,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUserFromPlan(commissionPlanUser) {
+      async deleteUserFromPlan() {
+        const commissionPlanUser = this.userToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
@@ -1182,7 +1099,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteMilestone (commissionPlanAllocationId) {
+      async deleteMilestone () {
+        const commissionPlanAllocationId = this.milestoneToDelete.commissionPlanAllocationId
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
@@ -1279,7 +1197,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteSource (id) {
+      async deleteSource () {
+        const id = this.sourceToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/${this.planId}/source/${id}`, 'blueraven')
