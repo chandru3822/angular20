@@ -681,6 +681,10 @@ export default {
         const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
         item.customFields.push(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.parent = {}
+        this.addField = false
+        this.snackbar = getSnackbar
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)

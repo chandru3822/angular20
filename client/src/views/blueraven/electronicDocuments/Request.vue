@@ -12,6 +12,7 @@
               <v-text-field label="Customer Name"
                             v-model="customer_name"
                             disabled
+                            class="customer-name-width"
               ></v-text-field>
             </v-col>
             <v-col>
@@ -21,6 +22,7 @@
                         @change="fetchTemplates"
                         item-text="text"
                         item-value="text"
+                        class="template-type-width"
               ></v-select>
 
               <v-autocomplete label="Documents"
@@ -31,7 +33,13 @@
                               no-data-text="No documents found"
                               item-text="name"
                               item-value="id"
+                              @change="populateDocName"
               ></v-autocomplete>
+              <v-text-field
+                  v-show="selectedDocIds.length === 1"
+                  label="Document Name"
+                  v-model="document_name"
+              ></v-text-field>
             </v-col>
           </v-row>
         </v-card-text>
@@ -83,6 +91,7 @@ export default {
     selectedDocIds: '',
     project_id: '',
     customer_name: '',
+    document_name: null,
     requestDialog: false,
     templateTypes: [
       {
@@ -190,7 +199,12 @@ export default {
           return
         }
 
-        const {data} = await getRequest('/electronicDocument/generate/' + this.project_id + '/' + this.selectedDocIds)
+        const {data, status} = await getRequestWithParams('/electronicDocument/generate/' + this.project_id + '/' + this.selectedDocIds, {
+          params: {
+            documentName: this.document_name
+          }
+        })
+
         if (data != null && data.length > 0) {
           for (let i = 0; i < data.length; i++) {
             window.open(data[i]);
@@ -209,6 +223,26 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         console.error('*** ERROR ***', e)
       }
+    },
+    populateDocName() {
+      try {
+        if (this.selectedDocIds.length === 1) {
+          let name = this.documents.filter(doc => doc.id === this.selectedDocIds[0])[0].name
+          if (name.lastIndexOf('-') > -1) {
+            this.document_name = name.substr(name.lastIndexOf('-') + 2)
+          }
+          else {
+            this.document_name = name;
+          }
+        }
+        else {
+          this.document_name = null;
+        }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.document_name = null;
+      }
+
     }
   }
 }
@@ -227,5 +261,13 @@ export default {
     text-decoration: underline;
     color: var(--v-primaryText-base);
   }
+}
+
+.customer-name-width {
+  width: 300px;
+}
+
+.template-type-width {
+  width: 150px;
 }
 </style>

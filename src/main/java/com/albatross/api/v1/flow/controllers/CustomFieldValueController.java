@@ -142,6 +142,7 @@ public class CustomFieldValueController {
     }
 
     return groups;
+      
   }
 
   @PostMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}")

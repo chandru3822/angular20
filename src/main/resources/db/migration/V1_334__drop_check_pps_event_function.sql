@@ -1,0 +1,1 @@
+drop function if exists check_pps_has_event_with_value(integer, integer, text)

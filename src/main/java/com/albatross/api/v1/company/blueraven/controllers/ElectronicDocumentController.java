@@ -41,12 +41,12 @@ public class ElectronicDocumentController {
 
   @GetMapping(value = "/generate/{projectId}/{templateIdsIn}")
   public List<String> getDocuments(
-      @PathVariable Long projectId, @PathVariable String templateIdsIn) {
+      @PathVariable Long projectId, @PathVariable String templateIdsIn, @RequestParam(required = false) String documentName) {
     try {
       String[] templateIds = templateIdsIn.split(",");
       List<String> docUrls = new ArrayList<>();
       for (String templateId : templateIds) {
-        docUrls.add(electronicDocumentService.generateDoc(projectId, templateId));
+        docUrls.add(electronicDocumentService.generateDoc(projectId, templateId, documentName));
       }
       return docUrls;
     } catch (Exception e) {
