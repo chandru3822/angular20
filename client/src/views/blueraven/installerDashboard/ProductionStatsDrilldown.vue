@@ -94,7 +94,7 @@
                   <v-spacer></v-spacer>
 
                   <v-btn
-                    color="primaryCustom"
+                    color="primary"
                     class="white--text mr-2 mb-3"
                     @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
                   >

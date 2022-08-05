@@ -18,8 +18,11 @@
       <v-col cols="12" md="5" class="py-0 schedule-row-filter-container">
         <v-card color="white" class="text-left py-0 square-card height-one-hunned">
           <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
-            <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
-            <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
+            <v-tabs>
+              <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
+            <v-tab text @click="showFilters = true">Filters</v-tab>
+            <v-tab text @click="showFilters = false">Find Project</v-tab>
+            </v-tabs>
           </v-card-actions>
           <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)"
                        class="filter-text-card">
@@ -80,7 +83,7 @@
                       :disabled="selectedEventTypes.length === 0"
                       return-object
             />
-            <v-btn color="primaryCustom" class="white--text schedule-row-go-button"
+            <v-btn color="primary" class="white--text schedule-row-go-button"
                    :disabled="!selectedEventTypes || selectedEventTypes.length === 0 || !state
                    || !selectedEventStatusType || !selectedEventStatusType.id
                    || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
@@ -134,7 +137,7 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primaryCustom" class="white--text schedule-row-go-button"
+            <v-btn color="primary" class="white--text schedule-row-go-button"
                    :disabled="!searchProject || !searchProject.projectId
                         || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchEventStatusType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
@@ -217,7 +220,7 @@
                         item-value="id"
                         @input="validateSaveEvent()"
               />
-              <v-btn color="primaryCustom"
+              <v-btn color="primary"
                      class="white--text schedule-row-go-button"
                      :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                      @click="[fieldsSaving = true, scheduleProject()]">Save</v-btn>
@@ -226,7 +229,7 @@
                   v-model="selectedProject.unscheduleConfirm"
                   width="500">
                 <template #activator="{ on }">
-                  <v-btn color="secondaryCustom"
+                  <v-btn color="secondary"
                          class="unschedule-button"
                          @click="getCancelledCompanyEventStatuses"
                          v-on="on">Unschedule Event</v-btn>
@@ -260,7 +263,7 @@
                     </v-btn>
                     <v-btn
                         :disabled="!selectedProject.cancelledCompanyStatusType || !selectedProject.cancelledCompanyStatusType.id"
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="cancelProjectProcessStepEvent">
                       Yes
@@ -278,7 +281,7 @@
             <v-progress-circular
               indeterminate
               :size="80"
-              :color="'primaryCustom'"
+              :color="'primary'"
             ></v-progress-circular>
           </div>
           <v-text-field
@@ -814,7 +817,7 @@
 
   .map-field-label {
     font-size: 12px;
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 
   .list-container {

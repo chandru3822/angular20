@@ -102,13 +102,13 @@
                     </span>
                   </td>
                   <td class="text-right" v-if="(projectProcessStepId == null && item.projectProcessStepId == null) || projectProcessStepId != null">
-                    <v-btn small text v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
+                    <v-btn small text color="primary" v-if="!item.edit" @click="[item.edit = true, renderTicker++]">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text v-if="item.edit" @click="saveFilename(item)">
+                    <v-btn small text color="primary" v-if="item.edit" @click="saveFilename(item)">
                       <v-icon>save</v-icon>
                     </v-btn>
-                    <v-btn small text v-if="item.edit" @click="[item.edit = false, renderTicker++]">
+                    <v-btn small text color="primary" v-if="item.edit" @click="[item.edit = false, renderTicker++]">
                       cancel
                     </v-btn>
                     <confirm-delete-dialog
@@ -144,7 +144,7 @@
                             No
                           </v-btn>
                           <v-btn
-                            color="primaryCustom"
+                            color="primary"
                             text
                             @click="[item.archived = true, deleteAttachment(item.id)]">
                             Yes
@@ -383,9 +383,6 @@ export default {
   .attachment-table {
     border-top: solid 2px #E0E0E0;
     border-bottom: solid 2px #E0E0E0;
-  }
-  .primary-row{
-    background-color: #ebf5ff !important;
   }
   .file-hover {
     background: #F6F7F8;

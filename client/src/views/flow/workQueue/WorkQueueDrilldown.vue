@@ -3,7 +3,7 @@
     <v-row v-if="!dataLoading && !errorLoading">
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-btn text small :to="`/workQueue`" class="mr-3" color="primaryCustom">
+          <v-btn text small :to="`/workQueue`" class="mr-3" color="primary">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
           <v-toolbar-title class="app-title" v-if="workQueue && workQueue.workQueueType">{{ workQueue.workQueueType }}
@@ -24,7 +24,7 @@
               label="Hide events with a start time in the future"
               @change="filterFutureFollowUps()"
             />
-            <v-btn text @click="exportCsv" v-if="results.length > 0">
+            <v-btn text color="primary" @click="exportCsv" v-if="results.length > 0">
               <v-icon class="mr-2">mdi-cloud-download</v-icon>
               Export
             </v-btn>
@@ -46,11 +46,11 @@
           id="wq-drilldown-table"
           @click:row="clickRow"
         >
-          <template #no-data>
+          <template class="black--text" #no-data>
             No available results
           </template>
 
-          <template #no-results>
+          <template class="black--text" #no-results>
             No available results
           </template>
 
@@ -70,12 +70,12 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left underline" v-if="useProcessStepHeaders">
-                <v-btn text small
-                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+            <tr :class="{'shaded-row': index % 2}" class="clickable" @click="$router.push(`/project/${item.projectId}/processStep/${item.projectProcessStepId}`)">
+              <td class="text-left" v-if="useProcessStepHeaders">
+<!--                <v-btn text small class="primary&#45;&#45;text"-->
+<!--                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepIdStepId}`">-->
                   {{ item['Project Name'] }}
-                </v-btn>
+<!--                </v-btn>-->
               </td>
               <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Name'] }}</td>
               <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Status Type'] }}</td>
@@ -114,7 +114,7 @@
                   </pre>
                   <v-spacer></v-spacer>
                   {{ item.id }}
-                  <v-btn small fab text @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
+                  <v-btn small fab text color="primary" @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
                 </div>
@@ -149,7 +149,7 @@
                       <v-spacer></v-spacer>
 
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         class="white--text mr-2 mb-3"
                         @click="[ytfDoWeNeedThis++, closeNotesModal()]"
                       >
@@ -606,7 +606,6 @@ export default {
 .card-accent {
   height: 100%;
   width: 5px;
-  /*border-radius: 4px 0 0 4px !important;*/
 }
 
 .card-count {
@@ -639,4 +638,5 @@ export default {
   list-style-type: none;
   padding-left: 0;
 }
+
 </style>

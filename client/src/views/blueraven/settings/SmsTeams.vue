@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Message Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addTemplate = !addTemplate, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')">
+            <v-btn text color="primary" @click="[addTemplate = !addTemplate, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addTemplate ? 'Cancel' : 'Add New'}}</span>
             </v-btn>

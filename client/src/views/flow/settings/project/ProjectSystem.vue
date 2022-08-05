@@ -1,6 +1,6 @@
 <template>
   <v-container class="custom-field-group-container">
-    <v-card flat color="rowShadeCustom" class="square-card">
+    <v-card flat color="primary lighten-9" class="square-card">
       <v-card-title style="height: 40px" class="py-0">
         Status Read Only
         <v-checkbox type="checkbox" class="ml-3"
@@ -50,14 +50,14 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+        <v-btn color="primary" dark class="d-inline-block white--text"
                @click="saveReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save
         </v-btn>
       </v-card-text>
     </v-card>
-    <v-card flat color="rowShadeCustom" class="square-card mt-5">
+    <v-card flat color="primary lighten-9" class="square-card mt-5">
       <v-card-title style="height: 40px" class="py-0">
         Owner Read Only
         <v-checkbox type="checkbox" class="ml-3"
@@ -107,7 +107,7 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+        <v-btn color="primary" dark class="d-inline-block white--text"
                @click="saveOwnerReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save

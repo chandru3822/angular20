@@ -18,7 +18,7 @@
           </v-toolbar>
 
           <v-col cols="12" v-if="isProcessStepsLoading">
-            <SpinnerInline :size="20" color="primaryCustom"/>
+            <SpinnerInline :size="20" color="primary"/>
           </v-col>
 
           <v-col cols="12" v-else class="pt-0">
@@ -37,8 +37,8 @@
           cols="12"
           class="text-right pt-0"
         >
-        <span @click="isProcessStepsExpanded = true" class="clickable">
-          Expand All Process Steps <v-icon>mdi-menu-down</v-icon>
+        <span @click="isProcessStepsExpanded = true" class="clickable primary--text">
+          Expand All Process Steps <v-icon color="primary">mdi-menu-down</v-icon>
         </span>
         </v-col>
       </v-fade-transition>
@@ -52,8 +52,8 @@
                   <h3>All Process Steps</h3>
                 </v-col>
                 <v-col class="text-right pb-0">
-              <span @click="isProcessStepsExpanded = false" class="clickable">
-                Collapse All Process Steps <v-icon>mdi-menu-down</v-icon>
+              <span @click="isProcessStepsExpanded = false" class="clickable primary--text">
+                Collapse All Process Steps <v-icon color="primary">mdi-menu-up</v-icon>
               </span>
                 </v-col>
               </v-row>
@@ -65,7 +65,7 @@
             </v-col>
 
             <v-col cols="12" v-if="isProcessStepsLoading">
-              <SpinnerInline :size="20" color="primaryCustom"/>
+              <SpinnerInline :size="20" color="primary"/>
             </v-col>
 
             <v-col cols="12" class="pt-0" v-else>

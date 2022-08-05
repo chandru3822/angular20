@@ -112,10 +112,6 @@ export default {
   border-bottom: solid 2px #E0E0E0;
 }
 
-.primary-row {
-  background-color: #ebf5ff !important;
-}
-
 .file-hover {
   background: #F6F7F8;
 }

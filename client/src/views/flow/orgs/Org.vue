@@ -1,171 +1,97 @@
 <template>
   <div id="org-container">
     <!--    modal for leaving with unsaved fields -->
-    <v-dialog width="500" v-model="unsavedFieldsModal">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Confirm
-        </v-card-title>
-
-        <v-card-text class="pt-4">
-          You have unsaved fields. Are you sure you want to continue without saving?
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="unsavedFieldsModal = false">
-            No
-          </v-btn>
-          <v-btn
-            color="primaryCustom"
-            text
-            @click="[navigationOverride = true, goToPath(toPath)]">
-            Yes
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <confirmation-dialog :open-dialog="unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false" @confirm="[navigationOverride = true, goToPath(toPath)]">
+      You have unsaved fields.  Are you sure you want to continue without saving?
+      <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Don't Save</template>
+    </confirmation-dialog>
     <!--    end unsaved fields modal -->
     <!--    modal for editing contact fields -->
-    <v-dialog width="500"
-              v-if="org && org.id"
-              v-model="showEditModal" content-class="square-card">
-      <v-card class="px-6 py-4 square-card">
-        <v-form ref="orgEditForm">
-          <v-card-title
-            color="blackText"
-            class="albatross-header-3 text-capitalize pa-0"
-            primary-title>
-            Organization Overview
-          </v-card-title>
-          <v-card-text class="pt-4 px-0">
-            <v-text-field
-              v-model="tempOrg.orgName"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              label="Organization Name"
-            ></v-text-field>
-            <v-select attach v-model="tempOrg.orgTypeId"
-                      :items="orgTypes"
-                      label="Organization Type"
-                      :rules="requiredRules"
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      item-text="orgType"
-                      item-value="id"
-                      @input="getOrgsByType(tempOrg.orgTypeId)"
-            ></v-select>
-            <v-autocomplete attach v-model="tempOrg.parentOrgId"
-                            :items="parents"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Parent Organization"
-                            item-text="orgName"
-                            item-value="id"
-            ></v-autocomplete>
-            <v-select attach v-model="tempOrg.companyStateId"
-                      :items="states"
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      label="State"
-                      item-text="state"
-                      item-value="id"
-            ></v-select>
-            <v-autocomplete v-model="tempOrg.companyTimezoneId"
-                            :items="companyTimezones"
-                            label="Time Zone"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            hide-details
-                            item-text="timezone"
-                            item-value="id"
-                            attach
-            ></v-autocomplete>
-            <h6 class="mt-1 red-text" v-if="tempOrg.schedulable && !tempOrg.companyTimezoneId">* Required when
-              Schedulable
-              Organization</h6>
-            <div class="mb-3 mt-3">
-              <label>Active:</label>
-              <input type="checkbox" :disabled="!userIsAdmin" :readonly="!userIsAdmin" class="ml-2"
-                     v-model="tempOrg.activeFlag">
-            </div>
-            <div class="mb-3">
-              <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2"
-                     v-model="tempOrg.schedulable">
-            </div>
-            <div class="mb-3" v-if="$store.getters.isParent(parentId)">
-              <label>Make available in children:</label>
-              <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
-                     class="ml-3" v-model="tempOrg.availableToChildren">
-            </div>
-          </v-card-text>
-        </v-form>
-
-        <v-card-actions class="pa-0">
-          <v-btn @click="showEditModal = false" class="text-capitalize">
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primaryCustom"
-            class="white--text text-capitalize font-weight-bold"
-            @click="validateForm()">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <confirmation-dialog :open-dialog="showEditModal" @close-dialog="showEditModal = false" @confirm="validateForm">
+      <template v-slot:title>Organization Overview</template>
+      <v-form ref="orgEditForm">
+          <v-text-field
+            v-model="tempOrg.orgName"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            label="Organization Name"
+          ></v-text-field>
+          <v-select attach v-model="tempOrg.orgTypeId"
+                    :items="orgTypes"
+                    label="Organization Type"
+                    :rules="requiredRules"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit"
+                    item-text="orgType"
+                    item-value="id"
+                    @input="getOrgsByType(tempOrg.orgTypeId)"
+          ></v-select>
+          <v-autocomplete attach v-model="tempOrg.parentOrgId"
+                          :items="parents"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          label="Parent Organization"
+                          item-text="orgName"
+                          item-value="id"
+          ></v-autocomplete>
+          <v-select attach v-model="tempOrg.companyStateId"
+                    :items="states"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit"
+                    label="State"
+                    item-text="state"
+                    item-value="id"
+          ></v-select>
+          <v-autocomplete v-model="tempOrg.companyTimezoneId"
+                          :items="companyTimezones"
+                          label="Time Zone"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          hide-details
+                          item-text="timezone"
+                          item-value="id"
+                          attach
+          ></v-autocomplete>
+          <h6 class="mt-1 red-text" v-if="tempOrg.schedulable && !tempOrg.companyTimezoneId">* Required when
+            Schedulable
+            Organization</h6>
+          <div class="mb-3 mt-3">
+            <label>Active:</label>
+            <input type="checkbox" :disabled="!userIsAdmin" :readonly="!userIsAdmin" class="ml-2"
+                   v-model="tempOrg.activeFlag">
+          </div>
+          <div class="mb-3">
+            <label>Show in Scheduling Tool:</label>
+            <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2"
+                   v-model="tempOrg.schedulable">
+          </div>
+          <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+            <label>Make available in children:</label>
+            <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
+                   class="ml-3" v-model="tempOrg.availableToChildren">
+          </div>
+      </v-form>
+      <template v-slot:yes>save</template>
+    </confirmation-dialog>
     <!--    end dialog -->
     <ThreeColumnLayout :header-text="org.orgName"
                        :auto-overflow-left="false">
       <template v-slot:back-btn>
-        <v-btn fab text small class="mr-2" @click="goToPath('/orgs')">
+        <v-btn fab text small color="primary" class="mr-2" @click="goToPath('/orgs')">
           <v-icon>mdi-view-list</v-icon>
         </v-btn>
       </template>
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && org && org.id"
              class="px-2 height-one-hunned overflow-y-auto">
-          <v-toolbar flat color="transparent">
-            <v-toolbar-title class="albatross-header-3">Organization Overview</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn
-                text x-small
-                @click="[tempOrg = cloneDeep(org), showEditModal = true]"
-                v-if="org && org.id && userCanEdit">
-                <v-icon>edit</v-icon>
-              </v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
-          <div class="mx-4 address-details">
-            <span class="detail-label">Status:</span>
-            <span class="detail-item" :class="{'status-active': org.activeFlag,
-                                               'status-cancelled': !org.activeFlag}">
-              {{ org.activeFlag ? 'Active' : 'Inactive' }}
-            </span> <br/>
-            <span class="detail-label">Type:</span>
-            <span class="detail-item">{{ org.orgType }}</span> <br/>
-            <span class="detail-label">Parent:</span>
-            <span class="detail-item underline clickable" @click="goToPath(`/org/${org.parentOrgId}`, true)">
-              {{ org.parentOrgName }}
-            </span> <br/>
-            <span class="detail-label">State:</span>
-            <span class="detail-item">{{ org.state }}</span> <br/>
-            <span class="detail-label">Timezone:</span>
-            <span class="detail-item">{{ org.timezone }}</span> <br/>
-            <span class="detail-label">Show in Scheduling Tool:</span>
-            <span class="detail-item">
-              {{ org.schedulable ? 'Yes' : 'No' }}
-            </span> <br/>
-          </div>
+          <PageOverview v-if="org && org.id"
+            page-name="Organization"
+                        :show-edit-btn="userCanEdit"
+                        @clickEdit="[tempOrg = cloneDeep(org), showEditModal = true]"
+                        :details="overviewDetails"
+                        @click-detail="goToPath(`/org/${org.parentOrgId}`, true)"
+          ></PageOverview>
           <v-divider class="mt-4"></v-divider>
         </div>
       </template>
@@ -177,12 +103,12 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="setSplitColumnValue()" class="px-0">
+              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
                 <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
               <div>
-                <v-btn color="primaryCustom"
+                <v-btn color="primary"
                        class="white--text mt-3"
                        v-if="userCanEdit"
                        :loading="fieldsLoading"
@@ -194,11 +120,11 @@
             </v-toolbar-items>
           </v-toolbar>
           <div class="px-4">
-            <v-btn @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]" small>
+            <v-btn @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]" :text="showChildOrgs" color="primary" small>
               {{ showChildOrgs ? 'Hide' : 'Show' }} Child Organizations
             </v-btn>
             <br/>
-            <v-btn @click="[showUsersAssignedToOrg = !showUsersAssignedToOrg, showChildOrgs = false]" small
+            <v-btn @click="[showUsersAssignedToOrg = !showUsersAssignedToOrg, showChildOrgs = false]" :text="showUsersAssignedToOrg" color="primary" small
                    class="mt-3">
               {{ showUsersAssignedToOrg ? 'Hide' : 'Show' }} Assigned Users
             </v-btn>
@@ -335,7 +261,7 @@
           </v-row>
         </div>
         <div v-else>
-          <SpinnerInline centered :size="50" color="primaryCustom"/>
+          <SpinnerInline centered :size="50" color="primary"/>
         </div>
       </template>
       <template v-slot:right-column>
@@ -363,16 +289,20 @@ import {
 import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from "@/helpers/constants";
+import ConfirmationDialog from "@/ConfirmationDialog";
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import SpinnerInline from '@/components/SpinnerInline'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import cloneDeep from 'lodash.clonedeep'
 import Style from "@/views/blueraven/settings/proposalDesigner/panel/Style";
 import {ProjectMutations} from "@/stores/ProjectStore";
+import PageOverview from "../PageOverview";
 
 export default {
   name: 'Org',
   components: {
+    PageOverview,
+    ConfirmationDialog,
     Style,
     SpinnerInline,
     ThreeColumnLayout,
@@ -419,6 +349,48 @@ export default {
       parentId: this.$store.state.user.details.parentCompanyId,
     }
   },
+  computed:{
+    overviewDetails() {
+      if(this.org) {
+        return [
+          {
+            label: 'Status',
+            type: constants.OVERVIEW_FIELD_TYPES.STATUS,
+            value: this.org.activeFlag ? 'Active' : 'Inactive',
+            active: this.org.activeFlag
+          },
+          {
+            label: 'Type',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.orgType
+          },
+          {
+            label: 'Parent',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.parentOrgName,
+            clickable: true
+          },
+          {
+            label: 'State',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.state
+          },
+          {
+            label: 'Timezone',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.timezone
+          },
+          {
+            label: 'Show in Scheduling Tool',
+            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+            value: this.org.schedulable ? 'Yes' : 'No'
+          }
+        ];
+      }
+      return []
+    }
+  },
+
   async created() {
     let requests = [
       this.getCustomFieldGroups(),

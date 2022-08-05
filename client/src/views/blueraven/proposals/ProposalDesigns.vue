@@ -54,7 +54,7 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
-        <v-btn color="primaryCustom" dark class="mt-4 one-hunned text-capitalize font-weight-bold"
+        <v-btn color="primary" dark class="mt-4 one-hunned text-capitalize font-weight-bold"
                @click="addProposal(d)">
           Create new proposal
         </v-btn>
@@ -92,10 +92,10 @@
       <v-card width="355" height="535" class="proposal-card request-new"
               :class="{'disable-new': (activeDesign && null != activeDesign.projectId) || !requestSuccessful}">
         <v-btn :disabled="(activeDesign && null != activeDesign.projectId) || !requestSuccessful"
-               text @click="showNewDesignRequestForm = true">
+               text color="primary" @click="showNewDesignRequestForm = true">
           <v-icon :size="60">add</v-icon>
         </v-btn>
-        <div class="mt-5">
+        <div class="mt-5 primary--text">
           Request New Design
         </div>
         <div class="request-new-details" v-if="activeDesign && null != activeDesign.projectId">
@@ -159,10 +159,10 @@
         <v-card-actions class="pa-0">
           <v-spacer/>
           <v-btn
-            color="primaryCustom"
-            class="white--text text-capitalize font-weight-bold"
-            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
-            @click="requestNewDesign()">
+              color="primary"
+              class="white--text text-capitalize font-weight-bold"
+              :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
+              @click="requestNewDesign()">
             Request
           </v-btn>
         </v-card-actions>

@@ -7,7 +7,7 @@
           <v-spacer></v-spacer>
           <div v-if="changesMade">
             <v-btn class="mr-2" :to="{ path: `/settings/processes`}">cancel</v-btn>
-            <v-btn color="primaryCustom white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
+            <v-btn color="primary white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
           </div>
         </v-toolbar>
         <v-toolbar flat class="app-toolbar">
@@ -15,15 +15,15 @@
             <span v-else>
               {{  processId ? process.processName : 'New Process Step'}}
             </span>
-            <v-btn class="d-inline-block" small text v-if="processId && editName && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveProcess()">
+            <v-btn class="d-inline-block" small text color="primary" v-if="processId && editName && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveProcess()">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn class="d-inline-block" small text v-else-if="processId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="editName = true">
+            <v-btn class="d-inline-block" small text color="primary" v-else-if="processId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="editName = true">
               <v-icon>edit</v-icon>
             </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAvailableProcessSteps()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+            <v-btn text color="primary" @click="getAvailableProcessSteps()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
               {{addNew ? 'Cancel' : 'Add Process Step'}}
             </v-btn>
           </v-toolbar-items>
@@ -49,7 +49,7 @@
           ></v-autocomplete>
 <!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
-          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
+          <v-btn color="primary" :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
                  @click="assignProcessStep">
             Save
           </v-btn>
@@ -111,13 +111,11 @@
                                 attach
                 ></v-autocomplete>
                 <div class="mt-3 text-center">
-                  <v-btn :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
+                  <v-btn color="primary" :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
                          @click="saveProcessStepProcess(item)">
-                    <v-icon>save</v-icon>
                     Save
                   </v-btn>
-                  <v-btn class="ml-3" @click="expanded = []">
-                    <v-icon>remove</v-icon>
+                  <v-btn text color="primary" class="ml-3" @click="expanded = []">
                     Cancel
                   </v-btn>
                 </div>
@@ -139,19 +137,22 @@
               <td class="text-left">{{ item.processStepStatusType }}</td>
               <td>
                 <div style="display: flex; float: right;">
-                  <v-btn text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getActiveAssignedToProcessStep(item)]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                  <v-btn text color="primary" @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getActiveAssignedToProcessStep(item)]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                     <v-icon v-else>expand_more</v-icon>
                   </v-btn>
-                  <confirm-delete-dialog :label="`this process step from the ${process.processName} process: `" :item-to-delete="item.processStepName" @confirm-delete="[item.archived = true, deleteStepFromProcess(item.id)]"></confirm-delete-dialog>
+                  <v-btn text color="primary" @click="processStepToDelete=item"><v-icon>delete</v-icon></v-btn>
                 </div>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
-
     </v-row>
+    <ConfirmationDialog :open-dialog="!!processStepToDelete" @confirm="deleteStepFromProcess" @close-dialog="processStepToDelete = null">
+      Are you sure you want to delete this process step from the {{process.processName}} process: <strong>{{processStepToDeleteName}}</strong>
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -164,10 +165,11 @@ import cloneDeep from 'lodash.clonedeep'
 import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Process',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   mixins: [Vue2Filters.mixin],
 
   data () {
@@ -208,7 +210,8 @@ export default {
         'items-per-page-options': [25, 50, 100, 1000]
       },
       expanded: [],
-      selectedIndex: null
+      selectedIndex: null,
+      processStepToDelete: null,
     }
   },
   created () {
@@ -216,6 +219,9 @@ export default {
     this.getProcessDetails()
   },
   computed: {
+    processStepToDeleteName(){
+      return this.processStepToDelete ? this.processStepToDelete.processStepName : ''
+    }
   },
   methods: {
     filterProcesses () {
@@ -286,8 +292,9 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteStepFromProcess (id) {
-      //reset the addNew field in case they delete one while it is open
+    async deleteStepFromProcess () {
+      const id = this.processStepToDelete.id
+      // reset the addNew field in case they delete one while it is open
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNew = false
@@ -301,6 +308,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.processStepToDelete.archived = true
+      this.processStepToDelete = null
     },
     async getPositions() {
       try {

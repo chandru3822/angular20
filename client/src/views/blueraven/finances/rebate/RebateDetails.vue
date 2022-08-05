@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <dl class="dl-horizontal row">
+  <div class="pt-6">
+    <dl class="dl-horizontal row pl-4">
       <dt class="left-align">Project Name:</dt>
       <dd>{{rebateDetails.project_name}}</dd>
 
@@ -10,19 +10,17 @@
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>
-        <br/>
       <dd>
         {{rebateDetails.street1}} {{rebateDetails.street2}}
       </dd>
       <dt class="left-align">&nbsp;</dt>
-      <dd>
+      <dd class="pb-1">
         {{rebateDetails.city}}, {{rebateDetails.state}} {{rebateDetails.postal_code}}
       </dd>
       <dt class="left-align">Mailing Address:</dt>
-      <br/>
       <!-- if all mailing address fields are null then show the add button -->
       <dd v-if="!editMailing && rebateDetails.mailing_street1 == null && rebateDetails.mailing_city == null && rebateDetails.mailing_state == null && rebateDetails.mailing_postal_code == null">
-        <v-btn text v-if="userCanEdit"  @click="editMailing = true">
+        <v-btn text color="primary" small v-if="userCanEdit"  @click="editMailing = true" class="mt-n1 px-1">
           <v-icon>add</v-icon>
           Add
         </v-btn>
@@ -67,18 +65,20 @@
                         label="Postal Code:"
                         v-model="rebateDetails.mailing_postal_code">
           </v-text-field>
-          <v-btn class="ma-2" @click="saveMailingAddress(false)"
-                 v-if="userCanEdit"
-                  :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code">
-            Save
-          </v-btn>
-          <v-btn class="ma-2" @click="saveMailingAddress(true)"
-                  v-if="mailingDetails.mailingStreet1 != null && userCanEdit">
-            Remove
-          </v-btn>
-          <v-btn class="ma-2" @click="cancelMailingEdit()">
+          <div class="d-flex justify-end">
+            <v-btn class="my-2" text color="primary" small @click="cancelMailingEdit()">
             Cancel
           </v-btn>
+            <v-btn class="my-2" text color="error" small @click="saveMailingAddress(true)"
+                   v-if="mailingDetails.mailingStreet1 != null && userCanEdit">
+              Remove
+            </v-btn>
+            <v-btn class="my-2 ml-2" color="primary" small @click="saveMailingAddress(false)"
+                   v-if="userCanEdit"
+                   :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code">
+              Save
+            </v-btn>
+          </div>
         </div>
       </dd>
 
@@ -99,7 +99,7 @@
       </div>
     </dl>
 
-    <table class="rebate-table left-align">
+    <table class="rebate-table left-align pl-4 pt-2">
       <thead>
       <tr>
         <th colspan="4">Customer Details</th>
@@ -127,14 +127,14 @@
         <td>
           <div v-if="editTotalPromotionAmount == false">
             {{rebateDetails.total_promotion_amount || 0 | currency('$', 2) }}
-            <v-icon small class="mr-3" @click="editTotalPromotionAmount = true">
+            <v-icon small color="primary" class="mr-3" @click="editTotalPromotionAmount = true">
               edit
             </v-icon>
           </div>
           <div v-if="editTotalPromotionAmount" class="flex-display" style="width: 100px">
             <v-text-field style="width: 80px" type="number" v-model="rebateDetails.total_promotion_amount">
             </v-text-field>
-            <v-icon @click="updateTotalPromotionAmount()">
+            <v-icon color="primary" @click="updateTotalPromotionAmount()">
                 save
             </v-icon>
           </div>
@@ -183,7 +183,7 @@
                 <td class="text-left">{{item.name}}</td>
                 <td class="text-left">{{item.check_number}}</td>
                 <td class="text-left">
-                  <a v-if="item.id != null && userCanEdit" @click="openNotesDialog(item)">+ Note</a><br/>
+                  <a v-if="item.id != null && userCanEdit" @click="openNotesDialog(item)"><v-icon x-small color="primary">{{item.void_note ? 'edit' : 'add'}}</v-icon> Note</a><br/>
                   {{item.void_note}}
                 </td>
                 <td class="text-left" style="color: red">
@@ -192,114 +192,51 @@
                 </td>
                   <td>
                       <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
-                          @click="openDeleteDialog(item)" text><v-icon>delete</v-icon></v-btn>
+                          @click="openDeleteDialog(item)" text color="primary"><v-icon>delete</v-icon></v-btn>
                   </td>
               </tr>
             </template>
           </v-data-table>
 
-          <v-dialog v-model="deleteConfirm" width="500">
-                <v-card>
-                  <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title
-                  >
-                    Confirm
-                  </v-card-title>
+          <ConfirmationDialog :open-dialog="deleteConfirm"
+                              @confirm="deletePayment"
+                              @close-dialog="deleteConfirm=false">
+            Are you sure you want to delete this payment?
+          </ConfirmationDialog>
 
-                  <v-card-text>
-                    Are you sure you want to delete this payment?
-                  </v-card-text>
+          <ConfirmationDialog :open-dialog="notesDialog"
+                              @confirm="updatePaymentNote"
+                              @close-dialog="cancelNotesDialog"
+                              :disable-confirm="!userCanEdit">
+            <template v-slot:title>Notes</template>
+            <v-text-field v-model="notesItem.void_note" outlined auto-grow rows="5">
+            </v-text-field>
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>save</template>
+          </ConfirmationDialog>
 
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      @click="deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                      color="primaryCustom"
-                      text
-                      @click="deletePayment()">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
-              <v-dialog v-model="notesDialog" max-width="600px">
-                <v-card class="pt-4 pb-2">
-                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
-                    <span class="font-weight-bold">Notes</span>
-                  </v-card-title>
-
-                  <template>
-                  <v-card-text>
-                    <v-row>
-                      <v-col>
-                        <v-text-field v-model="notesItem.void_note" outlined auto-grow rows="5">
-                        </v-text-field>
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
-                  </template>
-
-                  <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn v-if="userCanEdit" @click="updatePaymentNote()">Confirm</v-btn>
-                    <v-btn v-if="userCanEdit" @click="cancelNotesDialog()">Close</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
-            <v-dialog v-model="voidDialog" max-width="600px" v-if="userCanEdit">
-                <v-card class="pt-4 pb-2">
-                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
-                    <span class="font-weight-bold">Confirm</span>
-                  </v-card-title>
-
-                  <template>
-                    <v-card-text>
-                      <v-row>
-                        <v-col>
-                          Are you sure you want to void this payment?
-                          <v-text-field v-model="notesItem.void_note" outlined auto-grow>
-                          </v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-card-text>
-                  </template>
-
-                  <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn @click="voidPayment(notesItem)">Yes</v-btn>
-                    <v-btn @click="cancelVoidDialog()">Close</v-btn>
-                  </v-card-actions>
-                </v-card>
-            </v-dialog>
-
-            <v-dialog v-model="unvoidDialog" max-width="600px" v-if="userCanEdit">
-                <v-card class="pt-4 pb-2">
-                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
-                    <span class="font-weight-bold">Confirm</span>
-                  </v-card-title>
-
-                  <template>
-                    <v-card-text>
-                      <v-row>
-                        <v-col>
-                          Are you sure you want to unvoid this payment?
-                        </v-col>
-                      </v-row>
-                    </v-card-text>
-                  </template>
-
-                  <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn @click="unvoidPayment(notesItem)">Yes</v-btn>
-                    <v-btn @click="cancelUnvoidDialog()">Close</v-btn>
-                  </v-card-actions>
-                </v-card>
-            </v-dialog>
+          <ConfirmationDialog
+              :open-dialog="voidDialog"
+              @confirm="voidPayment"
+              @close-dialog="cancelVoidDialog"
+          >
+            <template v-slot:title>Confirm</template>
+            Are you sure you want to void this payment?
+            <v-text-field v-model="notesItem.void_note" outlined auto-grow>
+            </v-text-field>
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>void</template>
+          </ConfirmationDialog>
+          <ConfirmationDialog
+              :open-dialog="unvoidDialog"
+              @confirm="unvoidPayment"
+              @close-dialog="cancelUnvoidDialog"
+          >
+            <template v-slot:title>Confirm</template>
+            Are you sure you want to unvoid this payment?
+            <template v-slot:no>cancel</template>
+            <template v-slot:yes>Unvoid</template>
+          </ConfirmationDialog>
 
         </v-col>
       </v-row>
@@ -309,7 +246,7 @@
           <div>
           <tr>
             <td class="left-align">
-              <v-icon v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.total_promotion_amount"
+              <v-icon color="primary" v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.total_promotion_amount"
                       @click="addNewRow()">
                 add
               </v-icon>
@@ -322,7 +259,7 @@
               (Non-Canceled)
             </td>
             <td>
-              <v-icon v-if="userCanEdit" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount"
+              <v-icon v-if="userCanEdit" color="primary" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount"
                       @click="savePaymentHistoryChanges()">
                 save
               </v-icon>
@@ -341,9 +278,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
   import {getCompanyStates} from '@/services/stateService'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'RebateDetails',
+    components: {ConfirmationDialog},
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
@@ -361,7 +300,9 @@
           { text: 'Amount', value: 'payment_amount', show: true },
           { text: 'Status', value: 'name', show: true },
           { text: 'Check Number', value: 'check_number', show: true },
-          { text: 'Notes', value: 'void_note', show: true }
+          { text: 'Notes', value: 'void_note', show: true },
+          { text: '', value: 'status', show: true },
+          { text: '', value: 'delete', show: true }
         ],
         rebateDetails: {},
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
@@ -627,7 +568,8 @@
 
         this.notesDialog = false
       },
-      async voidPayment(item) {
+      async voidPayment() {
+        const item = this.notesItem
         try {
           let params = {
             paymentId: item.id,
@@ -645,7 +587,8 @@
         this.voidDialog = false;
         await this.fetchPayments();
       },
-      async unvoidPayment(item) {
+      async unvoidPayment() {
+        const item = this.notesItem
         try {
           let params = {
             paymentId: item.id
@@ -770,7 +713,7 @@
   }
 
   .error-message {
-    color: red;
+    color: var(--v-error-base);
     font-weight: 600;
   }
 </style>

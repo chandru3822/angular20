@@ -19,7 +19,7 @@
           ></AhjDocument>
         </v-card-text>
         <v-card-actions class="flex-display justify-end px-4 pt-0">
-          <v-btn @click="documentsDialog = false">Close</v-btn>
+          <v-btn color="primary" @click="documentsDialog = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

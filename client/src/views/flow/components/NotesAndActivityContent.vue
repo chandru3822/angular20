@@ -15,7 +15,7 @@
                       auto-grow
                       rows="4"
                       @change="dirtyNote = true"
-                      background-color="#F2F6F8"
+                      background-color="grey lighten-4"
                       filled v-model="note.note">
           </v-textarea>
 
@@ -48,11 +48,11 @@
           />
         </div>
         <div class="text-left mb-2 mt-5">
-          <v-btn color="primaryCustom" class="white--text"
+          <v-btn color="primary" class="white--text"
                  :disabled="!note.note || savingNote"
                  @click="saveNote(note)">Save
           </v-btn>
-          <v-btn text v-if="note.note" @click="[note={}, dirtyNote = false]">
+          <v-btn text color="primary" v-if="note.note" @click="[note={}, dirtyNote = false]">
             <span>cancel</span>
           </v-btn>
         </div>
@@ -92,7 +92,7 @@
                             auto-grow
                             rows="4"
                             @change="dirtyNote = true"
-                            background-color="#F2F6F8"
+                            background-color="transparent"
                             filled v-model="item.note"></v-textarea>
 
                 <template #no-result>
@@ -124,11 +124,11 @@
                 />
               </div>
               <div class="text-left mb-2">
-                <v-btn color="primaryCustom" class="white--text"
+                <v-btn color="primary" class="white--text"
                        :disabled="!item.note"
                        @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save
                 </v-btn>
-                <v-btn text
+                <v-btn text color="primary"
                        @click="[dirtyNote = false, item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
                   <span>cancel</span>
                 </v-btn>
@@ -158,7 +158,7 @@
                       :close-on-content-click="true"
                       min-width="290px">
                 <template v-slot:activator="{ on }">
-                  <v-btn v-on="on" text>
+                  <v-btn v-on="on" text color="primary">
                     <v-icon>mdi-dots-horizontal</v-icon>
                   </v-btn>
                 </template>
@@ -170,43 +170,9 @@
                                @click="[item.oldNote = item.note, item.edit = true]">
                     <v-list-item-title>Edit Note</v-list-item-title>
                   </v-list-item>
-                  <v-dialog
-                      v-if="item.createdById === userId || $store.getters.isFullAdmin"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                    <template #activator="{ on }">
-                      <v-list-item v-on="on">
-                        <v-list-item-title>Delete Note</v-list-item-title>
-                      </v-list-item>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        Deleting this note will remove all comments. Are you sure you want to delete?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="deleteNote(item, false)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                  <v-list-item v-if="item.createdById === userId || $store.getters.isFullAdmin" @click="startNoteDelete(item, false)">
+                    <v-list-item-title>Delete Note</v-list-item-title>
+                  </v-list-item>
 
                 </v-list>
               </v-menu>
@@ -245,12 +211,12 @@
                 </template>
               </Mentionable>
               <div class="text-left py-2">
-                <v-btn color="primaryCustom white--text" @click="saveNote(item)"
+                <v-btn color="primary white--text" @click="saveNote(item)"
                        :disabled="!item.reply"
                 >
                   Save
                 </v-btn>
-                <v-btn class="ml-2" v-if="item.reply"
+                <v-btn text color="primary" class="ml-2" v-if="item.reply"
                        @click="[item.reply=null, item.showReply = false, !item.childNotes || item.childNotes.length === 0 ? expanded=[] : null]">
                   cancel
                 </v-btn>
@@ -268,7 +234,7 @@
                               auto-grow
                               @change="dirtyNote = true"
                               rows="4"
-                              background-color="#F2F6F8"
+                              background-color="grey lighten-4"
                               filled v-model="cn.note"></v-textarea>
 
                   <template #no-result>
@@ -287,18 +253,18 @@
                 </Mentionable>
 
                 <div class="text-left mb-2">
-                  <v-btn color="primaryCustom" class="white--text"
+                  <v-btn color="primary" class="white--text"
                          :disabled="!cn.note"
                          @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save
                   </v-btn>
-                  <v-btn text @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
+                  <v-btn text color="primary" @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
                     <span>cancel</span>
                   </v-btn>
                 </div>
               </div>
               <v-row v-else class="px-0">
                 <v-col cols="11" class="pr-0">
-                  <v-card color="#F2F6F8" class="py-0">
+                  <v-card color="grey lighten-5" class="py-0">
                     <v-card-title class="reply-note-creator pt-1 pb-0">
                       {{ cn.createdBy }}
                       <v-spacer></v-spacer>
@@ -323,44 +289,9 @@
                                    @click="[cn.oldNote = cn.note, cn.edit = true]">
                         <v-list-item-title>Edit Comment</v-list-item-title>
                       </v-list-item>
-                      <v-dialog
-                          v-if="cn.createdById === userId || $store.getters.isFullAdmin"
-                          v-model="cn.deleteConfirm"
-                          width="500">
-                        <template #activator="{ on }">
-                          <v-list-item v-on="on">
-                            <v-list-item-title>Delete Comment</v-list-item-title>
-                          </v-list-item>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                              class="text-h5 grey lighten-2"
-                              primary-title>
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text class="pt-4">
-                            Are you sure you want to delete this comment?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                                @click="cn.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                                color="primaryCustom"
-                                text
-                                @click="deleteNote(cn, true, item)">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
-
+                      <v-list-item v-if="cn.createdById === userId || $store.getters.isFullAdmin" @click="startNoteDelete(cn, true, item)">
+                        <v-list-item-title>Delete Comment</v-list-item-title>
+                      </v-list-item>
                     </v-list>
                   </v-menu>
 
@@ -370,6 +301,11 @@
           </td>
         </template>
       </v-data-table>
+    <ConfirmationDialog
+        :open-dialog="showDeleteNoteDialog"
+        @confirm="deleteNote"
+        @close-dialog="closeNoteDelete"
+    >{{ deleteDialogBody }}</ConfirmationDialog>
   </div>
 </template>
 
@@ -379,10 +315,11 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from "vue2-filters"
 import {Mentionable} from 'vue-mention'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'NotesAndActivityContent',
-  components: {Mentionable, DatetimePickerInput},
+  components: {ConfirmationDialog, Mentionable, DatetimePickerInput},
   mixins: [Vue2Filters.mixin],
   props: {
     showNotes: Boolean,
@@ -419,7 +356,11 @@ export default {
         {text: null, value: 'icons', show: true, width: '50px'}
       ],
       expanded: [],
-      users: []
+      users: [],
+      showDeleteNoteDialog: false,
+      noteToDelete:{},
+      parentOfNoteToDelete:{},
+      deleteDialogBody: ""
     }
   },
   computed: {
@@ -431,16 +372,31 @@ export default {
     this.getUsers()
   },
   methods: {
+    startNoteDelete(n, isChildNote, item){
+      this.deleteDialogBody = isChildNote ? "Are you sure you want to delete this comment?" : "Deleting this note will remove all comments. Are you sure you want to delete?"
+      this.showDeleteNoteDialog = true
+      this.noteToDelete = n
+      this.parentOfNoteToDelete = item
+
+    },
+    closeNoteDelete(){
+      this.showDeleteNoteDialog = false
+      this.noteToDelete = null
+      this.parentOfNoteToDelete = null
+    },
     hasUnsavedNotes() {
       return this.dirtyNote
     },
-    async deleteNote(n, isChildNote, item) {
+    async deleteNote() {
+      const n = this.noteToDelete
+      const isChildNote = !!this.parentOfNoteToDelete
+
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         await deleteRequest(`/note/${n.id}`)
         n.archived = true
         if (isChildNote) {
-          item.childNotes = item.childNotes.filter(cn => !cn.archived)
+          this.parentOfNoteToDelete.childNotes = this.parentOfNoteToDelete.childNotes.filter(cn => !cn.archived)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -449,6 +405,7 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Note')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
+      this.closeNoteDelete()
     },
     async saveNote(n) {
       try {
@@ -551,19 +508,17 @@ export default {
 }
 
 .reply-note-item {
-  background-color: #F2F6F8;
+  background-color: var(-v--primary-lighten9);
   padding: 5px 15px;
   border-radius: 10px;
 }
 
 .reply-note-creator {
-  color: var(--v-primaryCustom-base) !important;
   font-weight: 600;
   font-size: 12px;
 }
 
 .reply-note {
-  color: var(--v-primaryCustom-base) !important;
   font-size: 12px;
   font-style: italic;
 }

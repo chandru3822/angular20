@@ -5,20 +5,13 @@
         <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-title class="app-title">Reimbursement Request
           </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="[createNew = !createNew, newReimbursement = {}]">
-              <v-icon>add</v-icon>
-              New Reimbursement Request
-            </v-btn>
-          </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="12" sm="6">
-        <v-card flat v-if="createNew" class="pa-4">
+        <v-card flat class="pa-4">
           <h3>New Reimbursement Request</h3>
           <v-text-field text
                         type="number"
@@ -40,7 +33,7 @@
                           item-value="id"
           ></v-autocomplete>
           <label>Details:</label>
-          <v-textarea class="py-2" hide-details
+          <v-textarea class="py-2 gray lighten-4" hide-details
                       auto-grow filled
                       rows="4"
                       background-color="#F2F6F8"
@@ -62,14 +55,14 @@
           <div class="receipt-image-background mb-5" v-else>
             <img class="receipt-image" :src="receiptLogo.presignedUrl">
           </div>
-          <v-btn color="primaryCustom" class="white--text"
+          <v-btn color="primary" class="white--text"
                  :disabled="!newReimbursement.expenseDate || !newReimbursement.expenseBudgetId || !newReimbursement.amount
                             || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
                  @click="submitReimbursementRequest()">
             Submit
           </v-btn>
-          <v-btn class="ml-3" @click="[newReimbursement = {}, createNew = false]">
-            Cancel
+          <v-btn text color="primary" class="ml-3" @click="newReimbursement = {}">
+            Clear
           </v-btn>
         </v-card>
       </v-col>
@@ -98,7 +91,7 @@
                         item-text="name"
                         item-value="id"
               ></v-select>
-              <v-btn color="primaryCustom" class="white--text ml-3"
+              <v-btn color="primary" class="white--text ml-3"
                      @click="setDataForMonth">
                 Load
               </v-btn>
@@ -195,7 +188,7 @@
                               background-color="#F2F6F8"
                               v-model="needsApprovalRequest.notes">
                   </v-textarea>
-                  <v-btn color="primaryCustom"
+                  <v-btn color="primary"
                          @click="setRequestStatusWithNotes(needsApprovalRequest, 3)"
                          class="white--text">Approve</v-btn>
                   <v-btn color="red"
@@ -209,47 +202,47 @@
           </v-card>
 
           <v-card class="mt-3">
-            <v-card-title class="grey lighten-2" primary-title>
+            <v-card-title class="primary lighten-9" primary-title>
               Submitted Reimbursements
             </v-card-title>
             <v-card-text class="pt-4">
               <table class="detail-table">
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column default-text-color clickable"
                       @click="[drilldownTitle = 'Submitted Reimbursements - Pending Review',
                                loadDrilldown('PENDING_REVIEW')]">
                     Pending Review:
                   </td>
-                  <td class="detail-column text-right">{{ submittedReport.pending_review || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ submittedReport.pending_review || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column default-text-color clickable"
                       @click="[drilldownTitle = 'Submitted Reimbursements - Pending Approval',
                                loadDrilldown('PENDING_APPROVAL')]">Pending Approval:</td>
-                  <td class="detail-column text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column default-text-color clickable"
                       @click="[drilldownTitle = 'Submitted Reimbursements - Pending Payment',
                                loadDrilldown('PENDING_PAYMENT')]">Pending Payment:</td>
-                  <td class="detail-column text-right">{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column default-text-color clickable"
                       @click="[drilldownTitle = 'Submitted Reimbursements - Paid',
                                loadDrilldown('PAID')]">Paid:</td>
-                  <td class="detail-column text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr class="total-row">
-                  <td class="detail-column">Total Reimbursements:</td>
-                  <td class="detail-column text-right">{{ submittedReport.total || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color">Total Reimbursements:</td>
+                  <td class="detail-column default-text-color text-right">{{ submittedReport.total || 0 | currency('$', 2) }}</td>
                 </tr>
               </table>
             </v-card-text>
           </v-card>
 
           <v-card class="mt-3">
-            <v-card-title class="grey lighten-2" primary-title>
+            <v-card-title class="primary lighten-9" primary-title>
               Budgets
             </v-card-title>
             <v-card-text class="pt-4">
@@ -260,40 +253,40 @@
                   </td>
                 </tr>
                 <tr>
-                  <td class="detail-column">Monthly Budget:</td>
-                  <td class="detail-column text-right">{{ br.amount || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color">Monthly Budget:</td>
+                  <td class="detail-column default-text-color text-right">{{ br.amount || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column clickable default-text-color"
                       @click="[drilldownTitle = `${br.budget_name} Budget - Pending Review`,
                                loadDrilldown('PENDING_REVIEW', br.budget_id)]">Pending Review:</td>
-                  <td class="detail-column text-right">{{ br.pending_review || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ br.pending_review || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column default-text-color clickable"
                       @click="[drilldownTitle = `${br.budget_name} Budget - Pending Approval`,
                                loadDrilldown('PENDING_APPROVAL', br.budget_id)]">Pending Approval:</td>
-                  <td class="detail-column text-right">{{ br.pending_approval || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ br.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column default-text-color clickable"
                       @click="[drilldownTitle = `${br.budget_name} Budget - Pending Payment`,
                                loadDrilldown('PENDING_PAYMENT', br.budget_id)]">Pending Payment:</td>
-                  <td class="detail-column text-right">{{ br.pending_payment || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ br.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable"
+                  <td class="detail-column default-text-color clickable"
                       @click="[drilldownTitle = `${br.budget_name} Budget - Paid`,
                                loadDrilldown('PAID', br.budget_id)]">Paid:</td>
-                  <td class="detail-column text-right">{{ br.paid || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color text-right">{{ br.paid || 0 | currency('$', 2) }}</td>
                 </tr>
 <!--                <tr>-->
 <!--                  <td class="detail-column">Other:</td>-->
 <!--                  <td class="detail-column text-right">{{ br.paid || 0 | currency('$', 2) }}</td>-->
 <!--                </tr>-->
                 <tr>
-                  <td class="detail-column">Remaining Budget:</td>
-                  <td class="detail-column text-right">{{ br.remaining_budget || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color">Remaining Budget:</td>
+                  <td class="detail-column default-text-color text-right">{{ br.remaining_budget || 0 | currency('$', 2) }}</td>
                 </tr>
               </table>
             </v-card-text>

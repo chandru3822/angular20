@@ -27,7 +27,7 @@
               <td class="text-left">{{ item.objectType }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text @click="goToDetails(item)">
+                  <v-btn small text color="primary" @click="goToDetails(item)">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </div>

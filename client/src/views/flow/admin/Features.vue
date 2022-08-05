@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Features</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, selectedFeature = {}]">
+            <v-btn text color="primary" @click="[addNew = !addNew, selectedFeature = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -33,12 +33,12 @@
                 return-object
             ></v-select>
           </div>
+          <v-btn text color="primary" @click="[addNew = !addNew, selectedFeature = {}]">Cancel</v-btn>
           <v-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="mr-2"
                  @click="saveFeature(true)">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, selectedFeature = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -73,7 +73,7 @@
                 </div>
               </div>
               <v-btn :disabled="!item.featureName"
-                     color="primaryCustom" class="white--text mr-2"
+                     color="primary" class="white--text mr-2"
                      @click="saveFeature(false, item)">
                 Save
               </v-btn>
@@ -85,50 +85,11 @@
               <td class="text-left">{{ item.featureName }}</td>
               <td class="text-left">{{ item.featureCode }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text class="pt-4">
-                      <div class="error-text">
-                        {{isCompanyRoot ? 'WARNING: This will delete this feature system-wide!'
-                          : 'WARNING: Feature access control will be completely reset for this feature even if you add the same one back in.'}}
-                      </div>
-                      Are you sure you want to delete this feature: {{ item.featureName }}?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                          @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deleteFeature(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" @click="featureToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -136,7 +97,15 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!featureToDelete" @confirm="deleteFeature" @close-dialog="featureToDelete = null">
+      <div v-if="isCompanyRoot">
+        <span class="error--text">WARNING:</span> This will delete this feature system-wide!
+          </div>
+      <div v-else>
+        <span class="error--text">WARNING:</span> Feature access control will be completely reset for this feature even if you add the same one back in.
+      </div>
+      Are you sure you want to delete this feature: <b>{{ featureToDeleteName }}</b>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -145,10 +114,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Features',
-
+    components: {ConfirmationDialog},
     data() {
       return {
         constants,
@@ -168,7 +138,13 @@
           { text: 'Feature Code', value: 'featureCode', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
-        expanded: []
+        expanded: [],
+        featureToDelete: null
+      }
+    },
+    computed: {
+      featureToDeleteName(){
+        return this.featureToDelete ? this.featureToDelete.featureName : ''
       }
     },
     async created () {
@@ -231,7 +207,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteFeature(feature) {
+      async deleteFeature() {
+        const feature = this.featureToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`${this.apiUrl}/${feature.id}`)

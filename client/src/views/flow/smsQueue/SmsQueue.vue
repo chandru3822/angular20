@@ -15,7 +15,7 @@
                   hide-details
         />
         <v-btn
-          color="primaryCustom"
+          color="primary"
           class="white--text mr-2 mb-3 filter-projects-btn"
           @click="filterProjects"
         >

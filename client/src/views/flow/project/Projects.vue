@@ -69,12 +69,12 @@
 
           <template #item="{item: project, index}">
             <tr class="clickable"  :class="{'shaded-row': index % 2}">
-              <td class="text-left pa-0">
+              <td class="text-left py-0 pl-4">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
                   {{project.id}}
                 </router-link>
               </td>
-              <td class="text-left">
+              <td class="text-left text--black">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
                   {{project.projectName}}
                 </router-link>

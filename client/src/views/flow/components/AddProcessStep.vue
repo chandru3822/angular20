@@ -8,7 +8,7 @@
 >
 
   <template #activator="{on}">
-    <v-btn text class="" x-small v-on="on" @click="[ getSteps() ]">
+    <v-btn text color="primary" class="" x-small v-on="on" @click="[ getSteps() ]">
       <v-icon>add</v-icon>
     </v-btn>
   </template>

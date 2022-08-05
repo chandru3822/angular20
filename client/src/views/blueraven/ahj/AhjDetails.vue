@@ -4,7 +4,7 @@
       <v-col cols="12" class="pt-0">
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-            <v-btn id="back-btn" text class="pl-1 pr-2" :to="'/ahj'">
+            <v-btn id="back-btn" text color="primary" class="pl-1 pr-2" :to="'/ahj'">
               <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
             </v-btn>
 
@@ -96,10 +96,10 @@
     border-top: 1px solid #E6E6E6;
     border-bottom: 1px solid #E6E6E6;
     .v-tab:hover {
-      color: var(--v-primaryCustom-base);
+      color: var(--v-primary-base);
     }
   }
   .v-tab--active {
-    color: var(--v-primaryCustom-base) !important;
+    color: var(--v-primary-base) !important;
   }
 </style>

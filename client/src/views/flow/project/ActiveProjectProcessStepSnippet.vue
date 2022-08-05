@@ -55,16 +55,16 @@ export default {
 }
 
 .active-ps {
-  background-color: #EEEEEE;
+  background-color: var(--v-active-base) ;
 }
 
 .active-ps-button {
-  border: solid 1px #C4C4C4;
+  border: solid 1px var(--v-grey-lighten1);
   padding: 10px;
   margin-bottom: 10px;
 }
 
 .ps-owner {
-  color: #9E9C9C;
+  color: var(--v-grey-darken2);
 }
 </style>

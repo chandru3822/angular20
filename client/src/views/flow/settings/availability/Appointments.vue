@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId" id="appointment-container">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew && $store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')" @click="addNew = !addNew" class="mb-3">
+        <v-btn v-if="!addNew && $store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')" @click="addNew = !addNew" color="primary" class="mb-3">
           Add Appointment
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
@@ -63,8 +63,8 @@
           </div>
           <v-card-actions>
             <v-card-actions>
-              <v-btn color="secondary" @click="[newAppt = {}, addNew = false]">Cancel</v-btn>
-              <v-btn color="primaryCustom"  @click="saveAppt(newAppt)" class="white--text"
+              <v-btn text color="primary" @click="[newAppt = {}, addNew = false]">Cancel</v-btn>
+              <v-btn color="primary"  @click="saveAppt(newAppt)" class="white--text"
                      :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50">
                 Save
               </v-btn>
@@ -163,7 +163,7 @@
 
                 <v-card-actions>
                   <v-card-actions>
-                    <v-btn color="primaryCustom"  @click="saveAppt(appt)" class="white--text"
+                    <v-btn color="primary"  @click="saveAppt(appt)" class="white--text"
                            :disabled="saveError || !appt.startTime || !appt.endTime || !appt.title || appt.title.length > 50">
                       Save
                     </v-btn>
@@ -179,52 +179,31 @@
               <td class="text-left">{{item.title}}</td>
               <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
               <td class="text-left">
-                <v-btn small text @click="[expanded = [item], selectedIndex = index, saveError = false]"
+                <v-btn small text color="primary" @click="[expanded = [item], selectedIndex = index, saveError = false]"
                        v-if="!expanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="expanded = []"
+                <v-btn small text color="primary" @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')">
-                  <template #activator="{ on }">
-                    <v-btn v-on="on" small text>
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title>
-                      <span class="text-h5">Confirm</span>
-                    </v-card-title>
-                    <v-card-text v-if="item.recurringEventId">
-                      Do you want to delete all occurrences or this one only?<br>
-                      <strong>{{ item.startTime | formatDate(item.allDay ? 'date' : 'timestamp') }} - {{ item.endTime | formatDate(item.allDay ? 'date' : 'timestamp') }}</strong>
-                    </v-card-text>
-                    <v-card-text v-else>
-                      Are you sure you want to archive this appointment?<br>
-                      <strong>{{ item.startTime | formatDate(item.allDay ? 'date' : 'timestamp') }} - {{ item.endTime | formatDate(item.allDay ? 'date' : 'timestamp') }}</strong>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="secondaryButton mr-3" text @click="item.deleteConfirm = false">Cancel</v-btn>
-                      <div v-if="item.recurringEventId">
-                        <v-btn color="primaryCustom" class="white--text mr-2"
-                               @click="deleteAppointment(item, false)">One Only</v-btn>
-                        <v-btn color="brRed" class="white--text"
-                               @click="deleteAppointment(item, true)">All Occurrences</v-btn>
-                      </div>
-                      <v-btn color="brRed" class="white--text" v-else
-                             @click="deleteAppointment(item, false)">Yes</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary"
+                       v-if="$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')"
+                       @click="[itemToDelete=item, showDeleteDialog=true]"
+                ><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <MultiOptionDialog :open-dialog="showDeleteDialog"
+                       :options="deleteOptions"
+                       @option-0="deleteAppointment(false)"
+                       @option-1="deleteAppointment(true)"
+                       @cancel="closeDeleteDialog">
+      {{itemToDeleteString}}<br>
+      <strong>{{ itemToDeleteDateString }}</strong>
+    </MultiOptionDialog>
   </v-container>
 </template>
 
@@ -237,13 +216,14 @@
   import orderBy from "lodash.orderby"
   import moment from 'moment-timezone'
   import constants from "@/helpers/constants"
+  import MultiOptionDialog from "@/components/MultiOptionDialog";
 
   const { VUE_APP_ENV } = process.env
 
   export default {
     name: 'Appointments',
     components: {
-
+      MultiOptionDialog,
       RRule,
       DatetimePickerInput
     },
@@ -304,12 +284,33 @@
           { text: 'All Day', value: 'allDay', show: true},
           { text: '', value: 'icons', show: true}
         ],
+        showDeleteDialog:false,
+        itemToDelete: null
       }
     },
     computed: {
       totalAppointments() {
         return this.appointments.filter(a => { return !a.archived}).length;
       },
+      itemToDeleteDateString (){
+        return this.itemToDelete ?
+            `${this.$filters.formatDate(this.itemToDelete.startTime, this.itemToDelete.allDay ? 'date' : 'timestamp') || ''} - ${this.$filters.formatDate(this.itemToDelete.endTime, this.itemToDelete.allDay ? 'date' : 'timestamp') || ''}`
+            : ''
+      },
+      itemToDeleteString() {
+        if(this.itemToDelete) {
+          return this.itemToDelete.recurringEventId ? "Do you want to delete all occurrences or this one only?"
+              : "Are you sure you want to archive this appointment?"
+        }
+            return ''
+        },
+      deleteOptions() {
+        if(this.itemToDelete) {
+          return this.itemToDelete.recurringEventId ? ['one only', 'all occurrences']
+              : ['confirm']
+        }
+        return null
+      }
     },
     created() {
       // if(VUE_APP_ENV === 'local') {
@@ -403,7 +404,8 @@
       filterAppointments () {
         return this.appointments.filter(a => { return !a.archived})
       },
-      async deleteAppointment(item, deleteAllRecurring) {
+      async deleteAppointment(deleteAllRecurring) {
+        const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
@@ -424,6 +426,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
       async deleteRecurring(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -462,6 +465,10 @@
           this.newAppt.recurrence = recurrenceString
           this.newAppt.recurringEndTime = endDate
         }
+      },
+      closeDeleteDialog(){
+        this.showDeleteDialog = false
+        this.itemToDelete = null
       }
 
     }

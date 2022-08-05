@@ -80,7 +80,7 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <v-btn text small class="clickable" @click="[showModal = true, showScoreUser = item]">
+              <v-btn text small color="primary" class="clickable" @click="[showModal = true, showScoreUser = item]">
                 <v-icon>mdi-format-list-bulleted</v-icon>
               </v-btn>
             </td>

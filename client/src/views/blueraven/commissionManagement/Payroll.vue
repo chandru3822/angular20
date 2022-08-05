@@ -3,8 +3,8 @@
     <v-row>
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1">
-          <v-tabs :optional="true" color="primaryCustom"
-                  background-color="white" v-model="model" slider-color="primaryCustom">
+          <v-tabs :optional="true" color="primary"
+                  background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
             </v-tab>

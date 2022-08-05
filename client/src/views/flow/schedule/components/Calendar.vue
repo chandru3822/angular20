@@ -211,7 +211,7 @@
         <v-progress-circular
           indeterminate
           :size="80"
-          :color="'primaryCustom'"
+          :color="'primary'"
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar"
@@ -944,6 +944,10 @@
   #calendar-container .fc-cell-content {
     padding-top: 0;
     padding-bottom: 0;
+  }
+
+  #calendar-container .fc-button-primary {
+    background-color: var(--v-primary-base);
   }
 
 </style>

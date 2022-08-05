@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newUser" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
+            <v-btn text to="/newUser" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
               <v-icon>add</v-icon>
               Add User
             </v-btn>
@@ -32,16 +32,16 @@
           <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="msgDialog = true" :disabled="allUsersLoading">
+            <v-btn text color="primary" @click="msgDialog = true" :disabled="allUsersLoading">
               <v-icon v-if="constants.IS_MOBILE">email</v-icon>
               <span v-else>Send Email/Text</span>
             </v-btn>
-            <v-btn text @click="handleOrgFilterChange(true)">
+            <v-btn text color="primary" @click="handleOrgFilterChange(true)">
               <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
               <span v-else>Reset Filters</span>
             </v-btn>
 
-            <v-btn text @click="exportCsv">
+            <v-btn text color="primary" @click="exportCsv">
               <v-icon v-if="constants.IS_MOBILE">mdi-cloud-download</v-icon>
               <span v-else>Export</span>
             </v-btn>
@@ -258,7 +258,7 @@
             Send Bulk Emails/Texts
         </v-card-title>
           <v-toolbar-items>
-        <v-tabs color="secondaryCustom" background-color="primaryCustom" slot="extension" dark slider-color="secondaryCustom">
+        <v-tabs color="secondary" background-color="primary" slot="extension" dark slider-color="secondary">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>
@@ -339,17 +339,18 @@
             <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
             <v-card-actions class="flex-display justify-end px-4 pt-0">
               <v-btn
+                text color="primary"
                 @click="msgDialog = false">
-                Close
+                Cancel
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text mr-2 "
+                color="primary" class="white--text mr-2 "
                 :disabled="this.disableSendEmail"
                 @click="sendMessage(true, false)">
                 Send Emails Only
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text"
+                color="primary" class="white--text"
                 :disabled="this.disableSendEmail || this.disableSendText"
                 @click="sendMessage(true, true)">
                 Send Both
@@ -408,6 +409,7 @@
             <v-file-input
                 dense
                 outlined
+                color="primary"
                 label="Upload image"
                 v-model="textFile"
                 @change="uploadTextAttachment"
@@ -417,17 +419,18 @@
             <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
             <v-card-actions class="flex-display justify-end px-4 pt-0">
               <v-btn
+                text color="primary"
                 @click="msgDialog = false">
-                Close
+                Cancel
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text mr-2"
+                color="primary" class="white--text mr-2"
                 :disabled="this.disableSendText"
                 @click="sendMessage(false, true)">
                 Send Text Only
               </v-btn>
               <v-btn
-                color="primaryCustom" class="white--text"
+                color="primary" class="white--text"
                 :disabled="this.disableSendEmail || this.disableSendText"
                 @click="sendMessage(true, true)">
                 Send Both

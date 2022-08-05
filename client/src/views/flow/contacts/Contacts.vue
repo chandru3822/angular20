@@ -16,7 +16,7 @@
               attach
             />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
-                   to="/newContact" color="primaryCustom">
+                   to="/newContact" color="primary" >
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Contact</span>
             </v-btn>
@@ -28,7 +28,7 @@
                     class="account-menu"
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
-                <v-btn text v-on="on">
+                <v-btn text v-on="on" color="primary">
                   <v-icon>add</v-icon>
                   <span v-if="!constants.IS_MOBILE">Add Contact</span>
                 </v-btn>
@@ -74,16 +74,16 @@
             class="elevation-1 fix-column-width-bug contact-table"
         >
           <template #no-data>
-            No available contacts
+            <div class="black--text">No available contacts</div>
           </template>
 
           <template #no-results>
-            No available contacts
+            <div class="black--text">No available contacts</div>
           </template>
 
           <template #item="{ item, index }">
 
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr class="clickable" :class="{'primary lighten-9': index % 2}" >
               <td class="text-left">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/contact/${item.id}`">
                   {{item.fullName}}

@@ -49,9 +49,9 @@
             <div v-if="newPosition.startDate >= newPosition.endDate" class="error-text mb-2">
               End date must be null or after the start date
             </div>
-            <v-btn color="secondary" class="mr-2"
+            <v-btn text color="primary" class="mr-2"
                    @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
-            <v-btn color="primaryCustom" class="white--text mr-2"
+            <v-btn color="primary" class="white--text mr-2"
                    :disabled="!newPosition.positionId ||
                               (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) ||
                               (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
@@ -82,7 +82,7 @@
 
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text x-small @click="addNew = !addNew" v-if="userCanAdd">
+              <v-btn text color="primary" x-small @click="addNew = !addNew" v-if="userCanAdd">
                 <v-icon>add</v-icon>
               </v-btn>
             </div>
@@ -147,7 +147,7 @@
               <div v-if="item.startDate >= item.endDate" class="error-text mb-2">
                 End date must be null or after the start date
               </div>
-              <v-btn color="primaryCustom" class="white--text mr-2"
+              <v-btn color="primary" class="white--text mr-2"
                      :disabled="item.startDate >= item.endDate || validatePositionFields(item)"
                      v-if="userCanEdit"
                      @click="savePosition(item)">Save</v-btn>
@@ -165,19 +165,14 @@
               <td class="text-left user-column" v-for="(f, index) in filters" :key="index">
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
-              <td width="150">
-                <v-btn class="d-inline-block" text
+              <td width="150" class="d-flex">
+                <v-btn class="align-self-center" text color="primary"
                        v-if="!expanded.includes(item) && userCanEdit"
                        @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn class="d-inline-block" text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
-                <confirm-delete-dialog
-                    v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')"
-                    label="this position: "
-                    :item-to-delete="item.position"
-                    @confirm-delete="deleteUserPosition(item)"
-                ></confirm-delete-dialog>
+                <v-btn class="align-self-center" text color="primary" v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
+                <v-btn v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')" class="align-self-center" text color="primary" @click="positionToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -185,7 +180,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deleteUserPosition" @close-dialog="positionToDelete = null">
+      Are you sure you want to delete this position: <b>{{positionToDeleteName}}</b>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -197,13 +194,12 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from "@/helpers/constants";
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'UserPositions',
     components: {
-      ConfirmDeleteDialog,
-
+      ConfirmationDialog,
       DatetimePickerInput
     },
     data() {
@@ -227,6 +223,12 @@
           { text: 'Position', value: 'position', show: true },
           { text: 'Primary', value: 'primaryFlag', show: true },
         ],
+        positionToDelete: null
+      }
+    },
+    computed: {
+      positionToDeleteName(){
+        return this.positionToDelete ? this.positionToDelete.position : ''
       }
     },
     created() {
@@ -400,7 +402,8 @@
       filterUserPositions () {
         return this.userPositions.filter(wqc => { return !wqc.archived})
       },
-      async deleteUserPosition(item) {
+      async deleteUserPosition() {
+        const item = this.positionToDelete
         try {
           await deleteRequest(`/userPosition/${item.id}`)
           item.archived = true

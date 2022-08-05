@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Links</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newLink = { url: ''}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newLink = { url: ''}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -27,11 +27,11 @@
               These parameters can be used to add some system values to a url. <br/>
               Validation is not yet in place so be careful which screens you assign a url to. <br/>
               For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
-              <v-btn v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
+              <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
                 {{p.name}}
               </v-btn>
             </div>
-            <v-btn class="mt-4" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
+            <v-btn color="primary" class="mt-4" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
           </v-card>
           <div v-else>
             <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
@@ -52,7 +52,7 @@
                       These parameters can be used to add some system values to a url. <br/>
                       Validation is not yet in place so be careful which screens you assign a url to. <br/>
                       For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
-                      <v-btn v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
+                      <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
                         {{p.name}}
                       </v-btn>
                     </div>
@@ -60,20 +60,22 @@
                   <div v-else>{{a.link}}</div>
                 </v-list-item-content>
                 <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <v-btn text :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id" @click="saveLink(a)">
+                  <v-btn text color="primary" :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id" @click="saveLink(a)">
                     <v-icon>save</v-icon>
                   </v-btn>
-                  <v-icon v-else @click="selectedLinkId = a.id">edit</v-icon>
+                  <v-icon v-else color="primary" @click="selectedLinkId = a.id">edit</v-icon>
                 </v-list-item-action>
-                <confirm-delete-dialog
-                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    label="this link: "
-                    :item-to-delete="a.link"
-                    @confirm-delete="[a.archived = true, deleteLink(a.id)]"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary"
+                       v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                       @click="linkToDelete=a">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </v-list-item>
             </v-list>
           </div>
+          <ConfirmationDialog :open-dialog="!!linkToDelete" @confirm="deleteLink" @close-dialog="linkToDelete=null">
+            Are you sure you want to delete this link: <strong>{{linkToDeleteValue}}</strong>?
+          </ConfirmationDialog>
         </v-container>
       </v-col>
 
@@ -90,10 +92,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Links',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -113,10 +116,14 @@
         ],
         selectedLinkId: null,
         userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        linkToDelete: null
       }
     },
     computed: {
+      linkToDeleteValue(){
+        return this.linkToDelete ? this.linkToDelete.link : ''
+      }
     },
     methods: {
       updateUrl(item, code) {
@@ -135,12 +142,15 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteLink (typeId) {
+      async deleteLink () {
+        const link = this.linkToDelete
+       const typeId= this.linkToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/links/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          link.archived = true
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -148,6 +158,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.linkToDelete = null
       },
       async addNewLink () {
         this.$store.commit(AppMutations.SET_LOADING, true)

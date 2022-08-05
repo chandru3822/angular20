@@ -20,7 +20,7 @@
         ></v-autocomplete>
         <v-btn @click="saveUserHomePage"
                v-if="!userIsAlbatross"
-               color="primaryCustom" class="mt-4 white--text">
+               color="primary" class="mt-4 white--text">
           Save
         </v-btn>
       </v-card-text>

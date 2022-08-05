@@ -614,6 +614,30 @@ public class ProjectProcessStepEventService {
     return attachmentService.findById(attachmentId);
   }
 
+  public Optional<ProjectProcessStepEvent> getActiveCloserAppointment(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.get("projectProcessStepEvent.getActiveCloserAppointment", params, ProjectProcessStepEvent.class);
+  }
+
+  public Optional<ProjectProcessStepEvent> getActiveAhjInspectionWork(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.get("projectProcessStepEvent.getActiveAhjInspectionWork", params, ProjectProcessStepEvent.class);
+  }
+
+  public Optional<ProjectProcessStepEvent> getActiveInstallation(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.get("projectProcessStepEvent.getActiveInstallation", params, ProjectProcessStepEvent.class);
+  }
+
   public static class PpsEventMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

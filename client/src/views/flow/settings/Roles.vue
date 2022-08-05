@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Roles</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/settings/role" color="primaryCustom">
+            <v-btn text to="/settings/role" color="primary">
               <v-icon>add</v-icon>
               Add Role
             </v-btn>
@@ -35,7 +35,7 @@
               <td class="text-left">{{item.roleName}}</td>
               <!-- icon column -->
               <td class="text-right">
-                <v-btn text @click="clickRow(item.id)">
+                <v-btn text color="primary" @click="clickRow(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-dialog
@@ -67,7 +67,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="[item.archived = true, deleteRole(item.id)]">
                         Yes

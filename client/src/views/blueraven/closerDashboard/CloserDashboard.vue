@@ -32,11 +32,11 @@
       <!-- ROUND ROBIN LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
         <div v-if="roundRobinRanksLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header user-office-ranking-table-header">
           <div class="user-office-ranking-table-header-left-side">
-            <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
+            <v-icon class="ranking-table-icon mr-2 default-text-color">mdi-sort-descending</v-icon>
             <span>Round Robin Lead Allocation Rank</span>
           </div>
           <v-autocomplete class="table-header-dropdown"
@@ -54,7 +54,7 @@
         </div>
 
         <table v-if="leadAllocationRankingData.length > 0">
-          <tr>
+          <tr class="grey--text text--darken-2">
             <th class="center-text">Rank</th>
             <th></th>
             <th class="left-text">Rep</th>
@@ -96,11 +96,11 @@
       <!-- OFFICE FDC RANK START -->
       <div class="ranking-table">
         <div v-if="officeFdcRankLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header user-office-ranking-table-header">
           <div class="user-office-ranking-table-header-left-side">
-            <v-icon class="ranking-table-icon mr-2">mdi-chevron-double-down</v-icon>
+            <v-icon class="ranking-table-icon mr-2 default-text-color">mdi-chevron-double-down</v-icon>
             <span>Office FDC Rank</span>
           </div>
           <v-autocomplete class="table-header-dropdown"
@@ -118,7 +118,7 @@
         </div>
 
         <table v-if="officeFdcRankingData.length > 0">
-          <tr>
+          <tr class="grey--text text--darken-2">
             <th class="center-text">Rank</th>
             <th></th>
             <th class="left-text">Rep</th>
@@ -171,15 +171,15 @@
       <!-- OFFICE RANKING START -->
       <div class="ranking-table">
         <div v-if="companyOfficeRankLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header">
-          <v-icon class="ranking-table-icon mr-2">mdi-office-building</v-icon>
+          <v-icon class="ranking-table-icon default-text-color mr-2">mdi-office-building</v-icon>
           <span>Office Ranking</span>
         </div>
 
         <table v-if="officeRankingData.length > 0">
-          <tr>
+          <tr class="grey--text text--darken-2">
             <th class="center-text">Rank</th>
             <th class="left-text">Office</th>
             <th class="left-text">Metro Area</th>
@@ -209,18 +209,18 @@
       <!-- TOP REPS START -->
       <div id="top-reps-table" class="ranking-table">
         <div v-if="topRepsLoading" class="section-spinner">
-          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header" id="top-reps-table-header">
           <div>
-            <v-icon class="ranking-table-icon mr-2">mdi-account-multiple</v-icon>
+            <v-icon class="ranking-table-icon default-text-color mr-2">mdi-account-multiple</v-icon>
             <span>Top Reps</span>
           </div>
           <input type="text" placeholder="Search" v-model="searchText">
         </div>
 
         <table v-if="topRepsData.length > 0">
-          <tr>
+          <tr class="grey--text text--darken-2">
             <th class="center-text">Rank</th>
             <th></th>
             <th class="left-text">Rep</th>
@@ -657,7 +657,7 @@
         }
 
         .v-btn-toggle .v-btn {
-          border: 1px solid var(--v-primaryCustom-base) !important;
+          border: 1px solid var(--v-primary-base) !important;
           font-size: 11px;
           letter-spacing: 0.02em !important;
           height: 25px;
@@ -667,13 +667,13 @@
           }
 
           &:hover {
-            background-color: var(--v-primaryCustom-base);
+            background-color: var(--v-primary-base);
             color: #fff !important;
           }
         }
 
         .v-btn--active {
-          background-color: var(--v-primaryCustom-base);
+          background-color: var(--v-primary-base);
           color: #fff !important;
         }
       }
@@ -682,12 +682,11 @@
 
   .ranking-tables-section-header {
     position: relative;
-    color: var(--v-primaryCustom-base);
     text-align: left;
     font-family: "Roboto", sans-serif;
     font-weight: bold;
     font-size: 20px;
-    border-bottom: 2px solid var(--v-primaryCustom-base);
+    border-bottom: 2px solid var(--v-primary-base);
     margin: 0 auto 12px auto;
     padding-bottom: 3px;
     width: 100%;
@@ -732,7 +731,6 @@
   .ranking-table-header {
     display: flex;
     flex-flow: row nowrap;
-    color: var(--v-primaryCustom-base);
     font-weight: bold;
     font-size: 16px;
     text-align: left;
@@ -800,8 +798,7 @@
   }
 
   .ranking-table-icon {
-    font-size: 24px;
-    color: var(--v-primaryText-base) !important;
+    font-size: 16px;
   }
 
   .ranking-table table {
@@ -811,7 +808,6 @@
 
   .ranking-table th {
     border-bottom: 1px solid #e6eeff;
-    color: var(--v-primaryCustom-base);
     font-size: 11px;
     height: 55px;
   }
@@ -841,7 +837,7 @@
   }
 
   .highlight-user-row {
-    background-color: var(--v-primaryCustom-base);
+    background-color: var(--v-primary-base);
     color: #fff;
   }
 
@@ -923,7 +919,7 @@
     }
 
     .ranking-table-icon {
-      font-size: 30px;
+      font-size: 22px;
     }
 
     .ranking-table th {
@@ -1008,7 +1004,7 @@
     }
 
     .ranking-table-icon {
-      font-size: 35px;
+      font-size: 15px;
     }
 
     .ranking-table th {
@@ -1036,7 +1032,7 @@
       margin: 0 auto;
     }
 
-    .ranking-table-header {
+    .ranking-table-header, .ranking-table-icon {
       font-size: 18px;
     }
   }

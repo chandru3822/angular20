@@ -2,14 +2,14 @@
   <v-container class="custom-field-group-container" v-if="processStep && processStep.id">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/processSteps'">
+        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/processSteps'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
             <span class="page-title" v-if="!editName">{{ processStep.processStepName }}</span>
-            <v-text-field v-else color="primaryCustom"
+            <v-text-field v-else color="primary"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
@@ -22,13 +22,13 @@
             </div>
           </div>
           <div class="text-right" v-if="userCanEdit">
-            <v-btn text v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
+            <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else @click="saveProcessStep($event,true)">
+            <v-btn text color="primary" class="" v-else @click="saveProcessStep($event,true)">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text  v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
+            <v-btn text color="primary" v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
               cancel
             </v-btn>
           </div>
@@ -164,7 +164,7 @@
 }
 
 .name-container {
-  background-color: var(--v-rowShadeCustom-base) !important;
+  background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
 }
 .page-title {
@@ -177,7 +177,7 @@
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
   .v-tab:hover {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 }
 </style>

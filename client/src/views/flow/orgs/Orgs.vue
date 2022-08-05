@@ -6,11 +6,11 @@
           <v-toolbar-title class="app-title">Organizations</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="exportCsv">
+            <v-btn text color="primary" @click="exportCsv">
               <v-icon>mdi-cloud-download</v-icon>
               <span class="ml-2" v-if="!constants.IS_MOBILE">Export</span>
             </v-btn>
-            <v-btn text to="/newOrg" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
+            <v-btn text color="primary" to="/newOrg" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
               <v-icon>add</v-icon>
               <span class="ml-2" v-if="!constants.IS_MOBILE">Add Organization</span>
             </v-btn>

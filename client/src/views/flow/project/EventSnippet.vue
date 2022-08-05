@@ -66,7 +66,4 @@
   border-bottom: 1px solid #C7C7CC;
 }
 
-.primary-row{
-  background-color: #ebf5ff !important;
-}
 </style>

@@ -6,10 +6,10 @@
           <v-toolbar-title class="app-title">Email Settings</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="addNew" @click="addEmail()" :disabled="!addFormValid">
+            <v-btn text color="primary" v-if="addNew" @click="addEmail()" :disabled="!addFormValid">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text @click="[addNew = !addNew, newEmail = {}]">
+            <v-btn text color="primary" @click="[addNew = !addNew, newEmail = {}]">
               <span>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -83,26 +83,24 @@
                 <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
               </td>
               <td>
-                <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
+                <v-btn small text color="primary" @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">
+                <v-btn small text color="primary" @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
-                <v-btn small text v-if="index === editIndex" @click="clearChanges()">
+                <v-btn small text color="primary" v-if="index === editIndex" @click="clearChanges()">
                   cancel
                 </v-btn>
-                <ConfirmDeleteDialog
-                    :is-disabled="item.isDefault"
-                    label="this email address: "
-                    :item-to-delete="item.emailAddress"
-                    @confirm-delete="deleteEmailAddress(item)"
-                ></ConfirmDeleteDialog>
+                <v-btn :disabled="item.isDefault" small text color="primary" @click="emailToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
+    <ConfirmationDialog :open-dialog="!!emailToDelete" @confirm="deleteEmailAddress" @close-dialog="emailToDelete=null">
+      Are you sure you want to delete this email address: <strong>{{emailToDeleteAddress}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -118,10 +116,11 @@ import {
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: "EmailSettings",
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   data() {
     return {
       addFormValid: false,
@@ -139,6 +138,12 @@ export default {
       addNew: false,
       senderRequiredRule: [v => !!v || 'Sender name is required'],
       emailRules: constants.EMAIL_RULES,
+      emailToDelete: null
+    }
+  },
+  computed:{
+    emailToDeleteAddress(){
+      return this.emailToDelete ? this.emailToDelete.emailAddress : ''
     }
   },
   async created() {
@@ -220,7 +225,8 @@ export default {
       }
     },
 
-    async deleteEmailAddress(item) {
+    async deleteEmailAddress() {
+      const item = this.emailToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         if(item.isDefault){
@@ -239,6 +245,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.emailToDelete = null
     },
     cancelDelete(item){
       item.deleteConfirm = false

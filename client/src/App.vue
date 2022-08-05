@@ -15,13 +15,13 @@
       dense>
       <v-toolbar-title @click="goToApps">
         Go to App Download Page
-        <v-icon color="primaryCustom" class="ml-3">
+        <v-icon color="primary" class="ml-3">
           mdi-arrow-right
         </v-icon>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn x-small text color="primaryCustom" @click="dismissMobileToolbar = !dismissMobileToolbar">
+        <v-btn x-small text color="primary" @click="dismissMobileToolbar = !dismissMobileToolbar">
           <v-icon>close</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -29,7 +29,7 @@
     <AppNav v-if="!noNavRoutes.includes($route.name) && !hideHeader" />
     <v-main>
       <v-container class="router-container">
-        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primaryCustom'" :size="100"></Spinner>
+        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
         <router-view class="router-view" />
       </v-container>
     </v-main>
@@ -94,12 +94,11 @@ export default {
 
 <style scoped lang="scss">
 #app {
-  font-family: 'Lato', sans-serif;
   letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-top: 0 !important;
-  background-color: var(--v-secondaryCustom-base);
+  background-color: var(--v-secondary-base);
   min-height: 100vh;
 
   .app-title {

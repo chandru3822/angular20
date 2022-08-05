@@ -8,125 +8,52 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primaryCustom" class="white--text mr-2"
+          <v-btn color="primary" class="white--text mr-2"
                  :disabled="!residualPlan.name"
                  @click="savePlan()">
             Save
           </v-btn>
-          <v-btn color="green" class="white--text mr-2"
+          <v-btn color="success" class="white--text mr-2"
                  v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approvePlan()">
             Approve
           </v-btn>
-          <v-dialog v-if="planId && !residualPlan.approved"
-                    v-model="deleteConfirm"
-                    width="500">
-            <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
-                Delete
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to delete this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="deleteConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primaryCustom"
-                  text
-                  @click="[deleteConfirm = true, deletePlan()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <v-dialog v-else-if="planId"
-              v-model="inactivateConfirm"
-              width="500">
-            <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
-                Inactivate
-              </v-btn>
-            </template>
-            <v-card v-if="planHasActiveUsers()">
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Error
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                You cannot set this plan to inactive with active users.
-                <table class="table mt-2">
-                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
-                    <td class="pr-3">{{u.name}}</td>
-                    <td>{{u.position}}</td>
-                  </tr>
-                </table>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  Cancel
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-            <v-card v-else>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to inactivate this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primaryCustom"
-                  text
-                  @click="[inactivateConfirm = true, inactivatePlan()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
+          <ConfirmationDialog :open-dialog="deleteConfirm" @confirm="deletePlan" @close-dialog="deleteConfirm=false">
+            Are you sure you want to delete this plan?
+          </ConfirmationDialog>
+          <v-btn v-if="planId && !residualPlan.approved" color="error" class="mr-2" @click="deleteConfirm = true">delete</v-btn>
+          <v-btn v-else-if="planId"
+                 @click="inactivateConfirm = true"
+                 color="error"
+                 class="mr-2"
+          >
+            inactivate
+          </v-btn>
+          <ConfirmationDialog :open-dialog="inactivateConfirm" :hide-confirm="planHasActiveUsers()" @confirm="inactivatePlan" @close-dialog="inactivateConfirm = false">
+            <template v-if="planHasActiveUsers()" v-slot:title>Error</template>
+            <template v-else v-slot:title>Confirm</template>
+            <div v-if="planHasActiveUsers()">
+              You cannot set this plan to inactive with active users.
+              <table class="table mt-2">
+                <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                  <td class="pr-3">{{u.name}}</td>
+                  <td>{{u.position}}</td>
+                </tr>
+              </table>
+            </div>
+            <div v-if="!planHasActiveUsers()">
+              Are you sure you want to inactivate this plan?
+            </div>
+            <template v-if="!planHasActiveUsers()" v-slot:yes>Inactivate</template>
+          </ConfirmationDialog>
 
           <v-dialog v-if="planId && residualPlan && residualPlan.users && residualPlan.users.filter(u => {return u.endDate == null}).length > 0"
             v-model="cloneDialog"
             width="600"
           >
             <template v-slot:activator="{ on }">
-              <v-btn color="primaryCustom" dark v-on="on" class="mr-2">
+              <v-btn color="primary" dark v-on="on" class="mr-2">
                 Clone
               </v-btn>
             </template>
@@ -177,7 +104,7 @@
                   Cancel
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   :disabled="(residualPlan.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                             (residualPlan.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
                   class="white--text"
@@ -257,7 +184,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="residualPlan.statusType === 'PENDING'" @click="[selectedLevel = {}, addLevel = !addLevel]">
+            <v-btn text color="primary" v-if="residualPlan.statusType === 'PENDING'" @click="[selectedLevel = {}, addLevel = !addLevel]">
               <v-icon v-if="addLevel">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -290,7 +217,7 @@
                         label="Total"
                         v-model="selectedLevel.total">
           </v-text-field>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addLevelToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addLevelToPlan()"
                  :disabled="!selectedLevel.name || !selectedLevel.level || !selectedLevel.nbrFdcLower || !selectedLevel.nbrFdcUpper || !selectedLevel.total">
             Add
           </v-btn>
@@ -343,7 +270,7 @@
                             label="Total"
                             v-model="item.total">
               </v-text-field>
-              <v-btn :disabled="!item.name || !item.level || !item.nbrFdcLower || !item.nbrFdcUpper || !item.total"
+              <v-btn color="primary" :disabled="!item.name || !item.level || !item.nbrFdcLower || !item.nbrFdcUpper || !item.total"
                      @click="[levelExpanded = [], updateLevel(item)]">Save</v-btn>
             </td>
           </template>
@@ -356,48 +283,15 @@
               <td class="text-left">{{item.nbrFdcUpper}}</td>
               <td class="text-left">{{item.total || 0 | currency('$', 2)}}</td>
               <td>
-                <v-btn small text @click="levelExpanded = [item]"
+                <v-btn small text color="primary" @click="levelExpanded = [item]"
                        v-if="residualPlan.statusType === 'PENDING' && !levelExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="levelExpanded = []"
+                <v-btn small text color="primary" @click="levelExpanded = []"
                        v-if="levelExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
-                  v-if="residualPlan.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this level: <strong>{{ item.name }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteLevel(item.id)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" @click="levelToDelete = item"
+                    v-if="residualPlan.statusType === 'PENDING'"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -412,7 +306,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]">
+            <v-btn text color="primary" @click="[addUser = !addUser, newUser = {}, userHistory = []]">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -482,7 +376,7 @@
           <div class="mb-2" v-else-if="newUser.showNote">
             {{newUser.noteMsg}}
           </div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addUserToPlan()"
                  :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory">
             Add
           </v-btn>
@@ -544,7 +438,7 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primaryCustom" class="mr-3 white--text" @click="updateAssignedUser(item)"
+              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
                      :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
                 Save
               </v-btn>
@@ -560,58 +454,30 @@
               <td class="text-left">{{item.endDate}}</td>
               <td>
 
-                <v-btn small text @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
+                <v-btn small text color="primary" @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
                        v-if="residualPlan.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="assignedUserExpanded = []"
-                       v-if="assignedUserExpanded.includes(item)">cancel
+                <v-btn small text color="primary" @click="assignedUserExpanded = []"
+                       v-if="assignedUserExpanded.includes(item)">
+                  cancel
                 </v-btn>
-                <v-dialog
-                  v-if="residualPlan.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{ item.name }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteUserFromPlan(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" @click="userToDelete = item"
+                    v-if="residualPlan.statusType === 'PENDING'">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPlan" @close-dialog="userToDelete = null">
+      Are you sure you want to delete <strong>{{ userToDeleteName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!levelToDelete" @confirm="deleteLevel" @close-dialog="levelToDelete = null">
+      Are you sure you want to delete this level: <strong>{{ levelToDeleteName }}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -621,11 +487,13 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'ResidualPlan',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmationDialog,
 
       DatetimePickerInput
     },
@@ -704,11 +572,20 @@
         residualPlan: {
           users: [],
           positionId: 1
-        }
+        },
+        levelToDelete: null,
+        userToDelete: null
       }
     },
 
-
+    computed: {
+      levelToDeleteName() {
+        return this.levelToDelete ? this.levelToDelete.name : ''
+      },
+      userToDeleteName() {
+        return this.userToDelete ? this.userToDelete.name : ''
+      }
+    },
     methods: {
       async getResidualPlanDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -947,7 +824,9 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUserFromPlan(residualPlanUser) {
+      async deleteUserFromPlan() {
+        debugger
+        const residualPlanUser = this.userToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/residuals/${this.planId}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
@@ -1003,7 +882,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteLevel (residualPlanAllocationId) {
+      async deleteLevel () {
+        const residualPlanAllocationId = this.levelToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation/${residualPlanAllocationId}`, 'blueraven')

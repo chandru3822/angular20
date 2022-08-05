@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-servicing-fots">
   <v-card class="mb-3">
-    <v-toolbar class="primaryCustom">
+    <v-toolbar class="primary">
       <v-toolbar-title class="white--text font-weight-bold"
                        title="Servicing FOT's"
       >Servicing FOT's</v-toolbar-title>

@@ -38,15 +38,15 @@
         <v-card-title class="albatross-header-4-new pa-0">What would you like to do?</v-card-title>
         <v-radio-group v-model="removeOption">
           <v-radio :key="0" :value="0" class="albatross-body-1 remove-dialog-option mb-4">
-            <template v-slot:label> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</template></v-radio>
-          <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
-            <template v-slot:label>Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</template>
+            <template v-slot:label><div class="default-text-color"> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</div></template></v-radio>
+          <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
+            <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</div></template>
           </v-radio>
           <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove.teamName}} team members on the conversation</span>
         </v-radio-group>
         <v-card-actions class="pb-4">
           <v-spacer/>
-          <v-btn class="text-capitalize" color="secondary" @click="showRemoveDialog=false">Cancel</v-btn>
+          <v-btn class="text-capitalize" text color="primary" @click="showRemoveDialog=false">Cancel</v-btn>
           <v-btn class="text-capitalize white--text" depressed color="primary" @click="confirmChoice">Confirm</v-btn>
         </v-card-actions>
       </v-card>
@@ -58,13 +58,13 @@
             primary-title>
           Remove Team
         </v-card-title>
-        <v-card-text class=" albatross-body-1 px-6">
+        <v-card-text class="default-text-color albatross-body-1 px-6">
          <div>Because no other team is on the conversation, this action will remove the team and close the conversation.</div>
           <div>Are you sure you want to remove {{teamToRemove.teamName}} team and close conversation?</div>
         </v-card-text>
         <v-card-actions class="pb-4">
           <v-spacer/>
-          <v-btn class="text-capitalize" color="secondary" @click="showRemoveLastTeamDialog=false">Cancel</v-btn>
+          <v-btn class="text-capitalize" text color="primary" @click="showRemoveLastTeamDialog=false">Cancel</v-btn>
           <v-btn class="text-capitalize white--text" color="primary" @click="removeTeam(teamToRemove.id)">Remove and Close</v-btn>
         </v-card-actions>
       </v-card>
@@ -76,20 +76,21 @@
             primary-title>
           Remove Team
         </v-card-title>
-        <v-card-text class="albatross-body-1 pb-2">
+        <v-card-text class="albatross-body-1 pb-2 default-text-color">
           <div>This action will remove the team from the conversation. </div>
           <div>Are you sure you want to remove <b>{{teamToRemove.teamName}}</b> team?</div>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
+              text color="primary"
               @click="showRemoveTeamDialog=false"
               class="text-capitalize mr-2 mb-2"
           >
             Cancel
           </v-btn>
           <v-btn
-              color="primaryButton"
+              color="primary"
               class="white--text elevation-2 text-capitalize mb-2"
               @click="removeTeam(teamToRemove.id)">
             Remove
@@ -102,7 +103,7 @@
       <template v-slot:activator="{on, attrs}">
         <v-btn icon v-bind="attrs" v-on="on" large class="align-self-baseline">
           <v-tooltip top small><template v-slot:activator="{on, attrs}">
-            <v-icon @click="" v-bind="attrs" v-on="on">
+            <v-icon color="primary" @click="" v-bind="attrs" v-on="on">
               mdi-plus
             </v-icon>
           </template>
@@ -261,7 +262,7 @@ export default {
 }
 
 .unassigned-team-chip {
-  background: #F8DDDD !important;
+  background-color: var(--v-error-lighten4) !important;
   color: #BD2828 !important;
   cursor: default;
 
@@ -271,7 +272,7 @@ export default {
 }
 
 .other-team-chip {
-  background: #eaeaea !important;
+  background: var(--v-grey-lighten3) !important;
   cursor: default;
 
   &.selected {
@@ -280,7 +281,7 @@ export default {
 }
 
 .assigned-team-chip {
-  background: darken(#EDF5FE, 2%) !important;
+  background: var(--v-primary-lighten9) !important;
   //color: white !important;
   cursor: default;
   &.selected {

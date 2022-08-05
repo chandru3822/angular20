@@ -19,7 +19,7 @@
           </v-toolbar>
 
           <v-col cols="12" v-if="isProcessStepsLoading">
-            <SpinnerInline :size="20" color="primaryCustom"/>
+            <SpinnerInline :size="20" color="primary"/>
           </v-col>
 
           <v-col cols="12" v-else class="py-0">

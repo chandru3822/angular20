@@ -14,7 +14,7 @@
                 text
                 small
                 class="mr-3"
-                color="primaryCustom"
+                color="primary"
                 @click="$router.go(-1)"
               >
                 <v-icon>mdi-arrow-left</v-icon>
@@ -25,6 +25,7 @@
                 <v-btn
                   v-if="smartlist.id"
                   text
+                  color="primary"
                   @click="runReport"
                 >
                   <v-icon>mdi-cloud-download</v-icon>
@@ -34,6 +35,7 @@
                 <v-btn
                   v-if="smartlist.id"
                   text
+                  color="primary"
                   @click="copy"
                 >
                   <v-icon>mdi-content-copy</v-icon>
@@ -43,57 +45,24 @@
                 <v-btn
                   v-if="canEdit"
                   text
+                  color="primary"
                   @click="validateForm"
                 >
                   <v-icon>save</v-icon>
                   <span v-if="!constants.IS_MOBILE">Save</span>
                 </v-btn>
-
-                <v-dialog
-                  v-model="showDeleteDialog"
-                  width="500"
-                  v-if="smartlist.id && canEdit"
+                <v-btn
+                    text
+                    color="primary"
+                    @click="showDeleteDialog=true"
                 >
-                  <template #activator="{on}">
-                    <v-btn
-                      text
-                      color="brRed"
-                      v-on="on"
-                    >
-                      <v-icon>delete</v-icon>
-                      <span v-if="!constants.IS_MOBILE">Delete</span>
-                    </v-btn>
-                  </template>
-
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this smartlist?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="showDeleteDialog = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="[showDeleteDialog = false, deleteSmartlist()]">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                  <v-icon>delete</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Delete</span>
+                </v-btn>
+                <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="[showDeleteDialog = false, deleteSmartlist()]" @close-dialog="showDeleteDialog=false">
+                  <template v-slot:title>Confirm</template>
+                  Are you sure you want to delete this smartlist?
+                </ConfirmationDialog>
               </v-toolbar-items>
             </v-toolbar>
           </v-col>
@@ -150,7 +119,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="[showObjectTypeDialog = false, toggleSmartlistObjectType()]">
                           Yes
@@ -228,7 +197,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="[showToggleDialog = false, toggleProjectDetails()]">
                           Yes
@@ -339,7 +308,7 @@
 <!--        Save Logic Changes-->
 <!--      </v-btn>-->
 <!--    </v-col>-->
-    <v-btn color="primaryCustom" dark class="white--text build-sql" @click="buildSql"
+    <v-btn color="primary" dark class="white--text build-sql" @click="buildSql"
            v-if="is7oaksAdmin || userId === 2350555">
       <div>BUILD SQL</div>
       <div>(only 7oaks and Judson)</div>
@@ -362,10 +331,12 @@ import SmartlistRequirement from './SmartlistRequirement'
 import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Smartlist',
   components: {
+    ConfirmationDialog,
     SmartlistRequirement,
     SmartlistColumn
   },

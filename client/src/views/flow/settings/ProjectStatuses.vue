@@ -63,13 +63,13 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Project Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="rowShadeCustom">
+        <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
           <h3>Add Project Status</h3>
           <v-text-field label="Project Status" v-model="newType.projectStatusType">
           </v-text-field>
@@ -80,7 +80,7 @@
                     label="Select a Category"
                     item-text="projectStatusType"
                           attach></v-autocomplete>
-          <v-btn :disabled="!newType.projectStatusTypeId || !newType.projectStatusType" @click="saveType(newType, true)">Save</v-btn>
+          <v-btn color="primary" :disabled="!newType.projectStatusTypeId || !newType.projectStatusType" @click="saveType(newType, true)">Save</v-btn>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -140,7 +140,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primaryCustom"
+                        color="primary"
                         text
                         @click="setAsInitial(item)">
                         Yes
@@ -182,7 +182,7 @@
                                 :hide-mode-switch="colorOptions.hideModeSwitch">
                 </v-color-picker>
               </div>
-              <v-btn color="primaryCustom" dark class="white--text"
+              <v-btn color="primary" dark class="white--text"
                      :disabled="!item.projectStatusType || !item.projectStatusTypeId"
                      @click="saveType(item, false)">Save</v-btn>
             </td>
@@ -216,16 +216,13 @@
                 </v-avatar>
               </td>
               <td class="text-right">
-                <v-btn small text v-if="!expanded.includes(item)" @click="[initItemColor(item), expanded = [item]]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[initItemColor(item), expanded = [item]]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <confirm-delete-dialog
-                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    label="this status type: "
-                    :item-to-delete="item.projectStatusType"
-                    @confirm-delete="deleteType(item)"
-                ></confirm-delete-dialog>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
 
             </tr>
@@ -234,6 +231,13 @@
       </v-col>
 
     </v-row>
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteType"
+                                 @close-dialog="closeDeleteDialog"
+    >
+      Are you sure you want to delete this status type: <strong>{{toDeleteStatusType}}</strong>?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -250,13 +254,13 @@
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
   import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "../../../ConfirmationDialog";
 
   export default {
     name: 'ProjectStatuses',
     mixins: [Vue2Filters.mixin],
     components: {
-      ConfirmDeleteDialog,
+      ConfirmationDialog,
       draggable,
     },
     data () {
@@ -292,7 +296,9 @@
         companyId: this.$store.state.user.details.companyId,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         fieldsInUse: [],
-        deleteError: false
+        deleteError: false,
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
     mounted() {
@@ -312,6 +318,9 @@
       })
     },
     computed: {
+      toDeleteStatusType(){
+        return this.itemToDelete ? this.itemToDelete.projectStatusType : ''
+      }
     },
     methods: {
       initItemColor(item) {
@@ -406,7 +415,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteType (item) {
+      async deleteType () {
+        const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/project/companyStatus/${item.id}`)
@@ -429,6 +439,7 @@
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
+        this.closeDeleteDialog()
       },
       async saveType (type, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -478,6 +489,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      closeDeleteDialog() {
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     },
     async created () {
       this.getCompanyStatusTypes()

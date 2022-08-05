@@ -4,16 +4,16 @@
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">
-            <v-btn text to="/ahj" color="primaryCustom">
+            <v-btn text to="/ahj" color="primary">
               AHJ
             </v-btn>
-            <v-btn text to="/ahjUtility" color="primaryCustom">
+            <v-btn text to="/ahjUtility" color="primary">
               Utility
             </v-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addItem" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add New</span>
             </v-btn>
@@ -35,7 +35,7 @@
               <th v-for="header in headers" :key="header.text"
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
-                <div v-if="ahjUtilityFilters[header.value]" class="pt-2 table-filter">
+                <div v-if="ahjUtilityFilters[header.value]" class="pt-2 ml-0 table-filter">
                   <v-text-field v-if="ahjUtilityFilters[header.value].type === 'text'" class="pt-2 table-filter"
                                 v-model="ahjUtilityFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
@@ -64,13 +64,12 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+            <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]" @click="goToRoute(item.id)" class="clickable">
               <td class="text-left" :class="{'strike': item.archived}">{{ item.name ? item.name : '' }}</td>
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left">{{ item.state ? item.state : '' }}</td>
               <td class="text-left">
-                <router-link :to="'ahjUtility/' + item.id + '/details'" class="mr-3 ahj-link">Details</router-link>
-                <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')">
+                <v-icon color="primary" class="mr-3 ahj-link-icon" @click.stop="editAhjUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')">
                   edit
                 </v-icon>
               </td>
@@ -128,8 +127,8 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-              <v-btn color="primaryButton" class="white--text" raised @click="saveAhjUtility"
+              <v-btn color="primary" text @click="close">Cancel</v-btn>
+              <v-btn color="primary" class="white--text" raised @click="saveAhjUtility"
                      :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId">
                 {{ ahjUtilityBtnTxt }}
               </v-btn>
@@ -325,7 +324,10 @@
         this.initFilters()
         await this.fetchAhjUtilities()
         this.editedItem = {}
-      }
+      },
+      goToRoute(id) {
+        this.$router.push('ahjUtility/' + id + '/details')
+      },
     },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -351,13 +353,13 @@
     }
   }
 
-  .ahj-link-icon {
-    color: var(--v-brBlue-base) !important;
-
-    &:hover {
-      color: var(--v-primaryText-base) !important;
-    }
-  }
+  //.ahj-link-icon {
+  //  color: var(--v-brBlue-base) !important;
+  //
+  //  &:hover {
+  //    color: var(--v-primaryText-base) !important;
+  //  }
+  //}
 
   .strike {
     text-decoration: line-through;

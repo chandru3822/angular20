@@ -11,7 +11,7 @@
           </v-toolbar>
 
           <v-col cols="12" v-if="activeEventsLoading">
-            <SpinnerInline :size="20" color="primaryCustom"/>
+            <SpinnerInline :size="20" color="primary"/>
           </v-col>
 
           <v-col cols="12" v-else class="pt-0">
@@ -28,8 +28,8 @@
           cols="12"
           class="text-right pt-0"
         >
-        <span @click="eventsExpanded = true" class="clickable">
-          Expand All Events <v-icon>mdi-menu-down</v-icon>
+        <span @click="eventsExpanded = true" class="clickable primary--text">
+          Expand All Events <v-icon color="primary">mdi-menu-down</v-icon>
         </span>
         </v-col>
       </v-fade-transition>
@@ -43,8 +43,8 @@
                   <h3>All Events</h3>
                 </v-col>
                 <v-col class="text-right pb-0">
-              <span @click="eventsExpanded = false" class="clickable">
-                Collapse All Events <v-icon>mdi-menu-down</v-icon>
+              <span @click="eventsExpanded = false" class="clickable primary--text">
+                Collapse All Events <v-icon color="primary">mdi-menu-up</v-icon>
               </span>
                 </v-col>
               </v-row>
@@ -56,7 +56,7 @@
             </v-col>
 
             <v-col cols="12" v-if="activeEventsLoading">
-              <SpinnerInline :size="20" color="primaryCustom"/>
+              <SpinnerInline :size="20" color="primary"/>
             </v-col>
 
             <v-col cols="12" class="pt-0" v-else>

@@ -2,13 +2,13 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/events'">
+        <v-btn text class="pl-1 pr-2 anchor" :to="'/settings/events'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
         <v-toolbar flat class="app-toolbar">
           <span class="page-title" v-if="!editName">{{ event.eventName }}</span>
-          <v-text-field v-else color="primaryCustom"
+          <v-text-field v-else color="primary"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         v-model="event.eventName"
@@ -16,13 +16,13 @@
                         label="Event Name"></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit && !editName" class="" @click="[oldName = event.eventName, editName = !editName]">
+            <v-btn text color="primary" v-if="userCanEdit && !editName" class="" @click="[oldName = event.eventName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else-if="userCanEdit" @click="saveEventName()">
+            <v-btn text color="primary" class="" v-else-if="userCanEdit" @click="saveEventName()">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text  v-if="userCanEdit && editName" class="" @click="[event.eventName = oldName, editName = !editName]">
+            <v-btn text color="primary" v-if="userCanEdit && editName" class="" @click="[event.eventName = oldName, editName = !editName]">
               cancel
             </v-btn>
           </v-toolbar-items>
@@ -133,7 +133,7 @@ export default {
 
 <style scoped lang="scss">
 .name-container {
-  background-color: var(--v-rowShadeCustom-base) !important;
+  background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
 }
 
@@ -147,7 +147,7 @@ export default {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
   .v-tab:hover {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 }
 </style>

@@ -38,14 +38,14 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]">
+            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="rowShadeCustom">
+          <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
             <v-text-field v-if="addNew"
                           v-model="newType.processStepStatusType"
                           placeholder="Enter a type"
@@ -58,7 +58,7 @@
                             label="Select a Category"
                             item-text="processStepStatusType"
                             attach></v-autocomplete>
-            <v-btn :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType" @click="addNewType">Save</v-btn>
+            <v-btn color="primary" :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType" @click="addNewType">Save</v-btn>
           </v-card>
           <v-card class="square-card">
             <v-card-title class="pt-0">
@@ -99,7 +99,7 @@
                     item-text="processStepStatusType"
                     attach></v-autocomplete>
 
-                  <v-btn color="primaryCustom" dark class="white--text mr-4"
+                  <v-btn color="primary" dark class="white--text mr-4"
                          :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
                          @click="saveType(item, false)">Save</v-btn>
                 </td>
@@ -113,16 +113,13 @@
                     {{item.rootProcessStepStatusType}}
                   </td>
                   <td class="text-right">
-                    <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                    <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                    <confirm-delete-dialog
-                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                        label="this status type: "
-                        :item-to-delete="item.processStepStatusType"
-                        @confirm-delete="deleteType(item)"
-                    ></confirm-delete-dialog>
+                    <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                    <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </td>
 
                 </tr>
@@ -133,6 +130,13 @@
       </v-col>
 
     </v-row>
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteType"
+                                 @close-dialog="closeDeleteDialog"
+    >
+      Are you sure you want to delete this status type: <strong>{{toDeleteProcessStepStatusType}}</strong>?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -145,11 +149,11 @@
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "../../../ConfirmationDialog";
 
   export default {
     name: 'Statuses',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -179,10 +183,15 @@
         companyId: this.$store.state.user.details.companyId,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         fieldsInUse: [],
-        deleteError: false
+        deleteError: false,
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
     computed: {
+      toDeleteProcessStepStatusType(){
+        return this.itemToDelete ? this.itemToDelete.processStepStatusType : ''
+      }
     },
     methods: {
       filteredRootStatuses() {
@@ -214,7 +223,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteType (type) {
+      async deleteType () {
+        const type = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await deleteRequest(`/processStep/status/${type.id}`)
@@ -239,6 +249,7 @@
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
+        this.closeDeleteDialog()
       },
       async addNewType () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -282,6 +293,10 @@
       filterProcessStepStatuses () {
         return this.statusTypes.filter(s => { return !s.archived})
       },
+      closeDeleteDialog() {
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     },
     async created () {
       this.getCompanyStatusTypes()

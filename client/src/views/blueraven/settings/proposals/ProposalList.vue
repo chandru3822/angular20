@@ -4,12 +4,12 @@
       <v-toolbar-title class="app-title">Proposal Versions</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <v-btn text :to="'/settings/proposalDesigner'">
+        <v-btn text color="primary" :to="'/settings/proposalDesigner'">
           <span>Designer</span>
         </v-btn>
       </v-toolbar-items>
       <v-toolbar-items v-if="canCreateVersion">
-        <v-btn text color="primaryButton" @click="create">Create New Version</v-btn>
+        <v-btn text color="primary" @click="create">Create New Version</v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider />

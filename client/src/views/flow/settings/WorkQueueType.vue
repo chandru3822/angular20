@@ -2,7 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/workQueue/types'">
+        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/workQueue/types'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
@@ -17,13 +17,13 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn text v-if="!editType" class="" @click="[editType = !editType]">
+              <v-btn text color="primary" v-if="!editType" class="" @click="[editType = !editType]">
                 <v-icon>edit</v-icon>
               </v-btn>
-              <v-btn text class="" v-else @click="saveType()">
+              <v-btn text color="primary" class="" v-else @click="saveType()">
                 <v-icon>save</v-icon>
               </v-btn>
-              <v-btn text v-if="editType" class="" @click="[editType = !editType]">
+              <v-btn text color="primary" v-if="editType" class="" @click="[editType = !editType]">
                 cancel
               </v-btn>
             </div>
@@ -203,22 +203,16 @@
           <v-spacer/>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn text v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
+              <v-btn text color="primary" v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
                 <v-icon>edit</v-icon>
               </v-btn>
-              <v-btn text class="" v-else @click="saveType()">
+              <v-btn text color="primary" class="" v-else @click="saveType()">
                 <v-icon>save</v-icon>
               </v-btn>
-              <v-btn text v-if="editSchedule" class="" @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]">
+              <v-btn text color="primary" v-if="editSchedule" class="" @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]">
                 cancel
               </v-btn>
             </div>
-
-            <v-btn
-              text
-            >
-              Cancel
-            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
 
@@ -264,7 +258,7 @@
         :company-object-types="filteredCompanyObjectTypes"
       />
 
-      <v-btn color="primaryCustom" class="white--text build-sql" @click="buildSql"
+      <v-btn color="primary" class="white--text build-sql" @click="buildSql"
              v-if="is7oaksAdmin || userId === 2350555">
         <div>BUILD SQL</div>
         <div>(only 7oaks and Judson)</div>

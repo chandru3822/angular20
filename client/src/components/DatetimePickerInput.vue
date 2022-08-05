@@ -40,8 +40,8 @@
     @click:date="saveDate()"
   >
     <v-spacer></v-spacer>
-    <v-btn text color="primaryCustom" @click="cancel()">Cancel</v-btn>
-    <v-btn text color="primaryCustom" @click="saveDate()">OK</v-btn>
+    <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
+    <v-btn text color="primary" @click="saveDate()">OK</v-btn>
   </v-date-picker>
 
   <v-time-picker
@@ -52,8 +52,8 @@
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
-    <v-btn text color="primaryCustom" class="qa-date-cancel" @click="cancel()">Cancel</v-btn>
-    <v-btn text color="primaryCustom" class="qa-date-ok" @click="saveTime()">OK</v-btn>
+    <v-btn text color="primary" class="qa-date-cancel" @click="cancel()">Cancel</v-btn>
+    <v-btn text color="primary" class="qa-date-ok" @click="saveTime()">OK</v-btn>
   </v-time-picker>
 </v-menu>
 </template>

@@ -7,6 +7,7 @@
       <v-btn
         v-if="!showNewFieldForm && canEdit"
         text
+        color="primary"
         @click="showNewFieldForm = true"
       >
         <v-icon>add</v-icon>
@@ -16,6 +17,7 @@
       <v-btn
         v-if="showNewFieldForm"
         text
+        color="primary"
         @click="resetNewFieldForm"
       >
         Cancel
@@ -94,7 +96,7 @@
 
       <v-btn
         text
-        color="primaryCustom"
+        color="primary"
         class="text-left"
         :disabled="isNewFieldButtonDisabled"
         @click="addNewField"
@@ -155,12 +157,15 @@
         </v-list-item-content>
 
         <v-list-item-action class="clickable">
-          <v-icon v-if="canEdit" @click="deleteField(index)">delete</v-icon>
+          <v-icon v-if="canEdit" color="primary" @click="colToDelete={field, index}">delete</v-icon>
           <v-icon v-else></v-icon>
         </v-list-item-action>
       </v-list-item>
     </draggable>
   </v-list>
+  <ConfirmationDialog :open-dialog="!!colToDelete" @confirm="deleteField" @close-dialog="colToDelete=null">
+    Are you sure you want to delete this column: <b>{{colToDeleteFieldName}}</b>?
+  </ConfirmationDialog>
 </v-col>
 </template>
 
@@ -179,10 +184,12 @@ import {
   putRequest,
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'SmartlistColumn',
   components: {
+    ConfirmationDialog,
     draggable
   },
   props: {
@@ -229,7 +236,8 @@ export default {
       availableEvents: [],
       fetchedAvailableFields: [],
       fetchedProcessStepEvents: [],
-      assignedFields: []
+      assignedFields: [],
+      colToDelete: null
     }
   },
   created() {
@@ -243,6 +251,9 @@ export default {
     },
     isNewFieldButtonDisabled () {
       return !this.newField?.selectedField && !this.newField?.projectDetailsColumn
+    },
+    colToDeleteFieldName(){
+      return this.colToDelete ? this.colToDelete.field.name : ''
     }
   },
   methods: {
@@ -316,8 +327,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteField (fieldIndex) {
-
+    async deleteField () {
+      const fieldIndex = this.colToDelete.index;
       try {
         const fieldToDelete = this.assignedFields[fieldIndex]
         this.$store.commit(AppMutations.SET_LOADING, true)

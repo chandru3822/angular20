@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer />
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
@@ -64,34 +64,29 @@
                 <td>
                   <div class="item-icons">
                     <div v-if="userCanEdit" class="flex-display">
-                      <v-btn small text
+                      <v-btn small text color="primary"
                              @click="item.edit = !item.edit">
                         <v-icon v-if="item.edit">remove</v-icon>
                         <v-icon v-else>edit</v-icon>
                       </v-btn>
-                      <v-btn small text
+                      <v-btn small text color="primary"
                              v-if="item.edit"
                              @click="[saveGroup(item), item.edit = false]">
                         <v-icon>save</v-icon>
                       </v-btn>
                     </div>
-                    <v-btn small text
+                    <v-btn small text color="primary"
                            v-if="userCanAdd"
                            @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
-                    <v-btn small text
+                    <v-btn small text color="primary"
                            @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                       <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                      v-if="userCanEdit"
-                      label="this Custom Field Group: "
-                      :item-to-delete="item.groupName"
-                      @confirm-delete="deleteGroup(item)"
-                    />
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -227,16 +222,9 @@
                             </v-btn>
                           </div>
                         </v-list-item-content>
-                        <confirm-delete-dialog
-                          v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                          :label="`this field from ${item.groupName}: `"
-                          :item-to-delete="cf.fieldName"
-                          @confirm-delete="deleteFieldFromGroup(cf)"
-                          :button-class="{'remove-padding':true}"
-                        >
-                          <span class="error--text">WARNING:</span>
-                          By deleting a field you will lose all data associated with the field.<br /><br />
-                        </confirm-delete-dialog>
+                        <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
+                          <v-icon>delete</v-icon>
+                        </v-btn>
                       </v-list-item>
                     </v-list>
                   </draggable>
@@ -247,6 +235,20 @@
         </v-container>
       </v-col>
     </v-row>
+    <ConfirmationDialog
+        :open-dialog="cfgToDelete && !cFieldToDelete"
+        @confirm="deleteGroup"
+        @close-dialog="cfgToDelete=null">
+      Are you sure you want to delete this Custom Field Group: <strong>{{cfgToDeleteName}}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog
+        :open-dialog="!!cFieldToDelete"
+        @confirm="deleteFieldFromGroup"
+        @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
+      <span class="error--text">WARNING:</span>
+      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
+      Are you sure you want to delete this field from {{cfgToDeleteName}}: <strong>{{cFieldToDeleteName}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -267,13 +269,13 @@ import {
   putRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from '@/ConfirmDeleteDialog'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'CompanyCustomFieldGroup',
   mixins: [Vue2Filters.mixin],
   components: {
-    ConfirmDeleteDialog,
+    ConfirmationDialog,
     draggable
   },
   data() {
@@ -312,7 +314,17 @@ export default {
       parent: {},
       parentObjects: [],
       selectedAncillaryField: {},
-      ancillaryCustomFields: []
+      ancillaryCustomFields: [],
+      cfgToDelete: null,
+      cFieldToDelete: null
+    }
+  },
+  computed: {
+    cfgToDeleteName(){
+      return this.cfgToDelete ? this.cfgToDelete.groupName : ''
+    },
+    cFieldToDeleteName(){
+      return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
     }
   },
   mounted() {
@@ -533,7 +545,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteGroup(item) {
+    async deleteGroup() {
+      const item = this.cfgToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { status } = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
@@ -547,8 +560,10 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.cfgToDelete=null
     },
-    async deleteFieldFromGroup(item) {
+    async deleteFieldFromGroup() {
+      const item=this.cFieldToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { status } = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
@@ -563,6 +578,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.cFieldToDelete=null
+      this.cfgToDelete = null
     },
     async deleteField(item, customFieldGroupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)

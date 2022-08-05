@@ -5,7 +5,7 @@
       <v-col cols="12" class="pt-0">
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-            <v-btn id="back-btn" text class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
+            <v-btn id="back-btn" text color="primary" class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
               <v-icon>arrow_left</v-icon>
               <span id="back-btn-text">Back to menu</span>
             </v-btn>
@@ -18,22 +18,24 @@
               </div>
             </div>
 
-            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(--v-secondary-base)">
-              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>
-            </v-tabs>
+<!--            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(&#45;&#45;v-secondary-base)">-->
+<!--              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>-->
+<!--            </v-tabs>-->
           </v-col>
         </v-row>
 
         <v-row dense>
           <v-col class="ahj-form-btns" cols="12">
-            <a v-if="dataWasChanged"
+            <v-btn v-if="dataWasChanged"
                @click="resetForm"
+                   text
+                   color="primary"
                class="cancel-link"
                style="margin-right: 10px"
-            >Cancel</a>
+            >Cancel</v-btn>
             <v-btn id="save-btn"
                    v-if="userCanEdit"
-                   color="primaryButton"
+                   color="primary"
                    class="white--text mr-0"
                    @click="validateForm()"
             >Save
@@ -56,7 +58,7 @@
 
                 <!-- UTILITY RATES -->
                 <v-card class="mb-3">
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     Utility Rates
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -154,7 +156,7 @@
 
                 <!-- DESIGN UTILITY REQUIREMENTS -->
                 <v-card class="mb-3">
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     Design Utility Requirements
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -216,7 +218,7 @@
 
                 <!-- NOTES -->
                 <v-card>
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     Notes
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -236,7 +238,7 @@
               <v-col cols="12" md="4" class="px-1 mb-3">
                 <!-- OVERVIEW -->
                 <v-card class="mb-3">
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     Overview
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -273,7 +275,7 @@
 
                 <!-- CUSTOMER SIGNATURES -->
                 <v-card class="mb-3">
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     Customer Signatures
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -319,7 +321,7 @@
 
                 <!-- SUBMISSION DETAILS -->
                 <v-card>
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     Submission Details
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -394,7 +396,7 @@
               <v-col cols="12" md="4" class="px-1 mb-3">
                 <!-- APPROVAL DETAILS -->
                 <v-card class="mb-3">
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     Approval Details
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -443,7 +445,7 @@
                                  :isNested="true"
                     ></AhjDocument>
                     <v-card>
-                      <v-card-title class="primaryCustom white--text font-weight-bold">
+                      <v-card-title class="primary white--text font-weight-bold">
                         Rejections
                       </v-card-title>
                       <v-card-text class="mt-4">
@@ -481,7 +483,7 @@
 
                 <!-- PTO DETAILS -->
                 <v-card class="mb-3">
-                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                  <v-card-title class="primary white--text font-weight-bold">
                     PTO Details
                   </v-card-title>
                   <v-card-text class="mt-4">
@@ -536,7 +538,7 @@
                                   class="mb-4"
                     ></AhjChecklist>
                     <v-card class="mb-4">
-                      <v-card-title class="primaryCustom white--text font-weight-bold">
+                      <v-card-title class="primary white--text font-weight-bold">
                         Pending PTO Followup
                       </v-card-title>
                       <v-card-text class="mt-4">
@@ -568,7 +570,7 @@
                       </v-card-text>
                     </v-card>
                     <v-card class="mb-sm-3">
-                      <v-card-title class="primaryCustom white--text font-weight-bold">
+                      <v-card-title class="primary white--text font-weight-bold">
                         Final Completion Submission
                       </v-card-title>
                       <v-card-text class="mt-4">
@@ -815,7 +817,7 @@ export default {
   border-bottom: 1px solid #E6E6E6;
 
   .v-tab:hover {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 }
 

@@ -27,7 +27,7 @@
                      :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
                      @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
                      @dragover.prevent="dragTypeId=type.attachmentTypeId"
-                     elevation="0" color="transparent" class="expansion-panel-btn upload-button">
+                     elevation="0" text color="primary" class="expansion-panel-btn upload-button">
                 Upload
               </v-btn>
 

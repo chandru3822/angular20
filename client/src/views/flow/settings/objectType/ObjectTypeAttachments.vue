@@ -6,13 +6,13 @@
           <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAvailableAttachmentTypes" v-if="userCanAdd">
+            <v-btn text color="primary" @click="getAvailableAttachmentTypes" v-if="userCanAdd">
               <v-icon v-if="!addNewType">add</v-icon>
               {{ addNewType ? 'Cancel' : 'Add Type' }}
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewType">
+        <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewType">
           <v-autocomplete v-model="newType.attachmentTypeId"
                           :items="availableAttachmentTypes"
                           label="Select Attachment Type"
@@ -117,6 +117,12 @@
           </v-data-table>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!attachmentTypeToDelete"
+                        @confirm="[attachmentTypeToDelete.archived = true, deleteTypeFromObject()]"
+                        @close-dialog="attachmentTypeToDelete=null">
+      Are you sure you want to delete this attachment type: <strong>{{attachmentTypeToDeleteName}}</strong>?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -128,11 +134,13 @@ import Vue2Filters from "vue2-filters"
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ObjectTypeAttachments',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmationDialog,
     draggable
   },
   props: {
@@ -177,6 +185,9 @@ export default {
     })
   },
   computed: {
+    attachmentTypeToDeleteName() {
+      return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
+    },
     headers() {
       return [
         {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
@@ -198,6 +209,7 @@ export default {
       newType: {},
       availableAttachmentTypes: [],
       attachmentTypes: [],
+      attachmentTypeToDelete: null
     }
   },
   watch: {},
@@ -300,7 +312,8 @@ export default {
         }
       }
     },
-    async deleteTypeFromObject(id) {
+    async deleteTypeFromObject() {
+      const id = this.attachmentTypeToDelete.id
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false
@@ -314,6 +327,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.attachmentTypeToDelete = null
     },
     filterTypes() {
       return orderBy(this.attachmentTypes.filter(e => { return !e.archived}), [e => e.displayOrder])

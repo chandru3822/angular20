@@ -4,12 +4,12 @@
       <v-card-title>
         Add Contact
         <v-spacer></v-spacer>
-        <v-btn v-if="!constants.IS_MOBILE" text class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn v-if="!constants.IS_MOBILE" color="primaryCustom white--text" :disabled="loadingInsertFields" @click="validate(true)">Save</v-btn>
+        <v-btn v-if="!constants.IS_MOBILE" text color="primary" class="mr-3" to="/contacts">Cancel</v-btn>
+        <v-btn v-if="!constants.IS_MOBILE" color="primary white--text" :disabled="loadingInsertFields" @click="validate(true)">Save</v-btn>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
-        <v-btn text class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields"
+        <v-btn text class="mr-3" color="primary" to="/contacts">Cancel</v-btn>
+        <v-btn color="primary white--text" :disabled="loadingInsertFields"
                @click="validate(true)" id="qa-add-contact-save"  >Save</v-btn>
       </v-card-text>
       <v-form ref="contactForm">
@@ -78,7 +78,7 @@
             </v-col>
           </v-row>
         </v-container>
-        <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
           <h3>{{cfg.groupName}}</h3>
           <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"

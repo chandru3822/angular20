@@ -23,6 +23,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text
+                   color="primary"
                    @click="setSplitColumnValue()">
               <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
               <v-icon v-else>mdi-format-align-justify</v-icon>
@@ -30,8 +31,8 @@
             <div>
               <v-btn
                 v-if="userCanEdit"
-                color="primaryCustom"
-                class="white--text mt-3"
+                color="primary"
+                class="mt-3"
                 :loading="isFieldsLoading"
                 :disabled="fieldsSaving"
                 @click="updateFieldGroups()">Save Fields
@@ -43,7 +44,7 @@
       <div class="project-fields-container px-3" ref="projectFieldsContainer">
         <v-form ref="projectForm">
           <v-col v-if="isFieldsLoading">
-            <SpinnerInline :size="20" color="primaryCustom"/>
+            <SpinnerInline :size="20" color="primary"/>
           </v-col>
 
           <div v-else>

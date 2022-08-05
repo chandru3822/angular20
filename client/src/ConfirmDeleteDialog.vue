@@ -6,7 +6,7 @@
       <v-tooltip top v-if="showTooltip">
         <template v-slot:activator="{ on: tooltip }">
           <div v-on="{ ...tooltip }" class="d-inline-block">
-            <v-btn v-if="textbutton" color="brRed" class="white--text py-1 px-2 align-center" small v-on="on" :disabled="isDisabled">
+            <v-btn v-if="textbutton" color="error" class="white--text py-1 px-2 align-center" small v-on="on" :disabled="isDisabled">
               Delete
             </v-btn>
             <v-btn v-else small text v-on="on" :disabled="isDisabled" class="align-center">
@@ -22,7 +22,7 @@
              small v-on="on" :disabled="isDisabled">
         Delete
       </v-btn>
-      <v-btn v-else small text v-on="on" :disabled="isDisabled" class="align-center">
+      <v-btn v-else small text color="primary" v-on="on" :disabled="isDisabled" class="align-center">
         <v-icon>delete</v-icon>
       </v-btn>
     </template>
@@ -40,13 +40,14 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
+            text color="primary"
             @click="no"
-            class="elevation-2 text-capitalize mr-2 mb-2"
+            class="text-capitalize mr-2 mb-2"
         >
           No
         </v-btn>
         <v-btn
-            color="primaryButton"
+            color="primary"
             class="white--text elevation-2 text-capitalize mr-2 mb-2"
             @click="yes">
           Yes
@@ -74,7 +75,7 @@ export default {
   },
   methods: {
     yes(){
-      this.$emit('confirm-delete')
+      this.$emit('confirm')
       this.openDialog = false
     },
     no() {

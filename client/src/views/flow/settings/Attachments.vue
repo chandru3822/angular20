@@ -82,12 +82,11 @@
                     <v-btn small text @click="goToType(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      label="this attachment type: "
-                      :item-to-delete="item.attachmentType"
-                      @confirm-delete="deleteType(item)"
-                    ></confirm-delete-dialog>
+                    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                        @confirm=deleteType
+                                        @close-dialog="closeDeleteDialog"
+                    >Are you sure you want to delete this attachment type:
+                      <strong>{{ itemToDeleteAttachmentType }}</strong></ConfirmationDialog>
                   </td>
 
                 </tr>
@@ -117,10 +116,11 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Attachments',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   mixins: [Vue2Filters.mixin],
 
   data() {
@@ -131,6 +131,7 @@ export default {
       search: '',
       addNew: false,
       newType: {},
+      selectedAttachmentTypeId: null,
       userId: this.$store.state.user.details.id,
       companyId: this.$store.state.user.details.companyId,
       cannotDeleteReasons: {},
@@ -143,9 +144,15 @@ export default {
         'items-per-page-options': [25, 50, 100, 1000],
         'items-per-page-text': 'Rows per page:'
       },
+      showDeleteDialog: false,
+      itemToDelete: null
     }
   },
-  computed: {},
+  computed: {
+    itemToDeleteAttachmentType() {
+      return this.itemToDelete ? this.itemToDelete.attachmentType : ''
+    }
+  },
   async created() {
     await this.getAttachmentTypes()
   },
@@ -167,7 +174,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteType(item) {
+    async deleteType() {
+      const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/attachmentType/delete/${item.id}`)
@@ -186,6 +194,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.closeDeleteDialog()
     },
     async addNewType() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -212,7 +221,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-
+    closeDeleteDialog() {
+      this.showDeleteDialog = false
+      this.itemToDelete = null
+    },
     filterTypes() {
       return this.attachmentTypes.filter(e => {
         return !e.archived

@@ -25,7 +25,7 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"
@@ -42,14 +42,14 @@
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="!createNew && userCanAdd" @click="createNew = !createNew">
+            <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Create Group</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
-                color="rowShadeCustom">
+                color="primary lighten-9">
           <div>
             <v-text-field
               label="Group Name"
@@ -58,13 +58,14 @@
             ></v-text-field>
           </div>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             class="white--text mr-2"
             :disabled="!newGroup.groupName"
             @click="saveFieldGroup()">
             Save
           </v-btn>
           <v-btn
+              text color="primary"
             @click="[newGroup = {}, createNew = false]">
             Cancel
           </v-btn>
@@ -95,7 +96,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <v-btn text icon small class="handle" v-if="userCanEdit">
+                    <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
@@ -105,8 +106,8 @@
                                     v-if="item.edit"
                                     v-model="item.groupName">
                         <template slot="append-outer">
-                          <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
-                          <v-icon @click="item.edit = false">clear</v-icon>
+                          <v-icon color="primary" @click="[saveGroupName(item), item.edit = false]">save</v-icon>
+                          <v-icon color="primary" @click="item.edit = false">clear</v-icon>
                         </template>
                       </v-text-field>
                       <a style="text-decoration: underline;" v-else @click="item.edit = true">
@@ -117,60 +118,25 @@
                   </td>
                   <td>
                     <div class="item-icons">
-                      <v-btn v-if="userCanAdd" small text
+                      <v-btn v-if="userCanAdd" small text color="primary"
                              @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                         <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                         <v-icon v-else>add</v-icon>
                       </v-btn>
-                      <v-btn small text
+                      <v-btn small text color="primary"
                              @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
                       </v-btn>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="item.deleteConfirm"
-                        width="500">
-                        <template #activator="{ on }">
-                          <v-btn small text v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title>
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text class="pt-4">
-                            <span class="error--text">WARNING:</span>
-                            By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
-
-                            Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName
-                            }}</strong>?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="item.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="deleteWithChecks(item, item.id, null)">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
+                      <v-btn v-if="userCanEdit" small text color="primary" @click="customFieldGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
                     </div>
                   </td>
                 </tr>
+                <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete" @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
+                  <span class="error--text">WARNING:</span>
+                  By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                  Are you sure you want to delete this Custom Field Group: <strong>{{ itemToDeleteGroupName }}</strong>?
+                </ConfirmationDialog>
               </template>
 
               <template #expanded-item="{ headers, item }">
@@ -224,7 +190,7 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <v-btn @click="addField = false">Cancel</v-btn>
+                    <v-btn color="primary" @click="addField = false">Cancel</v-btn>
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -240,7 +206,7 @@
                               :key="index" class="pa-0" color="transparent">
                         <v-list-item class="grab">
                           <v-list-item-action>
-                            <v-icon v-if="userCanEdit">drag_handle</v-icon>
+                            <v-icon color="primary" v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
                             <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
@@ -250,7 +216,7 @@
                               <div class="text-left mt-3" v-if="cf.edit">
                                 <v-row>
                                   <v-col cols="6">
-                                    <v-card flat color="rowShadeCustom" class="square-card">
+                                    <v-card flat color="primary lighten-9" class="square-card">
                                       <v-card-title style="height: 40px" class="py-0">
                                         Read Only
                                         <v-checkbox type="checkbox" class="ml-3" v-if="cf.systemReadonly"
@@ -307,7 +273,7 @@
                                           </template>
                                         </v-autocomplete>
                                         <br/>
-                                        <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                                        <v-btn color="primary" dark class="d-inline-block white--text"
                                                @click="saveReadOnlyAndWhiteList(cf)">
                                           <v-icon class="mr-2">save</v-icon>
                                           Save Read Only
@@ -316,7 +282,7 @@
                                     </v-card>
                                   </v-col>
                                   <v-col cols="6">
-                                    <v-card flat color="rowShadeCustom" class="square-card">
+                                    <v-card flat color="primary lighten-9" class="square-card">
                                       <v-card-title style="height: 40px" class="py-0">
                                         Hidden
                                         <v-checkbox type="checkbox" class="ml-2"
@@ -367,7 +333,7 @@
                                           </template>
                                         </v-autocomplete>
                                         <br/>
-                                        <v-btn color="primaryCustom" dark class="white--text d-inline-block"
+                                        <v-btn color="primary" dark class="white--text d-inline-block"
                                                @click="saveHiddenAndWhiteList(cf)">
                                           <v-icon class="mr-2">save</v-icon>
                                           Save Hidden
@@ -394,7 +360,7 @@
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small v-on="{...tooltip, ...menu}"
+                                  <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
                                          v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
                                     <v-icon>mdi-cursor-move</v-icon>
                                   </v-btn>
@@ -410,52 +376,10 @@
                               </v-list-item>
                             </v-list>
                           </v-menu>
-                          <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
+                          <v-btn text color="primary" small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
                             <v-icon>edit</v-icon>
                           </v-btn>
-
-                          <v-dialog
-                            v-if="userCanEdit"
-                            v-model="cf.deleteConfirm"
-                            width="500">
-                            <template v-slot:activator="{ on }">
-                              <v-list-item-action class="clickable" v-on="on">
-                                <v-icon>delete</v-icon>
-                              </v-list-item-action>
-                            </template>
-                            <v-card>
-                              <v-card-title
-                                class="text-h5 grey lighten-2"
-                                primary-title>
-                                Confirm
-                              </v-card-title>
-
-                              <v-card-text class="mt-2">
-                                <span class="error--text">WARNING:</span>
-                                By deleting a field you will lose all data associated with the field. If you meant to
-                                "move" the field to another group please cancel and move the field. <br/><br/>
-
-                                Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
-                                item.groupName }}</strong>?
-                              </v-card-text>
-
-                              <v-divider></v-divider>
-
-                              <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                  @click="cf.deleteConfirm = false">
-                                  No
-                                </v-btn>
-                                <v-btn
-                                  color="primaryCustom"
-                                  text
-                                  @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
-                                  Yes
-                                </v-btn>
-                              </v-card-actions>
-                            </v-card>
-                          </v-dialog>
+                          <v-btn v-if="userCanEdit" text color="primary" small @click="[assignmentToDelete=cf, customFieldGroupToDelete=item]"><v-icon>delete</v-icon></v-btn>
                         </v-list-item>
                         <v-divider v-if="cf.edit"></v-divider>
                       </v-list>
@@ -469,6 +393,14 @@
 
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!assignmentToDelete" @confirm="[addField=false, newField={}, deleteWithChecks()]" @close-dialog="[customFieldGroupToDelete = null, assignmentToDelete = null]">
+      <span class="error--text">WARNING:</span>
+      By deleting a field you will lose all data associated with the field. If you meant to
+      "move" the field to another group please cancel and move the field. <br/><br/>
+
+      Are you sure you want to delete <strong>{{ assignmentToDeleteFieldName }}</strong> from <strong>{{itemToDeleteGroupName}}</strong>?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -489,12 +421,14 @@
   import Sortable from "sortablejs";
   import cloneDeep from 'lodash.clonedeep'
   import orderBy from "lodash.orderby"
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
     mixins: [Vue2Filters.mixin],
     components: {
+      ConfirmationDialog,
       draggable,
     },
     props: {
@@ -564,7 +498,9 @@
           {text: null, value: 'icons', show: true}
         ],
         expanded: [],
-        eventTypes: []
+        eventTypes: [],
+        customFieldGroupToDelete: null,
+        assignmentToDelete: null
       }
     },
     computed: {
@@ -579,7 +515,12 @@
           return orderBy(val, v => v.groupOrder)
         }
       },
-
+      itemToDeleteGroupName(){
+        return this.customFieldGroupToDelete ? this.customFieldGroupToDelete.groupName : ''
+      },
+      assignmentToDeleteFieldName() {
+        return this.assignmentToDelete ? this.assignmentToDelete.fieldName : ''
+      }
     },
     methods: {
       selectAll(f) {
@@ -617,7 +558,15 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
+      async deleteWithChecks() {
+        let item, customFieldGroupId, customFieldGroupAssignmentId;
+        if(this.assignmentToDelete){
+          item = this.assignmentToDelete
+          customFieldGroupAssignmentId = this.assignmentToDelete.id
+        } else {
+          item = this.customFieldGroupToDelete
+          customFieldGroupId = this.customFieldGroupToDelete.id
+        }
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
@@ -652,6 +601,8 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.assignmentToDelete = null
+        this.customFieldGroupToDelete = null
       },
       async saveGroupName(group) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -919,11 +870,11 @@
 
 <style scoped lang="scss">
   .custom-field-group {
-    border: solid 1px var(--v-rowShadeCustom-base) !important;
+    border: solid 1px var(--v-primary-lighten9) !important;
   }
 
   .custom-field-group-border {
-    border-bottom: solid 1px var(--v-rowShadeCustom-base) !important;
+    border-bottom: solid 1px var(--v-primary-lighten9) !important;
   }
 
   .item-icons {

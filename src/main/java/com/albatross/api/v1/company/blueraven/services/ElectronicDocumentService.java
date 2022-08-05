@@ -93,7 +93,7 @@ public class ElectronicDocumentService {
     return pandaDocs.toString();
   }
 
-  public String generateDoc(Long projectId, String templateId) throws Exception {
-    return pandaDocService.generateElectronicDocument(projectId, templateId);
+  public String generateDoc(Long projectId, String templateId, String documentName) throws Exception {
+    return pandaDocService.generateElectronicDocument(projectId, templateId, documentName);
   }
 }

@@ -51,7 +51,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primaryCustom"
+                  color="primary"
                   class="white--text"
                   :disabled="null == payDate"
                   @click="submitForApproval(payrollStatus.secondaryAction)">
@@ -86,8 +86,8 @@
                             v-model="currentPayroll.description"></v-text-field>
 
               <div class="text-left">
-                <v-btn color="primaryCustom" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
-                <v-btn color="primaryCustom" class="ml-3" dark @click="exportAccountingReview()">Export</v-btn>
+                <v-btn color="primary" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
+                <v-btn color="primary" class="ml-3" dark @click="exportAccountingReview()">Export</v-btn>
               </div>
             </v-card>
           </v-col>
@@ -114,8 +114,8 @@
               ></v-autocomplete>
 
               <div class="text-left">
-                <v-btn color="primaryCustom" dark @click="getAccountingData()">Search</v-btn>
-                <v-btn class="ml-3" @click="[accountingSearch = {}, getAccountingData()]">Reset</v-btn>
+                <v-btn color="primary" dark @click="getAccountingData()">Search</v-btn>
+                <v-btn class="ml-3" text color="primary" @click="[accountingSearch = {}, getAccountingData()]">Reset</v-btn>
               </div>
             </v-card>
           </v-col>
@@ -158,13 +158,13 @@
             </template>
 
             <template v-slot:header.data-table-select="{ on, props }">
-              <v-checkbox color="primaryCustom" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
+              <v-checkbox color="primary" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
             </template>
 
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }" v-if="positionId === 1">
                 <td v-if="payrollStatus.showSelect">
-                  <v-checkbox color="primaryCustom" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
+                  <v-checkbox color="primary" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
                 <td class="text-left">{{item.project_id}}</td>
                 <td class="text-left">{{item.customer_name }}</td>
@@ -195,7 +195,7 @@
                     v-model="item.dialog"
                     width="500">
                     <template v-slot:activator="{ on }">
-                      <v-btn x-small color="primaryCustom" dark fab class="ml-2" v-on="on"
+                      <v-btn x-small color="primary" dark fab class="ml-2" v-on="on"
                              @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]" >
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -245,7 +245,7 @@
                         <v-btn @click="item.dialog = false">
                           Cancel
                         </v-btn>
-                        <v-btn color="primaryCustom" class="white--text"
+                        <v-btn color="primary" class="white--text"
                                :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
                                @click="addAdjustment(item)">
                           Add
@@ -264,7 +264,7 @@
               </tr>
               <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }" v-else>
                 <td v-if="payrollStatus.showSelect">
-                  <v-checkbox color="primaryCustom" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
+                  <v-checkbox color="primary" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
                 <td class="text-left">{{item.project_id}}</td>
                 <td class="text-left">{{item.project_name }}</td>
@@ -285,7 +285,7 @@
                     v-model="item.dialog"
                     width="500">
                     <template v-slot:activator="{ on }">
-                      <v-btn x-small color="primaryCustom" dark fab class="ml-2" v-on="on"
+                      <v-btn x-small color="primary" dark fab class="ml-2" v-on="on"
                              @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]" >
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -335,7 +335,7 @@
                         <v-btn @click="item.dialog = false">
                           Cancel
                         </v-btn>
-                        <v-btn color="primaryCustom" class="white--text"
+                        <v-btn color="primary" class="white--text"
                                :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
                                @click="addAdjustment(item)">
                           Add
@@ -648,7 +648,7 @@
             this.payrollStatus.showSelect = true
             this.payrollStatus.action = 'submit'
             this.payrollStatus.actionText = 'Submit For Approval'
-            this.payrollStatus.actionColor = 'primaryCustom'
+            this.payrollStatus.actionColor = 'primary'
             break
           case 'SUBMITTED':
             this.payrollStatus.message = 'This payroll has been Submitted.'
@@ -668,7 +668,7 @@
             this.payrollStatus.showSelect = true
             this.payrollStatus.action = 'submit'
             this.payrollStatus.actionText = 'Submit For Approval'
-            this.payrollStatus.actionColor = 'primaryCustom'
+            this.payrollStatus.actionColor = 'primary'
             break
           default:
             this.payrollStatus = {}

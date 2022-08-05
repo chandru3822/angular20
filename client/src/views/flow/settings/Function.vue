@@ -91,7 +91,7 @@
               </td>
               <!-- icon column -->
               <td>
-                <v-btn text v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)" @click="handleExpand(item, true)">
+                <v-btn text color="primary" v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)" @click="handleExpand(item, true)">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn text v-if="item.parameterTypeId === 3 && expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>

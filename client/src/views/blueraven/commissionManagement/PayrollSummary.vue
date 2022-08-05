@@ -22,7 +22,7 @@
 
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text x-small :disabled="dataLoading" @click="exportPayrollSummary">
+              <v-btn text x-small color="primary" :disabled="dataLoading" @click="exportPayrollSummary">
                 <v-icon>download</v-icon>
               </v-btn>
             </div>

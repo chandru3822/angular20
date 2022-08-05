@@ -21,7 +21,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"
@@ -77,18 +77,13 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text
+                    <v-btn class="clickable" small text color="primary"
                            @click="[expanded.includes(item) ? expanded = [] : expanded = [item], item.newFieldName = item.fieldName, selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
                       <v-icon v-if="expanded.includes(item)">remove</v-icon>
                       <v-icon v-else-if="item.custom">add</v-icon>
                       <v-icon v-else>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                      v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      label="this field: "
-                      :item-to-delete="item.fieldName"
-                      @confirm-delete="deleteField(item)"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -97,7 +92,7 @@
               <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': selectedIndex % 2}">
                 <v-col class="flex-display pl-3 pr-3 justify" :class="{'shaded-row': selectedIndex % 2}">
                   <v-card text class="text-center field-card one-hunned" flat
-                          :color="selectedIndex % 2 ? 'rowShadeCustom' : 'white'">
+                          :color="selectedIndex % 2 ? 'primary lighten-9' : 'white'">
                     <v-card-text>{{ item.custom ? 'Add Field' : 'Edit Field' }}</v-card-text>
                     <v-text-field
                       label="Field Name"
@@ -242,21 +237,23 @@
                               </v-text-field>
                             </v-list-item-content>
                             <v-list-item-action class="grab" v-if="!item.sortListValuesAlphabetically">
-                              <v-icon>drag_handle</v-icon>
+                              <v-icon color="primary">drag_handle</v-icon>
                             </v-list-item-action>
                             <v-list-item-action class="clickable" @click="ddo.archived = true">
-                              <v-icon>delete</v-icon>
+                              <v-icon color="primary">delete</v-icon>
                             </v-list-item-action>
                           </v-list-item>
                         </v-list>
                       </draggable>
                       <v-btn
+                          color="primary"
                         @click="addOption(item.listOfValues)">
                         Add Option
                       </v-btn>
                     </v-col>
                     <v-btn
                       v-if="userCanEdit"
+                      color="primary"
                       :disabled="invalid(item)"
                       @click="[saveChanges(item.custom, item), item.expanded = !item.expanded]">
                       {{ item.custom ? 'Add Field' : 'Save Changes' }}
@@ -269,6 +266,12 @@
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteField"
+                                 @close-dialog="closeDeleteDialog">
+      Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -290,6 +293,7 @@ import {
 } from "@/helpers/helpers";
 import constants from "@/helpers/constants";
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: "CustomFields",
@@ -298,6 +302,7 @@ export default {
     apiPath: {type: String}
   },
   components: {
+    ConfirmationDialog,
     ConfirmDeleteDialog,
     draggable
   },
@@ -339,8 +344,15 @@ export default {
         createdById: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         listOfValues: [],
-      }
+      },
+      showDeleteDialog: false,
+      itemToDelete: null
     };
+  },
+  computed : {
+    itemToDeleteName() {
+      return this.itemToDelete ? this.itemToDelete.fieldName : ''
+    }
   },
   async created() {
     this.fieldsLoading = true
@@ -455,7 +467,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
       }
     },
-    async deleteField(item) {
+    async deleteField() {
+      const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
         const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, []);
@@ -481,6 +494,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
         this.$store.commit(AppMutations.SET_LOADING, false);
       }
+      this.closeDeleteDialog()
     },
     async saveChanges(editMode, object) {
       this.$store.commit(AppMutations.SET_LOADING, true);
@@ -554,6 +568,10 @@ export default {
       return this.customFields.filter(cf => {
         return !cf.archived;
       });
+    },
+    closeDeleteDialog(){
+      this.showDeleteDialog = false
+      this.itemToDelete = null
     }
   }
 };

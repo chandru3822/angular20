@@ -30,7 +30,7 @@
       </template>
     </v-row>
 
-    <v-btn icon class="templateButton " style="display: none" small>
+    <v-btn icon color="primary" class="templateButton " style="display: none" small>
       <v-tooltip bottom small>
         <template v-slot:activator="{on, attrs}">
           <v-icon @click="" v-bind="attrs" v-on="on">
@@ -133,7 +133,7 @@ export default {
           bg: '#ffffff'
         },
         sentMessage: {
-          bg: '#4e8cff',
+          bg: 'var(--v-primary-lighten3)',
           text: '#ffffff'
         },
         receivedMessage: {
@@ -142,7 +142,7 @@ export default {
         },
         userInput: {
           bg: '#f4f7f9',
-          text: '#565867',
+          text: '#1F3C73',
           button: '#1F3C73'
         }
       }, // specifies the color scheme for the component
@@ -379,6 +379,10 @@ export default {
 <style lang="scss">
 .hide-chat {
   display: none !important;
+}
+
+a.chatLink {
+  color: white;
 }
 
 .message-container {

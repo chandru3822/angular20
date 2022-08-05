@@ -195,7 +195,7 @@ public class PandaDocService {
       throw ex;
     }
 
-    JSONObject body = getDocumentBody(templateId, templateFields, tokens);
+    JSONObject body = getDocumentBody(templateId, templateFields, tokens, null);
     body = setRecipientInfo(body, deets);
 
     log.debug("PANDADOC_BODY: {}", body.toString());
@@ -216,7 +216,7 @@ public class PandaDocService {
     return respBody.toString();
   }
 
-  public String generateElectronicDocument(Long projectId, String templateId) throws Exception {
+  public String generateElectronicDocument(Long projectId, String templateId, String documentName) throws Exception {
     log.debug(
         "PANDADOC: creating document for project {} using template {}", projectId, templateId);
     JSONObject template = getTemplateDetails(templateId);
@@ -224,7 +224,7 @@ public class PandaDocService {
 
     List<String> templateFields = getExpectedFields(template);
     JSONObject tokens = getProjectTokens(projectId);
-    JSONObject body = getDocumentBody(templateId, templateFields, tokens);
+    JSONObject body = getDocumentBody(templateId, templateFields, tokens, documentName);
 
     setRecipientInfoElecDocs(template, tokens, body);
     HttpResponse resp = POST("/documents", body.toString());
@@ -405,18 +405,26 @@ public class PandaDocService {
    * @throws JSONException
    */
   public JSONObject getDocumentBody(
-      String templateId, List<String> templateFields, JSONObject tokens) throws JSONException {
+      String templateId, List<String> templateFields, JSONObject tokens, String documentName) throws JSONException {
     JSONObject body = new JSONObject();
     JSONObject fields = new JSONObject();
 
-    body.put(
-        "name",
-        joinIfPresent(
-            " ",
-            pandaDoc.getDocumentPrefix(),
-            tokens.getString("Deal.Contact.Name"),
-            tokens.optString("Deal.Proposal Number"),
-            "Installation Agreement"));
+    String name = "";
+    if (documentName == null || documentName.isEmpty()) {
+      name = joinIfPresent(
+        " ",
+        pandaDoc.getDocumentPrefix(),
+        tokens.getString("Deal.Contact.Name"),
+        tokens.optString("Deal.Proposal Number"),
+        "Installation Agreement");
+    }
+    else {
+      name = joinIfPresent(
+        " ",
+        pandaDoc.getDocumentPrefix(),
+        documentName);
+    }
+    body.put("name", name);
     body.put("template_uuid", templateId);
 
     // organize tokens and fields the way PandaDoc requires

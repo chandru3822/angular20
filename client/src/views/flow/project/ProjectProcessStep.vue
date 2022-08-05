@@ -30,7 +30,7 @@
                 No
               </v-btn>
               <v-btn
-                color="primaryCustom"
+                color="primary"
                 text
                 @click="[navigationOverride = true, goToPath(toPath, query)]">
                 Yes
@@ -87,7 +87,7 @@
                     No
                   </v-btn>
                   <v-btn
-                    color="primaryCustom"
+                    color="primary"
                     text
                     @click="[processStep.changeActiveConfirm = false, processStep.main = true, showMainDialog = true]">
                     Yes
@@ -106,7 +106,7 @@
                   <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
                 </div>
                 </div>
-                <v-btn v-if="userCanEdit" small icon class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
+                <v-btn v-if="userCanEdit" small icon color="primary" class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
               </div>
             </div>
             <div v-if="displayChangeOwner">
@@ -126,7 +126,7 @@
               </v-autocomplete>
             </div>
             <div>
-              <v-btn text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
+              <v-btn color="primary" text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
                      :class="{'mt-2': displayChangeOwner}"
                      @click="displayChangeOwner = !displayChangeOwner">
                 <span v-if="displayChangeOwner">cancel</span>
@@ -182,6 +182,7 @@
           <v-btn
             class="back-btn show-unperformable-actions-btn"
             text
+            color="primary"
             :ripple="false"
             @click="showUnperformableActions = !showUnperformableActions"
           >
@@ -221,11 +222,11 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text @click="setSplitColumnValue()" class="px-0">
+          <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
             <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
-          <v-btn v-if="!getReadOnly() && projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text small @click="showUploadModal = true" class="px-0">
+          <v-btn v-if="!getReadOnly() && projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text color="primary" small @click="showUploadModal = true" class="px-0">
             <v-icon class="px-0">mdi-upload</v-icon>
           </v-btn>
           <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
@@ -237,8 +238,8 @@
           </v-dialog>
           <div>
             <v-btn
-              color="primaryCustom"
-              class="white--text mt-3 ml-2"
+              color="primary"
+              class="mt-3 ml-2"
               :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
             >Save Fields
@@ -313,7 +314,7 @@
     />
   </v-main>
   <v-main v-else>
-    <SpinnerInline centered :size="50" color="primaryCustom"/>
+    <SpinnerInline centered :size="50" color="primary"/>
   </v-main>
 </template>
 
@@ -834,7 +835,7 @@ owner-toolbar-tools {
 }
 
 .owner-position {
-  color: #9E9C9C;
+  color: var(--v-grey-darken2);
 }
 
 .banner-card-swatch {

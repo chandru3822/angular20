@@ -9,11 +9,11 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!position.position || (!position.orgTypeId && !clonePositionId)" @click="savePosition" color="primaryCustom" v-if="userCanEdit || userCanEditAccessControl">
+            <v-btn text :disabled="!position.position || (!position.orgTypeId && !clonePositionId)" @click="savePosition" color="primary" v-if="userCanEdit || userCanEditAccessControl">
               <v-icon>save</v-icon>
               Save
             </v-btn>
-            <v-btn text @click="$router.push('/settings/positions')">
+            <v-btn text color="primary" @click="$router.push('/settings/positions')">
               <v-icon>close</v-icon>
               Close
             </v-btn>

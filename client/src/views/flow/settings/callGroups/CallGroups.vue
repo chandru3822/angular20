@@ -17,7 +17,7 @@
                             tabindex=1
                             v-model="daysPerPeriod">
               </v-text-field>
-              <v-btn :disabled="!maxCallCount || !daysPerPeriod" text color="primaryCustom" @click="saveGroupInfo()">
+              <v-btn :disabled="!maxCallCount || !daysPerPeriod" text color="primary" @click="saveGroupInfo()">
                 <v-icon>save</v-icon>
               </v-btn>
             </div>
@@ -29,10 +29,10 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit" @click="editGroup = !editGroup">
+            <v-btn text color="primary" v-if="userCanEdit" @click="editGroup = !editGroup">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -44,7 +44,7 @@
                 tabindex=1
                 v-model="newCallGroup.callGroupName"
             ></v-text-field>
-            <v-btn :disabled="!newCallGroup.callGroupName" @click="addCallGroup">Save</v-btn>
+            <v-btn color="primary" :disabled="!newCallGroup.callGroupName" @click="addCallGroup">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -82,15 +82,10 @@
                     <v-select attach style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
                   </td>
                   <td class="text-right">
-                    <v-btn small text @click="goToCallGroup(item.id)">
+                    <v-btn small text color="primary" @click="goToCallGroup(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="userCanDelete"
-                        label="this call group: "
-                        :item-to-delete="item.callGroupName"
-                        @confirm-delete="[item.archived = true, deleteCallGroup(item.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanDelete" small text color="primary" @click="callGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </td>
                 </tr>
               </template>
@@ -99,6 +94,9 @@
         </v-container>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!callGroupToDelete" @confirm="[callGroupToDelete.archived = true, deleteCallGroup()]" @close-dialog="callGroupToDelete = null">
+      Are you sure you want to delete this call group: <strong>{{callGroupToDeleteName}}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -107,11 +105,11 @@
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
   import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'CallGroups',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -140,10 +138,14 @@
         items: [
           {text: 'Active', value: true},
           {text: 'Disabled', value: false}
-        ]
+        ],
+        callGroupToDelete: null
       }
     },
     computed: {
+      callGroupToDeleteName(){
+        return this.callGroupToDelete ? this.callGroupToDelete.callGroupName : ''
+      }
     },
     methods: {
       debounceSearch: debounce( function () {
@@ -175,7 +177,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteCallGroup (groupId) {
+      async deleteCallGroup () {
+        const groupId = this.callGroupToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
@@ -188,6 +191,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.callGroupToDelete = null
       },
       async addCallGroup () {
         this.$store.commit(AppMutations.SET_LOADING, true)

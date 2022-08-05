@@ -13,7 +13,7 @@
                 {{f.companyFunctionName}}
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <v-btn :to="{ path: `/settings/function/${f.id}`}" text>
+                <v-btn :to="{ path: `/settings/function/${f.id}`}" text color="primary">
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-list-item-action>

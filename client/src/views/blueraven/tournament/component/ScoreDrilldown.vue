@@ -7,7 +7,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text @click="$emit('scoreDialogClosed')">
+        <v-btn text color="primary" @click="$emit('scoreDialogClosed')">
           Close
         </v-btn>
       </v-toolbar-items>
