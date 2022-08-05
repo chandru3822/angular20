@@ -69,7 +69,7 @@ public class CommunicationController {
     Contact contact = contactService.getContact(contactId);
     log.debug("TWILIO: attempting text for contact ID: {}", contactId);
     if (null != contact) {
-      String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
+      String phoneNumber = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();
       try {
         String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
         Optional<Project> projectIn = projectService.getProject(projectId);
