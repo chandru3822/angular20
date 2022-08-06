@@ -251,6 +251,7 @@
       <template v-slot:right-column>
         <ProjectActivity v-if="user && user.id"
                          :user-id="userId"
+                         :force-show-upload-btn="true"
                          :show-sms-tab="false"></ProjectActivity>
       </template>
     </ThreeColumnLayout>

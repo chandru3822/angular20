@@ -311,11 +311,11 @@ where ppse.id = :id
         a.content_type,
         a.s3_key,
         a.archived,
+        ppsa.linked,
         substring(filename, '\.([^\.]+)$') as file_extension,
         ps.process_step_name,
         ppsa.project_process_step_event_id,
         pps.id as "projectProcessStepId",
-        pps.main,
         concat(u.first_name, ' ', u.last_name) AS uploadedBy
       from flow.project_process_step_event_attachment ppsa
              inner join flow.attachment a on a.id = ppsa.attachment_id

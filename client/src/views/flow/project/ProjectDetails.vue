@@ -22,6 +22,28 @@
           <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-menu data-app left
+                    offset-y
+                    v-model="attachmentMenuOpen"
+                    max-height="350"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <v-btn text color="primary" @click="loadProjectTypes()" v-on="on">
+                  <v-icon>mdi-tray-arrow-up</v-icon>
+                </v-btn>
+              </template>
+              <v-list dense class="pa-3">
+                <template v-for="(item, index) in attachmentTypes">
+                  <v-list-item
+                    :key="index"
+                    @click="menuOpen = false">
+                    <v-list-item-content>
+                      <v-list-item-title>{{item.attachmentType}}</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+              </v-list>
+            </v-menu>
             <v-btn text
                    color="primary"
                    @click="setSplitColumnValue()">
@@ -48,42 +70,57 @@
           </v-col>
 
           <div v-else>
-            <v-col
-              :class="{ 'mt-4': index !== 0 }"
-              class="py-0"
-              v-for="(group, index) in displayedGroups"
-              :key="index"
-            >
-              <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-                <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
-              </v-toolbar>
-              <v-card class="px-4 text-left square-card">
-                <v-row>
-                  <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                    <CustomValueInput
-                      v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
-                      :key="idx"
-                      :required="field.required"
-                      :callback="populateDirtyCfvs"
-                      :readonly="getReadOnly(field)"
-                      :showFieldName="false"
-                      :field="field"
-                    />
-                  </v-col>
-                  <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
-                    <CustomValueInput
-                      v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
-                      :key="idx"
-                      :required="field.required"
-                      :callback="populateDirtyCfvs"
-                      :readonly="getReadOnly(field)"
-                      :showFieldName="false"
-                      :field="field"
-                    />
-                  </v-col>
-                </v-row>
-              </v-card>
-            </v-col>
+            <div v-if="selectedTab.id !== -1">
+              <v-col
+                :class="{ 'mt-4': index !== 0 }"
+                class="py-0"
+                v-for="(group, index) in displayedGroups"
+                :key="index"
+              >
+                <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+                  <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
+                </v-toolbar>
+                <v-card class="px-4 text-left square-card">
+                  <v-row>
+                    <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                      <CustomValueInput
+                        v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
+                        :key="idx"
+                        :required="field.required"
+                        :callback="populateDirtyCfvs"
+                        :readonly="getReadOnly(field)"
+                        :showFieldName="false"
+                        :field="field"
+                      />
+                    </v-col>
+                    <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                      <CustomValueInput
+                        v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
+                        :key="idx"
+                        :required="field.required"
+                        :callback="populateDirtyCfvs"
+                        :readonly="getReadOnly(field)"
+                        :showFieldName="false"
+                        :field="field"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-card>
+              </v-col>
+            </div>
+            <div v-else>
+              <AttachmentsFolderList :object-type-id="1"
+                                     :project-id="projectId"
+                                     :allow-upload="true"
+                                      :show-title="true"
+                                      title="Uploaded Documents"/>
+
+              <AttachmentsFolderList :object-type-id="1"
+                                     :project-id="projectId"
+                                     :linkable="true"
+                                     :show-title="true"
+                                     title="Linked Documents"/>
+            </div>
           </div>
         </v-form>
       </div>
@@ -106,6 +143,7 @@ import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from '@/stores/ProjectStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 export default {
@@ -113,6 +151,7 @@ export default {
   components: {
     SpinnerInline,
     CustomValueInput,
+    AttachmentsFolderList
   },
   data() {
     return {
@@ -128,6 +167,8 @@ export default {
       isProcessStepsLoading: false,
       isFieldsLoading: true,
       dirtyCfvs: [],
+      attachmentTypes: [],
+      attachmentMenuOpen: false,
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
@@ -166,6 +207,14 @@ export default {
   },
 
   methods: {
+    async loadProjectTypes() {
+      const {data} = await getRequestWithParams(`/attachmentType/objectType/project`, { params: {
+          linkable: false,
+          allowUpload: true,
+          focused: false
+        }})
+      this.attachmentTypes = data
+    },
     setSplitColumnValue() {
       //flip the flag
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
@@ -191,7 +240,17 @@ export default {
         }
         const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
         this.tabs = data
+        this.tabs.push({
+          archived: false,
+          companyObjectTypeId: 1,
+          displayOrder: this.tabs.length,
+          id: -1,
+          tabName: 'Uploaded and Linked Documents',
+          uniqueIdentifier: 'tab_documents'
+        })
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+        //used to preselect the docs tab for testing purposes
+        // this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
       } catch (e) {
         logError(e)
       } finally {

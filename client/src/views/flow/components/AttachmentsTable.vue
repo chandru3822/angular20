@@ -2,7 +2,7 @@
   <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
 
   <v-container v-else dense :key="renderTicker" id="attachment-table">
-    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'primary-row': item.main}" :key="item.processStepId">
+    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :key="item.processStepId">
       <v-col cols="6" class="text-left pa-1">
         <v-btn
             icon
@@ -61,13 +61,15 @@ export default {
   props: {
     attachments: Array,
     displayType: Object,
-    showNonPrimaryDocs: Boolean
+    showLinked: Boolean,
+
   },
   data () {
     return {
       renderTicker: 0,
       attachmentDeleteConfirm: false,
-      attachmentToDelete: {}
+      attachmentToDelete: {},
+
     }
   },
   computed: {
@@ -75,12 +77,7 @@ export default {
       if (this.displayType === null) {
         return []
       } else {
-        if (this.showNonPrimaryDocs) {
-          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
-        }
-        else {
-          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.main)
-        }
+        return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.showLinked)
       }
     },
     attachmentToDeleteName(){

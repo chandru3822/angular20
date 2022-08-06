@@ -351,8 +351,7 @@ public class AttachmentService {
     setAttachmentUrl(storageBucket, attachment);
     setAttachmentPresignedUrl(storageBucket, attachment);
     setAttachmentPublicUrl(attachment);
-    // all project attachments are considered "main"
-    attachment.setMain(true);
+    attachment.setLinked(false);
     return attachment;
   }
 

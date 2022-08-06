@@ -1,7 +1,21 @@
 <template>
   <div>
+    <div v-if="activityTab" class="px-5">
+      <v-text-field
+        v-model="search"
+        prepend-inner-icon="search"
+        label="Search all project documents"
+        single-line
+        hide-details
+      ></v-text-field>
+
+      <v-btn color="primary" class="my-4">
+        Compare
+      </v-btn>
+    </div>
+    <div v-if="showTitle" class="attachment-section-title">{{title}}</div>
     <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
-    <div v-if="!attachmentTypes.length">No attachments available</div>
+    <div v-if="attachmentTypes.length === 0">No attachments available</div>
     <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
       <v-expansion-panel-header class="expansion-panel-header">
         <template v-slot:default="{ open }">
@@ -20,7 +34,7 @@
                   @click.stop=""
                   ref='fileInput'
               >
-              <v-btn v-if="!type.readOnly || !!projectProcessStepId" @click.native.stop="selectFile(type.attachmentTypeId)"
+              <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
                      @dragenter="dragTypeId=type.attachmentTypeId"
                      @dragleave="dragTypeId=null"
                      @dragend="dragTypeId=null"
@@ -31,16 +45,6 @@
                 Upload
               </v-btn>
 
-              <v-btn
-                  v-if="!objectTypeId && (!projectProcessStepId && getNonPrimaryCount(type.attachmentTypeId) !== 0)"
-                  @click.native.stop="type.showNonPrimary = !type.showNonPrimary"
-                  elevation="0"
-
-                  class="expansion-panel-btn"
-              >
-                <span v-if="type.showNonPrimary">Hide non-primary</span>
-                <span v-else>Show non-primary</span>
-              </v-btn>
             </div>
             <span
                 v-else
@@ -53,8 +57,8 @@
       <v-expansion-panel-content>
         <AttachmentsTable
             :display-type="type"
+            :show-linked="linkable"
             :attachments="attachments"
-            :show-non-primary-docs="null != objectTypeId || type.showNonPrimary || !!projectProcessStepId"
         ></AttachmentsTable>
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -76,15 +80,29 @@ import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
 import constants from "@/helpers/constants";
 
 export default {
-  name: "AttachmentsDropdown",
+  name: "AttachmentsFolderList",
   components: {
     AttachmentsTable
+  },
+  props: {
+    projectId: Number,
+    objectTypeId: Number,
+    userId: Number,
+    contactId: Number,
+    orgId: Number,
+    allowUpload: Boolean,
+    linkable: Boolean,
+    focused: Boolean,
+    showTitle: Boolean,
+    title: String,
+    activityTab: Boolean, //this tells us whether to show the search and compare buttons
+    forceShowUploadBtn: Boolean
   },
   data () {
     return {
       processStepId: null,
-      projectProcessStepId: null,
       eventId: null,
+      projectProcessStepId: null,
       projectProcessStepEventId: null,
       attachmentTypes: [],
       attachments: [],
@@ -100,35 +118,31 @@ export default {
         { text: null, value: 'filename', show: true },
         { text: null, value: 'icons', show: true },
       ],
-      showNonPrimaryDocs: false,
+      search: ''
     }
   },
-  props: {
-    projectId: Number,
-    objectTypeId: Number,
-    userId: Number,
-    contactId: Number,
-    orgId: Number,
-  },
   watch: {
-    // whenever pps id changes, this function will run
+    focused: function() {
+      this.loadAllPageDetails()
+    },
+    // // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
       // reset the selected item
       this.updateProcessStepAndEventIds()
       this.loadAllPageDetails()
     },
-    // whenever pps event id changes, this function will run
+    // // whenever pps event id changes, this function will run
     '$route.params.ppsEventId': async function () {
       // reset the selected item
       this.updateProcessStepAndEventIds()
       this.loadAllPageDetails()
     },
-    // whenever the project store forces a reload - do this
-    '$store.state.project.forceReloadKey': async function () {
-      // reset the selected item
-      this.updateProcessStepAndEventIds()
-      this.loadAllPageDetails()
-    }
+    // // whenever the project store forces a reload - do this
+    // '$store.state.project.forceReloadKey': async function () {
+    //   // reset the selected item
+    //   this.updateProcessStepAndEventIds()
+    //   this.loadAllPageDetails()
+    // }
   },
   created () {
     this.updateProcessStepAndEventIds();
@@ -144,27 +158,51 @@ export default {
       this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
     },
     loadAllPageDetails() {
-      if (this.projectProcessStepEventId) {
-        this.typePath = `/project/${this.projectId}/pps/${this.projectProcessStepId}/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
+      // if (this.projectProcessStepEventId) {
+      //   this.typePath = `/project/${this.projectId}/pps/${this.projectProcessStepId}/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
+      //   this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
+      // } else if (this.projectProcessStepId) {
+      //   this.typePath = `/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`
+      //   this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
+      // } else if (this.projectId) {
+      //   this.typePath = '/projectTypes'
+      //   this.attachmentPath = `/project/${this.projectId}/attachments`
+      // } else if (this.objectTypeId === 3) {
+      //   //user
+      //   this.typePath = `/objectTypes/user`
+      //   this.attachmentPath = `/user/${this.userId}/attachments`
+      // } else if (this.objectTypeId === 2) {
+      //   //contact
+      //   this.typePath = `/objectTypes/contact`
+      //   this.attachmentPath = `/contact/${this.contactId}/attachments`
+      // } else if (this.objectTypeId === 5) {
+      //   //org
+      //   this.typePath = `/objectTypes/org`
+      //   this.attachmentPath = `/org/${this.orgId}/attachments`
+      // }
+      //this part has to completely change
+
+      if(this.projectProcessStepEventId) {
+        this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
-      } else if (this.projectProcessStepId) {
-        this.typePath = `/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`
+      } else if(this.projectProcessStepId) {
+        this.typePath = `/processStepTypes/${this.projectProcessStepId}`
         this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
-      } else if (this.projectId) {
-        this.typePath = '/projectTypes'
+      } else if(this.projectId) {
+        this.typePath = `/objectType/project`
         this.attachmentPath = `/project/${this.projectId}/attachments`
-      } else if (this.objectTypeId === 3) {
-        //user
-        this.typePath = `/objectTypes/user`
-        this.attachmentPath = `/user/${this.userId}/attachments`
       } else if (this.objectTypeId === 2) {
         //contact
-        this.typePath = `/objectTypes/contact`
+        this.typePath = `/objectType/contact`
         this.attachmentPath = `/contact/${this.contactId}/attachments`
       } else if (this.objectTypeId === 5) {
         //org
-        this.typePath = `/objectTypes/org`
+        this.typePath = `/objectType/org`
         this.attachmentPath = `/org/${this.orgId}/attachments`
+      } else if (this.objectTypeId === 3) {
+        //user
+        this.typePath = `/objectType/user`
+        this.attachmentPath = `/user/${this.userId}/attachments`
       }
 
       if(this.typePath && this.attachmentPath) {
@@ -175,8 +213,9 @@ export default {
     fetchAttachmentTypes: async function () {
       this.attachmentTypesLoading = true
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
-          projectId: this.projectId,
-          companyId: this.companyId
+          linkable: this.linkable,
+          allowUpload: this.allowUpload,
+          focused: this.focused
         }})
       this.attachmentTypes = data
       this.attachmentTypesLoading = false
@@ -194,14 +233,7 @@ export default {
     },
     getTypeCount: function(typeId) {
       try {
-        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
-      } catch {
-        return 0
-      }
-    },
-    getNonPrimaryCount: function(typeId) {
-      try {
-        return this.attachments?.filter(a => a.attachmentTypeId === typeId && !a.archived && !a.main).length || 0
+        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived && a.linked === this.linkable)?.length || 0
       } catch {
         return 0
       }
@@ -300,5 +332,10 @@ export default {
 
 .theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
   background-color: transparent !important;
+}
+
+.attachment-section-title {
+  font-weight: 700;
+  font-size: 18px;
 }
 </style>

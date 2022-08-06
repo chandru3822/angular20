@@ -61,33 +61,20 @@ public class AttachmentTypeController {
   }
 
   //endpoints for displaying attachment types for uploading to (non-admin side)
-  @GetMapping(value = "/project/{projectId}/processStepTypes/{ppsId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypesByPps(@PathVariable Long projectId,
-                                                                                  @PathVariable Long ppsId) {
-    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypesByPps(projectId, ppsId), HttpStatus.OK);
+  @GetMapping(value = "/processStepTypes/{ppsId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypesByPps(@PathVariable Long ppsId,
+                                                                                  @RequestParam Boolean allowUpload,
+                                                                                  @RequestParam Boolean focused,
+                                                                                  @RequestParam Boolean linkable) {
+    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypesByPps(ppsId, allowUpload, focused, linkable), HttpStatus.OK);
   }
 
   @GetMapping(value = "/eventTypesByPpsEventId/{ppsEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<EventAttachmentType>> getEventTypesByPpsEventId(@PathVariable Long ppsEventId) {
-    return new ResponseEntity<>(attachmentTypeService.getEventTypesByPpsEventId(ppsEventId), HttpStatus.OK);
-  }
-
-  @GetMapping(value = "/project/{projectId}/pps/{ppsId}/eventTypesByPpsEventId/{ppsEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<EventAttachmentType>> getEventTypesByPpsEventIdAndPps(@PathVariable Long projectId,
-                                                                                   @PathVariable Long ppsId,
-                                                                                   @PathVariable Long ppsEventId) {
-    return new ResponseEntity<>(attachmentTypeService.getEventTypesByPpsEventIdAndPps(projectId, ppsId, ppsEventId), HttpStatus.OK);
-  }
-
-  @GetMapping(value = "/eventAndPsTypes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<EventAttachmentType>> getEventAndPsTypes(@RequestParam Long psId,
-                                                                      @RequestParam Long eventId) {
-    return new ResponseEntity<>(attachmentTypeService.getEventAndPsTypes(psId, eventId), HttpStatus.OK);
-  }
-
-  @GetMapping(value = "/eventAndPsTypes/{ppsEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<EventAttachmentType>> getEventAndPsTypesByPpsEventId(@PathVariable Long ppsEventId) {
-    return new ResponseEntity<>(attachmentTypeService.getEventAndPsTypesByPpsEventId(ppsEventId), HttpStatus.OK);
+  public ResponseEntity<List<EventAttachmentType>> getEventTypesByPpsEventId(@PathVariable Long ppsEventId,
+                                                                             @RequestParam Boolean allowUpload,
+                                                                             @RequestParam Boolean focused,
+                                                                             @RequestParam Boolean linkable) {
+    return new ResponseEntity<>(attachmentTypeService.getEventTypesByPpsEventId(ppsEventId, allowUpload, focused, linkable), HttpStatus.OK);
   }
 
   //these endpoints are for the admin side of things
@@ -275,4 +262,34 @@ public class AttachmentTypeController {
   public void deleteTypeForEvent(@PathVariable Long attachmentTypeId) {
     attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.EVENT);
   }
+
+  //these endpoints are for the non-admin side of things
+  @GetMapping(value = "/objectType/project", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAssignedTypesForProject(@RequestParam Boolean allowUpload,
+                                                                   @RequestParam Boolean focused,
+                                                                   @RequestParam Boolean linkable) {
+    return attachmentTypeService.getAssignedTypes(ObjectType.PROJECT, allowUpload, focused, linkable);
+  }
+
+  @GetMapping(value = "/objectType/contact", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAssignedTypesForContact(@RequestParam Boolean allowUpload,
+                                                                   @RequestParam Boolean focused,
+                                                                   @RequestParam Boolean linkable) {
+    return attachmentTypeService.getAssignedTypes(ObjectType.CONTACT, allowUpload, focused, linkable);
+  }
+
+  @GetMapping(value = "/objectType/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAssignedTypesForUser(@RequestParam Boolean allowUpload,
+                                                                @RequestParam Boolean focused,
+                                                                @RequestParam Boolean linkable) {
+    return attachmentTypeService.getAssignedTypes(ObjectType.USER, allowUpload, focused, linkable);
+  }
+
+  @GetMapping(value = "/objectType/org", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAssignedTypesForOrg(@RequestParam Boolean allowUpload,
+                                                               @RequestParam Boolean focused,
+                                                               @RequestParam Boolean linkable) {
+    return attachmentTypeService.getAssignedTypes(ObjectType.ORGANIZATION, allowUpload, focused, linkable);
+  }
+
 }

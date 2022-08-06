@@ -17,9 +17,23 @@
           </template>
           <span class="albatross-body-3">Go to project</span>
         </v-tooltip>
-        <div v-else-if="!isSidebarCollapsed"
-             class="d-inline-block"
-        >{{ sidebarTitle }}
+        <div v-else-if="!isSidebarCollapsed" >
+          {{ sidebarTitle }}
+          <v-btn-toggle
+            v-if="selectedOption === 2"
+            v-model="toggleFocused"
+            mandatory
+            class="d-inline-block"
+          >
+            <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocused === 0}">
+              Focused
+            </v-btn>
+            <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocused === 1}">
+              All
+            </v-btn>
+          </v-btn-toggle>
         </div>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
@@ -58,8 +72,8 @@
         @joinConversation="startJoinConversation"
       />
 
-      <!--      i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
-      <div class="sidebar-subtitle mb-3" v-if="!isSidebarCollapsed">{{ sidebarSubTitle }}</div>
+      <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
+      <div class="mb-3" v-if="!isSidebarCollapsed"></div>
     </div>
     <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
     <div class="project-activity-inner-container">
@@ -68,12 +82,17 @@
         <ProjectNotes :contact-id="contactId" :user-id="userId"
                       :object-type-id="objectTypeId" :project-id="projectId"
                       :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
-        <AttachmentsDropdown :contact-id="contactId"
-                             :user-id="userId"
-                             :object-type-id="objectTypeId"
-                             :org-id="orgId"
-                             v-else-if="selectedOption === 2"
-                             :projectId="projectId" :project-process-step-id="projectProcessStepId" />
+        <div v-else-if="selectedOption === 2">
+          <AttachmentsFolderList :contact-id="contactId"
+                               :user-id="userId"
+                               :object-type-id="objectTypeId"
+                               :org-id="orgId"
+                               :force-show-upload-btn="forceShowUploadBtn"
+                               :activity-tab="true"
+                               :focused="toggleFocused === 0"
+                               :project-id="projectId"
+                               :project-process-step-id="projectProcessStepId" />
+        </div>
       </div>
     </div>
     <div class="footer-container"
@@ -86,19 +105,19 @@
         class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
       >
         <v-col cols="4" class="px-0">
-          <v-btn v-if="showSmsTab" text  :color="selectedOption== 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
+          <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
                  :class="{'section-selected': selectedOption===0}">
             <v-icon>mdi-forum-outline</v-icon>
           </v-btn>
         </v-col>
         <v-col cols="4" class="px-0">
-          <v-btn text :color="selectedOption== 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
+          <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
                  :class="{'section-selected': selectedOption===1}">
             <v-icon>mdi-text-long</v-icon>
           </v-btn>
         </v-col>
         <v-col cols="4" class="px-0">
-          <v-btn text :color="selectedOption== 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
+          <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
                  :class="{'section-selected': selectedOption===2}">
             <v-icon>mdi-folder-outline</v-icon>
           </v-btn>
@@ -117,7 +136,7 @@
 import SpinnerInline from '@/components/SpinnerInline'
 import ProjectNotes from '@/views/flow/project/ProjectNotes'
 import Messaging from '@/views/flow/components/Messaging'
-import AttachmentsDropdown from '@/views/flow/components/AttachmentsDropdown'
+import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import { ProjectMutations } from '@/stores/ProjectStore'
 import { AppMutations } from '@/stores/AppStore'
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
@@ -137,7 +156,7 @@ export default {
     OwnershipHistoryDrilldown,
     TeamAssignmentChips,
     SpinnerInline,
-    AttachmentsDropdown,
+    AttachmentsFolderList,
     ProjectNotes,
     Messaging
   },
@@ -149,6 +168,7 @@ export default {
     contactId: Number,
     userId: Number,
     orgId: Number,
+    forceShowUploadBtn: Boolean,
     allowSidebarCollapse: {
       type: Boolean,
       default: true
@@ -186,7 +206,8 @@ export default {
       teamsMenuOpen: false,
       myOwner: [],
       projectHistory: [],
-      projectIsLoading: true
+      projectIsLoading: true,
+      toggleFocused: 1
     }
   },
   created() {
@@ -217,16 +238,6 @@ export default {
         case 2:
           return this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
             : this.$route.params.ppsEventId ? 'Event Documents' : this.$route.params.processStepId ? 'Process Step Documents' : this.projectId ? 'Project Documents' : null
-      }
-    },
-    sidebarSubTitle() {
-      switch (this.selectedOption) {
-        case 0:
-          return ''
-        case 1:
-          return ''
-        case 2:
-          return this.$route.params.ppsEventId ? 'Documents related to the selected event.' : this.$route.params.processStepId ? 'Documents related to the selected process step.' : this.projectId ? 'Documents related to the selected project.' : null
       }
     },
     isSidebarCollapsed() {
@@ -379,11 +390,6 @@ export default {
   height: fit-content;
   min-height: 65px;
   background-color: white;
-}
-
-.sidebar-subtitle {
-  margin-left: 24px;
-  font-size: 14px;
 }
 
 .section-footer {

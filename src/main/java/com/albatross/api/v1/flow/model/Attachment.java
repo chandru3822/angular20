@@ -11,5 +11,5 @@ public class Attachment {
     private String filename, fileExtension, contentType, s3Key, url, presignedUrl, uploadedBy, processStepName, publicUrl;
     private Date dateCreated, dateModified;
     private UUID uuid;
-    private Boolean archived, show, main;
+    private Boolean archived, show, linked;
 }

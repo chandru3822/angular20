@@ -264,6 +264,7 @@
       a.archived,
       substring(filename, '\.([^\.]+)$') as file_extension,
       ca.contact_id,
+      ca.linked,
       concat(u.first_name, ' ', u.last_name) AS uploadedBy
     from flow.contact_attachment ca
            inner join flow.attachment a on a.id = ca.attachment_id

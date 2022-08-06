@@ -177,37 +177,21 @@ add column if not exists default_field_id integer references flow.default_field(
 CREATE INDEX if not exists cfga_default_field_id_idx ON flow.custom_field_group_assignment (default_field_id);
 
 ALTER TABLE flow.custom_field_group_assignment
-  DROP CONSTRAINT null_custom_and_ancillary_check;
+  DROP CONSTRAINT if exists null_custom_and_ancillary_check;
 alter table flow.custom_field_group_assignment
 add constraint null_custom_ancillary_default_check
     check ((custom_field_id IS NOT NULL) OR (ancillary_custom_field_group_assignment_id IS NOT NULL) OR (default_field_id IS NOT NULL))
 
--- drop table if exists flow.event_attachment_type_default_field;
--- CREATE TABLE if not exists flow.event_attachment_type_default_field
--- (
---   id              serial  NOT NULL,
---   default_field_id integer not null,
---   custom_field_group_id integer not null,
---   field_order integer not null,
---   date_created    timestamp without time zone DEFAULT now(),
---   date_modified    timestamp without time zone,
---   created_by_id   integer not null,
---   modified_by_id  integer,
---   archived boolean not null default false,
---   CONSTRAINT event_attachment_type_default_field_pk PRIMARY KEY (id),
---   CONSTRAINT eatdf_default_field_id_fk FOREIGN KEY (default_field_id)
---     REFERENCES flow.default_field (id) MATCH SIMPLE
---     ON UPDATE RESTRICT ON DELETE RESTRICT,
---   CONSTRAINT eatdf_custom_field_group_id_fk FOREIGN KEY (custom_field_group_id)
---     REFERENCES flow.custom_field_group (id) MATCH SIMPLE
---     ON UPDATE RESTRICT ON DELETE RESTRICT,
---   CONSTRAINT cat_created_by_id_fk FOREIGN KEY (created_by_id)
---     REFERENCES flow.user (id) MATCH SIMPLE
---     ON UPDATE NO ACTION ON DELETE NO ACTION,
---   CONSTRAINT cat_modified_by_id_fk FOREIGN KEY (modified_by_id)
---     REFERENCES flow.user (id) MATCH SIMPLE
---     ON UPDATE NO ACTION ON DELETE NO ACTION
--- );
---
--- CREATE INDEX if not exists eatdf_company_id_idx ON flow.event_attachment_type_default_field (custom_field_group_id);
--- CREATE INDEX if not exists eatdf_default_field_id_idx ON flow.event_attachment_type_default_field (default_field_id);
+--add linked column to all the attachment tables
+alter table flow.project_attachment
+  add column if not exists linked boolean not null default false;
+alter table flow.project_process_step_attachment
+  add column if not exists linked boolean not null default false;
+alter table flow.project_process_step_event_attachment
+  add column if not exists linked boolean not null default false;
+alter table flow.contact_attachment
+  add column if not exists linked boolean not null default false;
+alter table flow.user_attachment
+  add column if not exists linked boolean not null default false;
+alter table flow.org_attachment
+  add column if not exists linked boolean not null default false;

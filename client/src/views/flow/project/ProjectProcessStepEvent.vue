@@ -86,6 +86,29 @@
           </v-btn>
         </div>
       </div>
+      <v-toolbar flat color="secondary" class="cfg-detail-header px-3">
+        <v-toolbar-title class="albatross-header-3">
+          Event Documents
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
+            <v-icon v-if="collapsedAttachments">mdi-chevron-down</v-icon>
+            <v-icon v-else>mdi-chevron-up</v-icon>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-col cols="12" class="text-left py-0 px-0" v-if="!collapsedAttachments">
+        <AttachmentsFolderList :object-type-id="1"
+                               :allow-upload="true"
+                               :show-title="true"
+                               title="Uploaded Documents"/>
+
+        <AttachmentsFolderList :object-type-id="1"
+                               :linkable="true"
+                               :show-title="true"
+                               title="Linked Documents"/>
+      </v-col>
       <div class="fixed-toolbar padding-left-1">
         <v-toolbar flat color="secondary" class="cfg-name-toolbar px-6">
           <v-toolbar-title class="albatross-header-3">
@@ -97,17 +120,6 @@
               <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
               <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
-            <v-btn v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" text small
-                   @click="showUploadModal = true" class="px-0">
-              <v-icon class="px-0">mdi-upload</v-icon>
-            </v-btn>
-            <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-              <UploadDocumentModal @cancel="showUploadModal = false"
-                                   :width="uploadModalWidth"
-                                   :show-success-snackbar="true"
-                                   :pps-event-id="ppsEventId"
-                                   :attachment-types="attachmentTypes"></UploadDocumentModal>
-            </v-dialog>
             <div>
               <v-btn class="white--text mt-3 ml-2"
                      @click="checkFieldsForUnique()"
@@ -323,7 +335,6 @@ import {AppMutations} from '@/stores/AppStore'
 import {getAssignedToEvent} from '@/services/eventStatusTypeService'
 import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
-import Attachments from '@/views/flow/components/Attachments'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
 import moment from 'moment-timezone'
@@ -334,16 +345,17 @@ import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import {getStatusClass} from '@/services/eventStatusTypeService'
 import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from "@/ConfirmationDialog";
+import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 
 export default {
   name: 'ProjectProcessStepEvent',
   components: {
     ConfirmationDialog,
     CustomValueInput,
-    Attachments,
     DatetimePickerInput,
     SpinnerInline,
-    UploadDocumentModal
+    UploadDocumentModal,
+    AttachmentsFolderList
   },
   mixins: [Vue2Filters.mixin],
   props: {
@@ -364,7 +376,6 @@ export default {
       navigationOverride: false,
       toPath: null,
       query: {},
-      attachmentTypes: [],
       attemptedAction: {},
       companyEventStatuses: [],
       saveErrorMsg: '',
@@ -383,6 +394,7 @@ export default {
       projectProcessStepId: parseInt(this.$route.params.processStepId),
       processStepId: this.$route.query.processStepId,
       eventSaveOverrideRequired: false,
+      collapsedAttachments: false,
       actionRequiresStart: false,
       actionRequiresEnd: false,
       actionRequiresResource: false,
@@ -493,7 +505,7 @@ export default {
     async loadAllPageDetails() {
       this.eventDetailsLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getEventDetails(), this.getEventAttachmentTypes()]
+      const requests = [this.getEventDetails()]
       try {
         await Promise.all(requests).then((statusVals) => {
           let success = true
@@ -978,19 +990,6 @@ export default {
         return !ppse.archived
       }) : []
     },
-    getEventAttachmentTypes: async function () {
-      //this gets the attachment types assigned to the process step so we know whether to show the upload button
-      try {
-        const {data, status} = await getRequest(`/attachmentType/eventTypesByPpsEventId/${this.ppsEventId}`, null, [])
-        this.attachmentTypes = data
-        return status
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
   }
 }
 </script>

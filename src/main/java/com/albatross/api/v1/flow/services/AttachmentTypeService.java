@@ -53,13 +53,15 @@ public class AttachmentTypeService {
       new AttachmentTypeMapper<>(AttachmentType.class, om));
   }
 
-  public List<ProcessStepAttachmentType> getProcessStepTypesByPps(Long projectId, Long ppsId) {
+  public List<ProcessStepAttachmentType> getProcessStepTypesByPps(Long ppsId, Boolean allowUpload, Boolean focused, Boolean linkable) {
     User user = securityService.getCurrentUser();
 
     //using all 3 params verifies that the call is coming from the right company and that the project and pps match
     Map<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
     params.put("ppsId", ppsId);
+    params.put("allowUpload", allowUpload);
+    params.put("linkable", linkable);
+    params.put("focused", focused);
     params.put("companyId", user.getCompanyId());
     return sqlCache.query(
       "attachmentType.getProcessStepTypesByPps", params, ProcessStepAttachmentType.class);
@@ -127,35 +129,14 @@ public class AttachmentTypeService {
     return getType(id);
   }
 
-  public List<EventAttachmentType> getEventTypesByPpsEventId(Long ppsEventId) {
+  public List<EventAttachmentType> getEventTypesByPpsEventId(Long ppsEventId, Boolean allowUpload, Boolean focused, Boolean linkable) {
     Map<String, Object> params = new HashMap<>();
     params.put("ppsEventId", ppsEventId);
+    params.put("allowUpload", allowUpload);
+    params.put("focused", focused);
+    params.put("linkable", linkable);
     return sqlCache.query(
         "attachmentType.getEventTypesByPpsEventId", params, EventAttachmentType.class);
-  }
-
-  //doing this ensures that the frontend cant load mismatched details via the url
-  public List<EventAttachmentType> getEventTypesByPpsEventIdAndPps(Long projectId, Long ppsId, Long ppsEventId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("ppsId", ppsId);
-    params.put("ppsEventId", ppsEventId);
-    return sqlCache.query(
-      "attachmentType.getEventTypesByPpsEventIdAndPps", params, EventAttachmentType.class);
-  }
-
-  public List<EventAttachmentType> getEventAndPsTypes(Long psId, Long eventId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("eventId", eventId);
-    params.put("psId", psId);
-    return sqlCache.query("attachmentType.getEventAndPsTypes", params, EventAttachmentType.class);
-  }
-
-  public List<EventAttachmentType> getEventAndPsTypesByPpsEventId(Long ppsEventId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("ppsEventId", ppsEventId);
-    return sqlCache.query(
-        "attachmentType.getEventAndPsTypesByPpsEventId", params, EventAttachmentType.class);
   }
 
   //these endpoints are for the admin side of things
@@ -249,6 +230,19 @@ public class AttachmentTypeService {
     params.put("readOnly", attachmentType.getReadOnly());
     String sqlKey = "attachmentType." + objectType.tablePrefix + ".updateReadOnly";
     sqlCache.update(sqlKey, params);
+  }
+
+  //these endpoints are for the non-admin side of things
+  public List<ObjectTypeAttachmentType> getAssignedTypes(ObjectType objectType, Boolean allowUpload, Boolean focused, Boolean linkable) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("allowUpload", null != allowUpload ? allowUpload : false);
+    params.put("focused", null != focused ? focused : false);
+    params.put("linkable", null != linkable ? linkable : false);
+    String sqlKey = "attachmentType." + objectType.tablePrefix + ".getAssignedTypes";
+    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
   }
 
   public static class AttachmentTypeMapper<T> extends BeanPropertyRowMapper<T> {

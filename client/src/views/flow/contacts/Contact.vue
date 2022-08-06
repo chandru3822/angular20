@@ -280,6 +280,7 @@
       <template v-slot:right-column>
         <ProjectActivity v-if="!contactLoading && contactId !== 0"
                          :contact-id="contactId"
+                         :force-show-upload-btn="true"
                          :show-sms-tab="false"></ProjectActivity>
       </template>
     </ThreeColumnLayout>

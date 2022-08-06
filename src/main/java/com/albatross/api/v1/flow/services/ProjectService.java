@@ -39,7 +39,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -477,13 +476,13 @@ public class ProjectService {
     // Get project attachments
     List<Attachment> attachments =
         sqlCache.query("project.getAttachments", params, Attachment.class);
-    // Get project process step attachments
-    List<Attachment> ppsAttachments =
-        sqlCache.query(
-            "projectProcessStep.getProjectProcessStepAttachmentsForProjectId",
-            params,
-            Attachment.class);
-    attachments.addAll(ppsAttachments);
+//    // Get project process step attachments
+//    List<Attachment> ppsAttachments =
+//        sqlCache.query(
+//            "projectProcessStep.getProjectProcessStepAttachmentsForProjectId",
+//            params,
+//            Attachment.class);
+//    attachments.addAll(ppsAttachments);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
@@ -535,6 +534,7 @@ public class ProjectService {
     params.clear();
     params.put("projectId", projectId);
     params.put("attachmentId", attachmentId);
+    params.put("linked", false);
     params.put("createdById", currentUser.trueUserId());
 
     sqlCache.update("project.addAttachment", params);

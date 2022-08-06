@@ -290,6 +290,7 @@
       a.content_type,
       a.s3_key,
       a.archived,
+      oa.linked,
       substring(filename, '\.([^\.]+)$') as file_extension,
       oa.org_id,
       concat(u.first_name, ' ', u.last_name) AS uploadedBy

@@ -505,7 +505,7 @@
       a.content_type,
       a.s3_key,
       a.archived,
-      true as main
+      pa.linked
     from flow.project_attachment pa
            inner join flow.attachment a on a.id = pa.attachment_id
     where pa.project_id = :projectId
@@ -533,8 +533,8 @@
   ]]></project.getAttachmentById>
 
   <project.addAttachment><![CDATA[
-    insert into flow.project_attachment(attachment_id, project_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:attachmentId, :projectId, :createdById, now(), :createdById, now())
+    insert into flow.project_attachment(attachment_id, project_id, created_by_id, date_created, modified_by_id, date_modified, linked)
+    values (:attachmentId, :projectId, :createdById, now(), :createdById, now(), :linked)
   ]]></project.addAttachment>
 
   <project.updateOwner><![CDATA[

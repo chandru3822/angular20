@@ -216,6 +216,29 @@
       <v-col cols="12" style="height: 0; padding: 0 !important;">
       <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
       </v-col>
+      <v-toolbar flat color="secondary" class="cfg-detail-header px-3">
+        <v-toolbar-title class="albatross-header-3">
+          Process Step Documents
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
+            <v-icon v-if="collapsedAttachments">mdi-chevron-down</v-icon>
+            <v-icon v-else>mdi-chevron-up</v-icon>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-col cols="12" class="text-left py-0 px-0" v-if="!collapsedAttachments">
+        <AttachmentsFolderList :object-type-id="1"
+                               :allow-upload="true"
+                               :show-title="true"
+                               title="Uploaded Documents"/>
+
+        <AttachmentsFolderList :object-type-id="1"
+                               :linkable="true"
+                               :show-title="true"
+                               title="Linked Documents"/>
+      </v-col>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
         <v-toolbar-title class="albatross-header-3">
           Process Step Details
@@ -226,16 +249,6 @@
             <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
-          <v-btn v-if="!getReadOnly() && projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text color="primary" small @click="showUploadModal = true" class="px-0">
-            <v-icon class="px-0">mdi-upload</v-icon>
-          </v-btn>
-          <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-            <UploadDocumentModal @cancel="showUploadModal = false"
-                                 :width="uploadModalWidth"
-                                 :show-success-snackbar="true"
-                                 :pps-id="parseInt(projectProcessStepId)"
-                                 :attachment-types="attachmentTypes"></UploadDocumentModal>
-          </v-dialog>
           <div>
             <v-btn
               color="primary"
@@ -334,7 +347,6 @@ import EventButton from './EventButton'
 import {AppMutations} from '@/stores/AppStore'
 import {ProjectMutations} from '@/stores/ProjectStore'
 import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
-import Attachments from '@/views/flow/components/Attachments'
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly, getEventCustomFieldReadOnly} from '@/services/customFieldService'
@@ -343,6 +355,7 @@ import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepSta
 import SpinnerInline from '@/components/SpinnerInline'
 import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import Vue2Filters from 'vue2-filters'
+import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -356,12 +369,12 @@ export default {
     ActionButton,
     EventButton,
     Links,
-    Attachments,
     CustomValueInput,
     DatetimePickerInput,
     ProjectProcessStepStatus,
     SpinnerInline,
-    UploadDocumentModal
+    UploadDocumentModal,
+    AttachmentsFolderList
   },
   data() {
     return {
@@ -373,7 +386,6 @@ export default {
       getStatusClass,
       showUploadModal: false,
       uploadModalWidth: 600,
-      attachmentTypes: [],
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
@@ -386,7 +398,8 @@ export default {
       schedulerLoading: true,
       timezone: this.$store.state.user.details.timezone.value,
       projectId: parseInt(this.$route.params.projectId),
-      projectProcessStepId: this.$route.params.processStepId,
+      projectProcessStepId: parseInt(this.$route.params.processStepId),
+      collapsedAttachments: false,
       processStepId: null,
       processStep: {},
       customFieldGroups: [],
@@ -483,7 +496,7 @@ export default {
     async loadAllPageDetails() {
       this.processStepLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getCustomFieldGroups(), this.getProcessStepAttachmentTypes(), this.getProcessStep(true)]
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true)]
       await Promise.all(requests).then(async (statusVals) => {
         let success = true
         statusVals.forEach(status => {
@@ -766,19 +779,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    getProcessStepAttachmentTypes: async function () {
-      //this gets the attachment types assigned to the process step so we know whether to show the upload button
-      try {
-        const {data, status} = await getRequest(`/attachmentType/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`, null, [])
-        this.attachmentTypes = data
-        return status
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
 
   }
 }
