@@ -18,7 +18,7 @@
           <span class="albatross-body-3">Go to project</span>
         </v-tooltip>
         <div v-else-if="!isSidebarCollapsed" >
-          {{ sidebarTitle }}
+          Project Documents
           <v-btn-toggle
             v-if="selectedOption === 2"
             v-model="toggleFocused"
@@ -222,23 +222,6 @@ export default {
     objectTypeId() {
       //not needed for other types
       return this.userId ? 3 : this.contactId ? 2 : this.orgId ? 5 : null
-    },
-    sidebarTitle() {
-      switch (this.selectedOption) {
-        case 0:
-          if (this.userCanViewSms) {
-            return this.$route.path.includes('inboxConversation') ? this.projectMessageProperties.projectName : 'Project Communication'
-          } else {
-            return this.$route.path.includes('inboxConversation') ? this.projectMessageProperties.projectName : 'Project Communication (Read-only)'
-          }
-
-        case 1:
-          return this.orgId ? 'Organization Notes' : this.userId ? 'User Notes'
-                    : this.contactId ? 'Contact Notes' : this.projectId ? 'Project Notes' : null
-        case 2:
-          return this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
-            : this.$route.params.ppsEventId ? 'Event Documents' : this.$route.params.processStepId ? 'Process Step Documents' : this.projectId ? 'Project Documents' : null
-      }
     },
     isSidebarCollapsed() {
       return this.allowSidebarCollapse && this.$store.state.project.rightSideSplit

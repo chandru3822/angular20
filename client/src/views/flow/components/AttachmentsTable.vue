@@ -19,26 +19,21 @@
               {{ getIconForFile(item) }}
             </v-icon>
           </v-btn>
-          <a v-if="!item.edit" :href="item.presignedUrl"
-             class="type link text-left text-decoration-none">
+          <a @click="selectFile(item)" class="text-left no-text-decoration">
             {{ item.editableNameCopy }}
           </a>
-          <v-text-field
-            v-else
-            hide-details
-            label="Filename"
-            class="my-2 text-field"
-            v-model="item.editableName"
-          ></v-text-field>
         </v-col>
         <v-col cols="4" class="text-center px-1 attachment-info">
           {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{ item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY') }}
         </v-col>
         <v-col cols="2" class="text-right pa-0">
-          <v-btn dense small text color="primary" class="px-0" @click="selectFile(item)">
-            <v-icon>edit</v-icon>
+<!--          <v-btn dense small text color="primary" class="px-0" @click="selectFile(item)">-->
+<!--            <v-icon>edit</v-icon>-->
+<!--          </v-btn>-->
+          <v-btn small text color="primary" :href="item.presignedUrl">
+            <v-icon>mdi-tray-arrow-down</v-icon>
           </v-btn>
-          <v-btn small text color="primary" @click="startDelete(item)" class="px-0">
+          <v-btn small v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
             <v-icon>delete</v-icon>
           </v-btn>
           <ConfirmationDialog
@@ -71,6 +66,7 @@ export default {
     attachments: Array,
     displayType: Object,
     showLinked: Boolean,
+    allowUpload: Boolean
 
   },
   data() {

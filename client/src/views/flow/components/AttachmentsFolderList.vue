@@ -62,6 +62,7 @@
       <v-expansion-panel-content>
         <AttachmentsTable
             :display-type="type"
+            :allow-upload="allowUpload"
             :show-linked="linkable"
             :attachments="attachments"
         ></AttachmentsTable>
