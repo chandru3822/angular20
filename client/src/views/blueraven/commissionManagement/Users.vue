@@ -34,7 +34,7 @@
             <template #item="{ item, index }">
               <tr class="vertical-top" :class="{'shaded-row': index % 2}">
                 <td class="text-left pt-1" >
-                  <v-btn text color="primary" :to="{ name: 'commissionUser', params: {id: item.id} }">
+                  <v-btn text class="anchor" :to="{ name: 'commissionUser', params: {id: item.id} }">
                     {{item.name}}
                   </v-btn>
                 </td>
