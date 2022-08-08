@@ -9,10 +9,10 @@
           <v-card class="square-card pa-3">
             <v-text-field
               label="Document Name"
-              v-model="file.fileName"
+              v-model="fileDetails.editableName"
             ></v-text-field>
             <DatetimePickerInput
-              v-model="file.dateCreated"
+              v-model="fileDetails.dateCreated"
               :timezone="timezone"
               :type="'date'"
               readonly
@@ -22,17 +22,17 @@
             <v-text-field
               disabled readonly
               label="Uploaded By"
-              v-model="file.createdBy"
+              v-model="fileDetails.uploadedBy"
             ></v-text-field>
             <v-text-field
               disabled readonly
               label="Document Type"
-              v-model="file.fileType"
+              v-model="fileDetails.attachmentType"
             ></v-text-field>
             <v-text-field
               disabled readonly
               label="Document Location"
-              v-model="file.location"
+              v-model="fileDetails.originLocation"
             ></v-text-field>
           </v-card>
           Additional Document Details
@@ -41,7 +41,7 @@
             v-for="(cfg, index) in customFieldGroups"
             :key="index"
           >
-            {{cfg.groupName}}
+            {{ cfg.groupName }}
             <v-card class="square-card pa-3">
               <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
                                 :key="idx"
@@ -61,13 +61,19 @@
                   Cancel Upload
                 </v-btn>
                 <v-btn small :loading="fieldsSaving" color="primary" @click="saveAndUpload()">
-                  Save and Upload</v-btn>
+                  Save and Upload
+                </v-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
         </v-col>
         <v-col cols="8">
-          {{ file.fileName }}
+          <div class="one-hunned text-right">
+            <v-btn x-small text @click="closeModal()">
+              <v-icon>close</v-icon>
+            </v-btn>
+          </div>
+          {{ fileDetails.filename }}
           <v-divider></v-divider>
           file preview here
         </v-col>
@@ -91,58 +97,62 @@ import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from "@/services/customFieldService"
+import cloneDeep from 'lodash.clonedeep'
 
 export default {
   name: "AttachmentCoversheetModal",
   props: {
-    attachmentTypeId: Number,
-    existingAttachmentId: Number,
+    existingAttachment: Object,
     closeCallback: Function,
-    showModal: Boolean
+    fileUploadedCallback: Function,
+    showModal: Boolean,
+    file: File,
+    projectId: Number,
+    projectProcessStepId: Number,
+    userId: Number,
+    contactId: Number,
+    orgId: Number,
+    objectTypeId: Number,
+    projectProcessStepEventId: Number,
   },
   components: {
     DatetimePickerInput,
     CustomValueInput
   },
   watch: {
-    showModal: async function (visible) {
+    showModal: function (visible) {
       //created only gets called the first time the modal opens. this forces it to load every time (the watcher doesn't get call on the first time the modal opens, so no double loading to worry about)
-      if(visible) {
-        await this.getFieldGroups()
+      if (visible) {
+        this.doPageLoad()
       }
     }
   },
   data() {
     return {
-      file: {},
+      fileDetails: {},
       timezone: this.$store.state.user.details.timezone.value,
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       customFieldGroups: [],
-      attachmentId: null,
       dirtyCfvs: [],
       fieldsSaving: false
     }
   },
-  async created() {
-
-    //todo: temp, take this out
-    this.file = {
-      id: 4167016,
-      fileName: 'Final Design 4242',
-      dateCreated: '2022-06-14 17:46:35.153513',
-      createdBy: ' Brendan Filmore',
-      fileType: 'Final Design',
-      location: 'Design and Financing 384596'
-    }
-    await this.getFieldGroups()
+  created() {
+    this.doPageLoad()
   },
   computed: {},
   methods: {
+    async doPageLoad() {
+      this.fileDetails = cloneDeep(this.existingAttachment)
+      await this.getFieldGroups()
+    },
     getFieldGroups: async function () {
       try {
-        const {data} = await getRequestWithParams(`/customFieldValues/attachmentType/${this.attachmentTypeId}`, { params: {
-            attachmentId: this.existingAttachmentId
-          }}, null, [])
+        const {data} = await getRequestWithParams(`/customFieldValues/attachmentType/${this.existingAttachment.attachmentTypeId}`, {
+          params: {
+            attachmentId: this.existingAttachment.id
+          }
+        }, null, [])
         this.customFieldGroups = data
       } catch (e) {
         logError(e)
@@ -152,7 +162,7 @@ export default {
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if(!match) {
+      if (!match) {
         this.dirtyCfvs.push(field)
       }
     },
@@ -162,33 +172,84 @@ export default {
     closeModal() {
       this.closeCallback()
     },
-    saveAndUpload() {
-      //todo: get this id back from the upload later
-      this.attachmentId = this.existingAttachmentId || 4167016
-      console.log('we will save here', this.attachmentTypeId)
-      if(this.dirtyCfvs?.length > 0) {
-        console.log('dirty cfvs: ', this.dirtyCfvs)
-        this.updateFieldGroups()
+    async saveAndUpload() {
+      if (!this.existingAttachment.id) {
+        //file hasn't been uploaded yet so do that first to get the id
+        await this.uploadDocument()
+      } else {
+        //if file already exists then only save fields
+        await this.updateFieldGroups(this.existingAttachment.id)
       }
     },
-    async updateFieldGroups() {
-      this.fieldsSaving = true
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    uploadDocument: async function () {
       try {
-        // save dirty custom field values
-        const {data} = await postRequest(`/customFieldValues/attachmentType/${this.attachmentTypeId}/attachment/${this.attachmentId}`, this.dirtyCfvs)
-        this.dirtyCfvs = []
-        this.customFieldGroups = data
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        //reset error message when trying to upload new file
+        this.error = {}
+        if (this.file && this.file.size > 0) {
+          console.log('file here', this.file)
+          await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
+            null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
+              (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
+                Actions.OBJECT_TYPE_FILE_UPLOAD, {
+            file: this.file,
+            attachmentTypeId: this.existingAttachment.attachmentTypeId,
+            projectId: this.projectId,
+            projectProcessStepId: this.projectProcessStepId,
+            userId: this.userId,
+            contactId: this.contactId,
+            orgId: this.orgId,
+            objectTypeId: this.objectTypeId,
+            projectProcessStepEventId: this.projectProcessStepEventId,
+            callback: this.uploadCallback
+          })
+        }
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
-      } finally {
-        this.fieldsSaving = false
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async uploadCallback(newAttachment, error) {
+      if (error) {
+        this.error = error
+        this.snackbar = getSnackbar('ERROR', error.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else {
+        let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
+        newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
+        newAttachment.editableNameCopy = newAttachment.editableName
+        // this.snackbar = getSnackbar('SUCCESS', 'Document Uploaded')
+        // this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        // this.attachments = [...this.attachments, newAttachment]
+        await this.updateFieldGroups(newAttachment.id)
+        this.fileUploadedCallback(newAttachment)
+        this.closeModal()
+      }
+      this.$store.commit(AppMutations.SET_LOADING, false)
+    },
+    async updateFieldGroups(attachmentId) {
+      if (this.dirtyCfvs?.length > 0) {
+        this.fieldsSaving = true
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          // save dirty custom field values
+          const {data} = await postRequest(`/customFieldValues/attachmentType/${this.existingAttachment.attachmentTypeId}/attachment/${attachmentId}`, this.dirtyCfvs)
+          this.dirtyCfvs = []
+          this.customFieldGroups = data
+          this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } finally {
+          this.fieldsSaving = false
+        }
       }
     },
   }

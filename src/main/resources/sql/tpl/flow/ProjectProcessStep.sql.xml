@@ -59,9 +59,12 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       ps.process_step_name,
       ppsa.linked,
       ppsa.project_process_step_id,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy,
+      att.attachment_type,
+      ps.process_step_name || ' ' || pps.id as origin_location
     from flow.project_process_step_attachment ppsa
            inner join flow.attachment a on a.id = ppsa.attachment_id
+           inner join flow.attachment_type att on a.attachment_type_id = att.id
            inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
            inner join flow.process_step ps on ps.id = pps.process_step_id
            inner join flow."user" u ON a.created_by_id = u.id
@@ -71,6 +74,11 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       and case when :linked is true then ppsa.linked is true else ppsa.linked is false end
     order by pps.date_created desc
   ]]></projectProcessStep.getProjectProcessStepAttachments>
+
+  <projectProcessStep.linkAttachment><![CDATA[
+    insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, created_by_id, linked)
+    values(:attachmentId, :projectProcessStepId, :userId, true)
+  ]]></projectProcessStep.linkAttachment>
 
   <projectProcessStep.addAttachment><![CDATA[
     insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, created_by_id, date_created, modified_by_id, date_modified)

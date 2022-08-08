@@ -284,6 +284,12 @@ public class UserController {
         userService.addAttachment(file, userId, attachmentTypeId), HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{userId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long userId,
+                             @PathVariable Long attachmentId) {
+    userService.linkAttachment(userId, attachmentId);
+  }
+
   @Data
   public static class NewUserCompanyRequest {
     private Long companyId, companyUserStatusTypeId, userId;

@@ -293,14 +293,22 @@
       oa.linked,
       substring(filename, '\.([^\.]+)$') as file_extension,
       oa.org_id,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy,
+      att.attachment_type,
+      'Organization' as origin_location
     from flow.org_attachment oa
            inner join flow.attachment a on a.id = oa.attachment_id
            inner join flow."user" u ON a.created_by_id = u.id
+           inner join flow.attachment_type att on a.attachment_type_id = att.id
     where oa.org_id = :orgId
       and a.archived is not true
     order by oa.date_created desc
   ]]></org.getOrgAttachments>
+
+  <org.linkAttachment><![CDATA[
+    insert into flow.org_attachment(attachment_id, org_id, created_by_id, linked)
+    values(:attachmentId, :orgId, :userId, true)
+  ]]></org.linkAttachment>
 
   <org.addAttachment><![CDATA[
     insert into flow.org_attachment(attachment_id, org_id, created_by_id, date_created, modified_by_id, date_modified)

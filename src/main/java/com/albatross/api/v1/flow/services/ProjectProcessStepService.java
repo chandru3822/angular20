@@ -82,6 +82,16 @@ public class ProjectProcessStepService {
     return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
+  public void linkAttachment(Long projectProcessStepId, Long attachmentId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("attachmentId", attachmentId);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    sqlCache.update("projectProcessStep.linkAttachment", params);
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
   public Attachment addAttachment(MultipartFile file, Long projectProcessStepId, Long attachmentTypeId) throws IOException {
     User user = securityService.getCurrentUser();

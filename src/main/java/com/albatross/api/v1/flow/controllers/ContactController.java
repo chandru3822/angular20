@@ -105,6 +105,12 @@ public class ContactController {
     return new ResponseEntity<>(contactService.getContactAttachments(contactId, isMobile), HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{contactId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long contactId,
+                             @PathVariable Long attachmentId) {
+    contactService.linkAttachment(contactId, attachmentId);
+  }
+
   @PostMapping(value = "/{contactId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Attachment> uploadContactAttachment(@PathVariable Long contactId,
                                                             @RequestParam Long attachmentTypeId,

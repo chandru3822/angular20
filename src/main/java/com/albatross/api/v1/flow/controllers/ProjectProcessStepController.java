@@ -257,6 +257,12 @@ public class ProjectProcessStepController {
         HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{projectProcessStepId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long projectProcessStepId,
+                             @PathVariable Long attachmentId) {
+    projectProcessStepService.linkAttachment(projectProcessStepId, attachmentId);
+  }
+
   @PostMapping(value = "/{projectProcessStepId}/attachment")
   public ResponseEntity<Attachment> uploadProjectProcessStepAttachment(
       @PathVariable Long projectProcessStepId,

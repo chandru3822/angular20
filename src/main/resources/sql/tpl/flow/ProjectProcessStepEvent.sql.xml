@@ -316,17 +316,27 @@ where ppse.id = :id
         ps.process_step_name,
         ppsa.project_process_step_event_id,
         pps.id as "projectProcessStepId",
-        concat(u.first_name, ' ', u.last_name) AS uploadedBy
+        concat(u.first_name, ' ', u.last_name) AS uploadedBy,
+        att.attachment_type,
+        e.event_name || ' ' || ppse.id as origin_location
       from flow.project_process_step_event_attachment ppsa
              inner join flow.attachment a on a.id = ppsa.attachment_id
              inner join flow.project_process_step_event ppse on ppse.id = ppsa.project_process_step_event_id
+             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+             inner join flow.event e on pse.event_id = e.id
              inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
              inner join flow.process_step ps on ps.id = pps.process_step_id
              inner join flow."user" u ON a.created_by_id = u.id
+             inner join flow.attachment_type att on a.attachment_type_id = att.id
       where ppsa.project_process_step_event_id = :projectProcessStepEventId
         and a.archived is not true
         and ppsa.archived is not true
   ]]></projectProcessStepEvent.getProjectProcessStepEventAttachments>
+
+  <projectProcessStepEvent.linkAttachment><![CDATA[
+    insert into flow.project_process_step_event_attachment(attachment_id, project_process_step_event_id, created_by_id, linked)
+    values(:attachmentId, :projectProcessStepEventId, :userId, true)
+  ]]></projectProcessStepEvent.linkAttachment>
 
   <projectProcessStepEvent.addAttachment><![CDATA[
     insert into flow.project_process_step_event_attachment(attachment_id, project_process_step_event_id, created_by_id)

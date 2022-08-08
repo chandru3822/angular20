@@ -1,15 +1,14 @@
 <template>
   <div>
     <v-dialog persistent :width="1000" v-model="showCoversheetModal">
-      <AttachmentCoversheetModal :attachment-type-id="selectedAttachmentTypeId"
-                                 :existing-attachment-id="selectedAttachmentId"
+      <AttachmentCoversheetModal :existing-attachment="selectedFile"
                                  :show-modal="showCoversheetModal"
                                  :close-callback="closeCoversheet">
       </AttachmentCoversheetModal>
     </v-dialog>
     <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
     <v-container v-else dense :key="renderTicker" id="attachment-table">
-      <v-row v-for="item in drillDownAttachments" class="text-left attachment" :key="item.processStepId">
+      <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment" :key="item.processStepId">
         <v-col cols="6" class="text-left pa-1">
           <v-btn
             icon
@@ -27,14 +26,14 @@
           {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{ item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY') }}
         </v-col>
         <v-col cols="2" class="text-right pa-0">
-<!--          <v-btn dense small text color="primary" class="px-0" @click="selectFile(item)">-->
-<!--            <v-icon>edit</v-icon>-->
-<!--          </v-btn>-->
           <v-btn small text color="primary" :href="item.presignedUrl">
             <v-icon>mdi-tray-arrow-down</v-icon>
           </v-btn>
           <v-btn small v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
             <v-icon>delete</v-icon>
+          </v-btn>
+          <v-btn small v-if="!allowUpload && !showLinked" text color="primary" @click="linkAttachment(item)" class="px-0">
+            <v-icon>link</v-icon>
           </v-btn>
           <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
@@ -50,14 +49,16 @@
 </template>
 
 <script>
-import {getFileIcon, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
+import {getFileIcon, getRequestWithParams, postRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
+import Vue2Filters from 'vue2-filters'
 
 export default {
   name: "AttachmentsTable",
+  mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
     AttachmentCoversheetModal
@@ -66,18 +67,24 @@ export default {
     attachments: Array,
     displayType: Object,
     showLinked: Boolean,
-    allowUpload: Boolean
+    allowUpload: Boolean,
+    projectId: Number,
+    userId: Number,
+    contactId: Number,
+    orgId: Number,
+    objectTypeId: Number,
+    projectProcessStepId: Number,
+    projectProcessStepEventId: Number,
 
   },
   data() {
     return {
       renderTicker: 0,
       showCoversheetModal: false,
-      selectedAttachmentTypeId: null,
-      selectedAttachmentId: null,
+      selectedFile: {},
       attachmentDeleteConfirm: false,
       attachmentToDelete: {},
-
+      uploadAttachmentPath: null
     }
   },
   computed: {
@@ -94,38 +101,14 @@ export default {
   },
   methods: {
     selectFile: function (attachment) {
+      this.selectedFile = attachment
       this.showCoversheetModal = true
-      this.selectedAttachmentTypeId = attachment.attachmentTypeId
-      this.selectedAttachmentId = attachment.id
     },
     closeCoversheet() {
       this.showCoversheetModal = false
     },
     getIconForFile(item) {
       return getFileIcon(item)
-    },
-    async saveFilename(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let newFileName = item.editableName
-        if (item.fileExtension) {
-          newFileName += '.' + item.fileExtension
-        }
-        item.filename = newFileName
-        const {data, status} = await putRequest(`/attachment/${item.id}`, item)
-        item.editableNameCopy = item.editableName
-        item.presignedUrl = data.presignedUrl
-        item.edit = false
-        this.renderTicker++;
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
     },
     deleteAttachment: async function () {
       const id = this.attachmentToDelete.id
@@ -141,6 +124,27 @@ export default {
       }
       this.closeDeleteDialog()
 
+    },
+    async linkAttachment(attachment) {
+      console.log('link this: ', attachment)
+      if(this.projectProcessStepEventId) {
+        this.uploadAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/linkAttachment/${attachment.id}`
+      } else if(this.projectProcessStepId) {
+        this.uploadAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/linkAttachment/${attachment.id}`
+      } else if(this.projectId) {
+        this.uploadAttachmentPath = `/project/${this.projectId}/linkAttachment/${attachment.id}`
+      } else if (this.objectTypeId === 2) {
+        //contact
+        this.uploadAttachmentPath = `/contact/${this.contactId}/linkAttachment/${attachment.id}`
+      } else if (this.objectTypeId === 5) {
+        //org
+        this.uploadAttachmentPath = `/org/${this.orgId}/linkAttachment/${attachment.id}`
+      } else if (this.objectTypeId === 3) {
+        //user
+        this.uploadAttachmentPath = `/user/${this.userId}/linkAttachment/${attachment.id}`
+      }
+
+      const {data} = await postRequest(`${this.uploadAttachmentPath}`)
     },
     startDelete(item) {
       this.attachmentToDelete = item

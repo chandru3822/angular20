@@ -531,6 +531,16 @@ public class UserService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
+  public void linkAttachment(Long userId, Long attachmentId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("attachmentId", attachmentId);
+    params.put("currentUserId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    sqlCache.update("user.linkAttachment", params);
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(MultipartFile file, Long userId, Long attachmentTypeId)

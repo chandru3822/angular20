@@ -425,6 +425,16 @@ public class ContactService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
+  public void linkAttachment(Long contactId, Long attachmentId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    params.put("attachmentId", attachmentId);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    sqlCache.update("contact.linkAttachment", params);
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(MultipartFile file, Long contactId, Long attachmentTypeId)

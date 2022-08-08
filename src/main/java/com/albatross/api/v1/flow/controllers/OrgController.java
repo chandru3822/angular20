@@ -105,6 +105,12 @@ public class OrgController {
     return new ResponseEntity<>(orgService.getOrgAttachments(orgId, isMobile), HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{orgId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long orgId,
+                             @PathVariable Long attachmentId) {
+    orgService.linkAttachment(orgId, attachmentId);
+  }
+
   @PostMapping(value = "/{orgId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Attachment> uploadOrgAttachment(@PathVariable Long orgId,
                                                          @RequestParam Long attachmentTypeId,

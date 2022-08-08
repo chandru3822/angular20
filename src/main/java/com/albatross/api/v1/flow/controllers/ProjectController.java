@@ -135,6 +135,12 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.getCombinedAttachments(projectId), HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{projectId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long projectId,
+                             @PathVariable Long attachmentId) {
+      projectService.linkAttachment(projectId, attachmentId);
+  }
+
   @PostMapping(value = "/{projectId}/attachment")
   public ResponseEntity<Attachment> uploadProjectAttachment(
       @PathVariable Long projectId,

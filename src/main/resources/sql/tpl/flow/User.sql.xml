@@ -801,14 +801,22 @@
       substring(filename, '\.([^\.]+)$') as file_extension,
       ua.user_id,
       ua.linked,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+      concat(u.first_name, ' ', u.last_name) AS uploadedBy,
+      att.attachment_type,
+      'User' as origin_location
     from flow.user_attachment ua
            inner join flow.attachment a on a.id = ua.attachment_id
            inner join flow."user" u ON a.created_by_id = u.id
+           inner join flow.attachment_type att on a.attachment_type_id = att.id
     where ua.user_id = :userId
       and a.archived is not true
     order by ua.date_created desc
   ]]></user.getUserAttachments>
+
+  <user.linkAttachment><![CDATA[
+    insert into flow.user_attachment(attachment_id, user_id, created_by_id, linked)
+    values(:attachmentId, :userId, :currentUserId, true)
+  ]]></user.linkAttachment>
 
   <user.addAttachment><![CDATA[
   insert into flow.user_attachment(attachment_id, user_id, created_by_id, date_created, modified_by_id, date_modified)

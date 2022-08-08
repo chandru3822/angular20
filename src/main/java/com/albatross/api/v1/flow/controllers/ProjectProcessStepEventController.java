@@ -69,6 +69,12 @@ public class ProjectProcessStepEventController {
         HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{projectProcessStepEventId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long projectProcessStepEventId,
+                             @PathVariable Long attachmentId) {
+    projectProcessStepEventService.linkAttachment(projectProcessStepEventId, attachmentId);
+  }
+
   @PostMapping(
       value = "/{projectProcessStepEventId}/attachment",
       produces = MediaType.APPLICATION_JSON_VALUE)

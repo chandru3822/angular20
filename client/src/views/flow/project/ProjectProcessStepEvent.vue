@@ -93,8 +93,8 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
-            <v-icon v-if="collapsedAttachments">mdi-chevron-down</v-icon>
-            <v-icon v-else>mdi-chevron-up</v-icon>
+            <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
+            <v-icon v-else>mdi-chevron-down</v-icon>
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>

@@ -1,9 +1,19 @@
 <template>
   <div>
     <v-dialog persistent :width="1000" v-model="showCoversheetModal">
-      <AttachmentCoversheetModal :attachment-type-id="coversheetSelectedTypeId"
+      <AttachmentCoversheetModal :existing-attachment="tempFile"
+                                 :file="fileToUpload"
                                  :show-modal="showCoversheetModal"
-                                 :close-callback="closeCoversheet">
+                                 :close-callback="closeCoversheet"
+                                 :file-uploaded-callback="fileUploaded"
+                                 :projectId="projectId"
+                                 :projectProcessStepId="projectProcessStepId"
+                                 :userId="userId"
+                                 :contactId="contactId"
+                                 :orgId="orgId"
+                                 :objectTypeId="objectTypeId"
+                                 :projectProcessStepEventId="projectProcessStepEventId"
+      >
       </AttachmentCoversheetModal>
     </v-dialog>
     <div v-if="activityTab" class="px-5">
@@ -33,9 +43,8 @@
               <input
                   :id="`fileInput${type.attachmentTypeId}`"
                   type="file"
-                  multiple
                   :accept="acceptedFileTypes"
-                  @change='uploadDocument($event.target.files, type.attachmentTypeId)'
+                  @change='setTempFile($event.target.files, type)'
                   style="display: none"
                   @click.stop=""
                   ref='fileInput'
@@ -45,7 +54,7 @@
                      @dragleave="dragTypeId=null"
                      @dragend="dragTypeId=null"
                      :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
-                     @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
+                     @drop.prevent="addDragDocument($event, type)"
                      @dragover.prevent="dragTypeId=type.attachmentTypeId"
                      elevation="0" text color="primary" class="expansion-panel-btn upload-button">
                 Upload
@@ -65,6 +74,13 @@
             :allow-upload="allowUpload"
             :show-linked="linkable"
             :attachments="attachments"
+            :projectId="projectId"
+            :projectProcessStepId="projectProcessStepId"
+            :userId="userId"
+            :contactId="contactId"
+            :orgId="orgId"
+            :objectTypeId="objectTypeId"
+            :projectProcessStepEventId="projectProcessStepEventId"
         ></AttachmentsTable>
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -93,23 +109,25 @@ export default {
     AttachmentCoversheetModal
   },
   props: {
-    projectId: Number,
-    objectTypeId: Number,
-    userId: Number,
-    contactId: Number,
-    orgId: Number,
     allowUpload: Boolean,
     linkable: Boolean,
     focused: Boolean,
     showTitle: Boolean,
     title: String,
     activityTab: Boolean, //this tells us whether to show the search and compare buttons
-    forceShowUploadBtn: Boolean
+    forceShowUploadBtn: Boolean,
+    projectId: Number,
+    userId: Number,
+    contactId: Number,
+    orgId: Number,
+    objectTypeId: Number,
   },
   data () {
     return {
       processStepId: null,
       eventId: null,
+      tempFile: {},
+      fileToUpload: null,
       projectProcessStepId: null,
       projectProcessStepEventId: null,
       attachmentTypes: [],
@@ -165,6 +183,10 @@ export default {
     closeCoversheet() {
       this.showCoversheetModal = false
     },
+    fileUploaded(attachment) {
+      console.log('file was uploaded',attachment)
+      this.attachments.push(attachment)
+    },
     updateProcessStepAndEventIds(){
       this.processStepId = this.$route.query.processStepId
       this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
@@ -198,6 +220,11 @@ export default {
           this.typePath = `/objectType/user`
           this.attachmentPath = `/user/${this.userId}/attachments`
         }
+      }
+
+      //if focused override attachment path to get all in project
+      if(this.focused) {
+        this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
       }
 
       if(this.typePath && this.attachmentPath) {
@@ -235,69 +262,26 @@ export default {
         return 0
       }
     },
-    addDragDocument: async function (e, attachmentTypeId) {
+    addDragDocument: async function (e, type) {
       let files = e.dataTransfer.files
-      await this.uploadDocument(files, attachmentTypeId)
+      await this.setTempFile(files, type)
     },
     selectFile: function(typeId){
-      this.showCoversheetModal = true
-      this.coversheetSelectedTypeId = typeId
-      // document.getElementById(`fileInput${typeId}`)?.click();
+      document.getElementById(`fileInput${typeId}`)?.click();
     },
-    uploadDocument: async function (files, attachmentTypeId) {
-      if (files?.length > this.maxFiles) {
-        this.snackbar = getSnackbar('ERROR', `Cannot upload more than ${this.maxFiles} files at one time. Please try again and select fewer files.`)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else if (files?.length > 0) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          //reset error message when trying to upload new file
-          this.error = {}
-          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-          for (let i = 0; i < files.length; ++i) {
-            let file = files[i];
-            if (file && file.size > 0) {
-              await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
-                  null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
-                      (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
-                          Actions.OBJECT_TYPE_FILE_UPLOAD, {
-                file,
-                attachmentTypeId: attachmentTypeId,
-                projectId: this.projectId,
-                projectProcessStepId: this.projectProcessStepId,
-                userId: this.userId,
-                contactId: this.contactId,
-                orgId: this.orgId,
-                objectTypeId: this.objectTypeId,
-                projectProcessStepEventId: this.projectProcessStepEventId,
-                callback: this.uploadCallback
-              })
-            }
-          }
-          // this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
+    setTempFile: function(files, type) {
+      this.tempFile = {}
+      this.fileToUpload = null
+      if(files?.length > 0) {
+        //we dont upload new files until after they fill in custom fields, need to pass file to next screen
+        this.fileToUpload = files[0]
+        this.tempFile.attachmentTypeId = type.attachmentTypeId
+        this.tempFile.attachmentType = type.attachmentType
+        let tempFileName = files[0].name?.substr(0, files[0].name?.lastIndexOf('.'))
+        this.tempFile.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
+        this.tempFile.editableNameCopy = this.tempFile.editableName
+        this.showCoversheetModal = true
       }
-    },
-    async uploadCallback(newAttachment, error) {
-      if (error) {
-        this.error = error
-        this.snackbar = getSnackbar('ERROR', error.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else {
-        let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
-        newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
-        //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
-        newAttachment.editableNameCopy = newAttachment.editableName
-        this.snackbar = getSnackbar('SUCCESS', 'Document Uploaded')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.attachments = [...this.attachments, newAttachment]
-      }
-      this.$store.commit(AppMutations.SET_LOADING, false)
     }
   }
 }
