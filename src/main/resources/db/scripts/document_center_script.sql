@@ -195,3 +195,43 @@ alter table flow.user_attachment
   add column if not exists linked boolean not null default false;
 alter table flow.org_attachment
   add column if not exists linked boolean not null default false;
+alter table flow.project_attachment
+  add column if not exists archived boolean not null default false;
+
+--drop table if exists flow.attachment_custom_field_value;
+CREATE TABLE if not exists flow.attachment_custom_field_value
+(
+  id              serial  not null,
+  attachment_id      integer not null,
+  custom_field_group_assignment_id integer not null,
+  date_value      date,
+  timestamp_value timestamp,
+  boolean_value   boolean,
+  text_value      text,
+  numeric_value   numeric,
+  int_value       integer,
+  int_array_value integer[],
+  rich_text_value text,
+  date_created    timestamp without time zone DEFAULT now(),
+  date_modified    timestamp without time zone,
+  created_by_id   integer not null,
+  modified_by_id  integer,
+  CONSTRAINT attachment_custom_field_value_pk primary key (id),
+  CONSTRAINT acfv_attachment_id_fk FOREIGN KEY (attachment_id)
+    REFERENCES flow.attachment (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT acfv_custom_field_group_id_fk FOREIGN KEY (custom_field_group_assignment_id)
+    REFERENCES flow.custom_field_group_assignment (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT acfv_created_by_id_fk FOREIGN KEY (created_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT acfv_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    REFERENCES flow.user (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+  constraint acfv_unique_cfga_attachment_id
+    unique (attachment_id, custom_field_group_assignment_id)
+);
+
+CREATE INDEX if not exists acfv_attachment_id_idx ON flow.attachment_custom_field_value (attachment_id);
+CREATE INDEX if not exists acfv_custom_field_group_assignment_id_idx ON flow.attachment_custom_field_value (custom_field_group_assignment_id);

@@ -126,9 +126,13 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/{projectId}/attachments")
-  public ResponseEntity<List<Attachment>> getProjectAttachments(
-      @PathVariable Long projectId, @PathVariable(required = false) Boolean isMobile) {
+  public ResponseEntity<List<Attachment>> getProjectAttachments(@PathVariable Long projectId, @PathVariable(required = false) Boolean isMobile) {
     return new ResponseEntity<>(projectService.getAttachments(projectId, isMobile), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/combinedAttachments")
+  public ResponseEntity<List<Attachment>> getProjectCombinedAttachments(@PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getCombinedAttachments(projectId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{projectId}/attachment")

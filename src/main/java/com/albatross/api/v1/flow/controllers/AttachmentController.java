@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.services.AttachmentService;
+import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class AttachmentController {
 
   private final AttachmentService attachmentService;
+  private final CustomFieldValueService customFieldValueService;
 
   @GetMapping(value = "")
   public List<Attachment> getAttachments(

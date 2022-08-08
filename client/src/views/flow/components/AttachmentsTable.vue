@@ -1,52 +1,57 @@
 <template>
-  <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
-
-  <v-container v-else dense :key="renderTicker" id="attachment-table">
-    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :key="item.processStepId">
-      <v-col cols="6" class="text-left pa-1">
-        <v-btn
+  <div>
+    <v-dialog persistent :width="1000" v-model="showCoversheetModal">
+      <AttachmentCoversheetModal :attachment-type-id="selectedAttachmentTypeId"
+                                 :existing-attachment-id="selectedAttachmentId"
+                                 :show-modal="showCoversheetModal"
+                                 :close-callback="closeCoversheet">
+      </AttachmentCoversheetModal>
+    </v-dialog>
+    <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
+    <v-container v-else dense :key="renderTicker" id="attachment-table">
+      <v-row v-for="item in drillDownAttachments" class="text-left attachment" :key="item.processStepId">
+        <v-col cols="6" class="text-left pa-1">
+          <v-btn
             icon
             text
             :href="item.presignedUrl" class="type">
-          <v-icon size="25" color="grey">
-            {{ getIconForFile(item) }}
-          </v-icon>
-        </v-btn>
-        <a v-if="!item.edit" :href="item.presignedUrl"
-           class="type link text-left text-decoration-none">
-          {{ item.editableNameCopy }}
-        </a>
-        <v-text-field
+            <v-icon size="25" color="grey">
+              {{ getIconForFile(item) }}
+            </v-icon>
+          </v-btn>
+          <a v-if="!item.edit" :href="item.presignedUrl"
+             class="type link text-left text-decoration-none">
+            {{ item.editableNameCopy }}
+          </a>
+          <v-text-field
             v-else
             hide-details
             label="Filename"
             class="my-2 text-field"
             v-model="item.editableName"
-        ></v-text-field>
-      </v-col>
-      <v-col cols="4" class="text-center px-1 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
-      <v-col cols="2" class="text-right pa-0">
-        <v-btn v-if="!item.edit" dense small text color="primary" class="px-0" @click="[item.edit = true, renderTicker++]">
-          <v-icon>edit</v-icon>
-        </v-btn>
-        <v-btn v-if="item.edit" dense text color="primary" small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
-          cancel
-        </v-btn>
-        <v-btn  v-if="item.edit" dense small text color="primary" class="px-0" @click="saveFilename(item)">
-          <v-icon>save</v-icon>
-        </v-btn>
-        <v-btn small text color="primary" @click="startDelete(item)" class="px-0" v-if="!item.edit">
-          <v-icon>delete</v-icon>
-        </v-btn>
-        <ConfirmationDialog
+          ></v-text-field>
+        </v-col>
+        <v-col cols="4" class="text-center px-1 attachment-info">
+          {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{ item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY') }}
+        </v-col>
+        <v-col cols="2" class="text-right pa-0">
+          <v-btn dense small text color="primary" class="px-0" @click="selectFile(item)">
+            <v-icon>edit</v-icon>
+          </v-btn>
+          <v-btn small text color="primary" @click="startDelete(item)" class="px-0">
+            <v-icon>delete</v-icon>
+          </v-btn>
+          <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
             @confirm="deleteAttachment"
             @close-dialog="closeDeleteDialog"
 
-        >Are you sure you want to delete {{attachmentToDeleteName}}?</ConfirmationDialog>
-      </v-col>
-    </v-row>
-  </v-container>
+          >Are you sure you want to delete {{ attachmentToDeleteName }}?
+          </ConfirmationDialog>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
 </template>
 
 <script>
@@ -54,45 +59,60 @@ import {getFileIcon, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/
 import {AppMutations} from "@/stores/AppStore";
 import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/ConfirmationDialog";
+import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 
 export default {
   name: "AttachmentsTable",
-  components: {ConfirmationDialog},
+  components: {
+    ConfirmationDialog,
+    AttachmentCoversheetModal
+  },
   props: {
     attachments: Array,
     displayType: Object,
     showLinked: Boolean,
 
   },
-  data () {
+  data() {
     return {
       renderTicker: 0,
+      showCoversheetModal: false,
+      selectedAttachmentTypeId: null,
+      selectedAttachmentId: null,
       attachmentDeleteConfirm: false,
       attachmentToDelete: {},
 
     }
   },
   computed: {
-    drillDownAttachments () {
+    drillDownAttachments() {
       if (this.displayType === null) {
         return []
       } else {
         return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.showLinked)
       }
     },
-    attachmentToDeleteName(){
+    attachmentToDeleteName() {
       return this.attachmentToDelete ? this.attachmentToDelete.filename : ""
     }
   },
   methods: {
-    getIconForFile (item) {
+    selectFile: function (attachment) {
+      this.showCoversheetModal = true
+      this.selectedAttachmentTypeId = attachment.attachmentTypeId
+      this.selectedAttachmentId = attachment.id
+    },
+    closeCoversheet() {
+      this.showCoversheetModal = false
+    },
+    getIconForFile(item) {
       return getFileIcon(item)
     },
     async saveFilename(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let newFileName = item.editableName
-        if(item.fileExtension) {
+        if (item.fileExtension) {
           newFileName += '.' + item.fileExtension
         }
         item.filename = newFileName
@@ -126,7 +146,7 @@ export default {
       this.closeDeleteDialog()
 
     },
-    startDelete(item){
+    startDelete(item) {
       this.attachmentToDelete = item
       this.attachmentDeleteConfirm = true
     },
@@ -150,7 +170,7 @@ export default {
   justify-content: space-between;
 }
 
-.text-left{
+.text-left {
   display: flex;
   justify-content: flex-start;
   align-items: center;

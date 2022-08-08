@@ -7,7 +7,7 @@ public enum ObjectType {
     PROCESS_STEP(4L, "process_step"),
     ORGANIZATION(5L, "org"),
     EVENT(6L, "event"),
-    ATTACHMENT_TYPE(7L, null);
+    ATTACHMENT_TYPE(7L, "attachment_type");
 
   public final Long id;
   public final String tablePrefix;

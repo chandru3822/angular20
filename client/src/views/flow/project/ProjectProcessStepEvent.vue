@@ -341,7 +341,6 @@ import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
-import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import {getStatusClass} from '@/services/eventStatusTypeService'
 import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from "@/ConfirmationDialog";
@@ -354,7 +353,6 @@ export default {
     CustomValueInput,
     DatetimePickerInput,
     SpinnerInline,
-    UploadDocumentModal,
     AttachmentsFolderList
   },
   mixins: [Vue2Filters.mixin],
@@ -366,9 +364,7 @@ export default {
     return {
       snackbar: {},
       selectedEvent: {},
-      showUploadModal: false,
       projectMismatch: false,
-      uploadModalWidth: 600,
       defaultValuesChanged: false,
       //this is used to determine if we should save the status or not. should only save if it changes
       statusChanged: false,

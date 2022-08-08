@@ -74,9 +74,10 @@ public class ProjectProcessStepService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
-  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile) {
+  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile, Boolean linked) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
+    params.put("linked", null != linked ? linked : false);
     List<Attachment> attachments = sqlCache.query("projectProcessStep.getProjectProcessStepAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }

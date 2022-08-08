@@ -264,6 +264,11 @@ public class AttachmentTypeController {
   }
 
   //these endpoints are for the non-admin side of things
+  @GetMapping(value = "/combined/project", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getCombinedTypesForProject() {
+    return attachmentTypeService.getCombinedTypesForProject();
+  }
+
   @GetMapping(value = "/objectType/project", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ObjectTypeAttachmentType> getAssignedTypesForProject(@RequestParam Boolean allowUpload,
                                                                    @RequestParam Boolean focused,

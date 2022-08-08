@@ -471,20 +471,27 @@ public class ProjectService {
   }
 
   public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
+    params.put("companyId", currentUser.getCompanyId());
     // Get project attachments
     List<Attachment> attachments =
         sqlCache.query("project.getAttachments", params, Attachment.class);
-//    // Get project process step attachments
-//    List<Attachment> ppsAttachments =
-//        sqlCache.query(
-//            "projectProcessStep.getProjectProcessStepAttachmentsForProjectId",
-//            params,
-//            Attachment.class);
-//    attachments.addAll(ppsAttachments);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
+  }
+
+  public List<Attachment> getCombinedAttachments(Long projectId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", currentUser.getCompanyId());
+    // Get project attachments
+    List<Attachment> attachments =
+      sqlCache.query("project.getCombinedAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(
+      attachments, storageBucket, false);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped

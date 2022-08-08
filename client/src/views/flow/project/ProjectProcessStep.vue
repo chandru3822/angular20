@@ -353,7 +353,6 @@ import {getCustomFieldReadOnly, getEventCustomFieldReadOnly} from '@/services/cu
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
-import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import Vue2Filters from 'vue2-filters'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 
@@ -373,7 +372,6 @@ export default {
     DatetimePickerInput,
     ProjectProcessStepStatus,
     SpinnerInline,
-    UploadDocumentModal,
     AttachmentsFolderList
   },
   data() {
@@ -384,8 +382,6 @@ export default {
       projectMismatch: false,
       processStepReadOnly: false,
       getStatusClass,
-      showUploadModal: false,
-      uploadModalWidth: 600,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),

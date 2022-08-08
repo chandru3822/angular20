@@ -921,12 +921,30 @@
     where id = :id
   ]]></attachmentType.event.deleteType>
 
-
-
-
-
-
-
+  <attachmentType.getCombinedTypesForProject><![CDATA[
+    select distinct at.attachment_type,
+                    oat.attachment_type_id
+    from flow.project_attachment_type oat
+           inner join flow.attachment_type at on oat.attachment_type_id = at.id
+    where oat.company_id = :companyId
+      and oat.archived is not true  -- 27
+    union
+    select distinct at.attachment_type,
+                    psat.attachment_type_id
+    from flow.process_step_attachment_type psat
+         inner join flow.attachment_type at on at.id = psat.attachment_type_id
+    where psat.archived is not true
+      and at.company_id = :companyId -- 68
+    union
+    select distinct at.attachment_type,
+                    eat.attachment_type_id
+    from flow.event_attachment_type eat
+           inner join flow.attachment_type at on at.id = eat.attachment_type_id
+           inner join flow.event e on eat.event_id = e.id
+    where  eat.archived is not true
+      and e.company_id = :companyId
+    order by attachment_type
+  ]]></attachmentType.getCombinedTypesForProject>
 
   <attachmentType.project.getAssignedTypes><![CDATA[
     select oat.id,

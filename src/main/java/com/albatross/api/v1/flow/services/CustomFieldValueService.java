@@ -42,8 +42,10 @@ public class CustomFieldValueService {
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId, Long companyId) {
     for(CustomFieldGroup cfg : results) {
-      for(CustomFieldValue cv : cfg.getCustomFieldValues()){
-        handleCustomListValueForCfv(cv, projectId, userId, companyId);
+      if(null != cfg.getCustomFieldValues()) {
+        for(CustomFieldValue cv : cfg.getCustomFieldValues()){
+          handleCustomListValueForCfv(cv, projectId, userId, companyId);
+        }
       }
     }
   }
@@ -74,6 +76,9 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
+    return updateCustomFieldValues(values, sourceId, objectType, null);
+  }
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType, Long secondaryId) {
     User currentUser = securityService.getCurrentUser();
     try {
       for (CustomFieldValue cfv : values) {
@@ -89,6 +94,10 @@ public class CustomFieldValueService {
         params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
+        //this is new and only required for attachments because we need to know the attachmentTypeId
+        // AND the attachmentId in order to load these values
+        // attachment upsert uses the secondary id to insert
+        params.put("secondarySourceId", secondaryId);
         params.put("userId", currentUser.trueUserId());
 
         //only used on upsert
@@ -97,14 +106,19 @@ public class CustomFieldValueService {
         String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
         sqlCache.update(sql, params);
       }
-      return getCustomFieldGroupsAndValues(objectType, sourceId);
+      return getCustomFieldGroupsAndValues(objectType, sourceId, secondaryId);
     } catch (Exception e) {
       log.error("CFV: error saving value: {}, save by: {}, for sourceId: {}, for objectType: {}", e.getMessage(), currentUser.getId(), sourceId, objectType);
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
   }
 
+  //overloading cuz im too lazy to go fix it everywhere
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
+    return getCustomFieldGroupsAndValues(objectType, id, null);
+  }
+
+  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id, Long secondaryId) {
     //todo: @randa - this has a security bug - if a user were to send in a contact id for a company they did not have access to it would still load the data
     try {
       User user;
@@ -124,6 +138,8 @@ public class CustomFieldValueService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("objectTypeId", ObjectType.get(objectType).id);
       params.put("sourceId", id);
+      //this is new and only required for attachments because we need to know the attachmentTypeId AND the attachmentId in order to load these values
+      params.put("secondarySourceId", secondaryId);
       params.put("userPositions", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
       params.put("systemAdmin", systemAdmin);
       String sqlPrefix = "customFieldValues." + objectType;

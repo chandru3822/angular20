@@ -1,5 +1,11 @@
 <template>
   <div>
+    <v-dialog persistent :width="1000" v-model="showCoversheetModal">
+      <AttachmentCoversheetModal :attachment-type-id="coversheetSelectedTypeId"
+                                 :show-modal="showCoversheetModal"
+                                 :close-callback="closeCoversheet">
+      </AttachmentCoversheetModal>
+    </v-dialog>
     <div v-if="activityTab" class="px-5">
       <v-text-field
         v-model="search"
@@ -44,7 +50,6 @@
                      elevation="0" text color="primary" class="expansion-panel-btn upload-button">
                 Upload
               </v-btn>
-
             </div>
             <span
                 v-else
@@ -77,12 +82,14 @@ import {AppMutations} from "@/stores/AppStore";
 import orderBy from "lodash.orderby";
 import {Actions} from "@/store";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
+import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import constants from "@/helpers/constants";
 
 export default {
   name: "AttachmentsFolderList",
   components: {
-    AttachmentsTable
+    AttachmentsTable,
+    AttachmentCoversheetModal
   },
   props: {
     projectId: Number,
@@ -107,6 +114,8 @@ export default {
       attachmentTypes: [],
       attachments: [],
       dragTypeId: null,
+      showCoversheetModal: false,
+      coversheetSelectedTypeId: null,
       attachmentTypesLoading: true,
       error: {},
       maxFiles: constants.MAX_FILE_UPLOADS,
@@ -137,12 +146,12 @@ export default {
       this.updateProcessStepAndEventIds()
       this.loadAllPageDetails()
     },
-    // // whenever the project store forces a reload - do this
-    // '$store.state.project.forceReloadKey': async function () {
-    //   // reset the selected item
-    //   this.updateProcessStepAndEventIds()
-    //   this.loadAllPageDetails()
-    // }
+    // // whenever the project store forces a reload - do this - i cant remember why atm
+    '$store.state.project.forceReloadKey': async function () {
+      // reset the selected item
+      this.updateProcessStepAndEventIds()
+      this.loadAllPageDetails()
+    }
   },
   created () {
     this.updateProcessStepAndEventIds();
@@ -152,57 +161,42 @@ export default {
 
   },
   methods: {
+    closeCoversheet() {
+      this.showCoversheetModal = false
+    },
     updateProcessStepAndEventIds(){
       this.processStepId = this.$route.query.processStepId
       this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
       this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
     },
     loadAllPageDetails() {
-      // if (this.projectProcessStepEventId) {
-      //   this.typePath = `/project/${this.projectId}/pps/${this.projectProcessStepId}/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
-      //   this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
-      // } else if (this.projectProcessStepId) {
-      //   this.typePath = `/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`
-      //   this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
-      // } else if (this.projectId) {
-      //   this.typePath = '/projectTypes'
-      //   this.attachmentPath = `/project/${this.projectId}/attachments`
-      // } else if (this.objectTypeId === 3) {
-      //   //user
-      //   this.typePath = `/objectTypes/user`
-      //   this.attachmentPath = `/user/${this.userId}/attachments`
-      // } else if (this.objectTypeId === 2) {
-      //   //contact
-      //   this.typePath = `/objectTypes/contact`
-      //   this.attachmentPath = `/contact/${this.contactId}/attachments`
-      // } else if (this.objectTypeId === 5) {
-      //   //org
-      //   this.typePath = `/objectTypes/org`
-      //   this.attachmentPath = `/org/${this.orgId}/attachments`
-      // }
-      //this part has to completely change
-
-      if(this.projectProcessStepEventId) {
-        this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
-        this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
-      } else if(this.projectProcessStepId) {
-        this.typePath = `/processStepTypes/${this.projectProcessStepId}`
-        this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
-      } else if(this.projectId) {
-        this.typePath = `/objectType/project`
-        this.attachmentPath = `/project/${this.projectId}/attachments`
-      } else if (this.objectTypeId === 2) {
-        //contact
-        this.typePath = `/objectType/contact`
-        this.attachmentPath = `/contact/${this.contactId}/attachments`
-      } else if (this.objectTypeId === 5) {
-        //org
-        this.typePath = `/objectType/org`
-        this.attachmentPath = `/org/${this.orgId}/attachments`
-      } else if (this.objectTypeId === 3) {
-        //user
-        this.typePath = `/objectType/user`
-        this.attachmentPath = `/user/${this.userId}/attachments`
+      //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
+      if((!this.objectTypeId || this.objectTypeId === 1) && !this.focused && !this.allowUpload && !this.linkable) {
+        this.typePath = `/combined/project`
+        this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
+      } else {
+        if(this.projectProcessStepEventId) {
+          this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
+          this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
+        } else if(this.projectProcessStepId) {
+          this.typePath = `/processStepTypes/${this.projectProcessStepId}`
+          this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
+        } else if(this.projectId) {
+          this.typePath = `/objectType/project`
+          this.attachmentPath = `/project/${this.projectId}/attachments`
+        } else if (this.objectTypeId === 2) {
+          //contact
+          this.typePath = `/objectType/contact`
+          this.attachmentPath = `/contact/${this.contactId}/attachments`
+        } else if (this.objectTypeId === 5) {
+          //org
+          this.typePath = `/objectType/org`
+          this.attachmentPath = `/org/${this.orgId}/attachments`
+        } else if (this.objectTypeId === 3) {
+          //user
+          this.typePath = `/objectType/user`
+          this.attachmentPath = `/user/${this.userId}/attachments`
+        }
       }
 
       if(this.typePath && this.attachmentPath) {
@@ -221,7 +215,9 @@ export default {
       this.attachmentTypesLoading = false
     },
     fetchAttachments: async function () {
-      const {data} = await getRequest(this.attachmentPath, null, [])
+      const {data} = await getRequestWithParams(this.attachmentPath, { params: {
+          linked: this.linkable
+        }})
       data.forEach(d => {
         let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
         d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
@@ -243,7 +239,9 @@ export default {
       await this.uploadDocument(files, attachmentTypeId)
     },
     selectFile: function(typeId){
-      document.getElementById(`fileInput${typeId}`)?.click();
+      this.showCoversheetModal = true
+      this.coversheetSelectedTypeId = typeId
+      // document.getElementById(`fileInput${typeId}`)?.click();
     },
     uploadDocument: async function (files, attachmentTypeId) {
       if (files?.length > this.maxFiles) {
