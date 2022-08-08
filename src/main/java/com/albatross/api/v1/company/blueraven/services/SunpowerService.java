@@ -118,8 +118,9 @@ public class SunpowerService {
     applicantDetails.put("lastName", contact.getLastName());
 
     String phone = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();
-    if (!phone.isEmpty() && phone.startsWith("+1")) {
-      phone = phone.substring(2);
+    phone = phone.replaceAll("[^0-9]", "");
+    if (phone.startsWith("1")) {
+      phone = phone.substring(1);
     }
 
     applicantDetails.put("phone", phone);
