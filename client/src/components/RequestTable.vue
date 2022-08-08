@@ -37,14 +37,11 @@
           <tr
               v-for="(it, index) in items"
               :key="it.id"
-              :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
+              :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }, {'clickable' : $store.getters.userHasFeatureAccessLevel(featureCode, 'ADD')}]"
+              @click="submitRequest(it)"
           >
             <td class="text-left pl-4">
-              <a v-if="$store.getters.userHasFeatureAccessLevel(featureCode, 'ADD')"
-                 @click="[$emit('openRequest', it), requestDialog=true]" class="mr-3 name-link">
                 {{ it.customer_name ? it.customer_name : '' }}
-              </a>
-              <span v-else>{{ it.customer_name ? it.customer_name : '' }}</span>
             </td>
             <td class="text-left pl-4">{{ it.address ? it.address : '' }}</td>
           </tr>
@@ -128,6 +125,13 @@ export default {
       }
       this.$emit('searchInput', this.searchQuery)
     }, 500),
+
+    submitRequest(item) {
+      if(this.$store.getters.userHasFeatureAccessLevel(this.featureCode, 'ADD')){
+        this.$emit('openRequest', item)
+        this.requestDialog = true
+      }
+    }
   }
 
 }
