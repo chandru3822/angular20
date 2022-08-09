@@ -299,7 +299,7 @@ public class OrgService {
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId)
+  public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId, String displayName)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -329,6 +329,7 @@ public class OrgService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());

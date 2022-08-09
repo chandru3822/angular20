@@ -278,10 +278,11 @@ public class UserController {
   public ResponseEntity<Attachment> uploadUserAttachment(
       @PathVariable Long userId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
-        userService.addAttachment(file, userId, attachmentTypeId), HttpStatus.OK);
+        userService.addAttachment(file, userId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{userId}/linkAttachment/{attachmentId}")

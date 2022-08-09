@@ -51,6 +51,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       a.date_created,
       a.date_modified,
       a.filename,
+      a.display_name,
       a.attachment_type_id,
       a.content_type,
       a.s3_key,

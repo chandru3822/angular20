@@ -976,6 +976,7 @@
             file,
             attachmentTypeId: 3,
             sourceId: 1,
+            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
             callback: async (newAttachment) => {
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.textMediaUrls = [...this.textMediaUrls, newAttachment.url]

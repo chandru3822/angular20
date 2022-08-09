@@ -44,10 +44,11 @@ public class AttachmentController {
   public Attachment uploadAttachment(
       @RequestParam(required = false) Long sourceId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam(required = false, defaultValue = "true") Boolean deleteFirst,
       @RequestParam("file") MultipartFile file)
       throws IOException {
-    return attachmentService.create(file, sourceId, attachmentTypeId, deleteFirst);
+    return attachmentService.create(file, sourceId, attachmentTypeId, displayName, deleteFirst);
   }
 
   @PutMapping(value = "/{id}")

@@ -6,6 +6,7 @@
        filename,
        content_type,
        s3_key,
+       display_name,
        size,
        uuid,
        archived,
@@ -24,6 +25,7 @@
     SELECT
       a.id,
       a.content_type,
+      a.display_name,
       a.filename,
       a.s3_key,
       a.uuid
@@ -40,6 +42,7 @@
       a.filename,
       a.uuid,
       a.s3_key,
+      a.display_name,
       a.size,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.archived,
@@ -58,6 +61,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.display_name,
       a.uuid,
       a.show,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
@@ -79,6 +83,7 @@
       a.content_type,
       a.filename,
       a.s3_key,
+      a.display_name,
       a.size,
       a.uuid,
       a.show,
@@ -98,6 +103,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.display_name,
       a.uuid,
       a.show,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
@@ -120,6 +126,7 @@
       a.s3_key,
       a.size,
       a.uuid,
+      a.display_name,
       a.archived,
       src.source_id,
       a.date_created,
@@ -139,6 +146,7 @@
            a.filename,
            a.uuid,
            a.s3_key,
+           a.display_name,
            a.size,
            substring(a.filename, '\.([^\.]+)$') as file_extension,
            src.source_id,
@@ -159,6 +167,7 @@
       a.s3_key,
       a.size,
       a.uuid,
+      a.display_name,
       a.archived,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
@@ -172,8 +181,8 @@
   ]]></attachment.getAttachmentBySourceAndTypeForUserList>
 
   <attachment.create><![CDATA[
-    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid)
-    VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4())
+    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid, display_name)
+    VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4(), :displayName)
   ]]></attachment.create>
 
   <attachment.addToJoinTable><![CDATA[
@@ -219,7 +228,7 @@
 
   <attachment.update><![CDATA[
     update flow.attachment
-    set filename = :filename,
+    set display_name = :displayName,
         date_modified = now(),
         modified_by_id = :userId
     where id = :id

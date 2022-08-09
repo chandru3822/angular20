@@ -149,6 +149,7 @@ export default {
               file,
               attachmentTypeId: PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID,
               sourceId: null,
+              displayName: file.name.substr(0, file.name.lastIndexOf('.')),
               deleteFirst: false
             }
           })

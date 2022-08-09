@@ -281,9 +281,9 @@ export default {
         this.fileToUpload = files[0]
         this.tempFile.attachmentTypeId = type.attachmentTypeId
         this.tempFile.attachmentType = type.attachmentType
-        let tempFileName = files[0].name?.substr(0, files[0].name?.lastIndexOf('.'))
-        this.tempFile.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
-        this.tempFile.editableNameCopy = this.tempFile.editableName
+        let displayName = this.fileToUpload.name.substr(0, this.fileToUpload.name.lastIndexOf('.'))
+        this.tempFile.displayName = displayName
+        console.log('name',displayName)
         this.showCoversheetModal = true
       }
     }

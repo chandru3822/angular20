@@ -309,6 +309,7 @@ where ppse.id = :id
         a.filename,
         a.attachment_type_id,
         a.content_type,
+        a.display_name,
         a.s3_key,
         a.archived,
         ppsa.linked,

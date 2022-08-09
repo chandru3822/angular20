@@ -78,10 +78,12 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
+          let file = this.$refs.fileInput.files[0]
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: this.$refs.fileInput.files[0],
+            file: file,
             attachmentTypeId: this.documentTypeId,
             sourceId: this.sourceId,
+            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
             deleteFirst: false,
             callback: async (document) => {
               this.documents.push(document)

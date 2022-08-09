@@ -14,7 +14,7 @@
               <v-text-field
                 label="Document Name"
                 :rules="requiredRules"
-                v-model="fileDetails.editableName"
+                v-model="fileDetails.displayName"
               ></v-text-field>
               <DatetimePickerInput
                 v-model="fileDetails.dateCreated"
@@ -78,7 +78,7 @@
                 <v-icon>close</v-icon>
               </v-btn>
             </div>
-            {{ fileDetails.filename }}
+            {{ fileDetails.displayName }}
             <v-divider></v-divider>
             file preview here
           </v-col>
@@ -210,6 +210,7 @@ export default {
                 Actions.OBJECT_TYPE_FILE_UPLOAD, {
             file: this.file,
             attachmentTypeId: this.existingAttachment.attachmentTypeId,
+            displayName: this.fileDetails.displayName,
             projectId: this.projectId,
             projectProcessStepId: this.projectProcessStepId,
             userId: this.userId,
@@ -234,12 +235,6 @@ export default {
         this.snackbar = getSnackbar('ERROR', error.message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
-        let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
-        newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
-        newAttachment.editableNameCopy = newAttachment.editableName
-        // this.snackbar = getSnackbar('SUCCESS', 'Document Uploaded')
-        // this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        // this.attachments = [...this.attachments, newAttachment]
         await this.updateFieldGroups(newAttachment.id)
         this.fileUploadedCallback(newAttachment)
         this.closeModal()

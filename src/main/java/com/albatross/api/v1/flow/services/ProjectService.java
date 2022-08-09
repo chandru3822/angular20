@@ -506,7 +506,7 @@ public class ProjectService {
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long projectId, Long attachmentTypeId)
+  public Attachment addAttachment(MultipartFile file, Long projectId, Long attachmentTypeId, String displayName)
       throws IOException {
     User currentUser = securityService.getCurrentUser();
 
@@ -544,6 +544,7 @@ public class ProjectService {
     params.put("size", file.getSize());
     params.put("createdById", currentUser.trueUserId());
     params.put("companyId", companyId);
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("attachmentTypeId", attachmentTypeId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();

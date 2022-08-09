@@ -267,10 +267,11 @@ public class ProjectProcessStepController {
   public ResponseEntity<Attachment> uploadProjectProcessStepAttachment(
       @PathVariable Long projectProcessStepId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
-        projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId),
+        projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId, displayName),
         HttpStatus.OK);
   }
 

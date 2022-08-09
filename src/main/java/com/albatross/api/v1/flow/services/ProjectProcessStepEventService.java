@@ -571,7 +571,7 @@ public class ProjectProcessStepEventService {
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(
-      MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId)
+      MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId, String displayName)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -610,6 +610,7 @@ public class ProjectProcessStepEventService {
     params.put("size", file.getSize());
     params.put("createdById", user.getId());
     params.put("attachmentTypeId", attachmentTypeId);
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("companyId", companyId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();

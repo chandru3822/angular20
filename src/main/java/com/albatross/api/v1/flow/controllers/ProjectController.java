@@ -145,10 +145,11 @@ public class ProjectController {
   public ResponseEntity<Attachment> uploadProjectAttachment(
       @PathVariable Long projectId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
-        projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
+        projectService.addAttachment(file, projectId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
   // status stuff

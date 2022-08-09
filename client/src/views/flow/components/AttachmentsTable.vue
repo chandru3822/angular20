@@ -19,7 +19,7 @@
             </v-icon>
           </v-btn>
           <a @click="selectFile(item)" class="text-left no-text-decoration">
-            {{ item.editableNameCopy }}
+            {{ item.displayName }}
           </a>
         </v-col>
         <v-col cols="4" class="text-center px-1 attachment-info">
@@ -93,7 +93,6 @@ export default {
       if (this.displayType === null) {
         return []
       } else {
-        console.log('randaLogger',this.search)
         return this.attachments.filter(a => {
           return !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.showLinked
             && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)

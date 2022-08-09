@@ -113,9 +113,10 @@ public class OrgController {
 
   @PostMapping(value = "/{orgId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Attachment> uploadOrgAttachment(@PathVariable Long orgId,
-                                                         @RequestParam Long attachmentTypeId,
-                                                         @RequestParam("file") MultipartFile file) throws IOException {
-    return new ResponseEntity<>(orgService.addAttachment(file, orgId, attachmentTypeId), HttpStatus.OK);
+                                                        @RequestParam Long attachmentTypeId,
+                                                        @RequestParam String displayName,
+                                                        @RequestParam("file") MultipartFile file) throws IOException {
+    return new ResponseEntity<>(orgService.addAttachment(file, orgId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
 }

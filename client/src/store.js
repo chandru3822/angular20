@@ -88,10 +88,11 @@ const store = new Vuex.Store({
         .filter(({ file, sizeLimit = constants.MAX_FILE_SIZE }) => {
           return file.size <= sizeLimit
         })
-        .map(({ file, attachmentTypeId, sourceId, deleteFirst = true }) => {
+        .map(({ file, attachmentTypeId, sourceId, displayName, deleteFirst = true }) => {
           const formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
+          formData.append('displayName', displayName)
           formData.append('deleteFirst', deleteFirst)
 
           if (sourceId != null) {
@@ -106,7 +107,7 @@ const store = new Vuex.Store({
       return responses.map(res => res.data)
 
     },
-    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst = true, sizeLimit, callback }) => {
+    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, displayName, deleteFirst = true, sizeLimit, callback }) => {
       let reader = new FileReader()
       reader.addEventListener('loadend', async function() {
         let maxFileSize = sizeLimit ?? constants.MAX_FILE_SIZE
@@ -117,6 +118,7 @@ const store = new Vuex.Store({
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
+          formData.append('displayName', displayName)
           if (null != sourceId) {
             formData.append('sourceId', sourceId)
           }
@@ -132,7 +134,7 @@ const store = new Vuex.Store({
       })
       reader.readAsArrayBuffer(file)
     },
-    [Actions.PROJECT_FILE_UPLOAD]: (context, { file, attachmentTypeId, projectId, callback }) => {
+    [Actions.PROJECT_FILE_UPLOAD]: (context, { file, attachmentTypeId, projectId, displayName, callback }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
       reader.addEventListener('loadend', async function() {
@@ -142,7 +144,7 @@ const store = new Vuex.Store({
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
-
+          formData.append('displayName', displayName)
           try {
             const resp = await postRequest(`/project/${projectId}/attachment`, formData)
 
@@ -161,6 +163,7 @@ const store = new Vuex.Store({
       file,
       attachmentTypeId,
       projectProcessStepId,
+      displayName,
       callback
     }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
@@ -172,7 +175,7 @@ const store = new Vuex.Store({
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
-
+          formData.append('displayName', displayName)
           try {
             const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/attachment`, formData)
 
@@ -192,6 +195,7 @@ const store = new Vuex.Store({
       attachmentTypeId,
       projectProcessStepId,
       projectProcessStepEventId,
+      displayName,
       callback
     }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
@@ -203,7 +207,7 @@ const store = new Vuex.Store({
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
-
+          formData.append('displayName', displayName)
           try {
             const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/event/${projectProcessStepEventId}/attachment`, formData)
 
@@ -225,6 +229,7 @@ const store = new Vuex.Store({
       contactId,
       orgId,
       objectTypeId,
+      displayName,
       callback
     }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
@@ -236,7 +241,7 @@ const store = new Vuex.Store({
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
-
+          formData.append('displayName', displayName)
           try {
             let url = ''
             switch (objectTypeId) {

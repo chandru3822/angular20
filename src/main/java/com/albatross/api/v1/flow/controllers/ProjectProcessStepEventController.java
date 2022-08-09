@@ -81,11 +81,12 @@ public class ProjectProcessStepEventController {
   public ResponseEntity<Attachment> uploadProjectProcessStepEventAttachment(
       @PathVariable Long projectProcessStepEventId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
         projectProcessStepEventService.addAttachment(
-            file, projectProcessStepEventId, attachmentTypeId),
+            file, projectProcessStepEventId, attachmentTypeId, displayName),
         HttpStatus.OK);
   }
 

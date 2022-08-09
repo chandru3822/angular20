@@ -180,7 +180,7 @@ ALTER TABLE flow.custom_field_group_assignment
   DROP CONSTRAINT if exists null_custom_and_ancillary_check;
 alter table flow.custom_field_group_assignment
 add constraint null_custom_ancillary_default_check
-    check ((custom_field_id IS NOT NULL) OR (ancillary_custom_field_group_assignment_id IS NOT NULL) OR (default_field_id IS NOT NULL))
+    check ((custom_field_id IS NOT NULL) OR (ancillary_custom_field_group_assignment_id IS NOT NULL) OR (default_field_id IS NOT NULL));
 
 --add linked column to all the attachment tables
 alter table flow.project_attachment
@@ -235,3 +235,15 @@ CREATE TABLE if not exists flow.attachment_custom_field_value
 
 CREATE INDEX if not exists acfv_attachment_id_idx ON flow.attachment_custom_field_value (attachment_id);
 CREATE INDEX if not exists acfv_custom_field_group_assignment_id_idx ON flow.attachment_custom_field_value (custom_field_group_assignment_id);
+
+
+alter table flow.attachment
+add column if not exists display_name varchar(100);
+
+update flow.attachment
+set display_name = case when position('.' in filename) > 0
+                          then left(substring(filename,1,position('.' in filename) -1), 100)
+                        else left(filename, 100) end
+where id > 0;
+
+alter table flow.attachment alter column display_name set not null;
