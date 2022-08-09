@@ -29,14 +29,13 @@
         Compare
       </v-btn>
     </div>
-    <div v-if="showTitle" class="attachment-section-title">{{title}}</div>
     <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
     <div v-if="attachmentTypes.length === 0">No attachments available</div>
     <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
-      <v-expansion-panel-header class="expansion-panel-header">
+      <v-expansion-panel-header class="albatross-body-1">
         <template v-slot:default="{ open }">
           <v-row no-gutters class="align-center" :class="{'bold' : open}">
-            {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
+           <v-icon color="grey darken-1" class="mr-3">folder</v-icon> {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
             <v-spacer></v-spacer>
             <div class="expansion-panel-header-open" v-if="open"
                  key="0">
@@ -113,8 +112,6 @@ export default {
     allowUpload: Boolean,
     linkable: Boolean,
     focused: Boolean,
-    showTitle: Boolean,
-    title: String,
     activityTab: Boolean, //this tells us whether to show the search and compare buttons
     forceShowUploadBtn: Boolean,
     projectId: Number,
@@ -292,10 +289,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.expansion-panel-header{
-  font-size: 14px;
-  color: var(--v-primaryText-base);
-}
 
 .bold {
   font-weight: bold;
@@ -319,10 +312,5 @@ export default {
 
 .theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
   background-color: transparent !important;
-}
-
-.attachment-section-title {
-  font-weight: 700;
-  font-size: 18px;
 }
 </style>

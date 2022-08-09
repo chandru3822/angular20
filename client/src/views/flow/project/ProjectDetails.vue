@@ -62,6 +62,9 @@
             </div>
           </v-toolbar-items>
         </v-toolbar>
+        <v-toolbar v-else color="secondary" class="elevation-0 process-step-toolbar mx-6">
+          <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
+        </v-toolbar>
       </div>
       <div class="project-fields-container px-3" ref="projectFieldsContainer">
         <v-form ref="projectForm">
@@ -78,7 +81,7 @@
                 :key="index"
               >
                 <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-                  <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
+                  <v-toolbar-title class="albatross-header-4-new">{{ group.groupName }}</v-toolbar-title>
                 </v-toolbar>
                 <v-card class="px-4 text-left square-card">
                   <v-row>
@@ -109,17 +112,26 @@
               </v-col>
             </div>
             <div v-else>
-              <AttachmentsFolderList :object-type-id="1"
-                                     :project-id="projectId"
-                                     :allow-upload="true"
-                                      :show-title="true"
-                                      title="Uploaded Documents"/>
-
-              <AttachmentsFolderList :object-type-id="1"
-                                     :project-id="projectId"
-                                     :linkable="true"
-                                     :show-title="true"
-                                     title="Linked Documents"/>
+              <v-col class="py-0">
+                <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+                  <v-toolbar-title class="albatross-header-4-new">Uploaded Documents</v-toolbar-title>
+                </v-toolbar>
+                <v-card class="text-left square-card">
+                  <AttachmentsFolderList :object-type-id="1"
+                                         :project-id="projectId"
+                                         :allow-upload="true"/>
+                </v-card>
+              </v-col>
+              <v-col>
+                <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+                  <v-toolbar-title class="albatross-header-4-new">Linked Documents</v-toolbar-title>
+                </v-toolbar>
+                <v-card class="text-left square-card">
+                <AttachmentsFolderList :object-type-id="1"
+                                       :project-id="projectId"
+                                       :linkable="true"/>
+              </v-card>
+              </v-col>
             </div>
           </div>
         </v-form>
@@ -249,8 +261,8 @@ export default {
           uniqueIdentifier: 'tab_documents'
         })
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
-        //used to preselect the docs tab for testing purposes
-        // this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
+        // used to preselect the docs tab for testing purposes
+        this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
       } catch (e) {
         logError(e)
       } finally {
