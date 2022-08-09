@@ -70,6 +70,7 @@
       </v-expansion-panel-header>
       <v-expansion-panel-content>
         <AttachmentsTable
+            :search="search"
             :display-type="type"
             :allow-upload="allowUpload"
             :show-linked="linkable"
@@ -257,7 +258,10 @@ export default {
     },
     getTypeCount: function(typeId) {
       try {
-        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived && a.linked === this.linkable)?.length || 0
+        return this.attachments.filter(a => {
+          return a.attachmentTypeId === typeId && !a.archived && a.linked === this.linkable
+            && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)
+        })?.length || 0
       } catch {
         return 0
       }

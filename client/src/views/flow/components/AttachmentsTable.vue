@@ -65,6 +65,7 @@ export default {
   },
   props: {
     attachments: Array,
+    search: String,
     displayType: Object,
     showLinked: Boolean,
     allowUpload: Boolean,
@@ -92,7 +93,11 @@ export default {
       if (this.displayType === null) {
         return []
       } else {
-        return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.showLinked)
+        console.log('randaLogger',this.search)
+        return this.attachments.filter(a => {
+          return !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.showLinked
+            && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)
+        })
       }
     },
     attachmentToDeleteName() {
