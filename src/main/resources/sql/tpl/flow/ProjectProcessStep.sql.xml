@@ -62,7 +62,8 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       ppsa.project_process_step_id,
       concat(u.first_name, ' ', u.last_name) AS uploadedBy,
       att.attachment_type,
-      ps.process_step_name || ' ' || pps.id as origin_location
+      (select *
+      from flow.get_attachment_origin(a.id)) as origin_location
     from flow.project_process_step_attachment ppsa
            inner join flow.attachment a on a.id = ppsa.attachment_id
            inner join flow.attachment_type att on a.attachment_type_id = att.id

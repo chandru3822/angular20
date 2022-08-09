@@ -287,6 +287,7 @@
       a.date_modified,
       a.filename,
       a.attachment_type_id,
+      a.display_name,
       a.content_type,
       a.s3_key,
       a.archived,

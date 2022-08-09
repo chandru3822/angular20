@@ -223,7 +223,7 @@
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableNativeFieldsForEvent>
 
-  <customFieldGroupAssignment.getCustomField><![CDATA[
+  <customFieldGroupAssignment.getDefaultField><![CDATA[
     SELECT cfga.id,
            cfga.id as custom_field_group_assignment_id,
            cfga.custom_field_group_id as "customFieldGroupId",
@@ -239,7 +239,7 @@
          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
          inner join flow.object_type ot on ot.id = cot.object_type_id
     WHERE cfga.id = :cfgaId
-  ]]></customFieldGroupAssignment.getCustomField>
+  ]]></customFieldGroupAssignment.getDefaultField>
 
   <customFieldGroupAssignment.getCustomField><![CDATA[
     SELECT cfga.id,

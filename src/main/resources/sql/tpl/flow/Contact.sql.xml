@@ -260,6 +260,7 @@
       a.attachment_type_id,
       a.content_type,
       a.s3_key,
+      a.display_name,
       a.archived,
       substring(filename, '\.([^\.]+)$') as file_extension,
       ca.contact_id,
@@ -274,7 +275,7 @@
     where ca.contact_id = :contactId
       and a.company_id = :companyId
       and ca.archived is false
-      and case when :linked is true then pa.linked is true else pa.linked is false end
+      and case when :linked is true then ca.linked is true else ca.linked is false end
       and a.archived is not true
     order by ca.date_created desc
   ]]></contact.getContactAttachments>

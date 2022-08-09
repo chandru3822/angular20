@@ -67,8 +67,7 @@ public class CustomFieldGroupService {
   public CustomField getDefaultCustomField(Long cfgaId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("cfgaId", cfgaId);
-    Optional<CustomField> result =
-      sqlCache.get("customFieldGroupAssignment.getDefaultField", params, CustomField.class);
+    Optional<CustomField> result = sqlCache.get("customFieldGroupAssignment.getDefaultField", params, CustomField.class);
     return result.orElse(null);
   }
 

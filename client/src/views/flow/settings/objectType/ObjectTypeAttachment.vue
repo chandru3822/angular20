@@ -193,7 +193,7 @@
                                   <v-btn
                                     color="primaryCustom"
                                     text
-                                    @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
+                                    @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.customFieldGroupAssignmentId)]">
                                     Yes
                                   </v-btn>
                                 </v-card-actions>
@@ -438,6 +438,8 @@ export default {
       }
     },
     async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
+      console.log('item',item)
+      console.log('cfga',customFieldGroupAssignmentId)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {

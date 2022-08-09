@@ -593,7 +593,8 @@
       a.archived,
       pa.linked,
       att.attachment_type,
-      'Project' as origin_location
+      (select *
+      from flow.get_attachment_origin(a.id)) as origin_location
     from flow.project_attachment pa
            inner join flow.attachment a on a.id = pa.attachment_id
            inner join flow.attachment_type att on a.attachment_type_id = att.id
