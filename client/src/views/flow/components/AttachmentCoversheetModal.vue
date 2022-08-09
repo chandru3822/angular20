@@ -14,6 +14,7 @@
               <v-text-field
                 label="Document Name"
                 :rules="requiredRules"
+                @change="displayNameChanged = true"
                 v-model="fileDetails.displayName"
               ></v-text-field>
               <DatetimePickerInput
@@ -141,6 +142,7 @@ export default {
       customFieldGroups: [],
       dirtyCfvs: [],
       fieldsSaving: false,
+      displayNameChanged: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       saveError: false,
       errorMsg: null
@@ -152,6 +154,7 @@ export default {
   computed: {},
   methods: {
     async doPageLoad() {
+      //required so that both new and existing files work since the objects aren't identical
       this.fileDetails = cloneDeep(this.existingAttachment)
       await this.getFieldGroups()
     },
@@ -187,6 +190,10 @@ export default {
           //file hasn't been uploaded yet so do that first to get the id
           await this.uploadDocument()
         } else {
+          //existing file
+          if(this.displayNameChanged) {
+            await this.saveDisplayName()
+          }
           //if file already exists then only save fields
           await this.updateFieldGroups(this.existingAttachment.id)
         }
@@ -195,6 +202,20 @@ export default {
         this.saveError = true
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async saveDisplayName() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.existingAttachment.displayName = this.fileDetails.displayName
+        const {data, status} = await putRequest(`/attachment/${this.existingAttachment.id}`, this.existingAttachment)
+        this.existingAttachment.presignedUrl = data.presignedUrl
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     uploadDocument: async function () {

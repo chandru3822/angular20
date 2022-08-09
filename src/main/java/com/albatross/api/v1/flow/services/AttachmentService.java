@@ -405,7 +405,7 @@ public class AttachmentService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("displayName", attachment.getDisplayName());
+    params.put("displayName", attachment.getDisplayName().length() > 100 ? attachment.getDisplayName().substring(0, 100) : attachment.getDisplayName());
     params.put("userId", currentUser.trueUserId());
 
     sqlCache.update("attachment.update", params);
