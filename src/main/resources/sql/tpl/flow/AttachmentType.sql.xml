@@ -82,6 +82,7 @@
                                                                cfga.use_parent_data as "useParentData",
                                                                cfga.id as "customFieldGroupAssignmentId",
                                                                cfga.field_order as "fieldOrder",
+                                                               cfga.required,
                                                                cfga.archived,
                                                                cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                                                cfga.hidden as "customFieldGroupAssignmentHidden",

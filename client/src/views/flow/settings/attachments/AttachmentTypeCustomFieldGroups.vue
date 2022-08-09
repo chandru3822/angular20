@@ -147,7 +147,16 @@
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            {{ cf.fieldName }}
+                            <div>
+                              {{ cf.fieldName }}
+                            </div>
+                            <div class="text-left">
+                              <div>
+                                <input type="checkbox" v-model="cf.required" :readonly="!userCanEdit"
+                                       :disabled="!userCanEdit" @change="updateRequired(cf)">
+                                Required
+                              </div>
+                            </div>
                           </v-list-item-content>
                           <v-menu offset-y
                                   v-if="localCustomFieldGroups.length > 1 && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
@@ -239,7 +248,7 @@ import {
   putRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar
+  getSnackbar, handleHidingGlobalLoader
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
@@ -521,6 +530,23 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateRequired(cf) {
+      try {
+        const objectType = {
+          customFieldGroupAssignmentId: cf.customFieldGroupAssignmentId,
+          required: cf.required || false
+        }
+        const {status} = await putRequest(`/customFieldGroup/updateFieldShowOrRequire`, objectType)
+        this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
