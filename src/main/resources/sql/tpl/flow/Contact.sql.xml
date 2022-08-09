@@ -285,6 +285,16 @@
     values(:attachmentId, :contactId, :userId, true)
   ]]></contact.linkAttachment>
 
+  <contact.unlinkAttachment><![CDATA[
+    update flow.contact_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and contact_id = :contactId
+    and linked is true
+  ]]></contact.unlinkAttachment>
+
   <contact.addAttachment><![CDATA[
     insert into flow.contact_attachment(attachment_id, contact_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:attachmentId, :contactId, :createdById, now(), :createdById, now())

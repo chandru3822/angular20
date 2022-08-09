@@ -314,6 +314,16 @@
     values(:attachmentId, :orgId, :userId, true)
   ]]></org.linkAttachment>
 
+  <org.unlinkAttachment><![CDATA[
+    update flow.org_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and org_id = :orgId
+    and linked is true
+  ]]></org.unlinkAttachment>
+
   <org.addAttachment><![CDATA[
     insert into flow.org_attachment(attachment_id, org_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:attachmentId, :orgId, :createdById, now(), :createdById, now())

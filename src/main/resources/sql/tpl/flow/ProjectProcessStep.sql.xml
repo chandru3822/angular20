@@ -82,6 +82,16 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
     values(:attachmentId, :projectProcessStepId, :userId, true)
   ]]></projectProcessStep.linkAttachment>
 
+  <projectProcessStep.unlinkAttachment><![CDATA[
+    update flow.project_process_step_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and project_process_step_id = :projectProcessStepId
+    and linked is true
+  ]]></projectProcessStep.unlinkAttachment>
+
   <projectProcessStep.addAttachment><![CDATA[
     insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:attachmentId, :projectProcessStepId, :createdById, now(), :createdById, now())

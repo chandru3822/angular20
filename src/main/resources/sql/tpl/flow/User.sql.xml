@@ -822,6 +822,16 @@
     values(:attachmentId, :userId, :currentUserId, true)
   ]]></user.linkAttachment>
 
+  <user.unlinkAttachment><![CDATA[
+    update flow.user_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and user_id = :userId
+    and linked is true
+  ]]></user.unlinkAttachment>
+
   <user.addAttachment><![CDATA[
   insert into flow.user_attachment(attachment_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
   values (:attachmentId, :userId, :createdById, now(), :createdById, now())

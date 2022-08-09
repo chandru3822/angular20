@@ -611,6 +611,16 @@
     values(:attachmentId, :projectId, :userId, true)
   ]]></project.linkAttachment>
 
+  <project.unlinkAttachment><![CDATA[
+    update flow.project_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and project_id = :projectId
+    and linked is true
+  ]]></project.unlinkAttachment>
+
   <project.getAttachmentById><![CDATA[
     select
       a.id,

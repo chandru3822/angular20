@@ -108,8 +108,9 @@ public class OrgController {
 
   @PostMapping(value = "/{orgId}/linkAttachment/{attachmentId}")
   public void linkAttachment(@PathVariable Long orgId,
-                             @PathVariable Long attachmentId) {
-    orgService.linkAttachment(orgId, attachmentId);
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    orgService.linkAttachment(orgId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{orgId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)

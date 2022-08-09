@@ -259,8 +259,9 @@ public class ProjectProcessStepController {
 
   @PostMapping(value = "/{projectProcessStepId}/linkAttachment/{attachmentId}")
   public void linkAttachment(@PathVariable Long projectProcessStepId,
-                             @PathVariable Long attachmentId) {
-    projectProcessStepService.linkAttachment(projectProcessStepId, attachmentId);
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    projectProcessStepService.linkAttachment(projectProcessStepId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{projectProcessStepId}/attachment")

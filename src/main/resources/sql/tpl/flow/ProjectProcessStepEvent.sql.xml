@@ -342,6 +342,16 @@ where ppse.id = :id
     values(:attachmentId, :projectProcessStepEventId, :userId, true)
   ]]></projectProcessStepEvent.linkAttachment>
 
+  <projectProcessStepEvent.unlinkAttachment><![CDATA[
+    update flow.project_process_step_event_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and project_process_step_event_id = :projectProcessStepEventId
+    and linked is true
+  ]]></projectProcessStepEvent.unlinkAttachment>
+
   <projectProcessStepEvent.addAttachment><![CDATA[
     insert into flow.project_process_step_event_attachment(attachment_id, project_process_step_event_id, created_by_id)
     values (:attachmentId, :projectProcessStepEventId, :createdById)
