@@ -18,6 +18,7 @@
       :prepend-icon="hidePrependIcon ? '' : 'event'"
       :append-icon="showAppendIcon ? 'event' : ''"
       readonly
+      color="primary"
       class="datetime-picker-input"
       clear-icon="mdi-close-circle"
       :clearable="!readonly"
