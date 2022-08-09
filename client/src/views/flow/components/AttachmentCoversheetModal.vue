@@ -1,83 +1,89 @@
 <template>
   <v-card class="square-card">
     <v-card-text class="pb-0 pl-0">
-      <v-row>
-        <v-col cols="4" class="coversheet-left-pane">
-          Fill Out Coversheet
-          <v-divider></v-divider>
-          Document Details
-          <v-card class="square-card pa-3">
-            <v-text-field
-              label="Document Name"
-              v-model="fileDetails.editableName"
-            ></v-text-field>
-            <DatetimePickerInput
-              v-model="fileDetails.dateCreated"
-              :timezone="timezone"
-              :type="'date'"
-              readonly
-              :format="'MM/DD/YYYY'"
-              label="Upload Date"
-            />
-            <v-text-field
-              disabled readonly
-              label="Uploaded By"
-              v-model="fileDetails.uploadedBy"
-            ></v-text-field>
-            <v-text-field
-              disabled readonly
-              label="Document Type"
-              v-model="fileDetails.attachmentType"
-            ></v-text-field>
-            <v-text-field
-              disabled readonly
-              label="Document Location"
-              v-model="fileDetails.originLocation"
-            ></v-text-field>
-          </v-card>
-          Additional Document Details
-          <v-col
-            class="pt-0"
-            v-for="(cfg, index) in customFieldGroups"
-            :key="index"
-          >
-            {{ cfg.groupName }}
+      <v-form ref="attachmentFieldsForm">
+        <v-row>
+          <v-col cols="4" class="coversheet-left-pane">
+            Fill Out Coversheet
+            <v-divider></v-divider>
+            <div v-if="saveError" class="error-text">
+              {{errorMsg}}
+            </div>
+            Document Details
             <v-card class="square-card pa-3">
-              <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
-                                :key="idx"
-                                :show-field-name="false"
-                                :callback="populateDirtyCfvs"
-                                :required="cf.required"
-                                :readonly="getReadOnly(cf)"
-                                :field="cf"></CustomValueInput>
+              <v-text-field
+                label="Document Name"
+                :rules="requiredRules"
+                v-model="fileDetails.editableName"
+              ></v-text-field>
+              <DatetimePickerInput
+                v-model="fileDetails.dateCreated"
+                :timezone="timezone"
+                :type="'date'"
+                readonly
+                :format="'MM/DD/YYYY'"
+                label="Upload Date"
+              />
+              <v-text-field
+                disabled readonly
+                label="Uploaded By"
+                v-model="fileDetails.uploadedBy"
+              ></v-text-field>
+              <v-text-field
+                disabled readonly
+                label="Document Type"
+                v-model="fileDetails.attachmentType"
+              ></v-text-field>
+              <v-text-field
+                disabled readonly
+                label="Document Location"
+                v-model="fileDetails.originLocation"
+              ></v-text-field>
             </v-card>
+            Additional Document Details
+            <v-col
+              class="pt-0"
+              v-for="(cfg, index) in customFieldGroups"
+              :key="index"
+            >
+              {{ cfg.groupName }}
+              <v-card class="square-card pa-3">
+                <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                                  :key="idx"
+                                  :show-field-name="false"
+                                  :callback="populateDirtyCfvs"
+                                  :required="cf.required"
+                                  :readonly="getReadOnly(cf)"
+                                  :field="cf"></CustomValueInput>
+              </v-card>
 
+            </v-col>
+            <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <div class="flex-display">
+                  <v-btn small text @click="closeModal()">
+                    Cancel Upload
+                  </v-btn>
+                  <v-btn small :loading="fieldsSaving" color="primary" @click="saveAndUpload()">
+                    Save and Upload
+                  </v-btn>
+                </div>
+              </v-toolbar-items>
+            </v-toolbar>
           </v-col>
-          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <div class="flex-display">
-                <v-btn small text @click="closeModal()">
-                  Cancel Upload
-                </v-btn>
-                <v-btn small :loading="fieldsSaving" color="primary" @click="saveAndUpload()">
-                  Save and Upload
-                </v-btn>
-              </div>
-            </v-toolbar-items>
-          </v-toolbar>
-        </v-col>
-        <v-col cols="8">
-          <div class="one-hunned text-right">
-            <v-btn x-small text @click="closeModal()">
-              <v-icon>close</v-icon>
-            </v-btn>
-          </div>
-          {{ fileDetails.filename }}
-          <v-divider></v-divider>
-          file preview here
-        </v-col>
-      </v-row>
+          <v-col cols="8">
+            <div class="one-hunned text-right">
+              <v-btn x-small text @click="closeModal()">
+                <v-icon>close</v-icon>
+              </v-btn>
+            </div>
+            {{ fileDetails.filename }}
+            <v-divider></v-divider>
+            file preview here
+          </v-col>
+        </v-row>
+      </v-form>
     </v-card-text>
   </v-card>
 </template>
@@ -134,7 +140,10 @@ export default {
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       customFieldGroups: [],
       dirtyCfvs: [],
-      fieldsSaving: false
+      fieldsSaving: false,
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      saveError: false,
+      errorMsg: null
     }
   },
   created() {
@@ -173,12 +182,19 @@ export default {
       this.closeCallback()
     },
     async saveAndUpload() {
-      if (!this.existingAttachment.id) {
-        //file hasn't been uploaded yet so do that first to get the id
-        await this.uploadDocument()
+      if (this.$refs.attachmentFieldsForm.validate()) {
+        if (!this.existingAttachment.id) {
+          //file hasn't been uploaded yet so do that first to get the id
+          await this.uploadDocument()
+        } else {
+          //if file already exists then only save fields
+          await this.updateFieldGroups(this.existingAttachment.id)
+        }
       } else {
-        //if file already exists then only save fields
-        await this.updateFieldGroups(this.existingAttachment.id)
+        this.errorMsg = 'Additional fields are required before saving.'
+        this.saveError = true
+        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     uploadDocument: async function () {
