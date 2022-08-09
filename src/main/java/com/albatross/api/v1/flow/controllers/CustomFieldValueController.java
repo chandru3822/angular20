@@ -83,7 +83,7 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> getFieldsByAttachmentTypeId(@PathVariable Long attachmentTypeId,
                                                             @RequestParam(required = false) Long attachmentId) {
     return customFieldValueService.getCustomFieldGroupsAndValues(
-      ObjectType.ATTACHMENT_TYPE.textValue(), attachmentTypeId, attachmentId);
+      ObjectType.ATTACHMENT_TYPE.textValue(), attachmentTypeId, attachmentId, true);
   }
 
   // updates for all object types
@@ -123,7 +123,7 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> updateAttachmentCustomFieldValues(@RequestBody List<CustomFieldValue> values,
                                                                   @PathVariable Long attachmentTypeId,
                                                                   @PathVariable Long attachmentId) {
-    return customFieldValueService.updateCustomFieldValues(values, attachmentTypeId, ObjectType.ATTACHMENT_TYPE.textValue(), attachmentId);
+    return customFieldValueService.updateCustomFieldValues(values, attachmentTypeId, ObjectType.ATTACHMENT_TYPE.textValue(), attachmentId, true);
   }
 
   @PostMapping(value = "/user/{id}")

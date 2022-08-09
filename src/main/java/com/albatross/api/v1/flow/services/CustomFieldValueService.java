@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -76,9 +77,9 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
-    return updateCustomFieldValues(values, sourceId, objectType, null);
+    return updateCustomFieldValues(values, sourceId, objectType, null, false);
   }
-  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType, Long secondaryId) {
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType, Long secondaryId, Boolean doCustomAttachmentLoad) {
     User currentUser = securityService.getCurrentUser();
     try {
       for (CustomFieldValue cfv : values) {
@@ -106,7 +107,7 @@ public class CustomFieldValueService {
         String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
         sqlCache.update(sql, params);
       }
-      return getCustomFieldGroupsAndValues(objectType, sourceId, secondaryId);
+      return getCustomFieldGroupsAndValues(objectType, sourceId, secondaryId, doCustomAttachmentLoad);
     } catch (Exception e) {
       log.error("CFV: error saving value: {}, save by: {}, for sourceId: {}, for objectType: {}", e.getMessage(), currentUser.getId(), sourceId, objectType);
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
@@ -115,10 +116,10 @@ public class CustomFieldValueService {
 
   //overloading cuz im too lazy to go fix it everywhere
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
-    return getCustomFieldGroupsAndValues(objectType, id, null);
+    return getCustomFieldGroupsAndValues(objectType, id, null, false);
   }
 
-  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id, Long secondaryId) {
+  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id, Long secondaryId, Boolean doCustomAttachmentLoad) {
     //todo: @randa - this has a security bug - if a user were to send in a contact id for a company they did not have access to it would still load the data
     try {
       User user;
@@ -157,6 +158,15 @@ public class CustomFieldValueService {
 
       List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
+      if(doCustomAttachmentLoad) {
+        //secondaryId = attachmentId
+        //id = attachmentTypeId
+        List<CustomFieldGroup> ancillaryGroups = getAttachmentAncillaryCfgs(secondaryId, id, user.getCompanyId());
+        if(null != ancillaryGroups) {
+          fieldGroups.addAll(ancillaryGroups);
+        }
+      }
+
       // this allows us to pass project_id and user_id to custom sql queries
       if(objectType.equals("project")) {
         handleCustomListOfValue(fieldGroups, id, user.getId(), companyId);
@@ -175,6 +185,30 @@ public class CustomFieldValueService {
     } catch (SQLException e) {
       //this error should never happen
       log.error("SQL", e);
+      return null;
+    }
+  }
+
+  @Data
+  public static class AttachmentObject {
+    Long idToUse;
+    String objectTypeText;
+  }
+
+  public List<CustomFieldGroup> getAttachmentAncillaryCfgs(Long attachmentId, Long attachmentTypeId, Long companyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("attachmentId", attachmentId);
+    params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", companyId);
+    Optional<AttachmentObject> optionalObj = sqlCache.get("attachment.getAttachmentSource", params, AttachmentObject.class);
+
+    if(optionalObj.isPresent()) {
+      AttachmentObject obj = optionalObj.get();
+      params.put("idToUse", obj.idToUse);
+      String sqlPrefix = "customFieldValues." + obj.objectTypeText + ".getAncillaryCustomFieldGroupsAndValuesForAttachments";
+      List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+      return fieldGroups;
+    } else {
       return null;
     }
   }

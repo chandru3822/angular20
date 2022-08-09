@@ -226,6 +226,50 @@
     where at.id = :id
   ]]></attachment.getAttachmentType>
 
+  <attachment.getAttachmentSource><![CDATA[
+    select project_id as id_to_use,
+           'project' as object_type_text
+    from flow.project_attachment
+    where attachment_id = :attachmentId
+    and linked is false
+    and archived is false
+    union
+    select project_process_step_id as id_to_use,
+           'process_step' as object_type_text
+    from flow.project_process_step_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select project_process_step_event_id as id_to_use,
+           'event' as object_type_text
+    from flow.project_process_step_event_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select contact_id as id_to_use,
+           'contact' as object_type_text
+    from flow.contact_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select user_id as id_to_use,
+           'user' as object_type_text
+    from flow.user_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select org_id as id_to_use,
+           'org' as object_type_text
+    from flow.org_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+  ]]></attachment.getAttachmentSource>
+
   <attachment.update><![CDATA[
     update flow.attachment
     set display_name = :displayName,

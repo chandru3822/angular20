@@ -278,9 +278,12 @@ public class OrgService {
     return sqlCache.get("org.getOneOrgCalendarAccess", params, UserOrgAccess.class).orElse(null);
   }
 
-  public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile) {
+  public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("orgId", orgId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
         sqlCache.query("org.getOrgAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(

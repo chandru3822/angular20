@@ -101,8 +101,9 @@ public class ContactController {
 
   @GetMapping(value = "/{contactId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getContactAttachments(@PathVariable Long contactId,
-                                                                @PathVariable(required = false) Boolean isMobile) {
-    return new ResponseEntity<>(contactService.getContactAttachments(contactId, isMobile), HttpStatus.OK);
+                                                                @RequestParam(required = false) Boolean isMobile,
+                                                                @RequestParam(required = false) Boolean linked) {
+    return new ResponseEntity<>(contactService.getContactAttachments(contactId, isMobile, linked), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{contactId}/linkAttachment/{attachmentId}")

@@ -522,9 +522,13 @@ public class UserService {
     }
   }
 
-  public List<Attachment> getUserAttachments(Long userId, Boolean isMobile) {
+  public List<Attachment> getUserAttachments(Long userId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
         sqlCache.query("user.getUserAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(

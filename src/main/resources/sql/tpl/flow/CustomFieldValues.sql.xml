@@ -1182,4 +1182,164 @@
         modified_by_id = :userId,
         date_modified = now()
 ]]></customFieldValue.upsertAuroraDesign>
+
+  <customFieldValues.project.getAncillaryCustomFieldGroupsAndValuesForAttachments><![CDATA[
+    select
+      cfg.id,
+      cfg.group_name as "groupName",
+      cfg.company_object_type_tab_id as "companyObjectTypeTabId",
+      cfg.group_order as "groupOrder",
+      coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(fields)))
+                 FROM (
+                        select
+                          pcv.id,
+                          p.contact_id as "contactId",
+                          pcv.date_value as "dateValue",
+                          pcv.timestamp_value as "timestampValue",
+                          pcv.boolean_value as "booleanValue",
+                          pcv.text_value as "textValue",
+                          pcv.rich_text_value as "richTextValue",
+                          pcv.numeric_value as "numericValue",
+                          pcv.int_value as "intValue",
+                          pcv.int_array_value as "intArrayValue",
+                          cfga.custom_field_group_id as "customFieldGroupId",
+                          cfga.id as "customFieldGroupAssignmentId",
+                          cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                          cfga.required,
+                          cfga.hidden as "customFieldGroupAssignmentHidden",
+                          coalesce(cfga.custom_field_id, cfga1.custom_field_id) as "customFieldId",
+                          cfga.field_order as "fieldOrder",
+                          cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                          cfga.use_parent_data as "useParentData",
+                          cf.list_of_value_id as "listOfValueId",
+                          cf.field_name as "fieldName",
+                          cf.allow_now as "allowNow",
+                          case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                          cf.system_readonly as "systemReadonly",
+                          cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+                          cf.custom_field_sql_key as "customFieldSqlKey",
+                          cf.company_system_list_id as "companySystemListId",
+                          cf.system_list_option_ids as "systemListOptionIds",
+                          cf.company_data_type_id as "companyDataTypeId",
+                          cdt.data_type_id as "dataTypeId",
+                          cdt.has_list_values as "hasListValues",
+                          coalesce((
+                                     SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                     FROM (
+                                            select
+                                              lov.id,
+                                              lov.name,
+                                              lov.code,
+                                              lov.parent_id,
+                                              lov.display_order,
+                                              lov.archived
+                                            from flow.list_of_value lov
+                                            where lov.parent_id is not null
+                                              and lov.parent_id = cf.list_of_value_id
+                                              and (lov.archived is not true OR
+                                                   (lov.archived is true AND (lov.id = pcv.int_value
+                                                     OR lov.id = any(pcv.int_array_value))))
+                                            order by
+                                              case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                              case when cf.sort_list_values_alphabetically is false then lov.display_order end
+                                          ) listOfValues), '[]') AS "listOfValues"
+                        from flow.custom_field_group_assignment cfga
+                               left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
+                               inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
+                               inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                               left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :idToUse
+                               left join flow.project p on p.id = :idToUse
+
+                        where cfga.custom_field_group_id = cfg.id
+                          and cfga.archived is not true
+                        order by cfga.field_order, cf.field_name
+                      ) fields), '[]') AS "customFieldValues"
+    from flow.custom_field_group cfg
+        inner join flow.project_attachment_type pat on cfg.project_attachment_type_id = pat.id
+        inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+    where pat.attachment_type_id = :attachmentTypeId
+      and cfg.archived is not true
+      and cot.company_id = :companyId
+    order by cfg.group_order
+  ]]></customFieldValues.project.getAncillaryCustomFieldGroupsAndValuesForAttachments>
+
+  <customFieldValues.process_step.getAncillaryCustomFieldGroupsAndValuesForAttachments><![CDATA[
+    select
+      cfg.id,
+      cfg.group_name as "groupName",
+      cfg.company_object_type_tab_id as "companyObjectTypeTabId",
+      cfg.group_order as "groupOrder",
+      coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(fields)))
+                 FROM (
+                        select
+                          pcv.id,
+                          pcv.date_value as "dateValue",
+                          pcv.timestamp_value as "timestampValue",
+                          pcv.boolean_value as "booleanValue",
+                          pcv.text_value as "textValue",
+                          pcv.rich_text_value as "richTextValue",
+                          pcv.numeric_value as "numericValue",
+                          pcv.int_value as "intValue",
+                          pcv.int_array_value as "intArrayValue",
+                          cfga.custom_field_group_id as "customFieldGroupId",
+                          cfga.id as "customFieldGroupAssignmentId",
+                          cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                          cfga.required,
+                          cfga.hidden as "customFieldGroupAssignmentHidden",
+                          coalesce(cfga.custom_field_id, cfga1.custom_field_id) as "customFieldId",
+                          cfga.field_order as "fieldOrder",
+                          cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                          cfga.use_parent_data as "useParentData",
+                          cf.list_of_value_id as "listOfValueId",
+                          cf.field_name as "fieldName",
+                          cf.allow_now as "allowNow",
+                          case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                          cf.system_readonly as "systemReadonly",
+                          cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+                          cf.custom_field_sql_key as "customFieldSqlKey",
+                          cf.company_system_list_id as "companySystemListId",
+                          cf.system_list_option_ids as "systemListOptionIds",
+                          cf.company_data_type_id as "companyDataTypeId",
+                          cdt.data_type_id as "dataTypeId",
+                          cdt.has_list_values as "hasListValues",
+                          coalesce((
+                                     SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                     FROM (
+                                            select
+                                              lov.id,
+                                              lov.name,
+                                              lov.code,
+                                              lov.parent_id,
+                                              lov.display_order,
+                                              lov.archived
+                                            from flow.list_of_value lov
+                                            where lov.parent_id is not null
+                                              and lov.parent_id = cf.list_of_value_id
+                                              and (lov.archived is not true OR
+                                                   (lov.archived is true AND (lov.id = pcv.int_value
+                                                     OR lov.id = any(pcv.int_array_value))))
+                                            order by
+                                              case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                              case when cf.sort_list_values_alphabetically is false then lov.display_order end
+                                          ) listOfValues), '[]') AS "listOfValues"
+                        from flow.custom_field_group_assignment cfga
+                               left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
+                               inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
+                               inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                               left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :idToUse
+                        where cfga.custom_field_group_id = cfg.id
+                          and cfga.archived is not true
+                        order by cfga.field_order, cf.field_name
+                      ) fields), '[]') AS "customFieldValues"
+    from flow.custom_field_group cfg
+           inner join flow.process_step_attachment_type pat on cfg.process_step_attachment_type_id = pat.id
+           inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+    where pat.attachment_type_id = :attachmentTypeId
+      and cfg.archived is not true
+      and cot.company_id = :companyId
+    order by cfg.group_order
+  ]]></customFieldValues.process_step.getAncillaryCustomFieldGroupsAndValuesForAttachments>
+
 </sql>

@@ -470,10 +470,11 @@ public class ProjectService {
     return sj.toString();
   }
 
-  public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
+  public List<Attachment> getAttachments(Long projectId, Boolean isMobile, Boolean linked) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
+    params.put("linked", linked);
     params.put("companyId", currentUser.getCompanyId());
     // Get project attachments
     List<Attachment> attachments =

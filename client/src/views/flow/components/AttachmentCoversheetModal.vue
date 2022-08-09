@@ -154,8 +154,14 @@ export default {
   computed: {},
   methods: {
     async doPageLoad() {
+      //reset all the items cuz when the modal re-opens it doesnt reset everything
+      this.customFieldGroups = []
+      this.dirtyCfvs = []
+      this.fileDetails = {}
+
       //required so that both new and existing files work since the objects aren't identical
       this.fileDetails = cloneDeep(this.existingAttachment)
+
       await this.getFieldGroups()
     },
     getFieldGroups: async function () {

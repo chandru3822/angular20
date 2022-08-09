@@ -247,3 +247,10 @@ set display_name = case when position('.' in filename) > 0
 where id > 0;
 
 alter table flow.attachment alter column display_name set not null;
+
+alter table flow.contact_attachment
+  add column if not exists archived boolean not null default false;
+alter table flow.user_attachment
+  add column if not exists archived boolean not null default false;
+alter table flow.org_attachment
+  add column if not exists archived boolean not null default false;

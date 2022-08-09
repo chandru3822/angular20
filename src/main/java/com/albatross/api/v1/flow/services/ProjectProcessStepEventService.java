@@ -544,9 +544,13 @@ public class ProjectProcessStepEventService {
     return functionResults;
   }
 
-  public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile) {
+  public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     // there is currently no where in the UI where event attachments are not viewed side by side
     // with ps attachments, so for now this actually returns both
     List<Attachment> attachments =

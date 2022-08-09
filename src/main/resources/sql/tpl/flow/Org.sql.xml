@@ -301,6 +301,9 @@
            inner join flow."user" u ON a.created_by_id = u.id
            inner join flow.attachment_type att on a.attachment_type_id = att.id
     where oa.org_id = :orgId
+      and case when :linked is true then oa.linked is true else oa.linked is false end
+      and a.company_id = :companyId
+      and oa.archived is false
       and a.archived is not true
     order by oa.date_created desc
   ]]></org.getOrgAttachments>

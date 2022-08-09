@@ -416,9 +416,13 @@ public class ContactService {
     return project.orElse(null);
   }
 
-  public List<Attachment> getContactAttachments(Long contactId, Boolean isMobile) {
+  public List<Attachment> getContactAttachments(Long contactId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
         sqlCache.query("contact.getContactAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(

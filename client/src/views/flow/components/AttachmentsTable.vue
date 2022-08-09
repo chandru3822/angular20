@@ -3,7 +3,14 @@
     <v-dialog persistent :width="1000" v-model="showCoversheetModal">
       <AttachmentCoversheetModal :existing-attachment="selectedFile"
                                  :show-modal="showCoversheetModal"
-                                 :close-callback="closeCoversheet">
+                                 :close-callback="closeCoversheet"
+                                 :projectId="projectId"
+                                 :projectProcessStepId="projectProcessStepId"
+                                 :userId="userId"
+                                 :contactId="contactId"
+                                 :orgId="orgId"
+                                 :objectTypeId="objectTypeId"
+                                 :projectProcessStepEventId="projectProcessStepEventId">
       </AttachmentCoversheetModal>
     </v-dialog>
     <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>

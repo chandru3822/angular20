@@ -269,9 +269,10 @@ public class UserController {
   }
 
   @GetMapping(value = "/{userId}/attachments")
-  public ResponseEntity<List<Attachment>> getUserAttachments(
-      @PathVariable Long userId, @PathVariable(required = false) Boolean isMobile) {
-    return new ResponseEntity<>(userService.getUserAttachments(userId, isMobile), HttpStatus.OK);
+  public ResponseEntity<List<Attachment>> getUserAttachments(@PathVariable Long userId,
+                                                             @RequestParam(required = false) Boolean isMobile,
+                                                             @RequestParam(required = false) Boolean linked) {
+    return new ResponseEntity<>(userService.getUserAttachments(userId, isMobile, linked), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{userId}/attachment")

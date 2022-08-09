@@ -330,8 +330,12 @@ where ppse.id = :id
              inner join flow."user" u ON a.created_by_id = u.id
              inner join flow.attachment_type att on a.attachment_type_id = att.id
       where ppsa.project_process_step_event_id = :projectProcessStepEventId
+        and ppsa.archived is not true
+        and a.archived is not true
+        and case when :linked is true then ppsa.linked is true else ppsa.linked is false end
         and a.archived is not true
         and ppsa.archived is not true
+      order by ppsa.date_created desc
   ]]></projectProcessStepEvent.getProjectProcessStepEventAttachments>
 
   <projectProcessStepEvent.linkAttachment><![CDATA[

@@ -62,10 +62,11 @@ public class ProjectProcessStepEventController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getProjectProcessStepEventAttachments(
       @PathVariable Long projectProcessStepEventId,
-      @PathVariable(required = false) Boolean isMobile) {
+      @RequestParam(required = false) Boolean isMobile,
+      @RequestParam(required = false) Boolean linked) {
     return new ResponseEntity<>(
         projectProcessStepEventService.getProjectProcessStepEventAttachments(
-            projectProcessStepEventId, isMobile),
+            projectProcessStepEventId, isMobile, linked),
         HttpStatus.OK);
   }
 
