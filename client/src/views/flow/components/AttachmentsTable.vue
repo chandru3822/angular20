@@ -17,10 +17,7 @@
     <v-container v-else dense :key="renderTicker" id="attachment-table">
       <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment" :key="item.processStepId">
         <v-col cols="6" class="text-left pa-1">
-          <v-btn
-            icon
-            text
-            :href="item.presignedUrl" class="type">
+          <v-btn icon text @click="selectFile(item)" class="type">
             <v-icon size="25" color="grey">
               {{ getIconForFile(item) }}
             </v-icon>
