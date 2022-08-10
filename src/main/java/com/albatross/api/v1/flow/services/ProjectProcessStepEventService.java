@@ -562,14 +562,19 @@ public class ProjectProcessStepEventService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  public void linkAttachment(Long projectProcessStepEventId, Long attachmentId) {
+  public void linkAttachment(Long projectProcessStepEventId, Long attachmentId, Boolean doLink) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
     params.put("attachmentId", attachmentId);
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
-    sqlCache.update("projectProcessStepEvent.linkAttachment", params);
+
+    String sqlKey = "projectProcessStepEvent.linkAttachment";
+    if(!doLink) {
+      sqlKey = "projectProcessStepEvent.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped

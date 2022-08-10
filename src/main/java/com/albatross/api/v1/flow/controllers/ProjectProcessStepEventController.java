@@ -72,8 +72,10 @@ public class ProjectProcessStepEventController {
 
   @PostMapping(value = "/{projectProcessStepEventId}/linkAttachment/{attachmentId}")
   public void linkAttachment(@PathVariable Long projectProcessStepEventId,
-                             @PathVariable Long attachmentId) {
-    projectProcessStepEventService.linkAttachment(projectProcessStepEventId, attachmentId);
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    //used to link or unlink
+    projectProcessStepEventService.linkAttachment(projectProcessStepEventId, attachmentId, doLink);
   }
 
   @PostMapping(

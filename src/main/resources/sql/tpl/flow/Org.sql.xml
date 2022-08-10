@@ -287,6 +287,7 @@
       a.date_modified,
       a.filename,
       a.attachment_type_id,
+      a.display_name,
       a.content_type,
       a.s3_key,
       a.archived,
@@ -312,6 +313,16 @@
     insert into flow.org_attachment(attachment_id, org_id, created_by_id, linked)
     values(:attachmentId, :orgId, :userId, true)
   ]]></org.linkAttachment>
+
+  <org.unlinkAttachment><![CDATA[
+    update flow.org_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and org_id = :orgId
+    and linked is true
+  ]]></org.unlinkAttachment>
 
   <org.addAttachment><![CDATA[
     insert into flow.org_attachment(attachment_id, org_id, created_by_id, date_created, modified_by_id, date_modified)

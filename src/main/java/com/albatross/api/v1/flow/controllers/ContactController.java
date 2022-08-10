@@ -108,8 +108,9 @@ public class ContactController {
 
   @PostMapping(value = "/{contactId}/linkAttachment/{attachmentId}")
   public void linkAttachment(@PathVariable Long contactId,
-                             @PathVariable Long attachmentId) {
-    contactService.linkAttachment(contactId, attachmentId);
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    contactService.linkAttachment(contactId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{contactId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)

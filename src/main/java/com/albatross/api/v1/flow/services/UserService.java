@@ -535,14 +535,19 @@ public class UserService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  public void linkAttachment(Long userId, Long attachmentId) {
+  public void linkAttachment(Long userId, Long attachmentId, Boolean doLink) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("attachmentId", attachmentId);
     params.put("currentUserId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
-    sqlCache.update("user.linkAttachment", params);
+
+    String sqlKey = "user.linkAttachment";
+    if(!doLink) {
+      sqlKey = "user.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped

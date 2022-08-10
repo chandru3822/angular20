@@ -288,8 +288,9 @@ public class UserController {
 
   @PostMapping(value = "/{userId}/linkAttachment/{attachmentId}")
   public void linkAttachment(@PathVariable Long userId,
-                             @PathVariable Long attachmentId) {
-    userService.linkAttachment(userId, attachmentId);
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    userService.linkAttachment(userId, attachmentId, doLink);
   }
 
   @Data

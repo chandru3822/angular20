@@ -39,8 +39,11 @@
           <v-btn small v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
             <v-icon>delete</v-icon>
           </v-btn>
-          <v-btn small v-if="!allowUpload && !showLinked" text color="primary" @click="linkAttachment(item)" class="px-0">
+          <v-btn small v-if="!allowUpload && !showLinked" text color="primary" @click="linkAttachment(item, true)" class="px-0">
             <v-icon>link</v-icon>
+          </v-btn>
+          <v-btn small v-if="!allowUpload && showLinked" text color="primary" @click="linkAttachment(item, false)" class="px-0">
+            <v-icon>mdi-link-off</v-icon>
           </v-btn>
           <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
@@ -56,7 +59,15 @@
 </template>
 
 <script>
-import {getFileIcon, getRequestWithParams, postRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
+import {
+  getFileIcon,
+  getRequestWithParams,
+  postRequest,
+  getSnackbar,
+  handleHidingGlobalLoader,
+  putRequest,
+  postRequestWithRequestParams
+} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/ConfirmationDialog";
@@ -92,7 +103,7 @@ export default {
       selectedFile: {},
       attachmentDeleteConfirm: false,
       attachmentToDelete: {},
-      uploadAttachmentPath: null
+      linkAttachmentPath: null
     }
   },
   computed: {
@@ -136,26 +147,28 @@ export default {
       this.closeDeleteDialog()
 
     },
-    async linkAttachment(attachment) {
-      console.log('link this: ', attachment)
+    async linkAttachment(attachment, doLink) {
       if(this.projectProcessStepEventId) {
-        this.uploadAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/linkAttachment/${attachment.id}`
+        this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/linkAttachment/${attachment.id}`
       } else if(this.projectProcessStepId) {
-        this.uploadAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/linkAttachment/${attachment.id}`
+        this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/linkAttachment/${attachment.id}`
       } else if(this.projectId) {
-        this.uploadAttachmentPath = `/project/${this.projectId}/linkAttachment/${attachment.id}`
+        this.linkAttachmentPath = `/project/${this.projectId}/linkAttachment/${attachment.id}`
       } else if (this.objectTypeId === 2) {
         //contact
-        this.uploadAttachmentPath = `/contact/${this.contactId}/linkAttachment/${attachment.id}`
+        this.linkAttachmentPath = `/contact/${this.contactId}/linkAttachment/${attachment.id}`
       } else if (this.objectTypeId === 5) {
         //org
-        this.uploadAttachmentPath = `/org/${this.orgId}/linkAttachment/${attachment.id}`
+        this.linkAttachmentPath = `/org/${this.orgId}/linkAttachment/${attachment.id}`
       } else if (this.objectTypeId === 3) {
         //user
-        this.uploadAttachmentPath = `/user/${this.userId}/linkAttachment/${attachment.id}`
+        this.linkAttachmentPath = `/user/${this.userId}/linkAttachment/${attachment.id}`
       }
 
-      const {data} = await postRequest(`${this.uploadAttachmentPath}`)
+      const {data} = await postRequestWithRequestParams(`${this.linkAttachmentPath}`, null, { doLink})
+      if(!doLink) {
+        attachment.archived = true
+      }
     },
     startDelete(item) {
       this.attachmentToDelete = item

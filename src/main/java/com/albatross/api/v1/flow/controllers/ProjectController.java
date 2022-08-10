@@ -139,8 +139,9 @@ public class ProjectController {
 
   @PostMapping(value = "/{projectId}/linkAttachment/{attachmentId}")
   public void linkAttachment(@PathVariable Long projectId,
-                             @PathVariable Long attachmentId) {
-      projectService.linkAttachment(projectId, attachmentId);
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+      projectService.linkAttachment(projectId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{projectId}/attachment")

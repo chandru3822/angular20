@@ -495,14 +495,19 @@ public class ProjectService {
       attachments, storageBucket, false);
   }
 
-  public void linkAttachment(Long projectId, Long attachmentId) {
+  public void linkAttachment(Long projectId, Long attachmentId, Boolean doLink) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("attachmentId", attachmentId);
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
-    sqlCache.update("project.linkAttachment", params);
+
+    String sqlKey = "project.linkAttachment";
+    if(!doLink) {
+      sqlKey = "project.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
