@@ -267,11 +267,12 @@
       ca.linked,
       concat(u.first_name, ' ', u.last_name) AS uploadedBy,
       att.attachment_type,
-      'Contact' as origin_location
+      orgn.*
     from flow.contact_attachment ca
            inner join flow.attachment a on a.id = ca.attachment_id
            inner join flow."user" u ON a.created_by_id = u.id
            inner join flow.attachment_type att on a.attachment_type_id = att.id
+           left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where ca.contact_id = :contactId
       and a.company_id = :companyId
       and ca.archived is false

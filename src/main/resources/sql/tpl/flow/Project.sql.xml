@@ -593,17 +593,17 @@
       a.archived,
       pa.linked,
       att.attachment_type,
-      (select *
-      from flow.get_attachment_origin(a.id)) as origin_location
+      orgn.*
     from flow.project_attachment pa
-           inner join flow.attachment a on a.id = pa.attachment_id
-           inner join flow.attachment_type att on a.attachment_type_id = att.id
+      inner join flow.attachment a on a.id = pa.attachment_id
+      inner join flow.attachment_type att on a.attachment_type_id = att.id
+      left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where pa.project_id = :projectId
       and a.company_id = :companyId
       and pa.archived is false
       and case when :linked is true then pa.linked is true else pa.linked is false end
       and a.archived is not true
-    order by pa.date_created desc
+    order by pa.date_created desc;
   ]]></project.getAttachments>
 
   <project.linkAttachment><![CDATA[

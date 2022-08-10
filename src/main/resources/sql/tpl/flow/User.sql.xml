@@ -804,11 +804,12 @@
       ua.linked,
       concat(u.first_name, ' ', u.last_name) AS uploadedBy,
       att.attachment_type,
-      'User' as origin_location
+      orgn.*
     from flow.user_attachment ua
            inner join flow.attachment a on a.id = ua.attachment_id
            inner join flow."user" u ON a.created_by_id = u.id
            inner join flow.attachment_type att on a.attachment_type_id = att.id
+           left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where ua.user_id = :userId
       and a.company_id = :companyId
       and case when :linked is true then ua.linked is true else ua.linked is false end
