@@ -19,6 +19,7 @@
     </v-dialog>
     <v-dialog persistent :width="1000" v-model="showCompareModal">
       <AttachmentCompareModal :show-modal="showCompareModal"
+                              :attachments="selectedAttachmentsForCompare"
                               :close-callback="closeCompareModal">
       </AttachmentCompareModal>
     </v-dialog>
@@ -34,7 +35,8 @@
       <v-btn class="my-4" @click="compare = false" v-if="compare">
         Cancel Comparison
       </v-btn>
-      <v-btn color="primary" class="my-4" @click="showCompareModal = true" v-if="compare">
+      <v-btn color="primary" class="my-4" @click="showCompareModal = true" v-if="compare"
+             :disabled="selectedAttachmentsForCompare.length === 0">
         Confirm Comparison
       </v-btn>
       <v-btn color="primary" class="my-4" @click="compare = true" v-else>
@@ -95,9 +97,11 @@
             :orgId="orgId"
             :objectTypeId="objectTypeId"
             :projectProcessStepEventId="projectProcessStepEventId"
+            :compare-callback="toggleAttachmentToCompare"
+            :count-selected="selectedAttachmentsForCompare.length"
         ></AttachmentsTable>
       </v-expansion-panel-content>
-      <v-divider v-if="index != attachmentTypes.length - 1" class="mx-3"></v-divider>
+      <v-divider v-if="index !== attachmentTypes.length - 1" class="mx-3"></v-divider>
     </v-expansion-panel>
   </v-expansion-panels>
     </v-card>
@@ -148,6 +152,7 @@ export default {
       fileToUpload: null,
       projectProcessStepId: null,
       projectProcessStepEventId: null,
+      selectedAttachmentsForCompare: [],
       attachmentTypes: [],
       attachments: [],
       dragTypeId: null,
@@ -205,6 +210,13 @@ export default {
     },
     closeCompareModal() {
       this.showCompareModal = false
+    },
+    toggleAttachmentToCompare(attachment) {
+      if(attachment.compare) {
+        this.selectedAttachmentsForCompare.push(attachment)
+      } else {
+        this.selectedAttachmentsForCompare = this.selectedAttachmentsForCompare.filter(a => a.id !== attachment.id)
+      }
     },
     fileUploaded(attachment) {
       console.log('file was uploaded',attachment)

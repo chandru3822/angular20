@@ -18,8 +18,9 @@
     <v-container v-else dense :key="renderTicker" id="attachment-table">
       <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment" :key="item.processStepId">
         <v-col cols="6" class="text-left pa-1">
-          <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)" v-model="item.compare">
-
+          <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
+                      v-model="item.compare"
+                      :disabled="!item.compare && countSelected >= maxSelectable">
           </v-checkbox>
           <v-btn icon text @click="selectFile(item)" class="type">
             <v-icon size="25" color="grey">
@@ -96,6 +97,8 @@ export default {
     objectTypeId: Number,
     projectProcessStepId: Number,
     projectProcessStepEventId: Number,
+    compareCallback: Function,
+    countSelected: Number
 
   },
   data() {
@@ -105,7 +108,8 @@ export default {
       selectedFile: {},
       attachmentDeleteConfirm: false,
       attachmentToDelete: {},
-      linkAttachmentPath: null
+      linkAttachmentPath: null,
+      maxSelectable: 3
     }
   },
   computed: {
@@ -183,6 +187,7 @@ export default {
     selectFileToCompare(e, item) {
       console.log('event',e)
       console.log('item',item)
+      this.compareCallback(item)
     }
   }
 }

@@ -6,7 +6,9 @@
             <v-btn @click="closeCallback">Back</v-btn>
         </v-col>
         <v-col cols="8" class="coversheet-right-pane">
-          other stuffs
+          <div v-for="(a, idx) in attachments" :key="idx">
+            {{a.displayName}}
+          </div>
         </v-col>
       </v-row>
     </v-card-text>
@@ -34,6 +36,7 @@ export default {
   props: {
     showModal: Boolean,
     closeCallback: Function,
+    attachments: Array,
   },
   components: {
     DatetimePickerInput,
