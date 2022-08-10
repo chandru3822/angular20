@@ -18,6 +18,9 @@
     <v-container v-else dense :key="renderTicker" id="attachment-table">
       <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment" :key="item.processStepId">
         <v-col cols="6" class="text-left pa-1">
+          <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)" v-model="item.compare">
+
+          </v-checkbox>
           <v-btn icon text @click="selectFile(item)" class="type">
             <v-icon size="25" color="grey">
               {{ getIconForFile(item) }}
@@ -85,6 +88,7 @@ export default {
     displayType: Object,
     showLinked: Boolean,
     allowUpload: Boolean,
+    compare: Boolean,
     projectId: Number,
     userId: Number,
     contactId: Number,
@@ -175,6 +179,10 @@ export default {
     closeDeleteDialog() {
       this.attachmentDeleteConfirm = false
       this.attachmentToDelete = null
+    },
+    selectFileToCompare(e, item) {
+      console.log('event',e)
+      console.log('item',item)
     }
   }
 }

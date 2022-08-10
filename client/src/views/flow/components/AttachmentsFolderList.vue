@@ -1,7 +1,6 @@
 <template>
   <div>
     <v-dialog persistent :width="1000" v-model="showCoversheetModal"
-              class="coversheet-modal"
               content-class="coversheet-modal-content">
       <AttachmentCoversheetModal :existing-attachment="tempFile"
                                  :file="fileToUpload"
@@ -18,6 +17,11 @@
       >
       </AttachmentCoversheetModal>
     </v-dialog>
+    <v-dialog persistent :width="1000" v-model="showCompareModal">
+      <AttachmentCompareModal :show-modal="showCompareModal"
+                              :close-callback="closeCompareModal">
+      </AttachmentCompareModal>
+    </v-dialog>
     <div v-if="activityTab" class="px-5">
       <v-text-field
         v-model="search"
@@ -27,7 +31,13 @@
         hide-details
       ></v-text-field>
 
-      <v-btn color="primary" class="my-4">
+      <v-btn class="my-4" @click="compare = false" v-if="compare">
+        Cancel Comparison
+      </v-btn>
+      <v-btn color="primary" class="my-4" @click="showCompareModal = true" v-if="compare">
+        Confirm Comparison
+      </v-btn>
+      <v-btn color="primary" class="my-4" @click="compare = true" v-else>
         Compare
       </v-btn>
     </div>
@@ -81,6 +91,7 @@
             :projectProcessStepId="projectProcessStepId"
             :userId="userId"
             :contactId="contactId"
+            :compare="!allowUpload && !linkable && compare"
             :orgId="orgId"
             :objectTypeId="objectTypeId"
             :projectProcessStepEventId="projectProcessStepEventId"
@@ -106,13 +117,15 @@ import orderBy from "lodash.orderby";
 import {Actions} from "@/store";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
+import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
 import constants from "@/helpers/constants";
 
 export default {
   name: "AttachmentsFolderList",
   components: {
     AttachmentsTable,
-    AttachmentCoversheetModal
+    AttachmentCoversheetModal,
+    AttachmentCompareModal
   },
   props: {
     allowUpload: Boolean,
@@ -151,7 +164,9 @@ export default {
         { text: null, value: 'filename', show: true },
         { text: null, value: 'icons', show: true },
       ],
-      search: ''
+      search: '',
+      compare: false,
+      showCompareModal: false,
     }
   },
   watch: {
@@ -187,6 +202,9 @@ export default {
   methods: {
     closeCoversheet() {
       this.showCoversheetModal = false
+    },
+    closeCompareModal() {
+      this.showCompareModal = false
     },
     fileUploaded(attachment) {
       console.log('file was uploaded',attachment)
