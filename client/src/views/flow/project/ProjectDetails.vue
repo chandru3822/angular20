@@ -115,6 +115,10 @@
               <v-col class="py-0">
                 <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
                   <v-toolbar-title class="albatross-header-4-new">Uploaded Documents</v-toolbar-title>
+                  <v-spacer/>
+                  <v-toolbar-items>
+                    <v-btn text color="primary"><v-icon>mdi-view-grid</v-icon></v-btn>
+                  </v-toolbar-items>
                 </v-toolbar>
                   <AttachmentsFolderList :object-type-id="1"
                                          :project-id="projectId"
@@ -123,6 +127,10 @@
               <v-col>
                 <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
                   <v-toolbar-title class="albatross-header-4-new">Linked Documents</v-toolbar-title>
+                  <v-spacer/>
+                  <v-toolbar-items>
+                    <v-btn text color="primary"><v-icon>mdi-view-grid</v-icon></v-btn>
+                  </v-toolbar-items>
                 </v-toolbar>
                 <AttachmentsFolderList :object-type-id="1"
                                        :project-id="projectId"
