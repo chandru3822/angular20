@@ -31,7 +31,7 @@
     </div>
     <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
     <div v-if="attachmentTypes.length === 0">No attachments available</div>
-    <v-expansion-panel v-for="type in attachmentTypes" :key="type.attachmentTypeId">
+    <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
       <v-expansion-panel-header class="albatross-body-1">
         <template v-slot:default="{ open }">
           <v-row no-gutters class="align-center" :class="{'bold' : open}">
@@ -48,22 +48,22 @@
                   @click.stop=""
                   ref='fileInput'
               >
-              <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
-                     @dragenter="dragTypeId=type.attachmentTypeId"
-                     @dragleave="dragTypeId=null"
-                     @dragend="dragTypeId=null"
-                     :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
-                     @drop.prevent="addDragDocument($event, type)"
-                     @dragover.prevent="dragTypeId=type.attachmentTypeId"
-                     elevation="0" text color="primary" class="expansion-panel-btn upload-button">
-                Upload
-              </v-btn>
             </div>
             <span
                 v-else
                 key="1"
             >
                 </span>
+            <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
+                   @dragenter="dragTypeId=type.attachmentTypeId"
+                   @dragleave="dragTypeId=null"
+                   @dragend="dragTypeId=null"
+                   :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
+                   @drop.prevent="addDragDocument($event, type)"
+                   @dragover.prevent="dragTypeId=type.attachmentTypeId"
+                   elevation="0" text color="primary" class="text-capitalize">
+              Upload
+            </v-btn>
           </v-row>
         </template>
       </v-expansion-panel-header>
@@ -83,6 +83,7 @@
             :projectProcessStepEventId="projectProcessStepEventId"
         ></AttachmentsTable>
       </v-expansion-panel-content>
+      <v-divider v-if="index != attachmentTypes.length - 1" class="mx-3"></v-divider>
     </v-expansion-panel>
   </v-expansion-panels>
   </div>
@@ -297,13 +298,6 @@ export default {
 .expansion-panel-header-open{
   display: flex;
   align-items: center;
-}
-
-.expansion-panel-btn {
-  font-size: 12px;
-  font-weight: bold;
-  text-transform: capitalize;
-  margin: 0;
 }
 
 .file-hover {
