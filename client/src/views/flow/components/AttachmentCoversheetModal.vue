@@ -75,6 +75,11 @@
           </v-col>
           <v-col cols="8">
             <div class="one-hunned text-right">
+              <v-btn small text
+                     v-if="existingAttachment && null != existingAttachment.presignedUrl"
+                     :href="existingAttachment.presignedUrl">
+                <v-icon>mdi-tray-arrow-down</v-icon>
+              </v-btn>
               <v-btn x-small text @click="closeModal()">
                 <v-icon>close</v-icon>
               </v-btn>
