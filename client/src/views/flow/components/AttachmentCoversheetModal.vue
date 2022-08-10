@@ -38,11 +38,13 @@
                 label="Document Type"
                 v-model="fileDetails.attachmentType"
               ></v-text-field>
-              <v-text-field
-                disabled readonly
-                label="Document Location"
-                v-model="fileDetails.originLocation"
-              ></v-text-field>
+              <div @click="goToPath(fileDetails.originPath)" class="clickable">
+                <v-text-field
+                  disabled readonly
+                  label="Document Location"
+                  v-model="fileDetails.originLocation"
+                ></v-text-field>
+              </div>
             </v-card>
             Additional Document Details
             <v-col
@@ -161,16 +163,24 @@ export default {
     }
   },
   created() {
-    this.isExisting = null != this.existingAttachment.id
     this.doPageLoad()
   },
   computed: {},
   methods: {
+    goToPath(path) {
+      if(null != path) {
+        this.$router.push(path)
+      }
+    },
     async doPageLoad() {
       //reset all the items cuz when the modal re-opens it doesnt reset everything
+      this.isExisting = null != this.existingAttachment.id
+      this.displayNameChanged = false,
       this.customFieldGroups = []
       this.dirtyCfvs = []
       this.fileDetails = {}
+      this.saveError = false
+      this.errorMsg = null
 
       //required so that both new and existing files work since the objects aren't identical
       this.fileDetails = cloneDeep(this.existingAttachment)
