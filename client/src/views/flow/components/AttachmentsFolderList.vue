@@ -29,8 +29,9 @@
         Compare
       </v-btn>
     </div>
+    <div v-if="attachmentTypes.length === 0" class="text-center albatross-body-2">No attachments available</div>
+    <v-card v-else class="text-left square-card" :class="{'elevation-0': !isCard || attachments.length === 0}">
     <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
-    <div v-if="attachmentTypes.length === 0">No attachments available</div>
     <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
       <v-expansion-panel-header class="albatross-body-1">
         <template v-slot:default="{ open }">
@@ -86,6 +87,8 @@
       <v-divider v-if="index != attachmentTypes.length - 1" class="mx-3"></v-divider>
     </v-expansion-panel>
   </v-expansion-panels>
+    </v-card>
+
   </div>
 </template>
 
@@ -120,6 +123,7 @@ export default {
     contactId: Number,
     orgId: Number,
     objectTypeId: Number,
+    isCard: Boolean
   },
   data () {
     return {

@@ -228,12 +228,17 @@
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <v-col cols="12" class="text-left py-0 px-0" v-if="!collapsedAttachments">
+      <v-col cols="12" class="text-left pt-0 px-0 pb-4" v-if="!collapsedAttachments">
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+          <v-toolbar-title class="albatross-body-2">Uploaded Documents</v-toolbar-title>
+        </v-toolbar>
         <AttachmentsFolderList :object-type-id="1"
                                :allow-upload="true"
                                :show-title="true"
                                title="Uploaded Documents"/>
-
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+          <v-toolbar-title class="albatross-body-2">Linked Documents</v-toolbar-title>
+        </v-toolbar>
         <AttachmentsFolderList :object-type-id="1"
                                :linkable="true"
                                :show-title="true"
@@ -798,10 +803,6 @@ export default {
 .cfg-detail-header .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
-}
-
-.cfg-detail-header .v-toolbar__title {
-  font-size: 16px;
 }
 
 .owner-toolbar-items {

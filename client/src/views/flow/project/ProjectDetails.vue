@@ -116,21 +116,17 @@
                 <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
                   <v-toolbar-title class="albatross-header-4-new">Uploaded Documents</v-toolbar-title>
                 </v-toolbar>
-                <v-card class="text-left square-card">
                   <AttachmentsFolderList :object-type-id="1"
                                          :project-id="projectId"
                                          :allow-upload="true"/>
-                </v-card>
               </v-col>
               <v-col>
                 <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
                   <v-toolbar-title class="albatross-header-4-new">Linked Documents</v-toolbar-title>
                 </v-toolbar>
-                <v-card class="text-left square-card">
                 <AttachmentsFolderList :object-type-id="1"
                                        :project-id="projectId"
                                        :linkable="true"/>
-              </v-card>
               </v-col>
             </div>
           </div>
