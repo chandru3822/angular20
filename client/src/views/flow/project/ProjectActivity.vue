@@ -18,22 +18,7 @@
           <span class="albatross-body-3">Go to project</span>
         </v-tooltip>
         <div v-else-if="!isSidebarCollapsed" >
-          Project Documents
-          <v-btn-toggle
-            v-if="selectedOption === 2"
-            v-model="toggleFocused"
-            mandatory
-            class="d-inline-block"
-          >
-            <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocused === 0}">
-              Focused
-            </v-btn>
-            <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocused === 1}">
-              All
-            </v-btn>
-          </v-btn-toggle>
+          {{sidebarTitle}}
         </div>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
@@ -52,6 +37,29 @@
             ></OwnershipHistoryDrilldown>
           </v-dialog>
 
+        </div>
+        <div v-else-if="selectedOption === 2 && !isSidebarCollapsed">
+          <v-btn-toggle
+              v-model="toggleFocused"
+              mandatory
+              borderless
+              color="primary"
+              class="d-inline-block pa-0">
+            <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
+                   class="text-capitalize"
+                   width="50%"
+            >
+              Focused
+            </v-btn>
+            <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
+                   class="text-capitalize"
+                   width="50%"
+            >
+              All
+            </v-btn>
+          </v-btn-toggle>
         </div>
         <slot name="collapse-button">
         <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
@@ -222,6 +230,23 @@ export default {
     objectTypeId() {
       //not needed for other types
       return this.userId ? 3 : this.contactId ? 2 : this.orgId ? 5 : null
+    },
+    sidebarTitle() {
+      switch (this.selectedOption) {
+        case 0:
+          if (this.userCanViewSms) {
+            return this.$route.path.includes('inboxConversation') ? this.projectMessageProperties.projectName : 'Project Communication'
+          } else {
+            return this.$route.path.includes('inboxConversation') ? this.projectMessageProperties.projectName : 'Project Communication (Read-only)'
+          }
+
+        case 1:
+          return this.orgId ? 'Organization Notes' : this.userId ? 'User Notes'
+              : this.contactId ? 'Contact Notes' : this.projectId ? 'Project Notes' : null
+        case 2:
+          return this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
+              : this.projectId ? 'Project Documents' : null
+      }
     },
     isSidebarCollapsed() {
       return this.allowSidebarCollapse && this.$store.state.project.rightSideSplit
@@ -403,6 +428,16 @@ export default {
 
 .project-name-link {
   text-decoration: none;
+}
+
+.v-btn-toggle .v-btn {
+  border: 1px solid var(--v-primary-base) !important;
+  height: 30px !important;
+  width: 166px !important;
+
+  &:not(:last-child) {
+    border-right: none !important;
+  }
 }
 </style>
 
