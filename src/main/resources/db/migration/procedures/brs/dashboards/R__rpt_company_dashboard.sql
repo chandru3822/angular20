@@ -784,7 +784,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                     union
                     select name,
                            true  as show_targets,
-                           false as has_additional_column,
+                           true as has_additional_column,
                            milestone_type_id,
                            display_order,
                            company_count,
