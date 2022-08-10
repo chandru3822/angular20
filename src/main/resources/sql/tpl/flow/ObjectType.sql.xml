@@ -12,6 +12,21 @@
     and cot.archived is not true
   ]]></objectType.getCompanyObjectTypes>
 
+  <objectType.getSmartlistCompanyObjectTypes><![CDATA[
+    select cot.id,
+           cot.id company_object_type_id,
+           cot.object_type_id,
+           ot.object_type,
+           ot.flow_type_id,
+           cot.company_id
+    from flow.company_object_type cot
+           inner join flow.object_type ot on ot.id = cot.object_type_id
+    where cot.company_id = :companyId
+      and ot.smartlist is true
+      and cot.archived is not true
+    order by ot.object_type
+  ]]></objectType.getSmartlistCompanyObjectTypes>
+
   <objectType.getCompanyObjectTypeSimple><![CDATA[
     select cot.id,
            cot.id company_object_type_id,

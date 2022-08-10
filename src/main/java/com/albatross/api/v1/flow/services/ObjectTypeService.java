@@ -38,6 +38,13 @@ public class ObjectTypeService {
     return sqlCache.query("objectType.getCompanyObjectTypes", params, CompanyObjectType.class);
   }
 
+  public List<CompanyObjectType> getSmartlistCompanyObjectTypes() {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.query("objectType.getSmartlistCompanyObjectTypes", params, CompanyObjectType.class);
+  }
+
   public Optional<CompanyObjectType> getCompanyObjectTypeDetail(Long objectTypeId) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();

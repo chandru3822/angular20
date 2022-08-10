@@ -177,7 +177,7 @@ public class SmartlistController {
 
   @GetMapping(value = "/companyObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CompanyObjectType>> getCompanyObjectTypes() {
-      List<CompanyObjectType> types = objectTypeService.getCompanyObjectTypes();
+      List<CompanyObjectType> types = objectTypeService.getSmartlistCompanyObjectTypes();
       return new ResponseEntity<>(types, HttpStatus.OK);
   }
 
