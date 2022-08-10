@@ -10,9 +10,9 @@
       You have unsaved fields. Are you sure you want to continue without saving?
       <template v-slot:yes>Continue and Don't Save</template>
     </ConfirmationDialog>
-    <div v-if="selectedEvent.id" class="pt-6">
+    <div v-if="selectedEvent.id" class="pt-6 px-6">
       <v-toolbar color="transparent" height="auto"
-                 class="elevation-0 cfg-name-toolbar px-6" id="event-header">
+                 class="elevation-0 cfg-name-toolbar px-0" id="event-header">
         <v-toolbar-title class="albatross-header-2">
           <div>{{ selectedEvent.eventName }}</div>
           <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{ selectedEvent.eventStatusType }})</div>
@@ -31,7 +31,7 @@
           </ConfirmationDialog>
         </v-toolbar-items>
       </v-toolbar>
-      <div class="pb-4 px-6">
+      <div class="pb-4 px-0">
         <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
           <v-card class="square-card" :class="{'mt-2': idx !== 0}"
                   v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
@@ -86,7 +86,7 @@
           </v-btn>
         </div>
       </div>
-      <v-toolbar flat color="secondary" class="cfg-detail-header px-3">
+      <v-toolbar flat color="secondary" class="cfg-detail-header">
         <v-toolbar-title class="albatross-header-3">
           Event Documents
         </v-toolbar-title>
@@ -99,18 +99,23 @@
         </v-toolbar-items>
       </v-toolbar>
       <v-col cols="12" class="text-left py-0 px-0" v-if="!collapsedAttachments">
-        <AttachmentsFolderList :object-type-id="1"
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar cfg-detail-header">
+          <v-toolbar-title class="albatross-body-2">Uploaded Documents</v-toolbar-title>
+        </v-toolbar>
+          <AttachmentsFolderList :object-type-id="1"
                                :allow-upload="true"
                                :show-title="true"
                                title="Uploaded Documents"/>
-
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar cfg-detail-header">
+          <v-toolbar-title class="albatross-body-2">Linked Documents</v-toolbar-title>
+        </v-toolbar>
         <AttachmentsFolderList :object-type-id="1"
                                :linkable="true"
                                :show-title="true"
                                title="Linked Documents"/>
       </v-col>
       <div class="fixed-toolbar padding-left-1">
-        <v-toolbar flat color="secondary" class="cfg-name-toolbar px-6">
+        <v-toolbar flat color="secondary" class="cfg-name-toolbar px-0">
           <v-toolbar-title class="albatross-header-3">
             Event Details
           </v-toolbar-title>
@@ -131,7 +136,7 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
-      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
+      <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
@@ -140,7 +145,7 @@
         project screen and update.
       </v-card>
 
-      <v-form ref="eventFieldForm" class="px-6" v-else>
+      <v-form ref="eventFieldForm" class="px-0" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
           <a small text color="anchor" v-if="$store.getters.userHasFeature('SCHEDULE')"
                  class="px-0 d-flex align-baseline" target="_blank"
@@ -1021,11 +1026,8 @@ export default {
 <style lang="scss" scoped>
 
 .cfg-detail-header {
-  background-color: var(--v-secondary-base) !important;
-  margin-left: -10px;
-  margin-right: -10px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .scheduler-button-text {
