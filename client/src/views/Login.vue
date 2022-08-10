@@ -4,17 +4,17 @@
       <v-row align="center" justify="center">
         <v-col cols="12" sm="8">
           <v-card color="secondaryMaster" class="elevation-12">
-            <v-toolbar dark color="primaryCustom">
+            <v-toolbar dark color="primary">
               <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
-              <h2 class="error" v-if="$store.state.user.loginError">{{ $store.state.user.loginError }}</h2>
+              <h2 class="error--text" v-if="$store.state.user.loginError">{{ $store.state.user.loginError }}</h2>
               <v-form ref="login" v-model="validForm" @submit.prevent="onSubmit()">
-                <v-text-field required color="primaryCustom"
+                <v-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.email" prepend-icon="person" name="login"
                               label="Login" type="email"></v-text-field>
-                <v-text-field required color="primaryCustom"
+                <v-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.password" prepend-icon="lock" name="password"
                               label="Password" id="password" type="password"></v-text-field>
@@ -24,7 +24,7 @@
                   </router-link>
                   <v-spacer></v-spacer>
                   <v-btn :loading="loginLoading" type="submit"
-                         color="primaryButton" class="white--text">Login
+                         color="primary" class="white--text">Login
                   </v-btn>
                 </v-card-actions>
               </v-form>

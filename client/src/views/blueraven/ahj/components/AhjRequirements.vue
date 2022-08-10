@@ -23,9 +23,9 @@
                       v-model="requirement.position">
         </v-text-field>
         <div class="requirement-btns">
-          <a @click="hideCtrls"
-             class="cancel-link">Cancel</a>
-          <v-btn v-if="userCanEdit" @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
+          <v-btn color="primary" text @click="hideCtrls"
+             class="cancel-link">Cancel</v-btn>
+          <v-btn v-if="userCanEdit" @click="saveRequirement(null, false)" color="primary" class="white--text py-1 px-2"
                  :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
             {{ addMode ? 'Add' : 'Update' }}
           </v-btn>
@@ -111,12 +111,12 @@
     </div>
 
     <v-card v-if="!transparent">
-      <v-toolbar class="primaryCustom">
+      <v-toolbar class="primary">
         <v-toolbar-title class="white--text font-weight-bold" :title="title">
           {{title}}
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon color="#ddd" style="border-radius: 3px">
+        <v-btn icon color="primary" style="border-radius: 3px">
           <v-icon v-show="!addMode && !editMode"
                   @click="addRequirement" class="white--text">add</v-icon>
           <v-icon v-show="addMode || editMode"
@@ -137,7 +137,7 @@
         <div class="requirement-btns">
           <a @click="hideCtrls"
              class="cancel-link">Cancel</a>
-          <v-btn @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
+          <v-btn @click="saveRequirement(null, false)" color="primary" class="white--text py-1 px-2"
                  :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
             {{ addMode ? 'Add' : 'Update' }}
           </v-btn>

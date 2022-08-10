@@ -1,10 +1,12 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
-import com.albatross.api.config.PropertiesConfiguration;
+import com.albatross.api.config.AppProperties;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
@@ -28,8 +30,10 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +42,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3)")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 @RequiredArgsConstructor
 public class BlueravenProposalService {
   private final SqlCache sqlCache;
@@ -49,7 +53,7 @@ public class BlueravenProposalService {
   private final ProjectProcessStepService projectProcessStepService;
   private final ProjectService projectService;
   private final AttachmentService attachmentService;
-  private final PropertiesConfiguration propertiesConfiguration;
+  private final AppProperties appProperties;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
     HashMap<String, Object> params = new HashMap<>();
@@ -80,16 +84,20 @@ public class BlueravenProposalService {
     return results;
   }
 
-  public Optional<ProposalDesign> getActiveDesign(Long projectId) {
+  public ProposalDesign getActiveDesign(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
-    return sqlCache.get(
-        "proposal.getActiveDesign", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
+    Optional<ProposalDesign> result = sqlCache.get("proposal.getActiveDesign", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
+    return result.orElse(null);
   }
 
   public List<ProposalDesign> requestNewDesign(
-      Long projectId, String description, String dueDate, List<MultipartFile> attachments, List<MultipartFile> utilityBillAttachments)
+      Long projectId,
+      String description,
+      String dueDate,
+      List<MultipartFile> attachments,
+      List<MultipartFile> utilityBillAttachments)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -111,13 +119,14 @@ public class BlueravenProposalService {
     // upload attachments to the new step
     if (null != attachments && attachments.size() > 0) {
       for (MultipartFile a : attachments) {
-        projectProcessStepService.addAttachment(a, ppsId, 946L); //Proposal Request Supporting Files
+        // Proposal Request Supporting Files
+        projectProcessStepService.addAttachment(a, ppsId, 946L);
       }
     }
     // upload utility bill attachments to the new step
     if (null != utilityBillAttachments && utilityBillAttachments.size() > 0) {
       for (MultipartFile a : utilityBillAttachments) {
-        projectService.addAttachment(a, projectId, 47L); //Utility Bill
+        projectService.addAttachment(a, projectId, 47L); // Utility Bill
       }
     }
 
@@ -135,12 +144,13 @@ public class BlueravenProposalService {
     return getProposalDesigns(projectId);
   }
 
-  public Optional<Proposal> getProposal(Long proposalId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("proposalId", proposalId);
+  public Optional<Proposal> getProposal(@NonNull Long proposalId) {
 
     Optional<Proposal> result =
-        sqlCache.get("proposal.get", params, new ProposalMapper<>(Proposal.class, om));
+        sqlCache.get(
+            "proposal.get",
+            Map.of("proposalId", proposalId),
+            new ProposalMapper<>(Proposal.class, om));
 
     // handle custom list of values
     result.ifPresent(
@@ -152,9 +162,7 @@ public class BlueravenProposalService {
   }
 
   public Optional<Proposal> updateProposal(Long proposalId, List<CustomFieldValue> cfvs) {
-    blueravenCustomFieldValueService.updateCustomFieldValues(
-        cfvs, proposalId, ObjectType.PROPOSAL.textValue());
-
+    blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, proposalId, ObjectType.PROPOSAL);
     return getProposal(proposalId);
   }
 
@@ -167,6 +175,10 @@ public class BlueravenProposalService {
     Long proposalVersionId =
         sqlCache.queryForObject("proposal.getCurrentVersion", params, Long.class);
 
+    if (proposalVersionId == null) {
+      throw new ApiException("No published proposals available");
+    }
+
     params.put("proposalVersionId", proposalVersionId);
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
     params.put("userId", user.getId());
@@ -176,7 +188,7 @@ public class BlueravenProposalService {
   }
 
   public Map<String, Object> getCalculatedProposalValues(
-      @NonNull Long proposalId, boolean insertPropLogHistory) {
+    @NonNull Long proposalId, ProposalGeneratedType proposalGeneratedType, boolean insertPropLogHistory) {
 
     final Optional<Proposal> proposal = getProposal(proposalId);
     if (proposal.isEmpty()) {
@@ -189,20 +201,28 @@ public class BlueravenProposalService {
             Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
 
     final Map<String, Object> proposalAttachments =
-        getProposalAttachments(proposalId).stream()
+        sqlCache
+            .query("proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class)
+            .stream()
             .collect(
                 Collectors.toMap(
                     this::mapAttachmentTypeToProposalType,
-                    attachment ->
-                        "%s/public/attachment/%s/%s"
-                            .formatted(
-                                propertiesConfiguration.getApplicationHostUrl(),
-                                attachment.getId(),
-                                attachment.getUuid())));
+                    attachment -> buildUri(attachment.getUuid().toString(), proposalGeneratedType),
+                    (img1, img2) -> img1)); // if we have multiple just return one
 
     context.putAll(proposalAttachments);
 
     return context;
+  }
+
+  private URI buildUri(String uuid, ProposalGeneratedType proposalGeneratedType) {
+    final var params = ProposalGeneratedType.getOptions(proposalGeneratedType);
+
+    return UriComponentsBuilder.fromUri(appProperties.getHost())
+        .pathSegment("public", "image", uuid)
+        .queryParams(params)
+        .build()
+        .toUri();
   }
 
   private String mapAttachmentTypeToProposalType(Attachment attachment) {
@@ -215,11 +235,6 @@ public class BlueravenProposalService {
     }
 
     return "UNKNOWN";
-  }
-
-  private List<Attachment> getProposalAttachments(@NonNull Long proposalId) {
-    return sqlCache.query(
-        "proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class);
   }
 
   public static class ProposalDesignMapper<T> extends BeanPropertyRowMapper<T> {

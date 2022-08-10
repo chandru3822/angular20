@@ -455,6 +455,7 @@
         cpsst.process_step_status_type_id,
         coalesce(ppse.date_modified, ppse.date_created) as last_updated,
         cest.event_status_type,
+        pse.unique_behavior_type_id,
         e.id as event_id,
         e.event_name,
         ppse.resource_id,
@@ -484,12 +485,12 @@
 
   ]]></project.getEventsByProjectId>
 
-  <project.getPrimaryFinancierName><![CDATA[
+  <project.getProjectDetailTemplateFields><![CDATA[
      select primary_financier_name as primaryFinancier, installation_start_time, installation_end_time, closer_appointment_start as localCloserAppointmentStartTime,
             ahj_inspection_work_date as ahjInspectionWorkStartTime
       from brs.project_details
     where project_id = :projectId
-  ]]></project.getPrimaryFinancierName>
+  ]]></project.getProjectDetailTemplateFields>
 
   <project.getAttachments><![CDATA[
     select

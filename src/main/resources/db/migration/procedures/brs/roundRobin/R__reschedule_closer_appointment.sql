@@ -146,6 +146,9 @@ BEGIN
             --if we did reschedule then set the status of the current ppsEvent to Can Not Attend - Rescheduled
             update flow.project_process_step_event set company_event_status_type_id = 24 where id = p_pps_event_id;
 
+            -- due to order of operations for the triggers, we have to update the new one last.  This is a hack.
+            update flow.project_process_step_event set id = id where id = v_new_pps_event_id;
+
             --if we did reshcedule then send a text to the new closer
             perform brs.send_text_to_closer(v_project_id, p_current_user_id, 1);
 

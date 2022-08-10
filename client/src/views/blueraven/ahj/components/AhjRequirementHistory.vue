@@ -24,8 +24,8 @@
                           v-model="challenge.details">
             </v-text-field>
             <div class="requirement-challenge-btns flex-display justify-end align-center">
-              <a @click="toggleChallengeForm" class="cancel-link text-capitalize">Cancel</a>
-              <v-btn color="primaryButton" class="white--text text-capitalize py-1 px-3 ml-2"
+              <v-btn color="primary" text @click="toggleChallengeForm" class="cancel-link text-capitalize">Cancel</v-btn>
+              <v-btn color="primary" class="white--text text-capitalize py-1 px-3 ml-2"
                      :disabled="challenge.details === ''" small
                      @click="submitChallenge">
                 Submit Challenge

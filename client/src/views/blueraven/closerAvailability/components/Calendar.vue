@@ -94,7 +94,7 @@
         <v-progress-circular
           indeterminate
           :size="80"
-          :color="'primaryCustom'"
+          :color="'primary'"
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar"
@@ -417,7 +417,7 @@
             d.allDay = false
             d.groupId = `${d.resourceId}`
             d.resourceId = `${d.resourceId}`
-            d.color = 'gray'
+            d.color = 'var(--v-grey-darken1)'
           })
 
           //we do this for every resource, regardless of if they already have an availability or not
@@ -433,7 +433,7 @@
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              color: 'gray'
+              color: 'var(--v-error-base)'
             })
           })
 
@@ -539,9 +539,9 @@
           // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
           // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
         } else {
-          //moment starts on sunday, add 1 to start
-          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').utc().format('YYYY-MM-DD HH:mm:ss')
-          this.calendarEndTime = moment(this.calendarStart).endOf('week').utc().format('YYYY-MM-DD HH:mm:ss')
+          //moment starts on sunday, isoWeek starts on monday
+          this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
         }
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
@@ -639,6 +639,11 @@
   #calendar-container .fc-cell-content {
     padding-top: 0;
     padding-bottom: 0;
+  }
+
+  #calendar-container > div.calendar-resize-container > div > div.fc-view-container > div > table > tbody > tr > td.fc-time-area.fc-widget-content > div > div > div > div.fc-content > div > table > tbody > tr > td > div > div.fc-bgevent-container > div {
+    color: white !important;
+    font-size: 0.875rem !important;
   }
 
 </style>

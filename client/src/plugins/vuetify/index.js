@@ -17,28 +17,46 @@ export default new Vuetify({
     options: {
       customProperties: true
     },
-    themes: {
-      light: {
-        primary: '#1F3C73',
-        primaryCustom: '#1F3C73',
-        secondary: '#F6F7F8',
-        secondaryCustom: '#F6F7F8',
-        rowShade: '#EAEAF4',
-        rowShadeCustom: '#EAEAF4',
-        rowHover: '#ADD8E6',
-        rowHoverCustom: '#ADD8E6',
-        brGreen: '#2fc466',
-        brYellow: '#edd33e',
-        brRed: '#d4443f',
-        brBlue: '#2292cc',
-        activeBlue: '#0075FF',
-        primaryButton: '#1F3C73',
-        secondaryButton: '#878787',
-        calendarBorder: '#f2f5f8',
-        primaryText: '#1F3C73',
-        blackText: '#30363c',
-          error: '#B4221F'
-      },
+      themes: {
+          light: {
+              primary: {
+                  base:'#1F3C73',
+                  lighten1:'#2c5893',
+                  lighten2:'#3368a5',
+                  lighten3:'#3c79b6',
+                  lighten4:'#4486c3',
+                  lighten5:'#5796cb',
+                  lighten6:'#6fa7d3',
+                  lighten7:'#94c0e0',
+                  lighten8:'#bbd8ec',
+                  lighten9:'#e3eff7'
+              },
+              secondary: '#F6F7F8',
+              accent: '#3c79b6',
+              error:{
+                  base:'#B4221F',
+                  lighten1:'#D03331',
+                  lighten2:'#EC5552',
+                  lighten3:'#ED9B9B',
+                  lighten4:'#FECDD2'
+              },
+              warning:'#FB8C00',
+              success:'#1B5E20',
+              active:'#e3eff7',
+              anchor: '#2c5893',
+              grey: {
+                base: '#9E9E9E',
+                lighten1: '#BDBDBD',
+                lighten2:'#E0E0E0',
+                lighten3:'#EEEEEE',
+                lighten4:'#F5F5F5',
+                lighten5:'#FAFAFA',
+                darken1:'#757575',
+                darken2:'#616161',
+                darken3:'#424242',
+                darken4:'#212121',
+              }
+          },
       // dark: {
       //   primary: '#1F3C73',
       //   primaryCustom: '#1F3C73',

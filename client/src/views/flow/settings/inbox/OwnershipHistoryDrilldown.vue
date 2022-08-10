@@ -4,7 +4,7 @@
         History
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
-        <v-btn icon  class="text-capitalize" @click="$emit('historyDialogClosed')">
+        <v-btn icon color="primary" class="text-capitalize" @click="$emit('historyDialogClosed')">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -13,7 +13,7 @@
       :items="projectHistory"
       :items-per-page="10"
       disable-sort
-      class="elevation-0"
+      class="elevation-0 height-one-hunned"
     >
       <template #no-data>
         No history available
@@ -87,6 +87,7 @@
   }
   .performed-span {
     font-size: 0.70rem;
+    color: var(--v-grey-darken1);
   }
 </style>
 

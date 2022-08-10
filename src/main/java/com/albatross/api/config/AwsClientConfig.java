@@ -28,10 +28,12 @@ public class AwsClientConfig {
 
     if (awsProperties.getServiceEndpoint() != null) {
       builder =
-          builder.withEndpointConfiguration(
-              new EndpointConfiguration(
-                  awsProperties.getServiceEndpoint().toString(),
-                  awsProperties.getRegion().getName()));
+          builder
+              .withEndpointConfiguration(
+                  new EndpointConfiguration(
+                      awsProperties.getServiceEndpoint().toString(),
+                      awsProperties.getRegion().getName()))
+              .withPathStyleAccessEnabled(true);
     } else {
       builder = builder.withRegion(awsProperties.getRegion());
     }

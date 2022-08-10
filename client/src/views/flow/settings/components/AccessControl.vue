@@ -25,23 +25,23 @@
       </template>
 
       <template v-slot:header.data-table-select="{ on, props }">
-        <v-simple-checkbox v-bind="props" :ripple="false" v-on="on" v-if="userCanEdit"></v-simple-checkbox>
+                                      <v-simple-checkbox color="primary" v-bind="props" :ripple="false" v-on="on" v-if="userCanEdit"></v-simple-checkbox>
       </template>
 
       <template #item="{ item, index, isSelected, select }">
         <tr :class="{ 'shaded-row': index % 2 }">
           <td class="text-center">
-            <v-simple-checkbox v-if="userCanEdit" :ripple="false" :value="isSelected" @input="select($event)"></v-simple-checkbox>
+            <v-simple-checkbox color="primary" v-if="userCanEdit" :ripple="false" :value="isSelected" @input="select($event)"></v-simple-checkbox>
           </td>
           <td class="text-left">
             {{ item.featureName }}
           </td>
           <td v-for="acl in item.accessControl">
             <div v-if="acl.usedByFeature">
-              <input type="checkbox" :readonly="!userCanEdit"
+              <input type="checkbox" :readonly="!userCanEdit" color="primary"
                      :disabled="!userCanEdit" v-model="acl.enabled" @input="[acl.dirty = true, item.dirty = true, callback(companyFeatureList)]">
 
-              <v-icon class="ml-2 mb-1" small color="activeBlue"
+              <v-icon class="ml-2 mb-1" small color="grey darken-1"
                       v-if="secondaryFeatureAccess.length > 0 && secondaryHasAccess(item, acl)">
                 mdi-alpha-p-box-outline
               </v-icon>
@@ -241,5 +241,7 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
 
+</style>
 

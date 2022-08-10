@@ -10,15 +10,15 @@
 
     <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters>
       <v-col cols="12">
-        <span class="clickable" :class="{'font-weight-bold': $route.path.includes('funnel')}" @click="goToRoute('closerFunnel')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('funnel')}" @click="goToRoute('closerFunnel')">
           Funnel
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable" :class="{'font-weight-bold': $route.path.includes('dashboard')}" @click="goToRoute('closerDashboard')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('dashboard')}" @click="goToRoute('closerDashboard')">
           Dashboard
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable" :class="{'font-weight-bold': $route.path.includes('incentive')}" @click="goToRoute('closerIncentive')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('incentive')}" @click="goToRoute('closerIncentive')">
           Incentive
         </span>
       </v-col>
@@ -49,7 +49,6 @@
 
 <style lang="scss" scoped>
   #closer-dash-container {
-    font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
     overflow: auto;
   }
@@ -91,7 +90,7 @@
         }
 
         .v-btn-toggle .v-btn {
-          border: 1px solid var(--v-primaryCustom-base) !important;
+          border: 1px solid var(--v-primary-base) !important;
           font-size: 11px;
           letter-spacing: 0.02em !important;
           height: 25px;
@@ -101,13 +100,13 @@
           }
 
           &:hover {
-            background-color: var(--v-primaryCustom-base);
+            background-color: var(--v-primary-base);
             color: #fff !important;
           }
         }
 
         .v-btn--active {
-          background-color: var(--v-primaryCustom-base);
+          background-color: var(--v-primary-base);
           color: #fff !important;
         }
       }
@@ -128,7 +127,7 @@
       }
 
       .tab-separator {
-        border-right: 1px solid var(--v-primaryCustom-base);
+        border-right: 1px solid var(--v-primary-base);
       }
     }
   }

@@ -9,7 +9,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text @click="$emit('prodStatsDrilldownDialogClosed')">
+        <v-btn text color="primary" @click="$emit('prodStatsDrilldownDialogClosed')">
           Close
         </v-btn>
       </v-toolbar-items>
@@ -65,7 +65,7 @@
                      {{ item.notes[0].note }}
                   </pre>
               <v-spacer></v-spacer>
-              <v-btn small fab text @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
+              <v-btn small fab text color="primary" @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
                 <v-icon>mdi-comment-text-multiple</v-icon>
               </v-btn>
             </div>
@@ -94,7 +94,7 @@
                   <v-spacer></v-spacer>
 
                   <v-btn
-                    color="primaryCustom"
+                    color="primary"
                     class="white--text mr-2 mb-3"
                     @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
                   >

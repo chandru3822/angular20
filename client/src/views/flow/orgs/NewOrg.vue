@@ -4,8 +4,8 @@
       <v-card-title>
         Add Organization
         <v-spacer></v-spacer>
-        <v-btn text class="mr-3" to="/orgs">Cancel</v-btn>
-        <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
+        <v-btn text color="primary" class="mr-3" to="/orgs">Cancel</v-btn>
+        <v-btn color="primary white--text" :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
                @click="validate">Save</v-btn>
       </v-card-title>
 
@@ -40,10 +40,7 @@
                         item-text="state"
                         item-value="id"
               ></v-select>
-              <div class="mb-3">
-                <label>Show in Scheduling Tool:</label>
-                <input type="checkbox" class="ml-2" v-model="org.schedulable" @change="getCompanyTimezones(org.schedulable)">
-              </div>
+              <v-checkbox label="Show in Scheduling Tool" class="mb-n4" v-model="org.schedulable" @change="getCompanyTimezones(org.schedulable)"></v-checkbox>
               <div v-if="org.schedulable">
                 <v-autocomplete v-model="org.companyTimezoneId"
                                 :items="companyTimezones"
@@ -52,21 +49,16 @@
                                 item-text="timezone"
                                 item-value="id"
                                 attach
+                                class="pt-0"
                 ></v-autocomplete>
-                <h6 class="mt-3 red-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
+                <h6 class="mt-3 error-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
               </div>
-              <div class="mb-3 mt-3" v-if="$store.getters.isParent(parentId)">
-                <label>Make available in children:</label>
-                <input type="checkbox" class="ml-3" v-model="org.availableToChildren">
-              </div>
-              <div class="mb-3 mt-3" v-if="$store.getters.isParent(parentId)">
-                <label>Enable SMS:</label>
-                <input type="checkbox" class="ml-3" v-model="org.smsEnabled">
-              </div>
+              <v-checkbox class="mb-n4" v-if="$store.getters.isParent(parentId)" label="Make available in children" v-model="org.availableToChildren"></v-checkbox>
+              <v-checkbox class="mb-n4" v-if="$store.getters.isParent(parentId)" label="Enable SMS" v-model="org.smsEnabled"></v-checkbox>
             </v-col>
           </v-row>
         </v-container>
-        <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
           <h3>{{cfg.groupName}}</h3>
           <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"

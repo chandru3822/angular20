@@ -1,88 +1,40 @@
 <template>
   <v-container class="pa-0">
-    <v-toolbar color="white" class="elevation-1 mt-3">
-      <v-text-field
-        class="mt-5 pay-search"
-        prepend-inner-icon="search"
-        text
-        label="Search projects..."
-        v-model="searchQuery"
-        @input="debounceFilterProjects"
-      ></v-text-field>
-    </v-toolbar>
+    <RequestTable :headers="headers" :projects="projects" :total-items="totalItems" :feature-code="'INSTALLATION_AGREEMENT'" :is-loading="dataLoading"
+                  @openRequest="openRequest($event)" @searchInput="fetchProjects($event)" @submitRequest="submitRequest">
+      <template v-slot:dialogContent>
+        <v-card-title>
+          <span class="text-h5">Request for Installation Agreement</span>
+        </v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col>
+              <v-text-field label="Customer Name"
+                            v-model="requestItem.customer_name"
+                            disabled
+              ></v-text-field>
 
-    <v-col cols="12">
-      <v-data-table
-        :headers="headers"
-        :items="projects"
-        :fixed-header="true"
-        :search="projectsSearch"
-        :options.sync="options"
-        :footer-props="footerProps"
-        :items-per-page="50"
-        :server-items-length="totalItems"
-        :loading="dataLoading"
-        dense
-        class="elevation-1"
-      >
-
-        <template #no-data>
-          No requests found
-        </template>
-
-        <template #no-results>
-          No requests found
-        </template>
-
-        <template #body="{ items }">
-          <tr
-            v-for="(it, index) in items"
-            :key="it.id"
-            :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
-          >
-            <td class="text-left">
-              <a v-if="$store.getters.userHasFeatureAccessLevel('INSTALLATION_AGREEMENT', 'ADD')"
-                 @click="openRequest(it)" class="mr-3 name-link">
-                {{ it.customer_name ? it.customer_name : '' }}
-              </a>
-              <span v-else>{{ it.customer_name ? it.customer_name : '' }}</span>
-            </td>
-            <td class="text-left">{{ it.address ? it.address : '' }}</td>
-          </tr>
-        </template>
-      </v-data-table>
-
-      <v-dialog v-model="requestDialog" max-width="700px">
-        <v-card>
-          <v-card-title>
-            <span class="text-h5">Request for Installation Agreement</span>
-          </v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col>
-                <v-text-field label="Customer Name"
-                              v-model="requestItem.customer_name"
-                              disabled
+              <div style="display: flex;">
+                <v-text-field label="Email Address"
+                              v-model="requestItem.email"
+                              :disabled="!editEmail"
                 ></v-text-field>
+                <v-icon v-if="!editEmail" small color="primary" class="mr-3" @click="editEmail = !editEmail">
+                  edit
+                </v-icon>
+                <v-icon v-if="editEmail" small text color="primary" class="mr-3" @click="resetEmail">
+                  cancel
+                </v-icon>
+                <v-icon v-if="editEmail" small color="primary" class="mr-3" @click="updateEmail">
+                  save
+                </v-icon>
+              </div>
 
-                <div style="display: flex;">
-                  <v-text-field label="Email Address"
-                                v-model="requestItem.email"
-                                :disabled="!editEmail"
-                  ></v-text-field>
-                  <v-icon v-if="!editEmail" small class="mr-3" @click="editEmail = !editEmail">
-                    edit
-                  </v-icon>
-                  <v-icon v-if="editEmail" small class="mr-3" @click="resetEmail">
-                    cancel
-                  </v-icon>
-                  <v-icon v-if="editEmail" small class="mr-3" @click="updateEmail">
-                    save
-                  </v-icon>
-                </div>
-
-                <v-btn color="primaryButton" raised @click="openLoanApp()" class="white--text">
+                <v-btn color="primary" raised @click="openLoanApp()" class="white--text">
                   <span>Finance Application</span>
+                </v-btn>
+                <v-btn :disabled="!requestItem.proposalNbr" v-if="requestItem.sunpowerUrlExists" color="primary" raised @click="updateSunpowerApp()" class="white--text mt-5">
+                  <span>Update / Renew Spwr Quote</span>
                 </v-btn>
               </v-col>
               <v-col>
@@ -93,30 +45,22 @@
                           item-value="proposalNbr"
                 ></v-select>
                 <v-checkbox label="Send English Installation Agreement"
+                            class="default-text-color"
                             v-model="requestItem.sendInstallationAgreement"
                 ></v-checkbox>
                 <v-checkbox label="Send Spanish Installation Agreement"
+                            class="default-text-color"
                             v-model="requestItem.isSpanish"
                 ></v-checkbox>
                 <v-checkbox label="Send Finance Docs (Finance Products Only)"
+                            class="default-text-color"
                             v-model="requestItem.sendLoanDocs"
                 ></v-checkbox>
               </v-col>
             </v-row>
           </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="secondaryButton" text @click="close">Back</v-btn>
-            <v-btn color="primaryButton" raised @click="submitRequest" class="white--text">
-              Submit
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
-    </v-col>
-
+      </template>
+    </RequestTable>
   </v-container>
 </template>
 
@@ -132,11 +76,12 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
-import debounce from "lodash.debounce";
+import RequestTable from "@/components/RequestTable";
+import Snackbar from "@/components/Snackbar";
 
 export default {
   name: 'ProjectRequests',
-
+  components: {Snackbar, RequestTable},
   data: () => ({
     snackbar: {},
     dataLoading: true,
@@ -156,7 +101,6 @@ export default {
     projectsSearch: '',
     searchQuery: '',
     totalItems: 0,
-    requestDialog: false,
     requestItem: {
       customer_name: '',
       email: '',
@@ -165,6 +109,7 @@ export default {
       sendLoanDocs: true,
       sendInstallationAgreement: false,
       isSpanish: false,
+      sunpowerUrlExists: false,
       projectId: ''
     },
     currentEmail: '',
@@ -190,7 +135,10 @@ export default {
     })
   },
   methods: {
-    async fetchProjects() {
+    async fetchProjects(searchQuery) {
+      if(searchQuery != undefined){
+        this.searchQuery = searchQuery
+      }
       try {
         this.dataLoading = true
         const {page, itemsPerPage} = this.options
@@ -213,14 +161,16 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    debounceFilterProjects: debounce(function () {
-      this.fetchProjects()
-    }, 500),
+
+    setSearchQuery(query){
+      this.searchQuery=query
+    },
     async openRequest(it) {
       this.requestItem.customer_name = it.customer_name
       this.requestItem.email = it.email
       this.currentEmail = it.email
       this.requestItem.projectId = it.project_id
+      this.requestItem.sunpowerUrlExists = it.sunpower_url_exists
 
       // get proposal numbers
       try {
@@ -239,19 +189,6 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error retrieving proposal numbers')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
-
-      this.requestDialog = true;
-    },
-    close() {
-      this.requestDialog = false
-    },
-    changeSort(column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending
-      } else {
-        this.pagination.sortBy = column
-        this.pagination.descending = false
-      }
     },
     async submitRequest() {
       try {
@@ -265,7 +202,6 @@ export default {
         }
 
         const {status} = await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
-        this.requestDialog = false;
         handleHidingGlobalLoader(this, status)
         this.snackbar = getSnackbar('SUCCESS', 'Installation agreement request submitted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -277,6 +213,26 @@ export default {
           this.snackbar = getSnackbar('ERROR', e.data.message)
         } else {
           this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
+        }
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        console.error('*** ERROR ***', e)
+      }
+    },
+    async updateSunpowerApp() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {status} = await postRequest('/install-agreement/updateSunpowerApp/' + this.requestItem.projectId + '/' + this.requestItem.proposalNbr, {}, 'blueraven')
+        this.requestDialog = false;
+        handleHidingGlobalLoader(this, status)
+        this.snackbar = getSnackbar('SUCCESS', 'SunPower loan application updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        if (e?.data?.message) {
+          this.snackbar = getSnackbar('ERROR', e.data.message)
+        } else {
+          this.snackbar = getSnackbar('ERROR', 'Error updating SunPower loan application')
         }
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         console.error('*** ERROR ***', e)
@@ -368,4 +324,8 @@ export default {
     color: var(--v-primaryText-base);
   }
 }
+
+.default-text-color .theme--light.v-label{
+    color: rgba(0,0,0,0.87)
+  }
 </style>

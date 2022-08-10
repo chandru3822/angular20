@@ -7,7 +7,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text @click="goToDetails({})" v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" >
+        <v-btn text color="primary" @click="goToDetails({})" v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" >
           <v-icon>add</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -45,12 +45,8 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr class="clickable" :class="{'shaded-row': index % 2}">
-                <td class="text-left">
-                  <v-btn text @click="goToDetails(item)">
-                    {{item.name}}
-                  </v-btn>
-                </td>
+              <tr class="clickable" @click="goToDetails(item)" :class="{'shaded-row': index % 2}">
+                <td class="text-left">{{item.name}}</td>
                 <td class="text-left">{{item.description}}</td>
                 <td class="text-left">{{item.status}}</td>
                 <td class="text-left">{{item.total}}</td>

@@ -97,9 +97,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   }
 
   //    every  day at 1 am
-  @Scheduled(
-      fixedDelayString =
-          "${app.cron.closeProjectConversations.delay:20000}") // @Scheduled(cron = "0 0 1 * * *",
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
   // zone = "America/Denver")
   public void closeProjectConversations() {
     if (closeProjectConversations) {

@@ -11,7 +11,7 @@
       Confirm assignment
     </v-card-title>
 
-    <v-card-text class="albatross-caption pt-4 pb-0 px-0">
+    <v-card-text class="albatross-caption pt-4 pb-0 px-0 default-text-color">
       We assign users to conversations when they wish to send SMS to the customer. You are a part of more than 1 team, which team do you want to be added to this conversation?
     </v-card-text>
 
@@ -32,7 +32,7 @@
       <v-btn
           class="text-capitalize"
           @click="exitDialogue"
-          color="secondary"
+          text color="primary"
       >
         Cancel
       </v-btn>

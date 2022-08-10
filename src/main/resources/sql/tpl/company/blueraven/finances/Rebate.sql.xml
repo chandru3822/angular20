@@ -178,31 +178,33 @@
   <rebate.getPaymentsPending>
     <![CDATA[
             select * from (
-                select pd.project_id,
-                       pd.contact_name project_name,
-                       (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy) as createdBy,
-                       pd.substantial_completion_date substantialCompletionDate,
-                       pd.primary_financier_name as financier,
-                       pd.num_of_promotion_payments as numberOfPromotionPayments,
-                       pd.product_name as product,
+              select pd.project_id,
+                     pd.contact_name project_name,
+                     (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy) as createdBy,
+                     pd.substantial_completion_date substantialCompletionDate,
+                     pd.primary_financier_name as financier,
+                     pd.num_of_promotion_payments as numberOfPromotionPayments,
+                     pd.product_name as product,
+                     pd.total_promotion_amount,
+                     (select count(*) from brs.project_rebate_payment where project_id = pd.project_id) as numOfPayments
+              from brs.project_details pd
+              where ((pd.substantial_completion_date is not null and
+                      pd.product in  (295,293)) or
+                     (pd.substantial_completion_date is not null and
+                      pd.substantial_completion_date  <= (now() AT TIME ZONE 'US/Mountain') - interval '18 months'  and
+                                                    pd.product =  19424)) and
+                      pd.company_id = 3 and
+                  pd.archived is false
+              group by pd.project_id,
+                       pd.contact_name,
+                       (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy),
+                       pd.substantial_completion_date,
+                       pd.primary_financier_name,
+                       pd.num_of_promotion_payments,
+                       pd.product_name,
                        pd.total_promotion_amount,
-                       (select count(*) from brs.project_rebate_payment where project_id = pd.project_id) as numOfPayments
---                 from flow.project p
-                     from brs.project_details pd
-                where pd.substantial_completion_date is not null and
-                    pd.product_name in ('BluePower Plus','BluePower Plus PrePaid') and
-                    pd.company_id = 3 and
-                    pd.archived is false
-                group by pd.project_id,
-                         pd.contact_name,
-                         (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy),
-                         pd.substantial_completion_date,
-                         pd.primary_financier_name,
-                         pd.num_of_promotion_payments,
-                         pd.product_name,
-                         pd.total_promotion_amount,
-                         numOfPayments
-              ) as payments where numOfPayments < 1
+                       numOfPayments
+          ) as payments where numOfPayments < 1
         ]]>
   </rebate.getPaymentsPending>
 
@@ -251,9 +253,9 @@
          pd.product_name as product,
          pd.total_promotion_amount
          from flow.project p
-         where p.archived is false
            inner join brs.project_rebate_payment prp on p.id = prp.project_id
            left join brs.project_details pd on pd.project_id = p.id
+         where p.archived is false
            group by p.id,
            pd.contact_name,
            pd.substantial_completion_date,

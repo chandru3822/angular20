@@ -6,7 +6,7 @@
         <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text
+          <v-btn text color="primary"
                  @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [], eventStatuses: [] }, getWorkQueueTypesForItem(), prepTempStatuses(newWorkQueueType, false), prepTempProcessStepStatuses(newWorkQueueType, false), prepTempEventStatuses(newWorkQueueType, false)]"
                  v-if="userCanAdd">
             <v-icon v-if="!addNewWorkQueueType">add</v-icon>
@@ -19,7 +19,7 @@
         </v-toolbar-items>
       </v-toolbar>
       <div>
-        <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewWorkQueueType">
+        <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewWorkQueueType">
           <v-autocomplete v-model="newWorkQueueType.workQueueTypeId"
                           :items="workQueueTypes"
                           label="Select Work Queue Type"
@@ -144,7 +144,7 @@
               </template>
             </template>
           </v-autocomplete>
-          <v-btn
+          <v-btn color="primary"
             :disabled="!newWorkQueueType.workQueueTypeId || (!newWorkQueueType.projectStatuses || newWorkQueueType.projectStatuses.length === 0)
           || (!newWorkQueueType.processStepStatuses || newWorkQueueType.processStepStatuses.length === 0)
            || (showEventFields && (!newWorkQueueType.eventStatuses || newWorkQueueType.eventStatuses.length === 0))"
@@ -288,7 +288,7 @@
                   </template>
                 </v-autocomplete>
 
-                <v-btn class="mt-3" v-if="userCanEdit"
+                <v-btn class="mt-3" v-if="userCanEdit" color="primary"
                        :disabled="(!item.projectStatuses || item.projectStatuses.filter(ps => !ps.archived).length === 0)
                                     || (!item.processStepStatuses || item.processStepStatuses.filter(ps => !ps.archived).length === 0)
                                     || (showEventFields && (!item.eventStatuses || item.eventStatuses.filter(ps => !ps.archived).length === 0))"
@@ -322,18 +322,14 @@
                 </td>
                 <td class="text-right">
                   <div class="flex-display">
-                    <v-btn text
+                    <v-btn text color="primary"
                            @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true)]"
                            v-if="!expanded.includes(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn text @click="expanded = []" v-else>cancel
+                    <v-btn text color="primary" @click="expanded = []" v-else>cancel
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="userCanEdit"
-                        :item-to-delete="item.workQueueType"
-                        @confirm-delete="deleteWorkQueueTypeFromStep(item)"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanEdit" text color="primary" @click="workQueueTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -342,6 +338,10 @@
         </v-card>
       </div>
     </v-col>
+    <ConfirmationDialog :open-dialog="!!workQueueTypeToDelete" @confirm="deleteWorkQueueTypeFromStep" @close-dialog="workQueueTypeToDelete=null">
+      Are you sure you want to delete <strong>{{workQueueTypeToDeleteName}}</strong>?
+
+    </ConfirmationDialog>
   </v-row>
 </template>
 
@@ -360,11 +360,12 @@ import {
   getRequestWithParams
 } from '@/helpers/helpers'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepWorkQueueTypes',
   mixins: [Vue2Filters.mixin],
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog, ConfirmDeleteDialog},
   props: {
     processStep: Object,
     event: Object
@@ -408,12 +409,16 @@ export default {
       showShit: true,
       showPsShit: true,
       showEventShit: true, //dom key crap
-      showEventFields: false
+      showEventFields: false,
+      workQueueTypeToDelete: null
     }
   },
   computed: {
     displayedHeaders () {
       return this.headers.filter(h => h.show)
+    },
+    workQueueTypeToDeleteName(){
+      return this.workQueueTypeToDelete ? this.workQueueTypeToDelete.workQueueType : ''
     }
   },
   async created() {
@@ -865,7 +870,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteWorkQueueTypeFromStep(item) {
+    async deleteWorkQueueTypeFromStep() {
+      const item = this.workQueueTypeToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewWorkQueueType = false

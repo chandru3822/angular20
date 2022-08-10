@@ -40,7 +40,7 @@
             <v-spacer></v-spacer>
 
             <v-btn
-              color="primaryCustom"
+              color="primary"
               dark
               class="white--text"
               @click="deleteError = false"
@@ -59,20 +59,20 @@
               <v-toolbar-title class="app-title">Process Step Status Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text
+                <v-btn text color="primary"
                        @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
                        v-if="userCanAdd">
                   <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
                   {{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}
                 </v-btn>
-                <v-btn text @click="expandPsst = !expandPsst">
+                <v-btn text color="primary" @click="expandPsst = !expandPsst">
                   <v-icon v-if="!expandPsst">mdi-chevron-down</v-icon>
                   <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <div class="mb-4">
-              <v-card flat class="square-card mb-3 pa-3" color="rowShadeCustom" v-if="addNewProcessStepStatusType">
+              <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewProcessStepStatusType">
                 <h3>Assign a Status Type</h3>
                 <v-autocomplete label="Process Step Status Type"
                                 :items="availableCompanyProcessStepStatusTypes"
@@ -118,11 +118,7 @@
                     </td>
                     <td class="text-right">
                       <div class="flex-display">
-                        <confirm-delete-dialog
-                          v-if="userCanEdit"
-                          :item-to-delete="item.processStepStatusType"
-                          @confirm-delete="deleteStatusTypeFromStep(item)"
-                        ></confirm-delete-dialog>
+                        <v-btn v-if="userCanEdit" small text color="primary" @click="deleteProcessStepStatusType=item"><v-icon>delete</v-icon></v-btn>
                       </div>
                     </td>
                   </tr>
@@ -138,17 +134,17 @@
               <v-toolbar-title class="app-title">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getLinksForProcessStep" v-if="userCanAdd">
+                <v-btn text color="primary" @click="getLinksForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewLink">add</v-icon>
                   {{ addNewLink ? 'Cancel' : 'Add Link' }}
                 </v-btn>
-                <v-btn text @click="expandLinks = !expandLinks">
+                <v-btn text color="primary" @click="expandLinks = !expandLinks">
                   <v-icon v-if="!expandLinks">mdi-chevron-down</v-icon>
                   <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewLink">
+            <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewLink">
               <v-select attach v-if="addNewLink"
                         v-model="newLink.linkId"
                         :items="availableLinks"
@@ -173,12 +169,7 @@
                     <v-list-item-content>
                       {{ a.link }} | {{ a.url }}
                     </v-list-item-content>
-                    <confirm-delete-dialog
-                      v-if="userCanEdit"
-                      label="this link: "
-                      :item-to-delete="a.link"
-                      @confirm-delete="[a.archived = true, deleteLinkFromStep(a.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="deleteLink=a"><v-icon>delete</v-icon></v-btn>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -191,17 +182,17 @@
               <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getAttachmentTypesForProcessStep" v-if="userCanAdd">
+                <v-btn text color="primary" @click="getAttachmentTypesForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewType">add</v-icon>
                   {{ addNewType ? 'Cancel' : 'Add Type' }}
                 </v-btn>
-                <v-btn text @click="expandAttachmentTypes = !expandAttachmentTypes">
+                <v-btn text color="primary" @click="expandAttachmentTypes = !expandAttachmentTypes">
                   <v-icon v-if="!expandAttachmentTypes">mdi-chevron-down</v-icon>
                   <v-icon v-else>mdi-chevron-up</v-icon>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <v-card class="square-card pa-2" color="rowShadeCustom" v-if="addNewType">
+            <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewType">
               <v-autocomplete v-model="newType.attachmentTypeId"
                               :items="availableAttachmentTypes"
                               label="Select Attachment Type"
@@ -226,12 +217,7 @@
                     <v-list-item-content>
                       {{ a.attachmentType }}
                     </v-list-item-content>
-                    <confirm-delete-dialog
-                      v-if="userCanEdit"
-                      label="this attachment type: "
-                      :item-to-delete="a.attachmentType"
-                      @confirm-delete="[a.archived = true, deleteTypeFromStep(a.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="deleteAttachment=a"><v-icon>delete</v-icon></v-btn>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -293,7 +279,7 @@
                   </template>
                 </v-autocomplete>
                 <br/>
-                <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                <v-btn color="primary" class="d-inline-block"
                        @click="saveReadOnlyAndWhiteList()">
                   <v-icon class="mr-2">save</v-icon>
                   Save
@@ -303,8 +289,11 @@
           </v-col>
         </v-row>
       </v-col>
-
     </v-row>
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="confirmDelete" @close-dialog="[deleteProcessStepStatusType = null, deleteLink = null, deleteAttachment = null]">
+      Are you sure you want to delete {{deleteDialogText}}<strong>{{deleteDialogItemText}}</strong>?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -328,11 +317,13 @@ import {
   getRequestWithParams
 } from '@/helpers/helpers'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepComponents',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmationDialog,
     ConfirmDeleteDialog,
     ProcessStepWorkQueueTypes,
     ProcessStepCustomFieldGroups,
@@ -379,6 +370,9 @@ export default {
           to: `/settings/processSteps`
         },
       ],
+      deleteProcessStepStatusType: null,
+      deleteLink: null,
+      deleteAttachment: null
     }
   },
   computed: {
@@ -394,6 +388,30 @@ export default {
       ]
       return headers.filter(h => h.show)
     },
+    showDeleteDialog(){
+      return Boolean(this.deleteProcessStepStatusType || this.deleteAttachment || this.deleteLink)
+    },
+    deleteDialogText(){
+      if(this.deleteLink){
+        return `this link: `
+      }
+      if(this.deleteAttachment){
+        return `this attachment: `
+      }
+      return ''
+    },
+    deleteDialogItemText(){
+      if(this.deleteProcessStepStatusType){
+        return this.deleteProcessStepStatusType.processStepStatusType
+      }
+      if(this.deleteLink){
+        return this.deleteLink.link
+      }
+      if(this.deleteAttachment){
+        return this.deleteAttachment.attachmentType
+      }
+      return ''
+    }
   },
   async created() {
     await this.getProcessStepDetails()
@@ -708,6 +726,20 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    confirmDelete(){
+      if(this.deleteProcessStepStatusType){
+        this.deleteStatusTypeFromStep(this.deleteProcessStepStatusType)
+        this.deleteProcessStepStatusType = null
+      }else if(this.deleteLink){
+        this.deleteLink.archived = true
+        this.deleteLinkFromStep(this.deleteLink.id)
+        this.deleteLink = null
+      }else if(this.deleteAttachment){
+        this.deleteAttachment.archived = true
+        this.deleteTypeFromStep(this.deleteAttachment.id)
+        this.deleteAttachment = null
+      }
     }
   }
 
@@ -716,7 +748,7 @@ export default {
 
 <style scoped lang="scss">
 .name-container {
-  background-color: var(--v-rowShadeCustom-base) !important;
+  background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
 }
 

@@ -14,23 +14,23 @@
                         hide-details
                         label="Min Required Build Number"
         ></v-autocomplete>
-        <v-btn text x-small @click="editMinVersion = !editMinVersion" class="d-inline-block">
+        <v-btn text color="primary" x-small @click="editMinVersion = !editMinVersion" class="d-inline-block">
           <v-icon v-if="!editMinVersion">edit</v-icon>
           <v-icon v-else>close</v-icon>
         </v-btn>
-        <v-btn text x-small v-if="editMinVersion" @click="saveMinVersion()" class="d-inline-block">
+        <v-btn text color="primary" x-small v-if="editMinVersion" @click="saveMinVersion()" class="d-inline-block">
           <v-icon>save</v-icon>
         </v-btn>
       </div>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text @click="[addNew = !addNew, newApp = {}]" v-if="userCanAdd">
+        <v-btn text color="primary" @click="[addNew = !addNew, newApp = {}]" v-if="userCanAdd">
           <v-icon>add</v-icon>
         </v-btn>
-        <v-btn v-if="isIos" text @click="showIos = !showIos">
+        <v-btn v-if="isIos" text color="primary" @click="showIos = !showIos">
           <v-icon>mdi-chevron-down</v-icon>
         </v-btn>
-        <v-btn v-else text @click="showAndroid = !showAndroid">
+        <v-btn v-else text color="primary" @click="showAndroid = !showAndroid">
           <v-icon>mdi-chevron-down</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -66,8 +66,7 @@
                     v-model.number="newApp.buildNumber">
       </v-text-field>
 
-      <v-btn color="primaryCustom"
-             class="white--text"
+      <v-btn color="primary"
              :disabled="!newApp.versionNumber || !newApp.buildNumber
                         || (!newApp.attachment || !newApp.attachment.name)
                         || (isIos && (!newApp.secondaryAttachment || !newApp.secondaryAttachment.name))"
@@ -95,12 +94,12 @@
       <template #item="{ item, index }">
         <tr :class="{'default-row': item.show, 'shaded-row': index % 2}">
           <td>
-            <v-btn text color="primaryCustom" small
+            <v-btn text color="primary" small
                    v-if="isIos"
                    :href="`itms-services://?action=download-manifest&url=https://7oaks-albatross.s3.amazonaws.com/${item.s3Key}`">
               <v-icon>download</v-icon>
             </v-btn>
-            <v-btn text color="primaryCustom" small
+            <v-btn text color="primary" small
                    v-else
                    :href="item.presignedUrl">
               <v-icon>download</v-icon>
@@ -116,76 +115,21 @@
             {{item.dateCreated | formatDate('timestamp')}}
           </td>
           <td class="px-0">
-            <v-dialog
-                v-if="userCanDelete"
-                v-model="item.deleteConfirm"
-                width="500">
-              <template #activator="{ on }">
-                <v-btn small text color="primaryCustom"
-                       v-on="on">
-                  <v-icon>delete</v-icon>
-                </v-btn>
-              </template>
-              <v-card>
-                <v-card-title class="text-h5 grey lighten-2" primary-title>
-                  Confirm
-                </v-card-title>
-
-                <v-card-text class="pt-4">
-                  Are you sure you want to delete this app <strong>{{item.filename}}</strong>?
-                </v-card-text>
-                <v-divider></v-divider>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn @click="item.deleteConfirm = false">
-                    No
-                  </v-btn>
-                  <v-btn
-                      color="primaryCustom"
-                      text
-                      @click="deleteApp(item)">
-                    Yes
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-                v-if="userCanEdit"
-                v-model="item.showConfirm"
-                width="500">
-              <template #activator="{ on }">
-                <v-btn small text color="primaryCustom"
-                       v-on="on">
-                  {{ item.show ? 'hide' : 'show'}}
-                </v-btn>
-              </template>
-              <v-card>
-                <v-card-title class="text-h5 grey lighten-2" primary-title>
-                  Confirm
-                </v-card-title>
-
-                <v-card-text class="pt-4">
-                  {{item.show ? `Are you sure you want to hide this app from everyone?` : `Are you sure you want to make this app available to everyone?`}}
-                </v-card-text>
-                <v-divider></v-divider>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn @click="item.showConfirm = false">
-                    No
-                  </v-btn>
-                  <v-btn
-                      color="primaryCustom"
-                      text
-                      @click="showHideApp(item)">
-                    Yes
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+            <v-btn v-if="userCanDelete" text color="primary" @click="appToDelete = item"><v-icon>delete</v-icon></v-btn>
+            <v-btn v-if="userCanEdit" small text color="primary" @click="appToShowHide = item">
+              {{ item.show ? 'hide' : 'show'}}
+            </v-btn>
           </td>
         </tr>
       </template>
     </v-data-table>
+    <ConfirmationDialog :open-dialog="!!appToDelete" @confirm="deleteApp" @close-dialog="appToDelete = null">
+      Are you sure you want to delete this app <strong>{{appToDeleteName}}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!appToShowHide" @confirm="showHideApp" @close-dialog="appToShowHide = null">
+      {{hideOrShowApp ? `Are you sure you want to hide this app from everyone?` : `Are you sure you want to make this app available to everyone?`}}
+      <template v-slot:yes>{{hideOrShowApp ? 'hide' : 'show'}}</template>
+    </ConfirmationDialog>
   </v-main>
 </template>
 
@@ -203,11 +147,12 @@ import {
 } from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'AppDownloads',
   mixins: [Vue2Filters.mixin],
-  components: {},
+  components: {ConfirmationDialog},
   props: {
     isIos: Boolean
   },
@@ -236,6 +181,16 @@ export default {
         {text: 'Created', value: 'dateCreated', show: true},
         {text: '', value: 'icons', show: true, width: 175},
       ],
+      appToDelete: null,
+      appToShowHide: null
+    }
+  },
+  computed:{
+    appToDeleteName(){
+      return this.appToDelete ? this.appToDelete.filename : ''
+    },
+    hideOrShowApp(){
+      return this.appToShowHide ? this.appToShowHide.show : false
     }
   },
   created () {
@@ -329,7 +284,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteApp(item) {
+    async deleteApp() {
+      const item = this.appToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/app/${item.id}`)
@@ -342,12 +298,14 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async showHideApp(app) {
+    async showHideApp() {
+      const app = this.appToShowHide
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         app.show = !app.show
         const {status} = await putRequest(`/app/show`, app)
         app.showConfirm = false
+        this.appToShowHide = null
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

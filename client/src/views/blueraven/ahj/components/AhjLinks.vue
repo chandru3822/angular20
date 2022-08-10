@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-links">
   <v-card class="mb-3">
-    <v-toolbar class="primaryCustom">
+    <v-toolbar class="primary">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{ title }}
       </v-toolbar-title>
@@ -24,13 +24,13 @@
                   v-model="link.notes">
       </v-textarea>
       <div class="link-btns">
-        <a @click="hideCtrls"
-           class="cancel-link">Cancel</a>
+        <v-btn color="primary" text @click="hideCtrls"
+           class="cancel-link">Cancel</v-btn>
         <v-btn v-show="editMode" dark v-if="userCanEdit"
                @click="deleteLink" class="error">
           Delete
         </v-btn>
-        <v-btn @click="saveLink" color="primaryButton" class="white--text"
+        <v-btn @click="saveLink" color="primary" class="white--text"
                :disabled="!linkInfoEntered">
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
@@ -42,7 +42,7 @@
       <v-list-item :title="link.name">
         <v-list-item-content class="flex-row-center">
           <v-list-item-action @click="editLink(link)" v-if="userCanEdit">
-            <v-icon small>edit</v-icon>
+            <v-icon small color="primary">edit</v-icon>
           </v-list-item-action>
           <v-list-item-title :style="[{'font-size': isNested ? '0.95em !important' : '0.85em !important'}, {'text-align': 'left'}]">
             <a :href="link.link" target="_blank" class="list-link">{{ link.name }}</a>
@@ -240,7 +240,7 @@
     font-size: 0.95em !important;
   }
   .v-list {
-    border-bottom: 1px solid var(--v-primaryCustom-base) !important;
+    border-bottom: 1px solid var(--v-primary-base) !important;
     border-radius: 0;
   }
   .v-list__item__title {
@@ -250,7 +250,7 @@
     margin: 0 10px 0 0 !important;
     max-width: 30px;
     height: 30px;
-    border: 1px solid var(--v-primaryCustom-base) !important;
+    border: 1px solid var(--v-primary-base) !important;
     border-radius: 3px;
     display: flex;
     justify-content: center;

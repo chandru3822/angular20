@@ -4,16 +4,16 @@
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">
-            <v-btn text to="/ahj" color="primaryCustom">
+            <v-btn text to="/ahj" color="primary">
               AHJ
             </v-btn>
-            <v-btn text to="/ahjUtility" color="primaryCustom">
+            <v-btn text to="/ahjUtility" color="primary">
               Utility
             </v-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addItem" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add New</span>
             </v-btn>
@@ -61,21 +61,21 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+            <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
               <td class="text-left">{{ item.name ? item.name : '' }}</td>
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left">{{ item.state ? item.state : '' }}</td>
               <td class="text-left">
                 <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
                 <span v-else>
-                  <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
-                  <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
-                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link">Design Requirements</router-link>
+                  <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link primary--text">Permit</router-link>
+                  <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link primary--text">Inspection</router-link>
+                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link primary--text">Design Requirements</router-link>
                 </span>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
                 </v-icon>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small class="ahj-link-icon" @click="deleteItem(item)">
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
                   delete
                 </v-icon>
               </td>
@@ -127,35 +127,20 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-              <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
+              <v-btn color="primary" text @click="close">Cancel</v-btn>
+              <v-btn color="primary" raised @click="saveAhj" class="white--text"
                      :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId">
                 {{ ahjBtnTxt }}
               </v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
-
-        <v-dialog v-model="ahjDeleteDialog" max-width="500px">
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">Confirm</span>
-            </v-card-title>
-
-            <v-card-text>
-              Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
-            </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-              <v-btn color="brRed" class="white--text" raised
-                     @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!ahjToDelete" @confirm="deleteAhj" @close-dialog="ahjToDelete=null">
+      Are you sure you want to delete the AHJ for {{ ahjToDeleteName }}?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -165,6 +150,7 @@
   import constants from '@/helpers/constants'
   import {getActiveStates} from '@/services/stateService'
   import { AppMutations } from '@/stores/AppStore'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   const FILTER_DEFAULTS = {
     name: {value: '', type: 'text', model: 'name'},
@@ -174,7 +160,7 @@
 
   export default {
     name: 'ahjs',
-
+    components: {ConfirmationDialog},
     data: () => ({
       snackbar: {},
       constants,
@@ -208,7 +194,7 @@
       ahjFilters: [],
       states: [],
       metroAreas: [],
-      ahjToDelete: {},
+      ahjToDelete: null,
       footerProps: {
         showFirstLastPage: !constants.IS_MOBILE,
         firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
@@ -246,6 +232,9 @@
       },
       ahjBtnTxt () {
         return this.addMode ? 'Add' : 'Update'
+      },
+      ahjToDeleteName(){
+        return this.ahjToDelete ? this.ahjToDelete.name : ''
       }
     },
     watch: {
@@ -301,7 +290,6 @@
           id: item.id,
           name: item.name
         }
-        this.ahjDeleteDialog = true
       },
       close () {
         this.ahjDialog = false
@@ -341,21 +329,21 @@
         await this.fetchAhjs().then(() => this.fetchStates())
         this.editedItem = {}
       },
-      async deleteAhj (id) {
+      async deleteAhj () {
+        const id = this.ahjToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/ahj/${id}`, 'blueraven')
           this.close()
           this.initFilters()
           await this.fetchAhjs().then(() => this.fetchStates())
-          this.ahjToDelete = {}
           this.snackbar = getSnackbar('SUCCESS', 'AHJ deleted')
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting AHJ')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-
+        this.ahjToDelete = null
       },
       async fetchStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -401,10 +389,8 @@
   }
 
   .ahj-link-icon {
-    color: var(--v-brBlue-base) !important;
-
     &:hover {
-      color: var(--v-primaryText-base) !important;
+      color: var(--v-primary-lighten1) !important;
     }
   }
 

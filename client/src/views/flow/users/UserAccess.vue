@@ -7,7 +7,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="saveUserAccess"
-                   color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -27,7 +27,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]"
-                   color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
               <v-icon>add</v-icon>
               Add Org Calendar
             </v-btn>
@@ -44,7 +44,7 @@
                           @input="saveUserOrgCalendars"
                           attach
           />
-          <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -67,43 +67,7 @@
             <tr :class="{ 'shaded-row': index % 2 }">
               <td class="text-left">{{ item.orgName }}</td>
               <td class="text-right">
-                <v-dialog
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn small text class="clickable" v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{item.orgName}}</strong> from this user?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteOrgCalendarFromUser(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" class="clickable" @click="[showDeleteDialog=true, itemToDelete=item]"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -111,7 +75,9 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteOrgCalendarFromUser(itemToDelete)" @close-dialog="closeDeleteDialog">
+      Are you sure you want to delete <strong>{{itemToDeleteOrgName}}</strong> from this user?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -128,10 +94,12 @@
     getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers'
+  import ConfirmationDialog from "../../../ConfirmationDialog";
 
   export default {
     name: 'UserAccess',
     components: {
+      ConfirmationDialog,
 
       AccessControl
     },
@@ -141,6 +109,9 @@
           return this.userOrgCalendars.find(uoc => uoc.orgId === oc.id && !uoc.archived) == null
         })
       },
+      itemToDeleteOrgName () {
+        return this.itemToDelete ? this.itemToDelete.orgName : ""
+      }
     },
     data() {
       return {
@@ -158,7 +129,9 @@
           { text: 'Calendar', value: 'calendar', show: true },
           { text: '', value: 'icons', show: true },
         ],
-        accessControlKey: 0
+        accessControlKey: 0,
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
     created () {
@@ -225,6 +198,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
       async getAllOrgCalendars() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -265,6 +239,11 @@
       filterUserOrgAccess () {
         return this.userOrgCalendars.filter(uoc => { return !uoc.archived})
       },
+
+      closeDeleteDialog() {
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     }
   }
 </script>

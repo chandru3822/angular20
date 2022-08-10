@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAttachmentTypesForProjects" v-if="userCanAdd">
+            <v-btn text color="primary" @click="getAttachmentTypesForProjects" v-if="userCanAdd">
               <v-icon v-if="!addNewType">add</v-icon>
               {{ addNewType ? 'Cancel' : 'Add Type'}}
             </v-btn>
@@ -30,19 +30,25 @@
                     :key="index">
               <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
                 <v-list-item-action>
-                  <v-icon>drag_handle</v-icon>
+                  <v-icon color="primary">drag_handle</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
                   {{a.attachmentType}}
                 </v-list-item-content>
                 <v-checkbox  style="display: flex; justify-content: flex-end" v-model="a.readOnly" label="Read-Only" @change="updateReadOnly(a)"></v-checkbox>
-                <confirm-delete-dialog label="this attachment type: " :item-to-delete="a.attachmentType" @confirm-delete="[a.archived = true, deleteAttachmentType(a.id)]"></confirm-delete-dialog>
+                <v-btn small text color="primary" class="clickable" @click="attachmentTypeToDelete=a"><v-icon>delete</v-icon></v-btn>
               </v-list-item>
             </v-list>
           </draggable>
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!attachmentTypeToDelete"
+                        @confirm="[attachmentTypeToDelete.archived = true, deleteAttachmentType()]"
+                        @close-dialog="attachmentTypeToDelete=null">
+      Are you sure you want to delete this attachment type: <strong>{{attachmentTypeToDeleteName}}</strong>?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -52,11 +58,13 @@ import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters";
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProjectAttachments',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmationDialog,
     ConfirmDeleteDialog,
     draggable
   },
@@ -67,7 +75,13 @@ export default {
       addNewType: false,
       newType: {},
       availableAttachmentTypes: [],
-      projectAttachmentTypes: []
+      projectAttachmentTypes: [],
+      attachmentTypeToDelete: null
+    }
+  },
+  computed: {
+    attachmentTypeToDeleteName(){
+      return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
     }
   },
   watch: {},
@@ -125,7 +139,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteAttachmentType (id) {
+    async deleteAttachmentType () {
+      const id = this.attachmentTypeToDelete.id
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false

@@ -1,14 +1,14 @@
 <template>
   <v-row no-gutters>
     <v-col class="ahj-form-btns py-1" cols="12">
-      <a v-if="dataWasChanged"
+      <v-btn color="primary" text v-if="dataWasChanged"
          @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
-      >Cancel</a>
+      >Cancel</v-btn>
       <v-btn class="white--text mr-0 save-btn"
              v-if="userCanEdit"
-             color="primaryButton"
+             color="primary"
              @click="validateForm()"
       >Save
       </v-btn>
@@ -20,7 +20,7 @@
         <v-col cols="12" md="4" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
           <!-- CODES -->
           <v-card class="mb-3">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Codes
             </v-card-title>
             <v-card-text class="mt-4">
@@ -48,13 +48,14 @@
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           auto-grow
+                          class="override-readonly-font-color"
               ></v-textarea>
             </v-card-text>
           </v-card>
 
           <!-- ENGINEERING -->
           <v-card class="mb-3">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Engineering
             </v-card-title>
             <v-card-text class="mt-4">
@@ -76,7 +77,7 @@
         <v-col cols="12" md="8" class="pl-sm-0 pl-md-1 mb-sm-2 mb-md-3">
           <!-- DESIGN REQUIREMENTS -->
           <v-card class="mb-3 pb-10">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Design Requirements
             </v-card-title>
             <v-card-text class="mt-2">
@@ -117,7 +118,7 @@
 
           <!-- ELECTRICAL REQUIREMENTS -->
           <v-card class="mb-3 pb-10">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Electrical Requirements
             </v-card-title>
             <v-card-text class="mt-2">
@@ -158,7 +159,7 @@
 
           <!-- STRUCTURAL REQUIREMENTS -->
           <v-card class="pb-10">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Structural Requirements
             </v-card-title>
             <v-card-text class="mt-2">
@@ -497,7 +498,6 @@ export default {
 
 .save-btn {
   margin: 10px 5px 10px 0;
-  text-transform: capitalize;
 }
 
 .v-card__title,

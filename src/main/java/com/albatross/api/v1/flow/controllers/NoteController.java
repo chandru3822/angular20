@@ -35,6 +35,11 @@ public class NoteController {
     return noteService.getByPrimaryAndType(ObjectType.USER.id, primaryId);
   }
 
+  @GetMapping(value = "/getOrgNotes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Note> getOrgNotes(@RequestParam Long primaryId) {
+    return noteService.getByPrimaryAndType(ObjectType.ORGANIZATION.id, primaryId);
+  }
+
   @GetMapping(value = "/getProjectNotes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Note> getProjectNotes(@RequestParam Long primaryId) {
     return noteService.getByPrimaryAndType(ObjectType.PROJECT.id, primaryId);
@@ -59,6 +64,11 @@ public class NoteController {
   @PostMapping(value = "/saveUserNote", produces = MediaType.APPLICATION_JSON_VALUE)
   public Note saveUserNote(@RequestBody Note note) {
     return noteService.saveNote(ObjectType.USER.id, note);
+  }
+
+  @PostMapping(value = "/saveOrgNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Note saveOrgNote(@RequestBody Note note) {
+    return noteService.saveNote(ObjectType.ORGANIZATION.id, note);
   }
 
   @PostMapping(value = "/saveProjectNote", produces = MediaType.APPLICATION_JSON_VALUE)

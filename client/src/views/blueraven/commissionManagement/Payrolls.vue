@@ -43,8 +43,8 @@
 <!--                          label="Sales Rep"-->
 <!--                          v-model="payrollSearch.salesRep"></v-text-field>-->
             <div class="text-left">
-              <v-btn color="primaryCustom" dark @click="getPayrollData">Search</v-btn>
-              <v-btn class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
+              <v-btn color="primary" dark @click="getPayrollData">Search</v-btn>
+              <v-btn text color="primary" class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
             </div>
           </v-col>
         </v-row>
@@ -71,13 +71,13 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.id}}</td>
               <td class="text-left">{{item.periodEnd | formatDate('date')}}</td>
               <td class="text-left">{{item.description}}</td>
               <td class="text-left">{{item.currentPay || 0 | currency('$', 2)}}</td>
               <td class="text-left">
-                <v-btn class="clickable" small text @click="viewDetails(item)">
+                <v-btn class="clickable" small text color="primary" @click="viewDetails(item)">
                   <v-icon >mdi-dots-horizontal-circle</v-icon>
                 </v-btn>
               </td>

@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-note-template">
   <v-card class="mb-3 pb-1">
-    <v-toolbar class="primaryCustom">
+    <v-toolbar class="primary">
       <v-toolbar-title class="white--text font-weight-bold">
         Note Templates
       </v-toolbar-title>
@@ -37,7 +37,7 @@
     <v-card v-show="noteTemplatesCopy.length > 0" class="ma-4"
             v-for="(noteTemplate, index) in noteTemplatesCopy"
             :key="noteTemplate.id">
-      <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
+      <v-card-title class="primary white--text font-weight-bold title-with-icon">
         {{ noteTemplate.title }}
         <v-icon class="white--text" title="Copy text to clipboard"
                 @click="copyText(index)">file_copy</v-icon>
@@ -223,7 +223,7 @@
       max-width: 30px;
       height: 30px;
       padding: 5px;
-      border: 1px solid var(--v-primaryCustom-base) !important;
+      border: 1px solid var(--v-primary-base) !important;
       border-radius: 3px;
       display: flex;
       justify-content: center;

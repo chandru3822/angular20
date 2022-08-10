@@ -85,8 +85,8 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-tabs v-else :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark
-                  slider-color="secondaryCustom">
+          <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor" v-model="model" dark
+                  slider-color="secondary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{ tab.label }}
               <v-badge
@@ -304,7 +304,7 @@ export default {
   bottom: 0;
   padding: 5px 15px 5px 10px;
   z-index: 1000;
-  background-color: var(--v-primaryCustom-base);
+  background-color: var(--v-primary-base);
 }
 
 @media (min-width: 769px) {

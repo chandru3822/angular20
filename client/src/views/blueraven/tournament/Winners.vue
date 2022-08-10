@@ -16,7 +16,7 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text v-if="tournamentOver" @click="showWinners = !showWinners">
+          <v-btn text color="primary" v-if="tournamentOver" @click="showWinners = !showWinners">
             <v-icon>mdi-party-popper</v-icon>
           </v-btn>
         </v-toolbar-items>
@@ -64,7 +64,7 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <v-btn text small class="clickable" @click="[showModal = true, showScoreUser = item]">
+              <v-btn text small color="primary" class="clickable" @click="[showModal = true, showScoreUser = item]">
                 <v-icon>mdi-format-list-bulleted</v-icon>
               </v-btn>
             </td>
@@ -88,7 +88,7 @@
         </div>
       </v-card>
       <v-btn x-small fab @click="showWinners = !showWinners" class="show-score-button">
-        <v-icon>mdi-format-list-bulleted-square</v-icon>
+        <v-icon color="primary">mdi-format-list-bulleted-square</v-icon>
       </v-btn>
     </v-card>
   </v-container>

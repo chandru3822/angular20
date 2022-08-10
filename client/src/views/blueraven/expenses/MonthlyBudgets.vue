@@ -6,10 +6,10 @@
           <v-toolbar-title class="app-title">Monthly Budgets</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[showPastBudgets = !showPastBudgets]">
+            <v-btn text color="primary" @click="[showPastBudgets = !showPastBudgets]">
               {{showPastBudgets ? 'Hide Past Budgets' : 'Show Past Budgets'}}
             </v-btn>
-            <v-btn text @click="[createNew = !createNew, newBudget = {}, getAvailableUsers()]">
+            <v-btn text color="primary" @click="[createNew = !createNew, newBudget = {}, getAvailableUsers()]">
               <v-icon v-if="!createNew">add</v-icon>
               {{createNew ? 'cancel' : 'Add Budget'}}
             </v-btn>
@@ -55,7 +55,7 @@
                       background-color="#F2F6F8"
                       v-model="newBudget.notes">
           </v-textarea>
-          <v-btn color="primaryCustom" class="white--text"
+          <v-btn color="primary" class="white--text"
                  :disabled="!newBudget.userId || !newBudget.budgetTypeId
                     || !newBudget.amount || !newBudget.startDate || !newBudget.endDate"
                  @click="saveBudget(newBudget, true)">
@@ -122,7 +122,7 @@
                             v-model="item.notes">
                 </v-textarea>
                 <v-btn :disabled="false"
-                       color="primaryCustom" class="white--text mr-2"
+                       color="primary" class="white--text mr-2"
                        @click="saveBudget(item, false)">
                   Save
                 </v-btn>
@@ -139,47 +139,11 @@
               <td class="text-left">{{ item.endDate| formatDate('date')}}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                     <v-icon>edit</v-icon>
                   </v-btn>
-                  <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                  <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        There may already be expenses assigned to this budget. Are you sure you want to delete?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="[]">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="[item.archived = true, deleteBudget(item.id)]"
-                        >
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                  <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                  <v-btn small text color="primary" @click="[deleteConfirm=true, itemToDelete = item]"><v-icon>delete</v-icon></v-btn>
                 </div>
               </td>
             </tr>
@@ -187,7 +151,13 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <ConfirmationDialog
+        :open-dialog = deleteConfirm
+        @confirm="[itemToDelete.archived=true,deleteBudget(itemToDeleteId)]"
+        @close-dialog="closeDeleteDialog">
+      There may already be expenses assigned to this budget. Are you sure you want to delete?
 
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -198,13 +168,19 @@ import {getBudgetTypes} from './expenseService'
 import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'MonthlyBudgets',
   components: {
+    ConfirmationDialog,
     DatetimePickerInput
   },
-  computed: {},
+  computed: {
+    itemToDeleteId(){
+      return this.itemToDelete ? this.itemToDelete.id : ''
+    }
+  },
   data() {
     return {
       snackbar: {},
@@ -229,6 +205,9 @@ export default {
         {text: 'End Date', value: 'endDate', show: true},
         {text: null, value: 'icons', show: true}
       ],
+      deleteConfirm: false,
+      itemToDelete: null
+
     }
   },
   created() {
@@ -285,6 +264,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.closeDeleteDialog()
     },
     async getBudgetTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -318,6 +298,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    closeDeleteDialog() {
+      this.deleteConfirm = false
+      this.itemToDelete = null
+    }
   }
 }
 </script>

@@ -2,27 +2,30 @@
   <v-row id="project-activity-container" class="flex-column flex-nowrap" no-gutters>
     <div class="project-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
       <div class="albatross-header-3 pt-0 d-flex align-center project-activity-header"
-           :class="{'title-collapse': $store.state.project.rightSideSplit,
-                    'title-no-collapse': !$store.state.project.rightSideSplit}">
+           :class="{'title-collapse': isSidebarCollapsed,
+                    'title-no-collapse': !isSidebarCollapsed,
+                    'ml-2': isSidebarCollapsed && $route.path.indexOf('project') < 0,
+                    'mt-0': $route.path.indexOf('project') < 0}">
         <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
           <template v-slot:activator="{on, attrs}">
-            <div v-if="!$store.state.project.rightSideSplit"
-                 v-bind="attrs" v-on="on"
-                 class="d-inline-block clickable"
-                 @click="clickRightSideTitle">{{ projectMessageProperties.projectName }}
-            </div>
+            <a v-if="!isSidebarCollapsed"
+               v-bind="attrs" v-on="on"
+               class="d-inline-block clickable project-name-link"
+              :href="`/project/${projectId}/details`">
+              {{ projectMessageProperties.projectName }}
+            </a>
           </template>
           <span class="albatross-body-3">Go to project</span>
         </v-tooltip>
-        <div v-else-if="!$store.state.project.rightSideSplit"
+        <div v-else-if="!isSidebarCollapsed"
              class="d-inline-block"
         >{{ sidebarTitle }}
         </div>
-        <v-spacer v-if="!$store.state.project.rightSideSplit"></v-spacer>
-        <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !$store.state.project.rightSideSplit">
+        <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
+        <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
-              <v-btn icon @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
+              <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
                 <v-icon>mdi-history</v-icon>
               </v-btn>
             </template>
@@ -36,17 +39,15 @@
           </v-dialog>
 
         </div>
-        <v-btn v-if="showSmsTab && $route.path.indexOf('inbox') > 0" class="d-inline-block align-self-center" small text
-               @click="closeRight()">
-          <v-icon>close</v-icon>
-        </v-btn>
-        <v-btn v-else class="d-inline-block" small text @click="collapseSide()">
+        <slot name="collapse-button">
+        <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
+        </slot>
       </div>
-      <span v-if="showSmsTab && selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
+      <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
       <TeamAssignmentChips
-        v-if="showSmsTab && selectedOption === 0 && !$store.state.project.rightSideSplit && userCanViewSms"
+        v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
         :sms-team-owners="projectMessageProperties.smsTeamOwners"
         :team-names-associated-to-user="teamNamesAssociatedToUser"
         :reloading="projectIsLoading"
@@ -58,11 +59,11 @@
       />
 
       <!--      i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
-      <div class="sidebar-subtitle mb-3" v-if="!$store.state.project.rightSideSplit">{{ sidebarSubTitle }}</div>
+      <div class="sidebar-subtitle mb-3" v-if="!isSidebarCollapsed">{{ sidebarSubTitle }}</div>
     </div>
-    <v-divider v-if="selectedOption === 0 && !$store.state.project.rightSideSplit"></v-divider>
+    <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
     <div class="project-activity-inner-container">
-      <div v-show="!$store.state.project.rightSideSplit" class="height-one-hunned">
+      <div v-show="!isSidebarCollapsed" class="height-one-hunned">
         <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
         <ProjectNotes :contact-id="contactId" :user-id="userId"
                       :object-type-id="objectTypeId" :project-id="projectId"
@@ -76,29 +77,28 @@
       </div>
     </div>
     <div class="footer-container"
-         :style="{'width': $store.state.project.rightSideSplit ? '72px' : '100%',
+         :style="{'width': isSidebarCollapsed ? '72px' : '100%',
                     }">
       <v-row
         :value="selectedOption"
-        color="primaryButton"
-        :style="{'flex-direction': $store.state.project.rightSideSplit ? 'column' : 'row',
-                      'width': $store.state.project.rightSideSplit ? 'calc(100% - 45px)' : '100%'}"
-        class="section-footer ma-0" :class="{'px-4': !$store.state.project.rightSideSplit}"
+        :style="{'flex-direction': isSidebarCollapsed ? 'column' : 'row',
+                      'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
+        class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
       >
         <v-col cols="4" class="px-0">
-          <v-btn v-if="showSmsTab" text block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
+          <v-btn v-if="showSmsTab" text  :color="selectedOption== 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
                  :class="{'section-selected': selectedOption===0}">
             <v-icon>mdi-forum-outline</v-icon>
           </v-btn>
         </v-col>
         <v-col cols="4" class="px-0">
-          <v-btn text block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
+          <v-btn text :color="selectedOption== 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
                  :class="{'section-selected': selectedOption===1}">
             <v-icon>mdi-text-long</v-icon>
           </v-btn>
         </v-col>
         <v-col cols="4" class="px-0">
-          <v-btn text block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
+          <v-btn text :color="selectedOption== 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
                  :class="{'section-selected': selectedOption===2}">
             <v-icon>mdi-folder-outline</v-icon>
           </v-btn>
@@ -149,6 +149,10 @@ export default {
     contactId: Number,
     userId: Number,
     orgId: Number,
+    allowSidebarCollapse: {
+      type: Boolean,
+      default: true
+    }
   },
   watch: {
     // whenever userImage changes, this function will run
@@ -226,7 +230,7 @@ export default {
       }
     },
     isSidebarCollapsed() {
-      return !this.$route.path.indexOf('inbox') && this.$store.state.project.rightSideSplit
+      return this.allowSidebarCollapse && this.$store.state.project.rightSideSplit
     },
     smsOwnershipEvents() {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
@@ -239,15 +243,10 @@ export default {
     collapseSide() {
       this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
     },
-    clickRightSideTitle() {
-      if (this.$route.path.includes('inboxConversation')) {
-        this.$router.push(`/project/${this.projectId}/details`)
-      }
-    },
     selectView: function(viewOption) {
       this.$store.commit(ProjectMutations.SET_SELECTED_TAB, viewOption)
       this.selectedOption = viewOption
-      if (this.$store.state.project.rightSideSplit) {
+      if (this.isSidebarCollapsed) {
         this.collapseSide()
         this.$emit('openRight')
       }
@@ -393,7 +392,7 @@ export default {
 }
 
 .section-selected {
-  background-color: var(--v-primaryCustom-base) !important;
+  background-color: var(--v-primary-base) !important;
 }
 
 .section-not-selected {
@@ -411,6 +410,10 @@ export default {
   display: flex !important;
   justify-content: space-between;
   margin-right: 11px;
+}
+
+.project-name-link {
+  text-decoration: none;
 }
 </style>
 

@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
+            <v-btn text color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -24,7 +24,7 @@
                         v-model="newCode">
           </v-text-field>
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addCodeToZone()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addCodeToZone()"
                  :disabled="!newCode">
             Add
           </v-btn>
@@ -62,55 +62,29 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.postalCode}}</td>
               <td>
-                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to remove this postal code: <strong>{{ item.postalCode }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteCodeFromZone(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn v-if="userCanDelete" text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteCodeFromZone"
+                                 @close-dialog="closeDeleteDialog">
+      Are you sure you want to remove this postal code: <strong>{{ itemToDeletePostalCode }}</strong>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Codes',
-
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},
@@ -129,6 +103,13 @@
           {text: 'Postal Code', value: 'postalCode', show: true},
           {text: '', value: 'icons', show: true},
         ],
+        showDeleteDialog: false,
+        itemToDelete: null
+      }
+    },
+    computed: {
+      itemToDeletePostalCode(){
+        return this.itemToDelete ? this.itemToDelete.postalCode : ''
       }
     },
     created () {
@@ -152,7 +133,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteCodeFromZone (code) {
+      async deleteCodeFromZone () {
+        const code = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/postalCode/zone/code/${code.id}`)
@@ -164,6 +146,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
       async addCodeToZone () {
         if(this.newCode?.toString()?.length === 5) {
@@ -192,6 +175,10 @@
           this.errorMsg = 'ERROR: Postal Code must be 5 digits'
         }
       },
+      closeDeleteDialog(){
+        this.showDeleteDialog = false
+        this.itemToDelete = null
+      }
     }
   }
 </script>

@@ -236,4 +236,19 @@
       where psp.id = :id
     ]]>
   </process.getOneProcessStepProcess>
+
+  <process.getOwnerPositionsByPosition>
+    <![CDATA[
+     SELECT pspop.id,
+            pspop.id as "processStepProcessOwningPositionId",
+            pspop.process_step_process_id as "processStepProcessId",
+            pspop.position_id as "positionId",
+            pspop.archived,
+            p.position
+     FROM flow.process_step_process_owning_position pspop
+          inner join flow.position p on p.id = pspop.position_id
+     WHERE pspop.archived is not true and pspop.position_id = :positionId
+    ]]>
+  </process.getOwnerPositionsByPosition>
+
 </sql>

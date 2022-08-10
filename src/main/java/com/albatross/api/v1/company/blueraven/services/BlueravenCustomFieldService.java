@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CustomFieldService;
@@ -224,13 +223,6 @@ public class BlueravenCustomFieldService {
       id = sqlCache.updateReturningId("blueravenCustomField.insertField", params, "id").longValue();
     }
 
-    // add / delete custom field object types
-    if (null != customField.getCustomFieldObjectTypes()) {
-      for (CustomFieldObjectType cfot : customField.getCustomFieldObjectTypes()) {
-        handleCustomFieldObjectTypes(id, cfot);
-      }
-    }
-
     return findCustomFieldById(id);
   }
 
@@ -252,25 +244,6 @@ public class BlueravenCustomFieldService {
       // archive single custom field
       sqlCache.update("blueravenCustomField.deleteField", params);
       return null;
-    }
-  }
-
-  private void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("archived", cfot.getArchived());
-    params.put("customFieldId", customFieldId);
-    params.put("userId", currentUser.trueUserId());
-    params.put("objectTypeId", cfot.getObjectTypeId());
-
-    // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here
-    if (null != cfot.getId() && null != cfot.getCustomFieldId()) {
-      params.put("id", cfot.getId());
-      sqlCache.update("blueravenCustomField.updateCustomFieldObjectType", params);
-    } else if (null != cfot.getArchived() && !cfot.getArchived()) {
-      // do not need to insert new row if it is archived / not selected
-      sqlCache.update("blueravenCustomField.insertCustomFieldObjectType", params);
     }
   }
 }

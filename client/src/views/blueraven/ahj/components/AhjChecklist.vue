@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-checklist">
   <v-card>
-    <v-toolbar class="primaryCustom">
+    <v-toolbar class="primary">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{title}}
       </v-toolbar-title>
@@ -20,7 +20,7 @@
                   v-model="checklistItem.description">
       </v-textarea>
       <div class="checklist-btns">
-        <a @click="hideCtrls" class="cancel-link mr-3">Cancel</a>
+        <v-btn color="primary" text @click="hideCtrls" class="cancel-link mr-3">Cancel</v-btn>
         <confirm-delete-dialog
             label="this checklist item: "
             :item-to-delete="checklistItem.description"
@@ -28,7 +28,7 @@
             textbutton
             v-if="editMode">
         </confirm-delete-dialog>
-        <v-btn @click="saveItem" color="primaryButton" class="white--text py-1 px-2"
+        <v-btn @click="saveItem" color="primary" class="white--text py-1 px-2"
                :disabled="checklistItem.description === ''" small>
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
@@ -41,7 +41,7 @@
         <v-list-item v-show="checklistItemsCopy.length > 0"
                      class="grab" :title="item.description">
           <v-list-item-action>
-            <v-icon small v-if="userCanEdit" class="mr-3" @click="editItem(item)">edit</v-icon>
+            <v-icon small color="primary" v-if="userCanEdit" class="mr-3" @click="editItem(item)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <pre class="app-pre-wrapper">

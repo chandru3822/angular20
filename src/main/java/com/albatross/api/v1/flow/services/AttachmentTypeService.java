@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -306,12 +307,26 @@ public class AttachmentTypeService {
     return getProjectType(id);
   }
 
-  public void deleteType(Long typeId) {
+  public ResponseEntity<List<FieldInUse>> deleteType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update(
+    List<FieldInUse> fields = getAllUsingAttachmentType(typeId);
+
+    if (!fields.isEmpty()) {
+      return ResponseEntity.badRequest().body(fields);
+    } else {
+      sqlCache.update(
         "attachmentType.deleteType",
         ImmutableMap.of("id", typeId, "modifiedById", currentUser.trueUserId()));
+      return ResponseEntity.ok().build();
+    }
+  }
+
+  public List<FieldInUse> getAllUsingAttachmentType(Long typeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("typeId", typeId);
+    List<FieldInUse> fieldsInUse = sqlCache.query("attachmentType.getAllUsingType", params, FieldInUse.class);
+    return fieldsInUse;
   }
 
   public void updateType(AttachmentType type) {

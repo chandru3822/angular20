@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.DurationType;
 import com.albatross.api.v1.flow.model.FieldInUse;
-import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
@@ -51,7 +50,7 @@ public class WorkQueueTypeController {
     workQueueTypeService.saveHiddenAndWhiteList(workQueueType, savePositions);
   }
 
-  @PutMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/delete/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<FieldInUse>> deleteType(@PathVariable Long typeId) {
     return workQueueTypeService.deleteType(typeId);
   }

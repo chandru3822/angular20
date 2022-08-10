@@ -49,8 +49,8 @@ public class EventController {
   }
 
   @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteEvent(@PathVariable Long id) {
-    eventService.deleteEvent(id);
+  public ResponseEntity<List<FieldInUse>> deleteEvent(@PathVariable Long id) {
+    return eventService.deleteEvent(id);
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)

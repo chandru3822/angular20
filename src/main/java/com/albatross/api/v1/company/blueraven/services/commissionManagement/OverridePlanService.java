@@ -17,10 +17,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -119,6 +121,27 @@ public class OverridePlanService {
         List<String> query = sqlCache.query("overridePlan.listAll", params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? "[]" : query.get(0);
     }
+
+  public void saveProjectToPlan(Long planId, Long projectId) {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("planId", planId);
+    params.put("projectId", projectId);
+
+    //see if project is valid.  this is the smallest pre-existing query even though it returns the company id
+    Optional<Long> companyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+
+    //see if project is already assigned
+    Optional<Long> commissionPlanId = sqlCache.queryForObjectOptional("overridePlan.checkProjectAssignment", params, Long.class);
+
+    if(companyId.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Project ID", new Exception());
+    } else if(commissionPlanId.isPresent()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project is already assigned to a plan.", new Exception());
+    } else {
+      sqlCache.update("overridePlan.assignProject", params);
+    }
+  }
 
     public String findOverridePlanDetail(Long id) {
         HashMap<String, Object> params = new HashMap<>();

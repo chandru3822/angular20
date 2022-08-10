@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Filters</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newOrgFilter = {}]">
+            <v-btn text color="primary" @click="[addNew = !addNew, newOrgFilter = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -32,12 +32,12 @@
             <label>Show Type:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
           </div>
+          <v-btn text color="primary" @click="[addNew = !addNew, newOrgFilter = {}]">Cancel</v-btn>
           <v-btn :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="mr-2"
                  @click="saveOrgFilter(newOrgFilter, true)">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, newOrgFilter = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -79,7 +79,7 @@
                 <input type="checkbox" v-model="item.showType">
               </div>
               <v-btn :disabled="!item.orgLevelId || !item.rank"
-                     color="primaryCustom" class="white--text mr-2"
+                     color="primary" class="white--text mr-2"
                      @click="saveOrgFilter(item, false)">
                 Save
               </v-btn>
@@ -94,49 +94,11 @@
                 <input type="checkbox" v-model="item.showType" disabled readonly>
               </td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                  <template #activator="{ on }">
-                    <v-btn small text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text class="pt-4">
-                      <div class="error-text">
-                        WARNING: This action can cause issues with many other screens.
-                      </div>
-                      Are you sure you want to delete this org filter: {{ item.levelName }}?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                          @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deleteOrgFilter(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" @click="filterToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -144,7 +106,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!filterToDelete" @confirm="deleteOrgFilter" @close-dialog="filterToDelete = null">
+      <div>
+        <span class="error-text">WARNING:</span> This action can cause issues with many other screens.
+      </div>
+      Are you sure you want to delete this org filter: <b>{{ filterToDeleteName }}</b>?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -153,10 +120,11 @@
   import {getOrgFilters, getOrgLevels} from '@/services/orgService'
   import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'OrgFilters',
-
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},
@@ -174,7 +142,13 @@
           { text: 'Show Type', value: 'showType', width: 80, show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
-        expanded: []
+        expanded: [],
+        filterToDelete: null
+      }
+    },
+    computed:{
+      filterToDeleteName(){
+        return this.filterToDelete ? this.filterToDelete.levelName : ''
       }
     },
     async created () {
@@ -231,7 +205,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteOrgFilter(filter) {
+      async deleteOrgFilter() {
+        const filter = this.filterToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/org/filters/${filter.id}`)

@@ -4,9 +4,9 @@
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1">
           <v-toolbar-title>Blue Power + Payments Queue</v-toolbar-title>
-          <v-tabs :optional="false" color="primaryCustom"
+          <v-tabs :optional="false" color="primary"
                   slot="extension"
-                  background-color="white" v-model="model" slider-color="primaryCustom">
+                  background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
             </v-tab>

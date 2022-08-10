@@ -2,12 +2,12 @@
   <v-container class="pt-0">
     <v-row>
       <v-col >
-        <v-btn color="primaryCustom" class="white--text"
+        <v-btn color="primary" class="white--text"
                :disabled="payrollSummary.length === 0"
                @click="exportPayrollSummary">
           Export
         </v-btn>
-        <v-btn color="primaryCustom" class="white--text ml-3"
+        <v-btn color="primary" class="white--text ml-3"
                :disabled="!currentPayroll.id || payrollSummary.length === 0"
                @click="exportAllOverrides">
           Export All Overrides

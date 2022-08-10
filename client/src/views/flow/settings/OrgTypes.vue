@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addType = !addType, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addType = !addType, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addType ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -35,11 +35,11 @@
           </div>
 
           <v-btn :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="saveOrgType(newOrgType, true)">
             Save
           </v-btn>
-          <v-btn @click="[addType = !addType, newOrgType = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addType = !addType, newOrgType = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -83,7 +83,7 @@
                 <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
               </div>
               <v-btn :disabled="!item.orgType || !item.orgLevelId"
-                     color="primaryCustom" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
+                     color="primary" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
             </td>
           </template>
 
@@ -93,10 +93,10 @@
               <td class="text-left">{{ item.level || 'n/a' }}</td>
               <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>
             </tr>
           </template>

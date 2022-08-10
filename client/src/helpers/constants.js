@@ -1,4 +1,4 @@
-const { VITE_BASE_API, VITE_ENV, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE} = import.meta.env
+const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN, VITE_MAPBOX_STYLE} = import.meta.env
 
 let constants = {}
 
@@ -6,12 +6,12 @@ constants.LOCAL_COLOR = 'pink'
 constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'
 constants.UAT_COLOR = 'blue' //this is a light blue color
-constants.PROD_COLOR = 'primaryCustom' //this is the dark blue prod color
+constants.PROD_COLOR = 'primary' //this is the dark blue prod color
 constants.VUE_APP_ENV = VITE_ENV
 constants.VUE_APP_BASE_API = VITE_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'
-constants.MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN || '***REMOVED***'
-constants.MAPBOX_STYLE = VUE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
+constants.MAPBOX_ACCESS_TOKEN = VITE_MAPBOX_ACCESS_TOKEN //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
+constants.MAPBOX_STYLE = VITE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 constants.IS_MOBILE = window.innerWidth <= 768
 constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
@@ -106,7 +106,7 @@ constants.SNACKBARS = {
     mode: '',
     timeout: 5000,
     text: '',
-    color: 'brRed',
+    color: 'error',
     fontClass: 'secondary--text'
   },
   SUCCESS: {
@@ -116,7 +116,7 @@ constants.SNACKBARS = {
     timeout: 5000,
     // timeout: 5000000,
     text: '',
-    color: 'brGreen',
+    color: 'success',
     fontClass: 'secondary--text'
   },
   WARNING: {
@@ -125,11 +125,29 @@ constants.SNACKBARS = {
     mode: '',
     timeout: 5000,
     text: '',
-    color: 'brYellow',
+    color: 'amber',
+    fontClass: 'secondary--text'
+  },
+  INFO: {
+    y: 'top',
+    x: null,
+    mode: '',
+    timeout: 5000,
+    text: '',
+    color: 'primaryText',
     fontClass: 'secondary--text'
   }
 }
 
 constants.CSV_BLOB_TYPE = 'text/csv;charset=utf-8'
+
+constants.OVERVIEW_FIELD_TYPES = {
+  DEFAULT: 'default',
+  DATE: 'date',
+  STATUS: 'status',
+  ADDRESS: 'address',
+  PHONE: 'phone',
+  OWNER: 'owner'
+}
 
 export default constants

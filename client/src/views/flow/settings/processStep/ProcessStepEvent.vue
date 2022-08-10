@@ -22,8 +22,7 @@
               {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
             </template>
           </v-autocomplete>
-          <v-btn class="white--text"
-                 color="primaryButton"
+          <v-btn color="primary"
                  @click="saveEventDetails(selectedEvent)"
           >Save
           </v-btn>
@@ -39,7 +38,7 @@
           <v-toolbar-title class="app-title">Event Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
+            <v-btn text color="primary" @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
                    v-if="userCanAdd">
               <v-icon v-if="!addNewEventAction">add</v-icon>
               {{ addNewEventAction ? 'Cancel' : 'Add Action' }}
@@ -350,6 +349,16 @@
                               placeholder="Enter a dynamic value (number)"
                               v-model="fp.dynamicValue"
                               :label="fp.parameterName"></v-text-field>
+                            <v-checkbox
+                              v-else-if="fp.dataTypeId === 3"
+                              type="checkbox"
+                              :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                              :value="fp.dynamicValue === 'true'"
+                              @change="changeBooleanValue($event, fp)"
+                              :label="fp.parameterName"
+                            />
                             <v-text-field
                               v-else
                               :key="index"
@@ -423,13 +432,17 @@
                                     :disabled="!cp.edit || !userCanEdit"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
-                                  <v-text-field
+                                  <v-checkbox
                                     v-else-if="fp.dataTypeId === 3"
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter a boolean"
-                                    v-model="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
+                                    :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                                    :value="fp.dynamicValue === 'true'"
+                                    @change="changeBooleanValue($event, fp)"
+                                    :label="fp.parameterName"></v-checkbox>
                                   <v-text-field
                                     v-else-if="fp.dataTypeId === 4"
                                     :readonly="!cp.edit || !userCanEdit"
@@ -458,13 +471,13 @@
                             </v-card>
                           </div>
                           <v-list-item-subtitle>
-                            <v-btn color="primaryCustom" class="white--text" v-if="cp.edit && userCanEdit"
+                            <v-btn color="primary" class="white--text" v-if="cp.edit && userCanEdit"
                                    @click="updateChildFunction(action.id, cp)">
                               Save
                             </v-btn>
                           </v-list-item-subtitle>
                         </v-list-item-content>
-                        <v-btn text color="primaryCustom" class="white--text" v-if="userCanEdit"
+                        <v-btn text color="primary" class="white--text" v-if="userCanEdit"
                                @click="cp.edit = !cp.edit">
                           <v-icon v-if="cp.edit">remove</v-icon>
                           <v-icon v-else>edit</v-icon>
@@ -501,7 +514,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="[cp.archived = true, deleteChildFunctionFromAction(action.id, cp.id)]">
                                 Yes
@@ -690,7 +703,7 @@
               <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn text v-if="userCanEdit"
+                  <v-btn text color="primary" v-if="userCanEdit"
                          @click="duplicateAction(action.id)">
                     <v-icon>mdi-content-copy</v-icon>
                   </v-btn>
@@ -728,7 +741,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="deleteActionFromEvent(action)">
                           Yes
@@ -893,6 +906,9 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     //populate requirements so that events can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.selectedEventRequirements = reqs

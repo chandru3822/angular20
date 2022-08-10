@@ -31,7 +31,7 @@
                 <label>Has Access:</label>
                 <input class="ml-3" type="checkbox" v-model="item.hasAccess">
               </div>
-              <v-btn color="primaryCustom" class="white--text mr-2"
+              <v-btn color="primary" class="white--text mr-2"
                      @click="saveCompanyUserStatusType(item)">
                 Save
               </v-btn>
@@ -45,10 +45,10 @@
                 <input type="checkbox" v-model="item.hasAccess" disabled readonly>
               </td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>
             </tr>
           </template>

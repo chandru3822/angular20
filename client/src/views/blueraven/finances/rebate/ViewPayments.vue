@@ -21,11 +21,11 @@
 <!--          <label><b>Approved By:</b></label>-->
 <!--          {{ userName }}-->
 <!--          <br/>-->
-          <v-btn color="primaryCustom" dark @click="approveDialog = true" class="ml-3">Approve and Create Batch</v-btn>
+          <v-btn color="primary" dark @click="approveDialog = true" class="ml-3">Approve and Create Batch</v-btn>
         </div>
 
         <v-spacer></v-spacer>
-        <v-btn color="primaryCustom" class="white--text" @click="exportPayments">Export</v-btn>
+        <v-btn color="primary" class="white--text" @click="exportPayments">Export</v-btn>
       </div>
       <div>
         <v-text-field
@@ -61,7 +61,7 @@
         </template>
 
         <template v-slot:header.data-table-select="{ on, props }">
-          <v-checkbox :disabled="!userCanEdit" color="primaryCustom" class="mx-2" v-model="selectAll"
+          <v-checkbox :disabled="!userCanEdit" color="primary" class="mx-2" v-model="selectAll"
                       @change="toggleSelectAll()"></v-checkbox>
         </template>
 
@@ -72,7 +72,7 @@
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
             <td v-if="status === 'approval'" class="flex-display justify-center">
-              <v-checkbox color="primaryCustom" :readonly="!userCanEdit"
+              <v-checkbox color="primary" :readonly="!userCanEdit"
                           :disabled="!userCanEdit" v-model="it.selected"></v-checkbox>
             </td>
             <td class="text-left" v-if="status === 'invalid' || status === 'approval'"><a v href=""
@@ -87,8 +87,8 @@
             <td class="text-left">{{ it.product ? it.product : '' }}</td>
             <td class="text-center">{{ it.totalPromotionAmount || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'approval'" class="text-center">{{ it.numberOfPromotionPayments }}</td>
-            <td v-show="status === 'approval'" class="text-center">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
-            <td v-show="status === 'approval'" class="text-center">{{ it.totalPaid || 0 | currency('$', 2) }}</td>
+            <td v-show="status === 'approval'" class="text-center pl-5">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
+            <td v-show="status === 'approval'" class="text-left">{{ it.totalPaid || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'approval'" class="text-left">{{ it.lastPaymentDate | formatDate('date') }}</td>
             <td v-show="status === 'invalid' || status === 'approval'" class="text-left">
               {{ it.balanceOwed || 0 | currency('$', 2) }}
@@ -149,94 +149,51 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-            <v-btn color="primaryButton" raised @click="submitPay" class="white--text">
+            <v-btn color="primary" text @click="close">Cancel</v-btn>
+            <v-btn color="primary" raised @click="submitPay" class="white--text">
               Submit
             </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
     </v-col>
-    <v-dialog v-model="approveDialog" max-width="600px">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Confirm
-        </v-card-title>
+    <ConfirmationDialog :open-dialog="approveDialog"
+                        @close-dialog="approveDialog = false"
+                        @confirm="[approveDialog=false, passwordDialog=true]">
+      <template v-slot:title>Confirm</template>
+      This will approve and create a batch for the selected payments, would you like to proceed?
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>confirm</template>
+    </ConfirmationDialog>
 
-        <v-card-text>
-          This will approve and create a batch for the selected payments, would you like to proceed?
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="approveDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primaryButton"
-            text
-            @click="passwordDialog = true">
-            Confirm
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="passwordDialog" max-width="600px">
-      <v-card>
-        <v-card-title
-          class="text-h5 grey lighten-2"
-          primary-title
-        >
-          Please confirm payment approval
-        </v-card-title>
-
-        <v-text-field class="passwordTextfield"
-                      label="Please confirm your password:"
-                      v-model="passwordInput"
-                      type="password"
-                      required
-        ></v-text-field>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="passwordDialog = false, approveDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primaryButton"
-            text
-            @click="confirmPassword()">
-            Confirm
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+    <ConfirmationDialog :open-dialog="passwordDialog"
+                        @close-dialog="passwordDialog = false"
+                        @confirm="confirmPassword()"
+    >
+      <template v-slot:title>Please confirm payment approval</template>
+      <v-text-field class="passwordTextfield"
+                    label="Please confirm your password:"
+                    v-model="passwordInput"
+                    type="password"
+      ></v-text-field>
+      <template v-slot:no>cancel</template>
+      <template v-slot:yes>confirm</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import Snackbar from '@/components/Snackbar.vue'
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
 import {saveAs} from 'file-saver'
 import moment from "moment";
 import debounce from "lodash.debounce";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Payments',
-  components: {Snackbar},
+  components: {ConfirmationDialog},
   data() {
     return {
       snackbar: {},
@@ -257,7 +214,8 @@ export default {
         {text: 'Payment Amount', value: 'paymentAmount', show: false},
         {text: 'Total Paid', value: 'totalPaid', show: false},
         {text: 'Last Payment Date', value: 'lastPaymentDate', show: false},
-        {text: 'Balance Owed', value: 'balanceOwed', show: false}
+        {text: 'Balance Owed', value: 'balanceOwed', show: false},
+        {text: '', show: false}
       ],
       statuses: [
         {
@@ -351,6 +309,8 @@ export default {
           this.headers[9].show = true;
           // Balance Owed
           this.headers[10].show = true;
+          //empty header
+          this.headers[11].show=false
 
           this.payments = data;
           this.filteredPayments = data;
@@ -374,6 +334,8 @@ export default {
           this.headers[9].show = false;
           // Balance Owed
           this.headers[10].show = false;
+          //empty header
+          this.headers[11].show = this.userCanEdit;
 
           handleHidingGlobalLoader(this, status)
         } else if (this.status === 'invalid') {
@@ -394,6 +356,8 @@ export default {
           this.headers[10].show = false;
           // Balance Owed
           this.headers[10].show = true;
+          //empty header
+          this.headers[11].show = false;
           handleHidingGlobalLoader(this, status)
         }
       } catch (e) {
@@ -405,7 +369,8 @@ export default {
     debounceFilterPayments: debounce(function () {
       this.filteredPayments = this.payments.filter(pay => {
         return (pay['projectName'].toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase())
+          pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          pay['product'].toString().toLowerCase().includes(this.searchQuery.toLowerCase())
         )
       })
 
@@ -512,18 +477,19 @@ export default {
 
         if (status === 200) {
           let param = {paymentIds: this.paymentIdsToApprove}
-          await postRequest('/rebate/approve', param, 'blueraven')
-          window.location.reload()
+          // await postRequest('/rebate/approve', param, 'blueraven')
+          // window.location.reload()
+          this.snackbar = getSnackbar('SUCCESS', 'Payment approved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-
         this.passwordDialog = false;
-        this.approveDialog = false;
+        this.passwordInput = '';
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Failed to approve payment')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.passwordDialog = false;
-        this.approveDialog = false;
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -533,12 +499,11 @@ export default {
 
 <style lang="scss" scoped>
 .pay-link {
-  color: var(--v-brBlue-base);
+  color: var(--v-primary-lighten1);
   text-decoration: none;
 
   &:hover {
     text-decoration: underline;
-    color: var(--v-primaryText-base);
   }
 }
 
@@ -560,7 +525,7 @@ export default {
 }
 
 .pending {
-  outline: 2px solid orange;
+  outline: 2px solid var(--v-warning-base);
 }
 
 .approval {
@@ -568,17 +533,12 @@ export default {
 }
 
 .invalid {
-  outline: 2px solid red;
+  outline: 2px solid var(--v-error-lighten1);
 }
 
 .approvalDiv {
   color: black;
   font-size: 14px
-}
-
-.passwordTextfield {
-  width: 500px;
-  margin-left: 40px;
 }
 
 .pay-header {

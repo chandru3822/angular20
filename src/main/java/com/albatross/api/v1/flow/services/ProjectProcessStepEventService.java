@@ -199,6 +199,10 @@ public class ProjectProcessStepEventService {
       return false;
     }
 
+    if (action.getAlwaysEnabled()) {
+      return true;
+    }
+
     // if there is logic, then check it all bitch
     if (!action.getProcessStepEventLogicList().isEmpty()) {
 
@@ -244,9 +248,10 @@ public class ProjectProcessStepEventService {
       } else {
         return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
       }
+    } else {
+      return false;
     }
 
-    return true;
   }
 
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(Long ppsId,
@@ -607,6 +612,30 @@ public class ProjectProcessStepEventService {
     sqlCache.update("projectProcessStepEvent.addAttachment", params);
 
     return attachmentService.findById(attachmentId);
+  }
+
+  public Optional<ProjectProcessStepEvent> getActiveCloserAppointment(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.get("projectProcessStepEvent.getActiveCloserAppointment", params, ProjectProcessStepEvent.class);
+  }
+
+  public Optional<ProjectProcessStepEvent> getActiveAhjInspectionWork(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.get("projectProcessStepEvent.getActiveAhjInspectionWork", params, ProjectProcessStepEvent.class);
+  }
+
+  public Optional<ProjectProcessStepEvent> getActiveInstallation(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.get("projectProcessStepEvent.getActiveInstallation", params, ProjectProcessStepEvent.class);
   }
 
   public static class PpsEventMapper<T> extends BeanPropertyRowMapper<T> {

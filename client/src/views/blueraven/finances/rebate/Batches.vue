@@ -56,7 +56,7 @@
                 No
               </v-btn>
               <v-btn
-                color="primaryCustom"
+                color="primary"
                 text
                 @click="voidBatch()"
               >
@@ -67,8 +67,8 @@
         </v-dialog>
         <v-spacer></v-spacer>
         <div class="btn-container">
-          <v-btn class="mr-3" v-show="batchLoaded && !voidedBatch" @click="exportChase">Download Chase CSV</v-btn>
-          <v-btn color="primaryCustom" class="white--text" v-show="batchLoaded && !voidedBatch"
+          <v-btn class="mr-3" text color="primary" v-show="batchLoaded && !voidedBatch" @click="exportChase">Download Chase CSV</v-btn>
+          <v-btn color="primary" class="white--text" v-show="batchLoaded && !voidedBatch"
                  @click="exportPayments">Export
           </v-btn>
         </div>

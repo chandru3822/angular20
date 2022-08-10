@@ -43,13 +43,13 @@
                 </div>
               </td>
               <td>
-                <v-btn small text @click="editIndex = index" v-if="index !== editIndex">
+                <v-btn small text color="primary" @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="saveConfigurationValue(item)" v-if="index === editIndex">
+                <v-btn small text color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
-                <v-btn small text @click="editIndex = null" v-if="index === editIndex">
+                <v-btn small text color="primary" @click="editIndex = null" v-if="index === editIndex">
                   cancel
                 </v-btn>
               </td>

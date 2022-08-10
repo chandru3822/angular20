@@ -30,7 +30,7 @@
       </template>
     </v-row>
 
-    <v-btn icon class="templateButton " style="display: none" small>
+    <v-btn icon color="primary" class="templateButton " style="display: none" small>
       <v-tooltip bottom small>
         <template v-slot:activator="{on, attrs}">
           <v-icon @click="" v-bind="attrs" v-on="on">
@@ -133,7 +133,7 @@ export default {
           bg: '#ffffff'
         },
         sentMessage: {
-          bg: '#4e8cff',
+          bg: 'var(--v-primary-lighten3)',
           text: '#ffffff'
         },
         receivedMessage: {
@@ -142,7 +142,7 @@ export default {
         },
         userInput: {
           bg: '#f4f7f9',
-          text: '#565867',
+          text: '#1F3C73',
           button: '#1F3C73'
         }
       }, // specifies the color scheme for the component
@@ -209,6 +209,12 @@ export default {
       }
     },
     async onMessageWasSent(message) {
+      if (message.data.text && message.data.text.length > 1599) {
+        let textOverflowLength = message.data.text.length - 1599;
+        this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        return
+      }
       // called when the user sends a message
       let params
       try {
@@ -259,6 +265,7 @@ export default {
         // when there's an error sending a message
         textInput.innerHTML = message.data.text
       }
+      debugger
     },
     openChat() {
       // called when the user clicks on the fab button to open the chat
@@ -355,7 +362,6 @@ export default {
       }
     },
     async sendTemplateMessage() {
-      debugger
       let textInput = document.querySelector('.sc-user-input--text')
       textInput.innerHTML += this.selectedTemplate.message
       //clear out all the selections for the next time the template selector is opened
@@ -373,6 +379,10 @@ export default {
 <style lang="scss">
 .hide-chat {
   display: none !important;
+}
+
+a.chatLink {
+  color: white;
 }
 
 .message-container {

@@ -65,7 +65,7 @@ BEGIN
         and ust.archived is false
         and cus.archived is false
         and up.archived is false
-        and up.primary_flag is true
+--         and up.primary_flag is true
         and up.start_date <= now()
         and (up.end_date is null or up.end_date >= now());
       select t.timezone into v_time_zone_for_resource

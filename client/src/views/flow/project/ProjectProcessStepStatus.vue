@@ -1,18 +1,13 @@
 <template>
-<v-dialog
-  v-model="internalShowDialog"
-  @click:outside="$emit('dialogClosed')"
-  width="500">
-  <v-card>
-    <v-card-title
-      class="text-h5 grey lighten-2"
-      primary-title
-    >
-      Change Process Step Status
-    </v-card-title>
-
-    <v-card-text class="mt-2">
-      <v-autocomplete
+  <ConfirmationDialog :open-dialog="internalShowDialog"
+                      :disable-confirm="(!newStatusOptional && (!projectProcessStep.newStatusToUse || !projectProcessStep.newStatusToUse.id)) ||
+                  (projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3 &&
+                      !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
+                      @confirm="$emit('updateStatus', projectProcessStep)"
+                      @close-dialog="$emit('dialogClosed')"
+  >
+    <template v-slot:title>Change Process Step Status</template>
+    <v-autocomplete
         v-model="projectProcessStep.newStatusToUse"
         :items="statuses"
         item-text="processStepStatusType"
@@ -22,15 +17,14 @@
         class="mt-2"
         autocomplete="off"
         attach
-      />
-      <div class="error-text"
-        v-if="projectProcessStep.main && projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId === 3">
-        WARNING: Setting the Primary step to a Cancelled status will automatically remove the Primary flag from this Project Process Step.
-      </div>
-
-      <div v-if="(projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3) || newStatusOptional === true">
-        Please select what to do with all existing Active steps of the same type.
-        <v-autocomplete
+    />
+    <div class="error-text"
+         v-if="projectProcessStep.main && projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId === 3">
+      WARNING: Setting the Primary step to a Cancelled status will automatically remove the Primary flag from this Project Process Step.
+    </div>
+    <div v-if="(projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3) || newStatusOptional === true">
+      Please select what to do with all existing Active steps of the same type.
+      <v-autocomplete
           v-if="projectProcessStep.newStatusToUse"
           v-model="projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId"
           :items="cancelledCompanyStatuses"
@@ -38,39 +32,22 @@
           item-text="processStepStatusType"
           item-value="id"
           attach
-        />
-      </div>
-    </v-card-text>
-
-    <v-divider></v-divider>
-
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn
-        @click="$emit('dialogClosed')">
-        Cancel
-      </v-btn>
-      <v-btn
-        :disabled="(!newStatusOptional && (!projectProcessStep.newStatusToUse || !projectProcessStep.newStatusToUse.id)) ||
-                  (projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3 &&
-                      !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
-        color="primaryCustom"
-        text
-        @click="$emit('updateStatus', projectProcessStep)">
-        Save
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
+      />
+    </div>
+    <template v-slot:no>cancel</template>
+    <template v-slot:yes>save</template>
+  </ConfirmationDialog>
 </template>
 
 <script>
 import {getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import {getSnackbar, logError} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProjectProcessStepStatus',
+  components: {ConfirmationDialog},
   props: {
     projectId: Number,
     projectProcessStep: Object,
@@ -95,7 +72,8 @@ export default {
   data () {
     return {
       cancelledCompanyStatuses: [],
-      internalShowDialog: this.showDialog
+      internalShowDialog: this.showDialog,
+      newStatus:{}
     }
   },
   mounted() {

@@ -2,32 +2,33 @@
   <v-container class="custom-field-group-container" v-if="processStep && processStep.id">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/processSteps'">
+        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/processSteps'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
             <span class="page-title" v-if="!editName">{{ processStep.processStepName }}</span>
-            <v-text-field v-else color="primaryCustom"
+            <v-text-field v-else color="primary"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
-            <div>
-              <label class="mt-4">Allow Non-Admin to Add to Project:</label>
-              <input class="ml-3" type="checkbox" :readonly="!userCanEdit" @input="saveProcessStep($event,false)"
-                     :disabled="!userCanEdit" v-model="processStep.nonAdminAdd">
+            <div class="non-admin-container">
+              <label class="mr-3">Allow Non-Admin to Add to Project:</label>
+              <v-checkbox class="ma-0 pa-0 shrink" type="checkbox" :readonly="!userCanEdit"
+                          @change="saveProcessStep(false)"
+                          :disabled="!userCanEdit" v-model="processStep.nonAdminAdd"></v-checkbox>
             </div>
           </div>
           <div class="text-right" v-if="userCanEdit">
-            <v-btn text v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
+            <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else @click="saveProcessStep($event,true)">
+            <v-btn text color="primary" class="" v-else @click="saveProcessStep($event,true)">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text  v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
+            <v-btn text color="primary" v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
               cancel
             </v-btn>
           </div>
@@ -131,11 +132,9 @@
           this.processStepLoading = false
         }
       },
-      async saveProcessStep(e, closeEditor) {
+      async saveProcessStep(closeEditor) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          //vue is weird and doesn't update this value before the @input is called
-          this.processStep.nonAdminAdd = e.target.checked || false
           const {status} = await putRequest(`/processStep`, this.processStep)
           this.editName = false
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
@@ -154,8 +153,13 @@
 </script>
 
 <style scoped lang="scss">
+.non-admin-container {
+  display: flex;
+  flex-direction: row;
+}
+
 .name-container {
-  background-color: var(--v-rowShadeCustom-base) !important;
+  background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
 }
 .page-title {
@@ -168,7 +172,7 @@
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
   .v-tab:hover {
-    color: var(--v-primaryCustom-base);
+    color: var(--v-primary-base);
   }
 }
 </style>

@@ -11,6 +11,7 @@
         <v-spacer />
         <v-btn
             text
+            color="primary"
             :disabled="isLoading"
             @click="showConfirmDialog = true"
         >

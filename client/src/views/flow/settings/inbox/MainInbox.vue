@@ -5,6 +5,7 @@
     :right-hidden="!$route.params.projectId"
     :left-hidden="true"
     :auto-overflow-left="true"
+    :show-right-collapse-btn="false"
     @closeRight="$router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>
@@ -27,11 +28,11 @@
               v-model="showUnreadOnly"
               @change="reloadProjects"
               label="Show unread only"
-              class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0"
+              class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0 default-text-color"
               :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
             >
             </v-checkbox>
-            <v-chip label class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
+            <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
             </v-chip>
@@ -45,7 +46,7 @@
                             :menu-props="{offsetY:true}"
                             multiple
                             clearable
-                            @input="reloadProjects"
+                            @input="teamSelectionChanged"
                             v-if="teamFilterOptions.length > 1">
               <v-list-item
                 slot="prepend-item"
@@ -129,11 +130,11 @@
         class="elevation-1"
       >
         <template #no-data>
-          No available conversations
+          <div class="default-text-color">No available conversations</div>
         </template>
 
-        <template #no-results>
-          No available conversations
+        <template #no-results class="default-text-color">
+          <div class="default-text-color">No available conversations</div>
         </template>
 
         <template #item="{ item, index }">
@@ -177,6 +178,12 @@
           </v-col>
         </template>
       </v-data-table>
+    </template>
+    <template v-slot:collapse-button>
+      <v-btn class="d-inline-block align-self-center" small text
+             @click="$router.push({path: `/inbox`})">
+        <v-icon>close</v-icon>
+      </v-btn>
     </template>
   </ThreeColumnLayout>
 </template>
@@ -597,6 +604,10 @@ export default {
       })
       return alreadyAdded
     },
+    teamSelectionChanged() {
+      this.options.page = 1
+      this.reloadProjects()
+    },
     searchProjects: debounce(function() {
       //don't allow searchQuery to be null - causes issues
       this.searchQuery = this.searchQuery || ''
@@ -633,7 +644,6 @@ export default {
 </style>
 
 <style scoped lang="scss">
-
 .sticky-toolbar {
   position: sticky;
   top: 0;
@@ -670,7 +680,7 @@ export default {
 }
 
 .selected {
-  background-color: #EDF5FE;
+  background-color: var(--v-primary-lighten9);
 }
 
 a {

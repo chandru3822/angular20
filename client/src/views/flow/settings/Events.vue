@@ -1,12 +1,43 @@
 <template>
   <v-container id="event-step-container" class="custom-field-group-container">
+    <v-dialog width="700"
+              v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2 error--text">
+          Error Deleting Event
+        </v-card-title>
+
+        <v-card-text class="pt-5">
+          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
+            <div class="mb-3">* This event is being used by Process Steps Events.  You must remove from the following locations before deleting this event.</div>
+            <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
+              <strong>{{ a.processStepName }}</strong>
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12" class="pa-0">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newStep = {}, getSchedulingFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newStep = {}, getEventResourceFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -20,15 +51,14 @@
             ></v-text-field>
 
             <v-autocomplete
-              v-if="schedulingFields && schedulingFields[0]"
               v-model="newEvent.resourceCustomFieldId"
-              :items="schedulingFields[0].availableCustomFields"
+              :items="eventResourceFields"
               label="Resource"
               item-text="fieldName"
               item-value="id"
             ></v-autocomplete>
 
-            <v-btn :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
+            <v-btn color="primary" :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
                    @click="addEvent">
               Save
             </v-btn>
@@ -58,21 +88,23 @@
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToEvent(item.id)">{{item.eventName}}</td>
                   <td class="text-right">
-                    <v-btn small text @click="goToEvent(item.id)">
+                    <v-btn small text color="primary" @click="goToEvent(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                        label="this event: "
-                        :item-to-delete="item.eventName"
-                        @confirm-delete="deleteEvent(item)"
-                    ></confirm-delete-dialog>
+                    <v-btn small text color="primary"
+                           v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                           @click="eventToDelete=item">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </td>
 
                 </tr>
               </template>
             </v-data-table>
           </v-card>
+          <ConfirmationDialog :open-dialog="!!eventToDelete" @confirm="deleteEvent" @close-dialog="eventToDelete=null">
+            Are you sure you want to delete this event: <b>{{eventToDeleteName}}</b>?
+          </ConfirmationDialog>
         </v-container>
       </v-col>
 
@@ -84,13 +116,13 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 
-import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import {getRequest, putRequest, postRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
 import debounce from "lodash.debounce";
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Events',
-  components: {ConfirmDeleteDialog},
+  components: {ConfirmationDialog},
   mixins: [Vue2Filters.mixin],
 
   data () {
@@ -98,14 +130,14 @@ export default {
       snackbar: {},
       addNew: false,
       deleteError: false,
-      fieldsInUse: [],
+      cannotDeleteReasons: {},
       search: '',
       newEvent: {},
       selectedEventId: null,
       companyId: this.$store.state.user.details.companyId,
       userId: this.$store.state.user.details.id,
       events: [],
-      schedulingFields: [],
+      eventResourceFields: [],
       headers: [
         {text: 'Event Name', value: 'eventName', show: true},
         {text: '', value: 'icons', show: true},
@@ -114,6 +146,7 @@ export default {
         'items-per-page-options': [25, 50, 100, 1000],
         'items-per-page-text': 'Rows per page:'
       },
+      eventToDelete: null
     }
   },
   watch: {
@@ -125,6 +158,9 @@ export default {
     },
   },
   computed: {
+    eventToDeleteName(){
+      return this.eventToDelete ? this.eventToDelete.eventName : ''
+    }
   },
   methods: {
     debounceGetSteps: debounce( function () {
@@ -133,12 +169,12 @@ export default {
     goToEvent(eventId) {
       this.$router.push({path: `/settings/event/${eventId}/components`})
     },
-    async getSchedulingFields() {
+    async getEventResourceFields() {
       if(this.addNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields/4`)
-          this.schedulingFields = data
+          const {data} = await getRequest(`/customFieldGroup/getEventResourceFields`)
+          this.eventResourceFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -161,30 +197,27 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteEvent (event) {
+    async deleteEvent () {
+      const event = this.eventToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/event/delete/${event.id}`)
-        if (data?.length > 0) {
-          this.deleteError = true
-          event.deleteConfirm = false
-          this.fieldsInUse = data
-          this.snackbar = getSnackbar('ERROR', 'Event Cannot Be Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.fieldsInUse = []
-          event.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Event Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {status} = await putRequest(`/event/delete/${event.id}`)
+        event.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Event Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
+        if (e.status === 400) {
+          event.deleteConfirm = false
+          this.deleteError = true
+          this.cannotDeleteReasons = e.data
+        }
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.eventToDelete = null
     },
     async addEvent () {
       this.$store.commit(AppMutations.SET_LOADING, true)

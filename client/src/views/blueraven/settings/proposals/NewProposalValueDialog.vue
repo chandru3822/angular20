@@ -23,10 +23,10 @@
             </v-container>
           </v-card-text>
           <v-card-actions class="justify-end">
-            <v-btn text @click="closeDialog">Close</v-btn>
+            <v-btn text color="primary" @click="closeDialog">Close</v-btn>
             <v-btn
               :disabled="!Object.keys(dirtyCfvs).length"
-              color="primaryButton"
+              color="primary"
               class="white--text"
               @click="validateForm()"
             >Save

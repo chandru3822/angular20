@@ -23,7 +23,7 @@
             No
           </v-btn>
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             @click="[navigationOverride = true, goToPath(toPath)]">
             Yes
@@ -32,8 +32,8 @@
       </v-card>
     </v-dialog>
     <v-row>
-      <v-col cols="12" style="padding-bottom: 0; padding-top: 0;" class="text-left">
-        <v-btn small text :to="`/users`">
+      <v-col cols="12" style="padding-bottom: 0; padding-top: 0;" class="text-left user-header-breadcrumbs">
+        <v-btn small text color="primary" :to="`/users`">
           <v-icon small>mdi-chevron-left</v-icon>
           Back to users
         </v-btn>
@@ -48,7 +48,7 @@
                           v-on="{ ...tooltip }"
                           :size="50"
                           color="grey lighten-4"
-                          @click="changePhoto = !changePhoto"
+                          @click="doChangePhoto()"
                           class="clickable account-img mr-3"
                 >
                   <v-img name="userImg" alt="user-image" v-if="loadComplete && userImage && userImage.presignedUrl && !imageFailed" v-on:error="onImgError()" :src="userImage.presignedUrl"></v-img>
@@ -75,7 +75,7 @@
 
           <v-btn class="ml-3 elevation-2" dark small fab
                  v-if="userCanMasquerade && !userIsMasquerading && userId !== loggedInUserId"
-                 color="primaryCustom"
+                 color="primary"
                  @click="masquerade()">
             <v-icon>mdi-account-switch</v-icon>
           </v-btn>
@@ -134,6 +134,7 @@
         userId: parseInt(this.$route.params.id),
         companyId: this.$store.state.user.details.companyId,
         loggedInUserId: this.$store.state.user.details.id,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
         userCanMasquerade: this.$store.getters.userHasFeatureAccessLevel('MASQUERADE', 'ADMIN'),
         userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
         userImage: {},
@@ -173,6 +174,11 @@
       }
     },
     methods: {
+      doChangePhoto() {
+        if(this.userCanEdit) {
+          this.changePhoto = !this.changePhoto
+        }
+      },
       getDirtyText() {
         return this.hasDirtyNotes && this.hasDirtyFields ?
           'fields and notes' : this.hasDirtyNotes ? 'notes' : 'fields'
@@ -265,8 +271,13 @@
 </script>
 
 <style lang="scss" scoped>
+
+.user-header-breadcrumbs {
+  background-color: var(--v-grey-lighten2);
+}
 .user-header {
-  border-bottom: solid 1px #EAEAF4
+  border-bottom: solid 1px #EAEAF4;
+  background-color: var(--v-grey-lighten2);
 }
 .user-image-hover-container {
   max-width: 100%;
@@ -275,6 +286,7 @@
 .user-img-tooltip {
   background-color: transparent;
   opacity: 1 !important;
+  z-index: 200 !important;
 }
 </style>
 

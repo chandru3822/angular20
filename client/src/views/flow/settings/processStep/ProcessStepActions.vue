@@ -8,17 +8,20 @@
           <v-toolbar-title class="app-title">Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text v-if="userCanAdd">
+            <v-btn @click="logicStringToggle = !logicStringToggle" text>
+              {{logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
+            </v-btn>
+            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
               {{ addNewAction ? 'Cancel' : 'Add Action' }}
             </v-btn>
-            <v-btn text @click="expandActions = !expandActions">
+            <v-btn text color="primary" @click="expandActions = !expandActions">
               <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>
               <v-icon v-else>mdi-chevron-up</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat color="rowShadeCustom" class="square-card my-3 pa-3" v-if="addNewAction">
+        <v-card flat color="primary lighten-9" class="square-card my-3 pa-3" v-if="addNewAction">
           <h3>Add New Action</h3>
           <v-text-field v-model="newAction.actionName"
                         placeholder="Enter a name"
@@ -114,7 +117,7 @@
               </v-color-picker>
             </div>
           </div>
-          <v-btn v-if="newAction.actionName && newAction.actionTypeId"
+          <v-btn color="primary" v-if="newAction.actionName && newAction.actionTypeId"
                  @click="saveNewAction">
             <v-icon>save</v-icon>
             Save
@@ -331,7 +334,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
                                 Yes
@@ -438,7 +441,7 @@
                                             item-value="id"
                                             attach
                             ></v-autocomplete>
-                            <v-btn color="primaryCustom" class="white--text"
+                            <v-btn color="primary" class="white--text"
                                    :disabled="!cp.existingCompanyProcessStepStatusTypeId || !cp.initialCompanyProcessStepStatusTypeId"
                                    @click="saveChildProcessCancelledStatus(item, cp)">Save Changes
                             </v-btn>
@@ -452,7 +455,7 @@
                           <td class="text-left">{{ cp.initialProcessStepStatusType }}</td>
                           <td class="text-left">{{ cp.existingProcessStepStatusType }}</td>
                           <td class="text-right">
-                            <v-btn text v-if="!cpExpanded.includes(cp)"
+                            <v-btn text color="primary" v-if="!cpExpanded.includes(cp)"
                                    @click="[ cpExpanded = [cp], getStatusesAssignedToStep(cp), getCancelledStatuses(cp)]">
                               <v-icon>edit</v-icon>
                             </v-btn>
@@ -487,7 +490,7 @@
                                     No
                                   </v-btn>
                                   <v-btn
-                                    color="primaryCustom"
+                                    color="primary"
                                     text
                                     @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
                                     Yes
@@ -565,7 +568,11 @@
                             <v-checkbox
                               v-else-if="fp.dataTypeId === 3"
                               type="checkbox"
-                              v-model="fp.dynamicValue"
+                              :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                              :value="fp.dynamicValue === 'true'"
+                              @change="changeBooleanValue($event, fp)"
                               :label="fp.parameterName"
                             />
                             <v-text-field
@@ -646,7 +653,11 @@
                                     :readonly="!cp.edit || !userCanEdit"
                                     :disabled="!cp.edit || !userCanEdit"
                                     type="checkbox"
-                                    v-model="fp.dynamicValue"
+                                    :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                                    :value="fp.dynamicValue === 'true'"
+                                    @change="changeBooleanValue($event, fp)"
                                     :label="fp.parameterName"
                                   />
                                   <v-text-field
@@ -678,13 +689,13 @@
                             </v-card>
                           </div>
                           <v-list-item-subtitle>
-                            <v-btn color="primaryCustom" class="white--text" v-if="cp.edit && userCanEdit"
+                            <v-btn color="primary" class="white--text" v-if="cp.edit && userCanEdit"
                                    @click="updateChildFunction(item.id, cp)">
                               Save
                             </v-btn>
                           </v-list-item-subtitle>
                         </v-list-item-content>
-                        <v-btn text color="primaryCustom" class="white--text" v-if="userCanEdit"
+                        <v-btn text color="primary" class="white--text" v-if="userCanEdit"
                                @click="cp.edit = !cp.edit">
                           <v-icon v-if="cp.edit">remove</v-icon>
                           <v-icon v-else>edit</v-icon>
@@ -721,7 +732,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="[cp.archived = true, deleteChildFunctionFromAction(item.id, cp.id)]">
                                 Yes
@@ -776,19 +787,40 @@
                   <v-toolbar-items
                     v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
                     <v-btn text
-                           @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = false]">
+                           @click="[item.logicListChanged = true, item.logicMargin = 0, item.processStepLogicList = [], item.alwaysEnabled = false]">
                       <v-icon>clear</v-icon>
                       Clear All
                     </v-btn>
                   </v-toolbar-items>
                 </v-toolbar>
                 <v-card flat class="text-left px-3" color="transparent">
-                  <v-btn small class="ml-1 mr-1 mt-1"
-                         :disabled="!userCanEdit"
-                         v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
-                         @click="[l.archived = true, item.logicListChanged = true]">
-                    {{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}
-                  </v-btn>
+                  <div v-if="logicStringToggle">
+                    <div v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')"
+
+                         :style="{'margin-left': getLogicMargin(l, item, index)}"
+                         :key="index">
+                      <v-btn small class="ml-1 mr-1 mt-1"
+                             :disabled="!userCanEdit"
+                             @click="[l.archived = true, item.logicListChanged = true]">
+                        {{ getLogicButtonText(l) }}
+                      </v-btn>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <v-tooltip top max-width="300px"
+                               v-for="(l, idx) in filterBy(item.processStepLogicList, false, 'archived')"
+                               :key="idx">
+                      <template v-slot:activator="{ on:tooltip }">
+                        <v-btn small class="ml-1 mr-1 mt-1"
+                               v-on="{ ...tooltip }"
+                               :disabled="!userCanEdit"
+                               @click="[l.archived = true, item.logicListChanged = true]">
+                          {{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}
+                        </v-btn>
+                      </template>
+                      <span>{{ getLogicButtonText(l) }}</span>
+                    </v-tooltip>
+                  </div>
                   <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled"
                          :disabled="!userCanEdit"
                          @click="[item.logicListChanged = true, item.alwaysEnabled = !item.alwaysEnabled]">
@@ -814,11 +846,20 @@
                   <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
                 </v-toolbar>
                 <v-card flat class="text-left mb-4 px-3" color="transparent">
-                  <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
-                         :disabled="!userCanEdit"
-                         @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })]">
-                    {{ r.requirementNbr }}
-                  </v-btn>
+                  <v-tooltip top max-width="300px"
+                             :disabled="logicStringToggle"
+                             v-for="r in requirements" :key="r.id">
+                    <template v-slot:activator="{ on:tooltip }">
+                      <v-btn :class="{'d-block': logicStringToggle}"
+                             small class="ml-1 mr-1 mt-1"
+                             :disabled="!userCanEdit"
+                             v-on="{ ...tooltip }"
+                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString })]">
+                        {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
+                      </v-btn>
+                    </template>
+                    <span>{{ getLogicButtonText(r) }}</span>
+                  </v-tooltip>
                 </v-card>
                 <v-divider></v-divider>
                 <div v-if="actionLogicError" class="error-text ml-3 mt-3">
@@ -844,55 +885,20 @@
                 <td class="text-left">{{ item.projectStatusType || 'N/A' }}</td>
                 <td>
                   <div style="display: flex; float: right;">
-                    <v-btn small text v-if="userCanEdit"
+                    <v-btn small text color="primary"
+                           v-if="userCanEdit"
                            @click="duplicateAction(item.id)">
                       <v-icon>mdi-content-copy</v-icon>
                     </v-btn>
-                    <v-btn small text
+                    <v-btn small text color="primary"
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text @click="[actionExpanded = [], selectedActionIndex = index]"
+                    <v-btn small text color="primary" @click="[actionExpanded = [], selectedActionIndex = index]"
                            v-if="actionExpanded.includes(item)">cancel
                     </v-btn>
-                    <v-dialog
-                      v-if="userCanEdit"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template #activator="{ on }">
-                        <v-btn small text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this action?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="[item.archived = true, deleteAction(item)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -902,6 +908,10 @@
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAction" @close-dialog="closeDeleteDialog">
+      Are you sure you want to delete this action?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -926,11 +936,13 @@ import {
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepActions',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmationDialog,
     ProcessStepRequirements
   },
 
@@ -1029,7 +1041,7 @@ export default {
       requirements: [],
       availableFunctions: [],
 
-
+      logicStringToggle: false,
       addNewAction: false,
       newAction: {},
       actions: [],
@@ -1079,7 +1091,9 @@ export default {
       ],
       //doing these as strings since the filtered list will be too
       invalidFirsts: ['2', '3', '4'],
-      invalidLasts: ['1', '3', '4', '5']
+      invalidLasts: ['1', '3', '4', '5'],
+      showDeleteDialog: false,
+      itemToDelete: null
     }
   },
   computed: {},
@@ -1090,6 +1104,9 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     //populate requirements so that actions can use them any time they change from the requirements component
     populateRequirements(reqs) {
       this.requirements = reqs
@@ -1116,6 +1133,78 @@ export default {
       navigator.clipboard.writeText(this.actionLogicString);
       this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    getLogicMargin(item, parentItem, index) {
+      parentItem.logicMargin = parentItem.logicMargin || 0
+      if(item.operationTypeId === 1) {
+        if(parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
+          parentItem.logicMargin += 25
+        }
+        parentItem.indexOfPreviousAdd = index
+        return parentItem.logicMargin + 'px'
+      } else if(item.operationTypeId === 2) {
+        parentItem.indexOfPreviousSubtract = index
+        let placeholder = parentItem.logicMargin - 25
+        parentItem.logicMargin -= 25
+        return placeholder + 'px'
+      } else {
+        if(parentItem.indexOfPreviousAdd === index - 1) {
+          parentItem.logicMargin += 25
+        }
+        return parentItem.logicMargin + 'px'
+      }
+    },
+    getLogicButtonText(item) {
+
+        if(item.logicString) {
+          //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
+          return item.logicString
+        } else {
+          if(null != item.requirementNbr) {
+            //if not a system requirement (like AND, NOT, OR, etc)
+            let value = ''
+            if(item.dataTypeRequirement?.dataTypeValue) {
+              value = item.dataTypeRequirement?.dataTypeValue
+            } else if (item.listOfValue?.name) {
+              value = item.listOfValue?.name
+            } else if (item.listOfValues?.length > 0){
+              item.listOfValues.forEach((lv, idx) => {
+                if(idx !== 0) {
+                  value = value + ', '
+                }
+                value = value + lv.name
+              })
+            } else if(item.requirementValue) {
+              value = item.requirementValue
+            } else {
+              value = 'UNKNOWN CONTACT ADMIN'
+            }
+            if(null != item.secondaryRequirementValue) {
+              value = value + ` (${item.secondaryRequirementValue})`
+            }
+            if([1,3,4].includes(item.processStepRequirementTypeId)) {
+              //custom field
+              let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
+              let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
+              item.logicString = logicString
+              return logicString
+            } else if(item.processStepRequirementTypeId === 2) {
+              //function
+              let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' '  + item.operatorType + ' ' + value
+              item.logicString = logicString
+              return logicString
+            } else if([7,8,9,10].includes(item.processStepRequirementTypeId)){
+              //status (project or process step)
+              let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
+              let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
+              item.logicString = logicString
+              return logicString
+            }
+          } else {
+            //this returns if AND, OR, NOT, etc
+            return item.operationType
+          }
+        }
     },
     async getActionLogicString(actionId) {
       try {
@@ -1325,7 +1414,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteAction(item) {
+    async deleteAction() {
+      const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${item.id}`)
@@ -1339,6 +1429,8 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.itemToDelete.archive = true
+      this.closeDeleteDialog()
     },
     //child process steps
     async loadChildProcessSteps(actionId) {
@@ -1587,8 +1679,10 @@ export default {
           this.updateAction(item)
         }
       }
-
-
+    },
+    closeDeleteDialog(){
+      this.showDeleteDialog = false
+      this.itemToDelete = null
     }
   }
 

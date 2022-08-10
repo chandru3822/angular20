@@ -34,7 +34,7 @@
 
             <v-list-item v-if="tourneysLoading">
               <v-list-item-title>
-                <SpinnerInline :size="20" color="primaryCustom"/>
+                <SpinnerInline :size="20" color="primary"/>
               </v-list-item-title>
             </v-list-item>
 
@@ -130,6 +130,11 @@
   li {
     display: inline-block;
     margin: 0 10px;
+  }
+
+  .v-list .v-list-item--active{
+    color:var(--v-anchor-base);
+    background-color: var(--v-primary-lighten9);
   }
   .account-menu-button{
     text-transform: capitalize;

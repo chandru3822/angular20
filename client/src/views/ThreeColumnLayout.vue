@@ -2,7 +2,7 @@
   <v-container class="pa-0" id="three-column-container">
     <v-row>
       <slot name="header">
-        <v-toolbar v-if="!headerHidden" flat color="#E3E3E3" class="three-column-header px-4">
+        <v-toolbar v-if="!headerHidden" flat class="three-column-header px-4">
           <v-toolbar-title class="albatross-header-1 d-flex align-center mr-6">
             <slot name="back-btn"></slot>
             {{ headerText }}
@@ -23,8 +23,8 @@
                                                                                             'auto-overflow': this.autoOverflowLeft,
                                                                                             'white-bg': this.leftSideWhiteBg}">
         <div :class="{'title-collapsed': $store.state.project.leftSideSplit,
-                      'ml-3': !$store.state.project.leftSideSplit}">
-          <v-btn small text @click="collapseSide('left')">
+                      'ml-4': !$store.state.project.leftSideSplit}">
+          <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
@@ -34,18 +34,15 @@
         <slot name="main-column"></slot>
       </v-col>
       <v-col id="right-column" class="project-section right-column px-0 pb-0" :class="{'hidden': this.rightHidden,
-                                                                                                  'collapsed': this.$store.state.project.rightSideSplit,
+                                                                                                  'halvsies': this.leftHidden,
+                                                                                                  'collapsed': this.$store.state.project.rightSideSplit && showRightCollapseBtn,
                                                                                                   'white-bg': this.rightSideWhiteBg}">
-        <div v-if="showRightCollapseBtn" :class="{'title-collapsed': $store.state.project.rightSideSplit,
-                      'mr-3': !$store.state.project.rightSideSplit}">
-          <v-btn small text @click="collapseSide('right')">
-            <v-icon>mdi-menu</v-icon>
-          </v-btn>
-        </div>
         <slot name="right-column">
-          <ProjectActivity v-if="!projectLoading && projectId !== 0" :show-sms-tab="true"
+          <ProjectActivity v-if="!projectLoading && projectId !== 0" :show-sms-tab="true" :allow-sidebar-collapse="showRightCollapseBtn"
                            @closeRight="closeRight()"
-                           @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
+                           @openRight="$store.state.project.rightSideSplit = false">
+            <template v-slot:collapse-button><slot name="collapse-button"></slot></template>
+          </ProjectActivity>
         </slot>
       </v-col>
     </v-row>
@@ -86,7 +83,7 @@ export default {
     centerWhiteBg: Boolean,
     showRightCollapseBtn: {
       type: Boolean,
-      default: false
+      default: true
     },
   },
   computed: {
@@ -103,7 +100,7 @@ export default {
       if (!this.rightHidden) {
         return {
           'hidden': this.rightHidden,
-          'collapsed': this.$store.state.project.rightSideSplit,
+          'collapsed': this.$store.state.project.rightSideSplit && this.showRightCollapseBtn,
         }
       }
     },
@@ -172,6 +169,7 @@ export default {
 
 .three-column-header {
   height: 64px;
+  background-color: var(--v-grey-lighten2) !important;
 }
 
 .split-container {
@@ -235,11 +233,16 @@ export default {
     display: none;
   }
 
+  &.halvsies {
+    width: calc((6/12) * 100%); //col-6
+    max-width: calc((6/12) * 100%); //col-6
+  }
+
   &.collapsed {
     width: 72px;
     max-width: 72px;
-    //width: calc((1 / 24) * 100%); //half a col
-    //max-width: calc((1 / 24) * 100%); //half a col
+    width: calc((1 / 24) * 100%); //half a col
+    max-width: calc((1 / 24) * 100%); //half a col
   }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-btn text class="pl-1 pr-2" @click="$router.back()">
+    <v-btn text color="primary" class="pl-1 pr-2" @click="$router.back()">
       <v-icon>arrow_left</v-icon>
       <span>Back</span>
     </v-btn>
@@ -14,85 +14,22 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-items v-if="detail && detail.status === 'DRAFT'">
-        <v-dialog persistent max-width="600px" v-model="confirmation">
-          <template #activator="{on}">
-            <v-btn text v-on="on">
-              Publish
-            </v-btn>
-          </template>
-          <template #default>
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
-              >
-                Confirm
-              </v-card-title>
-
-              <v-card-text>
-                <v-row align="center" class="pt-4">
-                  <div>Are you sure you want to publish this version?</div>
-                </v-row>
-              </v-card-text>
-              <v-card-actions class="justify-end">
-                <v-btn
-                  text
-                  @click="confirmation = false"
-                >Cancel
-                </v-btn>
-                <v-btn
-                  color="primaryButton"
-                  @click="publish(detail.id)"
-                  dark
-                >Publish
-                </v-btn>
-              </v-card-actions>
-
-            </v-card>
-          </template>
-        </v-dialog>
+        <v-btn text color="primary" @click="confirmation=true">Publish</v-btn>
+        <ConfirmationDialog :open-dialog="confirmation" @confirm="publish(detail.id)" @close-dialog="confirmation=false">
+          <template v-slot:title>Confirm</template>
+          <div>Are you sure you want to publish this version?</div>
+          <template v-slot:yes>Publish</template>
+        </ConfirmationDialog>
       </v-toolbar-items>
     </v-toolbar>
     <v-card v-if="detail">
       <div class="top-actions" v-if="detail && detail.status === 'DRAFT'">
-
-        <v-dialog persistent max-width="600px" v-if="hasChanges" v-model="undoDraftChanges">
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn v-on="on" v-bind="attrs">
-              Undo All Changes
-            </v-btn>
-          </template>
-          <template #default>
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
-              >
-                Confirm
-              </v-card-title>
-
-              <v-card-text>
-                <v-row align="center" class="pt-4">
-                  <p>Are you sure you want to undo all changes to this draft? This action is <b>irreversible</b>! </p>
-                </v-row>
-              </v-card-text>
-              <v-card-actions class="justify-end">
-                <v-btn
-                  text
-                  @click="undoDraftChanges = false"
-                >Cancel
-                </v-btn>
-                <v-btn
-                  color="red"
-                  @click="undoAllChanges"
-                  dark
-                >Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </template>
-        </v-dialog>
-
+        <v-btn v-if="hasChanges" text color="primary" @click="undoDraftChanges=true">Undo All Changes</v-btn>
+        <ConfirmationDialog :open-dialog="undoDraftChanges" @confirm="undoAllChanges" @close-dialog="undoDraftChanges=false">
+          <template v-slot:title>Confirm</template>
+          <p>Are you sure you want to undo all changes to this draft? <span class="error--text">WARNING:</span>This action is <b>irreversible</b>! </p>
+          <template v-slot:yes>Undo all</template>
+        </ConfirmationDialog>
         <v-btn color="primary" dark @click.prevent="visible = true">
           Add New
         </v-btn>
@@ -103,37 +40,9 @@
           @input="doInput"
           @save="doSaveValues" />
       </div>
-      <v-dialog persistent max-width="600px" v-model="deleteGroupConfirmation">
-        <template #default>
-          <v-card>
-            <v-card-title
-              class="text-h5 grey lighten-2"
-              primary-title
-            >
-              Confirm
-            </v-card-title>
-
-            <v-card-text>
-              <v-row align="center" class="pt-4">
-                <p>Are you sure you want to delete this record? It <b>will not</b> be available in future versions.</p>
-              </v-row>
-            </v-card-text>
-            <v-card-actions class="justify-end">
-              <v-btn
-                text
-                @click="deleteGroupConfirmation = undefined"
-              >Cancel
-              </v-btn>
-              <v-btn
-                color="red"
-                @click="archiveItem(selectedDeleteItem)"
-                dark
-              >Yes
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </template>
-      </v-dialog>
+      <ConfirmationDialog :open-dialog="!!selectedDeleteItem" @confirm="archiveItem(selectedDeleteItem)" @close-dialog="selectedDeleteItem=undefined">
+        Are you sure you want to delete this record? <p><span class="error--text">WARNING:</span> It <b>will not</b> be available in future versions.</p>
+      </ConfirmationDialog>
       <v-tabs
         background-color="transparent"
         v-model="tab"
@@ -186,10 +95,10 @@
                 <tr :class="detail && detail.status === 'DRAFT' ? 'clickable' : ''" @click.prevent="editItem(item)">
                   <td v-for="header in headers">
                     <span class="row-actions" v-if="header.value === 'actions'">
-                      <v-btn small text @click.stop="deleteItem(item)" v-if="item.versionId === detail.id">
+                      <v-btn small text color="primary" @click.stop="deleteItem(item)" v-if="item.versionId === detail.id">
                            <v-icon>mdi-undo</v-icon>
                       </v-btn>
-                      <v-btn small text @click.stop="archiveItemConfirm(item)">
+                      <v-btn small text color="primary" @click.stop="selectedDeleteItem = item">
                         <v-icon>mdi-delete</v-icon>
                       </v-btn>
                     </span>
@@ -214,6 +123,7 @@
 import { deleteRequestWithPayload, getRequestWithParams, getSnackbar, postRequest } from '@/helpers/helpers'
 import NewProposalValueDialog from './NewProposalValueDialog.vue'
 import { AppMutations } from '@/stores/AppStore'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 const defaultActionColumn = { txt: 'Actions', value: 'actions', sortable: false }
 
@@ -244,7 +154,7 @@ let headerSort = (a, b) => {
 
 export default {
   name: 'ProposalDetail',
-  components: { NewProposalValueDialog },
+  components: {ConfirmationDialog, NewProposalValueDialog },
   props: ['id'],
   filters: {
     capitalize: (value) => {
@@ -282,11 +192,11 @@ export default {
       visible: false,
       editedItem: undefined,
       modifiedOnlyFilter: false,
-      deleteGroupConfirmation: false,
       undoDraftChanges: false,
       footerProps: {
         'items-per-page-options': [1, 5, 10, 20, 50, -1]
-      }
+      },
+      selectedDeleteItem: undefined
     }
   },
   computed: {
@@ -338,11 +248,6 @@ export default {
       this.editedItem = { ...item }
     },
 
-    async archiveItemConfirm(item) {
-      this.selectedDeleteItem = item
-      this.deleteGroupConfirmation = true
-    },
-
     async archiveItem(item) {
       const { data } = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}/archive`, undefined, 'blueraven')
       const pk = data?.pk || item.pk
@@ -353,7 +258,6 @@ export default {
 
       this.values = values
       this.selectedDeleteItem = undefined
-      this.deleteGroupConfirmation = false
 
       const snackbar = getSnackbar('SUCCESS', `Row was successfully archived. It will not be available in future versions.`)
       this.$store.commit(AppMutations.SHOW_SNACK, snackbar)

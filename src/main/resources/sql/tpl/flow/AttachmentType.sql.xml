@@ -9,6 +9,35 @@
     and at.is_system is not true
   ]]></attachmentType.getTypesForCompany>
 
+  <attachmentType.getAllUsingType><![CDATA[
+    select concat('Process Step: ', ps.process_step_name) as process_step_name
+      from flow.process_step_attachment_type at
+        inner join flow.process_step ps on at.process_step_id = ps.id
+      where at.attachment_type_id = :typeId
+        and at.archived is false
+        and ps.archived is false
+      union
+      select concat('Event: ', e.event_name) as process_step_name
+      from flow.event_attachment_type at
+             inner join flow.event e on at.event_id = e.id
+      where at.attachment_type_id = :typeId
+        and at.archived is false
+        and e.archived is false
+      union
+      select 'Project' as process_step_name
+      from flow.project_attachment_type at
+      where at.attachment_type_id = :typeId
+        and at.archived is false
+      union
+      select ot.object_type as process_step_name
+      from flow.company_object_type_attachment_type cotat
+             inner join flow.company_object_type cot on cotat.company_object_type_id = cot.id
+             inner join flow.object_type ot on cot.object_type_id = ot.id
+      where cotat.attachment_type_id = :typeId
+        and cotat.archived is false
+      order by process_step_name
+  ]]></attachmentType.getAllUsingType>
+
   <attachmentType.getSystemTypes><![CDATA[
     select at.*,
            kp.key_pattern

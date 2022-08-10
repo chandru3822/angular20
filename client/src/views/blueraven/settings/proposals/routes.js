@@ -11,14 +11,14 @@ const settingsBeforeEnter = (to, from, next) => {
 export default {
   path: 'proposals',
   meta: {title: 'Albatross - Settings - Proposals'},
-  component: () => import(/* webpackChunkName: "proposalVersions" */ './ProposalVersions'),
+  component: () => import(/* webpackChunkName: "proposalVersions" */ './ProposalVersions.vue'),
   children: [
     {
       name: 'proposalList',
       path: '',
       meta: {title: 'Albatross - Settings - Proposals'},
       beforeEnter: settingsBeforeEnter,
-      component: () => import(/* webpackChunkName: "proposalVersions" */ './ProposalList'),
+      component: () => import(/* webpackChunkName: "proposalVersions" */ './ProposalList.vue'),
     },
     {
       name: 'proposalDetail',
@@ -26,7 +26,7 @@ export default {
       props: route=>({ id : route.params.id }),
       meta: {title: 'Albatross - Settings - Proposals'},
       beforeEnter: settingsBeforeEnter,
-      component: () => import(/* webpackChunkName: "proposalVersions" */ './ProposalDetail'),
+      component: () => import(/* webpackChunkName: "proposalVersions" */ './ProposalDetail.vue'),
     }
   ]
 }

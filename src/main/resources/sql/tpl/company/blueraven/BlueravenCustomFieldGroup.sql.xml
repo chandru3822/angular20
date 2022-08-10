@@ -1,77 +1,72 @@
 <sql>
   <blueravenCustomFieldGroup.assignment.getByObjectTypeId><![CDATA[
-    select cfg.*,
-           cfg.group_name as original_group_name,
-           cot.object_type,
-           coalesce((
-                      SELECT array_to_json(array_agg(row_to_json(customFields)))
-                      FROM (
-                             SELECT cfga.id,
-                                    cfga.custom_field_group_id as "customFieldGroupId",
-                                    cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                    cfga.custom_field_id as "customFieldId",
-                                    cfga.use_parent_data as "useParentData",
-                                    cfga.id as "customFieldGroupAssignmentId",
-                                    cfga.field_order as "fieldOrder",
-                                    cfga.required as "required",
-                                    cfga.min_value as "minValue",
-                                    cfga.max_value as "maxValue",
-                                    cfga.archived,
-                                    cdt.data_type_id as "dataTypeId",
-                                    cdt.has_list_values as "hasListValues",
-                                    cf.field_name as "fieldName",
-                                    cfot.id as "customFieldObjectTypeId",
-                                    null as "processStepName",
-                                    null as "groupName",
-                                    ot.object_type as "objectType"
-                             FROM brs.custom_field_group_assignment cfga
-                               inner join brs.custom_field cf on cf.id = cfga.custom_field_id
-                               inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-                               inner join brs.custom_field_object_type cfot on cfot.custom_field_id = cf.id
-                               inner join brs.object_type ot on cfot.object_type_id = ot.id
-                             WHERE cfga.custom_field_group_id = cfg.id
-                               AND cfga.archived is not true
-                               AND cfot.archived is not true
-                               and cfot.object_type_id = :objectTypeId
-                             union all
-                             SELECT cfga.id,
-                               cfga.custom_field_group_id as "customFieldGroupId",
-                               cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                               cfga.custom_field_id as "customFieldId",
-                               cfga.use_parent_data as "useParentData",
-                               cfga.id as "customFieldGroupAssignmentId",
-                               cfga.field_order as "fieldOrder",
-                               cfga.required as "required",
-                               cfga.min_value as "minValue",
-                               cfga.max_value as "maxValue",
-                               cfga.archived,
-                               cdt.data_type_id as "dataTypeId",
-                               cdt.has_list_values as "hasListValues",
-                               cf2.field_name as "fieldName",
-                               cfot2.id as "customFieldObjectTypeId",
-                               ps.process_step_name as "processStepName",
-                               cfg2.group_name as "groupName",
-                               ot2.object_type as "objectType"
-                             FROM brs.custom_field_group_assignment cfga
-                               inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                               inner join flow.custom_field cf2 on cf2.id = cfga2.custom_field_id
-                               inner join flow.company_data_type cdt on cf2.company_data_type_id = cdt.id
-                               inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
-                               inner join flow.custom_field_object_type cfot2 on cfot2.custom_field_id = cf2.id  and cfot2.company_object_type_id = cfg2.company_object_type_id
-                               inner join flow.company_object_type cot2 on cfg2.company_object_type_id = cot2.id
-                               inner join flow.object_type ot2 on cot2.object_type_id = ot2.id
-                               left join flow.process_step ps on cfg2.process_step_id = ps.id
-                             WHERE cfga.custom_field_group_id = cfg.id
-                               AND cfga.archived is not true
-                               AND cfga2.archived is not true
-                               AND cfot2.archived is not true
-                             ORDER BY "fieldOrder", "fieldName"
-                        ) customFields), '[]') AS "customFields"
-    from brs.custom_field_group cfg
-           inner join brs.object_type cot on cot.id = cfg.object_type_id
-    where cot.id = :objectTypeId
-      and cfg.archived is not true
-    order by cfg.group_order, cfg.group_name
+select cfg.*,
+       cfg.group_name                                                           as original_group_name,
+       cot.object_type,
+       coalesce((SELECT array_to_json(array_agg(row_to_json(customFields)))
+                 FROM (SELECT cfga.id,
+                              cfga.custom_field_group_id                      as "customFieldGroupId",
+                              cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                              cfga.custom_field_id                            as "customFieldId",
+                              cfga.use_parent_data                            as "useParentData",
+                              cfga.id                                         as "customFieldGroupAssignmentId",
+                              cfga.field_order                                as "fieldOrder",
+                              cfga.required                                   as "required",
+                              cfga.min_value                                  as "minValue",
+                              cfga.max_value                                  as "maxValue",
+                              cfga.conditional_on_cfga_id                     as "conditionalOnId",
+                              cfga.archived,
+                              cdt.data_type_id                                as "dataTypeId",
+                              cdt.has_list_values                             as "hasListValues",
+                              cf.field_name                                   as "fieldName",
+                              null                                            as "processStepName",
+                              null                                            as "groupName",
+                              ot.object_type                                  as "objectType"
+                       FROM brs.custom_field_group_assignment cfga
+                                inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                                inner join brs.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+                                inner join brs.object_type ot on cfg.object_type_id = ot.id
+                       WHERE cfga.custom_field_group_id = cfg.id
+                         AND cfga.archived is not true
+                         and cfg.object_type_id = :objectTypeId
+                       union all
+                       SELECT cfga.id,
+                              cfga.custom_field_group_id                      as "customFieldGroupId",
+                              cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                              cfga.custom_field_id                            as "customFieldId",
+                              cfga.use_parent_data                            as "useParentData",
+                              cfga.id                                         as "customFieldGroupAssignmentId",
+                              cfga.field_order                                as "fieldOrder",
+                              cfga.required                                   as "required",
+                              cfga.min_value                                  as "minValue",
+                              cfga.max_value                                  as "maxValue",
+                              cfga.conditional_on_cfga_id                     as "conditionalOnId",
+                              cfga.archived,
+                              cdt.data_type_id                                as "dataTypeId",
+                              cdt.has_list_values                             as "hasListValues",
+                              cf2.field_name                                  as "fieldName",
+                              ps.process_step_name                            as "processStepName",
+                              cfg2.group_name                                 as "groupName",
+                              ot2.object_type                                 as "objectType"
+                       FROM brs.custom_field_group_assignment cfga
+                                inner join flow.custom_field_group_assignment cfga2
+                                           on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                inner join flow.custom_field cf2 on cf2.id = cfga2.custom_field_id
+                                inner join flow.company_data_type cdt on cf2.company_data_type_id = cdt.id
+                                inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
+                                inner join flow.company_object_type cot2 on cfg2.company_object_type_id = cot2.id
+                                inner join flow.object_type ot2 on cot2.object_type_id = ot2.id
+                                left join flow.process_step ps on cfg2.process_step_id = ps.id
+                       WHERE cfga.custom_field_group_id = cfg.id
+                         AND cfga.archived is not true
+                         AND cfga2.archived is not true
+                       ORDER BY "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+from brs.custom_field_group cfg
+         inner join brs.object_type cot on cot.id = cfg.object_type_id
+where cot.id = :objectTypeId
+  and cfg.archived is not true
+order by cfg.group_order, cfg.group_name
   ]]></blueravenCustomFieldGroup.assignment.getByObjectTypeId>
 
   <blueravenCustomFieldGroup.insertCustomFieldGroup><![CDATA[
@@ -95,16 +90,16 @@
                       SELECT array_to_json(array_agg(row_to_json(customFields)))
                       FROM (
                              SELECT cfga.id,
-                                    cfga.custom_field_group_id as "customFieldGroupId",
-                                    cfga.custom_field_id as "customFieldId",
-                                    cfga.field_order as "fieldOrder",
-                                    cfga.required as "required",
+                                    cfga.custom_field_group_id                      as "customFieldGroupId",
+                                    cfga.custom_field_id                            as "customFieldId",
+                                    cfga.field_order                                as "fieldOrder",
+                                    cfga.required                                   as "required",
+                                    cfga.conditional_on_cfga_id                     as "conditionalOnId",
+                                    cfga.
                                     cfga.archived,
-                                    cf.field_name as "fieldName",
-                                    cfot.id as "customFieldObjectTypeId"
+                                    cf.field_name as "fieldName"
                              FROM brs.custom_field_group_assignment cfga
                                     inner join brs.custom_field cf on cf.id = cfga.custom_field_id
-                                    inner join brs.custom_field_object_type cfot on cfot.custom_field_id = cf.id
                              WHERE cfga.custom_field_group_id = cfg.id AND cfga.archived is not true) customFields), '[]') AS "customFields"
     from brs.custom_field_group cfg
            inner join brs.object_type ot on ot.id = cfg.object_type_id
@@ -128,24 +123,20 @@
   ]]></blueravenCustomFieldGroup.deleteCustomFieldGroup>
 
   <blueravenCustomFieldGroup.assignment.getAvailableCustomFieldsInGroup><![CDATA[
-    select cf.id,cf.field_name, cfot.object_type_id
-      from brs.custom_field_object_type cfot
-             inner join brs.custom_field cf on cf.id = cfot.custom_field_id
-             inner join brs.object_type cot on cot.id = cfot.object_type_id
-      where cot.id = :companyObjectTypeId
-        and cfot.archived is not true
-        and cf.archived is not true
-        except
-      select cf.id,cf.field_name, cfg.object_type_id
-      from brs.custom_field_group_assignment cfga
-             inner join brs.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-             inner join brs.custom_field cf on cf.id = cfga.custom_field_id
-             inner join brs.object_type cot on cot.id = cfg.object_type_id
-      where cot.id = :companyObjectTypeId
-        and cfga.archived is not true
-        and cf.archived is not true
-        and cfg.archived is not true
-      order by field_name
+    select cf.id,cf.field_name
+    from brs.custom_field cf
+    where  cf.archived is not true
+    except
+    select cf.id,cf.field_name
+    from brs.custom_field_group_assignment cfga
+           inner join brs.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+           inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+           inner join brs.object_type cot on cot.id = cfg.object_type_id
+    where cot.id = :companyObjectTypeId
+      and cfga.archived is not true
+      and cf.archived is not true
+      and cfg.archived is not true
+    order by field_name
   ]]></blueravenCustomFieldGroup.assignment.getAvailableCustomFieldsInGroup>
 
   <blueravenCustomFieldGroup.assignment.getCustomField><![CDATA[
@@ -156,6 +147,7 @@
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
            cfga.field_order as "fieldOrder",
            cfga.required as "required",
+           cfga.conditional_on_cfga_id                     as "conditionalOnId",
            cfga.archived,
            cf.field_name,
            null as "processStepName",
@@ -174,6 +166,7 @@
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
            cfga.field_order as "fieldOrder",
            cfga.required as "required",
+           cfga.conditional_on_cfga_id                     as "conditionalOnId",
            cfga.archived,
            cf.field_name as "fieldName",
            ps.process_step_name as "processStepName",
@@ -226,4 +219,12 @@
           modified_by_id = :userId
     where id = :cfgaId
   ]]></blueravenCustomFieldGroup.assignment.saveMinMax>
+
+  <blueravenCustomFieldGroup.assignment.updateConditionalOnId><![CDATA[
+update brs.custom_field_group_assignment
+set conditional_on_cfga_id = :conditionalOnId,
+    modified_by_id         = :modifiedById,
+    date_modified          = now()
+where id = :cfgaId
+  ]]></blueravenCustomFieldGroup.assignment.updateConditionalOnId>
 </sql>

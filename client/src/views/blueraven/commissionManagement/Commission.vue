@@ -1,5 +1,10 @@
 <template>
   <v-container class="pa-0" id="commission-container">
+    <v-dialog :width="600" v-model="showProjectAssignmentModal">
+      <ProjectAssignmentModal @cancel="showProjectAssignmentModal = false"
+                           :plan-id="parseInt(planId)"
+                           :plan-name="commission.name"></ProjectAssignmentModal>
+    </v-dialog>
     <v-toolbar flat color="transparent">
       <v-toolbar-title>
         <span v-if="planId">{{commission.name}}</span>
@@ -8,188 +13,95 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primaryCustom" class="white--text mr-2"
+          <v-btn color="primary" class="white--text mr-2"
+                 v-if="userIsAdmin && planId"
+                 @click="showProjectAssignmentModal = true">
+            Admin
+          </v-btn>
+          <v-btn color="primary" class="white--text mr-2"
                  :disabled="!commission.name || !commission.positionId"
                  v-if="userCanEdit"
                  @click="savePlan()">
             Save
           </v-btn>
-          <v-btn color="green" class="white--text mr-2"
+          <v-btn color="success" class="white--text mr-2"
                  v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approvePlan()">
             Approve
           </v-btn>
-          <v-dialog v-if="planId && !commission.approved && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-                    v-model="deleteConfirm"
-                    width="500">
-            <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
-                Delete
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to delete this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="deleteConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primaryCustom"
-                  text
-                  @click="[deleteConfirm = true, deletePlan()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <v-dialog v-else-if="planId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-              v-model="inactivateConfirm"
-              width="500">
-            <template #activator="{ on }">
-              <v-btn color="red" dark class="mr-2" v-on="on">
-                Inactivate
-              </v-btn>
-            </template>
-            <v-card v-if="planHasActiveUsers()">
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Error
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                You cannot set this plan to inactive with active users.
-                <table class="table mt-2">
-                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
-                    <td class="pr-3">{{u.name}}</td>
-                    <td>{{u.position}}</td>
-                  </tr>
-                </table>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  Cancel
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-            <v-card v-else>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title>
-                Confirm
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                Are you sure you want to inactivate this plan?
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="inactivateConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primaryCustom"
-                  text
-                  @click="[inactivateConfirm = true, inactivatePlan()]">
-                  Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-
-          <v-dialog v-if="planId && commission && commission.users
+          <ConfirmationDialog :open-dialog="showDeleteConfirm" @confirm="[deleteConfirm = true, deletePlan()]" @close-dialog="showDeleteConfirm=false">
+            Are you sure you want to delete this plan?
+          </ConfirmationDialog>
+          <v-btn v-if="planId && !commission.approved && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+                 @click="showDeleteConfirm = true"
+                 color="error"
+          >
+            delete
+          </v-btn>
+          <v-btn v-else-if="planId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+                 @click="inactivateConfirm = true"
+                 color="error"
+                 class="mr-2"
+          >
+            inactivate
+          </v-btn>
+          <ConfirmationDialog :open-dialog="inactivateConfirm" :hide-confirm="planHasActiveUsers()" @confirm="inactivatePlan" @close-dialog="inactivateConfirm = false">
+              <template v-if="planHasActiveUsers()" v-slot:title>Error</template>
+              <template v-else v-slot:title>Confirm</template>
+            <div v-if="planHasActiveUsers()">
+            You cannot set this plan to inactive with active users.
+              <table class="table mt-2">
+                <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                  <td class="pr-3">{{u.name}}</td>
+                  <td>{{u.position}}</td>
+                </tr>
+              </table>
+            </div>
+            <div v-if="!planHasActiveUsers()">
+              Are you sure you want to inactivate this plan?
+            </div>
+            <template v-if="!planHasActiveUsers()" v-slot:yes>Inactivate</template>
+          </ConfirmationDialog>
+          <v-btn v-if="planId && commission && commission.users
                         && userCanAdd
                         && commission.users.filter(u => {return u.endDate == null}).length > 0"
-            v-model="cloneDialog"
-            width="600"
+                 color="primary" @click="cloneDialog = true">
+            Clone
+          </v-btn>
+          <ConfirmationDialog :open-dialog="cloneDialog"
+                              :disable-confirm="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
+                              (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
+                              @confirm="validateStartDates"
+                              @close-dialog="[cloneDialog = false, cloneStartDate = null]"
           >
-            <template v-slot:activator="{ on }">
-              <v-btn color="primaryCustom" dark v-on="on" class="mr-2">
-                Clone
-              </v-btn>
-            </template>
-
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
-              >
-                Clone {{commission.name}}
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                <div class="mb-2">
-                  This option allows you to copy an entire plan over. <br/>
-                  By default, no users are copied over.
-                </div>
-                Users to Copy:
-                <div v-for="u in filterBy(commission.users, (u) => { return u.endDate == null })">
-                  <input type="checkbox" class="mr-2" v-model="u.selected">
-                  {{ u.name }}: {{u.startDate | formatDate('date')}}
-                </div>
-                <div class="mt-3" v-if="commission.users && commission.users.filter(u => u.selected).length > 0">
-                  <DatetimePickerInput
-                    v-model="cloneStartDate"
-                    :timezone="timezone"
-                    :type="'date'"
-                    :format="'MMMM DD, YYYY'"
-                    label="Start Date"
-                  />
-                  <div v-if="cloneStartDate">
-                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
-                  </div>
-                  <div v-if="cloneDateError" class="error--text">
-                    You cannot select a start date that is before or equal to any other user's plan start date.
-                  </div>
-                </div>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  text
-                  @click="[cloneDialog = false, cloneStartDate = null]"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  color="primaryCustom"
-                  :disabled="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
-                            (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
-                  class="white--text"
-                  @click="validateStartDates()">
-                  Clone
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+            <template v-slot:title>Clone {{commission.name}}</template>
+            <div class="mb-2">
+              This option allows you to copy an entire plan over. <br/>
+              By default, no users are copied over.
+            </div>
+            Users to Copy:
+            <div v-for="u in filterBy(commission.users, (u) => { return u.endDate == null })">
+              <input type="checkbox" class="mr-2" v-model="u.selected">
+              {{ u.name }}: {{u.startDate | formatDate('date')}}
+            </div>
+            <div class="mt-3" v-if="commission.users && commission.users.filter(u => u.selected).length > 0">
+              <DatetimePickerInput
+                  v-model="cloneStartDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="Start Date"
+              />
+              <div v-if="cloneStartDate">
+                * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
+              </div>
+              <div v-if="cloneDateError" class="error--text">
+                You cannot select a start date that is before or equal to any other user's plan start date.
+              </div>
+            </div>
+            <template v-slot:yes>Clone</template>
+          </ConfirmationDialog>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -269,7 +181,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]">
+            <v-btn text color="primary" v-if="commission.statusType === 'PENDING'" @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]">
               <v-icon v-if="addMilestone">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -306,7 +218,7 @@
           <div class="error-text mb-3" v-if="milestoneError">
             {{milestoneErrorMsg}}
           </div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addMilestoneToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addMilestoneToPlan()"
                  :disabled="!selectedMilestone.id || (!selectedMilestone.allocation && !selectedMilestone.min) || milestoneError">
             Add
           </v-btn>
@@ -369,66 +281,14 @@
               <td class="text-left" v-if="commission.positionId === 4">{{item.max}}</td>
               <td class="text-left">{{item.allocation}}</td>
               <td>
-                <v-btn small text @click="milestoneExpanded = [item]"
+                <v-btn small text color="primary" @click="milestoneExpanded = [item]"
                        v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="milestoneExpanded = []"
+                <v-btn small text color="primary" @click="milestoneExpanded = []"
                        v-if="milestoneExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card v-if="checkIfMilestoneUsed(item.milestoneId)">
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Error
-                    </v-card-title>
-                    <v-card-text>
-                      Cannot delete milestones that are in use by sources.
-                    </v-card-text>
-                    <v-divider></v-divider>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn @click="item.deleteConfirm = false">
-                        Ok
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                  <v-card v-else>
-                    <v-card-title class="text-h5 grey lighten-2" primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text v-if="commission.positionId === 1">
-                      Are you sure you want to delete this milestone: <strong>{{ item.milestoneType }}</strong>?
-                    </v-card-text>
-                    <v-card-text v-else>
-                      Are you sure you want to delete this tier: <strong>{{ item.milestoneType }}: {{item.min}} - {{item.max}}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteMilestone(item.commissionPlanAllocationId)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn small text color="primary" @click="milestoneToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -443,7 +303,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
+            <v-btn text color="primary" v-if="commission.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
               <v-icon v-if="addSource">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -477,7 +337,7 @@
                       item-text="milestoneType"
                       item-value="milestoneId"
             ></v-select>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="addSourceToPlan()"
+            <v-btn color="primary" class="mr-3 white--text" @click="addSourceToPlan()"
                    :disabled="!selectedSource.id || !selectedSource.feeTypeId || !selectedSource.feeAmount">
               Add
             </v-btn>
@@ -533,51 +393,18 @@
               <td class="text-left">{{item.feeType}}</td>
               <td class="text-left">{{item.milestoneType}}</td>
               <td>
-                <v-btn small text @click="sourceExpanded = [item]"
+                <v-btn small text color="primary" @click="sourceExpanded = [item]"
                        v-if="commission.statusType === 'PENDING' && !sourceExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="sourceExpanded = []"
+                <v-btn small text color="primary" @click="sourceExpanded = []"
                        v-if="sourceExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this source: <strong>{{ item.sourceName }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteSource(item.id)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn v-if="commission.statusType === 'PENDING'"
+                       small text color="primary"
+                       @click="sourceToDelete=item">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
@@ -592,7 +419,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]"
+            <v-btn text color="primary" @click="[addUser = !addUser, newUser = {}, userHistory = []]"
                    v-if="userCanAdd">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
@@ -663,7 +490,7 @@
           <div class="mb-2" v-else-if="newUser.showNote">
             {{newUser.noteMsg}}
           </div>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToPlan()"
+          <v-btn color="primary" class="mr-3 white--text" @click="addUserToPlan()"
                  :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory">
             Add
           </v-btn>
@@ -725,7 +552,7 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primaryCustom" class="mr-3 white--text" @click="updateAssignedUser(item)"
+              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
                      :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
                 Save
               </v-btn>
@@ -740,59 +567,37 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
-
-                <v-btn small text @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                       v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
+                <v-btn v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)"
+                       small text color="primary" @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
+                       >
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="assignedUserExpanded = []"
+                <v-btn small text color="primary" @click="assignedUserExpanded = []"
                        v-if="assignedUserExpanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{ item.name }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primaryCustom"
-                        text
-                        @click="deleteUserFromPlan(item)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn v-if="commission.statusType === 'PENDING'" small text color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPlan" @close-dialog="userToDelete=null">
+      Are you sure you want to delete <strong>{{ userToDeleteName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!sourceToDelete" @confirm="deleteSource" @close-dialog="sourceToDelete=null">
+      Are you sure you want to delete this source: <strong>{{ sourceToDeleteName }}</strong>??
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!milestoneToDelete" :hide-confirm="milestoneToDeleteIsUsed" @confirm="deleteMilestone" @close-dialog="milestoneToDelete=null">
+      <template v-slot:title v-if="milestoneToDeleteIsUsed">Error</template>
+      <div v-if="milestoneToDeleteIsUsed">Cannot delete milestones that are in use by sources.</div>
+      <div v-else-if="commission.positionId === 1">
+      Are you sure you want to delete this milestone: <strong>{{ milestoneToDeleteType }}</strong>?
+      </div>
+      <div v-else>
+        Are you sure you want to delete this tier: <strong>{{ milestoneToDeleteType }}: {{milestoneToDeleteMin}} - {{milestoneToDeleteMax}}</strong>?
+      </div>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -802,17 +607,41 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
+  import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Commission',
     mixins: [Vue2Filters.mixin],
     components: {
-
+      ConfirmationDialog,
+      ProjectAssignmentModal,
       DatetimePickerInput
     },
     computed: {
       displayedMilestoneHeaders () {
         return this.milestoneHeaders.filter(h => h.show || h.positionId === this.commission?.positionId)
+      },
+      milestoneToDeleteType(){
+        return this.milestoneToDelete ? this.milestoneToDelete.milestoneType : ''
+      },
+      milestoneToDeleteIsUsed(){
+        if(this.milestoneToDelete){
+         return this.checkIfMilestoneUsed(this.milestoneToDelete.milestoneId)
+        }
+        return false
+      },
+      milestoneToDeleteMin(){
+        return this.milestoneToDelete ? this.milestoneToDelete.min : ''
+      },
+      milestoneToDeleteMax(){
+        return this.milestoneToDelete ? this.milestoneToDelete.max : ''
+      },
+      sourceToDeleteName(){
+        return this.sourceToDelete ? this.sourceToDelete.sourceName : ''
+      },
+      userToDeleteName(){
+        return this.userToDelete ? this.userToDelete.name : ''
       }
     },
     created() {
@@ -845,6 +674,7 @@
     data() {
       return {
         snackbar: {},
+        showProjectAssignmentModal: false,
         cloneDialog: false,
         payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         levelText: this.$store.state.brs.commissionPositionId === 4 ? 'Tier' : 'Milestone',
@@ -855,6 +685,7 @@
         userHistory: [],
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN'),
         usersLoading: false,
         moment,
         cloneStartDate: null,
@@ -915,10 +746,13 @@
         commission: {
           users: [],
           positionId: null
-        }
+        },
+        showDeleteConfirm: false,
+        milestoneToDelete: null,
+        sourceToDelete: null,
+        userToDelete: null,
       }
     },
-
 
     methods: {
       checkMinMaxMilestones (item) {
@@ -1197,7 +1031,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUserFromPlan(commissionPlanUser) {
+      async deleteUserFromPlan() {
+        const commissionPlanUser = this.userToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
@@ -1264,7 +1099,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteMilestone (commissionPlanAllocationId) {
+      async deleteMilestone () {
+        const commissionPlanAllocationId = this.milestoneToDelete.commissionPlanAllocationId
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
@@ -1361,7 +1197,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteSource (id) {
+      async deleteSource () {
+        const id = this.sourceToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/commissionManagement/${this.planId}/source/${id}`, 'blueraven')

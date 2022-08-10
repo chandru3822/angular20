@@ -38,7 +38,7 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <v-btn v-bind="attrs" v-on="on" @click="downloadPreview" icon text>
+          <v-btn v-bind="attrs" v-on="on" @click="downloadPreview" :disabled="isSaveable" icon text>
             <v-icon>mdi-file-pdf-box</v-icon>
           </v-btn>
         </template>
@@ -210,18 +210,10 @@ export default {
       try {
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-
-        const theme = this.$store.getters.theme
-        const template = this.$store.state.proposal.template
-
         const { data } = await apiRequest('blueraven', {
           method: 'post',
-          url: '/proposal-preview',
-          responseType: 'blob',
-          data: {
-            template,
-            theme
-          }
+          url: '/proposal-preview/1',
+          responseType: 'blob'
         })
 
         if (data) {

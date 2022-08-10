@@ -119,7 +119,7 @@
               ></DatetimePickerInput>
             </v-col>
             <v-col cols="3" md="2">
-              <v-btn color="primaryCustom" class="white--text"
+              <v-btn color="primary" class="white--text"
                      :disabled="selectedInstallationCrews.length < 1"
                      @click="getDashboardValues()">Go</v-btn>
             </v-col>
@@ -134,7 +134,7 @@
                     width="200" height="100" >
               <div class="card-accent" :style="{'background-color': 'white'}"></div>
                 <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
-                  <div class="text-left">{{stat.name}}</div>
+                  <div class="text-left default-text-color">{{stat.name}}</div>
                   <div class="card-count">{{stat.value}}</div>
                 </v-card-text>
             </v-card>
@@ -154,7 +154,7 @@
                 <router-link class="no-text-decoration card-link" target="_blank"
                              :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
                                                                                                           installationCrewIds}}">
-                  <div class="text-left">{{wq.workQueueType}}</div>
+                  <div class="text-left default-text-color">{{wq.workQueueType}}</div>
                   <div class="card-count">{{wq.workQueueCount}}</div>
                 </router-link>
               </v-card-text>
@@ -201,7 +201,7 @@
         </v-col>
         <v-col cols="3" md="2">
             <v-btn
-              color="primaryCustom"
+              color="primary"
               class="white--text mr-2 mb-3"
               @click="getPerformanceMetrics"
             >
@@ -327,7 +327,7 @@
               </v-col>
             </v-row>
             <v-col cols="5" md="2">
-              <v-btn color="primaryCustom" class="white--text"
+              <v-btn color="primary" class="white--text"
                      :disabled="selectedInstallationCrews.length < 1"
                      @click="getDashboardValues()">Go</v-btn>
             </v-col>
@@ -342,7 +342,7 @@
                     width="200" height="100" >
               <div class="card-accent" :style="{'background-color': 'white'}"></div>
               <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
-                <div class="text-left">{{stat.name}}</div>
+                <div class="text-left default-text-color">{{stat.name}}</div>
                 <div class="card-count">{{stat.value}}</div>
               </v-card-text>
             </v-card>
@@ -359,11 +359,11 @@
                     width="200" height="100" >
               <div class="card-accent" :style="{'background-color': wq.color}"></div>
               <v-card-text class="pt-1">
-                <router-link class="no-text-decoration card-link" target="_blank"
+                <router-link class="no-text-decoration" target="_blank"
                              :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
                                                                                                           installationCrewIds}}">
-                  <div class="text-left">{{wq.workQueueType}}</div>
-                  <div class="card-count">{{wq.workQueueCount}}</div>
+                  <div class="text-left default-text-color">{{wq.workQueueType}}</div>
+                  <div class="card-count card-link">{{wq.workQueueCount}}</div>
                 </router-link>
               </v-card-text>
             </v-card>
@@ -414,7 +414,7 @@
       </v-row>
       <v-col cols="5" md="2">
         <v-btn
-          color="primaryCustom"
+          color="primary"
           class="white--text mr-2 mb-3"
           @click="getPerformanceMetrics"
         >

@@ -211,7 +211,7 @@
         <v-progress-circular
           indeterminate
           :size="80"
-          :color="'primaryCustom'"
+          :color="'primary'"
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar"
@@ -782,9 +782,9 @@
           // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
           // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
         } else {
-          //moment starts on sunday, add 1 to start
-          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').utc().format('YYYY-MM-DD HH:mm:ss')
-          this.calendarEndTime = moment(this.calendarStart).endOf('week').utc().format('YYYY-MM-DD HH:mm:ss')
+          //moment starts on sunday, isoWeek starts on monday
+          this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
         }
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
@@ -945,6 +945,10 @@
   #calendar-container .fc-cell-content {
     padding-top: 0;
     padding-bottom: 0;
+  }
+
+  #calendar-container .fc-button-primary {
+    background-color: var(--v-primary-base);
   }
 
 </style>

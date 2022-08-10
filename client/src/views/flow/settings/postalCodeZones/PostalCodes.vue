@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newZone = {}, getCompanyTimezones()]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newZone = {}, getCompanyTimezones()]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -31,7 +31,7 @@
                             item-value="id"
                             attach
             ></v-autocomplete>
-            <v-btn :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
+            <v-btn color="primary" :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -74,15 +74,10 @@
                   <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.distributionTimeFrameDays}}</td>
                   <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.schedulableFutureDays}}</td>
                   <td class="text-right">
-                    <v-btn small text @click="goToPostalCodeZone(item.id)">
+                    <v-btn small text color="primary" @click="goToPostalCodeZone(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <confirm-delete-dialog
-                        v-if="userCanDelete"
-                        label="this round robin: "
-                        :item-to-delete="item.zoneName"
-                        @confirm-delete="[item.archived = true, deletePostalCodeZone(item.id)]"
-                    ></confirm-delete-dialog>
+                    <v-btn v-if="userCanDelete" text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                   </td>
 
                 </tr>
@@ -91,8 +86,14 @@
           </v-card>
         </v-container>
       </v-col>
-
     </v-row>
+    <ConfirmationDialog
+        :open-dialog="showDeleteDialog"
+        @confirm="deletePostalCodeZone"
+        @close-dialog="closeDeleteDialog">
+      Are you sure you want to delete this round robin: <strong>{{itemToDeleteName}}</strong>
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -103,10 +104,11 @@
   import cloneDeep from 'lodash.clonedeep'
   import {  handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'PostalCodes',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {
@@ -131,10 +133,15 @@
           {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
           {text: '', value: 'icons', show: true},
         ],
-        companyTimezones: []
+        companyTimezones: [],
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
     computed: {
+      itemToDeleteName() {
+        return this.itemToDelete ? this.itemToDelete.zoneName : '';
+      }
     },
     methods: {
       async getCompanyTimezones() {
@@ -178,7 +185,9 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deletePostalCodeZone (zoneId) {
+      async deletePostalCodeZone () {
+        this.itemToDelete.archived = true
+        const zoneId = this.itemToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/postalCode/zone/${zoneId}`)
@@ -191,6 +200,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
       async addPostalCodeZone () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -211,6 +221,10 @@
         this.postalCodeZones = this.masterPostalCodeZones.filter(pcz => {
           return pcz?.zoneName?.toLowerCase().includes(this.nameSearch.toLowerCase())
         })
+      },
+      closeDeleteDialog() {
+        this.showDeleteDialog = false;
+        this.itemToDelete = null;
       }
     },
     async created () {

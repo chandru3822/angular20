@@ -23,7 +23,7 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"
@@ -40,11 +40,11 @@
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text v-if="userCanAdd">
+            <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewRequirement">add</v-icon>
               {{ addNewRequirement ? 'Cancel' : 'Add Requirement' }}
             </v-btn>
-            <v-btn text @click="expandRequirements = !expandRequirements">
+            <v-btn color="primary" text @click="expandRequirements = !expandRequirements">
               <v-icon v-if="!expandRequirements">mdi-chevron-down</v-icon>
               <v-icon v-else>mdi-chevron-up</v-icon>
             </v-btn>
@@ -135,6 +135,14 @@
                       v-model="fp.dynamicValue"
                       @input="validateRequirementForm()"
                       :label="fp.parameterName"></v-text-field>
+                    <v-checkbox
+                      v-else-if="fp.dataTypeId === 3"
+                      :label="fp.parameterName"
+                      :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                      :value="fp.dynamicValue === 'true'"
+                      @change="changeBooleanValue($event, fp)"></v-checkbox>
                     <v-text-field
                       :key="index"
                       v-else
@@ -171,7 +179,7 @@
               v-if="newRequirement.operatorTypeId && newRequirement.customValue && ![7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)
                     && ((!selectedCustomField.listOfValueId || selectedCustomField.listOfValueId === null) && (!selectedCustomField.customFieldSqlKey || selectedCustomField.customFieldSqlKey === null) && (!selectedCustomField.companySystemListId || selectedCustomField.companySystemListId === null))"
               v-model="newRequirement.requirementValue"
-              placeholder="Enter a value X"
+              placeholder="Enter a value"
               @input="validateRequirementForm()"
               label="Value">
             </v-text-field>
@@ -341,28 +349,31 @@
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                           <v-text-field
-                            v-if="fp.dataTypeId === 2"
+                            v-else-if="fp.dataTypeId === 2"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
                             placeholder="Enter a timestamp"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
-                          <v-text-field
-                            v-if="fp.dataTypeId === 3"
+                          <v-checkbox
+                            v-else-if="fp.dataTypeId === 3"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
-                            placeholder="Enter a boolean"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                            :value-comparator="function (a, b) {
+                                      return fp.dynamicValue === 'true'
+                                    }"
+                            :value="fp.dynamicValue === 'true'"
+                            @change="changeBooleanValue($event, fp)"
+                            :label="fp.parameterName"></v-checkbox>
                           <v-text-field
-                            v-if="fp.dataTypeId === 4"
+                            v-else-if="fp.dataTypeId === 4"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
                             placeholder="Enter a number"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                           <v-text-field
-                            v-if="fp.dataTypeId === 6"
+                            v-else-if="fp.dataTypeId === 6"
                             :readonly="item.immutable || !userCanEdit"
                             :disabled="item.immutable || !userCanEdit"
                             placeholder="Enter an integer"
@@ -538,52 +549,16 @@
                   </td>
                   <td>
                     <div style="display: flex;">
-                      <v-btn small text @click="[expanded = [item], loadOperatorTypes(item.dataTypeId, item.processStepRequirementTypeId),
+                      <v-btn small text color="primary" @click="[expanded = [item], loadOperatorTypes(item.dataTypeId, item.processStepRequirementTypeId),
                                     loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index]"
                              v-if="!expanded.includes(item)">
                         <v-icon v-if="item.immutable">expand_more</v-icon>
                         <v-icon v-else>edit</v-icon>
                       </v-btn>
-                      <v-btn small text @click="[expanded = [], selectedRequirementIndex = index]"
+                      <v-btn small text color="primary" @click="[expanded = [], selectedRequirementIndex = index]"
                              v-if="expanded.includes(item)">cancel
                       </v-btn>
-                      <v-dialog
-                        v-if="userCanEdit"
-                        v-model="item.deleteConfirm"
-                        width="500">
-                        <template #activator="{ on }">
-                          <v-btn small text v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                            class="text-h5 grey lighten-2"
-                            primary-title>
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text class="pt-4">
-                            Are you sure you want to delete this requirement?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              @click="item.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                              color="primaryCustom"
-                              text
-                              @click="deleteRequirement(item)">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
+                      <v-btn small text color="primary" v-if="userCanEdit" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                     </div>
                   </td>
                 </tr>
@@ -593,6 +568,12 @@
         </v-row>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                 @confirm="deleteRequirement"
+                                 @close-dialog="closeDeleteDialog">
+      Are you sure you want to delete this requirement?
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -608,9 +589,11 @@ import {
   getRequestWithParams,
   getSnackbar
 } from '@/helpers/helpers'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepRequirements',
+  components: {ConfirmationDialog},
   mixins: [Vue2Filters.mixin],
   props: {
     eventRequirements: Boolean,
@@ -673,7 +656,9 @@ export default {
 
       requirements: [],
       availableFunctions: [],
-      apiUrl: ''
+      apiUrl: '',
+      showDeleteDialog: false,
+      itemToDelete: null
     }
   },
   computed: {},
@@ -684,6 +669,9 @@ export default {
   },
   methods: {
     //requirements
+    changeBooleanValue(e, fp) {
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    },
     async getRequirements() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -1120,7 +1108,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteRequirement(item) {
+    async deleteRequirement() {
+      const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let url = this.apiUrl + `/${item.id}`
@@ -1144,6 +1133,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.closeDeleteDialog()
     },
     getListValueName(item) {
       let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
@@ -1151,6 +1141,10 @@ export default {
       let match = item.availableListOfValues.find(i => i.id === idToUse)
       return match ? match.name : 'unknown'
     },
+    closeDeleteDialog(){
+      this.showDeleteDialog = false
+      this.itemToDelete = null
+    }
   }
 
 }

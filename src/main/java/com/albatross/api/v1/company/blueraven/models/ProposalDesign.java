@@ -14,7 +14,7 @@ public class ProposalDesign {
 
   private Long projectId, projectProcessStepId, processStepStatusTypeId;
   private Long offset, imageIndex = 0L;
-  private String projectName, dateCreated, companyProcessStepStatusType;
+  private String projectName, dateCreated, dueDate, companyProcessStepStatusType;
   private List<Proposal> proposals;
   private List<Attachment> attachments;
 }

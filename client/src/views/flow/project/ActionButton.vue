@@ -1,7 +1,7 @@
 <template>
   <v-btn
     :disabled="!proceed"
-    color="primaryCustom"
+    color="primary"
     class="action-button"
     @click="completeAction"
   >

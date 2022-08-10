@@ -12,34 +12,6 @@
   margin-bottom: 0 !important;
 }
 
-.theme--light,
-.theme--light.application,
-.theme--light.application .text--primary,
-.theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
-.theme--light.v-input:not(.v-input--is-disabled) input,
-.theme--light.v-input:not(.fix-switch-color) .v-input--switch__thumb,
-.theme--light.v-input:not(.fix-switch-color) .v-input--switch__track,
-.theme--light.v-select .v-select__selections {
-  color: var(--v-primaryText-base) !important;
-  /*color: #1F3C73 !important;*/
-}
-//v-input--switch__thumb theme--light
-//v-input--switch__track theme--light
-.theme--light.v-input--is-disabled i,
-.theme--light.fix-switch-color:not(.v-input--is-label-active) .v-input--switch__thumb,
-.theme--light.fix-switch-color:not(.v-input--is-label-active) .v-input--switch__track,
-.theme--light.v-input--switch input,
-.v-list-item--disabled .v-list-item__content .v-list-item__title,
-.theme--light.v-input--is-disabled label{
-  color: #9E9E9E !important;
-}
-
-//.theme--light.error--text i,
-//.theme--light.error--text label,
-.theme--light.error--text div .v-messages__message {
-  color: red !important;
-}
-
 @font-face {
   font-family: "Congrats";
   src: local("Congrats"),
@@ -63,6 +35,14 @@ body {
   font-weight: 700;
 }
 
+.default-text-color, .default-text-color label {
+  color: rgba(0,0,0,0.87) !important;
+}
+
+.anchor {
+  color: var(--v-anchor-base) !important;
+} //this ought to work automatically with vuetify, but it doesn't
+
 .fixed-toolbar {
   position: sticky;
   position: -webkit-sticky; /* for Safari */
@@ -77,8 +57,8 @@ body {
 }
 
 .primary-custom-bg {
-  background-color: var(--v-primaryCustom-base) ;
-  border-color: var(--v-primaryCustom-base);
+  background-color: var(--v-primary-base) ;
+  border-color: var(--v-primary-base);
 }
 
 /* required to make autocomplete dropdowns not get covered up */
@@ -95,7 +75,6 @@ body {
 }
 
 #app {
-  font-family: 'Lato', sans-serif;
   letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -200,6 +179,20 @@ label[for="adminOriginatorSelect"] {
   vertical-align: middle;
   margin-left: 10px;
 }
+
+//globally set all table headers to lighter grey
+div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
+  color: var(--v-grey-base) !important;
+}
+
+//globally remove background color for active table headers
+.v-data-table--dense.v-data-table--fixed-header.theme--light > div > table > thead > tr > th.active {
+  background-color: transparent !important;
+}
+
+.primary-row {
+  background-color: var(--v-primary-lighten9) !important;
+}
 .vertical-top {
   vertical-align: top;
 }
@@ -245,11 +238,11 @@ label[for="adminOriginatorSelect"] {
 }
 
 .shaded-row{
-  background-color: var(--v-rowShadeCustom-base) !important;
+  background-color: var(--v-primary-lighten9) !important;
 }
 
 .row-hover:hover {
-  background-color: var(--v-rowHoverCustom-base) !important;
+  background-color: var(--v-primary-lighten8) !important;
 }
 
 .square-card{
@@ -277,19 +270,19 @@ label[for="adminOriginatorSelect"] {
 }
 
 .status-active {
-  color: #228726;
+  color: var(--v-success-base);
   font-weight: normal;
   font-size: 0.75rem;
 }
 
 .status-complete {
-  color: #3671E3;
+  color:  var(--v-accent-base);
   font-weight: normal;
   font-size: 0.75rem;
 }
 
 .status-cancelled {
-  color: #8B0000;
+  color: var(--v-error-base);
   font-weight: normal;
   font-size: 0.75rem;
 }
@@ -355,6 +348,8 @@ label[for="adminOriginatorSelect"] {
   border-radius: 10px;
 }
 
+
+
 .app-toolbar{
   .app-title {
     font-size: 20px;
@@ -368,7 +363,7 @@ label[for="adminOriginatorSelect"] {
   width: 100% !important;
   height: 100% !important;
   align-items: center;
-  padding: 0 10px;
+  color: var(--v-shades-black) !important;
 }
 
 /* currently toolbar doesn't support multi line titles */
@@ -416,14 +411,14 @@ label[for="adminOriginatorSelect"] {
 //Global Styles
 //there may be a better way to do this, but I wanted to at least get something going here
 .albatross-header-1 {
-  font-weight: normal;
+  font-weight: bold;
   font-size: 1.25rem;
 }
 .albatross-header-2,
 .cfg-name-toolbar .v-toolbar__title.albatross-header-2,
 .v-toolbar__title.albatross-header-2 //to override vuetify styling
 {
-  font-weight: bold;
+  font-weight: normal;
   font-size: 1.25rem;
 }
 .albatross-header-3,
@@ -484,5 +479,6 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 .albatross-caption {
   font-weight: normal;
   font-size: 0.75rem;
+  line-height: 1.6;
 }
 

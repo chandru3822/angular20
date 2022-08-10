@@ -117,12 +117,12 @@ BEGIN
                v_company_process_ids && dv.company_process_ids
     loop
       v_sql = NULL;
-      v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
       for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) a
         loop
+          v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -141,24 +141,23 @@ BEGIN
                                                     x.field_to_update,
                                                     x.update_first_value_only,
                                                     x.update_first_value_only_id,
-                                                    x.is_last_row,
+                                                    true,
                                                     x.data_type_id);
 
-
+          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                       v_value, null::text, null::text,
+                                                       x.update_first_value_only,
+                                                       x.update_first_value_only_id,
+                                                       true, true, v_project_ids)
+          into v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(contact_custom_field_value_id, error)
+              values (new.id, SQLERRM);
+          end;
         end loop;
-      select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, null::text, null::text,
-                                                   x.update_first_value_only,
-                                                   x.update_first_value_only_id,
-                                                   x.is_last_row, true, v_project_ids)
-      into v_sql;
-      begin
-        execute v_sql;
-      exception
-        when others then
-          insert into flow.trigger_error(contact_custom_field_value_id, error)
-          values (new.id, SQLERRM);
-      end;
     end loop;
 
 --TODO what to do here
@@ -223,6 +222,22 @@ BEGIN
       update flow.contact
       set date_modified = now()
     where id = new.contact_id;
+
+    with update_data as (
+      select ccfv2.id
+      from flow.data_view_field_config dvfc
+             inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
+             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+             inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id in (2)
+             inner join flow.contact_custom_field_value ccfv2 on cfga.id = ccfv2.custom_field_group_assignment_id
+             inner join flow.contact c on ccfv2.contact_id = c.id and c.id = new.contact_id
+    )
+    update flow.contact_custom_field_value ccfv
+    set id = ud.id
+    from update_data ud
+    where ud.id= ccfv.id;
+
+
   end if;
 
   select quote_literal(array_agg(new.id)::text)
@@ -327,12 +342,12 @@ BEGIN
                v_company_process_id = any(dv.company_process_ids)
     loop
       v_sql = NULL;
-      v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
       for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) a
         loop
+          v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -351,24 +366,23 @@ BEGIN
                                                     x.field_to_update,
                                                     x.update_first_value_only,
                                                     x.update_first_value_only_id,
-                                                    x.is_last_row,
+                                                    true,
                                                     x.data_type_id);
 
-
+          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                       v_value, null::text, null::text,
+                                                       x.update_first_value_only,
+                                                       x.update_first_value_only_id,
+                                                       true, true, v_project_ids)
+          into v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_custom_field_value_id, error)
+              values (new.id, SQLERRM);
+          end;
         end loop;
-      select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, null::text, null::text,
-                                                   x.update_first_value_only,
-                                                   x.update_first_value_only_id,
-                                                   x.is_last_row, true, v_project_ids)
-      into v_sql;
-      begin
-        execute v_sql;
-      exception
-        when others then
-          insert into flow.trigger_error(project_custom_field_value_id, error)
-          values (new.id, SQLERRM);
-      end;
     end loop;
 
   --TODO what to do here
@@ -552,12 +566,12 @@ BEGIN
              v_company_process_id = any(dv.company_process_ids)
     loop
       v_sql = NULL;
-      v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
       for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) a
         loop
+          v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -576,24 +590,24 @@ BEGIN
                                                     x.field_to_update,
                                                     x.update_first_value_only,
                                                     x.update_first_value_only_id,
-                                                    x.is_last_row,
+                                                    true,
                                                     x.data_type_id);
 
-
+          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                       v_value, null::text, null::text,
+                                                       x.update_first_value_only,
+                                                       x.update_first_value_only_id,
+                                                       true, true, v_project_ids)
+          into v_sql;
+        --  raise notice 'v_sql %',v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_custom_value_id, error)
+              values (new.id, SQLERRM);
+          end;
         end loop;
-      select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, null::text, null::text,
-                                                   x.update_first_value_only,
-                                                   x.update_first_value_only_id,
-                                                   x.is_last_row, true, v_project_ids)
-      into v_sql;
-      begin
-        execute v_sql;
-      exception
-        when others then
-          insert into flow.trigger_error(project_process_step_custom_value_id, error)
-          values (new.id, SQLERRM);
-      end;
     end loop;
   RETURN NULL;
 END
@@ -623,132 +637,132 @@ declare
   v_company_process_id integer;
 BEGIN
 
-  select pps.project_id, c.company_id,p.company_process_id
-  into v_project_id,v_company_id,v_company_process_id
-  from flow.project_process_step_event ppse
-         inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
-         inner join flow.project p on pps.project_id = p.id
-         inner join flow.contact c on p.contact_id = c.id
-  where ppse.id = new.id;
+  if new.archived is false then
+    select pps.project_id, c.company_id,p.company_process_id
+    into v_project_id,v_company_id,v_company_process_id
+    from flow.project_process_step_event ppse
+           inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
+           inner join flow.project p on pps.project_id = p.id
+           inner join flow.contact c on p.contact_id = c.id
+    where ppse.id = new.id;
 
-  select est.id
-  into v_event_status_type_id
-  from flow.company_event_status_type cest
-         inner join flow.event_status_type est on cest.event_status_type_id = est.id
-  where cest.id = new.company_event_status_type_id;
-
-
-  if  old.company_event_status_type_id != new.company_event_status_type_id then
-    if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
-
-      new.cancelled_date = null;
-      new.completed_date = now();
-    elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
-      new.cancelled_date = now();
-      new.completed_date = null;
-    else
-      new.cancelled_date = null;
-      new.completed_date = null;
-    end if;
-  end if;
+    select est.id
+    into v_event_status_type_id
+    from flow.company_event_status_type cest
+           inner join flow.event_status_type est on cest.event_status_type_id = est.id
+    where cest.id = new.company_event_status_type_id;
 
 
-  if (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE')) then
-    new.scheduled_date = now();
-  end if;
+    if  old.company_event_status_type_id != new.company_event_status_type_id then
+      if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
 
-  select quote_literal(array_agg(coalesce(v_project_id, v_project_id))::text)
-  into v_project_ids;
-
-  for z in select *
-           from flow.get_schema_by_company(v_company_id) dv
-           where exists(select ao.dvfc_id
-                        from flow.get_data_view_field_configs(dv.id,
-                                                              'EVENT',
-                                                              null) ao
-                        where ao.process_step_event_id = new.process_step_event_id) and
-               v_company_process_id = any(dv.company_process_ids)
-    loop
-      v_sql = NULL;
-      v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select a.*,lead(a.dvfc_id) OVER (order by a.update_first_value_only_id nulls last) IS NULL::boolean AS is_last_row
-               from flow.get_data_view_field_configs(z.id,
-                                                     'EVENT',
-                                                     null) a
-               where process_step_event_id = new.process_step_event_id
-               order by update_first_value_only_id nulls last
-
-        loop
-          execute format('SELECT $1.%I', x.column_name)
-            into v_value using new;
-raise notice 'v_value %',v_value;
-          select *
-          into v_sql
-          from flow.execute_data_view_field_configs(x.contains_children,
-                                                    v_value,
-                                                    x.dvfc_id,
-                                                    new.id,
-                                                    v_sql,
-                                                    x.field_to_update,
-                                                    x.update_first_value_only,
-                                                    x.update_first_value_only_id,
-                                                    x.is_last_row,
-                                                    x.data_type_id);
-
-          if x.update_first_value_only is true then
-            v_sql = trim(trailing ' ,' from v_sql);
-            select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                         v_value::text, null::text, null::text,
-                                                         x.update_first_value_only,
-                                                         x.update_first_value_only_id,
-                                                         x.is_last_row, true, v_project_ids)
-            into v_sql;
-            begin
-              execute v_sql;
-            exception
-              when others then
-                insert into flow.trigger_error(project_process_step_event_id, error)
-                values (new.id, SQLERRM);
-            end;
-            v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-          end if;
-
-        end loop;
-      if x.update_first_value_only is not true then
-        select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                     v_value::text, null::text, null::text,
-                                                     x.update_first_value_only,
-                                                     x.update_first_value_only_id,
-                                                     x.is_last_row, true, v_project_ids)
-        into v_sql;
-        begin
-          execute v_sql;
-        exception
-          when others then
-            insert into flow.trigger_error(project_process_step_event_id, error)
-            values (new.id, SQLERRM);
-        end;
+        new.cancelled_date = null;
+        new.completed_date = now();
+      elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
+        new.cancelled_date = now();
+        new.completed_date = null;
+      else
+        new.cancelled_date = null;
+        new.completed_date = null;
       end if;
-
-    end loop;
-
-  if new.process_step_event_id = 14 then
-    if new.start_time is not null then
-      perform flow.company_event_specific_tasks(v_company_id,
-                                                new.resource_id,
-                                                new.id,
-                                                v_project_id,
-                                                'UPDATE_APPOINTMENT_DATA',
-                                                new.start_time);
     end if;
-    if
-      ((old.resource_id is null and new.resource_id is not null) or
-       (old.resource_id != new.resource_id)) then
-      perform flow.company_event_specific_tasks(v_company_id,
-                                                new.resource_id,
-                                                new.id,
-                                                v_project_id,
-                                                'UPDATE_OWNER_ON_PROJECT');
+
+
+    if (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE')) then
+      new.scheduled_date = now();
+    end if;
+
+    select quote_literal(array_agg(coalesce(v_project_id, v_project_id))::text)
+    into v_project_ids;
+
+    for z in select *
+             from flow.get_schema_by_company(v_company_id) dv
+             where exists(select ao.dvfc_id
+                          from flow.get_data_view_field_configs(dv.id,
+                                                                'EVENT',
+                                                                null) ao
+                          where ao.process_step_event_id = new.process_step_event_id) and
+                 v_company_process_id = any(dv.company_process_ids)
+      loop
+        v_sql = NULL;
+        v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+        for x in select a.*,lead(a.dvfc_id) OVER (order by a.update_first_value_only_id nulls last) IS NULL::boolean AS is_last_row
+                 from flow.get_data_view_field_configs(z.id,
+                                                       'EVENT',
+                                                       null) a
+                 where process_step_event_id = new.process_step_event_id
+                 order by update_first_value_only_id nulls last
+
+          loop
+            execute format('SELECT $1.%I', x.column_name)
+              into v_value using new;
+  --raise notice 'v_value %',v_value;
+            select *
+            into v_sql
+            from flow.execute_data_view_field_configs(x.contains_children,
+                                                      v_value,
+                                                      x.dvfc_id,
+                                                      new.id,
+                                                      v_sql,
+                                                      x.field_to_update,
+                                                      x.update_first_value_only,
+                                                      x.update_first_value_only_id,
+                                                      x.is_last_row,
+                                                      x.data_type_id);
+
+            if x.update_first_value_only is true then
+              v_sql = trim(trailing ' ,' from v_sql);
+              select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                           v_value::text, null::text, null::text,
+                                                           x.update_first_value_only,
+                                                           x.update_first_value_only_id,
+                                                           x.is_last_row, true, v_project_ids)
+              into v_sql;
+              begin
+                execute v_sql;
+              exception
+                when others then
+                  insert into flow.trigger_error(project_process_step_event_id, error)
+                  values (new.id, SQLERRM);
+              end;
+              v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+            end if;
+
+          end loop;
+        if x.update_first_value_only is not true then
+          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                       v_value::text, null::text, null::text,
+                                                       x.update_first_value_only,
+                                                       x.update_first_value_only_id,
+                                                       x.is_last_row, true, v_project_ids)
+          into v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_event_id, error)
+              values (new.id, SQLERRM);
+          end;
+        end if;
+
+      end loop;
+
+    if new.process_step_event_id = 14 then
+      if new.start_time is not null then
+        perform flow.company_event_specific_tasks(v_company_id,
+                                                  new.resource_id,
+                                                  new.id,
+                                                  v_project_id,
+                                                  'UPDATE_APPOINTMENT_DATA',
+                                                  new.start_time);
+      end if;
+      if new.resource_id is not null then
+        perform flow.company_event_specific_tasks(v_company_id,
+                                                  new.resource_id,
+                                                  new.id,
+                                                  v_project_id,
+                                                  'UPDATE_OWNER_ON_PROJECT');
+      end if;
     end if;
   end if;
 
@@ -821,7 +835,6 @@ BEGIN
                v_company_process_id = any(dv.company_process_ids)
     loop
       v_sql = NULL;
-      v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
       for x in select dvfc.*,lead(dvfc.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
@@ -830,6 +843,7 @@ BEGIN
                               and dvfc.process_step_event_id = ppse.process_step_event_id
 
         loop
+          v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
@@ -848,24 +862,23 @@ BEGIN
                                                     x.field_to_update,
                                                     x.update_first_value_only,
                                                     x.update_first_value_only_id,
-                                                    x.is_last_row,
+                                                    true,
                                                     x.data_type_id);
 
-
+          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                       v_value, null::text, null::text,
+                                                       x.update_first_value_only,
+                                                       x.update_first_value_only_id,
+                                                       true, true, v_project_ids)
+          into v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
+              values (new.id, SQLERRM);
+          end;
         end loop;
-      select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                   v_value, null::text, null::text,
-                                                   x.update_first_value_only,
-                                                   x.update_first_value_only_id,
-                                                   x.is_last_row, true, v_project_ids)
-      into v_sql;
-      begin
-        execute v_sql;
-      exception
-        when others then
-          insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
-          values (new.id, SQLERRM);
-      end;
     end loop;
 
   if new.custom_field_group_assignment_id in (4, 21506) then
@@ -1384,7 +1397,7 @@ BEGIN
     into v_owner_org_ids;
 
     select array_agg(owner_id) as owner_ids
-    from (select new.id as contact_id, new.owner_user_position_id as owner_id
+    from (select new.id as contact_id, new.owner_user_position_id as owner_id where new.owner_user_position_id is not null
           union
           select p.contact_id as contact_id, user_position_id as owner_id
           from flow.project p
@@ -1439,7 +1452,7 @@ BEGIN
     into v_owner_org_ids;
 
     select array_agg(owner_id) as owner_ids
-    from (select new.contact_id as contact_id,new.user_position_id as owner_id
+    from (select new.contact_id as contact_id,new.user_position_id as owner_id  where new.user_position_id is not null
           union
           select p.contact_id as contact_id,p.user_position_id as owner_id
           from flow.project p

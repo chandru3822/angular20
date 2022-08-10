@@ -18,19 +18,6 @@
            coalesce((
                       select array_to_json(array_agg(rows))
                       from (
-                             select cot.id as "objectTypeId",
-                                    cot.object_type as "objectType",
-                                    cfot.id,
-                                    cfot.custom_field_id as "customFieldId",
-                                    cfot.archived
-                             from brs.object_type cot
-                                    left join brs.custom_field_object_type cfot on cfot.object_type_id = cot.id and cfot.custom_field_id = cf.id and cfot.archived is not true
-                             where cot.archived is not true
-                               and cfot.archived is not true
-                           ) rows), '[]') AS custom_field_object_types,
-           coalesce((
-                      select array_to_json(array_agg(rows))
-                      from (
                              select lv.id,
                                     lv.name,
                                     lv.parent_id as "parentId",
@@ -68,19 +55,6 @@
            cf.custom_field_sql_key,
            cf.custom_field_sql_reference_table,
            cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
-           coalesce((
-                      select array_to_json(array_agg(rows))
-                      from (
-                             select cot.id as "objectTypeId",
-                                    cot.object_type as "objectType",
-                                    cfot.id,
-                                    cfot.custom_field_id as "customFieldId",
-                                    cfot.archived
-                             from brs.object_type cot
-                                    left join brs.custom_field_object_type cfot on cfot.object_type_id = cot.id and cfot.custom_field_id = cf.id and cfot.archived is not true
-                             where cot.archived is not true
-                               and cfot.archived is not true
-                           ) rows), '[]') AS custom_field_object_types,
            coalesce((
                       select array_to_json(array_agg(rows))
                       from (
@@ -171,20 +145,6 @@
       date_modified = now()
     where id = :id
   ]]></blueravenCustomField.archiveListOfValue>
-
-  <blueravenCustomField.updateCustomFieldObjectType><![CDATA[
-    update brs.custom_field_object_type
-    set archived = :archived,
-      modified_by_id = :userId,
-      date_modified = now()
-    where id = :id
-  ]]></blueravenCustomField.updateCustomFieldObjectType>
-
-  <blueravenCustomField.insertCustomFieldObjectType><![CDATA[
-    insert into brs.custom_field_object_type(custom_field_id, object_type_id, created_by_id)
-    values (:customFieldId, :objectTypeId, :userId)
-    ON CONFLICT do nothing;
-  ]]></blueravenCustomField.insertCustomFieldObjectType>
 
   <blueravenCustomField.getByObjectCode><![CDATA[
 select cf.id,

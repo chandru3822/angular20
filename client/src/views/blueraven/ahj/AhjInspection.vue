@@ -2,13 +2,14 @@
 <template>
   <v-row no-gutters>
     <v-col class="ahj-form-btns py-1" cols="12">
-      <a v-if="dataWasChanged"
+      <v-btn color="primary" text v-if="dataWasChanged"
          @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
-      >Cancel</a>
-      <v-btn class="white--text mr-0 save-btn" v-if="userCanEdit"
-             color="primaryButton"
+      >Cancel</v-btn>
+      <v-btn class="white--text mr-0 save-btn"
+             v-if="userCanEdit"
+             color="primary"
              @click="validateForm()"
       >Save
       </v-btn>
@@ -21,7 +22,7 @@
         <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
           <!-- SCHEDULING WITH AHJ -->
           <v-card>
-            <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
+            <v-card-title class="primary white--text font-weight-bold title-with-icon">
               Scheduling with AHJ
               <router-link :to="'/schedule'" title="Go to Scheduling Tool"
                            v-if="this.$store.getters.userHasFeature('SCHEDULE')">
@@ -38,15 +39,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
+                              auto-grow
+                              :rows="1"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
-                              class="other-field"
-                ></v-text-field>
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.requiredInspectionTypes"
                             @change="dataWasChanged = true"
@@ -58,7 +61,7 @@
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
                   Scheduling Note
-                  <v-btn text x-small fab @click="editSchedulingNote = !editSchedulingNote">
+                  <v-btn text color="primary" x-small fab @click="editSchedulingNote = !editSchedulingNote">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </v-card-title>
@@ -69,6 +72,7 @@
                               :disabled="!userCanEdit || !editSchedulingNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -90,7 +94,7 @@
         <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
           <!-- SCHEDULING WITH BRS TECHNICIAN -->
           <v-card>
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Scheduling with BRS Technician
             </v-card-title>
             <v-card-text class="mt-4">
@@ -103,20 +107,22 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              :rows="1"
+                              auto-grow
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
                   Instructions for BRS Technician
-                  <v-btn text x-small fab @click="editInstructionsForBRSTech = !editInstructionsForBRSTech">
+                  <v-btn text color="primary" x-small fab @click="editInstructionsForBRSTech = !editInstructionsForBRSTech">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </v-card-title>
@@ -127,13 +133,14 @@
                               :disabled="!userCanEdit || !editInstructionsForBRSTech"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
                   Documentation Notes
-                  <v-btn text x-small fab @click="editDocumentationNote = !editDocumentationNote">
+                  <v-btn text color="primary" x-small fab @click="editDocumentationNote = !editDocumentationNote">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </v-card-title>
@@ -144,6 +151,7 @@
                               :disabled="!userCanEdit || !editDocumentationNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -165,7 +173,7 @@
         <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
           <!-- SCHEDULING WITH CUSTOMER -->
           <v-card class="mb-3">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Scheduling with Customer
             </v-card-title>
             <v-card-text class="mt-4">
@@ -196,7 +204,7 @@
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
                   Scheduling with Customer Note
-                  <v-btn text x-small fab @click="editCustomerNote = !editCustomerNote">
+                  <v-btn text color="primary" x-small fab @click="editCustomerNote = !editCustomerNote">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </v-card-title>
@@ -207,6 +215,7 @@
                               :disabled="!userCanEdit || !editCustomerNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -225,7 +234,7 @@
 
           <!-- OBTAINING RESULTS -->
           <v-card>
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Obtaining Results
             </v-card-title>
             <v-card-text class="mt-4">
@@ -245,20 +254,22 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              :rows="1"
+                              auto-grow
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
                   Obtaining Results Notes
-                  <v-btn text x-small fab @click="editObtainingResultsNote = !editObtainingResultsNote">
+                  <v-btn text color="primary" x-small fab @click="editObtainingResultsNote = !editObtainingResultsNote">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </v-card-title>
@@ -269,6 +280,7 @@
                               :disabled="!userCanEdit || !editObtainingResultsNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -290,7 +302,7 @@
         <v-col cols="12" md="3" class="pl-sm-0 pl-md-1 mb-3">
           <!-- RE-INSPECTIONS -->
           <v-card class="mb-3">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Re-inspections
             </v-card-title>
             <v-card-text class="mt-4">
@@ -303,15 +315,17 @@
                   :field="item"
                   :filled-style="true"
                 />
-                <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
                               v-model="item.textValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               label="Other Value"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               filled
-                              class="other-field"
-                ></v-text-field>
+                              :rows="1"
+                              auto-grow
+                              class="other-field override-readonly-font-color"
+                ></v-textarea>
               </div>
               <v-text-field v-model="ahjInspection.inspectionFee"
                             @change="dataWasChanged = true"
@@ -331,7 +345,7 @@
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
                   Re-inspection Notes
-                  <v-btn text x-small fab @click="editReinspectionNote = !editReinspectionNote">
+                  <v-btn text color="primary" x-small fab @click="editReinspectionNote = !editReinspectionNote">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </v-card-title>
@@ -342,6 +356,7 @@
                               :disabled="!userCanEdit || !editReinspectionNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -368,7 +383,7 @@
 
           <!-- IN-HOUSE MPUS -->
           <v-card class="mb-3">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               In-House MPUs
             </v-card-title>
             <v-card-text class="mt-4 pb-1">
@@ -385,7 +400,7 @@
               <v-card flat class="pa-0">
                 <v-card-title class="pa-0">
                   MPU Inspection Notes
-                  <v-btn text x-small fab @click="editMPUNote = !editMPUNote">
+                  <v-btn text color="primary" x-small fab @click="editMPUNote = !editMPUNote">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </v-card-title>
@@ -396,6 +411,7 @@
                               :disabled="!userCanEdit || !editMPUNote"
                               filled
                               auto-grow
+                              class="override-readonly-font-color"
                   ></v-textarea>
                 </v-card-text>
               </v-card>
@@ -547,26 +563,24 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions class="px-6">
-            <v-spacer></v-spacer>
-            <a @click="saveDialog = false"
-               class="cancel-link mr-2"
-            >Cancel</a>
-            <v-btn v-if="ahjInspection.updateAllInState"
-                   class="white--text mr-0 save-btn"
-                   color="primaryButton"
-                   @click="saveConfirmDialog = true"
-            >Save
-            </v-btn>
-            <v-btn v-else
-                   class="white--text mr-0 save-btn"
-                   color="primaryButton"
-                   @click="updateAhjInspection"
-            >Save
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="saveDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</v-btn>
+          <v-btn v-if="ahjInspection.updateAllInState"
+                 class="white--text mr-0 save-btn"
+                 color="primary"
+                 @click="saveConfirmDialog = true"
+          >Save</v-btn>
+          <v-btn v-else
+                 class="white--text mr-0 save-btn"
+                 color="primary"
+                 @click="updateAhjInspection"
+          >Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
       <v-dialog v-model="saveConfirmDialog" max-width="500">
         <v-card>
@@ -578,19 +592,18 @@
             Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
           </v-card-text>
 
-          <v-card-actions class="px-6">
-            <v-spacer></v-spacer>
-            <a @click="saveConfirmDialog = false"
-               class="cancel-link mr-2"
-            >Cancel</a>
-            <v-btn class="white--text mr-0 save-btn"
-                   color="primaryButton"
-                   @click="updateAhjInspection"
-            >Yes
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="saveConfirmDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</v-btn>
+          <v-btn class="white--text mr-0 save-btn"
+                 color="primary"
+                 @click="updateAhjInspection"
+          >Yes</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     </v-form>
   </v-row>
@@ -859,7 +872,6 @@ export default {
 
 .save-btn {
   margin: 10px 5px 10px 0;
-  text-transform: capitalize;
 }
 
 .empty-list {

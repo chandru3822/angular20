@@ -1,12 +1,43 @@
 <template>
   <v-container class="custom-field-group-container">
+    <v-dialog width="700"
+              v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2 error--text">
+          Error Deleting Attachment Type
+        </v-card-title>
+
+        <v-card-text class="pt-5">
+          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
+            <div class="mb-3">* This attachment type is currently in use.  You must remove it from the following locations before deleting.</div>
+            <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
+              <strong>{{ a.processStepName }}</strong>
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -18,7 +49,7 @@
                         placeholder="Enter a type"
                         label="Attachment Type">
           </v-text-field>
-          <v-btn v-if="addNew" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
+          <v-btn v-if="addNew" color="primary" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
           <v-list v-for="(a, index) in filterBy(attachmentTypes, false, 'archived')"
                   :key="index" class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
@@ -28,17 +59,16 @@
                 <div v-else>{{a.attachmentType}}</div>
               </v-list-item-content>
               <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                <v-icon v-if="selectedAttachmentTypeId === a.id" @click="saveType(a)">save</v-icon>
-                <v-icon v-else @click="selectedAttachmentTypeId = a.id">edit</v-icon>
+                <v-icon v-if="selectedAttachmentTypeId === a.id" color="primary" @click="saveType(a)">save</v-icon>
+                <v-icon v-else color="primary" @click="selectedAttachmentTypeId = a.id">edit</v-icon>
               </v-list-item-action>
-              <confirm-delete-dialog
-                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                  label="this attachment type: "
-                  :item-to-delete="a.attachmentType"
-                  @confirm-delete="[a.archived = true, deleteType(a.id)]"
-              ></confirm-delete-dialog>
+              <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="[itemToDelete=a, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
             </v-list-item>
           </v-list>
+          <ConfirmationDialog :open-dialog="showDeleteDialog"
+                                       @confirm = deleteType
+                                       @close-dialog="closeDeleteDialog"
+          >Are you sure you want to delete this attachment type: <strong>{{itemToDeleteAttachmentType}}</strong></ConfirmationDialog>
         </v-container>
       </v-col>
     </v-row>
@@ -55,10 +85,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "@/ConfirmationDialog";
 
   export default {
     name: 'Attachments',
-    components: {ConfirmDeleteDialog},
+    components: {ConfirmationDialog, ConfirmDeleteDialog},
     mixins: [Vue2Filters.mixin],
 
     data() {
@@ -70,10 +101,18 @@
         newType: {},
         selectedAttachmentTypeId: null,
         userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        cannotDeleteReasons: {},
+        deleteError: false,
+        showDeleteDialog: false,
+        itemToDelete: null
       }
     },
-    computed: {},
+    computed: {
+      itemToDeleteAttachmentType() {
+        return this.itemToDelete ? this.itemToDelete.attachmentType : ''
+      }
+    },
     methods: {
       async getAttachmentTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -89,19 +128,27 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteType(typeId) {
+      async deleteType() {
+        const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/attachmentType/type/${typeId}`)
+          const {status} = await deleteRequest(`/attachmentType/delete/${item.id}`)
+          item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Attachment Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
+          if (e.status === 400) {
+            item.deleteConfirm = false
+            this.deleteError = true
+            this.cannotDeleteReasons = e.data
+          }
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.closeDeleteDialog()
       },
       async addNewType() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -143,6 +190,10 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      closeDeleteDialog(){
+        this.showDeleteDialog = false
+        this.itemToDelete = null
       }
     },
     async created() {

@@ -38,11 +38,11 @@
                                      :dense="'dense'"
                                      :outlined="'outlined'"
                 ></DatetimePickerInput>
-                <v-btn color="primaryCustom" dark class="white--text dash-btn"
+                <v-btn color="primary" dark class="white--text dash-btn"
                   @click="getDashboardValues(true)">
                   Go
                 </v-btn>
-                <v-btn v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser) && !constants.IS_MOBILE"
+                <v-btn outlined color="primary" v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser) && !constants.IS_MOBILE"
                        id="targets-btn" class="dash-btn text-capitalize"
                        to="/companyDashboardTargets" title="View company dashboard targets">
                   Targets
@@ -78,7 +78,7 @@
               </template>
               <template #item="{ item, index }">
                 <tr :class="[{'light-blue-row': !(index % 2)}, {'blue-row': item.show_targets}]"
-                    :style="{'background-color': index === 0 ? '#e9f2ff' : ''}">
+                    :style="{'background-color': index === 0 ? 'var(--v-primary-lighten9)' : ''}">
                   <td class="milestone-col-td">{{ item.name }}</td>
                   <td class="data-col-td total-col-td clickable"
                       @click="openDrilldown(item, false)">{{ item.company_count + item.partner_count }}</td>
@@ -425,7 +425,6 @@
 
           .dash-btn {
             box-shadow: none;
-            border: 1px solid #9E9E9E;
             font-size: 14px;
             font-weight: 500;
             margin-left: 5px;
@@ -459,7 +458,7 @@
       }
 
       th {
-        border-top: 3px solid var(--v-primaryCustom-base);
+        border-top: 3px solid var(--v-primary-base);
         border-bottom: none;
         color: var(--v-primaryText-base);
         font-size: 12px !important;
@@ -469,19 +468,19 @@
     }
 
     .light-blue-row {
-      background-color: #e9f2ff;
+      background-color: var(--v-primary-lighten9);
 
       &:hover {
-        background-color: #e9f2ff;
+        background-color: var(--v-primary-lighten9);
       }
     }
 
     .blue-row {
-      background-color: #aed5ee;
+      background-color: var(--v-primary-lighten8);
       font-weight: bold;
 
       &:hover {
-        background-color: #aed5ee;
+        background-color: var(--v-primary-lighten8);
       }
     }
 
@@ -503,7 +502,7 @@
       }
 
       .total-col-th, .total-col-td {
-        border-left: 2px solid var(--v-primaryCustom-base) !important;
+        border-left: 2px solid var(--v-primary-base) !important;
       }
 
       .data-col-th, .data-col-td {

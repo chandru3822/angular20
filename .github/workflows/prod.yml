@@ -2,7 +2,8 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
 #*******
-#IF YOU NEED TO BUILD/DEPLOY DIRECTLY IN PROD, REMOVE TOP SECTION, AND UNCOMMENT LOWER SECTION. ALSO SEE .aws\prod-definition.json. In there, you would want to change the repo from generic albatross-repo to specific albatross-prod-repo.
+# IF YOU NEED TO BUILD/DEPLOY DIRECTLY IN PROD, REMOVE TOP SECTION, AND UNCOMMENT LOWER SECTION.
+# ALSO SEE .aws\prod-definition.json. In there, you would want to change the repo from generic albatross-repo to specific albatross-prod-repo.
 #*******
 
 #name: Albatross Build
@@ -86,7 +87,7 @@
 #          NETLIFY_SITE_ID: ${{ secrets.PROD_NETLIFY_SITE_ID }}
 #          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 #        run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
-
+#
 
 name: Albatross Build [Prod]
 

@@ -1,113 +1,88 @@
 <template>
   <div id="project-container">
     <!--    modal for editing project fields -->
-    <v-dialog width="500"
-              v-if="project && project.id"
-              v-model="showEditProjectModal" content-class="square-card">
-      <v-card class="px-6 py-4 square-card">
-        <v-form ref="projectEditForm">
-          <v-card-title
-            color="blackText"
-            class="albatross-header-3 text-capitalize pa-0"
-            primary-title>
-            Project Overview
-          </v-card-title>
-          <v-card-text class="pt-4 px-0">
-            <div>
-              <v-text-field
-                v-model="tempProject.projectName"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                label="Project Name"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempProject.street1"
-                label="Street"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempProject.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                v-model="tempProject.city"
-                label="City"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                @change="tempProject.reloadCoordinates = true"
-              ></v-text-field>
-              <v-text-field
-                type="text"
-                v-model="tempProject.postalCode"
-                counter
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                maxlength="10"
-                @keypress="isNumberOrHyphen"
-                :rules="postalCodeRules"
-                @change="tempProject.reloadCoordinates = true"
-                label="Postal Code"
-              ></v-text-field>
-              <v-autocomplete v-model="tempProject.companyStateId"
-                              :items="states"
-                              label="State"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              :loading="statesLoading"
-                              item-text="state"
-                              item-value="id"
-                              @input="tempProject.reloadCoordinates = true"
-              ></v-autocomplete>
-              <v-select v-model="tempProject.companyCountryId"
-                        :items="countries"
-                        label="Country"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        :loading="countriesLoading"
-                        @input="tempProject.reloadCoordinates = true"
-                        item-text="country"
+    <ConfirmationDialog :open-dialog="showEditProjectModal" @confirm="validateForm" @close-dialog="showEditProjectModal = false">
+      <template v-slot:title>Project Overview</template>
+      <v-form ref="projectEditForm">
+        <div>
+          <v-text-field
+            v-model="tempProject.projectName"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            label="Project Name"
+          ></v-text-field>
+          <v-text-field
+            v-model="tempProject.street1"
+            label="Street"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            @change="tempProject.reloadCoordinates = true"
+          ></v-text-field>
+          <v-text-field
+            v-model="tempProject.city"
+            label="City"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            @change="tempProject.reloadCoordinates = true"
+          ></v-text-field>
+          <v-text-field
+            type="text"
+            v-model="tempProject.postalCode"
+            counter
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            maxlength="10"
+            @keypress="isNumberOrHyphen"
+            :rules="postalCodeRules"
+            @change="tempProject.reloadCoordinates = true"
+            label="Postal Code"
+          ></v-text-field>
+          <v-autocomplete v-model="tempProject.companyStateId"
+                          :items="states"
+                          label="State"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          :loading="statesLoading"
+                          item-text="state"
+                          item-value="id"
+                          @input="tempProject.reloadCoordinates = true"
+          ></v-autocomplete>
+          <v-select v-model="tempProject.companyCountryId"
+                    :items="countries"
+                    label="Country"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit"
+                    :loading="countriesLoading"
+                    @input="tempProject.reloadCoordinates = true"
+                    item-text="country"
+                    item-value="id"
+          ></v-select>
+        </div>
+        <v-autocomplete v-model="tempProject.owner"
+                        :readonly="projectOwnerFieldIsReadOnly()"
+                        :disabled="projectOwnerFieldIsReadOnly()"
+                        :items="availableOwners"
+                        :loading="ownersLoading"
+                        label="Project Owner"
+                        clearable
+                        item-text="fullName"
+                        return-object
+                        autocomplete="off">
+        </v-autocomplete>
+        <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
+                        :items="statuses"
+                        :readonly="projectStatusIsReadOnly()"
+                        :disabled="projectStatusIsReadOnly()"
+                        :loading="statusesLoading"
+                        label="Project Stage"
+                        item-text="projectStatusType"
                         item-value="id"
-              ></v-select>
-            </div>
-            <v-autocomplete v-model="tempProject.owner"
-                            :readonly="projectOwnerFieldIsReadOnly()"
-                            :disabled="projectOwnerFieldIsReadOnly()"
-                            :items="availableOwners"
-                            :loading="ownersLoading"
-                            label="Project Owner"
-                            clearable
-                            item-text="fullName"
-                            return-object
-                            autocomplete="off">
-            </v-autocomplete>
-            <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
-                            :items="statuses"
-                            :readonly="projectStatusIsReadOnly()"
-                            :disabled="projectStatusIsReadOnly()"
-                            :loading="statusesLoading"
-                            label="Project Stage"
-                            item-text="projectStatusType"
-                            item-value="id"
-            />
-          </v-card-text>
-        </v-form>
-
-        <v-card-actions class="pa-0">
-          <v-btn @click="showEditProjectModal = false" class="text-capitalize">
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primaryCustom"
-            class="white--text text-capitalize font-weight-bold"
-            :disabled="!project.projectName"
-            @click="validateForm()">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        />
+      </v-form>
+      <template v-slot:yes>Save</template>
+    </ConfirmationDialog>
     <!--    end dialog -->
-
-    <v-toolbar flat color="#E3E3E3" class="project-header" v-if="!projectLoading && project && project.id">
+    <v-toolbar flat color="grey lighten-2" class="project-header" v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title albatross-header-1 d-flex align-center">
         <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
         <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
@@ -128,7 +103,7 @@
         <div>
           <v-btn color="#fff"
                  v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
-                 class="mt-3 no-text-transform"
+                 class="mt-3 no-text-transform primary--text"
                  :to="`/projectAdmin/${projectId}`"
           >
             Project Admin
@@ -139,52 +114,20 @@
     <v-row class="project-split-container">
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
-        <div class="left-expander-button" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
-          <v-btn small text @click="collapseSide('left')">
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
+          <v-btn small text color="primary" @click="collapseSide('left')" >
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 height-one-hunned overflow-y-auto">
-          <v-toolbar flat>
-            <v-toolbar-title class="albatross-header-3">Project Overview</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn
-                text x-small
-                @click="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
-                v-if="project && project.id && ($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
-                    || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())">
-                <v-icon>edit</v-icon>
-              </v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
+          <PageOverview
+            page-name="Project"
+            :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+                    || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())"
+            @clickEdit="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+            :details="overviewDetails"
+          ></PageOverview>
           <div class="mx-4 address-details">
-            <div v-if="!projectStatusLoading">
-              <span class="vertical-top project-detail-label">Project Stage:</span>
-              <div class="d-inline-block project-detail-item"
-                   :style="{'color': getStatusColor(project.projectStatusTypeId)}">
-                {{ project.projectStatusType }} <br/>
-                ({{ project.rootProjectStatusType }})
-              </div>
-            </div>
-            <div class="mt-2">
-              <span class="vertical-top project-detail-label">Address:</span>
-              <div class="d-inline-block project-detail-item">
-                {{ project.street1 }} <br/>
-                {{ project.city }} {{ project.stateAbbreviation }} {{ project.postalCode }}
-              </div>
-            </div>
-            <span class="project-detail-label">Contact:</span>
-            <span class="project-detail-item">{{ formatPhoneNumber(project.mobile || project.phone) }}</span> <br/>
-            <span class="project-detail-label">Email:</span>
-            <span class="project-detail-item">{{ project.email }}</span> <br/>
-            <div class="mt-2">
-              <span class="vertical-top project-detail-label">Owner:</span>
-              <div class="d-inline-block project-detail-item" v-if="project && project.owner">
-                <span :class="{'error-text': !project.owner.hasAccess}">{{ project.owner.fullName }} - {{ project.owner.position }} <br/></span>
-                <span v-if="project.owner.hasAccess">{{ formatPhoneNumber(project.owner.phoneNumber) }}<br/></span>
-              </div>
-            </div>
             <div class="mt-3">
               <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
             </div>
@@ -243,10 +186,14 @@ import constants from "@/helpers/constants";
 import {getCompanyStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
 import {ProjectMutations} from "@/stores/ProjectStore";
+import ConfirmationDialog from "../../../ConfirmationDialog";
+import PageOverview from "../PageOverview";
 
 export default {
   name: 'Project',
   components: {
+    PageOverview,
+    ConfirmationDialog,
     ProjectActivity,
     ActiveProcessSteps,
     ActiveEvents
@@ -298,6 +245,47 @@ export default {
   computed: {
     projectStage() {
       return this.statuses?.find(s => s.id === this.project.companyProjectStatusTypeId)?.rootProjectStatusType
+    },
+    overviewDetails(){
+      return [
+        {
+          label: 'Project Stage',
+          type: constants.OVERVIEW_FIELD_TYPES.STATUS,
+          value: this.project.projectStatusType,
+          statusType: this.project.rootProjectStatusType,
+          active:true //todo: fix
+        },
+        {
+          label: 'Address',
+          type: constants.OVERVIEW_FIELD_TYPES.ADDRESS,
+          value: {
+            street: this.project.street1,
+            city: this.project.city,
+            state: this.project.stateAbbreviation,
+            zip: this.project.postalCode
+          }
+        },
+        {
+          label: 'Phone',
+          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+          value: this.project.phone,
+        },
+        {
+          label: 'Mobile',
+          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+          value: this.project.mobile
+        },
+        {
+          label: 'Email',
+          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          value: this.project.email
+        },
+        {
+          label: 'Owner',
+          type: constants.OVERVIEW_FIELD_TYPES.OWNER,
+          value: this.project.owner
+        }
+      ]
     }
   },
   mounted() {
@@ -543,7 +531,7 @@ export default {
 }
 
 .white-bg {
-  background-color: #fff;
+  background-color: #fff !important;
 }
 
 .collapse-left {

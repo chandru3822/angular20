@@ -43,9 +43,9 @@
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn color="secondary" class="text-capitalize" @click="cancel()">Cancel</v-btn>
+      <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
       <v-btn :disabled="!teamToSave || !ownersToSave"
-             color="primary" class="text-capitalize white--text" @click="addTeamDetails()">Save</v-btn>
+             color="primary" class="white--text" @click="addTeamDetails()">Save</v-btn>
     </v-card-actions>
   </v-card>
 </template>

@@ -26,45 +26,24 @@
       </v-col>
       <v-col cols="4" class="text-center px-1 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
       <v-col cols="2" class="text-right pa-0">
-        <v-btn v-if="!item.edit" dense small text class="px-0" @click="[item.edit = true, renderTicker++]">
+        <v-btn v-if="!item.edit" dense small text color="primary" class="px-0" @click="[item.edit = true, renderTicker++]">
           <v-icon>edit</v-icon>
         </v-btn>
-        <v-btn v-if="item.edit" dense text small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
+        <v-btn v-if="item.edit" dense text color="primary" small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
           cancel
         </v-btn>
-        <v-btn  v-if="item.edit" dense small text class="px-0" @click="saveFilename(item)">
+        <v-btn  v-if="item.edit" dense small text color="primary" class="px-0" @click="saveFilename(item)">
           <v-icon>save</v-icon>
         </v-btn>
-        <v-dialog
-            v-model="item.deleteConfirm"
-            width="400"
-        class="albatross-body-1">
-          <template #activator="{ on }">
-            <v-btn small text v-on="on" class="px-0" v-if="!item.edit">
-              <v-icon>delete</v-icon>
-            </v-btn>
-          </template>
-          <v-card>
-            <v-card-text class="pt-4">
-              Are you sure you want to delete {{item.filename}}?
-            </v-card-text>
-            <v-card-actions>
-              <v-btn
-                  class="elevation-0 text-capitalize"
-                  @click="item.deleteConfirm = false">
-                No
-              </v-btn>
-              <v-spacer></v-spacer>
-              <v-btn
-                  color="primaryCustom"
-                  dark
-                  class="elevation-0 text-capitalize"
-                  @click="[item.archived = true, deleteAttachment(item.id)]">
-                Yes
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+        <v-btn small text color="primary" @click="startDelete(item)" class="px-0" v-if="!item.edit">
+          <v-icon>delete</v-icon>
+        </v-btn>
+        <ConfirmationDialog
+            :open-dialog="attachmentDeleteConfirm"
+            @confirm="deleteAttachment"
+            @close-dialog="closeDeleteDialog"
+
+        >Are you sure you want to delete {{attachmentToDeleteName}}?</ConfirmationDialog>
       </v-col>
     </v-row>
   </v-container>
@@ -74,16 +53,22 @@
 import {getFileIcon, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import {deleteAttachment} from "@/services/attachmentService";
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: "AttachmentsTable",
+  components: {ConfirmationDialog},
   props: {
     attachments: Array,
     displayType: Object,
     showNonPrimaryDocs: Boolean
   },
   data () {
-    return { renderTicker: 0 }
+    return {
+      renderTicker: 0,
+      attachmentDeleteConfirm: false,
+      attachmentToDelete: {}
+    }
   },
   computed: {
     drillDownAttachments () {
@@ -97,6 +82,9 @@ export default {
           return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.main)
         }
       }
+    },
+    attachmentToDeleteName(){
+      return this.attachmentToDelete ? this.attachmentToDelete.filename : ""
     }
   },
   methods: {
@@ -126,7 +114,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    deleteAttachment: async function (id) {
+    deleteAttachment: async function () {
+      const id = this.attachmentToDelete.id
       try {
         await deleteAttachment(id)
         this.snackbar = getSnackbar('SUCCESS', 'Document Deleted')
@@ -137,8 +126,17 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.closeDeleteDialog()
 
     },
+    startDelete(item){
+      this.attachmentToDelete = item
+      this.attachmentDeleteConfirm = true
+    },
+    closeDeleteDialog() {
+      this.attachmentDeleteConfirm = false
+      this.attachmentToDelete = null
+    }
   }
 }
 </script>
@@ -170,10 +168,6 @@ export default {
   font-size: 14px;
   color: #5E636D;
 
-}
-
-.primary-row{
-  background-color: #ebf5ff !important;
 }
 
 .no-attach {
