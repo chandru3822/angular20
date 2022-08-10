@@ -1,6 +1,8 @@
 <template>
   <div>
-    <v-dialog persistent :width="1000" v-model="showCoversheetModal">
+    <v-dialog persistent :width="1000" v-model="showCoversheetModal"
+              class="coversheet-modal"
+              content-class="coversheet-modal-content">
       <AttachmentCoversheetModal :existing-attachment="tempFile"
                                  :file="fileToUpload"
                                  :show-modal="showCoversheetModal"

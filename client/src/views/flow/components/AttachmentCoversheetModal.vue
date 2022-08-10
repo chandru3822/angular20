@@ -1,11 +1,14 @@
 <template>
-  <v-card class="square-card">
+  <v-card class="coversheet-container">
     <v-card-text class="pb-0 pl-0">
       <v-form ref="attachmentFieldsForm">
-        <v-row>
+        <v-row class="coversheet-container">
           <v-col cols="4" class="coversheet-left-pane">
-            Fill Out Coversheet
-            <v-divider></v-divider>
+            <div class="">
+              <v-btn small text color="primary">
+                <v-icon>mdi-menu</v-icon>
+              </v-btn>
+            </div>
             <div v-if="saveError" class="error-text">
               {{errorMsg}}
             </div>
@@ -59,24 +62,27 @@
               </v-card>
 
             </v-col>
-            <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+            <v-toolbar flat dense color="white"
+                       class="fixed-toolbar-bottom px-0 coversheet-save-bar">
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <div class="flex-display">
-                  <v-btn small text @click="closeModal()">
-                    Cancel Upload
-                  </v-btn>
-                  <v-btn small :loading="fieldsSaving" color="primary" @click="saveAndUpload()">
-                    Save and Upload
+                <v-btn text color="primary" small @click="closeModal()">
+                  {{ isExisting ? 'Cancel' : 'Cancel Upload' }}
+                </v-btn>
+                <div>
+                  <v-btn small :loading="fieldsSaving"
+                         class="mt-3"
+                         color="primary" @click="saveAndUpload()">
+                    {{ isExisting ? 'Save Changes' : 'Save and Upload' }}
                   </v-btn>
                 </div>
               </v-toolbar-items>
             </v-toolbar>
           </v-col>
-          <v-col cols="8">
+          <v-col cols="8" class="coversheet-right-pane">
             <div class="one-hunned text-right">
               <v-btn small text
-                     v-if="existingAttachment && null != existingAttachment.presignedUrl"
+                     v-if="isExisting"
                      :href="existingAttachment.presignedUrl">
                 <v-icon>mdi-tray-arrow-down</v-icon>
               </v-btn>
@@ -150,10 +156,12 @@ export default {
       displayNameChanged: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       saveError: false,
-      errorMsg: null
+      errorMsg: null,
+      isExisting: false
     }
   },
   created() {
+    this.isExisting = null != this.existingAttachment.id
     this.doPageLoad()
   },
   computed: {},
@@ -299,9 +307,30 @@ export default {
 }
 </script>
 
+<style>
+.coversheet-save-bar .v-toolbar__content {
+  padding: 0 !important;
+}
+</style>
+
 <style scoped>
+.coversheet-container {
+  height: 90vh;
+  max-height: 90vh;
+}
+
 .coversheet-left-pane {
   box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
   padding-left: 25px;
+  height: 90vh;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-bottom: 0;
+}
+
+.coversheet-right-pane {
+  height: 90vh;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 </style>

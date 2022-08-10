@@ -50,6 +50,14 @@ body {
   z-index: 1;
 }
 
+.fixed-toolbar-bottom {
+  position: sticky;
+  position: -webkit-sticky; /* for Safari */
+  bottom: 0;
+  z-index: 1;
+}
+
+
 //assign this to the content-class of a tooltip to use it
 .full-opacity-tooltip {
   opacity: 1 !important;
@@ -480,5 +488,10 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   font-weight: normal;
   font-size: 0.75rem;
   line-height: 1.6;
+}
+
+//coversheet modal needs to scroll independently so need to turn of the default modal scroller
+.coversheet-modal-content {
+  overflow: hidden !important;
 }
 
