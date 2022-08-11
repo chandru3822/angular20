@@ -64,7 +64,7 @@
             hide-details
           ></v-text-field>
           <v-btn text color="primary" class="d-inline-block" v-if="!addNew"
-                 @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">
+                 @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects(), fixData()]">
             <v-icon v-if="constants.IS_MOBILE">add</v-icon>
             <span v-else>{{ addNew ? 'Cancel' : 'Add New Field' }}</span>
           </v-btn>
@@ -155,7 +155,7 @@
                 <span class="mr-3">Update First Value Only?</span>
                 <input
                   type="checkbox"
-                  :disabled="newField.matchNew || newField.matchPrimary"
+                  :disabled="newField.resetOnNew || newField.resetValuesOnMain"
                   v-model="newField.updateFirstValueOnly"
                 />
                 <br/>
@@ -164,7 +164,7 @@
                 <input
                   :disabled="newField.updateFirstValueOnly"
                   type="checkbox"
-                  v-model="newField.matchNew"
+                  v-model="newField.resetOnNew"
                 />
                 <div v-if="selectedObjectTypeId === 4">
                 <span
@@ -172,7 +172,7 @@
                 <input
                   :disabled="newField.updateFirstValueOnly"
                   type="checkbox"
-                  v-model="newField.matchPrimary"
+                  v-model="newField.resetValuesOnMain"
                 />
                 </div>
               </div>
@@ -184,7 +184,7 @@
               Save
             </v-btn>
             <v-btn
-              @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]"
+              @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}, fixData()]"
               text color="primary"
             >
               Cancel
@@ -271,7 +271,7 @@
                 <input
                   disabled readonly
                   type="checkbox"
-                  v-model="item.matchNew"
+                  v-model="item.resetOnNew"
                 />
                 <div v-if="item.objectTypeId === 4">
                 <span
@@ -279,7 +279,7 @@
                 <input
                   disabled readonly
                   type="checkbox"
-                  v-model="item.matchNew"
+                  v-model="item.resetOnNew"
                 />
                 </div>
               </div>
@@ -522,13 +522,14 @@ export default {
       }
     },
     resetAllFields() {
+      console.log('this ahppend')
       //gets called when the field type changes so that all data is clean again
       this.selectedDefaultField = {}
       this.selectedObjectTypeId = null
       this.newField.customFieldGroupAssignmentId = null
       this.$set(this.newField, 'updateFirstValueOnly', false)
-      this.$set(this.newField, 'matchNew', false)
-      this.$set(this.newField, 'matchPrimary', false)
+      this.$set(this.newField, 'resetOnNew', false)
+      this.$set(this.newField, 'resetValuesOnMain', false)
       this.cfgaParentObject = {}
       this.newField.processStepEventId = null
       this.newField.processStepId = null
@@ -539,8 +540,8 @@ export default {
       //if they had set one of these as true but then changed the field type to a different type then reset the values here
       if (![4, 6].includes(this.selectedObjectTypeId)) {
         this.newField.updateFirstValueOnly = false
-        this.newField.matchNew = false
-        this.newField.matchPrimary = false
+        this.newField.resetOnNew = false
+        this.newField.resetValuesOnMain = false
       }
 
       if (valid) {
@@ -711,6 +712,7 @@ export default {
     fixData() {
       this.dataView.companyProcesses = cloneDeep(this.oldCompanyProcesses)
       this.dataView.companyProcessIds = cloneDeep(this.oldCompanyProcessIds)
+      this.resetAllFields()
     },
     async getDataView() {
       this.$store.commit(AppMutations.SET_LOADING, true)
