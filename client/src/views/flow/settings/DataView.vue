@@ -2,14 +2,14 @@
   <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
-        <v-btn text class="pl-1 pr-2" :to="'/settings/dataViews'">
+        <v-btn text class="pl-1 pr-2 anchor" :to="'/settings/dataViews'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
         <div class="flex-display pt-3 px-3 mb-4 one-hunned">
           <div class="one-hunned pl-3">
             <span class="page-title" v-if="!edit">{{ dataView.displayName }}</span>
-            <v-text-field v-else color="primaryCustom"
+            <v-text-field v-else color="primary"
                           v-model="dataView.displayName"
                           label="Display Name"></v-text-field>
             <div>
@@ -37,15 +37,17 @@
             </div>
           </div>
           <div class="text-right">
-            <v-btn text v-if="!edit" class=""
+            <v-btn text color="primary" v-if="!edit" class=""
                    @click="[oldName = dataView.displayName, edit = !edit, getCompanyProcesses()]">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn text class="" v-else :disabled="dataView.companyProcesses.length === 0"
+            <v-btn text color="primary" class="" v-else :disabled="dataView.companyProcesses.length === 0"
                    @click="[edit = false, saveDataView()]">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text v-if="edit" class="" @click="[dataView.displayName = oldName, edit = !edit, fixData()]">
+            <v-btn text color="primary"
+                   v-if="edit"
+                   @click="[dataView.displayName = oldName, edit = !edit, fixData()]">
               cancel
             </v-btn>
           </div>
@@ -61,7 +63,7 @@
             single-line
             hide-details
           ></v-text-field>
-          <v-btn text class="d-inline-block" v-if="!addNew"
+          <v-btn text color="primary" class="d-inline-block" v-if="!addNew"
                  @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects()]">
             <v-icon v-if="constants.IS_MOBILE">add</v-icon>
             <span v-else>{{ addNew ? 'Cancel' : 'Add New Field' }}</span>
@@ -153,27 +155,38 @@
                 <span class="mr-3">Update First Value Only?</span>
                 <input
                   type="checkbox"
-                  :disabled="newField.resetOnNew"
+                  :disabled="newField.matchNew || newField.matchPrimary"
                   v-model="newField.updateFirstValueOnly"
                 />
                 <br/>
                 <span
-                  class="mr-3">Reset on New {{ selectedObjectTypeId === 4 ? 'Main Process Step?' : 'Event?' }}</span>
+                  class="mr-3">Match New {{ selectedObjectTypeId === 4 ? 'Process Step' : 'Event' }} on create?</span>
                 <input
                   :disabled="newField.updateFirstValueOnly"
                   type="checkbox"
-                  v-model="newField.resetOnNew"
+                  v-model="newField.matchNew"
                 />
+                <div v-if="selectedObjectTypeId === 4">
+                <span
+                  class="mr-3">Match Primary Process Step on change?</span>
+                <input
+                  :disabled="newField.updateFirstValueOnly"
+                  type="checkbox"
+                  v-model="newField.matchPrimary"
+                />
+                </div>
               </div>
             </v-form>
             <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
                               || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
-                   color="primaryCustom" class="white--text mr-2"
+                   color="primary" class="white--text mr-2"
                    @click="validateFields(newField, true)">
               Save
             </v-btn>
             <v-btn
-              @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]">
+              @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}]"
+              text color="primary"
+            >
               Cancel
             </v-btn>
           </div>
@@ -207,7 +220,7 @@
                 <v-text-field text v-model="item.displayName" class="d-inline-block display-name-field"
                               label="Display Name"/>
                 <v-btn text :disabled="!item.displayName"
-                       color="primaryCustom" class="white--text mr-2 d-inline-block"
+                       color="primary" class="white--text mr-2 d-inline-block"
                        @click="saveFieldConfig(item, false)">
                   <v-icon>save</v-icon>
                 </v-btn>
@@ -252,14 +265,23 @@
 
                 <br/>
                 <span
-                  class="mr-3 disabled-label">Reset on New {{
-                    item.objectTypeId === 4 ? 'Main Process Step?' : 'Event?'
-                  }}</span>
+                  class="mr-3 disabled-label">Match New {{
+                    item.objectTypeId === 4 ? 'Process Step' : 'Event'
+                  }} on create?</span>
                 <input
                   disabled readonly
                   type="checkbox"
-                  v-model="item.resetOnNew"
+                  v-model="item.matchNew"
                 />
+                <div v-if="item.objectTypeId === 4">
+                <span
+                  class="mr-3 disabled-label">Match Primary Process Step on change?</span>
+                <input
+                  disabled readonly
+                  type="checkbox"
+                  v-model="item.matchNew"
+                />
+                </div>
               </div>
 
               <v-card color="transparent" flat>
@@ -267,7 +289,7 @@
                   <v-toolbar-title>Child Fields</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
-                    <v-btn text @click="[addChild = !addChild, childField = {}]">
+                    <v-btn text color="primary" @click="[addChild = !addChild, childField = {}]">
                       <v-icon>add</v-icon>
                     </v-btn>
                   </v-toolbar-items>
@@ -297,7 +319,7 @@
                     </div>
                     <v-btn
                       :disabled="!childField.fieldToUpdate || !childField.uniqueBehaviorTypeId"
-                      color="primaryCustom" class="white--text mr-2"
+                      color="primary" class="white--text mr-2"
                       @click="validateChildField(item, childField, true)">
                       Add Child Field
                     </v-btn>
@@ -327,7 +349,7 @@
                                             :rules="requiredRules"
                                             label="Display Name"/>
                               <v-btn text :disabled="!childField.displayName"
-                                     color="primaryCustom" class="white--text mr-2 d-inline-block"
+                                     color="primary" class="white--text mr-2 d-inline-block"
                                      @click="saveChildFieldConfig(item, childField, false)">
                                 <v-icon>save</v-icon>
                               </v-btn>
@@ -348,11 +370,15 @@
                         {{ childField.uniqueBehaviorTypeDescription }}
                       </td>
                       <td>
-                        <v-btn small text v-if="!childFieldExpanded.includes(childField)"
+                        <v-btn small text color="primary" v-if="!childFieldExpanded.includes(childField)"
                                @click="[addChild = false, childFieldExpanded = [childField] ]">
                           <v-icon>edit</v-icon>
                         </v-btn>
-                        <v-btn small text v-if="childFieldExpanded.includes(childField)" @click="childFieldExpanded = []">cancel</v-btn>
+                        <v-btn small text color="primary"
+                               v-if="childFieldExpanded.includes(childField)"
+                               @click="childFieldExpanded = []">
+                          cancel
+                        </v-btn>
 
                       </td>
                     </tr>
@@ -367,11 +393,15 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.fieldToUpdate }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)"
+                <v-btn small text color="primary" v-if="!expanded.includes(item)"
                        @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text color="primary"
+                       v-if="expanded.includes(item)"
+                       @click="expanded = []">
+                  cancel
+                </v-btn>
 
               </td>
             </tr>
@@ -497,7 +527,8 @@ export default {
       this.selectedObjectTypeId = null
       this.newField.customFieldGroupAssignmentId = null
       this.$set(this.newField, 'updateFirstValueOnly', false)
-      this.$set(this.newField, 'resetOnNew', false)
+      this.$set(this.newField, 'matchNew', false)
+      this.$set(this.newField, 'matchPrimary', false)
       this.cfgaParentObject = {}
       this.newField.processStepEventId = null
       this.newField.processStepId = null
@@ -508,7 +539,8 @@ export default {
       //if they had set one of these as true but then changed the field type to a different type then reset the values here
       if (![4, 6].includes(this.selectedObjectTypeId)) {
         this.newField.updateFirstValueOnly = false
-        this.newField.resetOnNew = false
+        this.newField.matchNew = false
+        this.newField.matchPrimary = false
       }
 
       if (valid) {
