@@ -1,24 +1,27 @@
 <template>
   <v-card class="coversheet-container">
-    <v-card-text class="pb-0 pl-0">
+    <v-card-text class="pa-0">
       <v-form ref="attachmentFieldsForm">
-        <v-row class="coversheet-container">
-          <v-col cols="4" class="coversheet-left-pane">
-            <div class="">
-              <v-btn small text color="primary">
+        <v-row class="coversheet-container ma-0">
+          <v-col cols="4" class="coversheet-left-pane pa-6">
+            <div class="d-flex align-center">
+              <v-btn small text color="primary" class="min-w-25 px-0 mr-6">
                 <v-icon>mdi-menu</v-icon>
               </v-btn>
+              <div class="albatross-header-1 default-text-color">Document Summary</div>
             </div>
+              <v-divider class="mt-1 mb-6"></v-divider>
             <div v-if="saveError" class="error-text">
               {{errorMsg}}
             </div>
-            Document Details
+            <div class="subtitle-1 mb-4 default-text-color">Document Details</div>
             <v-card class="square-card pa-3">
               <v-text-field
                 label="Document Name"
                 :rules="requiredRules"
                 @change="displayNameChanged = true"
                 v-model="fileDetails.displayName"
+                class="albatross-body-2"
               ></v-text-field>
               <DatetimePickerInput
                 v-model="fileDetails.dateCreated"
@@ -27,45 +30,50 @@
                 readonly
                 :format="'MM/DD/YYYY'"
                 label="Upload Date"
+                custom-class="albatross-body-2"
               />
               <v-text-field
                 disabled readonly
                 label="Uploaded By"
                 v-model="fileDetails.uploadedBy"
+                class="albatross-body-2"
               ></v-text-field>
               <v-text-field
                 disabled readonly
                 label="Document Type"
                 v-model="fileDetails.attachmentType"
+                class="albatross-body-2"
               ></v-text-field>
               <div @click="goToPath(fileDetails.originPath)" class="clickable">
                 <v-text-field
                   disabled readonly
                   label="Document Location"
                   v-model="fileDetails.originLocation"
+                  class="albatross-body-2"
                 ></v-text-field>
               </div>
             </v-card>
-            Additional Document Details
+            <div v-if="customFieldGroups.length > 0" class="subtitle-1 mt-6 mb-3 default-text-color">Additional Document Details</div>
             <v-col
-              class="pt-0"
+              class="pa-0"
               v-for="(cfg, index) in customFieldGroups"
               :key="index"
             >
-              {{ cfg.groupName }}
-              <v-card class="square-card pa-3">
+              <div class="albatross-body-1 default-text-color mb-2">{{ cfg.groupName }}</div>
+              <v-card class="square-card pa-3 mb-6">
                 <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
                                   :key="idx"
                                   :show-field-name="false"
                                   :callback="populateDirtyCfvs"
                                   :required="cf.required"
                                   :readonly="getReadOnly(cf)"
+                                  custom-class="albatross-body-2"
                                   :field="cf"></CustomValueInput>
               </v-card>
 
             </v-col>
             <v-toolbar flat dense color="white"
-                       class="fixed-toolbar-bottom px-0 coversheet-save-bar">
+                       class="fixed-toolbar-bottom mt-1 px-0 coversheet-save-bar">
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn text color="primary" small @click="closeModal()">
@@ -81,19 +89,20 @@
               </v-toolbar-items>
             </v-toolbar>
           </v-col>
-          <v-col cols="8" class="coversheet-right-pane">
+          <v-col cols="8" class="coversheet-right-pane pa-6">
+            <div class="d-flex align-center albatross-header-1 default-text-color" >{{ fileDetails.displayName }}
             <div class="one-hunned text-right">
-              <v-btn small text
+              <v-btn small text color="primary"
                      v-if="isExisting"
                      :href="existingAttachment.presignedUrl">
                 <v-icon>mdi-tray-arrow-down</v-icon>
               </v-btn>
-              <v-btn x-small text @click="closeModal()">
+              <v-btn x-small text color="primary" @click="closeModal()">
                 <v-icon>close</v-icon>
               </v-btn>
             </div>
-            {{ fileDetails.displayName }}
-            <v-divider></v-divider>
+            </div>
+            <v-divider class="mt-1"></v-divider>
             file preview here
           </v-col>
         </v-row>
@@ -317,25 +326,28 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 .coversheet-save-bar .v-toolbar__content {
   padding: 0 !important;
 }
+
 </style>
 
-<style scoped>
+<style lang="scss" scoped>
 .coversheet-container {
   height: 90vh;
   max-height: 90vh;
 }
 
+.min-w-25 {
+  min-width: 25px !important;
+}
+
 .coversheet-left-pane {
   box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-  padding-left: 25px;
   height: 90vh;
   max-height: 90vh;
   overflow-y: auto;
-  padding-bottom: 0;
 }
 
 .coversheet-right-pane {

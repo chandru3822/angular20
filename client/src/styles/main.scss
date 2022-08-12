@@ -421,6 +421,7 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .albatross-header-1 {
   font-weight: bold;
   font-size: 1.25rem;
+  line-height: 1.4;
 }
 .albatross-header-2,
 .cfg-name-toolbar .v-toolbar__title.albatross-header-2,
@@ -454,13 +455,28 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 {
   font-weight: normal;
   font-size: 1rem;
+}
 
-}.albatross-header-5,
- .albatross-header-5 .v-label,
- div.v-dialog__content.v-dialog__content--active > div > div > div.albatross-header-5,
- {
+.albatross-header-5,
+.albatross-header-5 .v-label,
+div.v-dialog__content.v-dialog__content--active > div > div > div.albatross-header-5,
+{
   font-weight: bold;
   font-size: 0.875rem;
+}
+
+.subtitle-1,
+.theme--light.v-card > .v-card__text, .theme--light.v-card > .v-card__subtitle.subtitle-1{
+  font-weight: bold !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
+.subtitle-2,
+div.coversheet-left-pane.theme--light.v-card > .v-card__text, .theme--light.v-card > .v-card__subtitle div.subtitle-2{
+  font-weight: bold !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
 }
 
 //eventually this should be our default body font size/weight, rendering this class unnecessary
