@@ -49,10 +49,21 @@
     <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
       <v-expansion-panel-header class="albatross-body-1">
         <template v-slot:default="{ open }">
+          <v-row v-if="(allowUpload || forceShowUploadBtn)"
+                 class="file-hover d-flex"
+                 :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId ==! type.attachmentTypeId}"
+                 @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId=null"
+                 @dragleave="dragTypeId=null"
+                 @dragend="dragTypeId=null"
+                 @drop.prevent="addDragDocument($event, type)"
+                 @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId = null"
+          >
+            <v-icon color="primary">upload</v-icon>
+          </v-row>
           <v-row no-gutters class="align-center" :class="{'bold' : open}">
-           <v-icon color="grey darken-1" class="mr-3">folder</v-icon> {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
+           <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">folder</v-icon> {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
             <v-spacer></v-spacer>
-            <div class="expansion-panel-header-open" v-if="open"
+            <div class="expansion-panel-header-open"  v-if="open"
                  key="0">
               <input
                   :id="`fileInput${type.attachmentTypeId}`"
@@ -69,14 +80,8 @@
                 key="1"
             >
                 </span>
-            <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
-                   @dragenter="dragTypeId=type.attachmentTypeId"
-                   @dragleave="dragTypeId=null"
-                   @dragend="dragTypeId=null"
-                   :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
-                   @drop.prevent="addDragDocument($event, type)"
-                   @dragover.prevent="dragTypeId=type.attachmentTypeId"
-                   elevation="0" text color="primary" class="text-capitalize">
+            <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="(type.attachmentTypeId)"
+                   elevation="0" text color="primary" class="text-capitalize" :disabled="dragTypeId === type.attachmentTypeId">
               Upload
             </v-btn>
           </v-row>
@@ -301,10 +306,12 @@ export default {
       }
     },
     addDragDocument: async function (e, type) {
-      let files = e.dataTransfer.files
-      await this.setTempFile(files, type)
+      if(this.allowUpload || this.forceShowUploadBtn) {
+        let files = e.dataTransfer.files
+        await this.setTempFile(files, type)
+      }
     },
-    selectFile: function(typeId){
+    selectFile: function(typeId){selectFile
       document.getElementById(`fileInput${typeId}`)?.click();
     },
     setTempFile: function(files, type) {
@@ -337,7 +344,32 @@ export default {
 }
 
 .file-hover {
-  background: #EEF0F4 !important;
+  width: inherit;
+  position: absolute;
+  height: 100%;
+  margin: -24px;
+  padding: 24px;
+
+  i{
+    width: 100%;
+  }
+}
+
+.file-hover-inactive {
+  hidden: true;
+
+  i {
+    display: none;
+  }
+}
+
+.file-hover-active {
+  hidden: false;
+  background-color: rgba(#e3eff7, 90%);
+
+  i {
+    display: inline-flex;
+  }
 }
 
 .theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
