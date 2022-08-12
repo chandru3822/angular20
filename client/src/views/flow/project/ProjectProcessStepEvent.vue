@@ -105,6 +105,7 @@
           <AttachmentsFolderList :object-type-id="1"
                                :allow-upload="true"
                                :show-title="true"
+                                 is-card
                                title="Uploaded Documents"/>
         <v-toolbar color="transparent" class="elevation-0 process-step-toolbar cfg-detail-header">
           <v-toolbar-title class="albatross-body-2">Linked Documents</v-toolbar-title>
@@ -112,6 +113,7 @@
         <AttachmentsFolderList :object-type-id="1"
                                :linkable="true"
                                :show-title="true"
+                               is-card
                                title="Linked Documents"/>
       </v-col>
       <div class="fixed-toolbar padding-left-1">

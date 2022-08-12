@@ -118,6 +118,7 @@
                 </v-toolbar>
                   <AttachmentsFolderList :object-type-id="1"
                                          :project-id="projectId"
+                                         is-card
                                          :allow-upload="true"/>
               </v-col>
               <v-col>
@@ -126,6 +127,7 @@
                 </v-toolbar>
                 <AttachmentsFolderList :object-type-id="1"
                                        :project-id="projectId"
+                                       is-card
                                        :linkable="true"/>
               </v-col>
             </div>
