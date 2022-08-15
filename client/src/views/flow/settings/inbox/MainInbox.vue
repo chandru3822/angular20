@@ -159,7 +159,7 @@
                   <span v-if="item.messageHistory.length > 0"
                         class="albatross-body-2 px-2">{{ getTime(item.messageHistory[0].lastMessageSent)
                     }}</span>
-                  <span class="albatross-body-2 px-1 deemphasis">{{ item.state }}</span>
+                  <span class="albatross-body-2 px-1 grey--text text--darken-2">{{ item.state }}</span>
                 </div>
                 <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}
                 </div>
@@ -181,7 +181,7 @@
       </v-data-table>
     </template>
     <template v-slot:collapse-button>
-      <v-btn class="d-inline-block align-self-center" small text
+      <v-btn class="d-inline-block align-self-center" small text color="primary"
              @click="$router.push({path: `/inbox`})">
         <v-icon>close</v-icon>
       </v-btn>
@@ -676,7 +676,7 @@ export default {
 .inbox-row {
   min-height: 94px;
   width: 100%;
-  border-bottom: 1px solid #C7C7CC;
+  border-bottom: 1px solid var(--v-grey-lighten1);
   background-color: white;
 }
 
@@ -722,10 +722,6 @@ a {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.deemphasis {
-  color: #474747;
 }
 
 .assigned-join-button {

@@ -137,11 +137,11 @@ export default {
           text: '#ffffff'
         },
         receivedMessage: {
-          bg: '#eaeaea',
-          text: '#222222'
+          bg: 'var(--v-grey-lighten3)',
+          text: 'rgba(0,0,0,0.87)'
         },
         userInput: {
-          bg: '#f4f7f9',
+          bg: 'var(--v-grey-lighten4)',
           text: '#1F3C73',
           button: '#1F3C73'
         }

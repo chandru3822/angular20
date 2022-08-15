@@ -35,8 +35,9 @@ body {
   font-weight: 700;
 }
 
+$default-text: rgba(0,0,0,0.87);
 .default-text-color, .default-text-color label {
-  color: rgba(0,0,0,0.87) !important;
+  color: $default-text !important;
 }
 
 .anchor {
