@@ -128,6 +128,7 @@
         :server-items-length="totalProjects"
         hide-default-header
         class="elevation-1"
+        id="inbox-message-list"
       >
         <template #no-data>
           <div class="default-text-color">No available conversations</div>
@@ -635,8 +636,8 @@ export default {
 </script>
 
 <style lang="scss">
-#main-inbox-container .v-data-table__wrapper table,
-#main-inbox-container .v-data-table__wrapper tbody{
+#inbox-message-list .v-data-table__wrapper table,
+#inbox-message-list .v-data-table__wrapper tbody{
   width: 100% !important;
   max-width: 100% !important;
   display: block;
