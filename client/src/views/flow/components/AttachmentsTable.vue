@@ -109,7 +109,7 @@ export default {
       attachmentDeleteConfirm: false,
       attachmentToDelete: {},
       linkAttachmentPath: null,
-      maxSelectable: 3
+      maxSelectable: 4
     }
   },
   computed: {

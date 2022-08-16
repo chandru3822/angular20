@@ -99,6 +99,7 @@
                                :activity-tab="true"
                                :focused="toggleFocused === 0"
                                :project-id="projectId"
+                               :reload-on-key-change="true"
                                :project-process-step-id="projectProcessStepId" />
         </div>
       </div>

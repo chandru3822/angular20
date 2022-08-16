@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION flow.get_attachment_compare_fields(p_attachment_id IN
   RETURNS TABLE
           (
             custom_field_id                  int,
+            ancillary_custom_field_id        int,
             field_name                       character varying,
             data_type_id                     int,
             default_field_id                 int,
@@ -39,14 +40,15 @@ BEGIN
 
   return query
     --native fields, always use this query
-    select cf.id                                               as custom_field_id,
+    select cf.id                                                     as custom_field_id,
+           null::int                                                 as ancillary_custom_field_id,
            cf.field_name,
            cdt.data_type_id,
-           null::int                                           as default_field_id,
-           a.id                                                as attachment_id,
-           v_object_type_id                                    as object_type_id,
-           null::int                                           as project_id,
-           cfga.id                                             as custom_field_group_assignment_id,
+           null::int                                                 as default_field_id,
+           a.id                                                      as attachment_id,
+           v_object_type_id                                          as object_type_id,
+           null::int                                                 as project_id,
+           cfga.id                                                   as custom_field_group_assignment_id,
            acfv.text_value,
            acfv.int_value,
            coalesce(array_to_json(acfv.int_array_value), '[]')::json as int_array_value,
@@ -75,8 +77,8 @@ BEGIN
                                       OR lov.id = any (acfv.int_array_value)))
                              order by case when cf.sort_list_values_alphabetically is true then lov.name end,
                                       case when cf.sort_list_values_alphabetically is false then lov.display_order end
-                           ) listOfValues), '[]')              AS "listOfValues",
-           array_to_json(cf.system_list_option_ids)::json as system_list_option_ids
+                           ) listOfValues), '[]')                    AS "listOfValues",
+           array_to_json(cf.system_list_option_ids)::json            as system_list_option_ids
     from flow.attachment a
            inner join flow.custom_field_group cfg on cfg.attachment_type_id = a.attachment_type_id
            inner join flow.custom_field_group_assignment cfga on cfg.id = cfga.custom_field_group_id

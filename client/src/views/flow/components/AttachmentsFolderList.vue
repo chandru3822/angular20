@@ -128,6 +128,7 @@ import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
 import constants from "@/helpers/constants";
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: "AttachmentsFolderList",
@@ -147,7 +148,11 @@ export default {
     contactId: Number,
     orgId: Number,
     objectTypeId: Number,
-    isCard: Boolean
+    isCard: Boolean,
+    reloadOnKeyChange: {
+      type: Boolean,
+      default: false
+    }
   },
   data () {
     return {
@@ -197,9 +202,11 @@ export default {
     },
     // // whenever the project store forces a reload - do this - i cant remember why atm
     '$store.state.project.forceReloadKey': async function () {
-      // reset the selected item
-      this.updateProcessStepAndEventIds()
-      this.loadAllPageDetails()
+      if(this.reloadOnKeyChange) {
+        // reset the selected item
+        this.updateProcessStepAndEventIds()
+        this.loadAllPageDetails()
+      }
     }
   },
   created () {
@@ -231,6 +238,8 @@ export default {
     fileUploaded(attachment) {
       console.log('file was uploaded',attachment)
       this.attachments.push(attachment)
+      //this value tells the right pane to update when a file is uploaded
+      this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
     },
     updateProcessStepAndEventIds(){
       this.processStepId = this.$route.query.processStepId

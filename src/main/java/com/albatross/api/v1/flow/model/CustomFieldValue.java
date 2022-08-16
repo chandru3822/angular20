@@ -33,7 +33,8 @@ public class CustomFieldValue {
   private List<ListOfValue> listOfValues;
   private List<Long> systemListOptionIds;
 
-  private Long projectId, defaultFieldId;  //this was required for attachment ancillary fields
+
+  private Long projectId, defaultFieldId, ancillaryCustomFieldId;   //these are required for attachment ancillary fields
 
   //This data type could change to JsonNode once albatross adds a legit json data type. As of 2022-03-01, it is used
   //only to store the returned Aurora design object

@@ -206,6 +206,23 @@
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep>
 
+  <customFieldGroupAssignment.getAvailableNativeFieldsForAttachmentType><![CDATA[
+    select cf.id, cf.field_name
+    from flow.custom_field cf
+    where cf.archived is not true
+      and cf.company_id = :companyId
+    except
+    select cf.id,cf.field_name
+    from flow.custom_field_group_assignment cfga
+           inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where cfg.attachment_type_id = :attachmentTypeId
+      and cfga.archived is not true
+      and cfg.archived is not true
+      and cf.archived is not true
+    order by field_name
+  ]]></customFieldGroupAssignment.getAvailableNativeFieldsForAttachmentType>
+
   <customFieldGroupAssignment.getAvailableNativeFieldsForEvent><![CDATA[
     select cf.id, cf.field_name
     from flow.custom_field cf

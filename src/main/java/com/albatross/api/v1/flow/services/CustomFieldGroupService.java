@@ -228,7 +228,7 @@ public class CustomFieldGroupService {
         CustomFieldGroup.class);
   }
 
-  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId) {
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId, Long attachmentTypeId) {
     User currentUser = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
@@ -253,6 +253,13 @@ public class CustomFieldGroupService {
               "customFieldGroupAssignment.getAvailableNativeFieldsForEvent",
               params,
               CustomField.class);
+    } else if (null != attachmentTypeId) {
+      params.put("attachmentTypeId", attachmentTypeId);
+      results =
+        sqlCache.query(
+          "customFieldGroupAssignment.getAvailableNativeFieldsForAttachmentType",
+          params,
+          CustomField.class);
     } else {
       results =
           sqlCache.query(

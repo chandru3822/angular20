@@ -184,7 +184,7 @@ export default {
     async doPageLoad() {
       //reset all the items cuz when the modal re-opens it doesnt reset everything
       this.isExisting = null != this.existingAttachment.id
-      this.displayNameChanged = false,
+      this.displayNameChanged = false
       this.customFieldGroups = []
       this.dirtyCfvs = []
       this.fileDetails = {}

@@ -3,13 +3,13 @@
     <v-card class="coversheet-card">
       <v-card-text class="pb-0 pl-0">
         <v-row class="">
-          <v-col cols="3" class="left-column">
+          <v-col :cols="leftCols" class="left-column">
             <v-btn @click="closeCallback">Back</v-btn>
             <div class="left-column-header">
               Thumbnail
             </div>
           </v-col>
-          <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+          <v-col :cols="attachmentCols" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
             <div>
               {{ a.displayName }}
               <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">
@@ -26,14 +26,14 @@
           </v-col>
         </v-row>
         <v-row class="">
-          <v-col cols="3" class="left-column">
+          <v-col :cols="leftCols" class="left-column">
             <span class="left-column-header">File Details</span><br>
             <span class="left-column-subheader">Uploaded Date</span><br>
             <span class="left-column-subheader">Uploaded By</span><br>
             <span class="left-column-subheader">Document Type</span><br>
             <span class="left-column-subheader">Document Location</span>
           </v-col>
-          <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+          <v-col :cols="attachmentCols" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
             <br>
             <span class="left-column-subheader">{{ a.dateCreated | formatDate('date') }} </span><br>
             <span class="left-column-subheader">{{ a.uploadedBy }} </span><br>
@@ -44,17 +44,22 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="3" class="left-column">
+          <v-col :cols="leftCols" class="left-column">
             <span class="left-column-header">Additional File Details</span><br>
           </v-col>
         </v-row>
         <v-row v-for="field in allFields"  class="">
-          <v-col cols="3" class="left-column field-container">
-            <span class="left-column-subheader">
-              {{ field.fieldName }}
-            </span>
+          <v-col :cols="leftCols" class="left-column field-container">
+            <div>
+              <div class="left-column-subheader">
+                {{ field.fieldName }}
+              </div>
+              <div v-if="field.ancillaryCustomFieldId" class="left-column-subheader">
+                (Ancillary)
+              </div>
+            </div>
           </v-col>
-          <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+          <v-col :cols="attachmentCols" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
             <CustomValueInput
               v-if="showField(a, field)"
               :readonly="true"
@@ -112,6 +117,8 @@ export default {
       attachmentsCopy: [],
       attachmentWithFields: [],
       allFields: [],
+      leftCols: 2,
+      attachmentCols: 2
     }
   },
   created() {
@@ -122,7 +129,8 @@ export default {
       let match = this.attachmentWithFields?.find(f => f.attachmentId === a.id)
       if (match) {
         let matchingValue = match.fieldValues?.find(fv => {
-          return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.customFieldId === field.customFieldId
+          return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.ancillaryCustomFieldId ?
+            fv.ancillaryCustomFieldId === field.ancillaryCustomFieldId : fv.customFieldId === field.customFieldId
         })
         return matchingValue
       }
@@ -184,9 +192,18 @@ export default {
           this.allFields = this.allFields.concat(f.fieldValues)
         })
 
-        //todo: need to figure out how to de-dupe but leave a 2nd dupe IF ancillary (but not 3rd)
+        //this removes duplicate fields (unless ancillary
+        this.allFields = this.allFields.reduce((unique, o) => {
+          console.log('unique: ',unique)
+          console.log('oooooo: ',o)
+          if(!unique.some(obj => (obj.customFieldId != null && obj.customFieldId === o.customFieldId) ||
+            (obj.ancillaryCustomFieldId != null && obj.ancillaryCustomFieldId === o.ancillaryCustomFieldId))) {
+            unique.push(o);
+          }
+          return unique;
+        },[]);
 
-        this.allFields = orderBy(this.allFields, [a => a.fieldName.toLowerCase()])
+        this.allFields = orderBy(this.allFields, [a => a.fieldName.toLowerCase(), a => a.customFieldId])
         console.log('ALL FIelds', this.allFields)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -231,7 +248,7 @@ export default {
 
 .field-container {
   display: flex;
-  align-items: end;
+  align-items: start;
 }
 
 .left-column-subheader {
