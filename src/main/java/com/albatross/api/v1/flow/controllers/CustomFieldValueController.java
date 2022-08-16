@@ -92,14 +92,8 @@ public class CustomFieldValueController {
     List<Long> attachmentIds;
   }
 
-  @Data
-  public static class ComparisonResponse {
-    Long attachmentId;
-    List<CustomFieldValue> fieldValues;
-  }
-
   @PostMapping(value = "/attachmentTypeComparison")
-  public List<ComparisonResponse> getAttachmentTypeComparisonFields(@RequestBody ComparisonBody body) {
+  public List<CustomFieldValueService.ComparisonResponse> getAttachmentTypeComparisonFields(@RequestBody ComparisonBody body) {
     return customFieldValueService.getAttachmentTypeComparisonFields(body.attachmentIds);
   }
 

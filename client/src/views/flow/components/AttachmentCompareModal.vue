@@ -1,47 +1,74 @@
 <template>
-  <v-card class="coversheet-container">
-    <v-card-text class="pb-0 pl-0">
-      <v-row class="">
-        <v-col cols="3" class="">
+  <div class="coversheet-container">
+    <v-card class="coversheet-card">
+      <v-card-text class="pb-0 pl-0">
+        <v-row class="">
+          <v-col cols="3" class="left-column">
             <v-btn @click="closeCallback">Back</v-btn>
-          Thumbnail
-        </v-col>
-        <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
-          <div>
-            {{a.displayName}}
-            <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">
-              <v-icon>close</v-icon>
+            <div class="left-column-header">
+              Thumbnail
+            </div>
+          </v-col>
+          <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+            <div>
+              {{ a.displayName }}
+              <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">
+                <v-icon>close</v-icon>
+              </v-btn>
+            </div>
+            <v-btn @click="closeModal(a)">
+              View
             </v-btn>
-          </div>
-          <v-btn @click="closeModal(a)">
-            View
-          </v-btn>
-          <v-btn color="primary"
-                 :href="a.presignedUrl">
-            Download
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row class="">
-        <v-col cols="3" class="">
-          File Details<br>
-          Uploaded Date<br>
-          Uploaded By<br>
-          Document Type<br>
-          Document Location
-        </v-col>
-        <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
-          <br>
-          {{a.dateCreated | formatDate('date')}} <br>
-          {{a.uploadedBy}} <br>
-          {{a.attachmentType}} <br>
-          <a @click="goToPath(a.originPath)">
-            {{a.originLocation}}
-          </a>
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+            <v-btn color="primary"
+                   :href="a.presignedUrl">
+              Download
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="3" class="left-column">
+            <span class="left-column-header">File Details</span><br>
+            <span class="left-column-subheader">Uploaded Date</span><br>
+            <span class="left-column-subheader">Uploaded By</span><br>
+            <span class="left-column-subheader">Document Type</span><br>
+            <span class="left-column-subheader">Document Location</span>
+          </v-col>
+          <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+            <br>
+            <span class="left-column-subheader">{{ a.dateCreated | formatDate('date') }} </span><br>
+            <span class="left-column-subheader">{{ a.uploadedBy }} </span><br>
+            <span class="left-column-subheader">{{ a.attachmentType }} </span><br>
+            <a class="left-column-subheader" @click="goToPath(a.originPath)">
+              {{ a.originLocation }}
+            </a>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="3" class="left-column">
+            <span class="left-column-header">Additional File Details</span><br>
+          </v-col>
+        </v-row>
+        <v-row v-for="field in allFields"  class="">
+          <v-col cols="3" class="left-column field-container">
+            <span class="left-column-subheader">
+              {{ field.fieldName }}
+            </span>
+          </v-col>
+          <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+            <CustomValueInput
+              v-if="showField(a, field)"
+              :readonly="true"
+              :hide-details="true"
+              :show-field-name="false"
+              :hide-label="true"
+              :field="getFieldValue(a, field)"
+              :filled-style="false"
+            />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+  </div>
 </template>
 
 <script>
@@ -58,8 +85,7 @@ import {ProjectMutations} from '@/stores/ProjectStore'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import cloneDeep from 'lodash.clonedeep'
-import {getCompanyProjectStatusTypes} from "@/services/projectStatusTypeService";
+import orderBy from 'lodash.orderby'
 
 export default {
   name: "AttachmentCompareModal",
@@ -83,15 +109,46 @@ export default {
   data() {
     return {
       timezone: this.$store.state.user.details.timezone.value,
-      attachmentsCopy: []
+      attachmentsCopy: [],
+      attachmentWithFields: [],
+      allFields: [],
     }
   },
   created() {
     this.doPageLoad()
   },
   methods: {
+    getFieldValue(a, field) {
+      let match = this.attachmentWithFields?.find(f => f.attachmentId === a.id)
+      if (match) {
+        let matchingValue = match.fieldValues?.find(fv => {
+          return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.customFieldId === field.customFieldId
+        })
+        return matchingValue
+      }
+      return null
+    },
+    showField(a, field) {
+      let match = this.attachmentWithFields?.find(f => f.attachmentId === a.id)
+      if (match) {
+        let matchingValue = match.fieldValues?.find(fv => {
+          return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.customFieldId === field.customFieldId
+        })
+        return (
+          matchingValue?.dateValue != null ||
+          matchingValue?.timestampValue != null ||
+          matchingValue?.textValue != null ||
+          matchingValue?.numericValue != null ||
+          matchingValue?.intValue != null ||
+          matchingValue?.intArrayValue != null ||
+          matchingValue?.richTextValue != null ||
+          matchingValue?.dataTypeId === 3
+        )
+      }
+      return false
+    },
     goToPath(path) {
-      if(null != path) {
+      if (null != path) {
         this.closeModal()
         this.$router.push(path)
       }
@@ -103,20 +160,34 @@ export default {
       this.attachmentsCopy = this.attachmentsCopy.filter(a => a.id !== item.id)
     },
     async doPageLoad() {
+      this.allFields = []
+      this.attachmentsCopy = []
+      this.attachmentWithFields = []
+
       //required since we cant mutate props that come from parent
       this.attachmentsCopy = this.attachments
-      console.log('do some stuff', this.attachmentsCopy)
       await this.getCustomFields()
     },
-    async getCustomFields () {
+    async getCustomFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
           attachmentIds: this.attachmentsCopy.map(a => a.id)
         }
-        console.log('randaLogger',params)
         const {data, status} = await postRequest(`/customFieldValues/attachmentTypeComparison`, params)
-        this.statusTypes = data
+        this.attachmentWithFields = data
+
+        //get cfIds and fieldNames across all attachments
+        this.attachmentWithFields.forEach((f, idx) => {
+          console.log('randaLogger', f.fieldValues)
+          //push all into one, will de-dupe after
+          this.allFields = this.allFields.concat(f.fieldValues)
+        })
+
+        //todo: need to figure out how to de-dupe but leave a 2nd dupe IF ancillary (but not 3rd)
+
+        this.allFields = orderBy(this.allFields, [a => a.fieldName.toLowerCase()])
+        console.log('ALL FIelds', this.allFields)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -141,18 +212,32 @@ export default {
   max-height: 90vh;
 }
 
-.coversheet-left-pane {
-  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-  padding-left: 25px;
-  height: 90vh;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding-bottom: 0;
+.coversheet-card {
+  min-height: 100%;
 }
 
-.coversheet-right-pane {
-  height: 90vh;
-  max-height: 90vh;
-  overflow-y: auto;
+.left-column {
+  padding-left: 25px;
+  border-right: solid 1px #C4C4C4;
+  /*box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);*/
+  /*clip-path: inset(0px -15px 0px 0px);*/
 }
+
+.left-column-header {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 25px;
+}
+
+.field-container {
+  display: flex;
+  align-items: end;
+}
+
+.left-column-subheader {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 25px;
+}
+
 </style>

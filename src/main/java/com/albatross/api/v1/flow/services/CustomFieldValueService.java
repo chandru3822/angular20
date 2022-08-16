@@ -3,7 +3,6 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.controllers.CustomFieldValueController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -57,7 +56,7 @@ public class CustomFieldValueService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
         params.put("userId", userId);
-        if(cv.getSystemReadonly()) {
+        if(null != cv.getSystemReadonly() && cv.getSystemReadonly()) {
           Optional<String> textValue = sqlCache.queryForObjectOptionalBySql(sql, params, String.class);
           textValue.ifPresent(cv::setTextValue);
         } else {
@@ -187,19 +186,29 @@ public class CustomFieldValueService {
     }
   }
 
-  public List<CustomFieldValueController.ComparisonResponse> getAttachmentTypeComparisonFields(List<Long> attachmentIds) {
-    List<CustomFieldValueController.ComparisonResponse> response = new ArrayList<>();
+  @Data
+  public static class ComparisonResponse {
+    Long attachmentId;
+    List<CustomFieldValue> fieldValues;
+  }
+
+  public List<ComparisonResponse> getAttachmentTypeComparisonFields(List<Long> attachmentIds) {
+    User currentUser = securityService.getCurrentUser();
+
+    List<ComparisonResponse> response = new ArrayList<>();
 
     HashMap<String, Object> params = new HashMap<>();
     for(Long attachmentId : attachmentIds) {
-      CustomFieldValueController.ComparisonResponse attachmentBody = new CustomFieldValueController.ComparisonResponse();
+      ComparisonResponse attachmentBody = new ComparisonResponse();
       attachmentBody.setAttachmentId(attachmentId);
       params.put("attachmentId", attachmentId);
-      List<CustomFieldValue> values = sqlCache.query("attachment.getComparisonFields", params, CustomFieldValue.class);
+      List<CustomFieldValue> values = sqlCache.query("attachment.getComparisonFields", params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
+      for(CustomFieldValue value : values) {
+        handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId());
+      }
       attachmentBody.setFieldValues(values);
       response.add(attachmentBody);
     }
-    log.error("We got these {}", response);
     return response;
   }
 
@@ -306,6 +315,12 @@ public class CustomFieldValueService {
       TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValues",
         new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
+      TypeReference<List<Integer>> intArrayValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "intArrayValue", new JsonCollectionDeserializer(intArrayValueRef, objectMapper));
+
+      TypeReference<List<Integer>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
 
     }
   }

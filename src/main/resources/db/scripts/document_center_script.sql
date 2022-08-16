@@ -10,6 +10,13 @@ insert into flow.company_object_type(object_type_id, company_id, archived, date_
 select (select id from flow.object_type where object_code = 'ATTACHMENTS'), 3, false, now(), now(), 2417170, false, false
   where not exists (select id from flow.company_object_type where company_id = 3 and object_type_id = (select id from flow.object_type where object_code = 'ATTACHMENTS'));
 
+insert into flow.data_type(data_type, custom_behavior, system_list)
+select 'Rich Text', false, false where not exists( select id from flow.data_type where data_type = 'Rich Text');
+
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+select 3, 'Rich Text', (select id from flow.data_type where data_type = 'Rich Text')
+       where not exists( select id from flow.company_data_type where company_data_type = 'Rich Text');
+
 --make project, ps, and event linkable and focusable
 alter table flow.project_attachment_type
   add column if not exists linkable boolean not null default false;
