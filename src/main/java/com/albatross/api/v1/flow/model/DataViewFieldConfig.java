@@ -16,7 +16,7 @@ public class DataViewFieldConfig {
   private Long id, fieldConfigId, defaultFieldId, customFieldGroupAssignmentId,
     updateFirstValueOnlyId, processStepEventId, processStepId, dataTypeId, objectTypeId;
   private String fieldToUpdate, fieldName, displayName, columnName, propertyName, parentObjectName, processStepName, processStepEventName;
-  private Boolean archived, watchedByTrigger, updateFirstValueOnly, resetOnNew;
+  private Boolean archived, watchedByTrigger, updateFirstValueOnly, resetOnNew, resetValuesOnMain;
   private List<DataViewChildFieldConfig> childFieldConfigs;
 
 }

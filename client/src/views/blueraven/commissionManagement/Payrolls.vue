@@ -71,7 +71,7 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.id}}</td>
               <td class="text-left">{{item.periodEnd | formatDate('date')}}</td>
               <td class="text-left">{{item.description}}</td>

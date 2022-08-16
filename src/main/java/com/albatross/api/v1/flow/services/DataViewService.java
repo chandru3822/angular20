@@ -148,6 +148,7 @@ public class DataViewService {
         params.put("fieldToUpdate", field.getFieldToUpdate());
         params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
         params.put("resetOnNew", null != field.getResetOnNew() && field.getResetOnNew());
+        params.put("resetValuesOnMain", null != field.getResetValuesOnMain() && field.getResetValuesOnMain());
 
         id = sqlCache.updateReturningId("dataView.addFieldConfig", params, "id").longValue();
 

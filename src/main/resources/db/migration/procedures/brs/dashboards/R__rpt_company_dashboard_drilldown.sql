@@ -486,9 +486,12 @@ BEGIN
                                  pd.project_id,
                                  s.abbreviation                         state,
                                  pd.source_name,
-                                 pd.ahj_final_inspection_verified    as date_value,
-                                 'AHJ FinalInspection Verified Date' as date_label,
-                                 'date'                              as date_type
+                                 pd.ahj_final_inspection_verified     as date_value,
+                                 'AHJ Final Inspection Verified Date' as date_label,
+                                 'date'                               as date_type,
+                                 pd.ahj_inspection_scheduled_date     as additional_field_value,
+                                 'Inspection Scheduled Date'          as additional_field_label,
+                                 'date'                          as additional_field_type
                           from brs.project_details pd
                                  inner join flow.project p on p.id = pd.project_id
                                  inner join flow.contact c on c.id = p.contact_id

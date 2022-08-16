@@ -41,7 +41,14 @@ export default new Vuetify({
                   lighten4:'#FECDD2'
               },
               warning:'#FB8C00',
-              success:'#1B5E20',
+              success: {
+                  base: '#1B5E20',
+                  lighten1:'#388E3B',
+                  lighten2:'#66BB6A',
+                  lighten3:'#A5D6A7',
+                  lighten4:'#E8F5E9'
+
+              },
               active:'#e3eff7',
               anchor: '#2c5893',
               grey: {

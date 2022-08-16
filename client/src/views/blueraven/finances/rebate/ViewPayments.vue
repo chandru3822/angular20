@@ -529,7 +529,7 @@ export default {
 }
 
 .approval {
-  outline: 2px solid blue;
+  outline: 2px solid var(--v-success-lighten1);
 }
 
 .invalid {

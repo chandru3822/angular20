@@ -134,7 +134,7 @@
                     width="200" height="100" >
               <div class="card-accent" :style="{'background-color': 'white'}"></div>
                 <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
-                  <div class="text-left">{{stat.name}}</div>
+                  <div class="text-left default-text-color">{{stat.name}}</div>
                   <div class="card-count">{{stat.value}}</div>
                 </v-card-text>
             </v-card>
@@ -154,7 +154,7 @@
                 <router-link class="no-text-decoration card-link" target="_blank"
                              :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
                                                                                                           installationCrewIds}}">
-                  <div class="text-left">{{wq.workQueueType}}</div>
+                  <div class="text-left default-text-color">{{wq.workQueueType}}</div>
                   <div class="card-count">{{wq.workQueueCount}}</div>
                 </router-link>
               </v-card-text>
@@ -342,7 +342,7 @@
                     width="200" height="100" >
               <div class="card-accent" :style="{'background-color': 'white'}"></div>
               <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
-                <div class="text-left">{{stat.name}}</div>
+                <div class="text-left default-text-color">{{stat.name}}</div>
                 <div class="card-count">{{stat.value}}</div>
               </v-card-text>
             </v-card>
@@ -359,11 +359,11 @@
                     width="200" height="100" >
               <div class="card-accent" :style="{'background-color': wq.color}"></div>
               <v-card-text class="pt-1">
-                <router-link class="no-text-decoration card-link" target="_blank"
+                <router-link class="no-text-decoration" target="_blank"
                              :to="{name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: 99999999, unassigned: selectedUserPosition.unassigned,
                                                                                                           installationCrewIds}}">
-                  <div class="text-left">{{wq.workQueueType}}</div>
-                  <div class="card-count">{{wq.workQueueCount}}</div>
+                  <div class="text-left default-text-color">{{wq.workQueueType}}</div>
+                  <div class="card-count card-link">{{wq.workQueueCount}}</div>
                 </router-link>
               </v-card-text>
             </v-card>
@@ -541,14 +541,38 @@
         }
         return 'check_box_outline_blank'
       },
+      additionalStartWeek () {
+        if (this.currentPeriod > 9) {
+          return 1;
+        }
+        return 0;
+      },
+      additionalEndWeek () {
+        if (this.currentPeriod === 9 || this.currentPeriod === 12) {
+          return 1;
+        }
+        return 0;
+      },
+      additionalStartWeekLastPeriod () {
+        if (this.currentPeriod > 10) {
+          return 1;
+        }
+        return 0;
+      },
+      additionalEndWeekLastPeriod () {
+        if (this.currentPeriod === 10 || this.currentPeriod === 1) {
+          return 1;
+        }
+        return 0;
+      },
       momentStartOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 + 1)
+        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek)
       },
       startOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 + 1).format('YYYY-MM-DD')
+        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek).format('YYYY-MM-DD')
       },
       endOfPeriod () {
-        return moment(this.momentStartOfPeriod).clone().add(3, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+        return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
       },
       startOfWeek () {
         return moment().startOf('W').format('YYYY-MM-DD')
@@ -693,9 +717,9 @@
             this.endDate = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
             break
           case 'Last Period':
-            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1)
-            this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1).format('YYYY-MM-DD')
-            this.endDate = moment(this.momentStartOfLastPeriod).clone().add(3, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod)
+            this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod).format('YYYY-MM-DD')
+            this.endDate = moment(this.momentStartOfLastPeriod).clone().add(3 + this.additionalEndWeekLastPeriod, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Custom':
             this.startDate = moment(this.startDate).format('YYYY-MM-DD')
@@ -742,9 +766,9 @@
             this.metricsEndDate = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
             break
           case 'Last Period':
-            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1)
-            this.metricsStartDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 2) * 4 + 1).format('YYYY-MM-DD')
-            this.metricsEndDate = moment(this.momentStartOfLastPeriod).clone().add(3, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod)
+            this.metricsStartDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod).format('YYYY-MM-DD')
+            this.metricsEndDate = moment(this.momentStartOfLastPeriod).clone().add(3 + this.additionalEndWeekLastPeriod, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Custom':
             this.metricsStartDate = moment(this.startDate).format('YYYY-MM-DD')
