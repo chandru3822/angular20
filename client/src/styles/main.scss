@@ -455,6 +455,12 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   font-size: 0.875rem;
 }
 
+ .albatross-subtitle-1 {
+   font-weight: bold;
+   font-size: 1rem;
+   line-height: 1.6;
+ }
+
 //eventually this should be our default body font size/weight, rendering this class unnecessary
 .albatross-body-1,
 .albatross-body-1 .v-label,

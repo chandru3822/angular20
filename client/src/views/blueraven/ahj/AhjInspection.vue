@@ -20,6 +20,7 @@
       <v-row class="mb-4" no-gutters>
         <!-- FIRST COLUMN -->
         <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
+          <AhjCard title="Test" :group="getCustomFieldsForGroup(17)"></AhjCard>
           <!-- SCHEDULING WITH AHJ -->
           <v-card>
             <v-card-title class="primary white--text font-weight-bold title-with-icon">
@@ -623,10 +624,12 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import orderBy from "lodash.orderby";
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
 export default {
   name: 'ahjInspection',
   components: {
+    AhjCard,
     AhjChecklist,
     AhjContact,
     AhjLink,
