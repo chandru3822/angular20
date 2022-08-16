@@ -48,7 +48,7 @@ public class InstallAgreementService {
   @Value(value = "${app.goodleap.newLoanUrl}")
   private String goodleapNewLoanUrl;
 
-  public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
+  public Page<InstallAgreementProject> getProjects(String query, Pageable pageable, Boolean showCancelled) {
     User user = securityService.getCurrentUser();
     Boolean viewAll =
         securityService.userHasFeatureAccessLevel(
@@ -66,6 +66,7 @@ public class InstallAgreementService {
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
+    params.put("showCancelled", showCancelled);
 
     List<InstallAgreementProject> results =
         sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
