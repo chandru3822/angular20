@@ -499,6 +499,7 @@
         a.uuid,
         a.display_name,
         a.date_created,
+        concat(u.first_name, ' ', u.last_name) as uploaded_by,
         a.date_modified,
         substring(a.filename, '\.([^\.]+)$') as file_extension,
         a.filename,
@@ -513,6 +514,7 @@
              inner join flow.attachment a on a.id = pa.attachment_id
              inner join flow.attachment_type att on a.attachment_type_id = att.id
              left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
+             inner join flow."user" u on u.id = a.created_by_id
       where pa.project_id = :projectId
         and a.company_id = :companyId
         and pa.archived is not true
@@ -525,6 +527,7 @@
         a.uuid,
         a.display_name,
         a.date_created,
+        concat(u.first_name, ' ', u.last_name) as uploaded_by,
         a.date_modified,
         substring(a.filename, '\.([^\.]+)$') as file_extension,
         a.filename,
@@ -540,6 +543,7 @@
              inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
              inner join flow.process_step ps on pps.process_step_id = ps.id
              inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow."user" u on u.id = a.created_by_id
              left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
       where pps.project_id = :projectId
         and a.company_id = :companyId
@@ -553,6 +557,7 @@
         a.uuid,
         a.display_name,
         a.date_created,
+        concat(u.first_name, ' ', u.last_name) as uploaded_by,
         a.date_modified,
         substring(a.filename, '\.([^\.]+)$') as file_extension,
         a.filename,
@@ -570,6 +575,7 @@
              inner join flow.event e on pse.event_id = e.id
              inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
              inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow."user" u on u.id = a.created_by_id
              left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
       where pps.project_id = :projectId
         and a.company_id = :companyId
@@ -586,6 +592,7 @@
       a.size,
       a.uuid,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.filename,
@@ -600,6 +607,7 @@
     from flow.project_attachment pa
       inner join flow.attachment a on a.id = pa.attachment_id
       inner join flow.attachment_type att on a.attachment_type_id = att.id
+      inner join flow."user" u on u.id = a.created_by_id
       left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where pa.project_id = :projectId
       and a.company_id = :companyId
@@ -631,6 +639,7 @@
       a.size,
       a.display_name,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.filename,
@@ -641,6 +650,7 @@
       true as main
     from flow.project_attachment pa
            inner join flow.attachment a on a.id = pa.attachment_id
+           inner join flow."user" u on u.id = a.created_by_id
     where pa.id = :id
       and a.archived is not true
   ]]></project.getAttachmentById>

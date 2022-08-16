@@ -60,7 +60,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       ps.process_step_name,
       ppsa.linked,
       ppsa.project_process_step_id,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy,
+      concat(u.first_name, ' ', u.last_name) AS uploaded_by,
       att.attachment_type,
       orgn.*
     from flow.project_process_step_attachment ppsa

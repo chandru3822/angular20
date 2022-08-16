@@ -802,7 +802,7 @@
       substring(filename, '\.([^\.]+)$') as file_extension,
       ua.user_id,
       ua.linked,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy,
+      concat(u.first_name, ' ', u.last_name) AS uploaded_by,
       att.attachment_type,
       orgn.*
     from flow.user_attachment ua

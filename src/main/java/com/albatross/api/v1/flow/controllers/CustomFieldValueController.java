@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -84,6 +85,22 @@ public class CustomFieldValueController {
                                                             @RequestParam(required = false) Long attachmentId) {
     return customFieldValueService.getCustomFieldGroupsAndValues(
       ObjectType.ATTACHMENT_TYPE.textValue(), attachmentTypeId, attachmentId, true);
+  }
+
+  @Data
+  public static class ComparisonBody {
+    List<Long> attachmentIds;
+  }
+
+  @Data
+  public static class ComparisonResponse {
+    Long attachmentId;
+    List<CustomFieldValue> fieldValues;
+  }
+
+  @PostMapping(value = "/attachmentTypeComparison")
+  public List<ComparisonResponse> getAttachmentTypeComparisonFields(@RequestBody ComparisonBody body) {
+    return customFieldValueService.getAttachmentTypeComparisonFields(body.attachmentIds);
   }
 
   // updates for all object types

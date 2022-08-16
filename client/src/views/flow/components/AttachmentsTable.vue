@@ -185,8 +185,6 @@ export default {
       this.attachmentToDelete = null
     },
     selectFileToCompare(e, item) {
-      console.log('event',e)
-      console.log('item',item)
       this.compareCallback(item)
     }
   }

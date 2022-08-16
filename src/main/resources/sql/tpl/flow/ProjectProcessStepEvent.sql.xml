@@ -317,7 +317,7 @@ where ppse.id = :id
         ps.process_step_name,
         ppsa.project_process_step_event_id,
         pps.id as "projectProcessStepId",
-        concat(u.first_name, ' ', u.last_name) AS uploadedBy,
+        concat(u.first_name, ' ', u.last_name) AS uploaded_by,
         att.attachment_type,
         orgn.*
       from flow.project_process_step_event_attachment ppsa

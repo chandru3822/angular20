@@ -1,14 +1,43 @@
 <template>
-  <v-card class="">
+  <v-card class="coversheet-container">
     <v-card-text class="pb-0 pl-0">
       <v-row class="">
-        <v-col cols="4" class="coversheet-left-pane">
+        <v-col cols="3" class="">
             <v-btn @click="closeCallback">Back</v-btn>
+          Thumbnail
         </v-col>
-        <v-col cols="8" class="coversheet-right-pane">
-          <div v-for="(a, idx) in attachments" :key="idx">
+        <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+          <div>
             {{a.displayName}}
+            <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">
+              <v-icon>close</v-icon>
+            </v-btn>
           </div>
+          <v-btn @click="closeModal(a)">
+            View
+          </v-btn>
+          <v-btn color="primary"
+                 :href="a.presignedUrl">
+            Download
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-row class="">
+        <v-col cols="3" class="">
+          File Details<br>
+          Uploaded Date<br>
+          Uploaded By<br>
+          Document Type<br>
+          Document Location
+        </v-col>
+        <v-col cols="3" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
+          <br>
+          {{a.dateCreated | formatDate('date')}} <br>
+          {{a.uploadedBy}} <br>
+          {{a.attachmentType}} <br>
+          <a @click="goToPath(a.originPath)">
+            {{a.originLocation}}
+          </a>
         </v-col>
       </v-row>
     </v-card-text>
@@ -30,6 +59,7 @@ import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import cloneDeep from 'lodash.clonedeep'
+import {getCompanyProjectStatusTypes} from "@/services/projectStatusTypeService";
 
 export default {
   name: "AttachmentCompareModal",
@@ -53,19 +83,48 @@ export default {
   data() {
     return {
       timezone: this.$store.state.user.details.timezone.value,
+      attachmentsCopy: []
     }
   },
   created() {
     this.doPageLoad()
   },
-  computed: {},
   methods: {
-    closeModal() {
-      this.closeCallback()
+    goToPath(path) {
+      if(null != path) {
+        this.closeModal()
+        this.$router.push(path)
+      }
+    },
+    closeModal(a) {
+      this.closeCallback(a)
+    },
+    removeAttachmentFromView(item) {
+      this.attachmentsCopy = this.attachmentsCopy.filter(a => a.id !== item.id)
     },
     async doPageLoad() {
-      console.log('do some stuff')
-    }
+      //required since we cant mutate props that come from parent
+      this.attachmentsCopy = this.attachments
+      console.log('do some stuff', this.attachmentsCopy)
+      await this.getCustomFields()
+    },
+    async getCustomFields () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let params = {
+          attachmentIds: this.attachmentsCopy.map(a => a.id)
+        }
+        console.log('randaLogger',params)
+        const {data, status} = await postRequest(`/customFieldValues/attachmentTypeComparison`, params)
+        this.statusTypes = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>

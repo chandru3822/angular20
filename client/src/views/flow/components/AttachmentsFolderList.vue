@@ -213,7 +213,12 @@ export default {
     closeCoversheet() {
       this.showCoversheetModal = false
     },
-    closeCompareModal() {
+    closeCompareModal(a) {
+      if(a && null != a.id) {
+        //use if compare modal needs to close and the coversheet needs to open
+        this.tempFile = a
+        this.showCoversheetModal = true
+      }
       this.showCompareModal = false
     },
     toggleAttachmentToCompare(attachment) {

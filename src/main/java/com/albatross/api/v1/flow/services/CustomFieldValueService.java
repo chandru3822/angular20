@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.CustomFieldValueController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -18,10 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -187,6 +185,22 @@ public class CustomFieldValueService {
       log.error("SQL", e);
       return null;
     }
+  }
+
+  public List<CustomFieldValueController.ComparisonResponse> getAttachmentTypeComparisonFields(List<Long> attachmentIds) {
+    List<CustomFieldValueController.ComparisonResponse> response = new ArrayList<>();
+
+    HashMap<String, Object> params = new HashMap<>();
+    for(Long attachmentId : attachmentIds) {
+      CustomFieldValueController.ComparisonResponse attachmentBody = new CustomFieldValueController.ComparisonResponse();
+      attachmentBody.setAttachmentId(attachmentId);
+      params.put("attachmentId", attachmentId);
+      List<CustomFieldValue> values = sqlCache.query("attachment.getComparisonFields", params, CustomFieldValue.class);
+      attachmentBody.setFieldValues(values);
+      response.add(attachmentBody);
+    }
+    log.error("We got these {}", response);
+    return response;
   }
 
   @Data
