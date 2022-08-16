@@ -194,8 +194,6 @@ export default {
 
         //this removes duplicate fields (unless ancillary
         this.allFields = this.allFields.reduce((unique, o) => {
-          console.log('unique: ',unique)
-          console.log('oooooo: ',o)
           if(!unique.some(obj => (obj.customFieldId != null && obj.customFieldId === o.customFieldId) ||
             (obj.ancillaryCustomFieldId != null && obj.ancillaryCustomFieldId === o.ancillaryCustomFieldId))) {
             unique.push(o);
@@ -204,7 +202,6 @@ export default {
         },[]);
 
         this.allFields = orderBy(this.allFields, [a => a.fieldName.toLowerCase(), a => a.customFieldId])
-        console.log('ALL FIelds', this.allFields)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

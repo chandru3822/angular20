@@ -45,70 +45,74 @@
     </div>
     <div v-if="attachmentTypes.length === 0" class="text-center albatross-body-2">No attachments available</div>
     <v-card v-else class="text-left square-card" :class="{'elevation-0': !isCard || attachments.length === 0}">
-    <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
-    <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
-      <v-expansion-panel-header class="albatross-body-1">
-        <template v-slot:default="{ open }">
-          <v-row v-if="(allowUpload || forceShowUploadBtn)"
-                 class="file-hover d-flex"
-                 :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId ==! type.attachmentTypeId}"
-                 @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId=null"
-                 @dragleave="dragTypeId=null"
-                 @dragend="dragTypeId=null"
-                 @drop.prevent="addDragDocument($event, type)"
-                 @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId = null"
-          >
-            <v-icon color="primary">upload</v-icon>
-          </v-row>
-          <v-row no-gutters class="align-center" :class="{'bold' : open}">
-           <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">folder</v-icon> {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
-            <v-spacer></v-spacer>
-            <input
-              :id="`fileInput${type.attachmentTypeId}`"
-              type="file"
-              :accept="acceptedFileTypes"
-              @change='setTempFile($event.target.files, type)'
-              style="display: none"
-              @click.stop=""
-              ref='fileInput'
-            >
-            <div class="expansion-panel-header-open"  v-if="open"
-                 key="0">
-            </div>
-            <span
-                v-else
-                key="1"
-            >
+      <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
+        <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
+          <v-expansion-panel-header class="albatross-body-1">
+            <template v-slot:default="{ open }">
+              <v-row v-if="(allowUpload || forceShowUploadBtn)"
+                     class="file-hover d-flex"
+                     :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId ==! type.attachmentTypeId}"
+                     @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId=null"
+                     @dragleave="dragTypeId=null"
+                     @dragend="dragTypeId=null"
+                     @drop.prevent="addDragDocument($event, type)"
+                     @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId = null"
+              >
+                <v-icon color="primary">upload</v-icon>
+              </v-row>
+              <v-row no-gutters class="align-center" :class="{'bold' : open}">
+                <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">
+                  folder
+                </v-icon>
+                {{ `${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})` }}
+                <v-spacer></v-spacer>
+                <input
+                  :id="`fileInput${type.attachmentTypeId}`"
+                  type="file"
+                  :accept="acceptedFileTypes"
+                  @change='doUpload($event.target.files, type)'
+                  style="display: none"
+                  @click.stop=""
+                  ref='fileInput'
+                >
+                <div class="expansion-panel-header-open" v-if="open"
+                     key="0">
+                </div>
+                <span
+                  v-else
+                  key="1"
+                >
                 </span>
-            <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
-                   elevation="0" text color="primary" class="text-capitalize" :disabled="dragTypeId === type.attachmentTypeId">
-              Upload
-            </v-btn>
-          </v-row>
-        </template>
-      </v-expansion-panel-header>
-      <v-expansion-panel-content>
-        <AttachmentsTable
-            :search="search"
-            :display-type="type"
-            :allow-upload="allowUpload"
-            :show-linked="linkable"
-            :attachments="attachments"
-            :projectId="projectId"
-            :projectProcessStepId="projectProcessStepId"
-            :userId="userId"
-            :contactId="contactId"
-            :compare="!allowUpload && !linkable && compare"
-            :orgId="orgId"
-            :objectTypeId="objectTypeId"
-            :projectProcessStepEventId="projectProcessStepEventId"
-            :compare-callback="toggleAttachmentToCompare"
-            :count-selected="selectedAttachmentsForCompare.length"
-        ></AttachmentsTable>
-      </v-expansion-panel-content>
-      <v-divider v-if="index !== attachmentTypes.length - 1" class="mx-3"></v-divider>
-    </v-expansion-panel>
-  </v-expansion-panels>
+                <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
+                       elevation="0" text color="primary" class="text-capitalize"
+                       :disabled="dragTypeId === type.attachmentTypeId">
+                  Upload
+                </v-btn>
+              </v-row>
+            </template>
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <AttachmentsTable
+              :search="search"
+              :display-type="type"
+              :allow-upload="allowUpload"
+              :show-linked="linkable"
+              :attachments="attachments"
+              :projectId="projectId"
+              :projectProcessStepId="projectProcessStepId"
+              :userId="userId"
+              :contactId="contactId"
+              :compare="!allowUpload && !linkable && compare"
+              :orgId="orgId"
+              :objectTypeId="objectTypeId"
+              :projectProcessStepEventId="projectProcessStepEventId"
+              :compare-callback="toggleAttachmentToCompare"
+              :count-selected="selectedAttachmentsForCompare.length"
+            ></AttachmentsTable>
+          </v-expansion-panel-content>
+          <v-divider v-if="index !== attachmentTypes.length - 1" class="mx-3"></v-divider>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </v-card>
 
   </div>
@@ -154,7 +158,7 @@ export default {
       default: false
     }
   },
-  data () {
+  data() {
     return {
       processStepId: null,
       eventId: null,
@@ -175,9 +179,9 @@ export default {
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       companyId: this.$store.state.user.details.companyId,
       headers: [
-        { text: null, value: 'fileIcon', show: true },
-        { text: null, value: 'filename', show: true },
-        { text: null, value: 'icons', show: true },
+        {text: null, value: 'fileIcon', show: true},
+        {text: null, value: 'filename', show: true},
+        {text: null, value: 'icons', show: true},
       ],
       search: '',
       compare: false,
@@ -185,7 +189,7 @@ export default {
     }
   },
   watch: {
-    focused: function() {
+    focused: function () {
       this.loadAllPageDetails()
     },
     // // whenever pps id changes, this function will run
@@ -202,26 +206,24 @@ export default {
     },
     // // whenever the project store forces a reload - do this - i cant remember why atm
     '$store.state.project.forceReloadKey': async function () {
-      if(this.reloadOnKeyChange) {
+      if (this.reloadOnKeyChange) {
         // reset the selected item
         this.updateProcessStepAndEventIds()
         this.loadAllPageDetails()
       }
     }
   },
-  created () {
+  created() {
     this.updateProcessStepAndEventIds();
     this.loadAllPageDetails();
   },
-  computed: {
-
-  },
+  computed: {},
   methods: {
     closeCoversheet() {
       this.showCoversheetModal = false
     },
     closeCompareModal(a) {
-      if(a && null != a.id) {
+      if (a && null != a.id) {
         //use if compare modal needs to close and the coversheet needs to open
         this.tempFile = a
         this.showCoversheetModal = true
@@ -229,36 +231,37 @@ export default {
       this.showCompareModal = false
     },
     toggleAttachmentToCompare(attachment) {
-      if(attachment.compare) {
+      if (attachment.compare) {
         this.selectedAttachmentsForCompare.push(attachment)
       } else {
         this.selectedAttachmentsForCompare = this.selectedAttachmentsForCompare.filter(a => a.id !== attachment.id)
       }
     },
     fileUploaded(attachment) {
-      console.log('file was uploaded',attachment)
+      console.log('file was uploaded', attachment)
       this.attachments.push(attachment)
       //this value tells the right pane to update when a file is uploaded
       this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+      this.$store.commit(AppMutations.SET_LOADING, false)
     },
-    updateProcessStepAndEventIds(){
+    updateProcessStepAndEventIds() {
       this.processStepId = this.$route.query.processStepId
       this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
       this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
     },
     loadAllPageDetails() {
       //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
-      if((!this.objectTypeId || this.objectTypeId === 1) && !this.focused && !this.allowUpload && !this.linkable) {
+      if ((!this.objectTypeId || this.objectTypeId === 1) && !this.focused && !this.allowUpload && !this.linkable) {
         this.typePath = `/combined/project`
         this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
       } else {
-        if(this.projectProcessStepEventId) {
+        if (this.projectProcessStepEventId) {
           this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
           this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
-        } else if(this.projectProcessStepId) {
+        } else if (this.projectProcessStepId) {
           this.typePath = `/processStepTypes/${this.projectProcessStepId}`
           this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
-        } else if(this.projectId) {
+        } else if (this.projectId) {
           this.typePath = `/objectType/project`
           this.attachmentPath = `/project/${this.projectId}/attachments`
         } else if (this.objectTypeId === 2) {
@@ -277,29 +280,33 @@ export default {
       }
 
       //if focused override attachment path to get all in project
-      if(this.focused) {
+      if (this.focused) {
         this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
       }
 
-      if(this.typePath && this.attachmentPath) {
+      if (this.typePath && this.attachmentPath) {
         this.fetchAttachmentTypes()
         this.fetchAttachments()
       }
     },
     fetchAttachmentTypes: async function () {
       this.attachmentTypesLoading = true
-      const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, { params: {
+      const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, {
+        params: {
           linkable: this.linkable,
           allowUpload: this.allowUpload,
           focused: this.focused
-        }})
+        }
+      })
       this.attachmentTypes = data
       this.attachmentTypesLoading = false
     },
     fetchAttachments: async function () {
-      const {data} = await getRequestWithParams(this.attachmentPath, { params: {
+      const {data} = await getRequestWithParams(this.attachmentPath, {
+        params: {
           linked: this.linkable
-        }})
+        }
+      })
       data.forEach(d => {
         let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
         d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
@@ -307,9 +314,9 @@ export default {
         d.editableNameCopy = d.editableName
       })
 
-      this.attachments = orderBy(data,  [a => a.dateCreated], 'desc')
+      this.attachments = orderBy(data, [a => a.dateCreated], 'desc')
     },
-    getTypeCount: function(typeId) {
+    getTypeCount: function (typeId) {
       try {
         return this.attachments.filter(a => {
           return a.attachmentTypeId === typeId && !a.archived && a.linked === this.linkable
@@ -320,28 +327,73 @@ export default {
       }
     },
     addDragDocument: async function (e, type) {
-      if(this.allowUpload || this.forceShowUploadBtn) {
+      if (this.allowUpload || this.forceShowUploadBtn) {
         let files = e.dataTransfer.files
-        await this.setTempFile(files, type)
+        await this.doUpload(files, type)
       }
     },
-    selectFile: function(typeId){
+    selectFile: function (typeId) {
       document.getElementById(`fileInput${typeId}`)?.click();
     },
-    setTempFile: function(files, type) {
+    async doUpload(files, type) {
+      console.log('TYPE TYPE', type)
+      if (type.hasFieldsAssigned) {
+        this.setTempFile(files, type)
+      } else {
+        await this.uploadDocument(files, type)
+      }
+    },
+    setTempFile: function (files, type) {
       this.tempFile = {}
       this.fileToUpload = null
-      if(files?.length > 0) {
+      if (files?.length > 0) {
         //we dont upload new files until after they fill in custom fields, need to pass file to next screen
         this.fileToUpload = files[0]
         this.tempFile.attachmentTypeId = type.attachmentTypeId
         this.tempFile.attachmentType = type.attachmentType
         let displayName = this.fileToUpload.name.substr(0, this.fileToUpload.name.lastIndexOf('.'))
         this.tempFile.displayName = displayName
-        console.log('name',displayName)
+        console.log('name', displayName)
         this.showCoversheetModal = true
       }
-    }
+    },
+    uploadDocument: async function (files, type) {
+      //this should only get called if the attachment type doesn't have any native fields
+      if (files?.length > 0) {
+        let file = files[0]
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          //reset error message when trying to upload new file
+          this.error = {}
+          if (file && file.size > 0) {
+            console.log('file here', file)
+            let displayName = file.name.substr(0, file.name.lastIndexOf('.'))
+            await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
+              null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
+                (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
+                  Actions.OBJECT_TYPE_FILE_UPLOAD, {
+              file,
+              attachmentTypeId: type.attachmentTypeId,
+              displayName,
+              projectId: this.projectId,
+              projectProcessStepId: this.projectProcessStepId,
+              userId: this.userId,
+              contactId: this.contactId,
+              orgId: this.orgId,
+              objectTypeId: this.objectTypeId,
+              projectProcessStepEventId: this.projectProcessStepEventId,
+              callback: this.fileUploaded
+            })
+          }
+        } catch (e) {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+
+    },
   }
 }
 </script>
@@ -352,7 +404,7 @@ export default {
   font-weight: bold;
 }
 
-.expansion-panel-header-open{
+.expansion-panel-header-open {
   display: flex;
   align-items: center;
 }
@@ -364,7 +416,7 @@ export default {
   margin: -24px;
   padding: 24px;
 
-  i{
+  i {
     width: 100%;
   }
 }

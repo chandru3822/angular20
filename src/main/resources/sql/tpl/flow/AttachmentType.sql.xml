@@ -956,7 +956,13 @@
            oat.focused,
            oat.linkable,
            oat.allow_upload,
-           oat.display_order
+           oat.display_order,
+           case when (
+             select cfga.id
+             from flow.custom_field_group_assignment cfga
+             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.project_attachment_type_id = oat.id
+             limit 1
+           ) is not null  then true else false end as has_fields_assigned
     from flow.project_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId
