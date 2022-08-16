@@ -826,7 +826,7 @@
   left: 0;
 }
 .card-link {
-  color: #666666;
+  color: var(--v-grey-darken2);
 }
 .stats-tile {
   cursor: pointer;
