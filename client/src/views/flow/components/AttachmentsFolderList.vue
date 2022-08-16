@@ -336,7 +336,6 @@ export default {
       document.getElementById(`fileInput${typeId}`)?.click();
     },
     async doUpload(files, type) {
-      console.log('TYPE TYPE', type)
       if (type.hasFieldsAssigned) {
         this.setTempFile(files, type)
       } else {

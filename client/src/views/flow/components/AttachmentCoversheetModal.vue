@@ -72,22 +72,25 @@
               </v-card>
 
             </v-col>
-            <v-toolbar flat dense color="white"
-                       class="fixed-toolbar-bottom mt-1 px-0 coversheet-save-bar">
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <v-btn text color="primary" small @click="closeModal()">
-                  {{ isExisting ? 'Cancel' : 'Cancel Upload' }}
-                </v-btn>
-                <div>
-                  <v-btn small :loading="fieldsSaving"
-                         class="mt-3"
-                         color="primary" @click="saveAndUpload()">
-                    {{ isExisting ? 'Save Changes' : 'Save and Upload' }}
+            <div class="fixed-toolbar-bottom bottom-toolbar-container">
+              <v-toolbar flat dense color="white"
+                         class=" mt-1 px-0 coversheet-save-bar">
+                <v-spacer></v-spacer>
+                <v-toolbar-items>
+                  <v-btn text color="primary" small @click="closeModal()">
+                    {{ isExisting ? 'Cancel' : 'Cancel Upload' }}
                   </v-btn>
-                </div>
-              </v-toolbar-items>
-            </v-toolbar>
+                  <div>
+                    <v-btn small :loading="fieldsSaving"
+                           :disabled="customFieldsLoading"
+                           class="mt-3"
+                           color="primary" @click="saveAndUpload()">
+                      {{ isExisting ? 'Save Changes' : 'Save and Upload' }}
+                    </v-btn>
+                  </div>
+                </v-toolbar-items>
+              </v-toolbar>
+            </div>
           </v-col>
           <v-col cols="8" class="coversheet-right-pane pa-6">
             <div class="d-flex align-center albatross-header-1 default-text-color" >{{ fileDetails.displayName }}
@@ -168,7 +171,8 @@ export default {
       requiredRules: constants.BASIC_REQUIRED_RULE,
       saveError: false,
       errorMsg: null,
-      isExisting: false
+      isExisting: false,
+      customFieldsLoading: false
     }
   },
   created() {
@@ -197,6 +201,7 @@ export default {
       await this.getFieldGroups()
     },
     getFieldGroups: async function () {
+      this.customFieldsLoading = true
       try {
         const {data} = await getRequestWithParams(`/customFieldValues/attachmentType/${this.existingAttachment.attachmentTypeId}`, {
           params: {
@@ -204,6 +209,7 @@ export default {
           }
         }, null, [])
         this.customFieldGroups = data
+        this.customFieldsLoading = false
       } catch (e) {
         logError(e)
       } finally {
@@ -348,11 +354,18 @@ export default {
   height: 90vh;
   max-height: 90vh;
   overflow-y: auto;
+  padding-bottom: 0 !important;
 }
 
 .coversheet-right-pane {
   height: 90vh;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.bottom-toolbar-container {
+  margin: 0 -10px;
+  background-color: white;
+  padding-bottom: 15px;
 }
 </style>
