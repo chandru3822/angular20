@@ -63,24 +63,24 @@
           <v-row no-gutters class="align-center" :class="{'bold' : open}">
            <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">folder</v-icon> {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
             <v-spacer></v-spacer>
+            <input
+              :id="`fileInput${type.attachmentTypeId}`"
+              type="file"
+              :accept="acceptedFileTypes"
+              @change='setTempFile($event.target.files, type)'
+              style="display: none"
+              @click.stop=""
+              ref='fileInput'
+            >
             <div class="expansion-panel-header-open"  v-if="open"
                  key="0">
-              <input
-                  :id="`fileInput${type.attachmentTypeId}`"
-                  type="file"
-                  :accept="acceptedFileTypes"
-                  @change='setTempFile($event.target.files, type)'
-                  style="display: none"
-                  @click.stop=""
-                  ref='fileInput'
-              >
             </div>
             <span
                 v-else
                 key="1"
             >
                 </span>
-            <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="(type.attachmentTypeId)"
+            <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
                    elevation="0" text color="primary" class="text-capitalize" :disabled="dragTypeId === type.attachmentTypeId">
               Upload
             </v-btn>
@@ -316,7 +316,7 @@ export default {
         await this.setTempFile(files, type)
       }
     },
-    selectFile: function(typeId){selectFile
+    selectFile: function(typeId){
       document.getElementById(`fileInput${typeId}`)?.click();
     },
     setTempFile: function(files, type) {
