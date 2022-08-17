@@ -38,8 +38,8 @@ public class InstallAgreementController {
   private final SqlCache sqlCache;
 
   @GetMapping(value = "/projects")
-  public Page<InstallAgreementProject> getProjects(@RequestParam String query, Pageable pageable) {
-    return installAgreementRepository.getProjects(query, pageable);
+  public Page<InstallAgreementProject> getProjects(@RequestParam String query, @RequestParam Boolean showCancelled, Pageable pageable) {
+    return installAgreementRepository.getProjects(query, pageable, showCancelled);
   }
 
   @PostMapping(value = "/create")

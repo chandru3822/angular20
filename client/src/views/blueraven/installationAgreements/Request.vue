@@ -1,5 +1,13 @@
 <template>
   <v-container class="pa-0">
+    <v-checkbox
+      class="pt-5 ml-3"
+      dense
+      v-model="showCancelled"
+      label="Show Cancelled"
+      v-show="userCanManage"
+      @change="fetchProjects(searchQuery)"
+    />
     <RequestTable :headers="headers" :projects="projects" :total-items="totalItems" :feature-code="'INSTALLATION_AGREEMENT'" :is-loading="dataLoading"
                   @openRequest="openRequest($event)" @searchInput="fetchProjects($event)" @submitRequest="submitRequest">
       <template v-slot:dialogContent>
@@ -82,39 +90,43 @@ import Snackbar from "@/components/Snackbar";
 export default {
   name: 'ProjectRequests',
   components: {Snackbar, RequestTable},
-  data: () => ({
-    snackbar: {},
-    dataLoading: true,
-    footerProps: {
-      'items-per-page-options': [25, 50, 100, 500],
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-    },
-    options: {
-      itemsPerPage: 100
-    },
-    projects: [],
-    headers: [
-      {text: 'Customer Name', value: 'customer_name', show: true},
-      {text: 'Address', value: 'address', show: true}
-    ],
-    pagination: {},
-    projectsSearch: '',
-    searchQuery: '',
-    totalItems: 0,
-    requestItem: {
-      customer_name: '',
-      email: '',
-      proposalNbr: '',
-      proposalNbrs: [],
-      sendLoanDocs: true,
-      sendInstallationAgreement: false,
-      isSpanish: false,
-      sunpowerUrlExists: false,
-      projectId: ''
-    },
-    currentEmail: '',
-    editEmail: false
-  }),
+  data() {
+    return {
+      snackbar: {},
+      dataLoading: true,
+      footerProps: {
+        'items-per-page-options': [25, 50, 100, 500],
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+      },
+      options: {
+        itemsPerPage: 100
+      },
+      projects: [],
+      headers: [
+        {text: 'Customer Name', value: 'customer_name', show: true},
+        {text: 'Address', value: 'address', show: true}
+      ],
+      pagination: {},
+      projectsSearch: '',
+      searchQuery: '',
+      showCancelled: false,
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('INSTALLATION_AGREEMENT', 'MANAGE'),
+      totalItems: 0,
+      requestItem: {
+        customer_name: '',
+        email: '',
+        proposalNbr: '',
+        proposalNbrs: [],
+        sendLoanDocs: true,
+        sendInstallationAgreement: false,
+        isSpanish: false,
+        sunpowerUrlExists: false,
+        projectId: ''
+      },
+      currentEmail: '',
+      editEmail: false
+    }
+  },
   computed: {},
   watch: {
     options: {
@@ -142,12 +154,15 @@ export default {
       try {
         this.dataLoading = true
         const {page, itemsPerPage} = this.options
+        const params = {
+          query: this.searchQuery,
+          showCancelled: this.showCancelled,
+          page: page - 1,
+          size: itemsPerPage
+        }
+
         const {data} = await getRequestWithParams(`/install-agreement/projects`, {
-          params: {
-            query: this.searchQuery,
-            page: page - 1,
-            size: itemsPerPage
-          }
+          params
         }, 'blueraven')
 
         this.projects = data.content;

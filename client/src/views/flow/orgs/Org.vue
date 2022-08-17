@@ -148,11 +148,11 @@
             class="elevation-1  square-card mx-4"
           >
             <template #no-data>
-              No users found
+              <span class="default-text-color">No users found</span>
             </template>
 
             <template #no-results>
-              No users found
+              <span class="default-text-color">No users found</span>
             </template>
 
             <template #item="{ item:user }">
@@ -160,7 +160,7 @@
                 <td class="text-left">{{ user.fullName }}</td>
                 <td class="text-left">{{ user.position }}</td>
                 <td class="text-right">
-                  <v-btn small text @click="goToPath(`/user/${user.id}/details`, true)">
+                  <v-btn small text color="primary lighten-1" @click="goToPath(`/user/${user.id}/details`, true)">
                     <v-icon>mdi-open-in-new</v-icon>
                   </v-btn>
 
@@ -188,11 +188,11 @@
               v-if="showChildOrgs"
             >
               <template #no-data>
-                No child orgs found
+                <span class="default-text-color">No child orgs found</span>
               </template>
 
               <template #no-results>
-                No child orgs found
+                <span class="default-text-color">No child orgs found</span>
               </template>
 
               <template #item="{ item }">
@@ -204,7 +204,7 @@
                                 v-model="item.activeFlag"/>
                   </td>
                   <td class="text-right">
-                    <v-btn small text @click="goToPath(`/org/${item.id}`, true)">
+                    <v-btn small text color="primary lighten-1" @click="goToPath(`/org/${item.id}`, true)">
                       <v-icon>mdi-open-in-new</v-icon>
                     </v-btn>
 
@@ -646,7 +646,7 @@ export default {
 
 .detail-label {
   font-size: 12px;
-  color: #9E9C9C;
+  color: var(--v-grey-darken1);
 }
 
 .detail-item {

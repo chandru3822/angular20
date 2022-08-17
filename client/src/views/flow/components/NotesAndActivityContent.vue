@@ -73,10 +73,10 @@
       >
 
         <template #no-data>
-          There are no notes to display
+          <span class="default-text-color">There are no notes to display</span>
         </template>
         <template #no-results>
-          There are no notes to display
+          <span class="default-text-color">There are no notes to display</span>
         </template>
 
         <template #item="{ item, index }">
