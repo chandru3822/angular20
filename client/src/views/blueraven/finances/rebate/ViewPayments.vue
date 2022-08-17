@@ -150,7 +150,9 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="primary" text @click="close">Cancel</v-btn>
-            <v-btn color="primary" raised @click="submitPay" class="white--text">
+            <v-btn color="primary" raised
+                   :disabled="submittingPay"
+                   @click="submitPay" class="white--text">
               Submit
             </v-btn>
           </v-card-actions>
@@ -247,6 +249,7 @@ export default {
         selected: false,
       },
       paymentsSearch: '',
+      submittingPay: false,
       pagination: {},
       selectAll: false,
       showSelect: false,
@@ -439,12 +442,14 @@ export default {
       this.newPayItem = {}
     },
     async submitPay() {
+      this.submittingPay = true
       try {
         const {status} = await postRequest('/rebate/recurringPayment', this.newPayItem, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Recurring Payment Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
         await this.fetchPayments();
+        this.submittingPay = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Failed to save Recurring Payment')
