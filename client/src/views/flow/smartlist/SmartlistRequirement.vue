@@ -389,6 +389,7 @@
 
           <v-btn
             text
+            color="primary"
             :disabled="isSaveExpandedRequirementDisabled"
             @click="updateRequirement(expandedRequirement)"
           >
