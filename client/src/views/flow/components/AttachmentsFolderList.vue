@@ -27,6 +27,7 @@
       <v-text-field
         v-model="search"
         prepend-inner-icon="search"
+        clearable
         label="Search all project documents"
         single-line
         hide-details
@@ -51,14 +52,14 @@
             <template v-slot:default="{ open }">
               <v-row v-if="(allowUpload || forceShowUploadBtn)"
                      class="file-hover d-flex"
-                     :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId ==! type.attachmentTypeId}"
-                     @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId=null"
-                     @dragleave="dragTypeId=null"
-                     @dragend="dragTypeId=null"
+                     :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId !== type.attachmentTypeId}"
+                     @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
+                     @dragend="dragTypeId = null"
+                     @dragleave="dragTypeId = null"
                      @drop.prevent="addDragDocument($event, type)"
-                     @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId=type.attachmentTypeId : dragTypeId = null"
+                     @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
               >
-                <v-icon color="primary">upload</v-icon>
+                <v-icon class="child-drag-elements" color="primary">upload</v-icon>
               </v-row>
               <v-row no-gutters class="align-center" :class="{'bold' : open}">
                 <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">
@@ -237,11 +238,15 @@ export default {
         this.selectedAttachmentsForCompare = this.selectedAttachmentsForCompare.filter(a => a.id !== attachment.id)
       }
     },
-    fileUploaded(attachment) {
-      console.log('file was uploaded', attachment)
-      this.attachments.push(attachment)
-      //this value tells the right pane to update when a file is uploaded
-      this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+    fileUploaded(attachment, error) {
+      if(error) {
+        this.snackbar = getSnackbar('ERROR', error.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else {
+        this.attachments.push(attachment)
+        //this value tells the right pane to update when a file is uploaded
+        this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+      }
       this.$store.commit(AppMutations.SET_LOADING, false)
     },
     updateProcessStepAndEventIds() {
@@ -327,6 +332,7 @@ export default {
       }
     },
     addDragDocument: async function (e, type) {
+      this.dragTypeId = null
       if (this.allowUpload || this.forceShowUploadBtn) {
         let files = e.dataTransfer.files
         await this.doUpload(files, type)
@@ -336,60 +342,56 @@ export default {
       document.getElementById(`fileInput${typeId}`)?.click();
     },
     async doUpload(files, type) {
-      if (type.hasFieldsAssigned) {
-        this.setTempFile(files, type)
-      } else {
-        await this.uploadDocument(files, type)
-      }
-    },
-    setTempFile: function (files, type) {
-      this.tempFile = {}
-      this.fileToUpload = null
-      if (files?.length > 0) {
-        //we dont upload new files until after they fill in custom fields, need to pass file to next screen
-        this.fileToUpload = files[0]
-        this.tempFile.attachmentTypeId = type.attachmentTypeId
-        this.tempFile.attachmentType = type.attachmentType
-        let displayName = this.fileToUpload.name.substr(0, this.fileToUpload.name.lastIndexOf('.'))
-        this.tempFile.displayName = displayName
-        console.log('name', displayName)
-        this.showCoversheetModal = true
-      }
-    },
-    uploadDocument: async function (files, type) {
-      //this should only get called if the attachment type doesn't have any native fields
       if (files?.length > 0) {
         let file = files[0]
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          //reset error message when trying to upload new file
-          this.error = {}
-          if (file && file.size > 0) {
-            console.log('file here', file)
-            let displayName = file.name.substr(0, file.name.lastIndexOf('.'))
-            await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
-              null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
-                (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
-                  Actions.OBJECT_TYPE_FILE_UPLOAD, {
-              file,
-              attachmentTypeId: type.attachmentTypeId,
-              displayName,
-              projectId: this.projectId,
-              projectProcessStepId: this.projectProcessStepId,
-              userId: this.userId,
-              contactId: this.contactId,
-              orgId: this.orgId,
-              objectTypeId: this.objectTypeId,
-              projectProcessStepEventId: this.projectProcessStepEventId,
-              callback: this.fileUploaded
-            })
-          }
-        } catch (e) {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        if (type.hasFieldsAssigned) {
+          this.setTempFile(file, type)
+        } else {
+          await this.uploadDocument(file, type)
         }
+      }
+    },
+    setTempFile: function (file, type) {
+      this.tempFile = {}
+      this.fileToUpload = null
+      //we dont upload new files until after they fill in custom fields, need to pass file to next screen
+      this.fileToUpload = file
+      this.tempFile.attachmentTypeId = type.attachmentTypeId
+      this.tempFile.attachmentType = type.attachmentType
+      let displayName = this.fileToUpload.name.substr(0, this.fileToUpload.name.lastIndexOf('.'))
+      this.tempFile.displayName = displayName
+      this.showCoversheetModal = true
+    },
+    uploadDocument: async function (file, type) {
+      //this should only get called if the attachment type doesn't have any native fields
+      try {
+        //reset error message when trying to upload new file
+        this.error = {}
+        if (file && file.size > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          let displayName = file.name.substr(0, file.name.lastIndexOf('.'))
+          await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
+            null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
+              (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
+                Actions.OBJECT_TYPE_FILE_UPLOAD, {
+            file,
+            attachmentTypeId: type.attachmentTypeId,
+            displayName,
+            projectId: this.projectId,
+            projectProcessStepId: this.projectProcessStepId,
+            userId: this.userId,
+            contactId: this.contactId,
+            orgId: this.orgId,
+            objectTypeId: this.objectTypeId,
+            projectProcessStepEventId: this.projectProcessStepEventId,
+            callback: this.fileUploaded
+          })
+        }
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
 
     },
@@ -439,5 +441,9 @@ export default {
 
 .theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
   background-color: transparent !important;
+}
+
+.child-drag-elements {
+  pointer-events: none;
 }
 </style>
