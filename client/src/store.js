@@ -89,17 +89,24 @@ const store = new Vuex.Store({
           return file.size <= sizeLimit
         })
         .map(({file, attachmentTypeId, sourceId, displayName, deleteFirst = true}) => {
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('attachmentTypeId', attachmentTypeId)
-          formData.append('displayName', displayName)
-          formData.append('deleteFirst', deleteFirst)
+          //@kaleb - sry if this breaks, i didn't test it, just matched it to the new checks to ensure no bad file types get uploaded
+            let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+            //only continue with upload if matches whitelisted file types
+            if(constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
+              const formData = new FormData()
+              formData.append('file', file)
+              formData.append('attachmentTypeId', attachmentTypeId)
+              formData.append('displayName', displayName)
+              formData.append('deleteFirst', deleteFirst)
 
-          if (sourceId != null) {
-            formData.append('sourceId', sourceId)
-          }
+              if (sourceId != null) {
+                formData.append('sourceId', sourceId)
+              }
 
-          return formData
+              return formData
+            } else {
+              return null
+            }
         })
         .map(data => postRequest('/attachment', data))
 
