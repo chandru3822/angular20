@@ -157,7 +157,7 @@
                                text
                                x-small
                                :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
-                               class="white--text"
+                               color="primary"
                                id="qa-create-project-button"
                                @click="getAvailableProcesses">
                           <v-icon>add</v-icon>
