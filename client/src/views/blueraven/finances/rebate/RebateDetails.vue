@@ -163,11 +163,11 @@
             class="elevation-1"
           >
             <template #no-data>
-              No available payment history
+              <span class="default-text-color">No available payment history</span>
             </template>
 
             <template #no-results>
-              No available payment history
+              <span class="default-text-color">No available payment history</span>
             </template>
 
             <template #item="{ item, index }">
