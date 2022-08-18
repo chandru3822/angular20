@@ -1090,7 +1090,7 @@
   }
   .count-span {
     font-size: 0.85em;
-    color: grey;
+    color: var(--v-grey-darken2);
   }
   .user-selected {
     margin-left: 150px;
