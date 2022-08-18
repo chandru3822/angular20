@@ -251,7 +251,7 @@ public class SMSService {
   }
 
   /** Process up to [limit] Twilio webhook payloads that have been queued up. */
-  public void processTwilioWebhookPayloads(int limit) {
+  private void processTwilioWebhookPayloads(int limit) {
 
     try (Jedis jedis = jedisPool.getResource()) {
 

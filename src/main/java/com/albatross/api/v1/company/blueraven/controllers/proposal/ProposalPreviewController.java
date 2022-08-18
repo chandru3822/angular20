@@ -5,6 +5,7 @@ import freemarker.template.TemplateException;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,10 +38,9 @@ public class ProposalPreviewController {
     final StreamingResponseBody responseBody =
         outputStream -> {
           try {
-            proposalTemplateService.generatePdf(templateId, new HashMap<>(), outputStream,
-              contentLength ->
-              response.addHeader(HttpHeaders.CONTENT_LENGTH, contentLength.toString()), true);
-
+            final var pdf = proposalTemplateService.generatePdf(templateId, new HashMap<>(), true);
+            response.addHeader(HttpHeaders.CONTENT_LENGTH, pdf.getContentLength().toString());
+            IOUtils.copy(pdf.getInputStream(), outputStream);
           } catch (TemplateException e) {
             log.error("[Proposal] Error generating preview PDF", e);
             throw new ApiException("Error generating preview");

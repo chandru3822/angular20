@@ -18,10 +18,10 @@ export default {
   getters: {
     getAllNotifications: (state) => state.notifications,
     getNotificationsByTopic: (state) => (topic) => {
-      return state.notifications.filter(n => n.topic === topic) ?? []
+      return state.notifications?.filter(n => n.topic === topic) ?? []
     },
     getEventsByTopic: (state) => (topic) => {
-      return state.messages.filter(n => n.topic === topic) ?? []
+      return state.messages?.filter(n => n.topic === topic) ?? []
     }
   },
   actions: {
@@ -44,7 +44,7 @@ export default {
           return
         }
 
-        const newState = state.notifications.filter(n => !notificationIds.includes(n.id))
+        const newState = state.notifications?.filter(n => !notificationIds.includes(n.id))
         commit('setNotifications', newState)
 
         await postRequest(`/notifications/markNotificationAsRead/`, { notificationIds })

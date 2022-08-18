@@ -1,5 +1,7 @@
 package com.albatross.api.v1.company.blueraven.services;
 
+import com.albatross.api.exception.ApiException;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
@@ -7,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,6 +28,7 @@ import java.math.RoundingMode;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -51,12 +56,12 @@ public class InstallAgreementService {
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable, Boolean showCancelled) {
     User user = securityService.getCurrentUser();
     Boolean viewAll =
-        securityService.userHasFeatureAccessLevel(
-            user.getId(),
-            user.getCompanyId(),
-            user.getHighestCompanyId(),
-            "INSTALLATION_AGREEMENT",
-            List.of("VIEW_ALL"));
+      securityService.userHasFeatureAccessLevel(
+        user.getId(),
+        user.getCompanyId(),
+        user.getHighestCompanyId(),
+        "INSTALLATION_AGREEMENT",
+        List.of("VIEW_ALL"));
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
@@ -69,15 +74,34 @@ public class InstallAgreementService {
     params.put("showCancelled", showCancelled);
 
     List<InstallAgreementProject> results =
-        sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
+      sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
     Integer count =
-        sqlCache.queryForObject("installAgreement.getProjectsCount", params, Integer.class);
+      sqlCache.queryForObject("installAgreement.getProjectsCount", params, Integer.class);
 
     return new PageImpl<>(
-        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+  }
+
+  private Optional<PropLogDetail> getProjectDetailsFromLog(@NonNull Long projectId, @NonNull Long proposalNbr) {
+    final Map<String, Object> params = Map.of("projectId", projectId, "proposalNbr", proposalNbr);
+    return sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
+    final String result = createRequest(request);
+    if (result == null || result.trim().equals("")) {
+      request.setRequest_successful(true);
+    } else {
+      request.setRequest_successful(false);
+    }
+
+    User user = securityService.getCurrentUser();
+    setRequestStatus(request, user.getId());
+
+    return result;
+  }
+
+  private String createRequest(InstallAgreementRequest request) throws Exception {
     Long projectId = request.getProjectId();
     Boolean sendLoanDocs = request.getSendLoanDocs();
 
@@ -109,29 +133,22 @@ public class InstallAgreementService {
         resultMsg = "Error sending finance docs through Sunpower: " + ex.getMessage();
       }
     } else if (sendLoanDocs && isLoanPalProject(financier)) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      params.put("proposalNbr", request.getProposalNbr());
-      Optional<InstallAgreementService.PropLogDetail> propLogDetail =
-          sqlCache.get(
-              "installAgreement.getProjectDetailsFromLog",
-              params,
-              InstallAgreementService.PropLogDetail.class);
+      Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, request.getProposalNbr());
 
       JSONObject loanApplication =
-          goodleapService.getApplicationByProjectId(request.getProjectId());
+        goodleapService.getApplicationByProjectId(request.getProjectId());
       if (loanApplication != null) {
         try {
           String loanPalId = loanApplication.getString("id");
 
           if (propLogDetail.isPresent()) {
             final BigDecimal propLogAmount =
-                new BigDecimal(propLogDetail.get().getLoanAmount()).setScale(0, RoundingMode.DOWN);
+              new BigDecimal(propLogDetail.get().getLoanAmount()).setScale(0, RoundingMode.DOWN);
             final BigDecimal currentAmount =
-                loanApplication
-                    .getJSONObject("amount")
-                    .getBigDecimal("value")
-                    .setScale(0, RoundingMode.DOWN);
+              loanApplication
+                .getJSONObject("amount")
+                .getBigDecimal("value")
+                .setScale(0, RoundingMode.DOWN);
 
             if (!propLogAmount.equals(currentAmount)) {
               goodleapService.updateLoanAmount(loanPalId, propLogDetail.get().getLoanAmount());
@@ -166,8 +183,8 @@ public class InstallAgreementService {
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
         log.warn(
-            String.format(
-                "IARQ: Unable to locate goodleap application for project ID: %s", projectId));
+          String.format(
+            "IARQ: Unable to locate goodleap application for project ID: %s", projectId));
         throw new RuntimeException(e);
       } else {
         if (!resultMsg.isEmpty()) {
@@ -204,18 +221,18 @@ public class InstallAgreementService {
     params.put("proposalNbr", proposalNbr);
 
     Optional<InstallAgreementRequest> req =
-        sqlCache.get(
-            "installAgreement.getFinancierFromProposalLog", params, InstallAgreementRequest.class);
+      sqlCache.get(
+        "installAgreement.getFinancierFromProposalLog", params, InstallAgreementRequest.class);
 
     if (req.isPresent()) {
       financier = req.get().getFinancier();
     }
 
     log.debug(
-        "IARQ: financier from proposal log for project {} #{}: {}",
-        projectId,
-        proposalNbr,
-        financier);
+      "IARQ: financier from proposal log for project {} #{}: {}",
+      projectId,
+      proposalNbr,
+      financier);
     return financier;
   }
 
@@ -227,24 +244,19 @@ public class InstallAgreementService {
     params.put("proposalNbr", proposalNbr);
 
     Optional<InstallAgreementRequest> req =
-        sqlCache.get(
-            "installAgreement.getUtilityFromProposalLog", params, InstallAgreementRequest.class);
+      sqlCache.get(
+        "installAgreement.getUtilityFromProposalLog", params, InstallAgreementRequest.class);
 
     if (req.isPresent()) {
       utility = req.get().getUtility_company();
     }
 
     log.debug(
-        "IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
+      "IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
     return utility;
   }
 
-  public void setRequestStatus(InstallAgreementRequest request) {
-    User user = securityService.getCurrentUser();
-    setRequestStatus(request, user.getId());
-  }
-
-  public void setRequestStatus(InstallAgreementRequest request, Long userId) {
+  private void setRequestStatus(InstallAgreementRequest request, Long userId) {
     Long projectId = request.getProjectId();
     Long proposalNbr = request.getProposalNbr();
     HashMap<String, Object> params = request.toHashMap();
@@ -252,61 +264,61 @@ public class InstallAgreementService {
     params.put("sendInstallationAgreement", request.getSendInstallationAgreement());
     params.put("isSpanish", request.getIsSpanish() != null ? request.getIsSpanish() : false);
     params.put(
-        "success",
-        request.getRequest_successful() != null ? request.getRequest_successful() : false);
+      "success",
+      request.getRequest_successful() != null ? request.getRequest_successful() : false);
 
     log.debug(
-        "IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
-        projectId,
-        proposalNbr,
-        userId,
-        request.getRequest_successful(),
-        request.getIsSpanish());
+      "IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
+      projectId,
+      proposalNbr,
+      userId,
+      request.getRequest_successful(),
+      request.getIsSpanish());
     sqlCache.update("installAgreement.setRequestStatus", params);
   }
 
   public String generateLoanApplication(Long projectId, Long proposalNbr, String sendVia)
-      throws Exception {
+    throws Exception {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
 
     Optional<PandaDocProjectDetails> deets =
-        sqlCache.get("pandaDoc.getProjectDetails", params, PandaDocProjectDetails.class);
+      sqlCache.get("pandaDoc.getProjectDetails", params, PandaDocProjectDetails.class);
 
     if (deets.isPresent()) {
       PandaDocProjectDetails pd = deets.get();
-      if (pd.getLoanType().contains("Sunlight")) {
-        Optional<InstallAgreementService.PropLogDetail> propLogDetail =
-            sqlCache.get(
-                "installAgreement.getProjectDetailsFromLog",
-                params,
-                InstallAgreementService.PropLogDetail.class);
+      final String loanType = pd.getLoanType();
+
+      if (loanType == null) {
+        throw new ApiException("Loan Type required and not found");
+      }
+
+      if (loanType.contains("Sunlight")) {
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
+
         try {
           return sunlightService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
         } catch (Exception e) {
           return sunlightPortalUrl + "salesdashboard";
         }
-      } else if (pd.getLoanType().toLowerCase().contains("sunpower")) {
-        Optional<InstallAgreementService.PropLogDetail> propLogDetail =
-            sqlCache.get(
-                "installAgreement.getProjectDetailsFromLog",
-                params,
-                InstallAgreementService.PropLogDetail.class);
+      } else if (loanType.toLowerCase().contains("sunpower")) {
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
+
         try {
           return sunpowerService.saveLoanFields(
-              propLogDetail.get(), projectId, proposalNbr, sendVia, false);
+            propLogDetail.get(), projectId, proposalNbr, sendVia, false);
         } catch (Exception e) {
           throw new Exception(e.getMessage(), e);
         }
-      } else if (pd.getLoanType().contains("LoanPal")) {
+      } else if (loanType.contains("LoanPal")) {
         // Check if this project has already had a credit check via Sunlight, if so throw error
         Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
         if (creditLastCheckedBy.isPresent()) {
           String creditor = (String) creditLastCheckedBy.get();
           if (creditor.equals("Sunlight")) {
             throw new Exception(
-                "Unable to generate LoanPal application due to existing Sunlight application.");
+              "Unable to generate LoanPal application due to existing Sunlight application.");
           }
         }
         String bothStreets = "";
@@ -365,8 +377,8 @@ public class InstallAgreementService {
     final String TWENTY_FIVE_YEAR_TERM = "25";
     // Handle multiple formats of 7 year loan term
     if (loanTerm.equals(SEVEN_YEAR_TERM_V1)
-        || loanTerm.equals(SEVEN_YEAR_TERM_V2)
-        || loanTerm.equals(SEVEN_YEAR_TERM_V3)) {
+      || loanTerm.equals(SEVEN_YEAR_TERM_V2)
+      || loanTerm.equals(SEVEN_YEAR_TERM_V3)) {
       if (interestRate.equals("0.0699")) {
         financeOption = "brs699";
       }
@@ -458,24 +470,88 @@ public class InstallAgreementService {
     return sqlCache.query("installAgreement.getProposalNumbers", params, ProposalInfo.class);
   }
 
+  public String getLoanStatus(@NonNull Long projectId, @NonNull Long proposalNbr) {
+
+    Optional<String> loanType =
+      sqlCache.get(
+        "installAgreement.getLoanType", Map.of("projectId", projectId, "proposalNbr", proposalNbr), new SingleColumnRowMapper<>(String.class));
+
+    if (loanType.isPresent()) {
+      try {
+        String loan = loanType.get();
+        if (loan.contains("LoanPal")) {
+          JSONObject loanApp = goodleapService.getApplicationByProjectId(projectId);
+          return loanApp.toString();
+        } else if (loan.contains("Sunlight")) {
+          JSONObject sunlightApp =
+            sunlightService.getApplicationByProjectId(projectId);
+          return sunlightApp.toString();
+        } else if (loan.toLowerCase().contains("sunpower")) {
+          JSONObject sunlightApp =
+            sunpowerService.getApplicationDetails(projectId, proposalNbr);
+          return sunlightApp.toString();
+        }
+      } catch (Exception e) {
+        log.debug("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
+        if (e.getMessage().contains("locate")) {
+          throw new NotFoundException("Loan application was not found.");
+        } else {
+          throw new ApiException("Unknown Error Occurred");
+        }
+      }
+    }
+    throw new NotFoundException("Loan application was not found.");
+  }
+
+  @Deprecated
+  public String getLoanStatus(@NonNull Long projectId) {
+    try {
+      JSONObject loanApp = goodleapService.getApplicationByProjectId(projectId);
+      return loanApp.toString();
+    } catch (Exception e) {
+      log.debug("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
+      if (e.getMessage().contains("locate")) {
+        throw new NotFoundException("Loan application was not found.");
+      } else {
+        throw new ApiException("Unknown Error Occurred");
+      }
+    }
+  }
+
+  public Map<String, String> updateSunpowerApplication(@NonNull Long projectId, @NonNull Long proposalNbr) {
+    try {
+      final var propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
+      if (propLogDetail.isPresent()) {
+        var message =
+          sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
+        return Map.of("message", message);
+      }
+      return Map.of("message", "");
+
+    } catch (Exception e) {
+      log.debug("IARQ: Installation agreement: Failed to update sunpower application: {}", e.getMessage());
+      throw new ApiException(e.getMessage());
+    }
+  }
+
   @Data
   public static class PropLogDetail {
     Long projectId;
     private String loanAmount,
-        loanTerm,
-        interestRate,
-        salesRepresentativeFirstName,
-        salesRepresentativeLastName,
-        salesRepresentativeEmail,
-        firstName,
-        lastName,
-        email,
-        address,
-        city,
-        state,
-        zip,
-        phone,
-        fullName;
+      loanTerm,
+      interestRate,
+      salesRepresentativeFirstName,
+      salesRepresentativeLastName,
+      salesRepresentativeEmail,
+      firstName,
+      lastName,
+      email,
+      address,
+      city,
+      state,
+      zip,
+      phone,
+      fullName;
   }
 
   @Data
