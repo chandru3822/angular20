@@ -40,11 +40,11 @@
             class="elevation-1 fix-column-width-bug mb-5"
           >
             <template #no-data>
-              No available field groups
+              <span class="default-text-color">No available field groups</span>
             </template>
 
             <template #no-results>
-              No available field groups
+              <span class="default-text-color">No available field groups</span>
             </template>
 
             <template #item="{ item, index }">

@@ -25,11 +25,11 @@
           class="elevation-1">
 
           <template #no-data>
-            No available default fields
+            <span class="default-text-color">No available default fields</span>
           </template>
 
           <template #no-results>
-            No available default fields
+            <span class="default-text-color">No available default fields</span>
           </template>
 
           <template #item="{ item, index }">

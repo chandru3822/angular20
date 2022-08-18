@@ -306,11 +306,11 @@
               class="elevation-1 fix-column-width-bug square-card"
             >
               <template #no-data>
-                No requirements for this process step
+                <span class="default-text-color">No requirements for this process step</span>
               </template>
 
               <template #no-results>
-                No requirements for this process step
+                <span class="default-text-color">No requirements for this process step</span>
               </template>
 
               <template #expanded-item="{ headers, item }">

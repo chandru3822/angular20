@@ -23,11 +23,11 @@
           class="elevation-1 mt-2"
         >
           <template #no-data>
-            No available summary data
+            <span class="default-text-color">No available summary data</span>
           </template>
 
           <template #no-results>
-            No available summary data
+            <span class="default-text-color">No available summary data</span>
           </template>
 
           <template #item="{ item, index }">

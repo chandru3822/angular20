@@ -25,7 +25,7 @@
       class="elevation-0"
     >
       <template #no-data>
-        NO RESULTS
+        <span class="default-text-color">NO RESULTS</span>
       </template>
 
       <template #header="{ props: { headers } }">

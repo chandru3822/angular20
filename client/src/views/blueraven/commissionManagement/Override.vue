@@ -247,11 +247,11 @@
             class="elevation-1"
         >
           <template #no-data>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #no-results>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -397,11 +397,11 @@
             class="elevation-1"
         >
           <template #no-data>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #no-results>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #expanded-item="{ headers, item }">

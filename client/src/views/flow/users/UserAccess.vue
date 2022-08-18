@@ -56,11 +56,11 @@
           class="elevation-1 mt-1"
         >
           <template #no-data>
-            No available calendars
+            <span class="default-text-color">No available calendars</span>
           </template>
 
           <template #no-results>
-            No available calendars
+            <span class="default-text-color">No available calendars</span>
           </template>
 
           <template #item="{ item, index }">

@@ -44,11 +44,11 @@
             class="elevation-1 square-card mb-2"
           >
             <template #no-data>
-              No available event status types
+              <span class="default-text-color">No available event status types</span>
             </template>
 
             <template #no-results>
-              No available event status types
+              <span class="default-text-color">No available event status types</span>
             </template>
 
             <template #item="{ item, index }">

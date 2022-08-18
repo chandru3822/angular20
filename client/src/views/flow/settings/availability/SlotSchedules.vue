@@ -35,11 +35,11 @@
           class="elevation-1 org-type-table"
         >
           <template #no-data>
-            NO DATA HERE!
+            <span class="default-text-color">NO DATA HERE!</span>
           </template>
 
           <template #no-results>
-            No available data
+            <span class="default-text-color">No available data</span>
           </template>
 
           <template #expanded-item="{ headers, item }">

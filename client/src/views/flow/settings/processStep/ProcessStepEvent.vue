@@ -127,11 +127,11 @@
           class="event-actions-table elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            No actions for this event
+            <span class="default-text-color">No actions for this event</span>
           </template>
 
           <template #no-results>
-            No actions for this event
+            <span class="default-text-color">No actions for this event</span>
           </template>
 
           <template #expanded-item="{ headers, item: action }">
@@ -664,11 +664,11 @@
                 class="elevation-1 fix-column-width-bug square-card"
               >
                 <template #no-data>
-                  No custom fields for this event
+                  <span class="default-text-color">No custom fields for this event</span>
                 </template>
 
                 <template #no-results>
-                  No custom fields for this event
+                  <span class="default-text-color">No custom fields for this event</span>
                 </template>
 
                 <template #item="{ item, index }">

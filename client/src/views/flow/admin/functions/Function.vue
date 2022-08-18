@@ -89,10 +89,10 @@
             class="elevation-1 mt-3"
           >
             <template #no-data>
-              No available params
+              <span class="default-text-color">No available params</span>
             </template>
             <template #no-results>
-              No available params
+              <span class="default-text-color">No available params</span>
             </template>
 
             <template #item="{ item, index }">

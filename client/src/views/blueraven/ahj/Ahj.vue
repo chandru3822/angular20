@@ -83,11 +83,11 @@
           </template>
 
           <template #no-data>
-            <div class="mt-2 mb-4">No records found</div>
+            <div class="mt-2 mb-4 default-text-color">No records found</div>
           </template>
 
           <template #no-results>
-            <div class="mt-2 mb-4">No records found</div>
+            <div class="mt-2 mb-4 default-text-color">No records found</div>
           </template>
         </v-data-table>
 

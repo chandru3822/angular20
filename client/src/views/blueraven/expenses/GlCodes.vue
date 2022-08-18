@@ -41,11 +41,11 @@
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            No GL Codes
+            <span class="default-text-color">No GL Codes</span>
           </template>
 
           <template #no-results>
-            No GL Codes
+            <span class="default-text-color">No GL Codes</span>
           </template>
 
           <template #item="{ item, index }">

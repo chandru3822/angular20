@@ -137,11 +137,11 @@
             class="action-table elevation-1 fix-column-width-bug"
           >
             <template #no-data>
-              No actions for this process step
+              <span class="default-text-color">No actions for this process step</span>
             </template>
 
             <template #no-results>
-              No actions for this process step
+              <span class="default-text-color">No actions for this process step</span>
             </template>
 
             <template #expanded-item="{ headers, item }">

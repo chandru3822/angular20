@@ -46,11 +46,11 @@
           id="wq-drilldown-table"
           @click:row="clickRow"
         >
-          <template class="black--text" #no-data>
+          <template class="default-text-color" #no-data>
             No available results
           </template>
 
-          <template class="black--text" #no-results>
+          <template class="default-text-color" #no-results>
             No available results
           </template>
 

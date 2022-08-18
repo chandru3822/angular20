@@ -60,11 +60,11 @@
               :key="renderTicker"
             >
               <template #no-data>
-                No Attachments Available
+                <span class="default-text-color">No Attachments Available</span>
               </template>
 
               <template #no-results>
-                No Attachments Available
+                <span class="default-text-color">No Attachments Available</span>
               </template>
 
               <template #item="{ item }">

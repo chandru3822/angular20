@@ -165,11 +165,11 @@
             class="elevation-1 square-card"
           >
             <template #no-data>
-              No available work queue types
+              <span class="default-text-color">No available work queue types</span>
             </template>
 
             <template #no-results>
-              No available work queue types
+              <span class="default-text-color">No available work queue types</span>
             </template>
 
             <template #expanded-item="{ headers, item }">

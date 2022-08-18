@@ -35,11 +35,11 @@
         >
 
           <template #no-data>
-            No available projects
+            <span class="default-text-color">No available projects</span>
           </template>
 
           <template #no-results>
-            No available projects
+            <span class="default-text-color">No available projects</span>
           </template>
 
           <template #item="{item}">

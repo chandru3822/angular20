@@ -16,12 +16,13 @@
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn
+        text color="primary"
         class="elevation-0 text-capitalize"
         @click="$emit('cancel')"
       >
         Close
       </v-btn>
-      <v-btn class="ml-2" :disabled="!projectId" @click="saveProjectToPlan()">Save</v-btn>
+      <v-btn class="ml-2 text-capitalize" :disabled="!projectId" color="primary" @click="saveProjectToPlan()">Save</v-btn>
     </v-card-actions>
   </v-card>
 </template>
