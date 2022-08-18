@@ -18,7 +18,6 @@ import javax.annotation.PostConstruct;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Configuration
@@ -35,7 +34,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final ProjectProcessStepService projectProcessStepService;
   private final ContactService contactService;
   private final MessagingService messagingService;
-  private final PubSubService pubSubService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
   private Boolean sendSmsNotifications;

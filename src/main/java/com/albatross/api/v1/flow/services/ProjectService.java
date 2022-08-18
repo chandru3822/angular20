@@ -17,7 +17,6 @@ import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEven
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,6 +26,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableMap;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -39,7 +39,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,6 +46,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -252,19 +252,6 @@ public class ProjectService {
 
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
-    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-
-    // pretty sure we don't show the user's image anywhere anymore and s3 stuff is slow. taking out
-    // for now.
-    //    if (project.isPresent()
-    //        && null != project.get().getOwner()
-    //        && null != project.get().getOwner().getUserId()) {
-    //      String presignedUrl =
-    //          attachmentService.getAttachmentPresignedUrl(
-    //              project.get().getOwner().getUserId(),
-    //              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
-    //      project.get().getOwner().setPresignedUrl(presignedUrl);
-    //    }
 
     return sqlCache.get(
         "project.get",
@@ -274,7 +261,7 @@ public class ProjectService {
             "companyId",
             user.getCompanyId(),
             "isParent",
-            isParent,
+            user.isParentCompany(),
             "parentCompanyId",
             user.getHighestParentCompanyId()),
         new ProjectMapper<>(Project.class, om));
@@ -451,7 +438,7 @@ public class ProjectService {
             });
   }
 
-  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+  private String stringifyAddress(String street1, String city, String state, String postalCode) {
     StringJoiner sj = new StringJoiner(", ");
     sj.add(street1);
     sj.add(city);
@@ -460,7 +447,7 @@ public class ProjectService {
     return sj.toString();
   }
 
-  public String getProjectAddress(Project project) {
+  private String getProjectAddress(Project project) {
     StringJoiner sj = new StringJoiner(", ");
     sj.add(project.getStreet1());
     sj.add(project.getCity());
@@ -488,44 +475,39 @@ public class ProjectService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped
-  // code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long projectId, Long attachmentTypeId)
+  public Attachment addAttachment(MultipartFile file, @NonNull Long projectId, Long attachmentTypeId)
       throws IOException {
-    User currentUser = securityService.getCurrentUser();
-
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
+    return addAttachment(projectId, attachmentTypeId, file.getSize(), file.getContentType(), file.getOriginalFilename(), new ByteArrayInputStream(file.getBytes()));
+  }
+
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
+  public Attachment addAttachment(@NonNull Long projectId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream){
+    User currentUser = securityService.getCurrentUser();
 
     // had to change this so that a parent looking at a child project could still see project
     // statuses
-    HashMap<String, Object> p2 = new HashMap<>();
-    p2.put("projectId", projectId);
-    Long companyId = sqlCache.queryForObject("project.getCompanyId", p2, Long.class);
+    Long companyId = sqlCache.queryForObject("project.getCompanyId", Map.of("projectId", projectId), Long.class);
 
     // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key =
-        String.format(
-            currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+      String.format(
+        currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(file.getSize());
-    metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
+    metadata.setContentLength(contentLength);
+    metadata.setContentType(contentType);
 
-    PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
-
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    s3.putObject(new PutObjectRequest(storageBucket, key, inputStream, metadata));
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
-    params.put("contentType", file.getContentType());
+    params.put("filename", CleanString.cleanFilename(filename));
+    params.put("contentType", contentType);
     params.put("key", key);
-    params.put("size", file.getSize());
+    params.put("size", contentLength);
     params.put("createdById", currentUser.trueUserId());
     params.put("companyId", companyId);
     params.put("attachmentTypeId", attachmentTypeId);

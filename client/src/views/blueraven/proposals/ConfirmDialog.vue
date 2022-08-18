@@ -12,10 +12,10 @@
       </v-card-text>
 
       <v-card-actions>
-        <slot name="actions" v-bind:cancelFn="cancel" v-bind:okFn="ok">
+        <slot name="actions" v-bind:cancel="cancel" v-bind:ok="ok">
           <v-btn
             text
-            @click="cancel"
+            @click="cancel(false)"
             class="text-capitalize"
           >
             {{ cancelButtonText }}
@@ -23,7 +23,7 @@
           <v-spacer />
           <v-btn
             color="primary"
-            @click="ok"
+            @click="ok(true)"
             class="text-capitalize"
             dark
           >
@@ -61,12 +61,12 @@ export default {
         this.reject = reject
       })
     },
-    ok() {
-      this.resolve(true)
+    ok(value = true) {
+      this.resolve({ ok: true, value })
       this.dialog = false
     },
-    cancel() {
-      this.resolve(false)
+    cancel(value = false) {
+      this.resolve({ ok: false, value })
       this.dialog = false
     }
   }

@@ -345,12 +345,11 @@ public class AppService {
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(attachment.getSize());
     metadata.setContentType(attachment.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
 
     PutObjectRequest objectRequest =
         new PutObjectRequest(
             storageBucket, key, new ByteArrayInputStream(attachment.getBytes()), metadata);
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    s3.putObject(objectRequest);
     return key;
   }
 

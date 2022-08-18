@@ -124,11 +124,19 @@
 
   <proposal.get><![CDATA[
   select p.id,
+       p.proposal_nbr,
        p.proposal_version_id,
+       p.name,
        pv.version,
        pps.project_id,
+       prj.project_name,
+       c.email,
        p.project_process_step_id,
        p.archived,
+       p.locked_tsz is not null                               as locked,
+       p.credit_check_submitted_tsz is not null               as credit_check_submitted,
+       p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
+       p.installation_agreement_sent_tsz is not null          as installation_agreement_sent,
        coalesce((SELECT array_to_json(array_agg(row_to_json(cfgs)))
                  FROM (select cfg.id,
                               cfg.group_name                                          as "groupName",
@@ -269,10 +277,11 @@
                        from brs.custom_field_group cfg
                        where cfg.object_type_id = 10
                          and cfg.archived is not true
-                      order by cfg.group_order
-                     ) cfgs), '[]') AS "customFieldGroups"
+                       order by cfg.group_order) cfgs), '[]') AS "customFieldGroups"
 from brs.proposal p
          inner join flow.project_process_step pps on p.project_process_step_id = pps.id
+         inner join flow.project prj on pps.project_id = prj.id
+         inner join flow.contact c on prj.contact_id = c.id
          inner join brs.proposal_version pv on pv.id = p.proposal_version_id
 where p.id = :proposalId
   and p.archived is false
@@ -302,5 +311,49 @@ where p.id = :proposalId
   and ppsa.archived is false
   ]]></proposal.getAttachments>
 
+  <proposal.setLocked><![CDATA[
+update brs.proposal
+set locked_tsz     = now(),
+    date_modified  = now(),
+    modified_by_id = :modifiedById
+where id = :id and locked_tsz is null
+  ]]></proposal.setLocked>
+
+  <proposal.setCreditChecked><![CDATA[
+update brs.proposal
+set credit_check_submitted_tsz     = now(),
+    date_modified  = now(),
+    modified_by_id = :modifiedById
+where id = :id and credit_check_submitted_tsz is null
+  ]]></proposal.setCreditChecked>
+
+  <proposal.setFinanceDocsSent><![CDATA[
+update brs.proposal
+set finance_docs_sent_tsz     = now(),
+    date_modified  = now(),
+    modified_by_id = :modifiedById
+where id = :id and finance_docs_sent_tsz is null
+  ]]></proposal.setFinanceDocsSent>
+
+  <proposal.setInstallationAgreementDocsSent><![CDATA[
+update brs.proposal
+set installation_agreement_sent_tsz     = now(),
+    date_modified  = now(),
+    modified_by_id = :modifiedById
+where id = :id and installation_agreement_sent_tsz is null
+  ]]></proposal.setInstallationAgreementDocsSent>
+
+  <proposal.setProcessed><![CDATA[
+update brs.proposal set processed_tsz = now() where id = :id
+  ]]></proposal.setProcessed>
+
+  <proposal.setProposalName><![CDATA[
+update brs.proposal
+set name          = :name,
+    date_modified = now(),
+    modified_by_id = :modifiedById
+where id = :id
+  and locked_tsz is null
+  ]]></proposal.setProposalName>
 
 </sql>
