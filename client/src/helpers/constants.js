@@ -116,7 +116,7 @@ constants.SNACKBARS = {
     timeout: 5000,
     // timeout: 5000000,
     text: '',
-    color: 'success',
+    color: 'success lighten-1',
     fontClass: 'secondary--text'
   },
   WARNING: {
@@ -134,7 +134,7 @@ constants.SNACKBARS = {
     mode: '',
     timeout: 5000,
     text: '',
-    color: 'primaryText',
+    color: 'primary',
     fontClass: 'secondary--text'
   }
 }
