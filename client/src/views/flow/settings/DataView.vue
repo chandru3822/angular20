@@ -279,7 +279,7 @@
                 <input
                   disabled readonly
                   type="checkbox"
-                  v-model="item.resetOnNew"
+                  v-model="item.resetValuesOnMain"
                 />
                 </div>
               </div>
