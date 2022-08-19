@@ -101,7 +101,7 @@
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px" @click="goToDetails(item)">
-                  <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text icon small class="handle">
+                  <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text color="primary" icon small class="handle">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
