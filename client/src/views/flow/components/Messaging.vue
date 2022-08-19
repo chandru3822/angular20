@@ -142,7 +142,7 @@ export default {
         },
         userInput: {
           bg: 'var(--v-grey-lighten4)',
-          text: '#1F3C73',
+          text: 'rgba(0,0,0,0.87)',
           button: '#1F3C73'
         }
       }, // specifies the color scheme for the component
