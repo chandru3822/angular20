@@ -1,3 +1,6 @@
+drop FUNCTION if exists flow.get_data_view_field_configs(p_data_view_id integer,
+                                                         p_object_code varchar,
+                                                         p_cfga_id integer);
 CREATE OR REPLACE FUNCTION flow.get_data_view_field_configs(p_data_view_id integer,
                                                            p_object_code varchar,
                                                            p_cfga_id integer)
@@ -11,7 +14,8 @@ CREATE OR REPLACE FUNCTION flow.get_data_view_field_configs(p_data_view_id integ
             contains_children          boolean,
             data_type_id               integer,
             process_step_event_id      integer,
-            process_step_id            integer
+            process_step_id            integer,
+            reset_values_on_main       boolean
           )
 AS
 $BODY$
@@ -28,7 +32,8 @@ BEGIN
                     where dvcvc2.data_view_field_config_id = dvfc.id) as contains_children,
              dt.id                                as data_type_id,
              dvfc.process_step_event_id,
-             dvfc.process_step_id
+             dvfc.process_step_id,
+             dvfc.reset_values_on_main
       from flow.data_view_field_config dvfc
              inner join flow.custom_field_group_assignment cfga
                         on dvfc.custom_field_group_assignment_id = cfga.id
@@ -48,7 +53,8 @@ BEGIN
                   where dvcvc2.data_view_field_config_id = dvfc.id) as contains_children,
            dt.id                                                    as data_type_id,
            dvfc.process_step_event_id,
-           dvfc.process_step_id
+           dvfc.process_step_id,
+           dvfc.reset_values_on_main
     from flow.data_view_field_config dvfc
            inner join flow.default_field df
                       on dvfc.default_field_id = df.id and df.watched_by_trigger is true

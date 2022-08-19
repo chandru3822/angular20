@@ -133,7 +133,10 @@ create type brs.calculated_proposal_value as
   reroof_cost                                      numeric,
   tree_trimming_cost                               numeric,
   trenching_cost                                   numeric,
-  ac_unit_relocation_cost                          numeric
+  ac_unit_relocation_cost                          numeric,
+  total_loan_amount_before_rebate   numeric,
+  zone_adder  numeric,
+  loan_type varchar
 );
 
 drop type brs.excluded_proposal_value;
@@ -203,7 +206,10 @@ create type brs.excluded_proposal_value as
   reroof_cost                                    numeric,
   tree_trimming_cost                             numeric,
   trenching_cost                                 numeric,
-  ac_unit_relocation_cost                        numeric
+  ac_unit_relocation_cost                        numeric,
+  total_loan_amount_before_rebate   numeric,
+  zone_adder  numeric,
+  loan_type varchar
 );
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
@@ -352,6 +358,8 @@ declare
   v_tree_trimming_cost                               numeric;
   v_trenching_cost                                   numeric;
   v_ac_unit_relocation_cost                          numeric;
+  v_zone_adder numeric;
+  v_loan_type varchar;
 BEGIN
 
   select prop.id        as proposal_id,
@@ -1204,7 +1212,6 @@ BEGIN
   create index pv_int_value on proposal_value (int_value);
   create index pv_object_code on proposal_value (object_code);
 
-
   raise notice 'v_product_id = % ',v_product_id;
   raise notice 'v_version_id = % ',v_version_id;
   raise notice 'v_project_process_step_id = % ',v_project_process_step_id;
@@ -1243,15 +1250,15 @@ BEGIN
 
 
   select value::numeric
-  into v_instantly_used
+  into v_net_metring_rate
   from proposal_value pv1
   where pv1.field_id = 92
     and object_code = 'PROPOSAL_PRICING';
 
-  v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;
-  v_sent_to_grid = v_first_year_production_estimate - v_instantly_used;
+  v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;  --TODO
+  v_sent_to_grid = v_first_year_production_estimate - coalesce(v_instantly_used,0);
   v_after_net_metering = v_sent_to_grid * v_net_metring_rate;
-  v_adjusted_annual_production = v_instantly_used + v_after_net_metering;
+  v_adjusted_annual_production = coalesce(v_instantly_used,0) + coalesce(v_after_net_metering,0);
 
   raise notice 'v_instant_use_assumption = % ',v_instant_use_assumption;
   raise notice 'v_net_metring_rate = % ',v_net_metring_rate;
@@ -1340,6 +1347,8 @@ BEGIN
   from proposal_value pv1
          inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
   where pv1.field_id = 98;
+  v_state_rebate_amount = coalesce(v_state_rebate_amount,0);
+  raise notice 'v_state_rebate_amount***************************** = % ',v_state_rebate_amount;
   with state_rebates as (select proposal_group_uuid
                          from proposal_value
                          where field_id = 86
@@ -1349,6 +1358,8 @@ BEGIN
   from proposal_value pv1
          inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
   where pv1.field_id = 97;
+
+
 
 
   raise notice 'v_utility_company_id = % ',v_utility_company_id;
@@ -1398,7 +1409,7 @@ BEGIN
                                                                   and object_code = 'PROPOSAL_PRICING');
 
   raise notice 'v_points_off_south_production_factor = %',v_points_off_south_production_factor;
-  v_price_change_per_production_point = v_funding_range / v_production_factor_range;
+  v_price_change_per_production_point = coalesce(v_funding_range,0) / v_production_factor_range;  --TODO
   raise notice 'v_price_change_per_production_point = %',v_price_change_per_production_point;
 
   v_calculated_price_adjustment = v_price_change_per_production_point * v_points_off_south_production_factor;
@@ -1426,8 +1437,7 @@ BEGIN
   raise notice 'v_financier_id = %',v_financier_id;
   raise notice 'v_financier = %',v_financier;
 
-  raise notice 'v_cash_price_storage = %',v_cash_price_storage;
-  raise notice 'v_loan_price_storage = %',v_loan_price_storage;
+
 
   v_equipment_storage_adder = 0;
   if v_financier_id = 119 then
@@ -1436,15 +1446,20 @@ BEGIN
     from proposal_value
     where object_code = 'PROPOSAL_STORAGE_DETAILS'
       and field_id = 157;
-    v_equipment_storage_adder = v_cash_price_storage;
+    v_cash_price_storage = coalesce(v_cash_price_storage,0);
+    v_equipment_storage_adder = coalesce(v_cash_price_storage,0);
   else
     select value
     into v_loan_price_storage
     from proposal_value
     where object_code = 'PROPOSAL_STORAGE_DETAILS'
       and field_id = 159;
-    v_equipment_storage_adder = v_loan_price_storage;
+    v_loan_price_storage = coalesce(v_loan_price_storage,0);
+    v_equipment_storage_adder = coalesce(v_loan_price_storage,0);
   end if;
+
+  raise notice 'v_cash_price_storage = %',v_cash_price_storage;
+  raise notice 'v_loan_price_storage = %',v_loan_price_storage;
 
   raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
 
@@ -1478,16 +1493,16 @@ BEGIN
   v_promotion_cost = 0.00;
   if v_product_id = 293 then
     v_promotion_cost =
-        ((v_initial_system_cost + v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
-          v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder + coalesce(v_main_panel_upgrade_cost,0)::numeric +
+        ((coalesce(v_initial_system_cost,0) + coalesce(v_equipment_storage_adder,0) + coalesce(v_equipment_panel_adder,0) + coalesce(v_equipment_inverter_adder,0) +
+          coalesce(v_misc_adders,0) + coalesce(v_smart_thermostat_adder,0) + coalesce(v_led_light_bulbs_adder,0) + coalesce(v_main_panel_upgrade_cost,0)::numeric +
           coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
           coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric) * v_initial_payment_factor * 18)
         /
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
   elsif v_product_id = 19424 then
     v_promotion_cost =
-        ((v_initial_system_cost + v_equipment_storage_adder + v_equipment_panel_adder + v_equipment_inverter_adder +
-          v_misc_adders + v_smart_thermostat_adder + v_led_light_bulbs_adder + coalesce(v_main_panel_upgrade_cost,0)::numeric +
+        ((coalesce(v_initial_system_cost,0) + coalesce(v_equipment_storage_adder,0) + coalesce(v_equipment_panel_adder,0) + coalesce(v_equipment_inverter_adder,0) +
+          coalesce(v_misc_adders,0) + coalesce(v_smart_thermostat_adder,0) + coalesce(v_led_light_bulbs_adder,0) + coalesce(v_main_panel_upgrade_cost,0)::numeric +
           coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
           coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric) *
          (v_reamortization_factor - v_initial_payment_factor) * 42) /
@@ -1498,18 +1513,20 @@ BEGIN
 
   raise notice 'v_down_payment_amount = %',v_down_payment_amount;
 
-
-  v_total_loan_amount_before_rebate = ((v_initial_system_cost - v_down_payment_amount) + v_equipment_inverter_adder +
-                                       v_equipment_panel_adder + v_equipment_storage_adder +
-                                       v_smart_thermostat_adder + v_led_light_bulbs_adder +
+  select value::numeric
+   into v_zone_adder
+   from proposal_value
+   where field_id = 119
+     and object_code = 'PROPOSAL_ZONE_ADDERS';
+  raise notice 'v_zone_adder = %',v_zone_adder;
+  v_total_loan_amount_before_rebate = ((coalesce(v_initial_system_cost,0) - coalesce(v_down_payment_amount,0)) + coalesce(v_equipment_inverter_adder,0) +
+                                       coalesce(v_equipment_panel_adder,0) + coalesce(v_equipment_storage_adder,0) +
+                                       coalesce(v_smart_thermostat_adder,0) + coalesce(v_led_light_bulbs_adder,0) +
                                        coalesce(v_main_panel_upgrade_cost,0)::numeric +
                                        coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
                                        coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric +
-                                       v_misc_adders + v_promotion_cost +
-                                       (select value::numeric
-                                        from proposal_value
-                                        where field_id = 119
-                                          and object_code = 'PROPOSAL_ZONE_ADDERS')::numeric);
+                                       coalesce(v_misc_adders,0) + coalesce(v_promotion_cost,0) +
+                                       coalesce(v_zone_adder,0));
   raise notice 'v_total_loan_amount_before_rebate = %',v_total_loan_amount_before_rebate;
 
   v_eto_rebate = 0;
@@ -1536,8 +1553,8 @@ BEGIN
     if v_eto_rebate_unit_type_id = 460 then
       v_eto_rebate = v_eto_rebate * v_system_size * 1000;
     elsif v_eto_rebate_unit_type_id = 458 then
-      v_eto_rebate = (v_total_loan_amount_before_rebate +
-                      v_down_payment_amount) * v_eto_rebate;
+      v_eto_rebate = (coalesce(v_total_loan_amount_before_rebate,0) +
+                      coalesce(v_down_payment_amount,0)) * coalesce(v_eto_rebate,0);
     end if;
   end if;
   raise notice 'v_eto_rebate = %',v_eto_rebate;
@@ -1572,15 +1589,15 @@ BEGIN
 
   end if;
   raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
-  v_above_line_rebate = v_eto_rebate + v_csu_rebate;
+  v_above_line_rebate = coalesce(v_eto_rebate,0) + coalesce(v_csu_rebate,0);
   raise notice 'v_above_line_rebate = %',v_above_line_rebate;
 
-  v_total_loan_amount = (v_total_loan_amount_before_rebate - v_above_line_rebate) / (1 - v_dealer_fee);
+  v_total_loan_amount = (coalesce(v_total_loan_amount_before_rebate,0) - coalesce(v_above_line_rebate,0)) / (1 - v_dealer_fee);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
 
 
   with referral_promotion as (select proposal_group_uuid
-                              from proposal_value pv
+                               from proposal_value pv
                               where object_code = 'PROPOSAL_REBATE'
                                 and pv.field_id::integer = 93
                                 and pv.int_value::integer = 535)
@@ -1590,9 +1607,10 @@ BEGIN
          inner join referral_promotion rp on rp.proposal_group_uuid = pv1.proposal_group_uuid
     and pv1.field_id = 98;
 
+  v_referral_promotion = coalesce(v_referral_promotion,0);
   raise notice 'v_referral_promotion = %',v_referral_promotion;
 
-  v_total_system_cost = (v_total_loan_amount + v_down_payment_amount + v_above_line_rebate + v_referral_promotion);
+  v_total_system_cost = (coalesce(v_total_loan_amount,0) + coalesce(v_down_payment_amount,0) + coalesce(v_above_line_rebate,0) + coalesce(v_referral_promotion,0));
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
   if v_unit_type_state_rebate = 460 then
@@ -1602,7 +1620,7 @@ BEGIN
   elsif v_unit_type_state_rebate = 459 then
     v_state_rebate_amount = v_state_rebate_amount;
   elsif v_unit_type_state_rebate = 539 then
-    v_state_rebate_amount = v_state_rebate_amount * v_first_year_production_estimate;
+    v_state_rebate_amount = coalesce(v_state_rebate_amount,0) * v_first_year_production_estimate;
   end if;
 
   raise notice 'v_state_rebate_amount = % ',v_state_rebate_amount;
@@ -1633,7 +1651,7 @@ BEGIN
   raise notice 'v_federal_tax_incentive_rate = %',v_federal_tax_incentive_rate;
   raise notice 'v_federal_tax_incentive_amount = %',v_federal_tax_incentive_amount;
 
-  v_monthly_solar_payment = v_total_loan_amount * v_initial_payment_factor;
+  v_monthly_solar_payment = coalesce(v_total_loan_amount,0) * v_initial_payment_factor;
   raise notice 'v_monthly_solar_payment = %',v_monthly_solar_payment;
 
   select value::numeric
@@ -1657,7 +1675,7 @@ BEGIN
              v_estimated_annual_energy_consumption_kwh * .2);
   raise notice 'v_total_ee_reduction = %',v_total_ee_reduction;
 
-  v_adjusted_annual_consumption = v_estimated_annual_energy_consumption_kwh::numeric - v_total_ee_reduction;
+  v_adjusted_annual_consumption = coalesce(v_estimated_annual_energy_consumption_kwh::numeric,0) - coalesce(v_total_ee_reduction,0);
   raise notice 'v_adjusted_annual_consumption = %',v_adjusted_annual_consumption;
 
   v_remaining_monthly_electric_bill_25_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
@@ -1698,11 +1716,11 @@ BEGIN
     select *
     into v_reamortized_monthly_payment_all_credits_to_loan
     from flow.get_reamortized_monthly_payment((v_apr / 12)::numeric, ((v_loan_term * 12) - 18)::smallint,
-                                              (v_total_loan_amount - v_federal_tax_incentive_amount -
-                                               v_state_rebate_amount - v_above_line_rebate)::numeric);
+                                              (coalesce(v_total_loan_amount,0) - coalesce(v_federal_tax_incentive_amount,0) -
+                                               coalesce(v_state_rebate_amount,0) - coalesce(v_above_line_rebate,0))::numeric);
   else
     v_reamortized_monthly_payment_all_credits_to_loan =
-        (v_total_loan_amount - v_federal_tax_incentive_amount - v_state_rebate_amount) * v_reamortization_factor;
+        (coalesce(v_total_loan_amount,0) - coalesce(v_federal_tax_incentive_amount,0) - coalesce(v_state_rebate_amount,0)) * v_reamortization_factor;
   end if;
 
 
@@ -1789,7 +1807,7 @@ BEGIN
                                     v_reamortized_monthly_payment_all_credits_to_loan;
   raise notice 'v_monthly_cost_today_with_solar = %',v_monthly_cost_today_with_solar;
 
-  v_net_system_cost = v_total_system_cost - v_referral_promotion - v_federal_tax_incentive_amount - v_above_line_rebate;
+  v_net_system_cost = v_total_system_cost - coalesce(v_referral_promotion,0) - coalesce(v_federal_tax_incentive_amount,0) - coalesce(v_above_line_rebate,0);
   raise notice 'v_net_system_cost = %',v_net_system_cost;
 
   v_current_estimated_annual_utility_bill =
@@ -1809,11 +1827,14 @@ BEGIN
 
   v_secondary_monthly_payment_no_credits_to_loan =
       v_reamortized_monthly_payment_no_credits_to_loan -
-      (v_reamortized_monthly_payment_all_credits_to_loan - v_initial_monthly_payment_all_credits_to_loan);
+      (coalesce(v_reamortized_monthly_payment_all_credits_to_loan,0) - coalesce(v_initial_monthly_payment_all_credits_to_loan,0));
   raise notice 'v_secondary_monthly_payment_no_credits_to_loan = %',v_secondary_monthly_payment_no_credits_to_loan;
 
   v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount;
   raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
+
+  v_loan_type = concat(v_financier||' '||v_loan_term);
+  raise notice 'v_loan_type = %',v_loan_type;
 
   select value::numeric
   into v_non_solar_cap
@@ -1823,7 +1844,7 @@ BEGIN
   raise notice 'v_non_solar_cap = %',v_non_solar_cap;
 
   v_required_down_payment =
-      (v_misc_adders + v_other_adder_and_discount_amount + coalesce(v_main_panel_upgrade_cost,0)::numeric +
+      (coalesce(v_misc_adders,0) + coalesce(v_other_adder_and_discount_amount,0) + coalesce(v_main_panel_upgrade_cost,0)::numeric +
        coalesce(v_structural_upgrade_cost,0)::numeric + coalesce(v_reroof_cost,0)::numeric +
        coalesce(v_tree_trimming_cost,0)::numeric + coalesce(v_trenching_cost,0)::numeric + coalesce(v_ac_unit_relocation_cost,0)::numeric) - (v_total_system_cost * v_non_solar_cap);
 
@@ -1854,7 +1875,7 @@ BEGIN
                                          eighteen_plus_payments_all_incentives, date_created,
                                          promotion_eighteen_months_free,
                                          proposal_date, proposal_nbr, proposal_log_id,
-                                         bp_plus_amount, aurora_design_id)
+                                         bp_plus_amount, aurora_design_id,loan_type)
     values (v_project_id, v_project_name, v_project_street1, v_city, v_project_state_abbrev,
             v_postal_code, v_contact_phone, v_contact_email, v_loan_term, v_apr, v_down_payment_amount,
             v_led_light_bulbs, v_smart_thermostat, v_current_estimated_cost_per_kwh, v_promotion_cost,
@@ -1886,7 +1907,7 @@ BEGIN
             v_initial_monthly_payment_all_credits_to_loan, v_reamortized_monthly_payment_all_credits_to_loan, now(),
             v_promotion_cost,
             now(), v_proposal_nbr, v_proposal_id, v_promotion_cost,
-            v_aurora_design_id);
+            v_aurora_design_id,v_loan_type);
   end if;
 
   return query
@@ -1904,99 +1925,99 @@ BEGIN
            v_postal_code,
            v_project_state,
            v_project_state_abbrev,
-           v_monthly_cost_25_year_average_without_solar,
-           v_monthly_cost_30_year_average_without_solar,
-           v_monthly_cost_25_year_average_with_solar,
-           v_remaining_monthly_electric_bill_25_year_average,
-           v_remaining_monthly_electric_bill_30_year_average,
-           v_total_cost_25_years,
-           v_total_cost_30_years,
-           v_total_savings_25_years,
-           v_total_savings_30_years,
-           v_monthly_solar_payment,
-           v_monthly_cost_today_without_solar,
-           v_monthly_cost_today_with_solar,
-           v_monthly_cost_today_avg_remaining_electrical_bill,
-           v_initial_monthly_payment_all_credits_to_loan,
-           v_initial_monthly_payment_no_credits_to_loan,
-           v_reamortized_monthly_payment_all_credits_to_loan,
-           v_reamortized_monthly_payment_no_credits_to_loan,
-           v_monthly_payment_all_credits_to_loan_after_term,
-           v_monthly_payment_no_credits_to_loan_after_term,
+           round(v_monthly_cost_25_year_average_without_solar, 2),
+           round(v_monthly_cost_30_year_average_without_solar, 2),
+           round(v_monthly_cost_25_year_average_with_solar, 2),
+           round(v_remaining_monthly_electric_bill_25_year_average, 2),
+           round(v_remaining_monthly_electric_bill_30_year_average, 2),
+           round(v_total_cost_25_years, 2),
+           round(v_total_cost_30_years, 2),
+           round(v_total_savings_25_years, 2),
+           round(v_total_savings_30_years, 2),
+           round(v_monthly_solar_payment, 2),
+           round(v_monthly_cost_today_without_solar, 2),
+           round(v_monthly_cost_today_with_solar, 2),
+           round(v_monthly_cost_today_avg_remaining_electrical_bill, 2),
+           round(v_initial_monthly_payment_all_credits_to_loan, 2),
+           round(v_initial_monthly_payment_no_credits_to_loan, 2),
+           round(v_reamortized_monthly_payment_all_credits_to_loan, 2),
+           round(v_reamortized_monthly_payment_no_credits_to_loan, 2),
+           round(v_monthly_payment_all_credits_to_loan_after_term, 2),
+           round(v_monthly_payment_no_credits_to_loan_after_term, 2),
            v_system_size,
            v_first_year_production_estimate,
-           v_total_system_cost,
-           v_referral_promotion,
-           v_total_loan_amount,
-           v_federal_tax_incentive_amount,
-           v_federal_tax_incentive_rate,
-           v_net_system_cost,
+           round(v_total_system_cost, 2),
+           round(v_referral_promotion, 2),
+           round(v_total_loan_amount, 2),
+           round(v_federal_tax_incentive_amount, 2),
+           round(v_federal_tax_incentive_rate, 2)*100,
+           round(v_net_system_cost, 2),
            v_utility_company,
            v_estimated_annual_energy_consumption_kwh,
-           v_current_estimated_annual_utility_bill,
-           v_current_estimated_cost_per_kwh,
-           v_utility_cost_escalator,
-           v_state_rebate_amount,
-           v_eto_rebate,
-           v_csu_rebate,
+           round(v_current_estimated_annual_utility_bill, 2),
+           round(v_current_estimated_cost_per_kwh, 4),
+           round(v_utility_cost_escalator, 3),
+           round(v_state_rebate_amount, 2),
+           round(v_eto_rebate, 2),
+           round(v_csu_rebate, 2),
            v_apr,
            v_loan_term,
-           v_assumed_payment_by_month_18,
+           round(v_assumed_payment_by_month_18, 2),
            v_panel_degradation_factor,
            v_system_production_25_year,
-           v_estimated_offset,
+           round(v_estimated_offset, 2)*100,
            v_led_light_bulbs,
            v_smart_thermostat,
-           v_total_ee_reduction,
+           round(v_total_ee_reduction, 2),
            v_panel_warranty,
            v_inverter_warranty,
-           v_down_payment_amount,
+           round(v_down_payment_amount, 2),
            v_version_id,
            v_project_process_step_id,
            v_friends_and_family,
-           v_production_factor,
-           v_funding_range,
-           v_production_factor_range,
-           v_points_off_south_production_factor,
-           v_price_change_per_production_point,
-           v_calculated_price_adjustment,
-           v_max_price_adjustment,
-           v_adjusted_price_per_wat,
-           v_initial_system_cost,
-           v_promotion_cost,
-           v_equipment_inverter_adder,
-           v_equipment_panel_adder,
-           v_equipment_storage_adder,
-           v_misc_adders,
+           round(v_production_factor, 2),
+           round(v_funding_range, 2),
+           round(v_production_factor_range, 2),
+           round(v_points_off_south_production_factor, 2),
+           round(v_price_change_per_production_point, 2),
+           round(v_calculated_price_adjustment, 2),
+           round(v_max_price_adjustment, 2),
+           round(v_adjusted_price_per_wat, 2),
+           round(v_initial_system_cost, 2),
+           round(v_promotion_cost, 2),
+           round(v_equipment_inverter_adder, 2),
+           round(v_equipment_panel_adder, 2),
+           round(v_equipment_storage_adder, 2),
+           round(v_misc_adders, 2),
            v_panel_brand_id,
            v_panel_watts,
-           v_above_line_rebate,
+           round(v_above_line_rebate, 2),
            v_state_id,
            v_utility_company_id,
            v_dealer_fee,
            v_eto_rebate_unit_type_id,
            v_federal_unit_type_id,
-           v_inverter_efficiency,
+           round(v_inverter_efficiency, 2),
            v_initial_payment_factor,
            v_reamortization_factor,
            v_product_id,
            v_smart_thermostat_value,
-           v_smart_thermostat_adder,
+           round(v_smart_thermostat_adder, 2),
            v_led_light_bulbs_value,
-           v_led_light_bulbs_adder,
-           v_energy_efficiency_reduction_light_bulbs,
-           v_energy_efficiency_reduction_thermostat,
+           round(v_led_light_bulbs_adder, 2),
+           round(v_energy_efficiency_reduction_light_bulbs, 2),
+           round(v_energy_efficiency_reduction_thermostat, 2),
            v_adjusted_annual_consumption,
            v_instantly_used,
            v_sent_to_grid,
            v_after_net_metering,
            v_adjusted_annual_production,
-           v_instant_use_assumption,
-           v_net_metring_rate,
-           v_cost_of_solar,
-           v_monthly_cost_30_year_average_with_solar,
+           round(v_instant_use_assumption, 2),
+           round(v_net_metring_rate, 2),
+           round(v_cost_of_solar, 2),
+           round(v_monthly_cost_30_year_average_with_solar, 2),
            v_reamortized_payment_factor_without_itc_paydown,
-           v_secondary_monthly_payment_no_credits_to_loan,
+           round(v_secondary_monthly_payment_no_credits_to_loan, 2),
            v_panel_brand,
            v_panel_quantity,
            v_inverter_brand_id,
@@ -2005,24 +2026,27 @@ BEGIN
            v_product_name,
            v_proposal_nbr,
            v_other_adder_and_discount,
-           v_other_adder_and_discount_amount,
+           round(v_other_adder_and_discount_amount, 2),
            v_adder,
-           v_non_solar_cap,
-           v_required_down_payment,
+           round(v_non_solar_cap, 2),
+           round(v_required_down_payment, 2),
            v_storage_type_id,
            v_storage_type,
            v_financier,
            v_financier_id,
-           v_loan_price_storage,
-           v_cash_price_storage,
-           v_main_panel_upgrade_cost,
-           v_structural_upgrade_cost,
-           v_reroof_cost,
-           v_tree_trimming_cost,
-           v_trenching_cost,
-           v_ac_unit_relocation_cost;
+           round(v_loan_price_storage, 2),
+           round(v_cash_price_storage, 2),
+           round(v_main_panel_upgrade_cost, 2),
+           round(v_structural_upgrade_cost, 2),
+           round(v_reroof_cost, 2),
+           round(v_tree_trimming_cost, 2),
+           round(v_trenching_cost, 2),
+           round(v_ac_unit_relocation_cost, 2),
+           round(v_total_loan_amount_before_rebate,2),
+           round(v_zone_adder ,2),
+           v_loan_type;
 
-  drop table proposal_value;
+ drop table proposal_value;
 
 END
 $BODY$
