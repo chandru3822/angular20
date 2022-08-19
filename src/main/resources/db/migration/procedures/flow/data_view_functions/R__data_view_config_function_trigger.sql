@@ -454,39 +454,41 @@ BEGIN
                order by update_first_value_only_id nulls last
 
         loop
-          execute format('SELECT $1.%I', x.column_name)
-            into v_value using new;
-          select *
-          into v_sql
-          from flow.execute_data_view_field_configs(x.contains_children,
-                                                    v_value,
-                                                    x.dvfc_id,
-                                                    new.id,
-                                                    v_sql,
-                                                    x.field_to_update,
-                                                    x.update_first_value_only,
-                                                    x.update_first_value_only_id,
-                                                    x.is_last_row,
-                                                    x.data_type_id);
+          if ((x.reset_values_on_main is true and new.main is true) or
+              (x.reset_values_on_main is false)) then
+            execute format('SELECT $1.%I', x.column_name)
+              into v_value using new;
+            select *
+            into v_sql
+            from flow.execute_data_view_field_configs(x.contains_children,
+                                                      v_value,
+                                                      x.dvfc_id,
+                                                      new.id,
+                                                      v_sql,
+                                                      x.field_to_update,
+                                                      x.update_first_value_only,
+                                                      x.update_first_value_only_id,
+                                                      x.is_last_row,
+                                                      x.data_type_id);
 
-          if x.update_first_value_only is true then
-            v_sql = trim(trailing ' ,' from v_sql);
-            select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                         v_value::text, null::text, null::text,
-                                                         x.update_first_value_only,
-                                                         x.update_first_value_only_id,
-                                                         x.is_last_row, true, v_project_ids)
-            into v_sql;
-            begin
-              execute v_sql;
-            exception
-              when others then
-                insert into flow.trigger_error(project_process_step_id, error)
-                values (new.id, SQLERRM);
-            end;
-            v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+            if x.update_first_value_only is true then
+              v_sql = trim(trailing ' ,' from v_sql);
+              select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                           v_value::text, null::text, null::text,
+                                                           x.update_first_value_only,
+                                                           x.update_first_value_only_id,
+                                                           x.is_last_row, true, v_project_ids)
+              into v_sql;
+              begin
+                execute v_sql;
+              exception
+                when others then
+                  insert into flow.trigger_error(project_process_step_id, error)
+                  values (new.id, SQLERRM);
+              end;
+              v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+            end if;
           end if;
-
         end loop;
       if x.update_first_value_only is not true then
         select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
@@ -533,6 +535,7 @@ declare
   z             record;
   x             record;
   v_company_process_id integer;
+  v_main boolean default false;
 BEGIN
   select pps.project_id, c.company_id
   into v_project_id,v_company_id
@@ -549,8 +552,8 @@ BEGIN
          inner join flow.contact c on p.contact_id = c.id
   where pps.id = new.project_process_step_id;
 
-  select pps.project_id, ps.company_id
-  into v_project_id1,v_company_id
+  select pps.project_id, ps.company_id,pps.main
+  into v_project_id1,v_company_id,v_main
   from flow.project_process_step pps
          inner join flow.process_step ps on pps.process_step_id = ps.id
   where pps.id = new.project_process_step_id;
@@ -566,47 +569,50 @@ BEGIN
              v_company_process_id = any(dv.company_process_ids)
     loop
       v_sql = NULL;
-      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
+      for x in select a.*, lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) a
         loop
-          v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-          select *
-          into v_sql
-          from flow.execute_data_view_field_configs(x.contains_children,
-                                                    case
-                                                      when x.data_type_id = 1 then new.date_value::text
-                                                      when x.data_type_id = 2 then new.timestamp_value::text
-                                                      when x.data_type_id = 3 then new.boolean_value::text
-                                                      when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id in (5,13) then new.text_value::text
-                                                      when x.data_type_id = 6 then new.int_value::text
-                                                      when x.data_type_id = 7 then new.int_array_value::text
-                                                      when x.data_type_id in (8, 9) then new.int_value::text end,
-                                                    x.dvfc_id,
-                                                    new.id,
-                                                    v_sql,
-                                                    x.field_to_update,
-                                                    x.update_first_value_only,
-                                                    x.update_first_value_only_id,
-                                                    true,
-                                                    x.data_type_id);
+          if ((x.reset_values_on_main is true and v_main is true) or
+              (x.reset_values_on_main is false)) then
+            v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+            select *
+            into v_sql
+            from flow.execute_data_view_field_configs(x.contains_children,
+                                                      case
+                                                        when x.data_type_id = 1 then new.date_value::text
+                                                        when x.data_type_id = 2 then new.timestamp_value::text
+                                                        when x.data_type_id = 3 then new.boolean_value::text
+                                                        when x.data_type_id = 4 then new.numeric_value::text
+                                                        when x.data_type_id in (5, 13) then new.text_value::text
+                                                        when x.data_type_id = 6 then new.int_value::text
+                                                        when x.data_type_id = 7 then new.int_array_value::text
+                                                        when x.data_type_id in (8, 9) then new.int_value::text end,
+                                                      x.dvfc_id,
+                                                      new.id,
+                                                      v_sql,
+                                                      x.field_to_update,
+                                                      x.update_first_value_only,
+                                                      x.update_first_value_only_id,
+                                                      true,
+                                                      x.data_type_id);
 
-          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                       v_value, null::text, null::text,
-                                                       x.update_first_value_only,
-                                                       x.update_first_value_only_id,
-                                                       true, true, v_project_ids)
-          into v_sql;
-        --  raise notice 'v_sql %',v_sql;
-          begin
-            execute v_sql;
-          exception
-            when others then
-              insert into flow.trigger_error(project_process_step_custom_value_id, error)
-              values (new.id, SQLERRM);
-          end;
+            select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                         v_value, null::text, null::text,
+                                                         x.update_first_value_only,
+                                                         x.update_first_value_only_id,
+                                                         true, true, v_project_ids)
+            into v_sql;
+            --  raise notice 'v_sql %',v_sql;
+            begin
+              execute v_sql;
+            exception
+              when others then
+                insert into flow.trigger_error(project_process_step_custom_value_id, error)
+                values (new.id, SQLERRM);
+            end;
+          end if;
         end loop;
     end loop;
   RETURN NULL;
@@ -964,7 +970,7 @@ BEGIN
                                                                 and psp.archived is false
                                                                 and cp.id = any (dv.company_process_ids))
 
-             where dvfc.reset_on_new is true
+             where (dvfc.reset_on_new is true or dvfc.reset_values_on_main is true)
                and dvfc.update_first_value_only is false
              union
              select dv.company_process_ids,
@@ -987,7 +993,7 @@ BEGIN
                                            and psp.archived is false
                                            and cp.id = any (dv.company_process_ids))
 
-             where dvfc.reset_on_new is true
+             where (dvfc.reset_on_new is true or dvfc.reset_values_on_main is true)
                and dvfc.update_first_value_only is false
       loop
         if v_count = 0 then
@@ -1061,7 +1067,7 @@ BEGIN
                     inner join flow.project_process_step_custom_field_value ppscfv
                                on cfga.id = ppscfv.custom_field_group_assignment_id and
                                   ppscfv.project_process_step_id = new.id
-             where dvfc.reset_on_new is true
+             where dvfc.reset_values_on_main is true
                and dvfc.update_first_value_only is false
 
       loop
@@ -1127,7 +1133,7 @@ BEGIN
                                                               where psp.process_step_id = ps.id
                                                                 and psp.archived is false
                                                                 and cp.id = any (dv.company_process_ids))
-             where dvfc.reset_on_new is true
+             where dvfc.reset_values_on_main is true
                and dvfc.update_first_value_only is false
 
       loop
