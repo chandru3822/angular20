@@ -30,7 +30,7 @@
         <span class="vertical-top detail-label">{{detail.label}}: </span>
         <span class="d-inline-block detail-item vertical-top"
               v-if="detail.value"
-              :class="{'status-active': detail.active,'status-cancelled': !detail.active}">
+              :class="[getStatusColorClass(detail.statusTypeId), {'status-active': detail.active && !detail.statusTypeId,'status-cancelled': !detail.active && !detail.statusTypeId}]">
         {{detail.value}}
         <br/>
         <span v-if="detail.statusType">({{detail.statusType}})</span>
@@ -64,6 +64,7 @@
 <script>
 import {formatPhoneNumber} from "../../helpers/helpers";
 import constants from "../../helpers/constants"
+import {getStatusColorClass} from "../../services/projectStatusTypeService";
 
 export default {
   name: "PageOverview",
@@ -76,7 +77,8 @@ export default {
   data() {
     return {
       constants,
-      formatPhoneNumber
+      formatPhoneNumber,
+      getStatusColorClass
     }
   },
    methods: {

@@ -46,12 +46,12 @@
           id="wq-drilldown-table"
           @click:row="clickRow"
         >
-          <template class="default-text-color" #no-data>
-            No available results
+          <template #no-data>
+            <span class="default-text-color">No available results</span>
           </template>
 
-          <template class="default-text-color" #no-results>
-            No available results
+          <template #no-results>
+            <span class="default-text-color">No available results</span>
           </template>
 
           <template #header="{ props: { headers } }">

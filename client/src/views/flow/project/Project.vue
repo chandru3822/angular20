@@ -253,7 +253,7 @@ export default {
           type: constants.OVERVIEW_FIELD_TYPES.STATUS,
           value: this.project.projectStatusType,
           statusType: this.project.rootProjectStatusType,
-          active:true //todo: fix
+          statusTypeId: this.project.projectStatusTypeId,
         },
         {
           label: 'Address',
