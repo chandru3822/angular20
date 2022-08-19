@@ -20,21 +20,21 @@
               ></v-autocomplete>
               <div class="radio-group-container mt-0">
                 <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
-                  <v-radio class="d-inline-block mx-4 wq-radio-label"
+                  <v-radio class="d-inline-block mx-4 wq-radio-label primary--text"
                            label="% Completed On Time"
                            small
                            :value="0"
-                           :class="{'inactive-radio': selectedViewType !== 0}"
+                           :class="{'active-radio': selectedViewType === 0}"
                   ></v-radio>
-                  <v-radio class="d-inline-block mx-4 wq-radio-label"
+                  <v-radio class="d-inline-block mx-4 wq-radio-label primary--text"
                            label="Projects Completed"
                            :value="1"
                            :color="selectedViewType === 1 ? 'primary' : '#808588'"
-                           :class="{'inactive-radio': selectedViewType !== 1}"></v-radio>
+                           :class="{'active-radio': selectedViewType === 1}"></v-radio>
                   <v-radio class="d-inline-block mx-4 wq-radio-label"
                            label="Change in WIP"
                            :value="2"
-                           :class="{'inactive-radio': selectedViewType !== 2}"></v-radio>
+                           :class="{'active-radio': selectedViewType === 2}"></v-radio>
                 </v-radio-group>
               </div>
             </v-col>
@@ -91,8 +91,8 @@
                   <div class="card-title-container text-left"
                        :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
                        :style="{'background-color': wq.color + '20' }">
-                    <div class="card-title ellipse two-lines">{{ wq.workQueueType }}</div>
-                    <div class="card-count">{{ wq.workQueueCount }}</div>
+                    <div class="card-title ellipse two-lines default-text-color">{{ wq.workQueueType }}</div>
+                    <div class="card-count grey--text text--darken-2">{{ wq.workQueueCount }}</div>
                   </div>
                   <div v-if="null != wq.metrics.expectedTarget && selectedViewType === 0"
                        class="expected-target-banner"
@@ -117,11 +117,11 @@
                             <!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
                             <!--                        </span>-->
                           </div>
-                          <div class="card-metric-percent"
+                          <div class="card-metric-percent grey--text"
                                v-else-if="selectedViewType === 1">
                             {{ wq.metrics.shortWindowExited }}
                           </div>
-                          <div class="card-metric-percent"
+                          <div class="card-metric-percent grey--text"
                                v-else-if="selectedViewType === 2">
                             {{ wq.metrics.shortWip >= 0 ? '+' : '' }}{{ wq.metrics.shortWip }}
                           </div>
@@ -139,11 +139,11 @@
                             <!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
                             <!--                        </span>-->
                           </div>
-                          <div class="card-metric-percent"
+                          <div class="card-metric-percent grey--text"
                                v-else-if="selectedViewType === 1">
                             {{ wq.metrics.longWindowExited }}
                           </div>
-                          <div class="card-metric-percent"
+                          <div class="card-metric-percent grey--text"
                                v-else-if="selectedViewType === 2">
                             {{ wq.metrics.longWip >= 0 ? '+' : '' }}{{ wq.metrics.longWip }}
                           </div>
@@ -404,6 +404,10 @@ export default {
   color: #808588 !important;
 }
 
+.active-radio > label {
+  color: var(--v-primary-base) !important;
+}
+
 .work-queue-selector .v-input__slot, .work-queue-selector input {
   cursor: pointer !important
 }
@@ -539,7 +543,7 @@ export default {
 .card-link {
   display: flex;
   position: relative;
-  color: #808588;
+  color: var(--v-grey-base);
 }
 
 .card-title-container {
@@ -560,7 +564,6 @@ export default {
 
 .card-title {
   width: 60%;
-  color: #363636;
   font-size: 16px;
   overflow: hidden;
   max-height: 100%;
@@ -605,6 +608,7 @@ export default {
   height: 20px;
   font-size: 12px;
   padding-top: 8px;
+  color: var(--v-grey-base);
 }
 
 .card-metric {
@@ -637,11 +641,11 @@ export default {
 }
 
 .expectation-met {
-  color: #168325;
+  color: var(--v-success-base);
 }
 
 .expectation-missed {
-  color: #DA3434;
+  color: var(--v-error-base);
 }
 
 .learn-span {
