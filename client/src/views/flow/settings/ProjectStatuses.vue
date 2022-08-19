@@ -153,7 +153,7 @@
                 <label>Status Type Icon</label>
                 <div class="flex-display ma-2">
                   <img class="status-icon" :src="item.icon.presignedUrl">
-                  <v-btn x-small text @click="deleteAttachment(item)">
+                  <v-btn x-small text color="primary" @click="deleteAttachment(item)">
                     <v-icon>close</v-icon>
                   </v-btn>
                 </div>
