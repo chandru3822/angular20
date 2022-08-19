@@ -23,8 +23,8 @@ public class ProposalRqueueListeners {
   private final ProjectService projectService;
   private final SecurityService securityService;
 
-  @RqueueListener(value="proposal_job", numRetries = "2")
-  public void doGenerateFinalPDF(ProposalJobMessage job){
+  @RqueueListener(value = "proposal_job", numRetries = "2")
+  public void doGenerateFinalPDF(ProposalJobMessage job) {
 
     // system needs to be aware of a user to access methods
     setBlueravenSystemUser();
@@ -33,7 +33,7 @@ public class ProposalRqueueListeners {
       .ifPresent(proposal -> {
         log.debug("[Proposal] Generating final PDF for proposalId={}", job.proposalId());
         proposalService.generateProposalPDF(proposal.getId(), 1L, true)
-          .ifPresent(baos-> {
+          .ifPresent(baos -> {
             log.debug("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
 
             projectService.addAttachment(
@@ -50,7 +50,7 @@ public class ProposalRqueueListeners {
       });
   }
 
-  private void setBlueravenSystemUser(){
+  private void setBlueravenSystemUser() {
     log.debug("Setting BR System User");
     final SystemSettings brSystemUser = SystemSettings.BR_SYSTEM_USER;
 
