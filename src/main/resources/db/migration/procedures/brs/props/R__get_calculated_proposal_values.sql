@@ -1228,7 +1228,7 @@ BEGIN
   raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
 
 
-  select value::numeric / 100
+  select value::numeric
   into v_apr
   from proposal_value pv
   where field_id = 111
@@ -1364,7 +1364,7 @@ BEGIN
 
   raise notice 'v_utility_company_id = % ',v_utility_company_id;
 --call first formula
-  select value::numeric
+  select value::numeric *100
   into v_panel_degradation_factor
   from proposal_value
   where field_id = 136
@@ -1960,11 +1960,11 @@ BEGIN
            round(v_state_rebate_amount, 2),
            round(v_eto_rebate, 2),
            round(v_csu_rebate, 2),
-           v_apr,
+           round(v_apr *100,2),
            v_loan_term,
            round(v_assumed_payment_by_month_18, 2),
-           v_panel_degradation_factor,
-           v_system_production_25_year,
+           round(v_panel_degradation_factor,2),
+           round(v_system_production_25_year,0),
            round(v_estimated_offset, 2)*100,
            v_led_light_bulbs,
            v_smart_thermostat,

@@ -29,14 +29,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class SMSService {
   private final NamedParameterJdbcTemplate jdbcTemplate;
   private final DataSource dataSource;
   private final ObjectMapper om;
-  private final JedisPool jedisPool;
+  private final RedisTemplate<String, String> stringRedisTemplate;
   private final String webhookPayloadKey = "twilio-webhook-payload";
   private final String webhookPayloadErrorsKey = "twilio-webhook-payload:errors";
   private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
@@ -67,14 +66,14 @@ public class SMSService {
 
   public Page<SmsQueueRow> getSmsQueue(Pageable pageable) {
     final Map<String, Object> params =
-        Map.of(
-            "limit", pageable.getPageSize(),
-            "offset", pageable.getOffset());
+      Map.of(
+        "limit", pageable.getPageSize(),
+        "offset", pageable.getOffset());
     final Long count = sqlCache.queryForObject("sms.getSmsQueue.count", Map.of(), Long.class);
     List<SmsQueueRow> results =
-        sqlCache.query("sms.getSmsQueue", params, new SMSQueuePageMapper<>(SmsQueueRow.class, om));
+      sqlCache.query("sms.getSmsQueue", params, new SMSQueuePageMapper<>(SmsQueueRow.class, om));
     return new PageImpl<>(
-        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public List<Owner> getOwners() {
@@ -82,43 +81,43 @@ public class SMSService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     return sqlCache.query(
-        "project.getOwners",
-        Map.of(
-            "companyId", user.getCompanyId(),
-            "isParent", isParent,
-            "parentCompanyId", user.getHighestParentCompanyId()),
-        Owner.class);
+      "project.getOwners",
+      Map.of(
+        "companyId", user.getCompanyId(),
+        "isParent", isParent,
+        "parentCompanyId", user.getHighestParentCompanyId()),
+      Owner.class);
   }
 
   public List<SMSQueueExportItem> exportSmsQueue() {
 
     return sqlCache.query(
-        "sms.queue.exportAll", Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
+      "sms.queue.exportAll", Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
   }
 
   public Optional<SMSQueueItem> getSmsById(Long id) {
     Map<String, Object> params = Map.of("id", id);
 
     return sqlCache.get(
-        "sms.queue.fetch", params, new SMSQueueMapper<>(SMSQueueItem.class, om), "sms.id = :id");
+      "sms.queue.fetch", params, new SMSQueueMapper<>(SMSQueueItem.class, om), "sms.id = :id");
   }
 
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
     Map<String, Object> params = Map.of("projectId", projectId);
     return sqlCache.query(
-        "sms.queue.fetchByProjectId", params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      "sms.queue.fetchByProjectId", params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public SMSQueueItem queueMessage(
-      String messageGroup,
-      Long userId,
-      Long contactId,
-      Long projectId,
-      String toPhone,
-      String message,
-      List<URI> mediaURLs,
-      RecipientType recipientType,
-      Long sentByUserId) {
+    String messageGroup,
+    Long userId,
+    Long contactId,
+    Long projectId,
+    String toPhone,
+    String message,
+    List<URI> mediaURLs,
+    RecipientType recipientType,
+    Long sentByUserId) {
     String queueInsert = sqlCache.getByKey("sms.queue.insert");
 
     MapSqlParameterSource source = new MapSqlParameterSource();
@@ -144,7 +143,7 @@ public class SMSService {
     }
 
     List<SMSQueueItem> items =
-        jdbcTemplate.query(queueInsert, source, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      jdbcTemplate.query(queueInsert, source, new SMSQueueMapper<>(SMSQueueItem.class, om));
     return items.get(0);
   }
 
@@ -157,24 +156,24 @@ public class SMSService {
     RateLimiter limiter = RateLimiter.create(1);
 
     List<SMSQueueItem> query =
-        jdbcTemplate.query(queueNext, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      jdbcTemplate.query(queueNext, new SMSQueueMapper<>(SMSQueueItem.class, om));
     for (SMSQueueItem sms : query) {
 
       limiter.acquire();
 
       List<URI> uris =
-          sms.getMediaUrls().stream()
-              .map(
-                  s -> {
-                    try {
-                      return new URI(s);
-                    } catch (URISyntaxException e) {
-                      log.error("TWILIO_WEBHOOK_ERROR: media urls failed", e);
-                    }
-                    return null;
-                  })
-              .filter(Objects::nonNull)
-              .collect(Collectors.toList());
+        sms.getMediaUrls().stream()
+          .map(
+            s -> {
+              try {
+                return new URI(s);
+              } catch (URISyntaxException e) {
+                log.error("TWILIO_WEBHOOK_ERROR: media urls failed", e);
+              }
+              return null;
+            })
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
 
       try {
         String messageText = sms.getMessage();
@@ -193,7 +192,7 @@ public class SMSService {
         Date twilioCreated = null;
         if (message.getDateCreated() != null) {
           twilioCreated =
-              Date.from(message.getDateCreated().withZoneSameInstant(ZoneId.of("UTC")).toInstant());
+            Date.from(message.getDateCreated().withZoneSameInstant(ZoneId.of("UTC")).toInstant());
         }
 
         Map<String, Object> params = new HashMap<>();
@@ -222,7 +221,7 @@ public class SMSService {
         jdbcTemplate.update(queueUpdate, params);
         String errorMsg = e.toString();
         if (!errorMsg.contains("violates a blacklist rule")
-            && !errorMsg.contains("is not a valid phone number")) {
+          && !errorMsg.contains("is not a valid phone number")) {
           // cron logs are noisy. only log error if not one we are expecting
           log.error("TWILIO: ERROR: {}", e.toString());
         }
@@ -237,43 +236,43 @@ public class SMSService {
    */
   public void saveTwilioStatusUpdate(TwilioSMSResponse msg) {
     log.debug(
-        "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | received webhook update",
-        msg.getMessageSid(),
-        msg.getFrom(),
-        msg.getMessageStatus());
+      "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | received webhook update",
+      msg.getMessageSid(),
+      msg.getFrom(),
+      msg.getMessageStatus());
 
     updateOrQueueSMSStatusUpdate(msg);
   }
 
-  /** Process up to 50 queue status updates from Twilio. */
+  /**
+   * Process up to 50 queue status updates from Twilio.
+   */
   public void processTwilioWebhookPayloads() {
     processTwilioWebhookPayloads(50);
   }
 
-  /** Process up to [limit] Twilio webhook payloads that have been queued up. */
+  /**
+   * Process up to [limit] Twilio webhook payloads that have been queued up.
+   */
   private void processTwilioWebhookPayloads(int limit) {
 
-    try (Jedis jedis = jedisPool.getResource()) {
+    final var opsForList = stringRedisTemplate.opsForList();
 
-      TwilioSMSResponse msg;
+    Long waitingPayloads = opsForList.size(webhookPayloadKey);
+    for (int i = 0; i < Math.min(waitingPayloads.intValue(), limit); i++) {
 
-      Long waitingPayloads = jedis.llen(webhookPayloadKey);
-      for (int i = 0; i < Math.min(waitingPayloads.intValue(), limit); i++) {
-        String payload = jedis.rpop(webhookPayloadKey);
-        if (payload == null) {
-          break;
-        }
+      String payload = opsForList.rightPop(webhookPayloadKey);
+      if (payload == null) {
+        break;
+      }
 
-        log.debug("TWILIO_WEBHOOK: processing payload: {}", payload);
-        try {
-          msg = TwilioSMSResponse.fromJSON(payload);
-        } catch (IOException ex) {
-          log.error("TWILIO_WEBHOOK_ERROR: failed to load JSON: {}", payload);
-          jedis.lpush(webhookPayloadErrorsKey, payload);
-          continue;
-        }
-
+      log.debug("TWILIO_WEBHOOK: processing payload: {}", payload);
+      try {
+        TwilioSMSResponse msg = TwilioSMSResponse.fromJSON(payload);
         updateOrQueueSMSStatusUpdate(msg);
+      } catch (IOException ex) {
+        log.error("TWILIO_WEBHOOK_ERROR: failed to load JSON: {}", payload);
+        opsForList.leftPush(webhookPayloadErrorsKey, payload);
       }
     }
   }
@@ -281,23 +280,23 @@ public class SMSService {
   /**
    * Update the status for the record in sms_queue that corresponds with the specified sid.
    *
-   * @param sid the unique identifier of the text on Twilio's end
-   * @param status the status of the text on Twilio's end
-   * @param fromPhone the phone number Twilio used to send the requested text message
+   * @param sid          the unique identifier of the text on Twilio's end
+   * @param status       the status of the text on Twilio's end
+   * @param fromPhone    the phone number Twilio used to send the requested text message
    * @param dateReceived the time the status update arrived from Twilio
    * @return
    */
   public boolean updateMessageBySid(
-      String sid, String status, String fromPhone, Date dateReceived) {
+    String sid, String status, String fromPhone, Date dateReceived) {
     log.debug(
-        "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | updating", sid, fromPhone, status);
+      "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | updating", sid, fromPhone, status);
 
     Map<String, Object> params =
-        Map.of(
-            "messageSid", sid,
-            "messageStatus", status,
-            "fromPhone", fromPhone,
-            "dateReceived", dateReceived);
+      Map.of(
+        "messageSid", sid,
+        "messageStatus", status,
+        "fromPhone", fromPhone,
+        "dateReceived", dateReceived);
 
     return jdbcTemplate.update(sqlCache.getByKey("sms.queue.updateByMessageSid"), params) > 0;
   }
@@ -310,19 +309,19 @@ public class SMSService {
    */
   private void updateOrQueueSMSStatusUpdate(TwilioSMSResponse msg) {
     boolean recordUpdated =
-        updateMessageBySid(
-            msg.getMessageSid(), msg.getMessageStatus(), msg.getFrom(), msg.getDateReceived());
+      updateMessageBySid(
+        msg.getMessageSid(), msg.getMessageStatus(), msg.getFrom(), msg.getDateReceived());
 
     if (!recordUpdated) {
       msg.addAttempt();
 
       if (msg.getAttempts() >= 3) {
         log.warn(
-            "TWILIO: WEBHOOK_ERROR: SID: {} too many failed attempts to update status",
-            msg.getMessageSid());
+          "TWILIO: WEBHOOK_ERROR: SID: {} too many failed attempts to update status",
+          msg.getMessageSid());
 
-        try (Jedis jedis = jedisPool.getResource()) {
-          jedis.lpush(webhookPayloadErrorsKey, msg.toJSON());
+        try {
+          stringRedisTemplate.opsForList().leftPush(webhookPayloadErrorsKey, msg.toJSON());
         } catch (JsonProcessingException ex) {
           log.error("TWILIO_WEBHOOK_ERROR: failed to serialize", ex);
         }
@@ -342,26 +341,26 @@ public class SMSService {
    */
   private void queueTwilioWebhookPayload(TwilioSMSResponse msg) {
     log.debug(
-        "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | queuing update Attempts: {}",
-        msg.getMessageSid(),
-        msg.getFrom(),
-        msg.getMessageStatus(),
-        msg.getAttempts());
+      "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | queuing update Attempts: {}",
+      msg.getMessageSid(),
+      msg.getFrom(),
+      msg.getMessageStatus(),
+      msg.getAttempts());
 
-    try (Jedis jedis = jedisPool.getResource()) {
+    try {
       String json = msg.toJSON();
       log.debug("TWILIO_WEBHOOK: payload {}", json);
-      jedis.lpush(webhookPayloadKey, json);
+      stringRedisTemplate.opsForList().leftPush(webhookPayloadKey, json);
     } catch (JsonProcessingException ex) {
       log.error(
-          "TWILIO_WEBHOOK_ERROR: failed to serialize payload: {}, message: {}",
-          msg,
-          ex.getMessage());
+        "TWILIO_WEBHOOK_ERROR: failed to serialize payload: {}, message: {}",
+        msg,
+        ex.getMessage());
     }
   }
 
   private Message sendMessage(
-      RecipientType recipientType, String phoneNumber, String messageText, List<URI> mediaURLs) {
+    RecipientType recipientType, String phoneNumber, String messageText, List<URI> mediaURLs) {
     Twilio.init(properties.getTwilioAccountSID(), properties.getTwilioAuthToken());
 
     PhoneNumber toPhoneNumber = new PhoneNumber(phoneNumber);
@@ -385,8 +384,8 @@ public class SMSService {
 
   private String getMessageServiceSID(RecipientType recipientType) {
     return recipientType == RecipientType.CUSTOMER
-        ? properties.getTwilioCustomersMessageServiceSID()
-        : properties.getTwilioMessageServiceSID();
+      ? properties.getTwilioCustomersMessageServiceSID()
+      : properties.getTwilioMessageServiceSID();
   }
 
   private RecipientType getRecordTypeByMessagingServiceSID(String mssid) {
@@ -407,8 +406,8 @@ public class SMSService {
     params.put("priority", smsQueueItem.isPriority());
     params.put("messageRead", smsQueueItem.isMessageRead());
     params.put(
-        "ownerUserPositionId",
-        smsQueueItem.getOwner() != null ? smsQueueItem.getOwner().getUserPositionId() : null);
+      "ownerUserPositionId",
+      smsQueueItem.getOwner() != null ? smsQueueItem.getOwner().getUserPositionId() : null);
     sqlCache.update("sms.update", params);
   }
 
@@ -419,7 +418,7 @@ public class SMSService {
 
   public String cleanPhoneNumber(String input, String region) throws NumberParseException {
     return phoneNumberUtil.format(
-        phoneNumberUtil.parse(input, region), PhoneNumberUtil.PhoneNumberFormat.E164);
+      phoneNumberUtil.parse(input, region), PhoneNumberUtil.PhoneNumberFormat.E164);
   }
 
   public String cleanPhoneNumber(String input) throws NumberParseException {
@@ -433,14 +432,14 @@ public class SMSService {
   }
 
   public Optional<TwilioMessageRequest> getReply(String phone, Date since)
-      throws NumberParseException {
+    throws NumberParseException {
     String phoneE164 = cleanPhoneNumber(phone);
 
     log.debug("TWILIO: input phone: {}; clean phone: {}", phone, phoneE164);
     Map<String, Object> params =
-        Map.of(
-            "phone", phoneE164,
-            "since", since);
+      Map.of(
+        "phone", phoneE164,
+        "since", since);
 
     return sqlCache.get("sms.reply.fetch", params, TwilioMessageRequest.class);
   }
@@ -459,9 +458,10 @@ public class SMSService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<String>> listTypeReference = new TypeReference<>() {};
+      TypeReference<List<String>> listTypeReference = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class, "mediaUrls", new JsonCollectionDeserializer(listTypeReference, om));
+        List.class, "mediaUrls", new JsonCollectionDeserializer(listTypeReference, om));
       bw.registerCustomEditor(DateTime.class, new JodaDateTimeEditor());
 
       super.initBeanWrapper(bw);
@@ -478,7 +478,8 @@ public class SMSService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<Owner> ownerRef = new TypeReference<>() {};
+      TypeReference<Owner> ownerRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(Object.class, "owner", new JsonCollectionDeserializer(ownerRef, om));
     }
   }
