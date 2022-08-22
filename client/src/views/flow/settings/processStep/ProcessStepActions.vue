@@ -8,7 +8,7 @@
           <v-toolbar-title class="app-title">Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="logicStringToggle = !logicStringToggle" text>
+            <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
               {{logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
             </v-btn>
             <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text color="primary" v-if="userCanAdd">
@@ -355,7 +355,7 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn text v-if="!addChildProcess && userCanAdd"
+                      <v-btn text color="primary" v-if="!addChildProcess && userCanAdd"
                              @click="[addChildProcess = true, loadChildProcessSteps(item.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -397,11 +397,11 @@
                     <div class="mt-3">
                       <v-btn
                         :disabled="!newChildProcessStep.processStepId || !newChildProcessStep.existingCompanyProcessStepStatusTypeId || !newChildProcessStep.initialCompanyProcessStepStatusTypeId"
-                        @click="saveProcessStepToAction(item)">
+                        @click="saveProcessStepToAction(item)" color="primary">
                         <v-icon>save</v-icon>
                         Save
                       </v-btn>
-                      <v-btn class="ml-3" @click="[addChildProcess = false, newChildProcessStep = {}]">
+                      <v-btn class="ml-3" @click="[addChildProcess = false, newChildProcessStep = {}]" text color="primary">
                         <v-icon>remove</v-icon>
                         Cancel
                       </v-btn>
@@ -515,7 +515,7 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn text v-if="!addChildFunction && userCanAdd"
+                      <v-btn text color="primary" v-if="!addChildFunction && userCanAdd"
                              @click="[addChildFunction = true, loadChildFunctions(item.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -586,12 +586,12 @@
                       </v-card>
                     </div>
                     <div class="mt-3">
-                      <v-btn :disabled="!selectedChildFunction.id"
+                      <v-btn :disabled="!selectedChildFunction.id" color="primary"
                              @click="saveFunctionToAction(item)">
                         <v-icon>save</v-icon>
                         Save
                       </v-btn>
-                      <v-btn class="ml-3" @click="addChildFunction = false">
+                      <v-btn class="ml-3" @click="addChildFunction = false" text color="primary">
                         <v-icon>remove</v-icon>
                         Cancel
                       </v-btn>
@@ -831,12 +831,12 @@
                   <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
                 </v-toolbar>
                 <v-card flat class="text-left px-3" color="transparent">
-                  <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
+                  <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="(ot, index) in operationTypes" :key="index"
                          :disabled="!userCanEdit"
                          @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})]">
                     {{ ot.operationType }}
                   </v-btn>
-                  <v-btn small class="ml-1 mr-1 mt-1"
+                  <v-btn small class="ml-1 mr-1 mt-1 primary--text"
                          :disabled="!userCanEdit"
                          @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = true]">
                     Always Enabled
@@ -875,7 +875,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': actions.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text v-if="userCanEdit" icon small class="handle">
+                  <v-btn text v-if="userCanEdit" icon small class="handle" color="primary">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>

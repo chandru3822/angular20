@@ -110,7 +110,7 @@
                           <v-icon color="primary" @click="item.edit = false">clear</v-icon>
                         </template>
                       </v-text-field>
-                      <a style="text-decoration: underline;" v-else @click="item.edit = true">
+                      <a style="text-decoration: underline;" v-else @click="item.edit = true" class="default-text-color">
                         {{item.groupName}}
                       </a>
                     </div>
