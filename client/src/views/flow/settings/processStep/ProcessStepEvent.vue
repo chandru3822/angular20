@@ -105,8 +105,7 @@
               </v-color-picker>
             </div>
           </div>
-          <v-btn class="white--text"
-                 color="primaryButton"
+          <v-btn color="primary"
                  @click="saveEventAction(newEventAction)"
                  :disabled="!newEventAction.actionName || !newEventAction.actionTypeId"
           >Add Action
@@ -214,7 +213,7 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn v-if="!addChildLink && userCanEdit"
+                      <v-btn v-if="!addChildLink && userCanEdit" color="primary"
                              @click="[addChildLink = true, loadLinks(action.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -230,7 +229,7 @@
                               return-object
                               @input="saveLinkToAction(action)"
                     ></v-select>
-                    <v-btn @click="addChildLink = false">
+                    <v-btn @click="addChildLink = false" text color="primary">
                       <v-icon>remove</v-icon>
                       Cancel
                     </v-btn>
@@ -300,7 +299,7 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn text v-if="!addChildFunction && userCanAdd"
+                      <v-btn text color="primary" v-if="!addChildFunction && userCanAdd"
                              @click="[addChildFunction = true, loadChildFunctions(action.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -329,7 +328,7 @@
                           >
                             <template v-slot:activator="{ on, attrs }">
                               <v-btn
-                                text
+                                text color="primary"
                                 class="d-inline-block"
                                 v-bind="attrs"
                                 v-on="on"
@@ -370,12 +369,12 @@
                       </v-card>
                     </div>
                     <div class="mt-3">
-                      <v-btn :disabled="!selectedChildFunction.id"
+                      <v-btn :disabled="!selectedChildFunction.id" color="primary"
                              @click="saveFunctionToAction(action)">
                         <v-icon>save</v-icon>
                         Save
                       </v-btn>
-                      <v-btn class="ml-3" @click="addChildFunction = false">
+                      <v-btn class="ml-3" @click="addChildFunction = false" text color="primary">
                         <v-icon>remove</v-icon>
                         Cancel
                       </v-btn>
@@ -471,7 +470,7 @@
                             </v-card>
                           </div>
                           <v-list-item-subtitle>
-                            <v-btn color="primary" class="white--text" v-if="cp.edit && userCanEdit"
+                            <v-btn color="primary" v-if="cp.edit && userCanEdit"
                                    @click="updateChildFunction(action.id, cp)">
                               Save
                             </v-btn>
@@ -595,21 +594,21 @@
                 <v-spacer></v-spacer>
                 <v-toolbar-items
                   v-if="((action.processStepEventLogicList && action.processStepEventLogicList.length > 0) || action.alwaysEnabled) && userCanEdit">
-                  <v-btn text
+                  <v-btn text color="primary"
                          @click="[action.logicListChanged = true, action.processStepEventLogicList = [], action.alwaysEnabled = false]">
                     <v-icon>clear</v-icon>
                     Clear All
                   </v-btn>
                 </v-toolbar-items>
               </v-toolbar>
-              <v-card flat class="text-left px-3" color="transparent">
+              <v-card flat class="text-left px-3 primary--text" color="transparent">
                 <v-btn small class="ml-1 mr-1 mt-1"
                        :disabled="!userCanEdit"
                        v-for="(l, index) in filterBy(action.processStepEventLogicList, false, 'archived')" :key="index"
                        @click="[l.archived = true, action.logicListChanged = true]">
                   {{ l.processStepEventRequirementId ? l.requirementNbr : l.operationType }}
                 </v-btn>
-                <v-btn small class="ml-1 mr-1 mt-1" v-if="action.alwaysEnabled"
+                <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-if="action.alwaysEnabled"
                        :disabled="!userCanEdit"
                        @click="[action.logicListChanged = true, action.alwaysEnabled = !action.alwaysEnabled]">
                   Always Enabled
@@ -619,12 +618,12 @@
                 <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left px-3" color="transparent">
-                <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
+                <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="(ot, index) in operationTypes" :key="index"
                        :disabled="!userCanEdit"
                        @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})]">
                   {{ ot.operationType }}
                 </v-btn>
-                <v-btn small class="ml-1 mr-1 mt-1"
+                <v-btn small class="ml-1 mr-1 mt-1 primary--text"
                        :disabled="!userCanEdit"
                        @click="[action.logicListChanged = true, action.processStepEventLogicList = [], action.alwaysEnabled = true]">
                   Always Enabled
@@ -634,7 +633,7 @@
                 <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left mb-4 px-3" color="transparent">
-                <v-btn small class="ml-1 mr-1 mt-1" v-for="r in selectedEventRequirements" :key="r.id"
+                <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="r in selectedEventRequirements" :key="r.id"
                        :disabled="!userCanEdit"
                        @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({ requirementNbr: r.requirementNbr, processStepEventRequirementId: r.id, archived: false })]">
                   {{ r.requirementNbr }}
@@ -645,7 +644,7 @@
                 <strong>* ERROR: </strong>{{ actionLogicErrorMsg }}
               </div>
               <v-btn v-if="userCanEdit" class="mt-4 ml-3 mb-4"
-                     :disabled="!action.actionName"
+                     :disabled="!action.actionName" color="primary"
                      @click="validateActionLogicString(action, true)">
                 <v-icon class="mr-2">save</v-icon>
                 Save Changes
@@ -693,7 +692,7 @@
           <template #item="{ item: action, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td style="width: 50px">
-                <v-btn text v-if="userCanEdit" icon small class="handle">
+                <v-btn text v-if="userCanEdit" icon small color="primary" class="handle">
                   <v-icon>drag_handle</v-icon>
                 </v-btn>
               </td>
@@ -707,48 +706,14 @@
                          @click="duplicateAction(action.id)">
                     <v-icon>mdi-content-copy</v-icon>
                   </v-btn>
-                  <v-btn text @click="[expanded = [action]]" v-if="!expanded.includes(action)">
+                  <v-btn text color="primary" @click="[expanded = [action]]" v-if="!expanded.includes(action)">
                     <v-icon>edit</v-icon>
                   </v-btn>
-                  <v-btn text @click="expanded = []" v-else>cancel
+                  <v-btn text color="primary" @click="expanded = []" v-else>cancel
                   </v-btn>
-                  <v-dialog
-                    v-if="userCanEdit"
-                    v-model="action.deleteConfirm"
-                    width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text class="pt-4">
-                        Are you sure you want to delete this event action?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="action.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primary"
-                          text
-                          @click="deleteActionFromEvent(action)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                  <v-btn small text color="primary" @click="eventActionToDelete = action">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
                 </div>
               </td>
             </tr>
@@ -756,6 +721,9 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="!!eventActionToDelete" @confirm="deleteActionFromEvent" @close-dialog="eventActionToDelete = null">
+      Are you sure you want to delete this event action?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -775,11 +743,13 @@ import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepEvent',
   mixins: [Vue2Filters.mixin],
   components: {
+    ConfirmationDialog,
     ProcessStepRequirements,
     ProcessStepWorkQueueTypes
   },
@@ -894,7 +864,8 @@ export default {
       ],
       //doing these as strings since the filtered list will be too
       invalidFirsts: ['2', '3', '4'],
-      invalidLasts: ['1', '3', '4', '5']
+      invalidLasts: ['1', '3', '4', '5'],
+      eventActionToDelete: null
     }
   },
   computed: {},
@@ -986,7 +957,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteActionFromEvent(action) {
+    async deleteActionFromEvent() {
+      const action = this.eventActionToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await deleteRequest(`/processStep/${this.processStepId}/event/${this.selectedEvent.id}/action/${action.id}`)
@@ -1000,6 +972,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.eventActionToDelete = null
     },
     async saveEventAction(action) {
       this.$store.commit(AppMutations.SET_LOADING, true)

@@ -96,7 +96,7 @@
                     :key="index">
               <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
                 <v-list-item-action>
-                  <v-icon>drag_handle</v-icon>
+                  <v-icon color="primary">drag_handle</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
                   {{a.attachmentType}}

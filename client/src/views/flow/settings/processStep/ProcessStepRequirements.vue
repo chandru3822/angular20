@@ -285,7 +285,7 @@
                      :readonly="!userCanEdit"
                      :disabled="!userCanEdit">
             </div>
-            <v-btn :disabled="invalidRequirement"
+            <v-btn :disabled="invalidRequirement" color="primary"
                    @click="saveNewRequirement">
               <v-icon>save</v-icon>
               Save
@@ -502,7 +502,7 @@
                            :readonly="item.immutable || !userCanEdit"
                            :disabled="item.immutable || !userCanEdit">
                   </div>
-                  <v-btn v-if="userCanEdit" @click="updateRequirement(item)">
+                  <v-btn v-if="userCanEdit" @click="updateRequirement(item)" color="primary">
                     <v-icon>save</v-icon>
                     Save
                   </v-btn>

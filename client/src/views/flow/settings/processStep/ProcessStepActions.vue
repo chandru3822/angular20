@@ -851,7 +851,7 @@
                              v-for="r in requirements" :key="r.id">
                     <template v-slot:activator="{ on:tooltip }">
                       <v-btn :class="{'d-block': logicStringToggle}"
-                             small class="ml-1 mr-1 mt-1"
+                             small class="ml-1 mr-1 mt-1 primary--text"
                              :disabled="!userCanEdit"
                              v-on="{ ...tooltip }"
                              @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString })]">
@@ -865,7 +865,7 @@
                 <div v-if="actionLogicError" class="error-text ml-3 mt-3">
                   <strong>* ERROR: </strong>{{ actionLogicErrorMsg }}
                 </div>
-                <v-btn v-if="userCanEdit" @click="validateActionLogicString(item, true)" class="mt-4 ml-3">
+                <v-btn v-if="userCanEdit" color="primary" @click="validateActionLogicString(item, true)" class="mt-4 ml-3">
                   <v-icon class="mr-2">save</v-icon>
                   Save Changes
                 </v-btn>

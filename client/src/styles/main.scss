@@ -40,6 +40,10 @@ $default-text: rgba(0,0,0,0.87);
   color: $default-text !important;
 }
 
+#no-data, #no-results {
+  color: $default-text !important;
+}
+
 .anchor {
   color: var(--v-anchor-base) !important;
 } //this ought to work automatically with vuetify, but it doesn't
