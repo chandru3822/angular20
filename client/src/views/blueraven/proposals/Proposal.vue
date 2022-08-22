@@ -29,7 +29,7 @@
 
           </v-toolbar-title>
           <!--          <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>-->
-          <v-chip v-if="proposal.locked" small color="brRed" dark class="ml-2 text-uppercase">
+          <v-chip v-if="proposal.locked" small color="red" dark class="ml-2 text-uppercase">
             <v-icon small>mdi-lock</v-icon>
             Locked
           </v-chip>
@@ -119,7 +119,8 @@
                 <!--                >-->
                 <!--                  Save Proposal-->
                 <!--                </v-btn>-->
-                <v-btn class="proposal-container-buttons text-capitalize"
+                <v-btn v-if="pages && pages.length"
+                  class="proposal-container-buttons text-capitalize"
                        @click="downloadPdf">
                   Download
                 </v-btn>
