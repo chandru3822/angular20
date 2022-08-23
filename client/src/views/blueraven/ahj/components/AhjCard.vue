@@ -5,6 +5,7 @@
     <v-icon class="white--text">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
   </v-card-title>
   <v-card-text v-if="expanded" class="pa-4">
+    <div v-if="group.length === 0" class="centered default-text-color">No fields available</div>
     <div v-for="field in group" :key="field.id" class="mb-3">
       <CustomValueInput
           :callback="(field) => updateDirtyValue(field)"
@@ -35,8 +36,9 @@ export default {
 
   },
   data: () => ({
-    expanded: false
-  })
+    expanded: true
+  }),
+
 }
 </script>
 
