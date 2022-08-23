@@ -1,5 +1,4 @@
- drop function flow.get_system_list_option_value(bigint, bigint);
-
+drop function if exists flow.get_system_list_option_value(bigint, bigint);
 create or replace function flow.get_system_list_option_value(p_company_system_list_id bigint, p_int_value bigint)
 
 returns table (id bigint, name text) as
