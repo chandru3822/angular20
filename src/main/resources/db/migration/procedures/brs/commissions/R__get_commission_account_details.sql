@@ -1,16 +1,16 @@
-DROP FUNCTION IF EXISTS brs.get_commission_account_details(integer,BIGINT [],INTEGER,INTEGER,DATE,DATE,INTEGER,INTEGER);
+DROP FUNCTION IF EXISTS brs.get_commission_account_details(bigint,BIGINT [],bigint,bigint,DATE,DATE,bigint,bigint);
 /*MILESTONE 1 175 MILESTONE 2 35*/
-CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id         integer,
+CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id         bigint,
                                                               p_project_ids         BIGINT [],
-                                                              p_contact_id   INTEGER,
-                                                              p_sales_rep          INTEGER,
+                                                              p_contact_id   bigint,
+                                                              p_sales_rep          bigint,
                                                               p_cancel_start_date  DATE,
                                                               p_cancel_end_date    DATE,
-                                                              p_override_plan_id   INTEGER,
-                                                              p_commission_plan_id INTEGER)
+                                                              p_override_plan_id   bigint,
+                                                              p_commission_plan_id bigint)
     RETURNS TABLE(
-                     project_id                                  INTEGER,
-                     customer_id                                 INT,
+                     project_id                                  bigint,
+                     customer_id                                 bigint,
                      customer_name                               VARCHAR,
                      system_size                                 NUMERIC(10,2),
                      user_id                              bigint,
@@ -39,10 +39,10 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      overrides_per_user                          JSON,
                      override_plan                               TEXT,
                      override_plan_status                        character VARYING,
-                     override_plan_id                            INT,
+                     override_plan_id                            bigint,
                      commission_plan                             TEXT,
                      commission_plan_status                      character VARYING,
-                     commission_plan_id                          INT,
+                     commission_plan_id                          bigint,
                      total_commissions                           NUMERIC(10,2),
                      total_overrides                             NUMERIC(10,2),
                      commission_earned                           NUMERIC(10,2),
@@ -301,7 +301,7 @@ BEGIN
                         0::numeric AS override_adjustments,
                         (SELECT coalesce(sum(amount), 0)
                          FROM brs.project_commission_ledger dcl
-                         WHERE dcl.project_id = p.id::integer
+                         WHERE dcl.project_id = p.id::bigint
                            AND dcl.ledger_type_id = 1
                            and dcl.position_id = 1)
                             AS commission_paid_to_date,

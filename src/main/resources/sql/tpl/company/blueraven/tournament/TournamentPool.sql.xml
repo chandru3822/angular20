@@ -52,7 +52,7 @@
 
   <tournamentPool.getPoolUsers><![CDATA[
     select *
-    from brs.get_tournament_pool_users(:tournamentId::int, :tournamentPoolTypeId::int)
+    from brs.get_tournament_pool_users(:tournamentId::bigint, :tournamentPoolTypeId::bigint)
   ]]></tournamentPool.getPoolUsers>
 
   <tournamentPool.getPosition><![CDATA[
@@ -99,7 +99,7 @@
   ]]></tournamentPool.deleteUser>
 
   <tournamentPool.assignUsersToMatches><![CDATA[
-    select from brs.assign_users_to_matches(:tournamentId::int, :tournamentPoolId::int, :userId::int, :seededMatches::jsonb)
+    select from brs.assign_users_to_matches(:tournamentId::bigint, :tournamentPoolId::bigint, :userId::bigint, :seededMatches::jsonb)
   ]]></tournamentPool.assignUsersToMatches>
 
   <tournamentPool.advanceUsersToWinnerPool><![CDATA[

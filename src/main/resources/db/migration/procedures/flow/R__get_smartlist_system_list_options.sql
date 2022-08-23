@@ -1,8 +1,8 @@
--- drop function if exists flow.get_smartlist_system_list_options(int, int);
+ drop function if exists flow.get_smartlist_system_list_options(bigint, bigint);
 
-create or replace function flow.get_smartlist_system_list_options(p_smartlist_system_list_id int, p_company_id int)
+create or replace function flow.get_smartlist_system_list_options(p_smartlist_system_list_id bigint, p_company_id bigint)
 
-  returns table(id int, name varchar) as
+  returns table(id bigint, name varchar) as
 
 $$
 begin

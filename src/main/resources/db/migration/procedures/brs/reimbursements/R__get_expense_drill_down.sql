@@ -1,5 +1,5 @@
-
-CREATE OR REPLACE FUNCTION brs.get_expense_drilldown(p_user_id integer, p_start_date DATE, p_end_date DATE, p_status varchar, p_budget_id integer)
+drop function if exists brs.get_expense_drilldown(p_user_id bigint, p_start_date DATE, p_end_date DATE, p_status varchar, p_budget_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_expense_drilldown(p_user_id bigint, p_start_date DATE, p_end_date DATE, p_status varchar, p_budget_id bigint)
   RETURNS SETOF json AS
 $BODY$
 DECLARE

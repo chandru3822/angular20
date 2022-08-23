@@ -151,7 +151,7 @@ public class BlueravenCustomFieldValueService {
             + "        text_value = :textValue,\n"
             + "        numeric_value = :numericValue,\n"
             + "        int_value = :intValue,\n"
-            + "        int_array_value = :intArrayValue::int[],\n"
+            + "        int_array_value = :intArrayValue::bigint[],\n"
             + "        modified_by_id = :userId,\n"
             + "        date_modified = now()";
     return sql;

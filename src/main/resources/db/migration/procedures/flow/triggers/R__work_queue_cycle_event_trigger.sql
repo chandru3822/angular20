@@ -1,16 +1,17 @@
+drop function if exists flow.create_event_work_queue_cycle();
 CREATE OR REPLACE FUNCTION flow.create_event_work_queue_cycle()
   RETURNS TRIGGER AS
 $$
 declare
-  v_new_work_queue_type_id          integer;
-  v_psewqtest_id                    integer;
+  v_new_work_queue_type_id          bigint;
+  v_psewqtest_id                    bigint;
   v_old                             record;
-  v_work_type_ids                   integer[];
-  v_event_status_type_id            integer;
-  v_process_step_status_type_id     integer;
-  v_company_process_step_status_type_id integer;
-  v_company_project_status_type_id  integer;
-  v_project_status_type_id          integer;
+  v_work_type_ids                   bigint[];
+  v_event_status_type_id            bigint;
+  v_process_step_status_type_id     bigint;
+  v_company_process_step_status_type_id bigint;
+  v_company_project_status_type_id  bigint;
+  v_project_status_type_id          bigint;
 BEGIN
 
   select cpst.id as company_project_status_type_id, cpst.project_status_type_id as project_status_type_id,

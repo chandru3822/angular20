@@ -108,7 +108,7 @@
         lazy_load_values = :lazyLoadValues,
         company_system_list_id = :systemListId,
         sort_list_values_alphabetically = :sortListValuesAlphabetically,
-        system_list_option_ids = :systemListOptionIds::int[],
+        system_list_option_ids = :systemListOptionIds::bigint[],
         custom_field_sql_key = :customFieldSqlKey,
         custom_field_sql_reference_table = :customFieldSqlReferenceTable,
         flow_custom_field_id = :flowCustomFieldId,

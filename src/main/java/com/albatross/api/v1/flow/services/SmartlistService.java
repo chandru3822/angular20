@@ -586,7 +586,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
         } else {
-          query.append(String.format(" sort(brs.project_details.%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" sort(brs.project_details.%s) %s sort(array%s::bigint[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
@@ -632,15 +632,15 @@ public class SmartlistService {
     StringBuilder whereClause = new StringBuilder();
 
     // Get smartlist system lists
-    withClause.append(String.format(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::bigint, %s::bigint)), ", companyId));
 
     // Get tables for system lists
     withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -1245,9 +1245,9 @@ public class SmartlistService {
             final String smartlistSystemListTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
 
             if (List.of(1, 3, 5, 6, 7, 8, 9).contains(r.getSmartlistSystemListId().intValue())) {
-              if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::int, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
+              if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::bigint, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
                 referenceTable = UUID.randomUUID().toString();
-                final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
+                final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::bigint, %s::bigint)", r.getSmartlistSystemListId(), r.getCompanyId());
                 additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = %s.%s ", subquery, referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
               } else {
                   referenceTable = requirements.stream()
@@ -1295,7 +1295,7 @@ public class SmartlistService {
                 referenceTable = newReferenceTable;
               }
             }
-            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::int[]", referenceTable);
+            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::bigint[]", referenceTable);
           } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
             String referenceColumn;
@@ -1498,7 +1498,7 @@ public class SmartlistService {
             if (r.getDataTypeRequirementId() != null) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+              whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
@@ -1601,11 +1601,11 @@ public class SmartlistService {
     query.append("with ");
 
     // Get smartlist system lists
-    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId));
 
     // Get tables for system lists
     query.append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -1684,7 +1684,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-            referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
+            referenceLocation = String.format("array[%s.%s]::bigint[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -1698,7 +1698,7 @@ public class SmartlistService {
 
           projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
           final String column = (r.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
         }
       } else if (r.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -1859,7 +1859,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
@@ -2160,7 +2160,7 @@ public class SmartlistService {
             referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
           }
           if (r.getSmartlistSystemListId() != 1) {
-            referenceLocation = String.format("array[%s]::int[]", referenceLocation);
+            referenceLocation = String.format("array[%s]::bigint[]", referenceLocation);
           }
         } else if (r.getSmartlistFieldId() != null) {
           //smartlist system fields
@@ -2271,7 +2271,7 @@ public class SmartlistService {
           if (r.getDataTypeRequirementId() != null) {
             whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
-            whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+            whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
           }
         } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
           //if this is a text requirement using null/not null requirement
@@ -2391,11 +2391,11 @@ public class SmartlistService {
     query.append("with ");
 
     // Get smartlist system lists
-    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId));
 
     // Get tables for system lists
     query.append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -2474,7 +2474,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-          referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
+          referenceLocation = String.format("array[%s.%s]::bigint[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -2488,7 +2488,7 @@ public class SmartlistService {
 
           projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
           final String column = (r.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
         }
       } else if (r.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -2644,7 +2644,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
@@ -3077,7 +3077,7 @@ public class SmartlistService {
               referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
             }
             if (r.getSmartlistSystemListId() != 1) {
-              referenceLocation = String.format("array[%s]::int[]", referenceLocation);
+              referenceLocation = String.format("array[%s]::bigint[]", referenceLocation);
             }
           } else if (r.getSmartlistFieldId() != null) {
             //smartlist system fields
@@ -3188,7 +3188,7 @@ public class SmartlistService {
             if (r.getDataTypeRequirementId() != null) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+              whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
@@ -3566,18 +3566,18 @@ public class SmartlistService {
           .toList();
 
         query.append("(")
-          .append(String.format("flow.company_project_status_type.id = any(array%s::int[]) or ", projectStatuses))
-          .append(String.format("flow.project_status_type.id = any(array%s::int[])", projectCategories))
+          .append(String.format("flow.company_project_status_type.id = any(array%s::bigint[]) or ", projectStatuses))
+          .append(String.format("flow.project_status_type.id = any(array%s::bigint[])", projectCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_process_step_status_type.id = any(array%s::int[]) or ", psStatuses))
-          .append(String.format("flow.process_step_status_type.id = any(array%s::int[])", psCategories))
+          .append(String.format("flow.company_process_step_status_type.id = any(array%s::bigint[]) or ", psStatuses))
+          .append(String.format("flow.process_step_status_type.id = any(array%s::bigint[])", psCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_event_status_type.id = any(array%s::int[]) or ", eventStatuses))
-          .append(String.format("flow.event_status_type.id = any(array%s::int[])", eventCategories))
+          .append(String.format("flow.company_event_status_type.id = any(array%s::bigint[]) or ", eventStatuses))
+          .append(String.format("flow.event_status_type.id = any(array%s::bigint[])", eventCategories))
           .append(")) or ");
       }
 
@@ -3676,11 +3676,11 @@ public class SmartlistService {
     var defaultFields = new StringBuilder().append("with ")
 
       // Get smartlist system lists
-      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId))
 
       // Get tables for system lists
       .append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ")
@@ -4011,7 +4011,7 @@ public class SmartlistService {
             case 5:
             case 13:
                 if (r.getSmartlistSystemListId() != null) {
-                  return String.format("sort(array[%s]::int[])", r.getListOfValueId());
+                  return String.format("sort(array[%s]::bigint[])", r.getListOfValueId());
                 }
                 if (r.getIsCustomValue()) {
                     return requirementValue;
@@ -4343,18 +4343,18 @@ public class SmartlistService {
           .toList();
 
         clause.append("(")
-          .append(String.format("flow.company_project_status_type.id = any(array%s::int[]) or ", projectStatuses))
-          .append(String.format("flow.project_status_type.id = any(array%s::int[])", projectCategories))
+          .append(String.format("flow.company_project_status_type.id = any(array%s::bigint[]) or ", projectStatuses))
+          .append(String.format("flow.project_status_type.id = any(array%s::bigint[])", projectCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_process_step_status_type.id = any(array%s::int[]) or ", psStatuses))
-          .append(String.format("flow.process_step_status_type.id = any(array%s::int[])", psCategories))
+          .append(String.format("flow.company_process_step_status_type.id = any(array%s::bigint[]) or ", psStatuses))
+          .append(String.format("flow.process_step_status_type.id = any(array%s::bigint[])", psCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_event_status_type.id = any(array%s::int[]) or ", eventStatuses))
-          .append(String.format("flow.event_status_type.id = any(array%s::int[])", eventCategories))
+          .append(String.format("flow.company_event_status_type.id = any(array%s::bigint[]) or ", eventStatuses))
+          .append(String.format("flow.event_status_type.id = any(array%s::bigint[])", eventCategories))
           .append(")) or ");
       }
 
@@ -4666,7 +4666,7 @@ public class SmartlistService {
       if (i.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(i.getSmartlistSystemListId())) {
-          referenceLocation = String.format("array[%s.%s]::int[]", i.getJoinTable(), i.getJoinColumn());
+          referenceLocation = String.format("array[%s.%s]::bigint[]", i.getJoinTable(), i.getJoinColumn());
         } else if (i.getSmartlistSystemListId() == 2 || i.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -4680,7 +4680,7 @@ public class SmartlistService {
 
           additionalJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, i.getPpsTable()));
           final String column = (i.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
         }
       } else if (i.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -4826,7 +4826,7 @@ public class SmartlistService {
         if (i.getDataTypeRequirementId() != null) {
           clause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          clause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          clause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (i.getDataTypeId() == 3 || i.getDataTypeId() == 4 || (i.getDataTypeRequirementId() != null && i.getSecondaryRequirementValue() == null && i.getDataTypeId() != 1 && i.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement

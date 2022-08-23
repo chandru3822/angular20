@@ -1,16 +1,20 @@
-CREATE OR REPLACE FUNCTION flow.copy_cfv_to_other_cfga(p_project_id integer, p_pps_id integer, p_ppse_id integer,
-                                                       p_user_id integer,
-                                                       p_cfga_copy_from integer, p_cfga_copy_to integer,
+drop function if exists flow.copy_cfv_to_other_cfga(p_project_id bigint, p_pps_id bigint, p_ppse_id bigint,
+                                                    p_user_id bigint,
+                                                    p_cfga_copy_from bigint, p_cfga_copy_to bigint,
+                                                    p_override_existing boolean);
+CREATE OR REPLACE FUNCTION flow.copy_cfv_to_other_cfga(p_project_id bigint, p_pps_id bigint, p_ppse_id bigint,
+                                                       p_user_id bigint,
+                                                       p_cfga_copy_from bigint, p_cfga_copy_to bigint,
                                                        p_override_existing boolean)
   returns boolean AS
 $BODY$
 declare
-  v_from_object_type_id int;
-  v_from_data_type_id   int;
-  v_to_object_type_id   int;
-  v_to_data_type_id     int;
+  v_from_object_type_id bigint;
+  v_from_data_type_id   bigint;
+  v_to_object_type_id   bigint;
+  v_to_data_type_id     bigint;
   v_value_to_save       text;
-  v_event_id            int;
+  v_event_id            bigint;
   v_event_request_valid boolean default true;
 
 BEGIN
@@ -48,7 +52,7 @@ BEGIN
     --get the value for the first cfga
     select *
     into v_value_to_save
-    from flow.get_cfv_value_as_text(p_project_id::int, p_ppse_id::int, p_cfga_copy_from);
+    from flow.get_cfv_value_as_text(p_project_id::bigint, p_ppse_id::bigint, p_cfga_copy_from);
 
     raise notice 'from object type = % ',v_to_object_type_id;
     raise notice 'value to save = % ',v_value_to_save;

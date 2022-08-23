@@ -1,6 +1,6 @@
--- drop function if exists flow.get_project_available_owners(int, int, bool);
+drop function if exists flow.get_project_available_owners(bigint, bigint, bool);
 
-create or replace function flow.get_project_available_owners(p_company_id int, p_parent_company_id int, p_is_parent bool)
+create or replace function flow.get_project_available_owners(p_company_id bigint, p_parent_company_id bigint, p_is_parent bool)
 
   returns table (
                   user_id bigint,
@@ -8,9 +8,9 @@ create or replace function flow.get_project_available_owners(p_company_id int, p
                   last_name varchar,
                   full_name text,
                   has_access boolean,
-                  user_position_id int,
+                  user_position_id bigint,
                   "position" varchar,
-                  position_id int,
+                  position_id bigint,
                   phone_number varchar
                 ) as
 
@@ -35,7 +35,7 @@ BEGIN
     where up.archived is not true
     and ust.has_access is true
     and case when p_is_parent then
-                 p.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
+                 p.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::bigint))
              else p.company_id = p_company_id end
     and up.start_date <= now()
     and (up.end_date is null or up.end_date >= now())

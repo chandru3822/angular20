@@ -9,7 +9,7 @@
     select id, title, message, to_jsonb(team_ids) as teamIds, archived
       from flow.message_template mt
       where mt.archived is not true
-      and :teamId::integer = any(mt.team_ids)
+      and :teamId::bigint = any(mt.team_ids)
   ]]></messageTemplate.getTemplates>
 
   <messageTemplate.getTemplate><![CDATA[
@@ -22,14 +22,14 @@
   <messageTemplate.insertTemplate><![CDATA[
       insert into flow.message_template
       (title, message, team_ids, created_by_id, date_created, modified_by_id, date_modified)
-      values (:title, :message, array[ :teamIds ]::integer[], :createdById, now(), :createdById, now())
+      values (:title, :message, array[ :teamIds ]::bigint[], :createdById, now(), :createdById, now())
   ]]></messageTemplate.insertTemplate>
 
   <messageTemplate.updateTemplate><![CDATA[
     update flow.message_template set
         title = :title,
         message = :message,
-        team_ids = array[ :teamIds ]::integer[],
+        team_ids = array[ :teamIds ]::bigint[],
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id

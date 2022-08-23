@@ -291,7 +291,7 @@
   ]]></workQueueType.deleteProcessStepWorkQueueType>
 
   <workQueueType.callPsConfigChangeFunction><![CDATA[
-      select * from flow.ps_wqt_configuration_change(:psWqtId::integer, :createdById::integer)
+      select * from flow.ps_wqt_configuration_change(:psWqtId::bigint, :createdById::bigint)
   ]]></workQueueType.callPsConfigChangeFunction>
 
   <workQueueType.insertProjectStatusTypeForProcessStep><![CDATA[
@@ -522,7 +522,7 @@
   ]]></workQueueType.getProcessStepEventWorkQueueType>
 
   <workQueueType.callEventConfigChangeFunction><![CDATA[
-        select * from flow.pse_wqt_configuration_change(:pseWqtId::integer, :createdById::integer)
+        select * from flow.pse_wqt_configuration_change(:pseWqtId::bigint, :createdById::bigint)
   ]]></workQueueType.callEventConfigChangeFunction>
 
   <workQueueType.getProjectStatusesForEventWorkQueueType><![CDATA[

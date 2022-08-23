@@ -33,8 +33,14 @@
                   select array_to_json(array_agg(rows))
                   from (
                          select p.id,
-                                p.date_created as "dateCreated",
-                                p.archived
+                              p.proposal_nbr                                as "proposalNbr",
+                              p.name,
+                              p.date_created                                as "dateCreated",
+                              p.archived,
+                              p.locked_tsz is not null                      as locked,
+                              p.credit_check_submitted_tsz is not null      as "creditCheckSubmitted",
+                              p.finance_docs_sent_tsz is not null           as "financeDocsSent",
+                              p.installation_agreement_sent_tsz is not null as "installationAgreementSent"
                          from brs.proposal p
                          where p.archived is not true
                           and p.project_process_step_id = pps.id
@@ -57,7 +63,7 @@
                                 INNER JOIN flow.project_process_step_attachment src ON src.attachment_id = a.id
                                 INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
                          WHERE src.project_process_step_id = pps.id
-                         AND at.id in (select unnest(string_to_array(value, ',')::int[])
+                         AND at.id in (select unnest(string_to_array(value, ',')::bigint[])
                                               from flow.company_configuration_value
                                               where code = 'AURORA_ATTACHMENT_TYPE_IDS' and archived is false)
                            AND a.archived IS NOT TRUE
@@ -83,8 +89,14 @@
                         select array_to_json(array_agg(rows))
                         from (
                                select p.id,
-                                      p.date_created as "dateCreated",
-                                      p.archived
+                                      p.proposal_nbr                                as "proposalNbr",
+                                      p.name,
+                                      p.date_created                                as "dateCreated",
+                                      p.archived,
+                                      p.locked_tsz is not null                      as locked,
+                                      p.credit_check_submitted_tsz is not null      as "creditCheckSubmitted",
+                                      p.finance_docs_sent_tsz is not null           as "financeDocsSent",
+                                      p.installation_agreement_sent_tsz is not null as "installationAgreementSent"
                                from brs.proposal p
                                where p.archived is not true
                                  and p.project_process_step_id = pps.id
@@ -106,7 +118,7 @@
                                       INNER JOIN flow.project_process_step_attachment src ON src.attachment_id = a.id
                                       INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
                                WHERE src.project_process_step_id = pps.id
-                                AND at.id in (select unnest(string_to_array(value, ',')::int[])
+                                AND at.id in (select unnest(string_to_array(value, ',')::bigint[])
                                               from flow.company_configuration_value
                                               where code = 'AURORA_ATTACHMENT_TYPE_IDS' and archived is false)
                                  AND a.archived IS NOT TRUE
@@ -288,18 +300,15 @@ where p.id = :proposalId
 ]]></proposal.get>
 
   <proposal.insert><![CDATA[
-   insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id)
-    values(:projectProcessStepId, :userId, :proposalVersionId)
+   insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id) values(:projectProcessStepId, :userId, :proposalVersionId)
   ]]></proposal.insert>
 
   <proposal.getCurrentVersion><![CDATA[
-   select proposal_version_id
-    from brs.primary_company_proposal_version
-    where company_id = :companyId
+   select proposal_version_id from brs.primary_company_proposal_version where company_id = :companyId
   ]]></proposal.getCurrentVersion>
 
   <proposal.getCalculatedProposalValues><![CDATA[
-    select calc.* from brs.get_calculated_proposal_values(:proposalId::integer, :insertPropLogHistory::boolean) calc
+    select calc.* from brs.get_calculated_proposal_values(:proposalId::bigint, :insertPropLogHistory::boolean) calc
   ]]></proposal.getCalculatedProposalValues>
 
   <proposal.getAttachments><![CDATA[

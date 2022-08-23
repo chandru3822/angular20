@@ -1,11 +1,12 @@
-CREATE OR REPLACE FUNCTION flow.set_pps_cfv_migration(p_project_id integer,p_project_process_step_id integer, p_user_id integer,p_cfga integer, p_value_to_save text)
+drop function if exists flow.set_pps_cfv_migration(p_project_id bigint,p_project_process_step_id bigint, p_user_id bigint,p_cfga bigint, p_value_to_save text);
+  CREATE OR REPLACE FUNCTION flow.set_pps_cfv_migration(p_project_id bigint,p_project_process_step_id bigint, p_user_id bigint,p_cfga bigint, p_value_to_save text)
     returns boolean AS
 $BODY$
 declare
     v_field_saved boolean;
-    v_existing_id int;
-    v_project_process_step_id int;
-    v_data_type_id int;
+    v_existing_id bigint;
+    v_project_process_step_id bigint;
+    v_data_type_id bigint;
 BEGIN
 
         select cfv.id into v_existing_id
@@ -29,8 +30,8 @@ BEGIN
     -- 3,boolean
     -- 4,numeric
     -- 5,text
-    -- 6,integer
-    -- 7,integer array
+    -- 6,bigint
+    -- 7,bigint array
     -- 8,system
     -- 9,System List
             if v_data_type_id = 1 then
@@ -50,10 +51,10 @@ BEGIN
                 values (v_project_process_step_id, p_cfga, null, null, null, p_value_to_save::text, null,null, null, p_user_id);
             elsif v_data_type_id = 6 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, null, null, p_value_to_save::int, null, p_user_id);
+                values (v_project_process_step_id, p_cfga, null, null, null, null, null, p_value_to_save::bigint, null, p_user_id);
             elsif v_data_type_id = 7 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, null, null, null, p_value_to_save::int[], p_user_id);
+                values (v_project_process_step_id, p_cfga, null, null, null, null, null, null, p_value_to_save::bigint[], p_user_id);
             end if;
         else
             if v_data_type_id = 1 then
@@ -78,11 +79,11 @@ BEGIN
                 where id = v_existing_id;
             elsif v_data_type_id = 6 then
                 update flow.project_process_step_custom_field_value
-                set int_value = p_value_to_save::int
+                set int_value = p_value_to_save::bigint
                 where id = v_existing_id;
             elsif v_data_type_id = 7 then
                 update flow.project_process_step_custom_field_value
-                set int_array_value = p_value_to_save::int[]
+                set int_array_value = p_value_to_save::bigint[]
                 where id = v_existing_id;
             end if;
         end if;

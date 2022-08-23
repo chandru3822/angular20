@@ -1,6 +1,9 @@
+drop function if exists brs.rpt_closer_funnel_appts_created_pipeline_drilldown(p_start_date date, p_end_date date,
+                                                                               p_funnel_id bigint,
+                                                                               p_source_ids bigint[]);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline_drilldown(p_start_date date, p_end_date date,
-                                                                                  p_funnel_id integer,
-                                                                                  p_source_ids integer[])
+                                                                                  p_funnel_id bigint,
+                                                                                  p_source_ids bigint[])
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS

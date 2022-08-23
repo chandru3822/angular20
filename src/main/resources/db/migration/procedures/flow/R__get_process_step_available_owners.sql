@@ -1,13 +1,13 @@
--- drop function if exists flow.get_process_step_available_owners(int, int, boolean);
+ drop function if exists flow.get_process_step_available_owners(bigint, bigint, boolean);
 
-create or replace function flow.get_process_step_available_owners(p_process_step_id int, p_company_id int, p_in_parent_company boolean)
+create or replace function flow.get_process_step_available_owners(p_process_step_id bigint, p_company_id bigint, p_in_parent_company boolean)
 
 returns table (
   user_id bigint,
   first_name varchar,
   last_name varchar,
   full_name text,
-  user_position_id int,
+  user_position_id bigint,
   "position" varchar
 ) as
 

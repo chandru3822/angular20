@@ -1,13 +1,13 @@
-﻿drop function if exists brs.rpt_closer_funnel_standard_event_based(date, date, integer[], integer[]);
+﻿drop function if exists brs.rpt_closer_funnel_standard_event_based(date, date, bigint[], bigint[]);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard_event_based(p_custom_start_date date, p_custom_end_date date,
-                                                                      p_user_position_ids integer[],
-                                                                      p_org_ids integer[])
+                                                                      p_user_position_ids bigint[],
+                                                                      p_org_ids bigint[])
   RETURNS table
           (
-            id                                 integer,
+            id                                 bigint,
             name                               character varying(100),
-            display_order                      integer,
-            funnel_type_id                     integer,
+            display_order                      bigint,
+            funnel_type_id                     bigint,
             today_count                        bigint,
             checked_in_today_count             bigint,
             week_to_date_count                 bigint,

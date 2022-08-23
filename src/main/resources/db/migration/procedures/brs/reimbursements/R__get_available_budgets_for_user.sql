@@ -1,11 +1,12 @@
-CREATE OR REPLACE FUNCTION brs.get_available_budgets_for_user(p_platform_user_id integer, p_expense_date date)
+drop function if exists brs.get_available_budgets_for_user(p_platform_user_id bigint, p_expense_date date);
+CREATE OR REPLACE FUNCTION brs.get_available_budgets_for_user(p_platform_user_id bigint, p_expense_date date)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
 $function$
 declare
-  v_position_ids   integer[];
-  v_budget_user_ids integer[];
+  v_position_ids   bigint[];
+  v_budget_user_ids bigint[];
 
 BEGIN
 

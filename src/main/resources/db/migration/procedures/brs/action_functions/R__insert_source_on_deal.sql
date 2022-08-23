@@ -1,16 +1,17 @@
-CREATE OR REPLACE FUNCTION brs.insert_source_on_deal(p_project_id integer, p_current_user_id integer)
+drop FUNCTION if exists brs.insert_source_on_deal(p_project_id bigint, p_current_user_id bigint);
+CREATE OR REPLACE FUNCTION brs.insert_source_on_deal(p_project_id bigint, p_current_user_id bigint)
     RETURNS void
     LANGUAGE plpgsql
 AS
 $function$
 declare
-    v_company_id                       integer;
+    v_company_id                       bigint;
     v_source                           character varying;
-    v_contact_id                       integer;
-    v_custom_field_group_assignment_id integer;
-    v_int_value_id                     integer;
-    v_company_feature_id               integer;
-    v_project_custom_field_value_id    integer;
+    v_contact_id                       bigint;
+    v_custom_field_group_assignment_id bigint;
+    v_int_value_id                     bigint;
+    v_company_feature_id               bigint;
+    v_project_custom_field_value_id    bigint;
 BEGIN
 
     select c.id, c.company_id

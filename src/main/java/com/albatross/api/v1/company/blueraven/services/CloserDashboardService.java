@@ -42,7 +42,7 @@ public class CloserDashboardService {
 
   public String finalDesignsCompletedDrilldown(int quarter) {
     String sqlQuery =
-        "SELECT * FROM brs.get_final_designs_completed_drilldown(:userId::INTEGER, :quarter::INTEGER)";
+        "SELECT * FROM brs.get_final_designs_completed_drilldown(:userId::bigint, :quarter::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", securityService.getCurrentUser().getId());
@@ -237,7 +237,7 @@ public class CloserDashboardService {
 
   public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::integer[], array[ :selfGenSourceIds ]::integer[])";
+        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[])";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
@@ -250,7 +250,7 @@ public class CloserDashboardService {
 
   public String apptsCreatedPipelineDrilldown(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :sourceIds ]::integer[])";
+        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :sourceIds ]::bigint[])";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
@@ -263,7 +263,7 @@ public class CloserDashboardService {
 
   public String getAreas(DashboardUserRequest req) {
     String sqlQuery =
-        "SELECT * FROM brs.util_closer_area_selection(:userId::int, :setterOverride::BOOLEAN)";
+        "SELECT * FROM brs.util_closer_area_selection(:userId::bigint, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -275,7 +275,7 @@ public class CloserDashboardService {
 
   public String getRegions(DashboardUserRequest req) {
     String sqlQuery =
-        "SELECT * FROM brs.util_closer_region_selection(:userId::int, :areas::JSON, :setterOverride::BOOLEAN)";
+        "SELECT * FROM brs.util_closer_region_selection(:userId::bigint, :areas::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -288,7 +288,7 @@ public class CloserDashboardService {
 
   public String getDistricts(DashboardUserRequest req) {
     String sqlQuery =
-        "SELECT * FROM brs.util_closer_district_selection(:userId::int, :areas::JSON, :regions::JSON, :setterOverride::BOOLEAN)";
+        "SELECT * FROM brs.util_closer_district_selection(:userId::bigint, :areas::JSON, :regions::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -302,7 +302,7 @@ public class CloserDashboardService {
 
   public String getOffices(DashboardUserRequest req) {
     String sqlQuery =
-        "SELECT * FROM brs.util_closer_office_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON, :setterOverride::BOOLEAN)";
+        "SELECT * FROM brs.util_closer_office_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -317,7 +317,7 @@ public class CloserDashboardService {
 
   public String getReps(DashboardUserRequest req) {
     String sqlQuery =
-        "SELECT * FROM brs.util_closer_rep_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
+        "SELECT * FROM brs.util_closer_rep_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -333,7 +333,7 @@ public class CloserDashboardService {
   public String funnelStandard(FunnelRequest funnelRequest) {
     String sqlQuery;
     sqlQuery =
-        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
 
     return runFunnelQuery(
         sqlQuery,
@@ -345,7 +345,7 @@ public class CloserDashboardService {
 
   public String funnelApptDateCohort(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
 
     return runFunnelQuery(
         sqlQuery,
@@ -368,7 +368,7 @@ public class CloserDashboardService {
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean, false)";
+        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, false)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,
@@ -382,7 +382,7 @@ public class CloserDashboardService {
 
   public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean, true)";
+        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,

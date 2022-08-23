@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.get_tournament_brackets(p_tournament_id integer)
+drop function if exists brs.get_tournament_brackets(p_tournament_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_tournament_brackets(p_tournament_id bigint)
     RETURNS SETOF json
 AS
 $BODY$
@@ -33,7 +34,7 @@ BEGIN
                                                                                        p_tournament_id,
                                                                                              t.tournament_formula_id,
                                                                                              tr.start_date, tr.end_date,
-                                                                                             tm.user_1_id::int))) end as "user1Score",
+                                                                                             tm.user_1_id::bigint))) end as "user1Score",
                                                                    tm.user_2_id                                                   as "user2Id",
                                                                    u2.first_name || ' ' || u2.last_name                           as "user2Name",
                                                                    case
@@ -43,7 +44,7 @@ BEGIN
                                                                                        p_tournament_id,
                                                                                              t.tournament_formula_id,
                                                                                              tr.start_date, tr.end_date,
-                                                                                             tm.user_2_id::int))) end as "user2Score"
+                                                                                             tm.user_2_id::bigint))) end as "user2Score"
                                                             from brs.tournament_match tm
                                                                      left join flow.user u1 on u1.id = tm.user_1_id
                                                                      left join flow.user u2 on u2.id = tm.user_2_id

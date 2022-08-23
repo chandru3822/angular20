@@ -1,10 +1,11 @@
-CREATE OR REPLACE FUNCTION brs.util_setter_district_selection(p_platform_user_id integer, p_area_ids json, p_region_ids json)
+drop function if exists brs.util_setter_district_selection(p_platform_user_id bigint, p_area_ids json, p_region_ids json);
+  CREATE OR REPLACE FUNCTION brs.util_setter_district_selection(p_platform_user_id bigint, p_area_ids json, p_region_ids json)
     RETURNS SETOF json
     LANGUAGE plpgsql
 AS
 $function$
 DECLARE
-    v_org_level_id integer;
+    v_org_level_id bigint;
 BEGIN
   select min(ol.level)
   into v_org_level_id
@@ -43,11 +44,11 @@ BEGIN
              where upv.org_id is not null
                and upv.archived is not true
                and  case when p_area_ids::text != '[]'::text then
-                             o2.parent_org_id in (SELECT (elem ->> 'area_id') :: INTEGER
+                             o2.parent_org_id in (SELECT (elem ->> 'area_id') :: bigint
                                                   FROM json_array_elements(p_area_ids) elem)
                          else 1= 1 end
                and case when p_region_ids::text != '[]'::text then
-                            o2.id in (SELECT (elem ->> 'region_id') :: INTEGER
+                            o2.id in (SELECT (elem ->> 'region_id') :: bigint
                                       FROM json_array_elements(p_region_ids) elem)
                         else 1=1 end
              group by upv.org_id, o.org_name, lov.name, o.active_flag
@@ -75,11 +76,11 @@ BEGIN
                where upv.org_id is not null
                  and upv.archived is not true
                  and  case when p_area_ids::text != '[]'::text then
-                               o2.parent_org_id in (SELECT (elem ->> 'area_id') :: INTEGER
+                               o2.parent_org_id in (SELECT (elem ->> 'area_id') :: bigint
                                                     FROM json_array_elements(p_area_ids) elem)
                            else 1= 1 end
                  and case when p_region_ids::text != '[]'::text then
-                              o2.id in (SELECT (elem ->> 'region_id') :: INTEGER
+                              o2.id in (SELECT (elem ->> 'region_id') :: bigint
                                         FROM json_array_elements(p_region_ids) elem)
                           else 1=1 end
                  and upv.user_id = p_platform_user_id

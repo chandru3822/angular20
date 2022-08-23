@@ -1,5 +1,11 @@
+drop procedure if exists flow.generate_sql_for_ccfv(in z record,
+                                                   in p_in_ccfv bigint,
+                                                   inout p_sql text ,
+                                                   inout p_text_array_tables character varying[],
+                                                   inout p_text_array_alias_columns character varying[],
+                                                   inout p_text_array_columns       character varying[]);
 CREATE OR REPLACE procedure flow.generate_sql_for_ccfv(in z record,
-                                                         in p_in_ccfv integer,
+                                                         in p_in_ccfv bigint,
                                                          inout p_sql text ,
                                                          inout p_text_array_tables character varying[],
                                                          inout p_text_array_alias_columns character varying[],
@@ -54,7 +60,7 @@ BEGIN
                       inner join flow.contact c on c.id = p.contact_id
                       inner join flow.contact_custom_field_value ccfv on c.id = ccfv.contact_id
                         and ccfv.custom_field_group_assignment_id = $$ || z.custom_field_group_assignment_id || $$
-                        where p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])), $$;
+                        where p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])), $$;
 
 
 END

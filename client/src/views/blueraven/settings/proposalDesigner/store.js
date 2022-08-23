@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash.clonedeep'
-import { getRequestWithParams, postRequest } from '@/helpers/helpers'
+import { getRequestWithParams, getSnackbar, postRequest } from '@/helpers/helpers'
+import { AppMutations } from '@/stores/AppStore'
 
 export const ProposalActions = {
   FETCH_TEMPLATE: 'fetchTemplate',
@@ -15,7 +16,7 @@ export const ProposalMutations = {
 }
 
 const removedUndefined = (object) => {
-  if (!object){
+  if (!object) {
     return object
   }
 
@@ -95,8 +96,13 @@ export default {
       commit('setTemplate', { template: data?.blocks, theme: data?.theme?.themeStyle })
     },
     [ProposalActions.FETCH_TEMPLATE_CONTEXT]: async ({ commit }, { proposalId }) => {
-      const { data } = await getRequestWithParams(`/proposal/${proposalId}/template`, {}, 'blueraven', {})
-      commit('setTemplate', { template: data?.blocks, theme: data?.theme?.themeStyle })
+      try {
+        const { data } = await getRequestWithParams(`/proposal/${proposalId}/template`, {}, 'blueraven', {})
+        commit('setTemplate', { template: data?.blocks, theme: data?.theme?.themeStyle })
+      } catch (e) {
+        const snackbar = getSnackbar('ERROR', e?.data?.message || 'Error retrieving template')
+        commit(AppMutations.SHOW_SNACK, snackbar)
+      }
     },
     //TODO: handle errors better
     [ProposalActions.SAVE_TEMPLATE]: async ({ commit, state, getters }) => {

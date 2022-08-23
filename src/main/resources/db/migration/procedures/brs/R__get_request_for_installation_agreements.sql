@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS brs.get_request_for_installation_agreements(boolean, boolean, bigint, boolean, bigint, bigint, character varying, integer, bigint);
+DROP FUNCTION IF EXISTS brs.get_request_for_installation_agreements(boolean, bigint, boolean, bigint, bigint, character varying, bigint, bigint);
 
 CREATE OR REPLACE FUNCTION brs.get_request_for_installation_agreements(
     p_view_all boolean,
@@ -8,11 +8,11 @@ CREATE OR REPLACE FUNCTION brs.get_request_for_installation_agreements(
     p_company_id bigint,
     p_parent_company_id bigint,
     p_searchterm character varying,
-    p_limit integer,
+    p_limit bigint,
     p_offset bigint
 )
     RETURNS TABLE(
-                     project_id    INTEGER,
+                     project_id    bigint,
                      customer_name VARCHAR,
                      email         VARCHAR,
                      address       TEXT,
@@ -41,7 +41,7 @@ BEGIN
                 AND p.archived is false
                 AND p.project_name ILIKE '%' || p_searchterm || '%'
                 AND case when p_is_parent
-                             then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
+                             then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::bigint))
                   else c.company_id = p_company_id end
             limit p_limit
             offset p_offset;
@@ -63,7 +63,7 @@ BEGIN
                     AND pd.energized_date is null
                     AND p.archived is false
                     AND case when p_is_parent
-                                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
+                                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::bigint))
                       else c.company_id = p_company_id end
                     AND p.project_name ILIKE '%' || p_searchterm || '%'
                 limit p_limit

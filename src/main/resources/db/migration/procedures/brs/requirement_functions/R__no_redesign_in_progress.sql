@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.no_redesign_in_progress(p_project_id integer)
+drop function if exists brs.no_redesign_in_progress(p_project_id bigint);
+CREATE OR REPLACE FUNCTION brs.no_redesign_in_progress(p_project_id bigint)
     returns boolean AS
 $BODY$
 declare

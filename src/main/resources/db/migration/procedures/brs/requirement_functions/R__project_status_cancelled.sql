@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.project_status_cancelled(p_project_id integer)
+drop function if exists brs.project_status_cancelled(p_project_id bigint);
+CREATE OR REPLACE FUNCTION brs.project_status_cancelled(p_project_id bigint)
     returns boolean AS
 $BODY$
 declare

@@ -1,12 +1,12 @@
--- DROP FUNCTION brs.get_setter_mgr_performance_report(integer, date, date);
+-- DROP FUNCTION brs.get_setter_mgr_performance_report(bigint, date, date);
 
 -- SELECT * FROM brs.get_setter_mgr_performance_report(717, '2020-07-01', '2020-07-09');
-
-CREATE OR REPLACE FUNCTION brs.get_setter_mgr_performance_report(p_office_id integer, p_start_date date, p_end_date date)
+drop function if exists brs.get_setter_mgr_performance_report(p_office_id bigint, p_start_date date, p_end_date date);
+  CREATE OR REPLACE FUNCTION brs.get_setter_mgr_performance_report(p_office_id bigint, p_start_date date, p_end_date date)
     RETURNS JSON AS
 $BODY$
 DECLARE
-    v_setter_ids integer[];
+    v_setter_ids bigint[];
     v_setter_performance_report json;
 
 BEGIN
@@ -18,7 +18,7 @@ BEGIN
         select rpt.total_appointments,
                rpt.total_pitches,
                (case when rpt.total_appointments = 0 then 0
-                    else ((rpt.total_pitches::numeric(10,2) / rpt.total_appointments) * 100)::integer
+                    else ((rpt.total_pitches::numeric(10,2) / rpt.total_appointments) * 100)::bigint
                     end
                ) as pitch_percentage
         from (select
@@ -26,7 +26,7 @@ BEGIN
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS') and up.archived is not true)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
@@ -58,7 +58,7 @@ BEGIN
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS') and up.archived is not true)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)

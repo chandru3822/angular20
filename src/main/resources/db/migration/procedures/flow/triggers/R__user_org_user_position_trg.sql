@@ -1,9 +1,10 @@
+drop function if exists flow.refresh_company_user_status_records();
 CREATE OR REPLACE FUNCTION flow.refresh_company_user_status_records()
     RETURNS trigger AS
 $BODY$
 declare
-    v_user_id integer;
-    v_user_ids integer[];
+    v_user_id bigint;
+    v_user_ids bigint[];
 BEGIN
 
     IF (TG_OP = 'DELETE') THEN
@@ -25,13 +26,13 @@ $BODY$
     COST 100;
 
 
-
+drop function if exists flow.refresh_user_records();
 CREATE OR REPLACE FUNCTION flow.refresh_user_records()
     RETURNS trigger AS
 $BODY$
 declare
-v_user_id integer;
-v_user_ids integer[];
+v_user_id bigint;
+v_user_ids bigint[];
 BEGIN
 
     IF (TG_OP = 'DELETE') THEN
@@ -52,12 +53,13 @@ $BODY$
     VOLATILE
     COST 100;
 
+drop function if exists flow.refresh_user_position_records();
 CREATE OR REPLACE FUNCTION flow.refresh_user_position_records()
     RETURNS trigger AS
 $BODY$
 declare
-    v_user_id integer;
-    v_user_ids integer[];
+    v_user_id bigint;
+    v_user_ids bigint[];
     v_count bigint;
 BEGIN
 
@@ -88,6 +90,8 @@ $BODY$
     VOLATILE
     COST 100;
 
+
+drop function if exists flow.refresh_position_records();
 CREATE OR REPLACE FUNCTION flow.refresh_position_records()
     RETURNS trigger AS
 $BODY$
@@ -106,12 +110,12 @@ $BODY$
     COST 100;
 
 
-
+drop function if exists flow.refresh_org_records();
 CREATE OR REPLACE FUNCTION flow.refresh_org_records()
     RETURNS trigger AS
 $BODY$
 declare
-    v_user_ids integer[];
+    v_user_ids bigint[];
 BEGIN
 
     select array_agg(user_id)
@@ -128,11 +132,13 @@ $BODY$
     VOLATILE
     COST 100;
 
+
+drop function if exists flow.refresh_user_status_type_records();
 CREATE OR REPLACE FUNCTION flow.refresh_user_status_type_records()
     RETURNS trigger AS
 $BODY$
 declare
-    v_user_ids integer[];
+    v_user_ids bigint[];
 BEGIN
 
     select array_agg(user_id)

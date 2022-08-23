@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION brs.get_misc_adder_amount(
 AS
 $BODY$
 declare
-  v_unit_type_id integer;
+  v_unit_type_id bigint;
   v_amount       numeric;
   v_adder_amount numeric;
   x record;

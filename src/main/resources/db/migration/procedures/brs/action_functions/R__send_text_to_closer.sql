@@ -1,11 +1,11 @@
--- drop function brs.send_text_to_closer(integer, integer, integer);
-CREATE OR REPLACE FUNCTION brs.send_text_to_closer(p_project_id integer, p_current_user_id integer, p_message_type_id int)
+drop function if exists brs.send_text_to_closer(bigint, bigint, bigint);
+CREATE OR REPLACE FUNCTION brs.send_text_to_closer(p_project_id bigint, p_current_user_id bigint, p_message_type_id bigint)
     RETURNS void
     LANGUAGE plpgsql
 AS
 $function$
 declare
-    v_closer_user_id int;
+    v_closer_user_id bigint;
     v_closer_phone_number text;
     v_closer_first_name text;
     v_contact_name text;

@@ -39,7 +39,7 @@
   </birdeye.addCustomerId>
 
   <birdeye.saveReviewInviteSentValue><![CDATA[
-    select from flow.set_pps_cfv(:projectId::int, :userId::int, 23391, 'true'::text, true);
+    select from flow.set_pps_cfv(:projectId::bigint, :userId::bigint, 23391, 'true'::text, true);
   ]]></birdeye.saveReviewInviteSentValue>
 
   <birdeye.saveReview>

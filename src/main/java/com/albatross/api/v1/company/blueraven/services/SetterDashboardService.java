@@ -39,7 +39,7 @@ public class SetterDashboardService {
   }
 
   public String pitchesDrilldown(int quarter, Boolean isSetterMgr, Integer setterMgrOfficeId) {
-    String sqlQuery = "SELECT * FROM brs.get_pitches_drilldown(:userId::INTEGER, :quarter::INTEGER, :isSetterMgr::BOOLEAN, :setterMgrOfficeId::INTEGER)";
+    String sqlQuery = "SELECT * FROM brs.get_pitches_drilldown(:userId::bigint, :quarter::bigint, :isSetterMgr::BOOLEAN, :setterMgrOfficeId::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", securityService.getCurrentUser().getId());
@@ -52,7 +52,7 @@ public class SetterDashboardService {
   }
 
   public String getPerformanceReport(String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_performance_report(:currentUserId::integer, :startDate::date, :endDate::date)";
+    String sqlQuery = "SELECT * FROM brs.get_setter_performance_report(:currentUserId::bigint, :startDate::date, :endDate::date)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("currentUserId", securityService.getCurrentUser().getId());
@@ -64,7 +64,7 @@ public class SetterDashboardService {
   }
 
   public String getMgrPerformanceReport(Integer officeId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_mgr_performance_report(:officeId::integer, :startDate::date, :endDate::date)";
+    String sqlQuery = "SELECT * FROM brs.get_setter_mgr_performance_report(:officeId::bigint, :startDate::date, :endDate::date)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("officeId", officeId);
@@ -76,7 +76,7 @@ public class SetterDashboardService {
   }
 
   public String repToBeat(int userId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_to_beat(:userId::integer, :startDate::date, :endDate::date)";
+    String sqlQuery = "SELECT * FROM brs.get_setter_to_beat(:userId::bigint, :startDate::date, :endDate::date)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", userId);
@@ -88,7 +88,7 @@ public class SetterDashboardService {
   }
 
   public String officeToBeat(int officeId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_office_to_beat(:officeId::integer, :startDate::date, :endDate::date)";
+    String sqlQuery = "SELECT * FROM brs.get_setter_office_to_beat(:officeId::bigint, :startDate::date, :endDate::date)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("officeId", officeId);
@@ -136,7 +136,7 @@ public class SetterDashboardService {
   }
 
   public String getAreas(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_area_selection(:userId::int)";
+    String sqlQuery = "SELECT * FROM brs.util_setter_area_selection(:userId::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -146,7 +146,7 @@ public class SetterDashboardService {
   }
 
   public String getRegions(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_region_selection(:userId::int, :areas::JSON)";
+    String sqlQuery = "SELECT * FROM brs.util_setter_region_selection(:userId::bigint, :areas::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -157,7 +157,7 @@ public class SetterDashboardService {
   }
 
   public String getDistricts(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_district_selection(:userId::int, :areas::JSON, :regions::JSON)";
+    String sqlQuery = "SELECT * FROM brs.util_setter_district_selection(:userId::bigint, :areas::JSON, :regions::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -169,7 +169,7 @@ public class SetterDashboardService {
   }
 
   public String getOffices(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_office_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON)";
+    String sqlQuery = "SELECT * FROM brs.util_setter_office_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -182,7 +182,7 @@ public class SetterDashboardService {
   }
 
   public String getReps(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_rep_selection(:userId::int, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
+    String sqlQuery = "SELECT * FROM brs.util_setter_rep_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
@@ -196,13 +196,13 @@ public class SetterDashboardService {
   }
 
   public String funnelStandard(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], false)";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], false)";
 
     return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
 
   public String funnelCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], true)";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], true)";
 
     return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
@@ -219,14 +219,14 @@ public class SetterDashboardService {
   }
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
-//    String sqlQuery = "select brs.rpt_setter_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
-    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+//    String sqlQuery = "select brs.rpt_setter_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }
 
   public String funnelDrilldownCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
 
     return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
   }

@@ -108,7 +108,7 @@
   ]]></postalCode.getZoneByPostalCode>
 
   <postalCode.getScheduleToUsers><![CDATA[
-    select * from brs.get_allocation_by_zone(:zoneId::int)
+    select * from brs.get_allocation_by_zone(:zoneId::bigint)
   ]]></postalCode.getScheduleToUsers>
 
   <postalCode.getScheduleByUsers><![CDATA[
@@ -314,7 +314,7 @@
       from flow.user_positions_vw upv
         inner join flow.org o on upv.org_id = o.id
       where case when :isParent and :isSchedulingTool
-                     then upv.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                     then upv.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                  else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and case when :loadSchedulers is true
                      then upv.position_scheduler is true

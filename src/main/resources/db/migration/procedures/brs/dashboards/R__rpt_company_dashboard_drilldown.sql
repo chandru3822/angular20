@@ -1,12 +1,15 @@
-﻿CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard_drilldown(p_custom_start_date date, p_custom_end_date date,
-                                                               p_company_id integer, p_milestone_type_id integer,
+﻿drop function if exists brs.rpt_company_dashboard_drilldown(p_custom_start_date date, p_custom_end_date date,
+                                                            p_company_id bigint, p_milestone_type_id bigint,
+                                                            p_load_partners boolean);
+CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard_drilldown(p_custom_start_date date, p_custom_end_date date,
+                                                               p_company_id bigint, p_milestone_type_id bigint,
                                                                p_load_partners boolean default false)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
 $function$
 declare
-  v_company_ids integer[];
+  v_company_ids bigint[];
 BEGIN
   if p_load_partners is false then
     select array_agg(id) as ids

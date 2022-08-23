@@ -201,7 +201,7 @@
 
 
   <expenseBudget.getAvailableBudgetsForUser>
-    SELECT * FROM brs.get_available_budgets_for_user(:userId::integer, :expenseDate::DATE)
+    SELECT * FROM brs.get_available_budgets_for_user(:userId::bigint, :expenseDate::DATE)
   </expenseBudget.getAvailableBudgetsForUser>
 
   <expenseBudget.getUsersWithBudget>
@@ -223,7 +223,7 @@
             select distinct upv.user_id as id,
                 upv.first_name || ' ' || upv.last_name as full_name
             from flow.user_positions_vw upv
-            where position_id in (select unnest(string_to_array(value, ',')::int[])
+            where position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                   from flow.company_configuration_value
                                   where code = 'BUDGET_USER_POSITIONS')
               and upv.start_date < now()
@@ -348,13 +348,13 @@
 
   <expenseBudget.getMonthlyBudgetReport>
     <![CDATA[
-            select * from brs.get_monthly_expense_budget_report(:userId::integer, :startDate::DATE, :endDate::DATE)
+            select * from brs.get_monthly_expense_budget_report(:userId::bigint, :startDate::DATE, :endDate::DATE)
         ]]>
   </expenseBudget.getMonthlyBudgetReport>
 
   <expenseBudget.getExpenseDrilldown>
     <![CDATA[
-            select * from brs.get_expense_drilldown(:userId::integer, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetId::integer)
+            select * from brs.get_expense_drilldown(:userId::bigint, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetId::bigint)
         ]]>
   </expenseBudget.getExpenseDrilldown>
 
