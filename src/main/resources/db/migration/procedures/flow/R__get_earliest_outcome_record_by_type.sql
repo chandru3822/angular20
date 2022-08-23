@@ -14,7 +14,7 @@ BEGIN
 
   case when p_config_code is not null or p_has_outcome is true then
     return query
-      select distinct on (ppse2.start_time ,ppsecfv2.int_value) ppsecfv2.int_value, ppse2.start_time, ppse2.id
+      select distinct on (ppse2.start_time ,ppsecfv2.int_value) ppsecfv2.int_value::bigint, ppse2.start_time, ppse2.id::bigint
       from flow.project_process_step_event ppse
              inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
              inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
@@ -37,7 +37,7 @@ BEGIN
       limit 1;
     else
       return query
-        select distinct on (ppse2.start_time ) null::bigint, ppse2.start_time, ppse2.id
+        select distinct on (ppse2.start_time ) null::bigint, ppse2.start_time, ppse2.id::bigint
         from flow.project_process_step_event ppse
                inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
                inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
