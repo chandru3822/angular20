@@ -18,11 +18,11 @@
             class="elevation-1 fix-column-width-bug"
         >
           <template #no-data>
-            No available errors
+            <span class="default-text-color">No available errors</span>
           </template>
 
           <template #no-results>
-            No available errors
+            <span class="default-text-color">No available errors</span>
           </template>
 
           <template #item="{ item, index }">

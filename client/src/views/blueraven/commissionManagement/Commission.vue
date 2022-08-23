@@ -66,7 +66,7 @@
           <v-btn v-if="planId && commission && commission.users
                         && userCanAdd
                         && commission.users.filter(u => {return u.endDate == null}).length > 0"
-                 color="primary" @click="cloneDialog = true">
+                 color="primary" class="ml-3" @click="cloneDialog = true">
             Clone
           </v-btn>
           <ConfirmationDialog :open-dialog="cloneDialog"
@@ -238,11 +238,11 @@
           class="elevation-1"
         >
           <template #no-data>
-            No available {{levelText}}s
+            <span class="default-text-color">No available {{levelText}}s</span>
           </template>
 
           <template #no-results>
-            No available {{levelText}}s
+            <span class="default-text-color">No available {{levelText}}s</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -270,7 +270,7 @@
                 {{milestoneErrorMsg}}
               </div>
               <v-btn :disabled="!item.allocation || (commission.positionId === 4 && !item.min) || milestoneError"
-                     @click="[milestoneExpanded = [], updateMilestone(item)]">Save</v-btn>
+                     @click="[milestoneExpanded = [], updateMilestone(item)]" color="primary">Save</v-btn>
             </td>
           </template>
 
@@ -357,11 +357,11 @@
             class="elevation-1"
         >
           <template #no-data>
-            No available sources
+            <span class="default-text-color">No available sources</span>
           </template>
 
           <template #no-results>
-            No available sources
+            <span class="default-text-color">No available sources</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -382,7 +382,7 @@
                         item-value="milestoneId"
               ></v-select>
               <v-btn :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
-                     @click="[sourceExpanded = [], updateSource(item)]">Save</v-btn>
+                     @click="[sourceExpanded = [], updateSource(item)]" color="primary">Save</v-btn>
             </td>
           </template>
 

@@ -1,13 +1,13 @@
--- CREATE OR REPLACE FUNCTION brs.update_project_status(p_project_id integer, p_status varchar)
+-- CREATE OR REPLACE FUNCTION brs.update_project_status(p_project_id bigint, p_status varchar)
 --     RETURNS void
 --     LANGUAGE plpgsql
 -- AS
 -- $function$
 -- declare
---     v_company_project_status_type_id      integer;
+--     v_company_project_status_type_id      bigint;
 --     v_company_current_project_status_type varchar;
---     v_company_id                          integer;
---     v_company_feature_id                  integer;
+--     v_company_id                          bigint;
+--     v_company_feature_id                  bigint;
 -- BEGIN
 --
 --     select company_id

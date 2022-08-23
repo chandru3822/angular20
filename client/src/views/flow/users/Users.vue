@@ -62,11 +62,11 @@
             class="elevation-1 fix-column-width-bug user-table"
         >
           <template #no-data>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #no-results>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #header="{ props: { headers } }">
@@ -229,11 +229,11 @@
           class="elevation-1"
         >
           <template #no-data>
-            No users available
+            <span class="default-text-color">No users available</span>
           </template>
 
           <template #no-results>
-            No users available
+            <span class="default-text-color">No users available</span>
           </template>
 
           <template #item="{ item, index }">
@@ -1090,7 +1090,7 @@
   }
   .count-span {
     font-size: 0.85em;
-    color: grey;
+    color: var(--v-grey-darken2);
   }
   .user-selected {
     margin-left: 150px;

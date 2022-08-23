@@ -34,10 +34,10 @@
           </template>
 
           <template #no-data>
-            <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3">
+            <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3 default-text-color">
               Data is not yet available for the selected quarter.
             </div>
-            <div v-else class="my-3">
+            <div v-else class="my-3 default-text-color">
               No data is available for the selected quarter.
             </div>
           </template>

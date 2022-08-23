@@ -1,5 +1,5 @@
 -- drop function if exists flow.contact_audit_trg();
-
+drop function if exists flow.contact_audit_trg();
 create or replace function flow.contact_audit_trg() returns trigger
 language plpgsql
 as $$

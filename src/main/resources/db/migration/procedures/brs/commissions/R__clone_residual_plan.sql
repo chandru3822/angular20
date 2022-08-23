@@ -1,15 +1,20 @@
-CREATE OR REPLACE FUNCTION brs.clone_residual_plan(
-  p_residual_plan INTEGER,
+drop function if exists brs.clone_residual_plan(
+  p_residual_plan bigint,
   p_start_date      DATE,
-  p_users           INTEGER [],
-  p_created_by      INTEGER)
-  RETURNS INTEGER
+  p_users           bigint [],
+  p_created_by      bigint);
+CREATE OR REPLACE FUNCTION brs.clone_residual_plan(
+  p_residual_plan bigint,
+  p_start_date      DATE,
+  p_users           bigint [],
+  p_created_by      bigint)
+  RETURNS bigint
 LANGUAGE plpgsql
 AS $$
 DECLARE
   _cloned  RECORD;
-  _cloneId INT;
-  _assignedUserIds INT[];
+  _cloneId bigint;
+  _assignedUserIds bigint[];
 BEGIN
   SELECT *
   INTO _cloned

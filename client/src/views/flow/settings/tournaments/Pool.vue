@@ -122,11 +122,11 @@
             class="elevation-1 org-type-table"
           >
             <template #no-data>
-              No positions assigned
+              <span class="default-text-color">No positions assigned</span>
             </template>
 
             <template #no-results>
-              No positions assigned
+              <span class="default-text-color">No positions assigned</span>
             </template>
 
             <template #item="{ item }">
@@ -189,11 +189,11 @@
             class="elevation-1 org-type-table"
           >
             <template #no-data>
-              No users assigned
+              <span class="default-text-color">No users assigned</span>
             </template>
 
             <template #no-results>
-              No users assigned
+              <span class="default-text-color">No users assigned</span>
             </template>
 
             <template #item="{ item }">

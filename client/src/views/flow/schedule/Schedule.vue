@@ -313,11 +313,11 @@
               class="elevation-1 square-card"
           >
             <template #no-data>
-              No Results Found
+              <span class="default-text-color">No Results Found</span>
             </template>
 
             <template #no-results>
-              No results
+              <span class="default-text-color">No Results Found</span>
             </template>
 
             <template #item.start="{ item }">

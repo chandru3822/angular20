@@ -157,7 +157,7 @@
                                text
                                x-small
                                :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
-                               class="white--text"
+                               color="primary"
                                id="qa-create-project-button"
                                @click="getAvailableProcesses">
                           <v-icon>add</v-icon>
@@ -791,7 +791,7 @@ export default {
 
 .detail-label {
   font-size: 12px;
-  color: var(--v-grey-darken2);
+  color: var(--v-grey-darken1);
 }
 
 .detail-item {

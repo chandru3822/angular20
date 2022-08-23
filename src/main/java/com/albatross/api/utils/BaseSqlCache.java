@@ -1,17 +1,12 @@
 package com.albatross.api.utils;
 
 import com.albatross.api.utils.convert.mapper.ConversionServiceBeanPropertyRowMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
@@ -21,11 +16,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
-import javax.annotation.PostConstruct;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,37 +24,23 @@ import java.util.Optional;
 @Slf4j
 public class BaseSqlCache {
 
-  private final Map<String, String> map = new HashMap<>();
-
   private NamedParameterJdbcTemplate jdbc;
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
-  @Autowired private ConversionService conversionService;
+  @Autowired
+  private ConversionService conversionService;
 
-  @PostConstruct
-  public void init() throws IOException, XMLStreamException {
-    ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
-    Resource[] resources = patternResolver.getResources("classpath*:**/*.sql.xml");
-
-    final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-    final XmlMapper mapper = new XmlMapper();
-
-    final TypeReference<Map<String, String>> mapTypeReference = new TypeReference<>() {};
-
-    for (Resource resource : resources) {
-      XMLStreamReader sr = inputFactory.createXMLStreamReader(resource.getInputStream());
-      var converted = mapper.readValue(sr, mapTypeReference);
-      map.putAll(converted);
-    }
-  }
+  @Autowired
+  private SqlXmlParser sqlXmlParser;
 
   public void setJdbc(NamedParameterJdbcTemplate in) {
     jdbc = in;
   }
 
   public String getByKey(String key) {
-    return map.get(key);
+    return sqlXmlParser.getSqlByKey(key);
   }
 
   public int update(String key, Map<String, Object> params, String... queryArgs) {
@@ -91,7 +67,7 @@ public class BaseSqlCache {
     String sql = getByKey(key);
 
     GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-    jdbc.update(sql, paramSource, generatedKeyHolder, new String[] {keyColumn});
+    jdbc.update(sql, paramSource, generatedKeyHolder, new String[]{keyColumn});
 
     return generatedKeyHolder.getKey();
   }
@@ -117,7 +93,7 @@ public class BaseSqlCache {
   }
 
   public <T> Optional<T> queryForObjectOptional(
-      String key, Map<String, Object> params, Class<T> elementType) {
+    String key, Map<String, Object> params, Class<T> elementType) {
     try {
       MapSqlParameterSource paramSource = scrubParams(params);
       String sql = getByKey(key);
@@ -139,7 +115,7 @@ public class BaseSqlCache {
   }
 
   public <T> List<T> query(
-      String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
+    String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
     return queryBySql(sql, params, elementType);
   }
@@ -150,7 +126,7 @@ public class BaseSqlCache {
   }
 
   public <T> List<T> query(
-      String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
+    String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
     return queryBySql(sql, params, rowMapper);
   }
@@ -160,9 +136,9 @@ public class BaseSqlCache {
 
     //noinspection unchecked
     return jdbc.query(
-        sql,
-        paramSource,
-        new ConversionServiceBeanPropertyRowMapper(elementType, conversionService));
+      sql,
+      paramSource,
+      new ConversionServiceBeanPropertyRowMapper(elementType, conversionService));
   }
 
   public <T> List<T> queryBySql(String sql, Map<String, Object> params, RowMapper<T> rowMapper) {
@@ -176,7 +152,7 @@ public class BaseSqlCache {
   }
 
   public <T> Optional<T> queryForObjectOptionalBySql(
-      String sql, Map<String, Object> params, Class<T> elementType) {
+    String sql, Map<String, Object> params, Class<T> elementType) {
     try {
       MapSqlParameterSource paramSource = scrubParams(params);
 
@@ -187,7 +163,7 @@ public class BaseSqlCache {
   }
 
   public <T> Optional<T> get(
-      String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
+    String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
     return getBySql(sql, params, elementType);
   }
@@ -198,7 +174,7 @@ public class BaseSqlCache {
   }
 
   public <T> Optional<T> get(
-      String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
+    String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
     return getBySql(sql, params, rowMapper);
   }
@@ -207,9 +183,9 @@ public class BaseSqlCache {
     List<T> results = queryBySql(sql, params, elementType);
     if (results.size() > 1) {
       log.warn(
-          "SQL: More than a single result returned for a GET of type {} on key={}",
-          elementType,
-          sql);
+        "SQL: More than a single result returned for a GET of type {} on key={}",
+        elementType,
+        sql);
     }
 
     return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
@@ -219,9 +195,9 @@ public class BaseSqlCache {
     List<T> results = queryBySql(sql, params, rowMapper);
     if (results.size() > 1) {
       log.warn(
-          "SQL: More than a single result returned for a GET of type {} on rowMapper={}",
-          rowMapper,
-          sql);
+        "SQL: More than a single result returned for a GET of type {} on rowMapper={}",
+        rowMapper,
+        sql);
     }
 
     return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
@@ -238,8 +214,8 @@ public class BaseSqlCache {
 
     if (params != null) {
       params.entrySet().stream()
-          .map(this::reduceMaps)
-          .forEach(e -> source.addValue(e.getKey(), e.getValue()));
+        .map(this::reduceMaps)
+        .forEach(e -> source.addValue(e.getKey(), e.getValue()));
     }
 
     return source;

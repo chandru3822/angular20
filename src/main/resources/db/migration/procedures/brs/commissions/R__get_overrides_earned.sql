@@ -1,6 +1,9 @@
+drop function if exists brs.get_overrides_earned(p_project_ids bigint[],
+                                                 p_period_end date,
+                                                 p_user_id bigint);
 CREATE OR REPLACE FUNCTION brs.get_overrides_earned(p_project_ids bigint[],
                                                     p_period_end date,
-                                                    p_user_id integer)
+                                                    p_user_id bigint)
     RETURNS numeric AS
 $BODY$
 DECLARE

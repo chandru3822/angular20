@@ -18,7 +18,6 @@ public class SqlCache extends BaseSqlCache {
 
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
-    super.init();
     setJdbc(sqlJdbc);
   }
 }

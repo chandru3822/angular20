@@ -1,10 +1,13 @@
+drop function if exists brs.delete_rebate_payment(
+  p_payment_id bigint,
+  p_deleted_by_user_id bigint);
 CREATE OR REPLACE FUNCTION brs.delete_rebate_payment(
-    p_payment_id integer,
-    p_deleted_by_user_id integer)
+    p_payment_id bigint,
+    p_deleted_by_user_id bigint)
   RETURNS void AS
 $BODY$
 DECLARE
-v_project_id integer;
+v_project_id bigint;
 v_payment_amount numeric(12,2);
 BEGIN
 

@@ -28,11 +28,11 @@
             class="elevation-1 fix-column-width-bug org-table square-card"
         >
           <template #no-data>
-            No available organizations
+            <span class="default-text-color">No available organizations</span>
           </template>
 
           <template #no-results>
-            No available organizations
+            <span class="default-text-color">No available organizations</span>
           </template>
 
           <template v-slot:body.prepend>

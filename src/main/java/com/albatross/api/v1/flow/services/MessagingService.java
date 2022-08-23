@@ -280,7 +280,7 @@ public class MessagingService {
   private void updateOwnerHistory(
     Long projectId, Long smsTeamId, List<Long> userIds, boolean isAdd, boolean removeTeam, Long modifiedByUserId) {
     String sqlQuery =
-        "SELECT * FROM flow.set_sms_project_owner_history(:projectId::integer, :smsTeamId::integer, array[ :userIds ]::integer[], :modifiedById::integer, :isAdd::boolean, :removeTeam::boolean)";
+        "SELECT * FROM flow.set_sms_project_owner_history(:projectId::bigint, :smsTeamId::bigint, array[ :userIds ]::bigint[], :modifiedById::bigint, :isAdd::boolean, :removeTeam::boolean)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("projectId", projectId);

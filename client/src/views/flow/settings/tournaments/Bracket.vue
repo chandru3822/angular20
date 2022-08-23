@@ -165,11 +165,11 @@
               class="elevation-1 square-card"
             >
               <template #no-data>
-                No available rounds
+                <span class="default-text-color">No available rounds</span>
               </template>
 
               <template #no-results>
-                No available rounds
+                <span class="default-text-color">No available rounds</span>
               </template>
 
               <template #item="{ item, index }">

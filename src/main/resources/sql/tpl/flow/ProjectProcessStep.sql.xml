@@ -1,6 +1,6 @@
 <sql>
 <projectProcessStep.insertProjectProcessStep><![CDATA[
-select insert_project_process_step as id from flow.insert_project_process_step(:projectId::integer, :processStepId::integer, :userPositionId::integer, :userId::integer, :companyId::integer, :parentProjectProcessStepId::integer, :initialCompanyProcessStepStatusTypeId::integer, :existingCompanyProcessStepStatusTypeId::integer, null::integer)
+select insert_project_process_step as id from flow.insert_project_process_step(:projectId::bigint, :processStepId::bigint, :userPositionId::bigint, :userId::bigint, :companyId::bigint, :parentProjectProcessStepId::bigint, :initialCompanyProcessStepStatusTypeId::bigint, :existingCompanyProcessStepStatusTypeId::bigint, null::bigint)
 ]]></projectProcessStep.insertProjectProcessStep>
 
   <projectProcessStep.delete><![CDATA[
@@ -28,7 +28,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
   ]]></projectProcessStep.getHistory>
 
   <projectProcessStep.getProjectProcessStep><![CDATA[
-    select * from flow.get_pps_with_actions_and_requirements(:stepId::integer, :companyId::integer)
+    select * from flow.get_pps_with_actions_and_requirements(:stepId::bigint, :companyId::bigint)
   ]]></projectProcessStep.getProjectProcessStep>
 
   <projectProcessStep.getStatus><![CDATA[
@@ -112,11 +112,11 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
   ]]></projectProcessStep.removeOwner>
 
   <projectProcessStep.setStatus><![CDATA[
-  select from flow.update_project_process_step_status(:projectId::integer, :processStepId::integer, :projectProcessStepId::integer, :companyProcessStepStatusTypeId::integer, :processStepStatusTypeId::integer, :userId::integer, :cancelledStatusTypeId::integer)
+  select from flow.update_project_process_step_status(:projectId::bigint, :processStepId::bigint, :projectProcessStepId::bigint, :companyProcessStepStatusTypeId::bigint, :processStepStatusTypeId::bigint, :userId::bigint, :cancelledStatusTypeId::bigint)
   ]]></projectProcessStep.setStatus>
 
   <projectProcessStep.setMain><![CDATA[
-    select from flow.set_main_project_process_step(:ppsId::int, :activeCompanyProcessStepStatusTypeId::int, :cancelledCompanyProcessStepStatusTypeId::int, :userId::int)
+    select from flow.set_main_project_process_step(:ppsId::bigint, :activeCompanyProcessStepStatusTypeId::bigint, :cancelledCompanyProcessStepStatusTypeId::bigint, :userId::bigint)
  ]]></projectProcessStep.setMain>
 
   <projectProcessStep.getOwners><![CDATA[
@@ -198,7 +198,7 @@ with projects as (
     from flow.project p
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
     where
-        case when :contactId::integer is not null then p.contact_id = :contactId else p.contact_id = 0 end and
+        case when :contactId::bigint is not null then p.contact_id = :contactId else p.contact_id = 0 end and
         cpst.project_status_type_id = 1
 )
 select distinct pps.id
@@ -209,7 +209,7 @@ inner join flow.process_step_requirement psr on psr.process_step_id = ps.id
 inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
 inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
 where
-    case when :contactId::integer is not null
+    case when :contactId::bigint is not null
         then pps.project_id = any(projects.ids)
         else pps.project_id = :projectId
     end and
@@ -281,7 +281,7 @@ where cpsst.process_step_status_type_id = 1 and
              left join flow.project_process_step_action ppsa on ppsa.project_process_step_id = pps_src.id and ppsa.process_step_action_id = psa.id
              inner join flow.project_process_step pps_usage on pps_usage.process_step_id = psa.process_step_id and pps_usage.project_id = pps_src.project_id and pps_usage.archived is not true
              inner join flow.company_process_step_status_type cpsst on pps_usage.company_process_step_status_type_id = cpsst.id
-    where pps_src.id = any(array[ :projectProcessStepIds ]::int[])
+    where pps_src.id = any(array[ :projectProcessStepIds ]::bigint[])
       and pps_src.archived is not true and pps_src.process_step_id != pps_usage.process_step_id
   ]]></projectProcessStep.getUsingStatusByPpsIds>
 

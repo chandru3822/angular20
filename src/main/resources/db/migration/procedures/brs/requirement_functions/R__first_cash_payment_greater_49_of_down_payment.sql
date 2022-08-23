@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.first_cash_payment_greater_49_of_down_payment(p_project_id integer)
+drop function if exists brs.first_cash_payment_greater_49_of_down_payment(p_project_id bigint);
+CREATE OR REPLACE FUNCTION brs.first_cash_payment_greater_49_of_down_payment(p_project_id bigint)
     returns boolean AS
 $BODY$
 declare

@@ -478,13 +478,13 @@
             </template>
 
             <template #no-data>
-              <div class="my-3 funnel-drilldown-no-data-msg">
+              <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
                 No data is available for the selected date range.
               </div>
             </template>
 
             <template #no-results>
-              <div class="my-3 funnel-drilldown-no-data-msg">
+              <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
                 No matching records found.
               </div>
             </template>

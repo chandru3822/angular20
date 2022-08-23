@@ -543,7 +543,6 @@
       }
 
       th, td, span {
-        color: black;
         text-align: center;
         font-size: 10px;
       }

@@ -16,8 +16,8 @@ with projects as (select distinct on (p.id) p.id                                
                                      on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id and pmo2.archived is false
                            left join flow.user u on pmo2.user_id = u.id
                   where case
-                            when array_length( array [ :notifProjectIds  ]::int[], 1) > 0 then
-                                (p.id = any ( array [ :notifProjectIds ]::int[] ))
+                            when array_length( array [ :notifProjectIds  ]::bigint[], 1) > 0 then
+                                (p.id = any ( array [ :notifProjectIds ]::bigint[] ))
                             else 1=1 end
                         and case
                             when :query::varchar is not null then
@@ -25,13 +25,13 @@ with projects as (select distinct on (p.id) p.id                                
                                         p.id::varchar like '%' || lower(:query) || '%'  or
                                         lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
                             else 1 = 1 end
-                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
+                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
                          (exists(select id
                                  from flow.project_message_owner pmo3
                                  where case
-                                           when array_length( array [ :ownerIds ]::int[], 1) > 0 then
-                                                   (pmo3.user_id = any ( array [ :ownerIds ]::int[] )) and
-                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::int[])
+                                           when array_length( array [ :ownerIds ]::bigint[], 1) > 0 then
+                                                   (pmo3.user_id = any ( array [ :ownerIds ]::bigint[] )) and
+                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
                                                    and pmo3.project_id = p.id and pmo3.archived is false
                                            end) or
                           case
@@ -109,13 +109,13 @@ from projects p
                                         p.id::varchar like :query or
                                         lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
                             else 1 = 1 end
-                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::int[]) and
+                    and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
                          (exists(select id
                                  from flow.project_message_owner pmo3
                                  where case
-                                           when array_length( array [ :ownerIds ]::int[], 1) > 0 then
-                                                   (pmo3.user_id = any ( array [ :ownerIds ]::int[] )) and
-                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::int[])
+                                           when array_length( array [ :ownerIds ]::bigint[], 1) > 0 then
+                                                   (pmo3.user_id = any ( array [ :ownerIds ]::bigint[] )) and
+                                                   pmo3.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
                                                    and pmo3.project_id = p.id
                                            end) or
                           case
@@ -327,8 +327,8 @@ where pmt.project_id = :projectId
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
       and user_id = :userId
-      and (metadata->>'projectId')::integer = :projectId
-      and (metadata->>'smsTeamId')::integer = :smsTeamId
+      and (metadata->>'projectId')::bigint = :projectId
+      and (metadata->>'smsTeamId')::bigint = :smsTeamId
   ]]></messaging.markSmsAsReadForUser>
 
   <messaging.markSmsAsReadForTeam><![CDATA[
@@ -337,16 +337,16 @@ where pmt.project_id = :projectId
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
-      and (metadata->'projectId')::integer = :projectId
-      and (metadata->'smsTeamId')::integer = :smsTeamId
+      and (metadata->'projectId')::bigint = :projectId
+      and (metadata->'smsTeamId')::bigint = :smsTeamId
   ]]></messaging.markSmsAsReadForTeam>
 
   <messaging.findUserByForTeam><![CDATA[
 select distinct user_id
 from flow.notification
 where notification_topic_id = :notificationTopicId
-  and (metadata -> 'projectId')::integer = :projectId
-  and (metadata -> 'smsTeamId')::integer = :smsTeamId
+  and (metadata -> 'projectId')::bigint = :projectId
+  and (metadata -> 'smsTeamId')::bigint = :smsTeamId
   ]]></messaging.findUserByForTeam>
 
   <messaging.markSmsAsReadForProject><![CDATA[
@@ -355,13 +355,13 @@ where notification_topic_id = :notificationTopicId
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
-      and (metadata->'projectId')::integer = :projectId
+      and (metadata->'projectId')::bigint = :projectId
   ]]></messaging.markSmsAsReadForProject>
 
   <messaging.findUserByForProject><![CDATA[
 select distinct user_id
 from flow.notification
 where notification_topic_id = :notificationTopicId
-  and (metadata -> 'projectId')::integer = :projectId
+  and (metadata -> 'projectId')::bigint = :projectId
   ]]></messaging.findUserByForProject>
 </sql>

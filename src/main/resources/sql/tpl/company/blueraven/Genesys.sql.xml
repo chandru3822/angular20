@@ -35,7 +35,7 @@
     select c.id from flow.contact c
     where regexp_replace(c.phone, '[^0-9]', '', 'g') ILIKE '%' || :phone
      and case when :isParent then c.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else c.company_id = :companyId end
             and c.archived is not true
     order by id desc limit 1
@@ -52,7 +52,7 @@
         inner join brs.project_details pd on p.id = pd.project_id
         where c.id = :contactId
          and case when :isParent then c.company_id = any (select id
-                                         from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                         from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
         else c.company_id = :companyId end
         and c.archived is not true) as appt;
     ]]></genesys.getContactAppointments>

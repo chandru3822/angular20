@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.get_monthly_expense_budget_report(p_user_id integer, p_start_date date, p_end_date date)
+drop function if exists brs.get_monthly_expense_budget_report(p_user_id bigint, p_start_date date, p_end_date date);
+CREATE OR REPLACE FUNCTION brs.get_monthly_expense_budget_report(p_user_id bigint, p_start_date date, p_end_date date)
   RETURNS SETOF json AS
 $BODY$
 DECLARE

@@ -1,5 +1,8 @@
--- drop function if exists  flow.pps_has_events_in_selected_status(integer, int[], int[], int);
-CREATE OR REPLACE FUNCTION flow.pps_has_events_in_selected_status(p_project_process_step_id integer,
+drop function if exists  flow.pps_has_events_in_selected_status(p_project_process_step_id bigint,
+                                                                p_company_event_status_type_ids text,
+                                                                p_root_event_status_type_ids text,
+                                                                p_event_id text);
+CREATE OR REPLACE FUNCTION flow.pps_has_events_in_selected_status(p_project_process_step_id bigint,
                                                                   p_company_event_status_type_ids text,
                                                                   p_root_event_status_type_ids text,
                                                                   p_event_id text)
@@ -18,19 +21,19 @@ BEGIN
   where ppse.project_process_step_id = p_project_process_step_id
     and ppse.archived is false
     -- if only root statuses is populated then check those
-    and case when p_company_event_status_type_ids = 'null' and p_root_event_status_type_ids != 'null' then cest.event_status_type_id = any( string_to_array(p_root_event_status_type_ids, ',')::int[] ) else 1=1 end
+    and case when p_company_event_status_type_ids = 'null' and p_root_event_status_type_ids != 'null' then cest.event_status_type_id = any( string_to_array(p_root_event_status_type_ids, ',')::bigint[] ) else 1=1 end
 
     -- if only company statuses is populated then check those
-    and case when p_root_event_status_type_ids = 'null' and p_company_event_status_type_ids != 'null' then ppse.company_event_status_type_id = any( string_to_array(p_company_event_status_type_ids, ',')::int[] ) else 1=1 end
+    and case when p_root_event_status_type_ids = 'null' and p_company_event_status_type_ids != 'null' then ppse.company_event_status_type_id = any( string_to_array(p_company_event_status_type_ids, ',')::bigint[] ) else 1=1 end
 
     -- if both are populated then check both together.  OR not AND
     and case when p_root_event_status_type_ids != 'null' and p_company_event_status_type_ids != 'null' then
-          (ppse.company_event_status_type_id = any( string_to_array(p_company_event_status_type_ids, ',')::int[] )
-              OR cest.event_status_type_id = any( string_to_array(p_root_event_status_type_ids, ',')::int[] ))
+          (ppse.company_event_status_type_id = any( string_to_array(p_company_event_status_type_ids, ',')::bigint[] )
+              OR cest.event_status_type_id = any( string_to_array(p_root_event_status_type_ids, ',')::bigint[] ))
        else 1=1 end
 
     -- if the send in an event id then only check for that one
-    and case when p_event_id != 'null' then pse.event_id = p_event_id::int else 1=1 end;
+    and case when p_event_id != 'null' then pse.event_id = p_event_id::bigint else 1=1 end;
 
   return v_has_events;
 END

@@ -1,6 +1,9 @@
-﻿CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard(p_custom_start_date date, p_custom_end_date date,
-                                                     p_company_id integer,
-                                                     p_target_type_id integer default -1) -- if p_target_type_id = 1 then it's a single day
+﻿drop function if exists brs.rpt_company_dashboard(p_custom_start_date date, p_custom_end_date date,
+                                                  p_company_id bigint,
+                                                  p_target_type_id bigint);
+CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard(p_custom_start_date date, p_custom_end_date date,
+                                                     p_company_id bigint,
+                                                     p_target_type_id bigint default -1::bigint) -- if p_target_type_id = 1 then it's a single day
 -- if p_target_type_id > 1 then use dates for target
   RETURNS SETOF json
   LANGUAGE plpgsql
@@ -8,7 +11,7 @@ AS
 $function$
 declare
 --   v_target_start_date date;
-  v_company_id        integer;
+  v_company_id        bigint;
 BEGIN
 --   v_target_start_date = p_custom_start_date;
 --   if p_target_type_id = 1 then

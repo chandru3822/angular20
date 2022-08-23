@@ -50,11 +50,11 @@
         class="elevation-1 square-card"
       >
         <template #no-data>
-          No available users
+          <span class="default-text-color">No available users</span>
         </template>
 
         <template #no-results>
-          No available users
+          <span class="default-text-color">No available users</span>
         </template>
 
         <template #header.score="{ header }">

@@ -118,7 +118,7 @@ public class PayrollService {
 
     Optional<Boolean> created =
         sqlCache.getBySql(
-            "select brs.copy_snapshot_to_ledger(:payrollId::int, :currentUserId::int)",
+            "select brs.copy_snapshot_to_ledger(:payrollId::bigint, :currentUserId::bigint)",
             params,
             new SingleColumnRowMapper<>(Boolean.class));
     return created.orElse(false);
@@ -164,7 +164,7 @@ public class PayrollService {
 
     Optional<Boolean> created =
         sqlCache.getBySql(
-            "select brs.create_payroll_snapshot(:payrollId::int, :currentUserId::int)",
+            "select brs.create_payroll_snapshot(:payrollId::bigint, :currentUserId::bigint)",
             params,
             new SingleColumnRowMapper<>(Boolean.class));
     return created.orElse(false);
@@ -329,7 +329,7 @@ public class PayrollService {
 
     Optional<Boolean> created =
         sqlCache.getBySql(
-            "SELECT brs.create_payroll(:currentUserId::int, :positionId::int)",
+            "SELECT brs.create_payroll(:currentUserId::bigint, :positionId::bigint)",
             params,
             new SingleColumnRowMapper<>(Boolean.class));
     return created.orElse(false);

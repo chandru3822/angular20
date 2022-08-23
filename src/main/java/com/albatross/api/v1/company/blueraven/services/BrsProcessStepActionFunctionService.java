@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -361,7 +362,7 @@ public class BrsProcessStepActionFunctionService {
                         Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
                         List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
                         final Long inverterLovId = values.stream()
-                                                         .filter(i -> i.getCode().equals(javaSucksInverter))
+                                                         .filter(i -> Objects.equals(i.getCode(), javaSucksInverter))
                                                          .map(ListOfValue::getId)
                                                          .findFirst()
                                                          .orElse(null);

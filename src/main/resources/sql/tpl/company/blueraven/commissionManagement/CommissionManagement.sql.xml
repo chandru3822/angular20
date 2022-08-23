@@ -110,11 +110,11 @@
     ]]></commissionManagement.getPayrollOverridePlans>
 
     <commissionManagement.getUserPayrollDetailsCommissions><![CDATA[
-      select * from brs.get_employee_review_commissions(:payrollId::int, :userId::int)
+      select * from brs.get_employee_review_commissions(:payrollId::bigint, :userId::bigint)
     ]]></commissionManagement.getUserPayrollDetailsCommissions>
 
     <commissionManagement.getPayrollDetailsOverrides><![CDATA[
-      select * from brs.get_employee_review_overrides(:payrollId::int, :userId::int)
+      select * from brs.get_employee_review_overrides(:payrollId::bigint, :userId::bigint)
     ]]></commissionManagement.getPayrollDetailsOverrides>
 
     <commissionManagement.getUserCommissions><![CDATA[
@@ -306,7 +306,7 @@
                                               inner join flow.position p2 on up5.position_id = p2.id
                                        where up5.primary_flag is true
                                          and up5.archived is false
-                                         and p2.id in (select unnest(string_to_array(value, ',')::int[])
+                                         and p2.id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
                                          and p2.company_id = 3)
@@ -321,7 +321,7 @@
     FROM flow.user u
            INNER JOIN flow.user_position up ON up.user_id = u.id AND
                                                ((up.primary_flag IS TRUE AND up.end_date IS NULL AND up.archived IS NOT TRUE) OR 1 = 1)
-                                                 AND up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                                 AND up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
            inner join flow.company_user_status cus on cus.user_id = u.id
@@ -473,7 +473,7 @@ FROM (SELECT cp.id,
                                                   and up5.archived is false
                                                   and cf.archived is false)
                                     WHEN cp.position_id = 4
-                                        THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                        THEN up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
                                    END
@@ -517,7 +517,7 @@ FROM (SELECT cp.id,
                                     and up5.archived is false
                                     and cf.archived is false)
                WHEN cp.position_id = 4
-                 THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                 THEN up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
                END
@@ -724,7 +724,7 @@ FROM (SELECT cp.id,
                   OR lower(last_name) LIKE lower(:search)
                   OR lower(u.email) LIKE lower(:search)
                 )
-            and ( case when :planId::int is not null
+            and ( case when :planId::bigint is not null
                        then u.id not in (
               select user_id
               from brs.commission_plan_user
@@ -833,7 +833,7 @@ FROM (SELECT cp.id,
     <commissionPlan.clone><![CDATA[
     SELECT clone_commission_plan AS id
     FROM brs.clone_commission_plan(
-    :planId::int, :startDate::DATE, :users::int[], :createdBy::int)
+    :planId::bigint, :startDate::DATE, :users::bigint[], :createdBy::bigint)
     ]]></commissionPlan.clone>
 
     <commissionPlan.approve><![CDATA[

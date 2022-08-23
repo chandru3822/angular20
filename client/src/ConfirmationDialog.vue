@@ -7,7 +7,7 @@
       <v-card-title
           class="albatross-header-2 lighten-2 pb-1"
           primary-title>
-        <slot name="title">
+        <slot v-if="!hideTitle" name="title">
           Delete
         </slot>
       </v-card-title>
@@ -29,6 +29,7 @@
             color="primary"
             class="white--text elevation-2 text-capitalize mr-2 mb-2"
             :disabled="disableConfirm"
+            :class="confirmClass"
             @click="yes">
           <slot name="yes">Delete</slot>
         </v-btn>
@@ -45,7 +46,8 @@ export default {
     hideTitle:Boolean,
     itemToDelete: Object,
     disableConfirm: Boolean,
-    hideConfirm: Boolean
+    hideConfirm: Boolean,
+    confirmClass: String
   },
   data() {
     return {
@@ -57,12 +59,11 @@ export default {
         return this.openDialog
       },
       set (value) {
-        this.$emit('close-dialog', value)
+        // this.$emit('close-dialog', value)
       }
     }
   },
-  created(){
-  },
+  created(){},
   methods: {
     yes(){
       this.$emit('confirm')

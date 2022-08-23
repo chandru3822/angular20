@@ -33,11 +33,11 @@
             class="elevation-1 fix-column-width-bug positions-table"
         >
           <template #no-data>
-            No available positions
+            <span class="default-text-color">No available positions</span>
           </template>
 
           <template #no-results>
-            No available positions
+            <span class="default-text-color">No available positions</span>
           </template>
 
           <template #item="{ item, index }">

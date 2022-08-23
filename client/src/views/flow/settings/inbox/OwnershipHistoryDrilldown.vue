@@ -16,11 +16,11 @@
       class="elevation-0 height-one-hunned"
     >
       <template #no-data>
-        No history available
+        <span class="default-text-color">No history available</span>
       </template>
 
       <template #no-results>
-        No history available
+        <span class="default-text-color">No history available</span>
       </template>
 
       <template v-slot:header.team_name="{ header }"><th class="pl-2">{{header.text}}</th></template>

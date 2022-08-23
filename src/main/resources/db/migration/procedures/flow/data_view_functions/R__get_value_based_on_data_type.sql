@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION flow.get_value_based_on_data_type(p_data_type_id INTEGER)
+drop function if exists flow.get_value_based_on_data_type(p_data_type_id bigint);
+CREATE OR REPLACE FUNCTION flow.get_value_based_on_data_type(p_data_type_id bigint)
 
 RETURNS text AS
 

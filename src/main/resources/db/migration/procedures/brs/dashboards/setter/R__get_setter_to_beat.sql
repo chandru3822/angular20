@@ -1,8 +1,8 @@
--- DROP FUNCTION brs.get_setter_to_beat(integer, date, date);
+-- DROP FUNCTION brs.get_setter_to_beat(bigint, date, date);
 
 -- SELECT * FROM brs.get_setter_to_beat(2391370, '2020-07-01', '2020-07-07');
-
-CREATE OR REPLACE FUNCTION brs.get_setter_to_beat(p_user_id integer, p_start_date date, p_end_date date)
+drop function if exists brs.get_setter_to_beat(p_user_id bigint, p_start_date date, p_end_date date);
+  CREATE OR REPLACE FUNCTION brs.get_setter_to_beat(p_user_id bigint, p_start_date date, p_end_date date)
     RETURNS JSON AS
 $BODY$
 DECLARE

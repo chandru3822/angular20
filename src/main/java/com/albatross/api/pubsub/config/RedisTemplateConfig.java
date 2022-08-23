@@ -19,7 +19,7 @@ public class RedisTemplateConfig {
 
   @Bean
   public RedisTemplate<String, Object> redisTemplate(
-      RedisConnectionFactory redisConnectionFactory) {
+    RedisConnectionFactory redisConnectionFactory) {
     final var redisTemplate = new RedisTemplate<String, Object>();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
     redisTemplate.setKeySerializer(new StringRedisSerializer());
@@ -30,21 +30,21 @@ public class RedisTemplateConfig {
 
   @Bean
   public MessageListenerAdapter messageListenerAdapter(
-      RealTimeEventMessageListener realTimeEventMessageListener) {
+    RealTimeEventMessageListener realTimeEventMessageListener) {
     return new MessageListenerAdapter(realTimeEventMessageListener);
   }
 
   @Bean
   public RedisMessageListenerContainer redisContainer(
-      RedisConnectionFactory redisConnectionFactory,
-      MessageListenerAdapter messageListenerAdapter) {
+    RedisConnectionFactory redisConnectionFactory,
+    MessageListenerAdapter messageListenerAdapter) {
     final var container = new RedisMessageListenerContainer();
     container.setConnectionFactory(redisConnectionFactory);
 
     final List<ChannelTopic> channelTopics =
-        Arrays.stream(EventChannel.values())
-            .map(topic -> new ChannelTopic(topic.getName()))
-            .toList();
+      Arrays.stream(EventChannel.values())
+        .map(topic -> new ChannelTopic(topic.getName()))
+        .toList();
     container.addMessageListener(messageListenerAdapter, channelTopics);
     return container;
   }

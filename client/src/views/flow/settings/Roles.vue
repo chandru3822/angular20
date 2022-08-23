@@ -23,11 +23,11 @@
             class="elevation-1 fix-column-width-bug roles-table"
         >
           <template #no-data>
-            No available roles
+            <span class="default-text-color">No available roles</span>
           </template>
 
           <template #no-results>
-            No available roles
+            <span class="default-text-color">No available roles</span>
           </template>
 
           <template #item="{ item, index }">

@@ -37,11 +37,11 @@
         :loading="isSmartlistsLoading"
       >
         <template #no-data>
-          No available smartlists
+          <span class="default-text-color">No available smartlists</span>
         </template>
 
         <template #no-results>
-          No available smartlists
+          <span class="default-text-color">No available smartlists</span>
         </template>
 
         <template #item="{item: smartlist}">

@@ -106,6 +106,13 @@
         class="elevation-1 pay-table"
       >
 
+        <template #no-data>
+          <span class="default-text-color">No data available</span>
+        </template>
+
+        <template #no-results>
+          <span class="default-text-color">No data available</span>
+        </template>
 
         <template #item="{ item: it, index }">
           <tr :class="{'shaded-row': index % 2}">

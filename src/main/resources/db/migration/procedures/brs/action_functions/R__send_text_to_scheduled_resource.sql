@@ -1,16 +1,16 @@
--- drop function brs.send_text_to_scheduled_resource(integer, integer, integer);
-CREATE OR REPLACE FUNCTION brs.send_text_to_scheduled_resource(p_pps_event_id integer, p_current_user_id integer, p_message_type_id int)
+drop function if exists brs.send_text_to_scheduled_resource(bigint, bigint, bigint);
+CREATE OR REPLACE FUNCTION brs.send_text_to_scheduled_resource(p_pps_event_id bigint, p_current_user_id bigint, p_message_type_id bigint)
     RETURNS void
     LANGUAGE plpgsql
 AS
 $function$
 declare
-    v_resource_type_id int; --1 = org, 2 = user
-    v_resource_id int; -- will either be a user id or an org id
+    v_resource_type_id bigint; --1 = org, 2 = user
+    v_resource_id bigint; -- will either be a user id or an org id
     v_users_to_message bigint[]; --will be used when the resource is an org
     v_message text;
     v_time_zone_for_resource text;
-    v_project_id int;
+    v_project_id bigint;
     v_appt_start_time text;
     r record;
 --     v_contact_name text;

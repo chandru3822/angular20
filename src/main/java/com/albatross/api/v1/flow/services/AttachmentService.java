@@ -7,7 +7,10 @@ import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -439,13 +442,9 @@ public class AttachmentService {
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
 
-    PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
-
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    s3.putObject( new PutObjectRequest(
+      storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", cleanFilename(file.getOriginalFilename()));

@@ -1,11 +1,13 @@
---DROP FUNCTION IF EXISTS flow.get_availability(integer, integer, boolean, integer[]);
-CREATE OR REPLACE FUNCTION flow.get_availability(p_start_time timestamp, p_end_time timestamp, p_org_ids int[],
-                                                 p_user_ids int[])
+--DROP FUNCTION IF EXISTS flow.get_availability(bigint, bigint, boolean, bigint[]);
+drop function if exists flow.get_availability(p_start_time timestamp, p_end_time timestamp, p_org_ids bigint[],
+                                              p_user_ids bigint[]);
+  CREATE OR REPLACE FUNCTION flow.get_availability(p_start_time timestamp, p_end_time timestamp, p_org_ids bigint[],
+                                                 p_user_ids bigint[])
   RETURNS setof json AS
 $$
 DECLARE
-  v_user_sluts     integer[];
-  v_user_non_sluts integer[];
+  v_user_sluts     bigint[];
+  v_user_non_sluts bigint[];
 BEGIN
   select array_agg(distinct foo3.user_id)
   into v_user_sluts
@@ -66,7 +68,7 @@ BEGIN
                       select coalesce(ra.user_id, ra.org_id)                   as "resourceId",
                              ra.start_time                                     as "start",
                              ra.end_time                                       as "end",
-                             null::int                                         as "dayOfWeekId",
+                             null::bigint                                         as "dayOfWeekId",
                              ra.all_day                                        as "allDay",
                              ra.title,
                              'background'                                      as rendering,

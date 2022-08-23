@@ -9,6 +9,7 @@ import axios from 'axios'
 import { UserMutations } from '@/stores/UserStore'
 import { AppMutations } from '@/stores/AppStore'
 import { NotificationPlugin } from '@/plugins/notifications/NotificationPlugin'
+import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
 
@@ -22,9 +23,8 @@ const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
 
-Vue.use(NotificationPlugin,  {
-  store
-})
+Vue.use(NotificationPlugin, { store })
+Vue.use(SnackbarPlugin, { store })
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
 

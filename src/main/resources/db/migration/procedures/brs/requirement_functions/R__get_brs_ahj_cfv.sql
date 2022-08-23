@@ -1,5 +1,5 @@
--- DROP FUNCTION IF EXISTS brs.get_brs_ahj_cfv(integer, integer, character varying);
-CREATE OR REPLACE FUNCTION brs.get_brs_ahj_cfv(p_project_id INTEGER, p_brs_ahj_table character varying, p_brs_ahj_cf_id INTEGER, p_expected_value character varying)
+ DROP FUNCTION IF EXISTS brs.get_brs_ahj_cfv(p_project_id bigint, p_brs_ahj_table character varying, p_brs_ahj_cf_id bigint, p_expected_value character varying);
+CREATE OR REPLACE FUNCTION brs.get_brs_ahj_cfv(p_project_id bigint, p_brs_ahj_table character varying, p_brs_ahj_cf_id bigint, p_expected_value character varying)
 
 RETURNS boolean
     LANGUAGE plpgsql

@@ -1,11 +1,13 @@
-CREATE OR REPLACE FUNCTION flow.check_pps_has_event_with_value(p_project_process_step_id integer, p_cfga integer,
+drop function if exists flow.check_pps_has_event_with_value(p_project_process_step_id bigint, p_cfga bigint,
+                                                            p_value_to_check text, p_not_null boolean);
+CREATE OR REPLACE FUNCTION flow.check_pps_has_event_with_value(p_project_process_step_id bigint, p_cfga bigint,
                                                                p_value_to_check text, p_not_null boolean default false)
   returns boolean AS
 $BODY$
 declare
   v_request_is_valid boolean;
   v_function_result boolean default false;
-  v_data_type_id     int;
+  v_data_type_id     bigint;
 BEGIN
 
   --check that the pps company id and the cfga company id are the same in case the user screwed it up
@@ -34,8 +36,8 @@ BEGIN
     -- 3,boolean
     -- 4,numeric
     -- 5,text
-    -- 6,integer
-    -- 7,integer array
+    -- 6,bigint
+    -- 7,bigint array
     -- 8,system
     -- 9,System List
 
@@ -126,7 +128,7 @@ BEGIN
                        and ppsecfv.custom_field_group_assignment_id = p_cfga
                        and case when p_not_null is true then
                                   ppsecfv.int_value is not null
-                                else ppsecfv.int_value = p_value_to_check::integer end
+                                else ppsecfv.int_value = p_value_to_check::bigint end
                      limit 1) is not null then true
                else false end
       into v_function_result;

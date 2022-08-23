@@ -36,11 +36,11 @@
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            No Budget Types
+            <span class="default-text-color">No Budget Types</span>
           </template>
 
           <template #no-results>
-            No Budget Types
+            <span class="default-text-color">No Budget Types</span>
           </template>
 
           <template #item="{ item, index }">

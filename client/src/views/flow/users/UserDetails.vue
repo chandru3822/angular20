@@ -672,7 +672,7 @@ export default {
 
 .detail-label {
   font-size: 12px;
-  color: #9E9C9C;
+  color: var(--v-grey-darken1);
 }
 
 .detail-item {

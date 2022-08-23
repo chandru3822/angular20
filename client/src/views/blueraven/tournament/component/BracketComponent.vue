@@ -442,7 +442,7 @@
     font-size: 10px;
     letter-spacing: 2px;
     font-family: 'Istok Web', sans-serif;
-    color: #3F915F;
+    color: var(--v-success-base);
   }
 
   .edit-button {

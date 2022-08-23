@@ -120,7 +120,7 @@
   ]]></dataView.updateFieldConfig>
 
   <dataView.addColumnToTable><![CDATA[
-    select from flow.add_column_to_data_view(:id::int, null::int)
+    select from flow.add_column_to_data_view(:id::bigint, null::bigint)
   ]]></dataView.addColumnToTable>
 
   <dataView.getFieldConfig><![CDATA[
@@ -255,7 +255,7 @@
   ]]></dataView.updateChildFieldConfig>
 
   <dataView.addChildColumnToTable><![CDATA[
-    select from flow.add_column_to_data_view(:fieldId::int, :id::int)
+    select from flow.add_column_to_data_view(:fieldId::bigint, :id::bigint)
   ]]></dataView.addChildColumnToTable>
 
   <dataView.getChildFieldConfig><![CDATA[
@@ -285,7 +285,7 @@
   ]]></dataView.update>
 
   <dataView.addTableForView><![CDATA[
-    select from flow.initialize_data_view_table(:companyId::int, :viewName::character varying, :companyProcessIds::int[])
+    select from flow.initialize_data_view_table(:companyId::bigint, :viewName::character varying, :companyProcessIds::bigint[])
   ]]></dataView.addTableForView>
 
   <dataView.getDataView><![CDATA[

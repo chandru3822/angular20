@@ -16,7 +16,7 @@
         <div v-if="status === 'approval'" class="pl-4">Payment Amount Total: <b>{{
             paymentSum || 0 | currency('$', 2)
           }}</b></div>
-        <div v-if="showApproval" class="approvalDiv">
+        <div v-if="showApproval" class="approvalDiv default-text-color">
 <!--          not sure why they need to see this. it just shows them their own name -->
 <!--          <label><b>Approved By:</b></label>-->
 <!--          {{ userName }}-->
@@ -53,11 +53,11 @@
       >
 
         <template #no-data>
-          No payments found
+          <span class="default-text-color">No payments found</span>
         </template>
 
         <template #no-results>
-          No payments found
+          <span class="default-text-color">No payments found</span>
         </template>
 
         <template v-slot:header.data-table-select="{ on, props }">
@@ -150,7 +150,9 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="primary" text @click="close">Cancel</v-btn>
-            <v-btn color="primary" raised @click="submitPay" class="white--text">
+            <v-btn color="primary" raised
+                   :disabled="submittingPay"
+                   @click="submitPay" class="white--text">
               Submit
             </v-btn>
           </v-card-actions>
@@ -247,6 +249,7 @@ export default {
         selected: false,
       },
       paymentsSearch: '',
+      submittingPay: false,
       pagination: {},
       selectAll: false,
       showSelect: false,
@@ -439,12 +442,14 @@ export default {
       this.newPayItem = {}
     },
     async submitPay() {
+      this.submittingPay = true
       try {
         const {status} = await postRequest('/rebate/recurringPayment', this.newPayItem, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Recurring Payment Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
         await this.fetchPayments();
+        this.submittingPay = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Failed to save Recurring Payment')
@@ -498,6 +503,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .pay-link {
   color: var(--v-primary-lighten1);
   text-decoration: none;
@@ -537,7 +543,6 @@ export default {
 }
 
 .approvalDiv {
-  color: black;
   font-size: 14px
 }
 

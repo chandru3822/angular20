@@ -44,11 +44,11 @@
               class="elevation-1"
           >
             <template #no-data>
-              No available fields
+              <span class="default-text-color">No available fields</span>
             </template>
 
             <template #no-results>
-              No available fields
+              <span class="default-text-color">No available fields</span>
             </template>
 
             <template #item="{ item }">
@@ -75,7 +75,7 @@
                 </td>
                 <td class="text-left">
                   <v-card flat color="transparent" class="square-card my-2" v-if="selectedWorkQueueCategoryId === item.id">
-                    <v-card-title style="height: 40px" class="py-0">
+                    <v-card-title style="height: 40px" class="py-0 grey--text text--darken-1">
                       Hidden
                       <v-checkbox type="checkbox" class="ml-3"
                                   v-model="item.hidden"></v-checkbox>
@@ -124,7 +124,7 @@
                         </template>
                       </v-autocomplete>
                       <br/>
-                      <v-btn color="primaryCustom" dark class="d-inline-block white--text"
+                      <v-btn color="primary" dark class="d-inline-block white--text"
                              @click="saveHiddenAndWhiteList(item)">
                         <v-icon class="mr-2">save</v-icon>
                         Save Hidden

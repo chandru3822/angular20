@@ -1,9 +1,10 @@
-CREATE OR REPLACE FUNCTION brs.update_rebate_payment(p_payment_id integer,p_updated_by_user_id integer, p_payment_amount numeric(12,2))
+drop function if exists brs.update_rebate_payment(p_payment_id bigint,p_updated_by_user_id bigint, p_payment_amount numeric(12,2));
+CREATE OR REPLACE FUNCTION brs.update_rebate_payment(p_payment_id bigint,p_updated_by_user_id bigint, p_payment_amount numeric(12,2))
   RETURNS VOID AS
 $BODY$
 DECLARE
 v_old_payment_amount numeric(12,2);
-v_project_id integer;
+v_project_id bigint;
 
 BEGIN
 --select brs.update_rebate_payment(23, 2350555, '2018-01-15', 200, 2);

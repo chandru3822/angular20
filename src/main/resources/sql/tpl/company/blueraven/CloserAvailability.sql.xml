@@ -1,6 +1,6 @@
 <sql>
   <closerAvailability.get><![CDATA[
     select *
-    from brs.get_closer_availability(:startTime::timestamp, :endTime::timestamp, array[ :postalCodeZoneUserIds ]::int[]);
+    from brs.get_closer_availability(:startTime::timestamp, :endTime::timestamp, array[ :postalCodeZoneUserIds ]::bigint[]);
  ]]></closerAvailability.get>
 </sql>

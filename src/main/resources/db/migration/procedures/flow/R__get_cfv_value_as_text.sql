@@ -1,10 +1,11 @@
--- drop function if exists flow.get_cfv_value_as_text(int, int, int, int);
-CREATE OR REPLACE FUNCTION flow.get_cfv_value_as_text(p_project_id integer, p_ppse_id integer, p_cfga_id integer)
+-- drop function if exists flow.get_cfv_value_as_text(bigint, bigint, bigint, bigint);
+drop function if exists flow.get_cfv_value_as_text(p_project_id bigint, p_ppse_id bigint, p_cfga_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_cfv_value_as_text(p_project_id bigint, p_ppse_id bigint, p_cfga_id bigint)
   returns text AS
 $BODY$
 declare
-  v_cfga_object_type_id int;
-  v_cfga_data_type_id   int;
+  v_cfga_object_type_id bigint;
+  v_cfga_data_type_id   bigint;
   v_cfga_value          text;
 BEGIN
   --verify that both cfga ids come from the same company (which also ensures they are valid cfga ids)

@@ -1,14 +1,20 @@
-create or replace function flow.search_projects_with_down_line(p_searchterm character varying, p_company_id integer,
-                                                               p_user_id integer, p_is_parent boolean, p_limit integer,
-                                                               p_offset integer,
-                                                               p_company_project_status_type_id integer DEFAULT NULL::integer,
+drop function if exists flow.search_projects_with_down_line(p_searchterm character varying, p_company_id bigint,
+                                                            p_user_id bigint, p_is_parent boolean, p_limit bigint,
+                                                            p_offset bigint,
+                                                            p_company_project_status_type_id bigint,
+                                                            p_sort_column character varying,
+                                                            p_sort_direction character varying );
+create or replace function flow.search_projects_with_down_line(p_searchterm character varying, p_company_id bigint,
+                                                               p_user_id bigint, p_is_parent boolean, p_limit bigint,
+                                                               p_offset bigint,
+                                                               p_company_project_status_type_id bigint DEFAULT NULL::bigint,
                                                                p_sort_column character varying DEFAULT NULL::character varying,
                                                                p_sort_direction character varying DEFAULT NULL::character varying)
   returns TABLE
           (
-            id                             integer,
+            id                             bigint,
             project_name                   character varying,
-            contact_id                     integer,
+            contact_id                     bigint,
             date_created                   timestamp without time zone,
             street1                        character varying,
             street2                        character varying,
@@ -18,7 +24,7 @@ create or replace function flow.search_projects_with_down_line(p_searchterm char
             postalcode                     character varying,
             latitude                       double precision,
             longitude                      double precision,
-            company_project_status_type_id integer,
+            company_project_status_type_id bigint,
             project_status_type            character varying,
             contact                        jsonb
           )
@@ -26,14 +32,14 @@ create or replace function flow.search_projects_with_down_line(p_searchterm char
 as
 $$
 DECLARE
-  v_company_ids               INTEGER[];
-  v_org_ids                   integer[];
+  v_company_ids               bigint[];
+  v_org_ids                   bigint[];
   v_clean_name_search_term    VARCHAR;
   v_clean_id_search_term      VARCHAR;
   v_clean_phone_search_term   VARCHAR;
   v_clean_email_search_term   VARCHAR;
   v_clean_address_search_term VARCHAR;
-  v_position_ids              integer[];
+  v_position_ids              bigint[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = right(trim(translate(p_searchterm, '+-(). ', '')), 10);

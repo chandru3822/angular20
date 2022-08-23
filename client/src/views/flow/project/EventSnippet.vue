@@ -12,11 +12,11 @@
           class="elevation-0"
         >
           <template #no-data>
-            No active events
+            <span class="default-text-color">No active events</span>
           </template>
 
           <template #no-results>
-            No active events
+            <span class="default-text-color">No active events</span>
           </template>
 
           <template #item="{ item, index }">

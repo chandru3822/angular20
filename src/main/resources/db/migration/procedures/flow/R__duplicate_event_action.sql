@@ -1,9 +1,10 @@
--- drop function if exists flow.duplicate_event_action(int, int);
-CREATE OR REPLACE FUNCTION flow.duplicate_event_action(p_process_step_event_action_id int, p_current_user_id int, p_company_id int)
-    returns int AS
+-- drop function if exists flow.duplicate_event_action(bigint, bigint);
+drop function if exists flow.duplicate_event_action(p_process_step_event_action_id bigint, p_current_user_id bigint, p_company_id bigint);
+  CREATE OR REPLACE FUNCTION flow.duplicate_event_action(p_process_step_event_action_id bigint, p_current_user_id bigint, p_company_id bigint)
+    returns bigint AS
 $BODY$
 declare
-    v_new_event_action_id int;
+    v_new_event_action_id bigint;
 BEGIN
   -- the company_id comes from the login token, so it ensures the user has access to the company/data
 

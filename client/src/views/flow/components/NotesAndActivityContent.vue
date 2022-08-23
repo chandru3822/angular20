@@ -73,10 +73,10 @@
       >
 
         <template #no-data>
-          There are no notes to display
+          <span class="default-text-color">There are no notes to display</span>
         </template>
         <template #no-results>
-          There are no notes to display
+          <span class="default-text-color">There are no notes to display</span>
         </template>
 
         <template #item="{ item, index }">
@@ -504,7 +504,7 @@ export default {
 .note-see-comments {
   font-size: 11px;
   font-style: italic;
-  color: #6B777D;
+  color: var(--v-primary-base);
 }
 
 .reply-note-item {

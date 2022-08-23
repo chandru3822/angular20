@@ -1,5 +1,7 @@
-CREATE OR REPLACE function flow.add_column_to_data_view(p_data_view_field_config_id integer,
-                                                        p_data_view_child_field_config_id integer)
+drop function if exists flow.add_column_to_data_view(p_data_view_field_config_id bigint,
+                                                     p_data_view_child_field_config_id bigint);
+CREATE OR REPLACE function flow.add_column_to_data_view(p_data_view_field_config_id bigint,
+                                                        p_data_view_child_field_config_id bigint)
   returns void
 AS
 $BODY$
@@ -7,11 +9,11 @@ declare
   v_field_to_update            varchar;
   v_data_type                  varchar;
   v_update_first_value_only    boolean;
-  v_data_type_id               integer;
+  v_data_type_id               bigint;
   v_schema_name                varchar;
   v_view_name                  varchar;
   v_update_first_value_only_id varchar;
-  v_data_view_field_config_id  integer;
+  v_data_view_field_config_id  bigint;
 BEGIN
 
   if p_data_view_field_config_id is not null and p_data_view_child_field_config_id is null then
@@ -37,9 +39,9 @@ BEGIN
     where dvfc.id = p_data_view_field_config_id;
 
     if v_data_type_id = 7 then
-      v_data_type = 'integer[]';
+      v_data_type = 'bigint[]';
     elsif v_data_type_id in (8, 9) then
-      v_data_type = 'integer';
+      v_data_type = 'bigint';
     end if;
     --     v_sql = $$ALTER TABLE $$||v_schema_name||$$.$$||v_view_name||$$ ADD COLUMN if not exists $$ || v_field_to_update || $$ $$ ||v_data_type||$$;$$;
 --     raise notice 'what is this %',v_sql;
@@ -48,7 +50,7 @@ BEGIN
     EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
 
     if v_update_first_value_only is true then
-      v_data_type = 'integer';
+      v_data_type = 'bigint';
       EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
               v_field_to_update || $$_cfv_id $$ || v_data_type || $$;$$;
       EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||

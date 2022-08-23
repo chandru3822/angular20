@@ -1,8 +1,10 @@
-
+drop function if exists flow.company_hierarchy_filter_up(
+  p_company_id bigint,
+  p_include_top boolean);
 CREATE OR REPLACE FUNCTION flow.company_hierarchy_filter_up(
-    p_company_id integer,
+    p_company_id bigint,
     p_include_top boolean default false)
-  RETURNS TABLE(id integer ,parent_company_id integer,company_name text) AS
+  RETURNS TABLE(id bigint ,parent_company_id bigint,company_name text) AS
 $BODY$
 declare
 
