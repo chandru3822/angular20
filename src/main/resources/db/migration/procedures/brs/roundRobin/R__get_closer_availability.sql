@@ -1,5 +1,6 @@
 DROP FUNCTION IF EXISTS brs.get_closer_availability(p_start_time timestamp, p_end_time timestamp,
-                                                    p_postal_code_zone_user_ids bigint[])
+                                                    p_postal_code_zone_user_ids bigint[]);
+
 CREATE OR REPLACE FUNCTION brs.get_closer_availability(p_start_time timestamp, p_end_time timestamp,
                                                        p_postal_code_zone_user_ids bigint[])
   RETURNS setof json AS
