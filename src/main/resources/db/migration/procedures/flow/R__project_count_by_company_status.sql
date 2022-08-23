@@ -1,7 +1,8 @@
-CREATE OR REPLACE FUNCTION flow.project_count_by_company_status(p_company_id integer)
+drop function if exists flow.project_count_by_company_status(p_company_id bigint);
+  CREATE OR REPLACE FUNCTION flow.project_count_by_company_status(p_company_id bigint)
     RETURNS TABLE
             (
-                company_project_status_type_id integer,
+                company_project_status_type_id bigint,
                 company_project_status         character varying,
                 project_status_count           bigint
             )

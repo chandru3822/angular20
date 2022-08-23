@@ -1,12 +1,21 @@
-CREATE OR REPLACE FUNCTION flow.process_work_queue_cycle_events(p_project_process_step_event_id integer,
-                                                                p_company_event_status_id integer,
-                                                                p_event_status_type_id integer,
-                                                                p_new_company_process_step_status_type_id integer,
-                                                                p_new_process_step_status_type_id integer,
-                                                                p_new_company_project_status_type_id integer,
-                                                                p_new_project_status_type_id integer,
-                                                                p_process_step_event_id integer,
-                                                                p_modified_by_id integer)
+drop function if exists flow.process_work_queue_cycle_events(p_project_process_step_event_id bigint,
+                                                             p_company_event_status_id bigint,
+                                                             p_event_status_type_id bigint,
+                                                             p_new_company_process_step_status_type_id bigint,
+                                                             p_new_process_step_status_type_id bigint,
+                                                             p_new_company_project_status_type_id bigint,
+                                                             p_new_project_status_type_id bigint,
+                                                             p_process_step_event_id bigint,
+                                                             p_modified_by_id bigint);
+  CREATE OR REPLACE FUNCTION flow.process_work_queue_cycle_events(p_project_process_step_event_id bigint,
+                                                                p_company_event_status_id bigint,
+                                                                p_event_status_type_id bigint,
+                                                                p_new_company_process_step_status_type_id bigint,
+                                                                p_new_process_step_status_type_id bigint,
+                                                                p_new_company_project_status_type_id bigint,
+                                                                p_new_project_status_type_id bigint,
+                                                                p_process_step_event_id bigint,
+                                                                p_modified_by_id bigint)
   RETURNS void AS
 $BODY$
 declare

@@ -1,32 +1,38 @@
--- drop function flow.set_closer_appointment(integer, integer, timestamp, int[])
-CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
-                                                       p_current_user_id integer,
-                                                       p_project_process_step_id integer,
-                                                       p_project_process_step_event_id integer,
+drop function if exists flow.set_closer_appointment(p_project_id bigint,
+                                                    p_current_user_id bigint,
+                                                    p_project_process_step_id bigint,
+                                                    p_project_process_step_event_id bigint,
+                                                    p_appointment_start_time timestamp,
+                                                    p_users bigint array,
+                                                    p_remote boolean);
+CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id bigint,
+                                                       p_current_user_id bigint,
+                                                       p_project_process_step_id bigint,
+                                                       p_project_process_step_event_id bigint,
                                                        p_appointment_start_time timestamp,
-                                                       p_users integer array,
+                                                       p_users bigint array,
                                                        p_remote boolean default false)
   RETURNS table
           (
             success                boolean,
-            user_id                integer,
+            user_id                bigint,
             appointment_start_time timestamp,
             appointment_end_time   timestamp,
             user_full_name         text,
             user_email             text,
-            user_position_id       integer
+            user_position_id       bigint
           )
 AS
 $BODY$
 declare
-  v_user_id                                     integer;
+  v_user_id                                     bigint;
   v_user_full_name                              text;
   v_user_email                                  text;
-  v_user_position_id                            integer;
-  v_process_step_id                             integer;
-  v_postal_code_zone_id                         integer;
-  v_user_already_assigned_to_another_project_id integer;
-  v_set_closer_appointment_audit_id             integer;
+  v_user_position_id                            bigint;
+  v_process_step_id                             bigint;
+  v_postal_code_zone_id                         bigint;
+  v_user_already_assigned_to_another_project_id bigint;
+  v_set_closer_appointment_audit_id             bigint;
 BEGIN
 
   select process_step_id
@@ -162,7 +168,7 @@ BEGIN
       set closer_selected = true
       where id = v_set_closer_appointment_audit_id;
       --set the proposal due date on the process step to the start time
-      perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::int, p_appointment_start_time::text);
+      perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::bigint, p_appointment_start_time::text);
       --change the status of the event to pending
       update flow.project_process_step_event
         set company_event_status_type_id = 7
@@ -178,7 +184,7 @@ BEGIN
 
       --then return
              return query select true::boolean,
-                          v_user_id::integer,
+                          v_user_id::bigint,
                           p_appointment_start_time::timestamp,
                           (p_appointment_start_time +
                            (case when p_remote is false then 90 else 60 end || 'minutes')::interval)::timestamp,
@@ -194,14 +200,14 @@ BEGIN
                                                     p_project_process_step_id,
                                                     p_project_process_step_event_id,
                                                     p_appointment_start_time,
-                                                    p_users, 
+                                                    p_users,
                                                     p_remote);
     else
-      return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text,null::integer;
+      return query select false::boolean, null::bigint, null::timestamp, null::timestamp, null::text, null::text,null::bigint;
     end if;
 
   else
-    return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text,null::integer;
+    return query select false::boolean, null::bigint, null::timestamp, null::timestamp, null::text, null::text,null::bigint;
   end if;
 
 

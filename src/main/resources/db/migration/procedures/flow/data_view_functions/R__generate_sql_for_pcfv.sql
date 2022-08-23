@@ -1,5 +1,11 @@
+drop procedure if exists flow.generate_sql_for_pcfv(in z record,
+                                                   in p_in_pcfv bigint,
+                                                   inout p_sql text ,
+                                                   inout p_text_array_tables character varying[],
+                                                   inout p_text_array_alias_columns character varying[],
+                                                   inout p_text_array_columns       character varying[]);
 CREATE OR REPLACE procedure flow.generate_sql_for_pcfv(in z record,
-                                                         in p_in_pcfv integer,
+                                                         in p_in_pcfv bigint,
                                                          inout p_sql text ,
                                                          inout p_text_array_tables character varying[],
                                                          inout p_text_array_alias_columns character varying[],
@@ -54,7 +60,7 @@ BEGIN
     p_sql = p_sql || $$ from flow.project p
                       inner join flow.project_custom_field_value pcfv on p.id = pcfv.project_id
                         and pcfv.custom_field_group_assignment_id = $$ || z.custom_field_group_assignment_id || $$
-                        where p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])), $$;
+                        where p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])), $$;
 
 
 END

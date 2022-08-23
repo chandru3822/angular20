@@ -1,19 +1,19 @@
-DROP FUNCTION if exists flow.get_work_queue_metrics_for_events(integer);
+DROP FUNCTION if exists flow.get_work_queue_metrics_for_events(bigint);
 
-CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics_for_events(p_work_queue_type_id integer)
+CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics_for_events(p_work_queue_type_id bigint)
   RETURNS table
           (
-            work_queue_type_id                integer,
+            work_queue_type_id                bigint,
 --             work_queue_type                   varchar,
---             work_queue_category_id            integer,
---             work_queue_type_display_order     integer,
---             work_queue_category_display_order integer,
+--             work_queue_category_id            bigint,
+--             work_queue_type_display_order     bigint,
+--             work_queue_category_display_order bigint,
 --             use_event_data                    boolean,
---             smartlist_id                      integer,
+--             smartlist_id                      bigint,
 --             color                             varchar,
---             long_window                       integer,
---             short_window                      integer,
---             expected_cycle                    integer,
+--             long_window                       bigint,
+--             short_window                      bigint,
+--             expected_cycle                    bigint,
             short_window_numerator            bigint,
             short_window_denominator          bigint,
             long_window_numerator             bigint,
@@ -37,20 +37,20 @@ CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics_for_events(p_work_queue_t
 as
 $$
 declare
---   v_work_queue_type_id                integer;
+--   v_work_queue_type_id                bigint;
 --   v_work_queue_type                   varchar;
---   v_work_queue_category_id            integer;
---   v_work_queue_type_display_order     integer;
---   v_work_queue_category_display_order integer;
+--   v_work_queue_category_id            bigint;
+--   v_work_queue_type_display_order     bigint;
+--   v_work_queue_category_display_order bigint;
 --   v_use_event_data                    boolean;
---   v_smartlist_id                      integer;
+--   v_smartlist_id                      bigint;
 --   v_color                             varchar;
-  v_long_window                       integer;
-  v_short_window                      integer;
-  v_long_window_duration_type_id      integer;
-  v_short_window_duration_type_id     integer;
-  v_expected_cycle                    integer;
-  v_expected_cycle_duration_type_id   integer;
+  v_long_window                       bigint;
+  v_short_window                      bigint;
+  v_long_window_duration_type_id      bigint;
+  v_short_window_duration_type_id     bigint;
+  v_expected_cycle                    bigint;
+  v_expected_cycle_duration_type_id   bigint;
   v_expected_target                   numeric;
   v_inverse_expectation               boolean;
   v_short_window_duration_type        varchar;

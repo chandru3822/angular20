@@ -1,9 +1,9 @@
-DROP FUNCTION if exists flow.get_work_queue_metrics(integer);
+DROP FUNCTION if exists flow.get_work_queue_metrics(bigint);
 
-CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics(p_work_queue_type_id integer)
+CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics(p_work_queue_type_id bigint)
   RETURNS table
           (
-            work_queue_type_id                integer,
+            work_queue_type_id                bigint,
             short_window_numerator            bigint,
             short_window_denominator          bigint,
             long_window_numerator             bigint,
@@ -25,12 +25,12 @@ CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics(p_work_queue_type_id inte
 as
 $$
 declare
-  v_long_window                       integer;
-  v_short_window                      integer;
-  v_long_window_duration_type_id      integer;
-  v_short_window_duration_type_id     integer;
-  v_expected_cycle                    integer;
-  v_expected_cycle_duration_type_id   integer;
+  v_long_window                       bigint;
+  v_short_window                      bigint;
+  v_long_window_duration_type_id      bigint;
+  v_short_window_duration_type_id     bigint;
+  v_expected_cycle                    bigint;
+  v_expected_cycle_duration_type_id   bigint;
   v_expected_target                   numeric;
   v_inverse_expectation               boolean;
   v_short_window_duration_type        varchar;

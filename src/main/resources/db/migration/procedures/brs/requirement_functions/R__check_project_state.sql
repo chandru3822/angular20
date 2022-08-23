@@ -1,5 +1,5 @@
--- DROP FUNCTION IF EXISTS brs.check_project_state(integer, character varying);
-CREATE OR REPLACE FUNCTION brs.check_project_state(p_project_id INTEGER, p_state_abbreviation character varying)
+ DROP FUNCTION IF EXISTS brs.check_project_state(bigint, character varying);
+CREATE OR REPLACE FUNCTION brs.check_project_state(p_project_id bigint, p_state_abbreviation character varying)
 
 RETURNS boolean
     LANGUAGE plpgsql

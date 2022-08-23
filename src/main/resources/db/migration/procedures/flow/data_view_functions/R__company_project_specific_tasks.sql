@@ -1,13 +1,16 @@
-CREATE OR REPLACE FUNCTION flow.company_project_specific_tasks(p_company_id integer,p_new_company_project_status_type_id integer,
-                                                       p_old_company_project_status_type_id integer,
-                                                       p_project_id integer)
+drop function if exists flow.company_project_specific_tasks(p_company_id bigint,p_new_company_project_status_type_id bigint,
+                                                            p_old_company_project_status_type_id bigint,
+                                                            p_project_id bigint);
+CREATE OR REPLACE FUNCTION flow.company_project_specific_tasks(p_company_id bigint,p_new_company_project_status_type_id bigint,
+                                                       p_old_company_project_status_type_id bigint,
+                                                       p_project_id bigint)
 
 RETURNS void AS
 
 $BODY$
 DECLARE
-  v_new_project_status_type_id integer;
-  v_old_project_status_type_id integer;
+  v_new_project_status_type_id bigint;
+  v_old_project_status_type_id bigint;
   v_cancelled_date             timestamp;
   v_on_hold_date               timestamp;
   v_off_hold_date              timestamp;

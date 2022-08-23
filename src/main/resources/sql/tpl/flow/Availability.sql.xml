@@ -33,7 +33,7 @@
     FROM flow.resource_schedule rs
          LEFT JOIN flow.org o ON o.id = rs.org_id
          LEFT JOIN flow.user u ON u.id = rs.org_id
-    WHERE case when :orgId::int is not null then rs.org_id = :orgId
+    WHERE case when :orgId::bigint is not null then rs.org_id = :orgId
         else rs.user_id = :userId end
     and rs.company_id = :companyId
     and rs.archived is not true
@@ -67,7 +67,7 @@
         date_modified = now(),
         modified_by_id = :modifiedById,
         archived = case when :startDate::date = start_date::date then true else archived end
-    where case when user_id::int is not null then user_id::int = :userId else org_id::int = :orgId end
+    where case when user_id::bigint is not null then user_id::bigint = :userId else org_id::bigint = :orgId end
       and company_id = :companyId
       and archived is not true
       and end_date is null
@@ -217,7 +217,7 @@
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
              LEFT JOIN flow.user u ON u.id = ra.user_id
-    WHERE case when :orgId::int is not null then ra.org_id = :orgId
+    WHERE case when :orgId::bigint is not null then ra.org_id = :orgId
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
@@ -232,7 +232,7 @@
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
              LEFT JOIN flow.user u ON u.id = ra.user_id
-    WHERE case when :orgId::int is not null then ra.org_id = :orgId
+    WHERE case when :orgId::bigint is not null then ra.org_id = :orgId
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
@@ -284,11 +284,11 @@
   ]]></availability.saveOrgAppointmentLength>
 
   <availability.getTimeSlots><![CDATA[
-    select success, scheduled_start_time, array_to_json(users) as users from flow.get_availability_time_slots(:projectId::int, :startTime::timestamp, :endTime::timestamp, :availableDate::date, :remote::boolean)
+    select success, scheduled_start_time, array_to_json(users) as users from flow.get_availability_time_slots(:projectId::bigint, :startTime::timestamp, :endTime::timestamp, :availableDate::date, :remote::boolean)
   ]]></availability.getTimeSlots>
 
   <availability.setCloserAppointment><![CDATA[
-    select * from flow.set_closer_appointment(:projectId::int, :userId::int, :projectProcessStepId::int, :projectProcessStepEventId::int, :appointmentTime::timestamp, :users::int[], :remote::boolean);
+    select * from flow.set_closer_appointment(:projectId::bigint, :userId::bigint, :projectProcessStepId::bigint, :projectProcessStepEventId::bigint, :appointmentTime::timestamp, :users::bigint[], :remote::boolean);
   ]]></availability.setCloserAppointment>
 
   <availability.saveOverrideInfoToAudit><![CDATA[

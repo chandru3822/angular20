@@ -1,9 +1,9 @@
 drop function if exists brs.upsert_proposal_custom_field_group(bigint, uuid, bigint);
 create or replace function brs.upsert_proposal_custom_field_group(p_proposal_version bigint, p_group_uuid uuid, p_current_user bigint)
-  returns int as
+  returns bigint as
 $$
 declare
-  ret int;
+  ret bigint;
 begin
 
   select id

@@ -65,9 +65,10 @@
     <installAgreement.getLoanAmountFromLog><![CDATA[
         SELECT loan_amount
         from brs.proposal_log_history
-        where project_id::integer = :projectId::integer
-        and proposal_nbr::integer = :proposalNbr::integer
-    ]]></installAgreement.getLoanAmountFromLog>
+            where project_id::bigint = :projectId::bigint
+            and proposal_nbr::bigint = :proposalNbr::bigint
+        ]]>
+    </installAgreement.getLoanAmountFromLog>
 
     <installAgreement.getProjectDetailsFromLog><![CDATA[
         select plh.loan_amount,
@@ -89,8 +90,8 @@
              left join flow.user_position up on p.user_position_id = up.id
              left join flow.user u on up.user_id = u.id
              left join flow.contact c on p.contact_id = c.id
-        where project_id::integer = :projectId::integer and
-              proposal_nbr::integer = :proposalNbr::integer
+        where project_id::bigint = :projectId::bigint and
+              proposal_nbr::bigint = :proposalNbr::bigint
     ]]></installAgreement.getProjectDetailsFromLog>
 
     <installAgreement.getDealId><![CDATA[

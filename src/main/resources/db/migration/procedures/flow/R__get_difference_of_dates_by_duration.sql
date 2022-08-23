@@ -1,5 +1,7 @@
-CREATE OR REPLACE FUNCTION flow.get_difference_of_dates_by_duration(p_end_date timestamp, p_start_date timestamp,
-                                                                   p_duration_type_id integer)
+drop function if exists flow.get_difference_of_dates_by_duration(p_end_date timestamp, p_start_date timestamp,
+                                                                 p_duration_type_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_difference_of_dates_by_duration(p_end_date timestamp, p_start_date timestamp,
+                                                                   p_duration_type_id bigint)
   RETURNS NUMERIC AS
 $BODY$
 declare

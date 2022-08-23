@@ -1,5 +1,11 @@
+drop procedure if exists flow.generate_sql_for_ppscfv(in z record,
+                                                     in p_in_ppscfv bigint,
+                                                     inout p_sql text,
+                                                     inout p_text_array_tables character varying[],
+                                                     inout p_text_array_alias_columns character varying[],
+                                                     inout p_text_array_columns character varying[]);
 CREATE OR REPLACE procedure flow.generate_sql_for_ppscfv(in z record,
-                                                         in p_in_ppscfv integer,
+                                                         in p_in_ppscfv bigint,
                                                          inout p_sql text,
                                                          inout p_text_array_tables character varying[],
                                                          inout p_text_array_alias_columns character varying[],
@@ -85,7 +91,7 @@ BEGIN
                           where case when $$ || v_field_required || $$ is true then ppscfv.$$ ||
           flow.get_value_based_on_data_type(z.data_type_id) ||
           $$ is not null else 1=1 end and
-                                p.company_process_id = any('$$ || z.company_process_ids::text || $$'::integer[])
+                                p.company_process_id = any('$$ || z.company_process_ids::text || $$'::bigint[])
                           order by pps.project_id,$$ || v_order_by || v_order || $$ ), $$;
 
 END

@@ -1,14 +1,17 @@
--- drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer, integer, integer);
-CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id integer, p_process_step_id integer, p_user_position_id integer, p_user_id integer,
-                                                            p_company_id integer, p_parent_project_process_step_id integer,
-                                                            p_initial_company_process_step_status_type_id integer, p_existing_company_process_step_status_type_id integer default null,
-                                                            p_parent_project_process_step_event_id integer default null)
+ drop function if exists flow.insert_project_process_step(p_project_id bigint, p_process_step_id bigint, p_user_position_id bigint, p_user_id bigint,
+                                                          p_company_id bigint, p_parent_project_process_step_id bigint,
+                                                          p_initial_company_process_step_status_type_id bigint, p_existing_company_process_step_status_type_id bigint,
+                                                          p_parent_project_process_step_event_id bigint);
+CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id bigint, p_process_step_id bigint, p_user_position_id bigint, p_user_id bigint,
+                                                            p_company_id bigint, p_parent_project_process_step_id bigint,
+                                                            p_initial_company_process_step_status_type_id bigint, p_existing_company_process_step_status_type_id bigint default null,
+                                                            p_parent_project_process_step_event_id bigint default null)
 -- i am leaving p_user_position_id as a param in case they ask us to put it back. just needs added to the insert at the bottom
-RETURNS integer
+RETURNS bigint
 LANGUAGE plpgsql AS
 $$
 DECLARE
-p_project_process_step_id integer;
+p_project_process_step_id bigint;
 BEGIN
 
 -- Mark current main pps as false

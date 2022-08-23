@@ -1,7 +1,8 @@
-CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_open_payroll(p_payroll_id integer)
+drop function if exists brs.get_all_users_overrides_earned_in_open_payroll(p_payroll_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_open_payroll(p_payroll_id bigint)
     RETURNS TABLE
             (
-                project_id            integer,
+                project_id            bigint,
                 closer                TEXT,
                 customer_name         CHARACTER VARYING(200),
                 system_size           NUMERIC(10, 2),
@@ -19,7 +20,7 @@ AS
 $BODY$
 declare
     v_period_end_date date;
-    v_position_id     integer;
+    v_position_id     bigint;
 BEGIN
 
     select period_end, position_id

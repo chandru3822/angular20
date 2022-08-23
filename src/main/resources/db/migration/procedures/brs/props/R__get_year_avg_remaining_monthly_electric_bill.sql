@@ -4,14 +4,14 @@ drop function if exists brs.get_year_avg_remaining_monthly_electric_bill(
   p_adjusted_annual_consumption numeric,
   p_first_year_annual_production numeric,
   p_panel_degradation_factor numeric,
-  p_years integer);
+  p_years bigint);
 CREATE OR REPLACE FUNCTION brs.get_year_avg_remaining_monthly_electric_bill(
   p_khw_rate numeric,
   p_utility_cost_escalator numeric,
   p_adjusted_annual_consumption numeric,
   p_first_year_annual_production numeric,
   p_panel_degradation_factor numeric,
-  p_years integer)
+  p_years bigint)
   returns numeric
 AS
 $BODY$

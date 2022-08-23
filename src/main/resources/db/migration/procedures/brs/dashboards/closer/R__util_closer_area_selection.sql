@@ -1,9 +1,10 @@
-CREATE OR REPLACE FUNCTION brs.util_closer_area_selection(p_platform_user_id integer, p_permission_override boolean DEFAULT false)
+drop function if exists brs.util_closer_area_selection(p_platform_user_id bigint, p_permission_override boolean);
+CREATE OR REPLACE FUNCTION brs.util_closer_area_selection(p_platform_user_id bigint, p_permission_override boolean DEFAULT false)
 	  RETURNS SETOF json
     LANGUAGE plpgsql
 AS $function$
 DECLARE
-    v_org_level_id integer;
+    v_org_level_id bigint;
 BEGIN
     select min(ol.level)
     into v_org_level_id

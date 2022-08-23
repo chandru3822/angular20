@@ -54,7 +54,7 @@ SELECT body          as message,
        date_received as created,
        from_phone,
        1             as recipient_type_id,
-       null::int     as user_id,
+       null::bigint     as user_id,
        null::text    as full_name
 from flow.sms_reply sr
          inner join flow.contact c on c.search_phones = sr.search_from_phone and c.archived is false
@@ -341,7 +341,7 @@ ORDER BY created ASC;
     </sms.update>
 
     <sms.getOwners><![CDATA[
-      select * from flow.get_sms_available_owners(:companyId::int, :parentCompanyId::int, :isParent::bool)
+      select * from flow.get_sms_available_owners(:companyId::bigint, :parentCompanyId::bigint, :isParent::bool)
     ]]></sms.getOwners>
 
 </sql>

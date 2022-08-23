@@ -1,8 +1,8 @@
--- DROP FUNCTION brs.get_setter_office_to_beat(integer, date, date);
+-- DROP FUNCTION brs.get_setter_office_to_beat(bigint, date, date);
 
 -- SELECT * FROM brs.get_setter_office_to_beat(723, '2020-06-01', '2020-06-07');
-
-CREATE OR REPLACE FUNCTION brs.get_setter_office_to_beat(p_office_id integer, p_start_date date, p_end_date date)
+drop function if exists brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date);
+  CREATE OR REPLACE FUNCTION brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date)
     RETURNS JSON AS
 $BODY$
 DECLARE
@@ -38,7 +38,7 @@ BEGIN
                 from flow.project p
                     inner join brs.project_details pd on pd.project_id = p.id
                     inner join flow.contact c on c.id = p.contact_id
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS') and up.archived is not true)
                     inner join flow.user u on u.id = pd.setter_user_id

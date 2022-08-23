@@ -14,7 +14,7 @@
       SELECT (select count(1)
               from flow.project p
                   inner join brs.project_details pd on pd.project_id = p.id
-                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
               where (((case when pd.first_appointment_pitched is not null
@@ -39,7 +39,7 @@
              (select count(1)
               from flow.project p
                   inner join brs.project_details pd on pd.project_id = p.id
-                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
               where (((case when pd.first_appointment_pitched is not null
@@ -64,7 +64,7 @@
              (select count(1)
               from flow.project p
                   inner join brs.project_details pd on pd.project_id = p.id
-                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
               where (((case when pd.first_appointment_pitched is not null
@@ -89,7 +89,7 @@
              (select count(1)
               from flow.project p
                   inner join brs.project_details pd on pd.project_id = p.id
-                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
               where (((case when pd.first_appointment_pitched is not null

@@ -260,7 +260,7 @@ select sf.id as "smartlistFieldId",
        cdt.allow_multiple as "allowMultiple",
        case when sf.smartlist_system_list_id is null then '[]' else
          (select to_jsonb(array_agg(row_to_json(rows))) from (
-           select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+           select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
          ) rows)
        end as "listOfValues"
 from flow.smartlist_field sf
@@ -422,7 +422,7 @@ order by name,
 <smartlist.getAvailableProjectDetailsFields><![CDATA[
 select distinct coalesce(pdc.second_field_to_update, pdc.field_to_update)                   as project_details_column,
                 pdc.display_name                                                            as name,
-                null::int                                                                   as process_step_event_id,
+                null::bigint                                                                   as process_step_event_id,
                 case
                   when pdc.field_to_update = 'ahj' then 8
                   else coalesce(pdc.second_data_type_id, pdc.data_type_id)
@@ -929,15 +929,15 @@ select sr.id,
             ) lov), '[]')
           when sf.smartlist_system_list_id is not null then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+              select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
             ) rows)
           when sf.reference_table = 'flow.user' and ot.id = 2 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
+              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::bigint, :inParentCompany)
             ) rows)
           when sf.reference_table = 'flow.user' and ot.id = 4 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
+              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::bigint, :inParentCompany)
             ) rows)
           when sf.reference_table = 'flow.user' and ot.id = 6 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
@@ -1175,7 +1175,7 @@ select sr.id,
         when sf.smartlist_system_list_id is not null then
         (select array_to_json(array_agg(row_to_json(rows))) from (
              select id, name
-             from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+             from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
             where id = any(sr.list_of_value_ids)
            ) rows)
        else null
@@ -1198,19 +1198,19 @@ select sr.id,
             ) lov), '[]')
           when sf.smartlist_system_list_id is not null then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-             select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+             select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
            ) rows)
           when sf.reference_table = 'flow.project_user' and ot.id = 1 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select user_position_id as id, full_name as name from flow.get_project_available_owners(:companyId::int, :parentCompanyId::int, :inParentCompany::bool)
+              select user_position_id as id, full_name as name from flow.get_project_available_owners(:companyId::bigint, :parentCompanyId::bigint, :inParentCompany::bool)
             ) rows)
           when sf.reference_table = 'flow.contact_user' and ot.id = 2 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
+              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::bigint, :inParentCompany)
             ) rows)
           when sf.reference_table = 'flow.user' and ot.id = 4 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
-              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
+              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::bigint, :inParentCompany)
             ) rows)
           when sf.reference_table = 'flow.user' and ot.id = 6 then
             (select array_to_json(array_agg(row_to_json(rows))) from (
@@ -1430,7 +1430,7 @@ order by display_order
 
 <smartlist.addRequirement><![CDATA[
 insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
-values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :processStepEventId, :userId, now(), :userId, now())
+values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :processStepEventId, :userId, now(), :userId, now())
 returning id;
 ]]></smartlist.addRequirement>
 
@@ -1441,7 +1441,7 @@ set operator_type_id = :operatorTypeId,
     secondary_requirement_value = :secondaryRequirementValue,
     data_type_requirement_id = :dataTypeRequirementId,
     list_of_value_id = :listOfValueId,
-    list_of_value_ids = array[ :listOfValueIds ]::int[],
+    list_of_value_ids = array[ :listOfValueIds ]::bigint[],
     system_list_option_id = :systemListOptionId,
     custom_sql_option_id = :customSqlOptionId,
     modified_by_id = :userId,
@@ -1459,7 +1459,7 @@ where id = :requirementId
 ]]></smartlist.deleteRequirement>
 
 <smartlist.getSmartlistSystemList><![CDATA[
-select id, name from flow.get_smartlist_system_list_options(:smartlistSystemListId::int, :companyId::int)
+select id, name from flow.get_smartlist_system_list_options(:smartlistSystemListId::bigint, :companyId::bigint)
 ]]></smartlist.getSmartlistSystemList>
 
 <smartlist.getLogic><![CDATA[

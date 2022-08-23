@@ -1,12 +1,13 @@
-CREATE OR REPLACE FUNCTION brs.get_final_designs_completed_drilldown(p_user_id integer, p_quarter integer)
+drop function if exists brs.get_final_designs_completed_drilldown(p_user_id bigint, p_quarter bigint);
+CREATE OR REPLACE FUNCTION brs.get_final_designs_completed_drilldown(p_user_id bigint, p_quarter bigint)
   RETURNS SETOF json AS
 $BODY$
 declare
   v_start_date date;
   v_end_date date;
-  v_year integer;
+  v_year bigint;
 BEGIN
-  select extract('year' from now())::integer
+  select extract('year' from now())::bigint
   into v_year;
 
   case when p_quarter = 1 then
@@ -44,7 +45,7 @@ BEGIN
       from brs.project_details pd
         left join flow.contact_custom_field_value ccfv_referral on ccfv_referral.contact_id = pd.contact_id and ccfv_referral.custom_field_group_assignment_id = 19106 -- Referral field - boolean
         left join flow.contact_custom_field_value ccfv_referred_by on ccfv_referred_by.contact_id = pd.contact_id and ccfv_referred_by.custom_field_group_assignment_id = 997 -- Referral by field - text
-        left join flow.contact_custom_field_value ccfv_ref_gen_rep on ccfv_ref_gen_rep.contact_id = pd.contact_id and ccfv_ref_gen_rep.custom_field_group_assignment_id = 19178 -- Referral Generation Representative field - system list (int)
+        left join flow.contact_custom_field_value ccfv_ref_gen_rep on ccfv_ref_gen_rep.contact_id = pd.contact_id and ccfv_ref_gen_rep.custom_field_group_assignment_id = 19178 -- Referral Generation Representative field - system list (bigint)
       where pd.final_design_complete_date is not null
         and pd.final_design_complete_date::date between v_start_date and v_end_date
         and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > v_end_date))

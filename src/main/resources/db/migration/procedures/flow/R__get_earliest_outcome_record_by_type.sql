@@ -1,10 +1,12 @@
-CREATE OR REPLACE FUNCTION brs.get_earliest_outcome_record_by_type(p_project_process_step_event_id integer, p_config_code varchar,
+drop function if exists brs.get_earliest_outcome_record_by_type(p_project_process_step_event_id bigint, p_config_code varchar,
+                                                                p_has_outcome boolean);
+  CREATE OR REPLACE FUNCTION brs.get_earliest_outcome_record_by_type(p_project_process_step_event_id bigint, p_config_code varchar,
                                                                   p_has_outcome boolean default true)
   RETURNS TABLE
           (
-            int_value  integer,
+            int_value  bigint,
             start_time timestamp,
-            id         integer
+            id         bigint
           )
 AS
 $BODY$
@@ -23,11 +25,11 @@ BEGIN
       where ppse.id = p_project_process_step_event_id
         and case
               when p_config_code is not null and p_config_code = 'OUTCOME_NOT_PITCHED_MISSED' then
-                  ppsecfv2.int_value not in (select unnest(string_to_array(value, ',')::int[])
+                  ppsecfv2.int_value not in (select unnest(string_to_array(value, ',')::bigint[])
                                              from flow.company_configuration_value
                                              where code = p_config_code)
               when p_config_code is not null and p_config_code != 'OUTCOME_NOT_PITCHED_MISSED' then
-                  ppsecfv2.int_value in (select unnest(string_to_array(value, ',')::int[])
+                  ppsecfv2.int_value in (select unnest(string_to_array(value, ',')::bigint[])
                                          from flow.company_configuration_value
                                          where code = p_config_code)
               else 1 = 1 end
@@ -35,7 +37,7 @@ BEGIN
       limit 1;
     else
       return query
-        select distinct on (ppse2.start_time ) null::integer, ppse2.start_time, ppse2.id
+        select distinct on (ppse2.start_time ) null::bigint, ppse2.start_time, ppse2.id
         from flow.project_process_step_event ppse
                inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
                inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1

@@ -1,11 +1,14 @@
-CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_postal_code_zone_id integer,
+drop function if exists brs.get_total_lead_allocation(p_postal_code_zone_id bigint,
+                                                      p_run_manual_allocation boolean ,
+                                                      p_remote boolean);
+CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_postal_code_zone_id bigint,
                                                          p_run_manual_allocation boolean default false,
                                                          p_remote boolean default false)
     RETURNS table
             (
-                postal_code_zone_user_id        integer,
-                user_id                         integer,
-                company_timezone_id             integer,
+                postal_code_zone_user_id        bigint,
+                user_id                         bigint,
+                company_timezone_id             bigint,
                 timezone                        varchar,
                 distance_from_actual_to_target  numeric,
                 total_lead_allocation           numeric,
@@ -22,7 +25,7 @@ CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_postal_code_zone_id i
 AS
 $BODY$
 declare
-  v_postal_code_zone_id integer;
+  v_postal_code_zone_id bigint;
 BEGIN
 
   if p_remote is false then

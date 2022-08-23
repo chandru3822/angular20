@@ -1,7 +1,8 @@
-CREATE OR REPLACE FUNCTION flow.refresh_user_position_orgs()
+drop function if exists flow.refresh_user_position_orgs();
+  CREATE OR REPLACE FUNCTION flow.refresh_user_position_orgs()
 
-RETURNS TABLE(id int, note text, archived boolean, parent_id int, date_created timestamp, date_modified timestamp,
-              created_by_id int, created_by text, modified_by_id int, primary_id int, child_notes json) AS
+RETURNS TABLE(id bigint, note text, archived boolean, parent_id bigint, date_created timestamp, date_modified timestamp,
+              created_by_id bigint, created_by text, modified_by_id bigint, primary_id bigint, child_notes json) AS
 
 $BODY$
 DECLARE

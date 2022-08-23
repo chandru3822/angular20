@@ -1,3 +1,4 @@
+drop function if exists flow.project_audit();
 CREATE OR REPLACE FUNCTION flow.project_audit()
   RETURNS TRIGGER AS
 $$
@@ -69,7 +70,7 @@ CREATE TRIGGER project_audit_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.project_audit();
 
-
+drop function if exists flow.user_audit();
 CREATE OR REPLACE FUNCTION flow.user_audit()
   RETURNS TRIGGER AS
 $$
@@ -140,7 +141,7 @@ CREATE TRIGGER user_audit_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.user_audit();
 
-
+drop function if exists flow.contact_audit();
 CREATE OR REPLACE FUNCTION flow.contact_audit()
   RETURNS TRIGGER AS
 $$
@@ -211,7 +212,7 @@ CREATE TRIGGER contact_audit_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.contact_audit();
 
-
+drop function if exists flow.organization_audit();
 CREATE OR REPLACE FUNCTION flow.organization_audit()
   RETURNS TRIGGER AS
 $$
@@ -283,7 +284,7 @@ CREATE TRIGGER organization_audit_trg
 EXECUTE PROCEDURE flow.organization_audit();
 
 
-
+drop function if exists flow.project_process_step_audit();
 CREATE OR REPLACE FUNCTION flow.project_process_step_audit()
   RETURNS TRIGGER AS
 $$
@@ -358,7 +359,7 @@ CREATE TRIGGER project_process_step_audit_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.project_process_step_audit();
 
-
+drop function if exists flow.project_process_step_event_custom_field_audit();
 CREATE OR REPLACE FUNCTION flow.project_process_step_event_custom_field_audit()
   RETURNS TRIGGER AS
 $$
@@ -433,7 +434,7 @@ CREATE TRIGGER project_process_step_event_custom_field_value_audit_trg
 EXECUTE PROCEDURE flow.project_process_step_event_custom_field_audit();
 
 
-
+drop function if exists flow.concrete_project_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_project_audit()
   RETURNS TRIGGER AS
 $$
@@ -463,6 +464,7 @@ CREATE TRIGGER concrete_project_audit_trg
 EXECUTE PROCEDURE flow.concrete_project_audit();
 
 
+drop function if exists flow.concrete_contact_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_contact_audit()
   RETURNS TRIGGER AS
 $$
@@ -494,6 +496,7 @@ CREATE TRIGGER concrete_contact_audit_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.concrete_contact_audit();
 
+drop function if exists flow.concrete_user_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_user_audit()
   RETURNS TRIGGER AS
 $$
@@ -521,7 +524,7 @@ CREATE TRIGGER concrete_user_audit_trg
 EXECUTE PROCEDURE flow.concrete_user_audit();
 
 
-
+drop function if exists flow.concrete_project_process_step_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_project_process_step_audit()
   RETURNS TRIGGER AS
 $$
@@ -548,6 +551,7 @@ CREATE TRIGGER concrete_project_process_step_audit_trg
 EXECUTE PROCEDURE flow.concrete_project_process_step_audit();
 
 
+drop function if exists flow.concrete_project_process_step_event_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_project_process_step_event_audit()
   RETURNS TRIGGER AS
 $$
@@ -577,6 +581,7 @@ CREATE TRIGGER concrete_project_process_step_event_audit_trg
 EXECUTE PROCEDURE flow.concrete_project_process_step_event_audit();
 
 
+drop function if exists flow.concrete_postal_code_zone_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_postal_code_zone_audit()
   RETURNS TRIGGER AS
 $$
@@ -624,6 +629,7 @@ CREATE TRIGGER concrete_postal_code_zone_audit_trg
 EXECUTE PROCEDURE flow.concrete_postal_code_zone_audit();
 
 
+drop function if exists flow.concrete_postal_code_zone_user_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_postal_code_zone_user_audit()
   RETURNS TRIGGER AS
 $$

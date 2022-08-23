@@ -1,12 +1,17 @@
+drop function if exists brs.create_rebate_payments(
+  p_project_id bigint,
+  p_created_by_user_id bigint,
+  p_total_promotion_amount numeric(12,2),
+  p_number_of_promotion_payments bigint);
 CREATE OR REPLACE FUNCTION brs.create_rebate_payments(
-    p_project_id integer,
-    p_created_by_user_id integer,
+    p_project_id bigint,
+    p_created_by_user_id bigint,
     p_total_promotion_amount numeric(12,2),
-    p_number_of_promotion_payments integer)
+    p_number_of_promotion_payments bigint)
   RETURNS VOID AS
 $BODY$
 DECLARE
-v_payment_nbr integer;
+v_payment_nbr bigint;
 BEGIN
 
     update flow.project_process_step_custom_field_value

@@ -1,3 +1,4 @@
+drop function if exists flow.user_asset_trg();
 CREATE OR REPLACE FUNCTION flow.user_asset_trg()
     RETURNS trigger AS
 $BODY$

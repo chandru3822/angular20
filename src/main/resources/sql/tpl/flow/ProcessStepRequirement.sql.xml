@@ -407,11 +407,11 @@
   <!-- @Randa, this is the same situation as in getActionById in ProcessStepActionService.java. Do we want to modularize out selection that are used in multiple queries?
        For instance, do we create a function that just returns the dynamic param values? -->
   <processStepRequirement.getRequirementsWithValuesByProjectProcessStepId><![CDATA[
-    select * from flow.get_project_process_step_requirements_with_values(:projectProcessStepId::integer, :requirementIds::integer[])
+    select * from flow.get_project_process_step_requirements_with_values(:projectProcessStepId::bigint, :requirementIds::bigint[])
   ]]></processStepRequirement.getRequirementsWithValuesByProjectProcessStepId>
 
   <processStepRequirement.getEventActionRequirementsWithValuesByProjectProcessStepId><![CDATA[
-    select * from flow.get_project_process_step_event_requirements_with_values(:projectProcessStepId::integer, :requirementIds::integer[])
+    select * from flow.get_project_process_step_event_requirements_with_values(:projectProcessStepId::bigint, :requirementIds::bigint[])
   ]]></processStepRequirement.getEventActionRequirementsWithValuesByProjectProcessStepId>
 
   <processStepRequirement.deleteRequirement><![CDATA[
@@ -462,7 +462,7 @@
         fail_if_no_reference_step_found = :failIfNoReferenceStepFound,
         custom_sql_option_id = :customSqlOptionId,
         list_of_value_id = :listOfValueId,
-        list_of_value_ids = array[ :listOfValueIds ]::integer[],
+        list_of_value_ids = array[ :listOfValueIds ]::bigint[],
         secondary_requirement_value = :secondaryRequirementValue,
         data_type_requirement_id = :dataTypeRequirementId,
         modified_by_id = :modifiedById,
@@ -488,7 +488,7 @@ values (:requirementTypeId, :operatorTypeId, :requirementValue, :customFieldGrou
         :processStepId,
         :secondaryRequirementValue,
         :dataTypeRequirementId,
-        :listOfValueId, array [ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId,
+        :listOfValueId, array [ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId,
         :referenceProcessStepId, :failIfNoReferenceStepFound, now(), :createdById, now(), :createdById)
   ]]></processStepRequirement.insertRequirement>
 

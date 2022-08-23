@@ -1,8 +1,5 @@
--- Function: blueraven.get_commission_summary_from_snapshot(integer)
-
--- DROP FUNCTION blueraven.get_commission_summary_from_snapshot(integer);
-
-CREATE OR REPLACE FUNCTION brs.get_commission_summary_from_snapshot_for_setters(p_payroll_id INTEGER)
+drop function if exists brs.get_commission_summary_from_snapshot_for_setters(p_payroll_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_commission_summary_from_snapshot_for_setters(p_payroll_id bigint)
   RETURNS  JSON AS
 $BODY$
 declare

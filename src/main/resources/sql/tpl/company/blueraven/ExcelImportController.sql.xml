@@ -11,7 +11,7 @@
         (select lov.name
         from flow.list_of_value lov
         where lov.id = (select int_value from flow.contact_custom_field_value where contact_id = (select contact_id from flow.project where id = :projectId) and
-        custom_field_group_assignment_id = 395)::integer) as source,
+        custom_field_group_assignment_id = 395)::bigint) as source,
         trim(concat(users.first_name, ' ', users.last_name)) as deal_owner,
         (select numeric_value from flow.project_process_step_custom_field_value where project_process_step_id =
             (select id from flow.project_process_step where project_id = :projectId and process_step_id=3 and main is true)
