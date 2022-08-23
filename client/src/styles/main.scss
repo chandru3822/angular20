@@ -123,6 +123,11 @@ $default-text: rgba(0,0,0,0.87);
   color: var(--v-primary-base);
 }
 
+.v-list .v-list-item--active{
+  color:var(--v-anchor-base);
+  background-color: var(--v-primary-lighten9);
+}
+
 .v-list-item--dense, .v-list--dense .v-list-item {
   /* vuetify's default code for v-list-dense sets the min-height to 40px, but nothing was setting the height itself so depending on content adding the `dense` flag wasn't doing anything */
   height: 40px;
