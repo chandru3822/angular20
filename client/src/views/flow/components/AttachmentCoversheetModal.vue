@@ -106,7 +106,46 @@
             </div>
             </div>
             <v-divider class="mt-1"></v-divider>
-            file preview here
+            <div class="mt-3 preview-main-container">
+              <div v-if="isImage" class="one-hunned">
+                <v-img name="coversheetPreview"
+                       class="preview-image"
+                       :src="existingAttachment.presignedUrl"></v-img>
+              </div>
+              <div v-else-if="isPdf" class="one-hunned">
+                <div v-if="pdfIsLoading" class="text-center">
+                  <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
+                </div>
+                <vue-pdf-embed
+                  ref="pdfRef"
+                  :source="existingAttachment.presignedUrl"
+                  :page="pdfPage"
+                  @rendered="handleDocumentRender"
+                />
+                <v-toolbar class="page-selection-bar">
+                  <v-spacer></v-spacer>
+                  <v-btn text :disabled="pdfPage <= 1" @click="pdfPage--" class="mr-3">
+                    <v-icon>mdi-chevron-left</v-icon>
+                  </v-btn>
+
+                  Page {{ pdfPage }} / {{ pdfPageCount }}
+
+                  <v-btn text :disabled="pdfPage >= pdfPageCount" @click="pdfPage++" class="ml-3">
+                    <v-icon>mdi-chevron-right</v-icon>
+                  </v-btn>
+                  <v-spacer></v-spacer>
+                </v-toolbar>
+              </div>
+              <div v-else class="height-one-hunned one-hunned">
+                <v-card class="square-card no-preview-container" >
+                  <div class="text-center">
+                    <v-icon :size="200" color="white">mdi-image-frame</v-icon>
+
+                    <div class="mt-5">No Preview Available</div>
+                  </div>
+                </v-card>
+              </div>
+            </div>
           </v-col>
         </v-row>
       </v-form>
@@ -130,6 +169,8 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from "@/services/customFieldService"
 import cloneDeep from 'lodash.clonedeep'
+import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: "AttachmentCoversheetModal",
@@ -149,7 +190,9 @@ export default {
   },
   components: {
     DatetimePickerInput,
-    CustomValueInput
+    CustomValueInput,
+    VuePdfEmbed,
+    SpinnerInline
   },
   watch: {
     showModal: function (visible) {
@@ -164,6 +207,7 @@ export default {
       fileDetails: {},
       timezone: this.$store.state.user.details.timezone.value,
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
+      imageFileExtensions: constants.IMAGE_FILE_EXTENSIONS,
       customFieldGroups: [],
       dirtyCfvs: [],
       fieldsSaving: false,
@@ -172,7 +216,12 @@ export default {
       saveError: false,
       errorMsg: null,
       isExisting: false,
-      customFieldsLoading: false
+      customFieldsLoading: false,
+      isImage: false,
+      isPdf: false,
+      pdfPage: 1,
+      pdfPageCount: 1,
+      pdfIsLoading: true
     }
   },
   created() {
@@ -180,6 +229,10 @@ export default {
   },
   computed: {},
   methods: {
+    handleDocumentRender() {
+      this.pdfIsLoading = false
+      this.pdfPageCount = this.$refs.pdfRef.pageCount
+    },
     goToPath(path) {
       if(null != path) {
         this.$router.push(path)
@@ -194,6 +247,13 @@ export default {
       this.fileDetails = {}
       this.saveError = false
       this.errorMsg = null
+      this.isPdf = false
+      this.isImage = false
+      this.pdfPage = 1
+      this.pdfPageCount = 1
+
+      this.isPdf = this.existingAttachment.fileExtension === 'pdf'
+      this.isImage = this.imageFileExtensions.includes(this.existingAttachment.fileExtension)
 
       //required so that both new and existing files work since the objects aren't identical
       this.fileDetails = cloneDeep(this.existingAttachment)
@@ -367,5 +427,32 @@ export default {
   margin: 0 -10px;
   background-color: white;
   padding-bottom: 15px;
+}
+.preview-main-container {
+  height: calc(100% - 80px);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.preview-image {
+  max-width: 100%;
+}
+
+.page-selection-bar {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.no-preview-container {
+  background-color: var(--v-grey-lighten2);
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

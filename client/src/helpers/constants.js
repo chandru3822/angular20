@@ -17,8 +17,9 @@ constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
 // constants.MAX_FILE_SIZE = 209715200 //200 mb
 constants.MAX_FILE_SIZE = 1048576000 //1 gb
-//note: do not include spaces in WHITELISTED_FILE_EXTENSIONS
 constants.WHITELISTED_FILE_EXTENSIONS = ['.png','.jpg','.jpeg','.gif','.tiff','.psd','.raw','.doc','.docx','.pdf','.xls','.xlsx','.csv','.txt']
+//IMAGE_FILE_EXTENSIONS is used/formatted specifically for the attachment coversheet checks. make another one if you need one with . first
+constants.IMAGE_FILE_EXTENSIONS = ['png','jpg','jpeg','gif','tiff','psd','raw']
 constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
 constants.STANDARD_IMAGES_ONLY = 'image/*'
 constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
