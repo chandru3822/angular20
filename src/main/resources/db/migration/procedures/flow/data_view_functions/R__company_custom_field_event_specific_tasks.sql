@@ -1,6 +1,9 @@
-CREATE OR REPLACE FUNCTION flow.company_custom_field_event_specific_tasks(p_company_id integer,
-                                                             p_project_process_step_event_id integer,
-                                                             p_project_id integer)
+drop function if exists flow.company_custom_field_event_specific_tasks(p_company_id bigint,
+                                                                       p_project_process_step_event_id bigint,
+                                                                       p_project_id bigint);
+CREATE OR REPLACE FUNCTION flow.company_custom_field_event_specific_tasks(p_company_id bigint,
+                                                             p_project_process_step_event_id bigint,
+                                                             p_project_id bigint)
   RETURNS void AS
 
 $BODY$

@@ -49,7 +49,7 @@
         </template>
 
         <template #no-data>
-          <div class="my-3">
+          <div class="my-3 default-text-color">
             No data was found for the specified date range.
           </div>
         </template>

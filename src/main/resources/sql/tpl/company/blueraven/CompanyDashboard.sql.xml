@@ -48,11 +48,11 @@
   ]]></dash.getDates>
 
   <dash.getCompanyDashboard><![CDATA[
-    select * from brs.rpt_company_dashboard(:startDate::date, :endDate::date, :companyId::int, :targetTypeId::int);
+    select * from brs.rpt_company_dashboard(:startDate::date, :endDate::date, :companyId::bigint, :targetTypeId::bigint);
   ]]></dash.getCompanyDashboard>
 
   <dash.getCompanyDashboardDrilldown><![CDATA[
-    select * from brs.rpt_company_dashboard_drilldown(:startDate::date, :endDate::date, :companyId::int, :milestoneTypeId::int, :loadPartners::boolean);
+    select * from brs.rpt_company_dashboard_drilldown(:startDate::date, :endDate::date, :companyId::bigint, :milestoneTypeId::bigint, :loadPartners::boolean);
   ]]></dash.getCompanyDashboardDrilldown>
 
 </sql>

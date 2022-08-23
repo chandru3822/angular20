@@ -1,6 +1,9 @@
+drop function if exists brs.rpt_closer_funnel_appt_date_cohort(p_custom_start_date date,
+                                                               p_custom_end_date date,
+                                                               p_user_position_ids bigint[], p_org_ids bigint[]);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appt_date_cohort(p_custom_start_date date,
                                                                   p_custom_end_date date,
-                                                                  p_user_position_ids integer[], p_org_ids integer[])
+                                                                  p_user_position_ids bigint[], p_org_ids bigint[])
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
@@ -60,7 +63,7 @@ BEGIN
                                             else 1 = 1 end)
                                   else true end
                             and pd.archived is false
-                            and ppsecfv.int_value in (select unnest(string_to_array(value, ',')::int[])
+                            and ppsecfv.int_value in (select unnest(string_to_array(value, ',')::bigint[])
                                                       from flow.company_configuration_value
                                                       where code = 'OUTCOME_PITCHED')
 --                             and (ppse.start_time :: DATE between p_custom_start_date and p_custom_end_date)
@@ -102,10 +105,10 @@ BEGIN
                                         when f.id in (21) then final_design_complete_date is not null
                                         when f.id in (8) then substantial_completion_date is not null
                                         else true end
-                                  --credit check int value
+                                  --credit check bigint value
                                   and case when f.id = 3 then credit_check = 82 else true end
                                )         as today_count,
-                               null::int as checked_in_today_count,
+                               null::bigint as checked_in_today_count,
                                (select count(1)
                                 from project_data
                                 where
@@ -121,11 +124,11 @@ BEGIN
                                         when f.id in (21) then final_design_complete_date is not null
                                         when f.id in (8) then substantial_completion_date is not null
                                         else true end
-                                  --credit check int value
+                                  --credit check bigint value
                                   and case when f.id = 3 then credit_check = 82 else true end
                                )         as week_to_date_count,
 --
-                               null::int as checked_in_week_to_date_count,
+                               null::bigint as checked_in_week_to_date_count,
                                (select count(1)
                                 from project_data
                                 where
@@ -142,10 +145,10 @@ BEGIN
                                         when f.id in (21) then final_design_complete_date is not null
                                         when f.id in (8) then substantial_completion_date is not null
                                         else true end
-                                  --credit check int value
+                                  --credit check bigint value
                                   and case when f.id = 3 then credit_check = 82 else true end
                                )         as custom_date_range_count,
-                               null::int as checked_in_custom_date_range_count
+                               null::bigint as checked_in_custom_date_range_count
                         from brs.funnel f
                         where f.archived is false
                           and f.funnel_type_id = 3

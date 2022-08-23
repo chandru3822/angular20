@@ -64,10 +64,10 @@ select ppse.*,
                   SELECT array_to_json(array_agg(row_to_json(availableResources)))
                   FROM (
                          select *
-                         from flow.get_system_list_options(e.company_id::integer,
-                                                           (select company_system_list_id from flow.custom_field cf where cf.id = e.resource_custom_field_id)::integer,
+                         from flow.get_system_list_options(e.company_id::bigint,
+                                                           (select company_system_list_id from flow.custom_field cf where cf.id = e.resource_custom_field_id)::bigint,
                                                            true,
-                                                           (select system_list_option_ids from flow.custom_field cf where cf.id = e.resource_custom_field_id)::integer[], ppse.resource_id::integer)) availableResources), '[]') AS "availableResources",
+                                                           (select system_list_option_ids from flow.custom_field cf where cf.id = e.resource_custom_field_id)::bigint[], ppse.resource_id::bigint)) availableResources), '[]') AS "availableResources",
        coalesce((
                   SELECT array_to_json(array_agg(row_to_json(psea)))
                   FROM (
@@ -269,11 +269,11 @@ where ppse.id = :id
 
   <projectProcessStepEvent.savePpsEventDetails><![CDATA[
     update flow.project_process_step_event
-      set resource_id = :resourceId::int,
+      set resource_id = :resourceId::bigint,
           start_time = :startTime::timestamp,
           end_time = :endTime::timestamp,
-          company_event_status_type_id = case when :companyEventStatusTypeId::int is null then company_event_status_type_id else :companyEventStatusTypeId::int end,
-          modified_by_id = :modifiedById::int,
+          company_event_status_type_id = case when :companyEventStatusTypeId::bigint is null then company_event_status_type_id else :companyEventStatusTypeId::bigint end,
+          modified_by_id = :modifiedById::bigint,
           date_modified = now(),
           save_version = save_version + 1
     where id = :id
@@ -282,11 +282,11 @@ where ppse.id = :id
 
   <projectProcessStepEvent.savePpsEventDetailsNoVersion><![CDATA[
     update flow.project_process_step_event
-      set resource_id = :resourceId::int,
+      set resource_id = :resourceId::bigint,
           start_time = :startTime::timestamp,
           end_time = :endTime::timestamp,
-          company_event_status_type_id = case when :companyEventStatusTypeId::int is null then company_event_status_type_id else :companyEventStatusTypeId::int end,
-          modified_by_id = :modifiedById::int,
+          company_event_status_type_id = case when :companyEventStatusTypeId::bigint is null then company_event_status_type_id else :companyEventStatusTypeId::bigint end,
+          modified_by_id = :modifiedById::bigint,
           date_modified = now()
     where id = :id
   ]]></projectProcessStepEvent.savePpsEventDetailsNoVersion>

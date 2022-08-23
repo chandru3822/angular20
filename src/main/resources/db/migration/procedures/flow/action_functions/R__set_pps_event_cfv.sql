@@ -1,11 +1,12 @@
-CREATE OR REPLACE FUNCTION flow.set_pps_event_cfv(p_ppse_id integer, p_user_id integer, p_cfga integer, p_value_to_save text, p_override_existing boolean default true)
+drop function if exists flow.set_pps_event_cfv(p_ppse_id bigint, p_user_id bigint, p_cfga bigint, p_value_to_save text, p_override_existing boolean);
+CREATE OR REPLACE FUNCTION flow.set_pps_event_cfv(p_ppse_id bigint, p_user_id bigint, p_cfga bigint, p_value_to_save text, p_override_existing boolean default true)
   returns boolean AS
 $BODY$
 declare
   v_field_saved        boolean;
-  v_existing_id        int;
+  v_existing_id        bigint;
   v_date_value_to_save text;
-  v_data_type_id       int;
+  v_data_type_id       bigint;
   v_request_is_valid   boolean;
   v_existing_value text;
 BEGIN
@@ -58,8 +59,8 @@ BEGIN
       -- 3,boolean
       -- 4,numeric
       -- 5,text
-      -- 6,integer
-      -- 7,integer array
+      -- 6,bigint
+      -- 7,bigint array
       -- 8,system
       -- 9,System List
       if v_data_type_id = 1 then
@@ -114,7 +115,7 @@ BEGIN
                                                                        numeric_value, int_value, int_array_value,
                                                                        created_by_id, date_created, modified_by_id,
                                                                        date_modified)
-        values (p_ppse_id, p_cfga, null, null, null, null, null, p_value_to_save::int, null, p_user_id, now(),
+        values (p_ppse_id, p_cfga, null, null, null, null, null, p_value_to_save::bigint, null, p_user_id, now(),
                 p_user_id, now());
       elsif v_data_type_id = 7 then
         insert into flow.project_process_step_event_custom_field_value(project_process_step_event_id,
@@ -123,7 +124,7 @@ BEGIN
                                                                        numeric_value, int_value, int_array_value,
                                                                        created_by_id, date_created, modified_by_id,
                                                                        date_modified)
-        values (p_ppse_id, p_cfga, null, null, null, null, null, null, p_value_to_save::int[], p_user_id, now(),
+        values (p_ppse_id, p_cfga, null, null, null, null, null, null, p_value_to_save::bigint[], p_user_id, now(),
                 p_user_id, now());
       end if;
     else
@@ -162,13 +163,13 @@ BEGIN
           where id = v_existing_id;
         elsif v_data_type_id in (6,9) then
           update flow.project_process_step_event_custom_field_value
-          set int_value      = p_value_to_save::int,
+          set int_value      = p_value_to_save::bigint,
               modified_by_id = p_user_id,
               date_modified  = now()
           where id = v_existing_id;
         elsif v_data_type_id = 7 then
           update flow.project_process_step_event_custom_field_value
-          set int_array_value = p_value_to_save::int[],
+          set int_array_value = p_value_to_save::bigint[],
               modified_by_id  = p_user_id,
               date_modified   = now()
           where id = v_existing_id;

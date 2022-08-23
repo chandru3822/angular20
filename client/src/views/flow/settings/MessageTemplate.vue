@@ -74,10 +74,10 @@
            </div>
           </template>
           <template #no-data>
-            No templates available
+            <span class="default-text-color">No templates available</span>
           </template>
           <template #no-results>
-            No templates match your selection
+            <span class="default-text-color">No templates match your selection</span>
           </template>
 
           <template #expanded-item="{ headers, item }">

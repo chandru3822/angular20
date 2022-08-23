@@ -1,5 +1,5 @@
--- DROP FUNCTION IF EXISTS flow.insert_note_relation(integer, integer);
-CREATE OR REPLACE FUNCTION flow.insert_note_relation(p_primary_id INTEGER, p_note_id INTEGER, p_object_type_id INTEGER)
+drop function if exists flow.insert_note_relation(p_primary_id bigint, p_note_id bigint, p_object_type_id bigint);
+  CREATE OR REPLACE FUNCTION flow.insert_note_relation(p_primary_id bigint, p_note_id bigint, p_object_type_id bigint)
 
 RETURNS boolean
     LANGUAGE plpgsql

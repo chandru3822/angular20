@@ -1,16 +1,23 @@
-CREATE OR REPLACE FUNCTION brs.clone_override_plan(
-  p_override_plan   INTEGER,
+drop function if exists brs.clone_override_plan(
+  p_override_plan   bigint,
   p_start_date      DATE,
-  p_assigned_users  INTEGER [],
-  p_receiving_users INTEGER [],
-  p_created_by      INTEGER,
-  p_user_to_add     INTEGER)
-  RETURNS INTEGER
+  p_assigned_users  bigint [],
+  p_receiving_users bigint [],
+  p_created_by      bigint,
+  p_user_to_add     bigint);
+CREATE OR REPLACE FUNCTION brs.clone_override_plan(
+  p_override_plan   bigint,
+  p_start_date      DATE,
+  p_assigned_users  bigint [],
+  p_receiving_users bigint [],
+  p_created_by      bigint,
+  p_user_to_add     bigint)
+  RETURNS bigint
 LANGUAGE plpgsql
 AS $$
 DECLARE
   _cloned  RECORD;
-  _cloneId INT;
+  _cloneId bigint;
 BEGIN
   SELECT *
   INTO _cloned

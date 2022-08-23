@@ -239,10 +239,10 @@
 
   <event.getStatusesForWqt><![CDATA[
     select
-      null::int as id,
+      null::bigint as id,
       'Category' as header,
-      null::int as "eventStatusTypeId",
-      null::int as "companyEventStatusTypeId",
+      null::bigint as "eventStatusTypeId",
+      null::bigint as "companyEventStatusTypeId",
       false as archived,
       null::text as "uniqueText",
       null::text as "group",
@@ -252,10 +252,10 @@
       0 as display_sort
     union all
     select
-      null::int as id,
+      null::bigint as id,
       null::text as header,
       est.id as "eventStatusTypeId",
-      null::int as "companyEventStatusTypeId",
+      null::bigint as "companyEventStatusTypeId",
       est.archived,
       concat(est.event_status_type, 'EST')::text as "uniqueText",
       'Category' as "group",
@@ -267,10 +267,10 @@
     where est.archived is not true
     union all
     select
-      null::int as id,
+      null::bigint as id,
       'Event Status' as header,
-      null::int as "eventStatusTypeId",
-      null::int as "companyEventStatusTypeId",
+      null::bigint as "eventStatusTypeId",
+      null::bigint as "companyEventStatusTypeId",
       false as archived,
       null::text as "uniqueText",
       null::text as "group",
@@ -280,7 +280,7 @@
       2 as display_sort
     union all
     select
-      null::int as id,
+      null::bigint as id,
       null::text as header,
       est.id as "eventStatusTypeId",
       cest.id as "companyEventStatusTypeId",
@@ -481,7 +481,7 @@ with customField as (
   where e.id = :eventId
 )
 select o.*
-from customField, flow.get_system_list_options(:companyId::int, customField.company_system_list_id::int, true, customField.system_list_option_ids::int[]) o
+from customField, flow.get_system_list_options(:companyId::bigint, customField.company_system_list_id::bigint, true, customField.system_list_option_ids::bigint[]) o
 ]]></event.getAvailableOwners>
 
   <event.getAssignedEventStatusesByListOfValue><![CDATA[

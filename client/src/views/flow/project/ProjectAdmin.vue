@@ -53,11 +53,11 @@
           >
 
             <template #no-data>
-              No available process steps
+              <span class="default-text-color">No available process steps</span>
             </template>
 
             <template #no-results>
-              No available process steps
+              <span class="default-text-color">No available process steps</span>
             </template>
 
             <template #item="{item: projectProcessStep}">

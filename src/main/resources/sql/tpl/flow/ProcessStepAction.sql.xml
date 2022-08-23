@@ -203,8 +203,8 @@
              left join flow.company_process_step_status_type cpsst on cpsst.id = psa.company_process_step_status_type_id
              left join flow.company_project_status_type cpst on cpst.id = psa.company_project_status_type_id
              inner join flow.action_type at on at.id = psa.action_type_id
-    where case when :processStepId::integer is not null then psa.process_step_id = :processStepId else 1 = 1 end
-      and case when :id::integer is not null then psa.id = :id else 1 = 1 end and psa.archived is not true
+    where case when :processStepId::bigint is not null then psa.process_step_id = :processStepId else 1 = 1 end
+      and case when :id::bigint is not null then psa.id = :id else 1 = 1 end and psa.archived is not true
     order by psa.display_order
   ]]></processStepAction.getActionsForStep>
 
@@ -237,7 +237,7 @@
   ]]></processStepAction.updateActionDisplayOrder>
 
   <processStepAction.duplicateAction><![CDATA[
-    select * from flow.duplicate_action(:actionId::int, :userId::int, :companyId::int);
+    select * from flow.duplicate_action(:actionId::bigint, :userId::bigint, :companyId::bigint);
   ]]></processStepAction.duplicateAction>
 
   <processStepAction.updateAction><![CDATA[

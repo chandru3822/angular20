@@ -9,12 +9,12 @@ CREATE OR REPLACE FUNCTION brs.get_request_for_installation_agreements_count(
     p_parent_company_id bigint,
     p_searchterm character varying
 )
-    RETURNS INTEGER
+    RETURNS bigint
     LANGUAGE plpgsql
 AS $function$
 
 declare
-    p_agreement_count integer;
+    p_agreement_count bigint;
 BEGIN
     case when (p_view_all) THEN
             SELECT count(*) into p_agreement_count
@@ -27,7 +27,7 @@ BEGIN
                 AND pd.energized_date is null
                 AND p.archived is false
                 AND case when p_is_parent
-                             then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
+                             then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::bigint))
                     else c.company_id = p_company_id end
                 AND p.project_name ILIKE '%' || p_searchterm || '%';
         ELSE
@@ -42,7 +42,7 @@ BEGIN
                     AND pd.energized_date is null
                     AND p.archived is false
                     AND case when p_is_parent
-                                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
+                                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::bigint))
                         else c.company_id = p_company_id end
                     AND p.project_name ILIKE '%' || p_searchterm || '%';
         END CASE;

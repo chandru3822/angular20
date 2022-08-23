@@ -247,11 +247,11 @@
               class="elevation-1 fix-column-width-bug event-cfg-table square-card"
             >
               <template #no-data>
-                No custom field groups for this event
+                <span class="default-text-color">No custom field groups for this event</span>
               </template>
 
               <template #no-results>
-                No custom field groups for this event
+                <span class="default-text-color">No custom field groups for this event</span>
               </template>
 
               <template #item="{ item, index }">

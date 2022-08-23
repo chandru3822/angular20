@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.get_tournament_pool_users(p_tournament_id integer, p_tournament_pool_type_id integer)
+drop function if exists brs.get_tournament_pool_users(p_tournament_id bigint, p_tournament_pool_type_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_tournament_pool_users(p_tournament_id bigint, p_tournament_pool_type_id bigint)
     RETURNS SETOF json
 AS
 $BODY$
@@ -10,7 +11,7 @@ BEGIN
                                                   u.id                                                      as "userId",
                                                   tpu.qualified,
                                                   brs.get_tournament_user_score(p_tournament_id,t.tournament_formula_id, tp.start_date,
-                                                                                tp.end_date, u.id::integer) as score
+                                                                                tp.end_date, u.id::bigint) as score
                                            from brs.tournament_pool tp
                                                     inner join brs.tournament t on tp.tournament_id = t.id
                                                     inner join brs.tournament_pool_user tpu on tp.id = tpu.tournament_pool_id
@@ -30,7 +31,7 @@ BEGIN
                                                    limit 1
                                                   )                                                         as "qualified",
                                                   brs.get_tournament_user_score(p_tournament_id,t.tournament_formula_id, tp.start_date,
-                                                                                tp.end_date, u.id::integer) as score
+                                                                                tp.end_date, u.id::bigint) as score
                                            from brs.tournament_pool tp
                                                     inner join brs.tournament t on tp.tournament_id = t.id
                                                     inner join brs.tournament_pool_position tpu on tp.id = tpu.tournament_pool_id

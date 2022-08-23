@@ -1,30 +1,44 @@
 <template>
   <v-container id="proposals-container" v-if="proposalExists">
-    <v-row justify="center" no-gutters>
-      <v-col md="auto">
-        <v-alert
-          color="brYellow"
-          dense
-          tile
-          :value="dirtyCfvs.length > 0"
-          transition="scale-transition"
-        >
-          Changes haven't been reflected on proposal
-        </v-alert>
-      </v-col>
-    </v-row>
 
     <v-row>
       <v-col cols="12" class="py-0">
         <router-link v-if="proposal && proposal.projectId"
                      :to="`/proposalDesigns/${proposal.projectId}`">Back
         </router-link>
+
+        <v-row align="center" justify="center" no-gutters>
+          <v-col md="auto">
+            <v-alert
+              color="warning"
+              dense
+              tile
+              :value="dirtyCfvs.length > 0"
+              transition="scale-transition"
+            >
+              Changes haven't been reflected on proposal
+            </v-alert>
+          </v-col>
+        </v-row>
+
         <v-toolbar dense flat color="transparent">
-          <v-toolbar-title class="new-proposal-header">New Proposal</v-toolbar-title>
-          <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>
+          <v-toolbar-title class="new-proposal-header">
+            <editable-input :editable="!proposal.locked"
+                            :value="defaultProposalName"
+                            @input="handleNameChange" />
+
+          </v-toolbar-title>
+          <!--          <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>-->
+          <v-chip v-if="proposal.locked" small color="red" dark class="ml-2 text-uppercase">
+            <v-icon small>mdi-lock</v-icon>
+            Locked
+          </v-chip>
           <v-spacer />
-          <v-toolbar-items v-if="proposal.locked">
-            <next-step-menu />
+          <v-toolbar-items>
+            <next-step-menu v-if="proposal.id"
+                            :disabled="dirtyCfvs.length > 0"
+                            :proposal="proposal"
+                            @update="handleStepChange" />
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
@@ -81,8 +95,9 @@
             <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
                  v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
               <v-alert
+                class="text-center"
                 v-if="isIntersecting"
-                color="brYellow"
+                color="warning"
                 dense
                 tile
                 :value="dirtyCfvs.length > 0"
@@ -91,41 +106,38 @@
                 Changes haven't been reflected on proposal
               </v-alert>
 
-              <div class="d-flex">
-                <div class="proposal-title">Proposal</div>
+              <div class="d-flex align-center">
+                <div class="proposal-title">Proposal <span>#{{ proposal.proposalNbr }}</span></div>
                 <v-spacer />
                 <!--              <v-btn depressed-->
                 <!--                     :disabled="dirtyCfvs.length === 0"-->
                 <!--                     class="proposal-container-buttons text-capitalize font-weight-bold">Present-->
                 <!--              </v-btn>-->
-                <v-btn class="proposal-container-buttons text-capitalize"
-                       :disabled="proposal.locked || dirtyCfvs.length > 0"
-                       @click="saveProposal"
-                >
-                  Save Proposal
-                </v-btn>
-                <v-btn class="proposal-container-buttons text-capitalize"
+                <!--                <v-btn class="proposal-container-buttons text-capitalize"-->
+                <!--                       :disabled="proposal.locked || dirtyCfvs.length > 0"-->
+                <!--                       @click="saveProposal"-->
+                <!--                >-->
+                <!--                  Save Proposal-->
+                <!--                </v-btn>-->
+                <v-btn v-if="pages && pages.length"
+                  class="proposal-container-buttons text-capitalize"
                        @click="downloadPdf">
                   Download
                 </v-btn>
               </div>
             </div>
             <div>
-              <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="false" :editable="false" />
+              <proposal-template v-if="pages && pages.length > 0"
+                                 :children="pages"
+                                 :debug="false"
+                                 :editable="false" />
             </div>
           </v-card>
         </v-col>
       </v-row>
     </v-form>
     <confirm-dialog ref="confirmDialog" />
-    <confirm-dialog ref="saveProposalConfirm"
-                    cancel-button-text="Continue editing"
-                    ok-button-text="Save and Lock">
-      <template #title>Are you sure you want to save and lock this proposal?</template>
-      <p>Saving proposal will lock the proposal and you will not be able to make changes to the current proposal.</p>
-    </confirm-dialog>
   </v-container>
-  <v-container v-else>This isn't the proposal you are looking for...</v-container>
 </template>
 
 <script>
@@ -134,7 +146,6 @@ import {
   apiRequest,
   getRequest,
   getRequestWithParams,
-  getSnackbar,
   handleHidingGlobalLoader,
   logError,
   postRequest
@@ -145,6 +156,7 @@ import ProposalTemplate from '@/views/blueraven/settings/proposalDesigner/Propos
 import { ProposalActions } from '@/views/blueraven/settings/proposalDesigner/store'
 import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
+import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import { mapState } from 'vuex'
 
 export default {
@@ -153,11 +165,12 @@ export default {
     CustomValueInput,
     ProposalTemplate,
     ConfirmDialog,
-    NextStepMenu
+    NextStepMenu,
+    EditableInput
   },
   data() {
     return {
-      proposalExists: true,
+      proposalExists: false,
       isIntersecting: false,
       loading: false,
       proposalId: this.$route.params.proposalId,
@@ -171,13 +184,18 @@ export default {
   created() {
     this.getProposalDetails()
     this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
-
     window.addEventListener('beforeunload', this.beforeWindowUnload)
   },
   beforeDestroy() {
     window.removeEventListener('beforeunload', this.beforeWindowUnload)
   },
   computed: {
+    defaultProposalName() {
+      if (this.proposal?.name) {
+        return this.proposal.name
+      }
+      return `New Proposal`
+    },
     pages() {
       return this.template?.filter(x => x.parentId === undefined)
     },
@@ -198,13 +216,21 @@ export default {
     })
   },
   methods: {
-    _showSnackbar(type, msg) {
-      const snackbar = getSnackbar(type, msg)
-      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
-    },
     onStickyHeader(entries) {
       const ratio = entries[0].intersectionRatio
       this.isIntersecting = ratio < 1
+    },
+    async handleNameChange({ save, value }) {
+      const hasChanged = this.proposal?.name !== value
+      this.proposal = { ...this.proposal, name: value }
+      if (save && hasChanged) {
+        try {
+          const { data: proposal } = await postRequest(`/proposal/${this.proposalId}/name`, { name: value }, 'blueraven', {})
+          this.proposal = proposal
+        } catch (e) {
+          this.$snackbar('ERROR', e?.data?.message || 'Error updating proposal name')
+        }
+      }
     },
     async getProposalDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -236,7 +262,7 @@ export default {
       } catch (e) {
         logError(e)
         this.proposalExists = false
-        this._showSnackbar('ERROR', `Error retrieving proposal #${this.proposalId}`)
+        this.$snackbar('ERROR', `Error retrieving proposal #${this.proposalId}`)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -250,7 +276,7 @@ export default {
       if (this.$refs.proposalForm.validate()) {
         this.saveCustomFieldValues()
       } else {
-        this._showSnackbar('ERROR', 'Missing Required Fields')
+        this.$snackbar('ERROR', 'Missing Required Fields')
       }
     },
     async saveCustomFieldValues() {
@@ -260,13 +286,14 @@ export default {
         const { data, status } = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
         this.proposal = data
         this.dirtyCfvs = []
-        this._showSnackbar('SUCCESS', 'Fields Updated')
+        this.$snackbar('SUCCESS', 'Fields Updated')
         await this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
 
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        this._showSnackbar('ERROR', 'Error Saving Fields')
+        const msg = e?.data?.message || 'Error Saving Fields'
+        this.$snackbar('ERROR', msg)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -314,7 +341,7 @@ export default {
             URL.revokeObjectURL(pdfFile)
           }, 100)
 
-          this._showSnackbar('INFO', 'Proposal Downloaded')
+          this.$snackbar('INFO', 'Proposal Downloaded')
         }
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -376,7 +403,7 @@ export default {
         }
       } catch (e) {
         logError(e)
-        this._showSnackbar('ERROR', e?.data?.message)
+        this.$snackbar('ERROR', e?.data?.message)
       } finally {
         this.loading = false
       }
@@ -397,14 +424,8 @@ export default {
       const isDirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
       return isDirtyCfv || isPrepopulated
     },
-    async saveProposal() {
-
-      const confirmLock = await this.$refs.saveProposalConfirm.open()
-      if (confirmLock) {
-        //todo; actually save it
-        this.proposal = { ...this.proposal, locked: true }
-        this._showSnackbar('SUCCESS', 'Proposal Saved and Locked!')
-      }
+    handleStepChange(updated) {
+      this.proposal = { ...updated }
     },
     beforeWindowUnload(e) {
       if (this.dirtyCfvs?.length > 0) {
@@ -417,8 +438,8 @@ export default {
   },
   async beforeRouteLeave(to, from, next) {
     if (this.dirtyCfvs?.length > 0) {
-      const confirmNavigation = await this.$refs.confirmDialog.open()
-      return confirmNavigation ? next() : false
+      const { ok } = await this.$refs.confirmDialog.open()
+      return ok ? next() : false
     }
     next()
   }
@@ -429,6 +450,8 @@ export default {
 .new-proposal-header {
   font-size: 18px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
 }
 
 .proposal-container {

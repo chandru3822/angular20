@@ -1,11 +1,15 @@
-﻿CREATE OR REPLACE FUNCTION brs.project_rebate_payments_add_extra_payment(
-    p_project_id integer,
-    p_created_by_user_id integer,
+﻿drop function if exists brs.project_rebate_payments_add_extra_payment(
+  p_project_id bigint,
+  p_created_by_user_id bigint,
+  p_payment_amount numeric(12,2));
+CREATE OR REPLACE FUNCTION brs.project_rebate_payments_add_extra_payment(
+    p_project_id bigint,
+    p_created_by_user_id bigint,
     p_payment_amount numeric(12,2))
   RETURNS void AS
 $BODY$
 DECLARE
-v_last_payment_nbr integer;
+v_last_payment_nbr bigint;
 BEGIN
 
   select max(payment_nbr) + 1

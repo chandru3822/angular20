@@ -1,10 +1,11 @@
-CREATE OR REPLACE FUNCTION flow.get_schema_by_company(p_company_id integer)
+drop function if exists flow.get_schema_by_company(p_company_id bigint);
+CREATE OR REPLACE FUNCTION flow.get_schema_by_company(p_company_id bigint)
   RETURNS TABLE
           (
             schema_name  varchar,
             view_name varchar,
-            id         integer,
-            company_process_ids integer[]
+            id         bigint,
+            company_process_ids bigint[]
           )
 AS
 $BODY$

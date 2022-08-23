@@ -1,7 +1,10 @@
-CREATE OR REPLACE FUNCTION flow.get_correct_step(
-    p_project_process_step_id integer,
-    p_process_step_id integer)
-    RETURNS TABLE(project_process_step_id integer,process_status_id integer,main boolean,user_position_id integer) AS
+drop function if exists low.get_correct_step(
+  p_project_process_step_id bigint,
+  p_process_step_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_correct_step(
+    p_project_process_step_id bigint,
+    p_process_step_id bigint)
+    RETURNS TABLE(project_process_step_id bigint,process_status_id bigint,main boolean,user_position_id bigint) AS
 $BODY$
 DECLARE
 BEGIN

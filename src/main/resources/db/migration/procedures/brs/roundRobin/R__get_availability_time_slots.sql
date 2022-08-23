@@ -1,5 +1,5 @@
--- drop function if exists flow.get_availability_time_slots(integer,timestamp,timestamp,date,boolean);
-CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer,
+drop function if exists flow.get_availability_time_slots(bigint,timestamp,timestamp,date,boolean);
+CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id bigint,
                                                             p_start_time timestamp,
                                                             p_end_time timestamp,
                                                             p_available_date date,
@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer
   RETURNS TABLE
           (
             success                boolean,
-            users                integer array,
+            users                bigint array,
             scheduled_start_time timestamp
           )
 AS
@@ -135,7 +135,7 @@ BEGIN
     EXECUTE 'SET TIME ZONE ''' || v_timezone || ''';';
 
     return query
-      select true, array_agg(distinct foo2.user_id)::integer array as users, foo2.scheduled_start_time
+      select true, array_agg(distinct foo2.user_id)::bigint array as users, foo2.scheduled_start_time
       from (
              select user_id,
                     foo1.scheduled_start_time,
@@ -210,10 +210,10 @@ BEGIN
       group by foo2.scheduled_start_time
       order by foo2.scheduled_start_time;
   elsif p_remote is false and v_timezone is null then
-    return query select false::boolean, array[]::int[], null::timestamp;
+    return query select false::boolean, array[]::bigint[], null::timestamp;
   else
     return query
-      select true, array_agg(distinct foo2.user_id)::integer array as users, foo2.scheduled_start_time
+      select true, array_agg(distinct foo2.user_id)::bigint array as users, foo2.scheduled_start_time
       from (
              select user_id,
                     foo1.scheduled_start_time,

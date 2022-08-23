@@ -46,12 +46,12 @@
           id="wq-drilldown-table"
           @click:row="clickRow"
         >
-          <template class="black--text" #no-data>
-            No available results
+          <template #no-data>
+            <span class="default-text-color">No available results</span>
           </template>
 
-          <template class="black--text" #no-results>
-            No available results
+          <template #no-results>
+            <span class="default-text-color">No available results</span>
           </template>
 
           <template #header="{ props: { headers } }">
@@ -70,12 +70,12 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}" class="clickable" @click="$router.push(`/project/${item.projectId}/processStep/${item.projectProcessStepId}`)">
+            <tr :class="{'shaded-row': index % 2}">
               <td class="text-left" v-if="useProcessStepHeaders">
-<!--                <v-btn text small class="primary&#45;&#45;text"-->
-<!--                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepIdStepId}`">-->
+                <v-btn text small class="primary--text"
+                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepIdStepId}`">
                   {{ item['Project Name'] }}
-<!--                </v-btn>-->
+                </v-btn>
               </td>
               <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Name'] }}</td>
               <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Status Type'] }}</td>

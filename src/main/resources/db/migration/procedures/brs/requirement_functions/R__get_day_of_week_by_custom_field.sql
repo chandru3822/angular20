@@ -1,8 +1,9 @@
-CREATE OR REPLACE FUNCTION brs.get_day_of_week_by_custom_field(p_custom_field_group_assignment_id integer, p_project_process_step_id integer)
-    returns integer AS
+drop function if exists brs.get_day_of_week_by_custom_field(p_custom_field_group_assignment_id bigint, p_project_process_step_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_day_of_week_by_custom_field(p_custom_field_group_assignment_id bigint, p_project_process_step_id bigint)
+    returns bigint AS
 $BODY$
 declare
-    v_dow integer;
+    v_dow bigint;
     v_date timestamp;
 BEGIN
 

@@ -1,15 +1,16 @@
-CREATE OR REPLACE FUNCTION brs.generate_matches(p_tournament_bracket_id integer, p_user_id integer)
+drop function if exists brs.generate_matches(p_tournament_bracket_id bigint, p_user_id bigint);
+CREATE OR REPLACE FUNCTION brs.generate_matches(p_tournament_bracket_id bigint, p_user_id bigint)
     RETURNS void AS
 $BODY$
 declare
-    v_num_of_users integer;
-    v_round        integer;
-    v_current_id   integer;
+    v_num_of_users bigint;
+    v_round        bigint;
+    v_current_id   bigint;
     r              record;
-    v_loop_count   integer;
-    v_round_id     integer;
-v_parent_id        integer;
-v_count integer;
+    v_loop_count   bigint;
+    v_round_id     bigint;
+v_parent_id        bigint;
+v_count bigint;
 BEGIN
 
     perform setval('brs.tournament_match_id_seq',
@@ -22,9 +23,9 @@ BEGIN
 
     create temp table matches
     (
-        round       integer,
-        starting_id integer,
-        ending_id   integer
+        round       bigint,
+        starting_id bigint,
+        ending_id   bigint
     );
 
     select number_of_users / 2

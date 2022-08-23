@@ -18,7 +18,7 @@
         </div>
       </v-col>
     </v-row>
-    <v-divider></v-divider>
+    <v-divider/>
     <v-toolbar flat color="transparent">
       <v-toolbar-title class="proposal-designs-title">Designs and Proposals</v-toolbar-title>
     </v-toolbar>
@@ -54,23 +54,31 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
-        <v-btn color="primary" dark class="mt-4 one-hunned text-capitalize font-weight-bold"
+        <v-btn color="primary"
+               dark
+               class="mt-4 one-hunned text-capitalize font-weight-bold"
                @click="addProposal(d)">
           Create new proposal
         </v-btn>
         <v-list v-if="d.proposals.length > 0">
           <v-list-item
             v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
-            :key="index" two-line
+            :key="index"
+            two-line
             class="proposal-container"
             @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
-              <v-list-item-title class="proposal-title">Proposal {{ proposal.id }}</v-list-item-title>
+              <v-list-item-title class="proposal-title" >
+                <span v-if="!proposal.name">Proposal {{ proposal.id }}</span>
+                <span v-else>{{ proposal.name }}</span>
+                <v-icon v-if="proposal.locked" small>mdi-lock</v-icon>
+              </v-list-item-title>
               <v-list-item-subtitle>
                 <v-container class="design-small-gray subtitle-container">
                   <v-row>
                     <v-col class="pt-2 pb-0">more info</v-col> <!--todo: use actual info here-->
-                    <v-col class="pt-2 pb-0 text-right">{{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}</v-col>
+                    <v-col class="pt-2 pb-0 text-right">{{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+                    </v-col>
                   </v-row>
                 </v-container>
               </v-list-item-subtitle>
@@ -82,11 +90,13 @@
           <v-icon dense
                   class="pr-1 pb-3"
                   :disabled="d.offset === 0"
-                  @click="d.offset--">mdi-chevron-left</v-icon>
+                  @click="d.offset--">mdi-chevron-left
+          </v-icon>
           <v-icon dense
                   class="pl-1 pb-3"
                   :disabled="disableAddSlice(d.proposals.length, d.offset)"
-                  @click="d.offset++">mdi-chevron-right</v-icon>
+                  @click="d.offset++">mdi-chevron-right
+          </v-icon>
         </div>
       </v-card>
       <v-card width="355" height="535" class="proposal-card request-new"
@@ -111,7 +121,7 @@
           class="text-h6 text-capitalize pa-0 font-weight-bold"
           primary-title
         >Request New design
-          <v-spacer/>
+          <v-spacer />
           <v-icon color="black" large @click="showNewDesignRequestForm = false">mdi-close</v-icon>
         </v-card-title>
         <v-card-text class="pt-4 px-0">
@@ -121,7 +131,7 @@
                       outlined
                       counter="250"
                       color="#808588"
-                      v-model="newDesignRequest.description"/>
+                      v-model="newDesignRequest.description" />
 
           <v-file-input
             dense
@@ -157,12 +167,12 @@
         </v-card-text>
 
         <v-card-actions class="pa-0">
-          <v-spacer/>
+          <v-spacer />
           <v-btn
-              color="primary"
-              class="white--text text-capitalize font-weight-bold"
-              :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
-              @click="requestNewDesign()">
+            color="primary"
+            class="white--text text-capitalize font-weight-bold"
+            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
+            @click="requestNewDesign()">
             Request
           </v-btn>
         </v-card-actions>
@@ -233,7 +243,7 @@ export default {
         })
 
         const { data, status } = await postRequest(`/proposal/design`, formData, 'blueraven')
-        //this endpoint returns all of the designs because adding a new one could possible remove (cancel) an existing one
+        //this endpoint returns all the designs because adding a new one could possibly remove (cancel) an existing one
         this.designs = data
         await this.getActiveDesign()
         this.newDesignRequest = {}
@@ -281,7 +291,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { data, status } = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
-        console.log('active design here',data)
+        console.log('active design here', data)
         this.activeDesign = data
         this.requestSuccessful = true
         handleHidingGlobalLoader(this, status)

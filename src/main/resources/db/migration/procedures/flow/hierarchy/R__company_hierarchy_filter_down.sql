@@ -1,7 +1,8 @@
-
+drop function if exists flow.company_hierarchy_filter_down(
+  p_company_id bigint);
 CREATE OR REPLACE FUNCTION flow.company_hierarchy_filter_down(
-    p_company_id integer)
-  RETURNS TABLE(id integer ,parent_company_id integer,company_name text, level int) AS
+    p_company_id bigint)
+  RETURNS TABLE(id bigint ,parent_company_id bigint,company_name text, level bigint) AS
 $BODY$
 declare
 

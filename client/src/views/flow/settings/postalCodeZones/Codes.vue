@@ -51,11 +51,11 @@
           class="elevation-0"
         >
           <template #no-data>
-            No available postal codes
+            <span class="default-text-color">No available postal codes</span>
           </template>
 
           <template #no-results>
-            No available postal codes
+            <span class="default-text-color">No available postal codes</span>
           </template>
 
           <template #item="{ item, index }">

@@ -1,9 +1,10 @@
-CREATE OR REPLACE FUNCTION brs.get_total_overrides( p_payroll_id integer,p_project_ids bigint[],p_user_id integer,p_position_id integer)
+drop function if exists brs.get_total_overrides( p_payroll_id bigint,p_project_ids bigint[],p_user_id bigint,p_position_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_total_overrides( p_payroll_id bigint,p_project_ids bigint[],p_user_id bigint,p_position_id bigint)
   RETURNS NUMERIC AS
 $BODY$
 DECLARE
   v_total numeric;
-  v_payroll_status_id integer;
+  v_payroll_status_id bigint;
 BEGIN
   begin
     select payroll_status_id

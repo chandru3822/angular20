@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.get_ledger_adjustment_current_totals( p_payroll_id integer,p_project_ids bigint[],p_payroll_adjustment_type_id integer)
+drop function if exists brs.get_ledger_adjustment_current_totals( p_payroll_id bigint,p_project_ids bigint[],p_payroll_adjustment_type_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_ledger_adjustment_current_totals( p_payroll_id bigint,p_project_ids bigint[],p_payroll_adjustment_type_id bigint)
   RETURNS NUMERIC AS
 $BODY$
 DECLARE

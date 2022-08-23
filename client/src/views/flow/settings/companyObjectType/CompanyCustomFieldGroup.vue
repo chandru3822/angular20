@@ -40,17 +40,17 @@
             class="elevation-1 fix-column-width-bug mb-5"
           >
             <template #no-data>
-              No available field groups
+              <span class="default-text-color">No available field groups</span>
             </template>
 
             <template #no-results>
-              No available field groups
+              <span class="default-text-color">No available field groups</span>
             </template>
 
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text icon small class="handle" v-if="userCanEdit">
+                  <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -158,7 +158,7 @@
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
                       <v-list-item class="grab pr-1">
                         <v-list-item-action v-if="userCanEdit">
-                          <v-icon>drag_handle</v-icon>
+                          <v-icon color="primary">drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
                           <div v-if="!cf.ancillaryCustomFieldGroupAssignmentId">

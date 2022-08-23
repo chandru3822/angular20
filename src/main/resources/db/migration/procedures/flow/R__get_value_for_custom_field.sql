@@ -1,8 +1,16 @@
-CREATE OR REPLACE FUNCTION flow.get_value_for_custom_field(p_object_type_id integer,
-                                                           p_custom_field_id integer,
-                                                           p_id integer,
+drop function if exists flow.get_value_for_custom_field(p_object_type_id bigint,
+                                                        p_custom_field_id bigint,
+                                                        p_id bigint,
+  -- p_id = the primary key for the object type record you are using, so contact_id, project_id, user_id, etc
+                                                        p_process_step_id bigint,
+  -- if using object_type_id = 4 then p_process_step_id is required
+                                                        p_get_id boolean
+);
+  CREATE OR REPLACE FUNCTION flow.get_value_for_custom_field(p_object_type_id bigint,
+                                                           p_custom_field_id bigint,
+                                                           p_id bigint,
                                                             -- p_id = the primary key for the object type record you are using, so contact_id, project_id, user_id, etc
-                                                           p_process_step_id integer default 0,
+                                                           p_process_step_id bigint default 0::bigint,
                                                             -- if using object_type_id = 4 then p_process_step_id is required
                                                            p_get_id boolean default false
                                                            )
@@ -15,7 +23,7 @@ BEGIN
             select case
                        when cdt.id = 7 and p_get_id is false then (select lov.name
                                              from flow.list_of_value lov
-                                             where lov.id = pscfv.int_value::integer)::text
+                                             where lov.id = pscfv.int_value::bigint)::text
                        when dt.id = 1 then pscfv.date_value::text
                        when dt.id = 2 then pscfv.timestamp_value::text
                        when dt.id = 3 then pscfv.boolean_value::text
@@ -44,7 +52,7 @@ BEGIN
                 select case
                            when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
-                                                 where lov.id = pcfv.int_value::integer)::text
+                                                 where lov.id = pcfv.int_value::bigint)::text
                            when dt.id = 1 then pcfv.date_value::text
                            when dt.id = 2 then pcfv.timestamp_value::text
                            when dt.id = 3 then pcfv.boolean_value::text
@@ -70,7 +78,7 @@ BEGIN
                 select case
                            when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
-                                                 where lov.id = ccfv.int_value::integer)::text
+                                                 where lov.id = ccfv.int_value::bigint)::text
                            when dt.id = 1 then ccfv.date_value::text
                            when dt.id = 2 then ccfv.timestamp_value::text
                            when dt.id = 3 then ccfv.boolean_value::text
@@ -96,7 +104,7 @@ BEGIN
                 select case
                            when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
-                                                 where lov.id = ucfv.int_value::integer)::text
+                                                 where lov.id = ucfv.int_value::bigint)::text
                            when dt.id = 1 then ucfv.date_value::text
                            when dt.id = 2 then ucfv.timestamp_value::text
                            when dt.id = 3 then ucfv.boolean_value::text
@@ -122,7 +130,7 @@ BEGIN
                 select case
                            when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
-                                                 where lov.id = ocfv.int_value::integer)::text
+                                                 where lov.id = ocfv.int_value::bigint)::text
                            when dt.id = 1 then ocfv.date_value::text
                            when dt.id = 2 then ocfv.timestamp_value::text
                            when dt.id = 3 then ocfv.boolean_value::text

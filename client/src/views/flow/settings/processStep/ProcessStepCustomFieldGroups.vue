@@ -86,11 +86,11 @@
               class="elevation-1 fix-column-width-bug process-step-cfg-table square-card"
             >
               <template #no-data>
-                No custom for this process step
+                <span class="default-text-color">No custom for this process step</span>
               </template>
 
               <template #no-results>
-                No actions for this process step
+                <span class="default-text-color">No actions for this process step</span>
               </template>
 
               <template #item="{ item, index }">
@@ -110,7 +110,7 @@
                           <v-icon color="primary" @click="item.edit = false">clear</v-icon>
                         </template>
                       </v-text-field>
-                      <a style="text-decoration: underline;" v-else @click="item.edit = true">
+                      <a style="text-decoration: underline;" v-else @click="item.edit = true" class="default-text-color">
                         {{item.groupName}}
                       </a>
                     </div>

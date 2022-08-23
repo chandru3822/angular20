@@ -73,11 +73,11 @@
             class="elevation-1 mt-1"
         >
           <template #no-data>
-            No available fields
+            <span class="default-text-color">No available fields</span>
           </template>
 
           <template #no-results>
-            No available fields
+            <span class="default-text-color">No available fields</span>
           </template>
 
           <template #header.icons="{}">

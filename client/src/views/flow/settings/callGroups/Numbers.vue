@@ -51,11 +51,11 @@
           class="elevation-0"
         >
           <template #no-data>
-            No available phone numbers
+            <span class="default-text-color">No available phone numbers</span>
           </template>
 
           <template #no-results>
-            No available phone numbers
+            <span class="default-text-color">No available phone numbers</span>
           </template>
 
           <template #item="{ item, index }">

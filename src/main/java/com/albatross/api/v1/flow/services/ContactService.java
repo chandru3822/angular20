@@ -463,13 +463,12 @@ public class ContactService {
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
 
     PutObjectRequest objectRequest =
         new PutObjectRequest(
             storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    s3.putObject(objectRequest);
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));

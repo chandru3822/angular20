@@ -1,7 +1,7 @@
 <sql>
   <user.searchUsers><![CDATA[
       with beat_off as (
-          SELECT (value->'orgId')::integer as org_id,vw.position_id,user_id, hierarchy, user_position_id
+          SELECT (value->'orgId')::bigint as org_id,vw.position_id,user_id, hierarchy, user_position_id
           FROM flow.user_position_hierarchy_vw vw
                    left join lateral jsonb_array_elements(vw.hierarchy) dr1
                              on true
@@ -36,8 +36,8 @@
         and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
         and upv.user_status_type_id in (:statuses)
         and case when :primaryFlag is true then upv.primary_flag = true else 1=1 end
-        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then upv.position_id  = any( array[ :positions ]::integer[] ) else 1=1 end
-        and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then upv.org_id = any( array [ :orgs ]::integer[] ) else 1=1 end
+        and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id  = any( array[ :positions ]::bigint[] ) else 1=1 end
+        and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id = any( array [ :orgs ]::bigint[] ) else 1=1 end
       union
       select u.id,u.first_name,u.last_name,uc.company_id,
             concat(u.first_name, ' ', u.last_name) AS full_name,
@@ -60,8 +60,8 @@
         and u.first_name ILIKE '%' || :firstName || '%'
         and u.last_name ILIKE '%' || :lastName || '%'
         and coalesce(u.email, '') ILIKE '%' || :email || '%'
-        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then false else 1=1 end
-        and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then false else 1=1 end
+        and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
+        and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
         and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
           and cus.user_status_type_id in (:statuses)
       order by last_name, first_name, start_date desc
@@ -86,8 +86,8 @@
           and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
           and upv.user_status_type_id in (:statuses)
           and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
-          and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then upv.position_id = any(array [ :positions ]::integer[]) else 1=1 end
-          and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then upv.org_id  = any(array [ :orgs ]::integer[]) else 1=1 end
+          and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id = any(array [ :positions ]::bigint[]) else 1=1 end
+          and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id  = any(array [ :orgs ]::bigint[]) else 1=1 end
        union
          select u.id
           from flow."user" u
@@ -104,8 +104,8 @@
             and u.first_name ILIKE '%' || :firstName || '%'
             and u.last_name ILIKE '%' || :lastName || '%'
             and coalesce(u.email, '') ILIKE '%' || :email || '%'
-            and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then false else 1=1 end
-            and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then false else 1=1 end
+            and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
+            and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
             and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
               and ust.id in (:statuses)
       )
@@ -260,7 +260,7 @@
   ]]></user.getByIds>
 
   <user.getAllActiveUsers><![CDATA[
-         select distinct upv.user_id::integer as id,
+         select distinct upv.user_id::bigint as id,
                        concat(upv.first_name,' ',upv.last_name::text) as full_name
        from flow.user_positions_vw upv
        where upv.company_id = :companyId
@@ -304,12 +304,12 @@
           where upv.position_schedulable is true
             and case
                     when :isParent and :isSchedulingTool
-                        then upv.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                        then upv.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                     else (upv.company_id = :companyId OR
                           (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true)) end
             and case
-                    when :companyStateId::integer is not null
-                        then upv.company_state_id = :companyStateId::integer and upv.position_schedulable is true
+                    when :companyStateId::bigint is not null
+                        then upv.company_state_id = :companyStateId::bigint and upv.position_schedulable is true
                     else upv.position_schedulable is true end
             and upv.user_archived is not true
             and upv.start_date <= now()
@@ -434,7 +434,7 @@
                left join flow.feature f on f.id = cf.feature_id
         where case
                 when :username::text is not null then lower(username) = lower(:username::text)
-                else u.id = :userId::integer end
+                else u.id = :userId::bigint end
           and uc.is_default = true
         limit 1
       )
@@ -725,7 +725,7 @@
          email
       from flow."user"
       where lower(trim(email)) = lower(trim(:email))
-      and case when :userId::int is not null then :userId::int != id else 1=1 end
+      and case when :userId::bigint is not null then :userId::bigint != id else 1=1 end
   ]]></user.checkEmailExists>
 
   <user.checkUsernameExists><![CDATA[
@@ -733,7 +733,7 @@
          username
       from flow."user"
       where lower(trim(username)) = lower(trim(:username))
-      and case when :userId::int is not null then :userId::int != id else 1=1 end
+      and case when :userId::bigint is not null then :userId::bigint != id else 1=1 end
   ]]></user.checkUsernameExists>
 
   <user.saveForgotPasswordFields><![CDATA[

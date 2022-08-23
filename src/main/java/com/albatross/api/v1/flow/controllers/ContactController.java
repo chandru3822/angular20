@@ -1,12 +1,14 @@
 package com.albatross.api.v1.flow.controllers;
 
 
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.CompanyProcess;
+import com.albatross.api.v1.flow.model.Contact;
+import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,20 +23,20 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@RequestMapping(value = "/api/v1/flow/contact")
+@RequiredArgsConstructor
+@RequestMapping(value = "/api/v1/flow/contact", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ContactController {
 
     private final ContactService contactService;
 
-    @GetMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value="/search")
     public ResponseEntity<Page<Contact>> searchContacts(@RequestParam String query,
                                                         @RequestParam(required = false) String overrideType,
                                                         Pageable pageable) {
         return new ResponseEntity<>(contactService.searchContacts(query, overrideType, pageable), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{contactId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{contactId}")
     public ResponseEntity<Contact> getContact(@PathVariable Long contactId) {
       Contact newContact = contactService.getContact(contactId);
       if (newContact != null) {
@@ -45,50 +47,50 @@ public class ContactController {
       }
     }
 
-    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "")
     public Contact updateContact(@RequestBody Contact contact) throws Exception {
         return contactService.updateContact(contact);
     }
 
     //temporary
-    @PostMapping(value = "/updateLatLong", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/updateLatLong")
     public void updateContactLatLong(@RequestParam(required = false) Integer limit) throws Exception {
       contactService.updateContactLatLong(limit);
     }
 
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}")
     public void deleteContact(@PathVariable Long id) {
         contactService.deleteContact(id);
     }
 
-    @PutMapping(value = "/{contactId}/updateOwner", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{contactId}/updateOwner")
     public void updateOwner(@PathVariable Long contactId,
                             @RequestBody Owner owner) {
         contactService.updateOwner(contactId, owner);
     }
 
-  @PutMapping(value = "/updateMailingAddress", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/updateMailingAddress")
   public void updateMailingAddress(@RequestBody Contact contact) {
     contactService.updateMailingAddress(contact);
   }
 
-    @GetMapping(value = "/{contactId}/project", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{contactId}/project")
     public ResponseEntity<Project> getContactProjects(@PathVariable Long contactId) {
         return new ResponseEntity<>(new Project(), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/project/{projectId}")
     public ResponseEntity<Contact> getContactByProjectId(@PathVariable Long projectId) {
       return new ResponseEntity<>(contactService.getContactByProjectId(projectId), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/owners")
     public List<Owner> getOwners(@RequestParam(required = false) Long contactId) {
       return contactService.getOwnersForContact(contactId);
     }
 
-    @PutMapping(value = "/{contactId}/convert", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{contactId}/convert")
     public Project convertToContact(@PathVariable Long contactId,
                                   @RequestBody CompanyProcess process) {
         // need to return the project so the frontend can navigate to /project/{id}
@@ -99,7 +101,7 @@ public class ContactController {
         }
     }
 
-  @GetMapping(value = "/{contactId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{contactId}/attachments")
   public ResponseEntity<List<Attachment>> getContactAttachments(@PathVariable Long contactId,
                                                                 @RequestParam(required = false) Boolean isMobile,
                                                                 @RequestParam(required = false) Boolean linked) {
@@ -113,7 +115,7 @@ public class ContactController {
     contactService.linkAttachment(contactId, attachmentId, doLink);
   }
 
-  @PostMapping(value = "/{contactId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{contactId}/attachment")
   public ResponseEntity<Attachment> uploadContactAttachment(@PathVariable Long contactId,
                                                             @RequestParam Long attachmentTypeId,
                                                             @RequestParam String displayName,

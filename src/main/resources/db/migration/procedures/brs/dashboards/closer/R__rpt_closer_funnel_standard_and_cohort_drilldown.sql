@@ -1,7 +1,13 @@
+drop function if exists brs.rpt_closer_funnel_standard_and_cohort_drilldown(p_start_date date, p_end_date date,
+                                                                            p_funnel_id bigint,
+                                                                            p_user_position_ids bigint[],
+                                                                            p_org_ids bigint[],
+                                                                            p_is_checked_in_column boolean,
+                                                                            p_is_cohort boolean);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard_and_cohort_drilldown(p_start_date date, p_end_date date,
-                                                                               p_funnel_id integer,
-                                                                               p_user_position_ids integer[],
-                                                                               p_org_ids integer[],
+                                                                               p_funnel_id bigint,
+                                                                               p_user_position_ids bigint[],
+                                                                               p_org_ids bigint[],
                                                                                p_is_checked_in_column boolean,
                                                                                p_is_cohort boolean)
   RETURNS SETOF json
@@ -10,12 +16,12 @@ AS
 $function$
 declare
   v_whole_company              boolean;
-  v_outcome_int_values         int[];
+  v_outcome_int_values         bigint[];
   v_exclude_values             boolean;
   v_hide_future                boolean;
   v_only_future                boolean;
   v_order_by_closer_appt_start boolean;
-  v_funnel_type_id             int;
+  v_funnel_type_id             bigint;
 
 BEGIN
   --If p_user_position_ids has a -1 that means get the funnel for the whole company
@@ -94,11 +100,11 @@ BEGIN
                    else true end
                  and pd.archived is false
                  and (ppse.start_time :: DATE between p_start_date and p_end_date)
-                 and ppsecfv.int_value in (select unnest(string_to_array(value, ',')::int[])
+                 and ppsecfv.int_value in (select unnest(string_to_array(value, ',')::bigint[])
                                            from flow.company_configuration_value
                                            where code = 'OUTCOME_PITCHED')
                  and pd.company_id = 3
-                 --credit check int value
+                 --credit check bigint value
                  and case when p_funnel_id = 3 then pd.credit_check = 82 else true end
                  and case
                        when p_funnel_id in (9, 3) then credit_decision_date is not null
@@ -189,7 +195,7 @@ BEGIN
                        when p_funnel_id in (8) then (coalesce(
                          substantial_completion_date :: DATE between p_start_date and p_end_date, false))
                        else true end
-                 --credit check int value
+                 --credit check bigint value
                  and case when p_funnel_id = 3 then pd.credit_check = 82 else true end
                  and pd.company_id = 3
                order by owner_name, order_by_date
@@ -233,12 +239,12 @@ BEGIN
                                                   (now() at time zone 'US/Mountain'))
                        )
                -- if included values then do in()
-                     when v_exclude_values is false and array_length(v_outcome_int_values::int[], 1) > 0
+                     when v_exclude_values is false and array_length(v_outcome_int_values::bigint[], 1) > 0
                        then closer_appt_outcome_int_value = any (v_outcome_int_values)
                --these will not run/be populated if the special case above is true so we dont need to have an additional check
                -- if excluded values then do not in()
 
-                     when v_exclude_values is true and array_length(v_outcome_int_values::int[], 1) > 0
+                     when v_exclude_values is true and array_length(v_outcome_int_values::bigint[], 1) > 0
                        then (closer_appt_outcome_int_value is null OR
                              closer_appt_outcome_int_value not in (select unnest(v_outcome_int_values)))
                      else true end

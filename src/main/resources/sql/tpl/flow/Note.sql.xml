@@ -1,6 +1,6 @@
 <sql>
   <note.getByPrimaryAndType><![CDATA[
-    select * from flow.get_notes(:primaryId::integer, :typeId::integer, :companyId::integer)
+    select * from flow.get_notes(:primaryId::bigint, :typeId::bigint, :companyId::bigint)
   ]]></note.getByPrimaryAndType>
 
   <note.getProjectProcessStepWorkQueueNotes><![CDATA[
@@ -79,7 +79,7 @@
   ]]></note.updateNote>
 
   <note.insertNoteRelation><![CDATA[
-    select * from flow.insert_note_relation(:primaryId::integer, :noteId::integer, :typeId::integer)
+    select * from flow.insert_note_relation(:primaryId::bigint, :noteId::bigint, :typeId::bigint)
   ]]></note.insertNoteRelation>
 
   <note.insertProjectProcessStepWorkQueueNoteRelation><![CDATA[

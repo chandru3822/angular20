@@ -1,5 +1,5 @@
 --this was replaced with a more generic function
--- CREATE OR REPLACE FUNCTION flow.pps_has_active_events(p_project_process_step_id integer)
+-- CREATE OR REPLACE FUNCTION flow.pps_has_active_events(p_project_process_step_id bigint)
 --     returns boolean AS
 -- $BODY$
 -- declare

@@ -1,14 +1,16 @@
-CREATE OR REPLACE FUNCTION brs.assign_users_to_matches(p_tournament_id integer, p_tournament_pool_id integer,
-                                                       p_user_id integer, p_seeded_matches jsonb)
+drop function if exists brs.assign_users_to_matches(p_tournament_id bigint, p_tournament_pool_id bigint,
+                                                    p_user_id bigint, p_seeded_matches jsonb);
+CREATE OR REPLACE FUNCTION brs.assign_users_to_matches(p_tournament_id bigint, p_tournament_pool_id bigint,
+                                                       p_user_id bigint, p_seeded_matches jsonb)
     RETURNS void AS
 $BODY$
 declare
     r                 record;
-    v_number_of_users integer;
-    round_number      integer;
-    v_user_1_id       integer;
-    v_user_2_id       integer;
-    v_user_ids        integer[];
+    v_number_of_users bigint;
+    round_number      bigint;
+    v_user_1_id       bigint;
+    v_user_2_id       bigint;
+    v_user_ids        bigint[];
 
 BEGIN
 
@@ -58,11 +60,11 @@ BEGIN
             select user_1_id, user_2_id
             into v_user_1_id,v_user_2_id
             from matches
-            where match_number::integer = round_number;
+            where match_number::bigint = round_number;
 
             update brs.tournament_match tm2
-            set user_1_id = v_user_1_id::integer,
-                user_2_id = v_user_2_id::integer
+            set user_1_id = v_user_1_id::bigint,
+                user_2_id = v_user_2_id::bigint
             where tm2.id = r.tournament_match_id;
         END LOOP;
 
@@ -77,7 +79,7 @@ BEGIN
     -- set all users as "qualified" so we can show that in the future
     update brs.tournament_pool_user
     set qualified = true
-    where user_id in (select unnest(array [ v_user_ids ]::int[]))
+    where user_id in (select unnest(array [ v_user_ids ]::bigint[]))
       and tournament_pool_id = p_tournament_pool_id;
 
     -- after advancing the qualifiers add all the non-qualified to the loser pool
@@ -93,7 +95,7 @@ BEGIN
           and tp.id = p_tournament_pool_id
           and tpu.archived is not true
         union
-        select distinct null::integer,
+        select distinct null::bigint,
                         upv.user_id,
                         concat(upv.first_name, ' ', upv.last_name::text) as full_name,
                         tpp.archived
@@ -120,7 +122,7 @@ BEGIN
                 now(),
                 p_user_id
          from all_pool_users apu
-         where apu.user_id not in (select unnest(array [ v_user_ids ]::int[]))
+         where apu.user_id not in (select unnest(array [ v_user_ids ]::bigint[]))
            and apu.archived is not true);
 
 

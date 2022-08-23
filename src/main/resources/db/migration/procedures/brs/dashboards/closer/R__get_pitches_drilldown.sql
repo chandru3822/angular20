@@ -1,12 +1,13 @@
-CREATE OR REPLACE FUNCTION brs.get_pitches_drilldown(p_user_id integer, p_quarter integer, p_is_setter_mgr boolean DEFAULT false, p_setter_mgr_office_id integer DEFAULT null)
+drop function if exists brs.get_pitches_drilldown(p_user_id bigint, p_quarter bigint, p_is_setter_mgr boolean, p_setter_mgr_office_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_pitches_drilldown(p_user_id bigint, p_quarter bigint, p_is_setter_mgr boolean DEFAULT false, p_setter_mgr_office_id bigint DEFAULT null)
 	RETURNS SETOF json AS
 $BODY$
 declare
 	v_start_date date;
 	v_end_date date;
-  v_year integer;
+  v_year bigint;
 BEGIN
-	select extract('year' from now())::integer
+	select extract('year' from now())::bigint
 	into v_year;
 
 	case when p_quarter = 1 then
@@ -40,7 +41,7 @@ BEGIN
             from flow.project p
               inner join brs.project_details pd on pd.project_id = p.id
               inner join flow.contact c on c.id = p.contact_id
-              inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+              inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                          from flow.company_configuration_value
                                                                                                          where code = 'SETTER_POSITION_IDS') and up.primary_flag is true and up.archived is not true)
               left join flow.list_of_value lov on (case when pd.first_appointment_pitched is not null

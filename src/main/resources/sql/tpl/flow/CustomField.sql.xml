@@ -175,7 +175,7 @@
           allow_now = :allowNow,
           system_readonly = :systemReadonly,
           sort_list_values_alphabetically = :sortListValuesAlphabetically,
-          system_list_option_ids = :systemListOptionIds::int[],
+          system_list_option_ids = :systemListOptionIds::bigint[],
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
@@ -187,7 +187,7 @@
                                   readonly, sort_list_values_alphabetically,
                                   date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now)
     values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey,
-            :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly,
+            :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::bigint[], :readonly,
             :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow)
     returning id
   ]]></customField.insertField>

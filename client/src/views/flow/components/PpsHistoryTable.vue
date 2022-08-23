@@ -8,11 +8,11 @@
     class="elevation-1">
 
     <template #no-data>
-      No available history data
+      <span class="default-text-color">No available history data</span>
     </template>
 
     <template #no-results>
-      No available history data
+      <span class="default-text-color">No available history data</span>
     </template>
 
     <template #item="{ item, index }">

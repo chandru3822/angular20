@@ -8,7 +8,7 @@
       <div class="previews">
         <div class="preview-image" :class="{'selected' : selected && selected.id === image.id }" v-for="image in images"
              @click="select(image)">
-          <img-proxy :uuid="image.uuid" :alt="image.filename" />
+          <img-proxy :uuid="image.uuid" :alt="image.filename" :width="100" />
         </div>
       </div>
 

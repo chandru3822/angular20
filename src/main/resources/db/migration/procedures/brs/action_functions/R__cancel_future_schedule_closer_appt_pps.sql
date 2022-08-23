@@ -1,5 +1,5 @@
--- drop function brs.cancel_future_schedule_closer_appt_pps(integer);
-CREATE OR REPLACE FUNCTION brs.cancel_future_schedule_closer_appt_pps(p_project_id integer)
+drop function if exists brs.cancel_future_schedule_closer_appt_pps(bigint);
+CREATE OR REPLACE FUNCTION brs.cancel_future_schedule_closer_appt_pps(p_project_id bigint)
     RETURNS void
     LANGUAGE plpgsql
 AS

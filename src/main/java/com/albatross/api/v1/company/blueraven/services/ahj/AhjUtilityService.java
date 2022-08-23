@@ -262,7 +262,7 @@ public class AhjUtilityService {
     User user = securityService.getCurrentUser();
 
     String sqlQuery =
-        "SELECT * FROM brs.ahj_update_requirement(:utilityId::integer, null, :requirementId::integer, :description::varchar, :position::integer, :complete::boolean, :statusId::integer, :userId::integer, :archived::boolean)";
+        "SELECT * FROM brs.ahj_update_requirement(:utilityId::bigint, null, :requirementId::bigint, :description::varchar, :position::bigint, :complete::boolean, :statusId::bigint, :userId::bigint, :archived::boolean)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("utilityId", utilityId);

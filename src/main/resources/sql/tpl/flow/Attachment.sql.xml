@@ -165,7 +165,7 @@
     FROM flow.attachment a
              LEFT JOIN flow.attachment_source src ON src.attachment_id = a.id
              inner join flow."user" u on u.id = a.created_by_id
-    WHERE case when :sourceId::int IS NOT NULL then src.source_id = :sourceId else 1 = 1 end
+    WHERE case when :sourceId::bigint IS NOT NULL then src.source_id = :sourceId else 1 = 1 end
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
   ]]></attachment.getAttachmentsBySourceIdAndType>
@@ -189,7 +189,7 @@
     FROM flow.attachment a
       INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
       inner join flow."user" u on u.id = a.created_by_id
-    WHERE src.source_id = any( array [ :sourceIds ]::integer[] )
+    WHERE src.source_id = any( array [ :sourceIds ]::bigint[] )
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived is not true
   ]]></attachment.getAttachmentBySourceAndTypeForUserList>

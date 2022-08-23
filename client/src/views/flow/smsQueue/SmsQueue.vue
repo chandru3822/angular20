@@ -36,11 +36,11 @@
       class="elevation-1 perf-table pb-md-5"
     >
       <template #no-data>
-        NO DATA FOUND
+        <span class="default-text-color">NO DATA FOUND</span>
       </template>
 
       <template #no-results>
-        No parameters exist for this function
+        <span class="default-text-color">No parameters exist for this function</span>
       </template>
 
       <template #item="{ item }">

@@ -51,19 +51,19 @@
                           :items="requestItem.proposalNbrs"
                           item-text="proposalNbr"
                           item-value="proposalNbr"
-                ></v-select>
+                />
                 <v-checkbox label="Send English Installation Agreement"
                             class="default-text-color"
                             v-model="requestItem.sendInstallationAgreement"
-                ></v-checkbox>
+                />
                 <v-checkbox label="Send Spanish Installation Agreement"
                             class="default-text-color"
                             v-model="requestItem.isSpanish"
-                ></v-checkbox>
+                />
                 <v-checkbox label="Send Finance Docs (Finance Products Only)"
                             class="default-text-color"
                             v-model="requestItem.sendLoanDocs"
-                ></v-checkbox>
+                />
               </v-col>
             </v-row>
           </v-card-text>

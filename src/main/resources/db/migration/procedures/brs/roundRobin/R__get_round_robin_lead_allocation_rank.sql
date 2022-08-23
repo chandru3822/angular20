@@ -1,7 +1,8 @@
-CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id integer, p_time_interval integer)
+drop function if exists brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint);
+CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint)
     RETURNS table
             (
-                user_id              integer,
+                user_id              bigint,
                 closer_name          text,
                 lead_gen_fdc         numeric,
                 self_gen             bigint,

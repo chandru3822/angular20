@@ -77,7 +77,7 @@
                 <v-list-item-title>{{ tab.label }}
                   <v-badge
                     class="notif-badge"
-                    color="#F35858"
+                    color="error lighten-2"
                     v-if="tab.label == 'Inbox' && smsNotification.length > 0"
                   >
                   </v-badge>

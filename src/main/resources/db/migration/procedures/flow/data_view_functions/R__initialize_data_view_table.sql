@@ -1,4 +1,5 @@
-CREATE OR REPLACE function flow.initialize_data_view_table(p_company_id integer,p_table_name character varying,p_company_process_ids integer[])
+drop function if exists flow.initialize_data_view_table(p_company_id bigint,p_table_name character varying,p_company_process_ids bigint[]);
+CREATE OR REPLACE function flow.initialize_data_view_table(p_company_id bigint,p_table_name character varying,p_company_process_ids bigint[])
   returns void
 AS $BODY$
 declare
@@ -11,9 +12,9 @@ BEGIN
   where id = p_company_id;
 
   execute $$Create table if NOT EXISTS $$||v_schema_name||$$.$$||p_table_name||$$ (id serial not null primary key,
-                                                                      project_id integer not null,
-                                                                      contact_id integer,
-                                                                      company_id integer,
+                                                                      project_id bigint not null,
+                                                                      contact_id bigint,
+                                                                      company_id bigint,
                                                                       date_modified timestamp without time zone DEFAULT now() not null );$$;
 
   execute $$insert into $$||v_schema_name||$$.$$||p_table_name||$$(project_id, contact_id,company_id, date_modified)

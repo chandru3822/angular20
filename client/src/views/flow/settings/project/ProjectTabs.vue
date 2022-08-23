@@ -33,11 +33,11 @@
               class="elevation-1"
           >
             <template #no-data>
-              No available tabs
+              <span class="default-text-color">No available tabs</span>
             </template>
 
             <template #no-results>
-              No available tabs
+              <span class="default-text-color">No available tabs</span>
             </template>
 
             <template #item="{ item, index }">

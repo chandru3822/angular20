@@ -1,6 +1,8 @@
---DROP FUNCTION IF EXISTS brs.get_closer_availability(timestamp, timestamp, int[], int[]);
+DROP FUNCTION IF EXISTS brs.get_closer_availability(p_start_time timestamp, p_end_time timestamp,
+                                                    p_postal_code_zone_user_ids bigint[]);
+
 CREATE OR REPLACE FUNCTION brs.get_closer_availability(p_start_time timestamp, p_end_time timestamp,
-                                                       p_postal_code_zone_user_ids int[])
+                                                       p_postal_code_zone_user_ids bigint[])
   RETURNS setof json AS
 $$
 BEGIN
@@ -16,7 +18,7 @@ BEGIN
                       select pczu.id                   as "resourceId",
                              ra.start_time                                     as "start",
                              ra.end_time                                       as "end",
-                             null::int                                         as "dayOfWeekId",
+                             null::bigint                                         as "dayOfWeekId",
                              ra.all_day                                        as "allDay",
                              ra.title,
                              'background'                                      as rendering,

@@ -1,10 +1,10 @@
--- drop function if exists brs.reschedule_closer_appointment(integer, integer);
-CREATE OR REPLACE FUNCTION brs.reschedule_closer_appointment(p_pps_event_id integer,
-                                                             p_current_user_id integer)
+drop function if exists brs.reschedule_closer_appointment(bigint, bigint);
+CREATE OR REPLACE FUNCTION brs.reschedule_closer_appointment(p_pps_event_id bigint,
+                                                             p_current_user_id bigint)
   RETURNS TABLE
           (
             success        boolean,
-            lead_source_id integer,
+            lead_source_id bigint,
             lead_source    text,
             fail_reason    text
           )
@@ -12,22 +12,22 @@ AS
 $BODY$
 declare
   v_timezone                      text;
-  v_project_id                    integer;
-  v_pps_id                        integer;
-  v_process_step_event_id         integer;
-  v_resource_id                   integer;
+  v_project_id                    bigint;
+  v_pps_id                        bigint;
+  v_process_step_event_id         bigint;
+  v_resource_id                   bigint;
   v_event_start_time              timestamp;
-  v_lead_source_id                int;
+  v_lead_source_id                bigint;
   v_lead_source                   text;
-  v_closer_appt_outcome           int;
+  v_closer_appt_outcome           bigint;
   v_available_date                date;
   v_search_start_time             timestamp;
   v_search_end_time               timestamp;
   v_failed                        boolean default true;
   v_appt_rescheduled              boolean default false;
-  v_users_found                   integer array;
-  v_new_pps_event_id              integer;
-  v_pps_event_root_status_type_id integer;
+  v_users_found                   bigint array;
+  v_new_pps_event_id              bigint;
+  v_pps_event_root_status_type_id bigint;
 BEGIN
 
 
@@ -141,7 +141,7 @@ BEGIN
           then
             v_failed = false;
             --if we did reschedule then set the closer appt outcome to Closer Cannot Attend: Reassign on the old pps event
-            perform flow.set_pps_event_cfv(p_pps_event_id, 99999999, 4::integer, 15327::text);
+            perform flow.set_pps_event_cfv(p_pps_event_id, 99999999, 4::bigint, 15327::text);
 
             --if we did reschedule then set the status of the current ppsEvent to Can Not Attend - Rescheduled
             update flow.project_process_step_event set company_event_status_type_id = 24 where id = p_pps_event_id;

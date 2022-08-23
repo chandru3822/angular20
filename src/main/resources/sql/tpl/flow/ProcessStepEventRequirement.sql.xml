@@ -459,7 +459,7 @@
         custom_sql_option_id = :customSqlOptionId,
         list_of_value_id = :listOfValueId,
         fail_if_no_reference_step_found = :failIfNoReferenceStepFound,
-        list_of_value_ids = array[ :listOfValueIds ]::integer[],
+        list_of_value_ids = array[ :listOfValueIds ]::bigint[],
         secondary_requirement_value = :secondaryRequirementValue,
         data_type_requirement_id = :dataTypeRequirementId,
         modified_by_id = :modifiedById,
@@ -486,7 +486,7 @@
       from flow.process_step_event_requirement
       where process_step_event_id = :processStepEventId
         and archived is not true), now(), :createdById, :processStepEventId, :secondaryRequirementValue, :dataTypeRequirementId,
-     :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId, :referenceProcessStepId, :failIfNoReferenceStepFound)
+     :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :referenceProcessStepId, :failIfNoReferenceStepFound)
   ]]></processStepEventRequirement.insertRequirement>
 
   <processStepEventRequirement.insertRequirementParamDynamicValue><![CDATA[

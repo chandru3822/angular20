@@ -87,11 +87,11 @@
           class="elevation-1 appointment-table"
         >
           <template #no-data>
-            No available appointments
+            <span class="default-text-color">No available appointments</span>
           </template>
 
           <template #no-results>
-            No available appointments
+            <span class="default-text-color">No available appointments</span>
           </template>
 
           <template #expanded-item="{ headers, item: appt }">

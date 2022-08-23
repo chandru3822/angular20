@@ -11,15 +11,15 @@
             :createdById, now(), :createdById, now(),
             (select coalesce(max(group_order) + 1, 0)
              from flow.custom_field_group cfg
-             where case when :processStepId::int is not null then cfg.process_step_id = :processStepId::int
-                        when :eventId::int is not null then event_id = :eventId::int
-                        when :attachmentTypeId::int is not null then cfg.attachment_type_id = :attachmentTypeId::int
-                        when :processStepAttachmentTypeId::int is not null then process_step_attachment_type_id = :processStepAttachmentTypeId::int
-                        when :projectAttachmentTypeId::int is not null then project_attachment_type_id = :projectAttachmentTypeId::int
-                        when :userAttachmentTypeId::int is not null then user_attachment_type_id = :userAttachmentTypeId::int
-                        when :orgAttachmentTypeId::int is not null then org_attachment_type_id = :orgAttachmentTypeId::int
-                        when :contactAttachmentTypeId::int is not null then contact_attachment_type_id = :contactAttachmentTypeId::int
-                        when :eventAttachmentTypeId::int is not null then event_attachment_type_id = :eventAttachmentTypeId::int
+             where case when :processStepId::bigint is not null then cfg.process_step_id = :processStepId::bigint
+                        when :eventId::bigint is not null then event_id = :eventId::bigint
+                        when :attachmentTypeId::bigint is not null then cfg.attachment_type_id = :attachmentTypeId::bigint
+                        when :processStepAttachmentTypeId::bigint is not null then process_step_attachment_type_id = :processStepAttachmentTypeId::bigint
+                        when :projectAttachmentTypeId::bigint is not null then project_attachment_type_id = :projectAttachmentTypeId::bigint
+                        when :userAttachmentTypeId::bigint is not null then user_attachment_type_id = :userAttachmentTypeId::bigint
+                        when :orgAttachmentTypeId::bigint is not null then org_attachment_type_id = :orgAttachmentTypeId::bigint
+                        when :contactAttachmentTypeId::bigint is not null then contact_attachment_type_id = :contactAttachmentTypeId::bigint
+                        when :eventAttachmentTypeId::bigint is not null then event_attachment_type_id = :eventAttachmentTypeId::bigint
                         else company_object_type_id = :companyObjectTypeId end))
   ]]></customFieldGroup.insertCustomFieldGroup>
 
@@ -160,12 +160,12 @@
     from flow.process_step_requirement psr
              inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
              inner join flow.process_step ps on ps.id = psr.process_step_id
-    where case when :processStepId::int is not null then ps.id != :processStepId:: int and cfga.id in (
+    where case when :processStepId::bigint is not null then ps.id != :processStepId:: int and cfga.id in (
         select cfga4.id
         from flow.custom_field_group cfg2
                  inner join flow.custom_field_group_assignment cfga4 on cfga4.custom_field_group_id = cfg2.id
-        where cfg2.process_step_id = :processStepId::int                  )
-               when :customFieldGroupAssignmentId::int is not null then cfga.id = :customFieldGroupAssignmentId::int
+        where cfg2.process_step_id = :processStepId::bigint                  )
+               when :customFieldGroupAssignmentId::bigint is not null then cfga.id = :customFieldGroupAssignmentId::bigint
         else cfga.custom_field_group_id = :customFieldGroupId end
         and psr.archived is not true
           and ps.archived is not true
@@ -181,12 +181,12 @@
              left join flow.process_step ps on ps.id = cfg.process_step_id
              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
              inner join flow.object_type ot on ot.id = cot.object_type_id
-    where case when :processStepId::int is not null then ps.id != :processStepId:: int and cfga1.id in (
+    where case when :processStepId::bigint is not null then ps.id != :processStepId:: int and cfga1.id in (
         select cfga3.id
         from flow.custom_field_group cfg3
                  inner join flow.custom_field_group_assignment cfga3 on cfga3.custom_field_group_id = cfg3.id
-        where cfg3.process_step_id = :processStepId::int                  )
-               when :customFieldGroupAssignmentId::int is not null then cfga1.id = :customFieldGroupAssignmentId::int
+        where cfg3.process_step_id = :processStepId::bigint                  )
+               when :customFieldGroupAssignmentId::bigint is not null then cfga1.id = :customFieldGroupAssignmentId::bigint
         else cfga1.custom_field_group_id = :customFieldGroupId end
         and cfga1.archived is not true
         and cfg.archived is not true

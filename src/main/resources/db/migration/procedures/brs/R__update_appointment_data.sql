@@ -1,24 +1,25 @@
-CREATE OR REPLACE FUNCTION brs.update_appointment_data(p_project_process_step_event_id integer, p_project_id integer,p_start_time timestamp default null)
+drop function if exists brs.update_appointment_data(p_project_process_step_event_id bigint, p_project_id bigint,p_start_time timestamp);
+CREATE OR REPLACE FUNCTION brs.update_appointment_data(p_project_process_step_event_id bigint, p_project_id bigint,p_start_time timestamp default null)
   RETURNS void AS
 $BODY$
 declare
-  v_missed_id                                   integer;
+  v_missed_id                                   bigint;
   v_missed                                      timestamp;
-  v_pitched_id                                  integer;
+  v_pitched_id                                  bigint;
   v_pitched                                     timestamp;
-  v_not_either_id                               integer;
+  v_not_either_id                               bigint;
   v_not_either                                  timestamp;
-  v_pitched_ppse_id                             integer;
-  v_missed_ppse_id                              integer;
-  v_not_pitched_missed_ppse_id                  integer;
-  v_first_appointment_id                        integer;
-  v_first_appointment_id_ppse_id                integer;
+  v_pitched_ppse_id                             bigint;
+  v_missed_ppse_id                              bigint;
+  v_not_pitched_missed_ppse_id                  bigint;
+  v_first_appointment_id                        bigint;
+  v_first_appointment_id_ppse_id                bigint;
   v_first_appointment_start_time                timestamp;
-  v_first_appointment_id_not_used               integer;
+  v_first_appointment_id_not_used               bigint;
   v_first_appointment_start_time_not_used       timestamp;
-  v_first_appointment_ppse_id                   integer;
-  v_count                                       integer;
-  v_prioritized_closer_appointment_outcome      integer;
+  v_first_appointment_ppse_id                   bigint;
+  v_count                                       bigint;
+  v_prioritized_closer_appointment_outcome      bigint;
   v_prioritized_closer_appointment_outcome_date timestamp;
 
 BEGIN

@@ -76,12 +76,11 @@
             <div v-if="edit" class="mb-4">
               <v-btn
                 color="primary"
-                class="white--text"
                 :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || (tournament.startDate >= tournament.endDate) || !tournament.tournamentOwnerTypeId || !tournament.tournamentFormulaId
                           || validateCustomFields()"
                 @click="updateTournament">Save
               </v-btn>
-              <v-btn class="ml-2" @click="edit = false">Cancel</v-btn>
+              <v-btn text color="primary" class="ml-2" @click="edit = false">Cancel</v-btn>
             </div>
 
             <!--            tournament image -->

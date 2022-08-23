@@ -1,6 +1,6 @@
-DROP FUNCTION if exists flow.pse_wqt_configuration_change(integer,integer);
+DROP FUNCTION if exists flow.pse_wqt_configuration_change(bigint,bigint);
 
-CREATE OR REPLACE FUNCTION flow.pse_wqt_configuration_change(p_process_step_event_work_queue_type_id integer,p_created_by_id integer)
+CREATE OR REPLACE FUNCTION flow.pse_wqt_configuration_change(p_process_step_event_work_queue_type_id bigint,p_created_by_id bigint)
 RETURNS void as
 $$
 BEGIN

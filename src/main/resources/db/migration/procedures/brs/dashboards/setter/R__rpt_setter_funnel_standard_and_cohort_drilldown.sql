@@ -1,16 +1,16 @@
--- drop function if exists brs.rpt_setter_funnel_standard_drilldown(date, date, integer, integer[], integer[]);
+drop function if exists brs.rpt_setter_funnel_standard_drilldown(date, date, bigint, bigint[], bigint[]);
 CREATE OR REPLACE FUNCTION brs.rpt_setter_funnel_standard_and_cohort_drilldown(p_start_date date,
                                                                                p_end_date date,
-                                                                               p_funnel_id integer,
-                                                                               p_user_position_ids integer[],
-                                                                               p_org_ids integer[])
+                                                                               p_funnel_id bigint,
+                                                                               p_user_position_ids bigint[],
+                                                                               p_org_ids bigint[])
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
 $function$
 declare
   v_whole_company      boolean;
-  v_outcome_int_values int[];
+  v_outcome_int_values bigint[];
 BEGIN
 
   --If p_user_position_ids has a -1 that means get the funnel for the whole company

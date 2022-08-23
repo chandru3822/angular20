@@ -8,7 +8,7 @@
       {{ ps.processStepName }}
       <span :class="getStatusClass(ps.processStepStatusTypeId)">{{ps.processStepStatusType}}</span>
       <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>
-      <div class="albatross-body-3"
+      <div class="albatross-body-3 grey--text text--darken-2"
            v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN') ||
                  $store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
         {{ ps.projectProcessStepId }}

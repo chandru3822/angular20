@@ -32,9 +32,9 @@
                     v-if="item.status">
               {{ item.status | capitalize }}
             </v-chip>
-            <v-chip class="ma-2"
+            <v-chip class="ma-2 default-text-color"
                     label
-                    color="blue"
+                    color="primary lighten-9"
                     v-if="item.primaryVersion">
               Current
             </v-chip>

@@ -350,7 +350,7 @@
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
-    where case when :cfgaId::int is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
+    where case when :cfgaId::bigint is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
       and company_id = :companyId
       and white_list_type_id = :whiteListTypeId
   ]]></customFieldGroupAssignment.archiveWhiteListPositions>
@@ -360,7 +360,7 @@
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
-    where case when :cfgaId::int is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
+    where case when :cfgaId::bigint is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
       and position_id not in (:positionIdsUsed)
       and company_id = :companyId
       and white_list_type_id = :whiteListTypeId
@@ -371,7 +371,7 @@
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
-    where case when :cfgaId::int is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
+    where case when :cfgaId::bigint is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
       and white_list_type_id = :whiteListTypeId
       and company_id = :companyId
   ]]></customFieldGroupAssignment.archiveAllWhiteListedPositions>

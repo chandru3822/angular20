@@ -1,6 +1,5 @@
--- DROP FUNCTION IF EXISTS flow.get_pps_with_actions_and_requirements(integer);
-
-CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id integer, p_company_id integer)
+drop function if exists flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint)
     RETURNS json AS
 $$
 DECLARE
@@ -122,7 +121,7 @@ BEGIN
                     requirement_param_dynamic_values as "requirementParamDynamicValues",
                     company_function_params as "companyFunctionParams",
                     available_list_of_values as "availableListOfValues"
-                from flow.get_project_process_step_requirements_with_values(p_project_process_step_id::integer, reqs.ids::integer[])
+                from flow.get_project_process_step_requirements_with_values(p_project_process_step_id::bigint, reqs.ids::bigint[])
             ) r), '[]') as "autoTriggeredActionRequirements",
              coalesce((select array_to_json(array_agg(row_to_json(a))) from (
                 select

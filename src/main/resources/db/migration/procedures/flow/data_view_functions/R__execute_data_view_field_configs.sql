@@ -1,13 +1,23 @@
+drop function if exists flow.execute_data_view_field_configs(p_contains_children boolean,
+                                                             p_value text,
+                                                             p_dvfc_id bigint,
+                                                             p_id bigint,
+                                                             p_sql text,
+                                                             p_field_to_update varchar,
+                                                             p_update_first_value_only boolean,
+                                                             p_update_first_value_only_id varchar,
+                                                             p_is_last_row boolean,
+                                                             p_data_type_id bigint);
 CREATE OR REPLACE FUNCTION flow.execute_data_view_field_configs(p_contains_children boolean,
                                                                 p_value text,
-                                                                p_dvfc_id integer,
-                                                                p_id integer,
+                                                                p_dvfc_id bigint,
+                                                                p_id bigint,
                                                                 p_sql text,
                                                                 p_field_to_update varchar,
                                                                 p_update_first_value_only boolean,
                                                                 p_update_first_value_only_id varchar,
                                                                 p_is_last_row boolean,
-                                                                p_data_type_id integer)
+                                                                p_data_type_id bigint)
   RETURNS text
 AS
 $BODY$

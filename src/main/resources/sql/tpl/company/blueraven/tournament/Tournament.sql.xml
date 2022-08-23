@@ -14,7 +14,7 @@
   ]]></tournament.getFormulaColumns>
 
   <tournament.getUserScores><![CDATA[
-      select * from brs.get_tournament_user_score_drill_down(:tournamentId::int, :startDate::date, :endDate::date, :userId::int)
+      select * from brs.get_tournament_user_score_drill_down(:tournamentId::bigint, :startDate::date, :endDate::date, :userId::bigint)
   ]]></tournament.getUserScores>
 
   <tournament.getOwnerTypes><![CDATA[
@@ -184,7 +184,7 @@
 
   <tournament.getBrackets><![CDATA[
         select *
-        from brs.get_tournament_brackets(:tournamentId::int)
+        from brs.get_tournament_brackets(:tournamentId::bigint)
   ]]></tournament.getBrackets>
 
   <tournament.getBracket><![CDATA[
@@ -267,7 +267,7 @@
   ]]></tournament.updateRound>
 
   <tournament.generateMatches><![CDATA[
-    select from brs.generate_matches(:bracketId::int, :userId::int)
+    select from brs.generate_matches(:bracketId::bigint, :userId::bigint)
   ]]></tournament.generateMatches>
 
 

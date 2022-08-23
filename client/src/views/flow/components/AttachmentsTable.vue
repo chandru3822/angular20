@@ -216,7 +216,7 @@ export default {
 
 .attachment-info {
   font-size: 14px;
-  color: #5E636D;
+  color: var(--v-grey-darken2);
 
 }
 

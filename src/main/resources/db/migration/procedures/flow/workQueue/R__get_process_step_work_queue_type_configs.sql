@@ -1,12 +1,13 @@
-CREATE OR REPLACE FUNCTION flow.get_process_step_work_queue_type_configs(p_process_step_id integer)
-  RETURNS TABLE(process_step_work_queue_type_process_step_status_type_id integer,
-                process_step_work_queue_type_id integer,
-                process_step_id integer,
-                work_queue_type_id integer,
-                company_process_status_type_id integer,
-                process_step_status_type_id integer,
-                company_project_status_type_id integer,
-                project_status_type_id integer) AS
+drop function if exists flow.get_process_step_work_queue_type_configs(p_process_step_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_process_step_work_queue_type_configs(p_process_step_id bigint)
+  RETURNS TABLE(process_step_work_queue_type_process_step_status_type_id bigint,
+                process_step_work_queue_type_id bigint,
+                process_step_id bigint,
+                work_queue_type_id bigint,
+                company_process_status_type_id bigint,
+                process_step_status_type_id bigint,
+                company_project_status_type_id bigint,
+                project_status_type_id bigint) AS
 $BODY$
 declare
 

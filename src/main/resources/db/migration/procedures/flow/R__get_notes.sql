@@ -1,8 +1,8 @@
--- DROP FUNCTION IF EXISTS flow.get_notes(integer, integer);
-CREATE OR REPLACE FUNCTION flow.get_notes(p_primary_id INTEGER, p_object_type_id INTEGER, p_company_id INTEGER)
+drop function if exists flow.get_notes(p_primary_id bigint, p_object_type_id bigint, p_company_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_notes(p_primary_id bigint, p_object_type_id bigint, p_company_id bigint)
 
-RETURNS TABLE(id int, note text, archived boolean, parent_id int, date_created timestamp, date_modified timestamp,
-              created_by_id int, created_by text, modified_by_id int, primary_id int, created_by_primary_position json, child_notes json) AS
+RETURNS TABLE(id bigint, note text, archived boolean, parent_id bigint, date_created timestamp, date_modified timestamp,
+              created_by_id bigint, created_by text, modified_by_id bigint, primary_id bigint, created_by_primary_position json, child_notes json) AS
 
 $BODY$
 DECLARE

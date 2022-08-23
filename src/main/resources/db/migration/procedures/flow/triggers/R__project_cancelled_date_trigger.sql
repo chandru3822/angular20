@@ -1,3 +1,4 @@
+drop function if exists flow.project_cancelled_date();
 CREATE OR REPLACE FUNCTION flow.project_cancelled_date()
   RETURNS TRIGGER AS
 $$

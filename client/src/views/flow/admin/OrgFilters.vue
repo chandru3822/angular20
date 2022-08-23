@@ -51,11 +51,11 @@
             class="elevation-1 org-type-table"
         >
           <template #no-data>
-            NO DATA HERE!
+            <span class="default-text-color">NO DATA HERE!</span>
           </template>
 
           <template #no-results>
-            No parameters exist for this function
+            <span class="default-text-color">No parameters exist for this function</span>
           </template>
 
           <template #expanded-item="{ headers, item }">

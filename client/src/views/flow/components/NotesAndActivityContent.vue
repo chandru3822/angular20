@@ -504,7 +504,7 @@ export default {
 .note-see-comments {
   font-size: 11px;
   font-style: italic;
-  color: #6B777D;
+  color: var(--v-primary-base);
 }
 
 .reply-note-item {

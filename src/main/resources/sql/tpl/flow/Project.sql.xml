@@ -49,12 +49,12 @@
                4326)
      and case
              when :isParent then cp.company_id = any
-                                 (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                 (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
              else cp.company_id = :companyId
       end
       and p.archived is false
-     and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::INTEGER[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::integer[] ) else 1=1 end
-     and case when :searchTypeId::int = 2 then up.user_id = :currentUserId::int else 1=1 end
+     and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::bigint[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::bigint[] ) else 1=1 end
+     and case when :searchTypeId::bigint = 2 then up.user_id = :currentUserId::bigint else 1=1 end
   ]]></project.getProjectsInGeoArea>
 
   <project.getProjectsInGeoAreaDownline><![CDATA[
@@ -154,11 +154,11 @@
                where
                  case
                    when :isParent then cp.company_id = any
-                                       (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                       (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                    else cp.company_id = :companyId
                  end
                  and p.archived is not true
-                 and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::INTEGER[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::integer[] ) else 1=1 end
+                 and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::bigint[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::bigint[] ) else 1=1 end
                  and st_makepoint(p.longitude, p.latitude)
                    && ST_MakeEnvelope (
                                       :upperBoundLongitude, :upperBoundLatitude,
@@ -174,7 +174,7 @@
       inner join flow.company c on c.id = cp.company_id
     where p.id = :projectId
       and p.archived is not true
-      and c.id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+      and c.id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
   ]]></project.existsInHierarchy>
 
   <project.exists><![CDATA[
@@ -194,62 +194,62 @@
 
   <project.searchDownline><![CDATA[
     select *
-    from flow.search_projects_with_down_line(:query::character varying, :companyId::int,
-                                                            :userId::int,
+    from flow.search_projects_with_down_line(:query::character varying, :companyId::bigint,
+                                                            :userId::bigint,
                                                             :isParent::boolean,
-                                                            :limit::int, :offset::int,
-                                                            :companyProjectStatusTypeId::int,
+                                                            :limit::bigint, :offset::bigint,
+                                                            :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying)
   ]]></project.searchDownline>
 
 
   <project.searchDownlineCount><![CDATA[
       select *
-      from flow.search_projects_with_down_line_count(:query::character varying, :companyId::int,
-                                                              :userId::int,
+      from flow.search_projects_with_down_line_count(:query::character varying, :companyId::bigint,
+                                                              :userId::bigint,
                                                               :isParent::boolean,
-                                                            :companyProjectStatusTypeId::int)
+                                                            :companyProjectStatusTypeId::bigint)
     ]]></project.searchDownlineCount>
 
   <project.search><![CDATA[
     select *
     from flow.search_all_projects(:query::character varying,
-                                  :companyId::int,
+                                  :companyId::bigint,
                                   :isParent::boolean,
-                                  :limit::int,
-                                  :offset::int,
-                                  :companyProjectStatusTypeId::int,
+                                  :limit::bigint,
+                                  :offset::bigint,
+                                  :companyProjectStatusTypeId::bigint,
                                   :sortColumn::character varying,
                                   :sortDirection::character varying)
   ]]></project.search>
 
   <project.searchCount><![CDATA[
-    select * from flow.search_all_projects_count(:query::character varying, :companyId::int, :isParent::boolean,
-                                                            :companyProjectStatusTypeId::int)
+    select * from flow.search_all_projects_count(:query::character varying, :companyId::bigint, :isParent::boolean,
+                                                            :companyProjectStatusTypeId::bigint)
   ]]></project.searchCount>
 
   <project.searchByOwner><![CDATA[
     select *
-    from flow.search_projects_by_user(:query::character varying, :companyId::int,
-                                 :userId::int,  :isParent::boolean,:limit::int, :offset::int,
-                                                            :companyProjectStatusTypeId::int,
+    from flow.search_projects_by_user(:query::character varying, :companyId::bigint,
+                                 :userId::bigint,  :isParent::boolean,:limit::bigint, :offset::bigint,
+                                                            :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying)
   ]]></project.searchByOwner>
 
   <project.searchByOwnerCount><![CDATA[
-    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::int, :userId::int, :isParent::boolean,
-                                                            :companyProjectStatusTypeId::int)
+    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::bigint, :userId::bigint, :isParent::boolean,
+                                                            :companyProjectStatusTypeId::bigint)
   ]]></project.searchByOwnerCount>
 
   <project.countsByStatus><![CDATA[
     select *
-    from flow.project_count_by_company_status(:companyId::int)
+    from flow.project_count_by_company_status(:companyId::bigint)
   ]]></project.countsByStatus>
 
   <project.countsByStatusByUser><![CDATA[
     select *
-    from flow.project_count_by_company_status_by_user(:companyId::int,
-                                                            :userId::int,
+    from flow.project_count_by_company_status_by_user(:companyId::bigint,
+                                                            :userId::bigint,
                                                             :viewDownline::boolean)
   ]]></project.countsByStatusByUser>
 
@@ -361,7 +361,7 @@
       inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
       where p.id = :projectId
         and case when :isParent
-            then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else cp.company_id = :companyId end
             and p.archived is not true
   ]]></project.get>
@@ -433,11 +433,11 @@
     where
       p.id = :projectId and
         case when :isParent
-            then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else ps.company_id = :companyId end
       and pps.archived is not true
       and p.archived is not true
-      and case when :statusTypeId::int is not null then :statusTypeId::int = cpsst.process_step_status_type_id else 1=1 end
+      and case when :statusTypeId::bigint is not null then :statusTypeId::bigint = cpsst.process_step_status_type_id else 1=1 end
     order by ps.process_step_name;
   ]]></project.getProcessStepsByProjectId>
 
@@ -480,7 +480,7 @@
         and pps.archived is not true
         and ppse.archived is not true
         and p.archived is not true
-        and case when :statusTypeId::int is not null then :statusTypeId::int = cest.event_status_type_id else 1=1 end
+        and case when :statusTypeId::bigint is not null then :statusTypeId::bigint = cest.event_status_type_id else 1=1 end
       order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
 
   ]]></project.getEventsByProjectId>
@@ -669,7 +669,7 @@
   ]]></project.updateOwner>
 
   <project.getOwners><![CDATA[
-    select * from flow.get_project_available_owners(:companyId::int, :parentCompanyId::int, :isParent::bool)
+    select * from flow.get_project_available_owners(:companyId::bigint, :parentCompanyId::bigint, :isParent::bool)
   ]]></project.getOwners>
 
   <project.getDefaultProjectStatusTypeByCompanyId><![CDATA[
@@ -691,10 +691,10 @@
 
   <project.getStatusesForWqt><![CDATA[
       select
-        null::int as id,
+        null::bigint as id,
         'Category' as header,
-        null::int as "projectStatusTypeId",
-        null::int as "companyProjectStatusTypeId",
+        null::bigint as "projectStatusTypeId",
+        null::bigint as "companyProjectStatusTypeId",
         false as archived,
         null::text as "uniqueText",
         null::text as "group",
@@ -704,10 +704,10 @@
         0 as display_sort
       union all
       select
-        null::int as id,
+        null::bigint as id,
         null::text as header,
         pst.id as "projectStatusTypeId",
-        null::int as "companyProjectStatusTypeId",
+        null::bigint as "companyProjectStatusTypeId",
         pst.archived,
         concat(pst.project_status_type, 'PST')::text as "uniqueText",
         'Category' as "group",
@@ -719,10 +719,10 @@
       where pst.archived is not true
       union all
       select
-        null::int as id,
+        null::bigint as id,
         'Project Status' as header,
-        null::int as "projectStatusTypeId",
-        null::int as "companyProjectStatusTypeId",
+        null::bigint as "projectStatusTypeId",
+        null::bigint as "companyProjectStatusTypeId",
         false as archived,
         null::text as "uniqueText",
         null::text as "group",
@@ -732,7 +732,7 @@
         2 as display_sort
       union all
       select
-        null::int as id,
+        null::bigint as id,
         null::text as header,
         pst.id as "projectStatusTypeId",
         cpst.id as "companyProjectStatusTypeId",

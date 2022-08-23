@@ -47,10 +47,10 @@
              inner join flow.org_type ot on ot.id = o.org_type_id
              left join flow.company_state cs on cs.id = o.company_state_id
     where case when :isParent and :isSchedulingTool
-        then o.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+        then o.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
         else (o.company_id = :companyId OR (:isSchedulingTool AND o.company_id = :parentCompanyId AND o.available_to_children is true )) end
-      and case when :companyStateId::integer is not null
-          then o.company_state_id = :companyStateId::integer and o.schedulable is true
+      and case when :companyStateId::bigint is not null
+          then o.company_state_id = :companyStateId::bigint and o.schedulable is true
           else o.schedulable is true end
       and o.archived is not true
       and o.active_flag is true
@@ -207,9 +207,9 @@
   ]]></org.deleteOrgFilter>
 
   <org.getOrgsByHierarchyFilter><![CDATA[
-    select * from flow.org_hierarchy_filter_down(ARRAY[ :selectedOrgs ]::integer[])
+    select * from flow.org_hierarchy_filter_down(ARRAY[ :selectedOrgs ]::bigint[])
     union
-    select * from flow.org_hierarchy_filter_up(ARRAY[ :selectedOrgs ]::integer[])
+    select * from flow.org_hierarchy_filter_up(ARRAY[ :selectedOrgs ]::bigint[])
     order by org_level_id, org_name;
   ]]></org.getOrgsByHierarchyFilter>
 

@@ -1,11 +1,15 @@
--- drop function flow.pps_parent_hierarchy(int, int);
+-- drop function flow.pps_parent_hierarchy(bigint, bigint);
 -- allow self reference currently only used by proposals who know their originating pps.id
 --     but they also need ancillary data off of their originating id.
+drop function if exists flow.pps_parent_hierarchy(
+  p_project_process_step_id bigint,
+  p_custom_field_group_assignment_id bigint,
+  p_allow_self_reference boolean);
 CREATE OR REPLACE FUNCTION flow.pps_parent_hierarchy(
-p_project_process_step_id integer,
-p_custom_field_group_assignment_id integer,
+p_project_process_step_id bigint,
+p_custom_field_group_assignment_id bigint,
 p_allow_self_reference boolean default false)
-  RETURNS TABLE(id integer) AS
+  RETURNS TABLE(id bigint) AS
 $BODY$
 declare
 

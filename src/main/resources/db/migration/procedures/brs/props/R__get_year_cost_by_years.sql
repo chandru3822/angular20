@@ -2,12 +2,12 @@
    p_khw_rate numeric,
    p_utility_cost_escalator numeric,
    p_estimated_annual_consumption numeric,
-   p_years integer);
+   p_years bigint);
 CREATE OR REPLACE FUNCTION brs.get_year_cost_by_years(
   p_khw_rate numeric,
   p_utility_cost_escalator numeric,
   p_estimated_annual_consumption numeric,
-  p_years integer)
+  p_years bigint)
   returns numeric
 AS
 $BODY$

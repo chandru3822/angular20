@@ -87,11 +87,11 @@
             class="elevation-1"
         >
           <template #no-data>
-            No available plans
+            <span class="default-text-color">No available plans</span>
           </template>
 
           <template #no-results>
-            No available plans
+            <span class="default-text-color">No available plans</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -209,11 +209,11 @@
             class="elevation-1"
         >
           <template #no-data>
-            No available overrides
+            <span class="default-text-color">No available overrides</span>
           </template>
 
           <template #no-results>
-            No available overrides
+            <span class="default-text-color">No available overrides</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -328,11 +328,11 @@
             class="elevation-1"
         >
           <template #no-data>
-            No available plans
+            <span class="default-text-color">No available plans</span>
           </template>
 
           <template #no-results>
-            No available plans
+            <span class="default-text-color">No available plans</span>
           </template>
 
           <template #expanded-item="{ headers, item }">

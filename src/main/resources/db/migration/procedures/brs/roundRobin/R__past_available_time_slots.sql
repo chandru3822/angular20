@@ -1,3 +1,8 @@
+drop function if exists flow.past_available_time_slots(p_user_id bigint,
+                                                       p_start_time timestamp,
+                                                       p_end_time timestamp,
+                                                       p_available_date date,
+                                                       p_time_zone text);
 CREATE OR REPLACE FUNCTION flow.past_available_time_slots(p_user_id bigint,
                                                           p_start_time timestamp,
                                                           p_end_time timestamp,
@@ -5,7 +10,7 @@ CREATE OR REPLACE FUNCTION flow.past_available_time_slots(p_user_id bigint,
                                                           p_time_zone text)
     RETURNS TABLE
             (
-                users                integer array,
+                users                bigint array,
                 scheduled_start_time timestamp
             )
 AS
@@ -30,7 +35,7 @@ BEGIN
 
     EXECUTE 'SET TIME ZONE ''' || p_time_zone || ''';';
     return query
-        select array_agg(foo2.user_id)::integer array as users, foo2.scheduled_start_time
+        select array_agg(foo2.user_id)::bigint array as users, foo2.scheduled_start_time
         from (
                  select user_id,
                         foo1.scheduled_start_time,

@@ -1,9 +1,10 @@
-CREATE OR REPLACE FUNCTION brs.util_setter_area_selection(p_platform_user_id integer)
+drop function if exists brs.util_setter_area_selection(p_platform_user_id bigint);
+  CREATE OR REPLACE FUNCTION brs.util_setter_area_selection(p_platform_user_id bigint)
 	  RETURNS SETOF json
     LANGUAGE plpgsql
 AS $function$
 DECLARE
-    v_org_level_id integer;
+    v_org_level_id bigint;
 BEGIN
     select min(ol.level)
     into v_org_level_id

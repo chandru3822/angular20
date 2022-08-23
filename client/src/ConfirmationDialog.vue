@@ -59,7 +59,7 @@ export default {
         return this.openDialog
       },
       set (value) {
-        this.$emit('close-dialog', value)
+        // this.$emit('close-dialog', value)
       }
     }
   },

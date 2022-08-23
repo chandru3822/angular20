@@ -1,30 +1,30 @@
 DROP FUNCTION IF EXISTS brs.ahj_update_requirement(
-  INTEGER,
-  INTEGER,
-  INTEGER,
+  bigint,
+  bigint,
+  bigint,
   TEXT,
-  INTEGER,
+  bigint,
   BOOLEAN,
-  INTEGER,
-  INTEGER,
+  bigint,
+  bigint,
   BOOLEAN
 );
 CREATE OR REPLACE FUNCTION brs.ahj_update_requirement(
-  p_utility_id     INTEGER,
-  p_ahj_id         INTEGER,
-  p_requirement_id INTEGER,
+  p_utility_id     bigint,
+  p_ahj_id         bigint,
+  p_requirement_id bigint,
   p_description    TEXT,
-  p_position       INTEGER,
+  p_position       bigint,
   p_complete       BOOLEAN,
-  p_status_id      INTEGER,
-  p_user_id        INTEGER,
+  p_status_id      bigint,
+  p_user_id        bigint,
   p_archived       BOOLEAN
 )
   RETURNS VOID
 AS $$
 DECLARE
-  o_req_id      INTEGER;
-  o_req_type_id INTEGER;
+  o_req_id      bigint;
+  o_req_type_id bigint;
   o_done        BOOLEAN;
 BEGIN
   IF p_status_id IN (1, 3)

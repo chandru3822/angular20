@@ -103,7 +103,7 @@
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
                                                           and wlp2.white_list_type_id = 2
                                                           and wlp2.archived is not true
-                                                          and wlp2.position_id = any(:userPositions::int[])
+                                                          and wlp2.position_id = any(:userPositions::bigint[])
                                                         limit 1
                                                 )
                                 else 1=1 end
@@ -275,7 +275,7 @@
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
                                                           and wlp2.white_list_type_id = 2
                                                           and wlp2.archived is not true
-                                                          and wlp2.position_id = any(:userPositions::int[])
+                                                          and wlp2.position_id = any(:userPositions::bigint[])
                                                         limit 1
                                                 )
                                 else 1=1 end
@@ -382,7 +382,7 @@
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
                                                           and wlp2.white_list_type_id = 2
                                                           and wlp2.archived is not true
-                                                          and wlp2.position_id = any(:userPositions::int[])
+                                                          and wlp2.position_id = any(:userPositions::bigint[])
                                                         limit 1
                                                 )
                                 else 1=1 end
@@ -567,7 +567,7 @@
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
                                                           and wlp2.white_list_type_id = 2
                                                           and wlp2.archived is not true
-                                                          and wlp2.position_id = any(:userPositions::int[])
+                                                          and wlp2.position_id = any(:userPositions::bigint[])
                                                         limit 1
                                                 )
                                 else 1=1 end
@@ -746,7 +746,7 @@
                                                           where wlp2.custom_field_group_assignment_id = cfga.id
                                                             and wlp2.white_list_type_id = 2
                                                             and wlp2.archived is not true
-                                                            and wlp2.position_id = any(:userPositions::int[])
+                                                            and wlp2.position_id = any(:userPositions::bigint[])
                                                           limit 1
                               )
                                        else 1=1 end
@@ -861,7 +861,7 @@
                                                         where wlp2.custom_field_group_assignment_id = cfga.id
                                                           and wlp2.white_list_type_id = 2
                                                           and wlp2.archived is not true
-                                                          and wlp2.position_id = any(:userPositions::int[])
+                                                          and wlp2.position_id = any(:userPositions::bigint[])
                                                         limit 1
                                                 )
                                 else 1=1 end
@@ -981,7 +981,7 @@
                                   inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                   inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 2
             where cfga.id = :customFieldGroupAssignmentId
-              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now()
     ON CONFLICT (contact_id, custom_field_group_assignment_id)
       DO UPDATE
       set date_value = :dateValue::date,
@@ -991,7 +991,7 @@
           rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
-          int_array_value = :intArrayValue::int[],
+          int_array_value = :intArrayValue::bigint[],
           modified_by_id = :userId,
           date_modified = now()
   ]]></customFieldValues.contact.upsertCustomFieldValue>
@@ -1004,7 +1004,7 @@
                                   inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 5
             where cfga.id = :customFieldGroupAssignmentId
               and cfga.archived is not true),
-           :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+           :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now()
     ON CONFLICT (org_id, custom_field_group_assignment_id)
       DO UPDATE
       set date_value = :dateValue::date,
@@ -1014,7 +1014,7 @@
           rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
-          int_array_value = :intArrayValue::int[],
+          int_array_value = :intArrayValue::bigint[],
           modified_by_id = :userId,
           date_modified = now()
   ]]></customFieldValues.organization.upsertCustomFieldValue>
@@ -1027,7 +1027,7 @@
               inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 3
                where cfga.id = :customFieldGroupAssignmentId
              and cfga.archived is not true),
-           :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+           :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now()
     ON CONFLICT (user_id, custom_field_group_assignment_id)
       DO UPDATE
       set date_value = :dateValue::date,
@@ -1037,7 +1037,7 @@
           rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
-          int_array_value = :intArrayValue::int[],
+          int_array_value = :intArrayValue::bigint[],
           modified_by_id = :userId,
           date_modified = now()
   ]]></customFieldValues.user.upsertCustomFieldValue>
@@ -1050,7 +1050,7 @@
             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and (cfg.process_step_id = (select process_step_id from flow.project_process_step where id = :sourceId))
           where cfga.id = :customFieldGroupAssignmentId
             and cfga.archived is not true
-          ), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+          ), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now()
         ON CONFLICT (project_process_step_id, custom_field_group_assignment_id)
           DO UPDATE
           set date_value = :dateValue::date,
@@ -1060,7 +1060,7 @@
               rich_text_value = :richTextValue,
               numeric_value = :numericValue,
               int_value = :intValue,
-              int_array_value = :intArrayValue::int[],
+              int_array_value = :intArrayValue::bigint[],
               modified_by_id = :userId,
               date_modified = now()
   ]]></customFieldValues.process_step.upsertCustomFieldValue>
@@ -1074,7 +1074,7 @@
                                                                                                                                             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
                                                                                                                                               where ppse.id = :sourceId))
               where cfga.id = :customFieldGroupAssignmentId
-                and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId
+                and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId
       ON CONFLICT (project_process_step_event_id, custom_field_group_assignment_id)
         DO UPDATE
         set date_value = :dateValue::date,
@@ -1084,7 +1084,7 @@
             rich_text_value = :richTextValue,
             numeric_value = :numericValue,
             int_value = :intValue,
-            int_array_value = :intArrayValue::int[],
+            int_array_value = :intArrayValue::bigint[],
             modified_by_id = :userId,
             date_modified = now()
   ]]></customFieldValues.event.upsertCustomFieldValue>
@@ -1096,7 +1096,7 @@
                                   inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
                                   inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id = 1
             where cfga.id = :customFieldGroupAssignmentId
-              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::int[], :userId, now(), :userId, now()
+              and cfga.archived is not true), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now()
     ON CONFLICT (project_id, custom_field_group_assignment_id)
       do update
       set date_value = :dateValue::date,
@@ -1106,7 +1106,7 @@
           rich_text_value = :richTextValue,
           numeric_value = :numericValue,
           int_value = :intValue,
-          int_array_value = :intArrayValue::int[],
+          int_array_value = :intArrayValue::bigint[],
           modified_by_id = :userId,
           date_modified = now()
   ]]></customFieldValues.project.upsertCustomFieldValue>
@@ -1152,7 +1152,7 @@
   ]]></customFieldValue.project.updateValueUsingCfId>
 
   <customFieldValue.updateValueUsingFunction><![CDATA[
-      select from flow.set_pps_cfv(:projectId::int, :userId::int, :cfgaId::integer, :value::text)
+      select from flow.set_pps_cfv(:projectId::bigint, :userId::bigint, :cfgaId::bigint, :value::text)
   ]]></customFieldValue.updateValueUsingFunction>
 
 <customFieldValue.getListOfValueIdByCfgaIdAndName><![CDATA[

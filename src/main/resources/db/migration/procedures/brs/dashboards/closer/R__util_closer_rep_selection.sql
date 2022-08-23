@@ -1,13 +1,15 @@
-CREATE OR REPLACE FUNCTION brs.util_closer_rep_selection(p_platform_user_id integer, p_area_ids json, p_region_ids json,
+drop function if exists brs.util_closer_rep_selection(p_platform_user_id bigint, p_area_ids json, p_region_ids json,
+                                                      p_district_ids json, p_office_ids json);
+CREATE OR REPLACE FUNCTION brs.util_closer_rep_selection(p_platform_user_id bigint, p_area_ids json, p_region_ids json,
                                                          p_district_ids json, p_office_ids json)
     RETURNS SETOF json
     LANGUAGE plpgsql
 AS
 $function$
 DECLARE
-    v_org_level_id         integer;
-    v_current_position_ids integer[];
-    v_org_ids integer[];
+    v_org_level_id         bigint;
+    v_current_position_ids bigint[];
+    v_org_ids bigint[];
 BEGIN
     select array_agg(position_id)
     into v_current_position_ids
@@ -35,7 +37,7 @@ BEGIN
         select array_agg(elem)
         into v_org_ids
         from (
-        SELECT (elem ->> 'office_id') :: INTEGER as elem
+        SELECT (elem ->> 'office_id') :: bigint as elem
 
         FROM json_array_elements(p_office_ids::JSON) elem)as elem;
     elsif p_district_ids::text != '[]'::text then
@@ -43,20 +45,20 @@ BEGIN
         select array_agg(elem)
         into v_org_ids
         from (
-        SELECT (elem ->> 'district_id') :: INTEGER as elem
+        SELECT (elem ->> 'district_id') :: bigint as elem
         FROM json_array_elements(p_district_ids::JSON) elem)as elem;
     elsif p_region_ids::text != '[]'::text then
         raise notice '3';
         select array_agg(elem)
         into v_org_ids
         from (
-        SELECT (elem ->> 'region_id') :: INTEGER as elem
+        SELECT (elem ->> 'region_id') :: bigint as elem
         FROM json_array_elements(p_region_ids::JSON) elem)as elem;
     elsif p_area_ids::text != '[]'::text then
         raise notice '4';
         select array_agg(elem)
         from (
-        SELECT (elem ->> 'area_id') :: INTEGER as elem
+        SELECT (elem ->> 'area_id') :: bigint as elem
         into v_org_ids
         FROM json_array_elements(p_area_ids::JSON) elem)as elem;
     end if;
@@ -82,7 +84,7 @@ BEGIN
                                      end)                                                  as active,
                                  upv.user_position_id
                           from flow.user_positions_vw upv
-                                   inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                   inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                                 from flow.company_configuration_value
                                                                                                                 where code = 'CLOSER_POSITION_IDS')
                                                                  and up.archived is not true and up.id = upv.user_position_id
@@ -109,7 +111,7 @@ BEGIN
                                                  end)                                                  as active,
                                              upv.user_position_id
                                       from flow.user_positions_vw upv
-                                             inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                             inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                                                  from flow.company_configuration_value
                                                                                                                                  where code = 'CLOSER_POSITION_IDS')
                                                                                                     and up.archived is not true and up.id = upv.user_position_id
@@ -139,7 +141,7 @@ BEGIN
                                                      end)                                                  as active,
                                                  upv.user_position_id
                                           from flow.user_positions_vw upv
-                                                 inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                                                 inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                                                      from flow.company_configuration_value
                                                                                                                                      where code = 'CLOSER_POSITION_IDS')
                                                                                                                     and up.archived is not true and up.id = upv.user_position_id

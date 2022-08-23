@@ -1,10 +1,11 @@
+drop function if exists brs.get_colorado_rebate(p_aurora_design_summary jsonb,p_rebate_amount numeric,p_inverter_efficiency numeric);
 CREATE OR REPLACE FUNCTION brs.get_colorado_rebate(p_aurora_design_summary jsonb,p_rebate_amount numeric,p_inverter_efficiency numeric)
     returns numeric AS
 $BODY$
 declare
   x jsonb;
-  v_tilt integer;
-  v_azimuth integer;
+  v_tilt bigint;
+  v_azimuth bigint;
   v_percent_value numeric;
   v_size numeric;
   v_annual numeric;
@@ -17,9 +18,9 @@ BEGIN
           loop
             v_tilt = null;
             v_azimuth = null;
-            v_tilt = (x::jsonb->'pitch')::integer;
-            v_azimuth = (x::jsonb->'azimuth')::integer;
-            v_size = (x::jsonb->'size')::integer;
+            v_tilt = (x::jsonb->'pitch')::bigint;
+            v_azimuth = (x::jsonb->'azimuth')::bigint;
+            v_size = (x::jsonb->'size')::bigint;
             v_annual = (x::jsonb->'shading'->'solar_access'->'annual')::numeric;
             select percent_value
             into v_percent_value

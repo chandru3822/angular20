@@ -20,10 +20,10 @@
 
   <processStepStatus.getStatusesForWqt><![CDATA[
     select
-      null::int as id,
+      null::bigint as id,
       'Category' as header,
-      null::int as "processStepStatusTypeId",
-      null::int as "companyProcessStepStatusTypeId",
+      null::bigint as "processStepStatusTypeId",
+      null::bigint as "companyProcessStepStatusTypeId",
       false as archived,
       null::text as "uniqueText",
       null::text as "group",
@@ -33,10 +33,10 @@
       0 as display_sort
     union all
     select
-      null::int as id,
+      null::bigint as id,
       null::text as header,
       psst.id as "processStepStatusTypeId",
-      null::int as "companyProcessStepStatusTypeId",
+      null::bigint as "companyProcessStepStatusTypeId",
       psst.archived,
       concat(psst.process_step_status_type, 'PSST')::text as "uniqueText",
       'Category' as "group",
@@ -48,10 +48,10 @@
     where psst.archived is not true
     union all
     select
-      null::int as id,
+      null::bigint as id,
       'Project Status' as header,
-      null::int as "processStepStatusTypeId",
-      null::int as "companyProcessStepStatusTypeId",
+      null::bigint as "processStepStatusTypeId",
+      null::bigint as "companyProcessStepStatusTypeId",
       false as archived,
       null::text as "uniqueText",
       null::text as "group",
@@ -61,7 +61,7 @@
       2 as display_sort
     union all
     select
-      null::int as id,
+      null::bigint as id,
       null::text as header,
       psst.id as "processStepStatusTypeId",
       cpsst.id as "companyProcessStepStatusTypeId",

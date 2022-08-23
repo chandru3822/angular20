@@ -308,11 +308,11 @@
             :items="drilldownData"
           >
             <template #no-data>
-                No data available
+              <span class="default-text-color">No data available</span>
             </template>
 
             <template #no-results>
-              No data available
+              <span class="default-text-color">No data available</span>
             </template>
 
             <template #item="{ item, index }">

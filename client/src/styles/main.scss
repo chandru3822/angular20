@@ -40,6 +40,10 @@ $default-text: rgba(0,0,0,0.87);
   color: $default-text !important;
 }
 
+#no-data, #no-results {
+  color: $default-text !important;
+}
+
 .anchor {
   color: var(--v-anchor-base) !important;
 } //this ought to work automatically with vuetify, but it doesn't
@@ -125,6 +129,11 @@ $default-text: rgba(0,0,0,0.87);
 .theme-datetime .vdatetime-time-picker__item--selected,
 .theme-datetime .vdatetime-popup__actions__button {
   color: var(--v-primary-base);
+}
+
+.v-list .v-list-item--active{
+  color:var(--v-anchor-base);
+  background-color: var(--v-primary-lighten9);
 }
 
 .v-list-item--dense, .v-list--dense .v-list-item {
