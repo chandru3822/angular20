@@ -1,4 +1,5 @@
-CREATE or replace function brs.get_commission_summary(p_position_id integer)
+drop function if exists brs.get_commission_summary(p_position_id bigint);
+CREATE or replace function brs.get_commission_summary(p_position_id bigint)
     RETURNS JSON AS
 $BODY$
 declare

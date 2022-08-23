@@ -63,7 +63,7 @@
                                 INNER JOIN flow.project_process_step_attachment src ON src.attachment_id = a.id
                                 INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
                          WHERE src.project_process_step_id = pps.id
-                         AND at.id in (select unnest(string_to_array(value, ',')::int[])
+                         AND at.id in (select unnest(string_to_array(value, ',')::bigint[])
                                               from flow.company_configuration_value
                                               where code = 'AURORA_ATTACHMENT_TYPE_IDS' and archived is false)
                            AND a.archived IS NOT TRUE
@@ -118,7 +118,7 @@
                                       INNER JOIN flow.project_process_step_attachment src ON src.attachment_id = a.id
                                       INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
                                WHERE src.project_process_step_id = pps.id
-                                AND at.id in (select unnest(string_to_array(value, ',')::int[])
+                                AND at.id in (select unnest(string_to_array(value, ',')::bigint[])
                                               from flow.company_configuration_value
                                               where code = 'AURORA_ATTACHMENT_TYPE_IDS' and archived is false)
                                  AND a.archived IS NOT TRUE
@@ -308,7 +308,7 @@ where p.id = :proposalId
   ]]></proposal.getCurrentVersion>
 
   <proposal.getCalculatedProposalValues><![CDATA[
-    select calc.* from brs.get_calculated_proposal_values(:proposalId::integer, :insertPropLogHistory::boolean) calc
+    select calc.* from brs.get_calculated_proposal_values(:proposalId::bigint, :insertPropLogHistory::boolean) calc
   ]]></proposal.getCalculatedProposalValues>
 
   <proposal.getAttachments><![CDATA[

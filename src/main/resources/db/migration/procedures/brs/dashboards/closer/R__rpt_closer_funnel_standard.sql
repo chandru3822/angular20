@@ -1,5 +1,7 @@
-﻿CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard(p_custom_start_date date, p_custom_end_date date,
-                                                          p_user_position_ids integer[], p_org_ids integer[])
+﻿drop function if exists brs.rpt_closer_funnel_standard(p_custom_start_date date, p_custom_end_date date,
+                                                       p_user_position_ids bigint[], p_org_ids bigint[]);
+CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard(p_custom_start_date date, p_custom_end_date date,
+                                                          p_user_position_ids bigint[], p_org_ids bigint[])
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
@@ -89,10 +91,10 @@ BEGIN
                                     when f.id in (8) then substantial_completion_date :: DATE =
                                                           (now() at time zone 'US/Mountain') :: DATE
                                     else true end
-                                  --credit check int value
+                                  --credit check bigint value
                                   and case when f.id = 3 then credit_check = 82 else true end
                                )         as today_count,
-                               null::int as checked_in_today_count,
+                               null::bigint as checked_in_today_count,
                                (select count(1)
                                 from project_data
                                 where
@@ -121,7 +123,7 @@ BEGIN
                                       false))
                                     else true end
                                )         as week_to_date_count,
-                               null::int as checked_in_week_to_date_count,
+                               null::bigint as checked_in_week_to_date_count,
                                (select count(1)
                                 from project_data
                                 where
@@ -150,7 +152,7 @@ BEGIN
                                       false))
                                     else true end
                                )         as custom_date_range_count,
-                               null::int as checked_in_custom_date_range_count
+                               null::bigint as checked_in_custom_date_range_count
                         from brs.funnel f
                         where f.archived is false
                           and f.funnel_type_id = 3

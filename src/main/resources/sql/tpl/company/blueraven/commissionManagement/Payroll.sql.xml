@@ -151,11 +151,11 @@
     ]]></payroll.status>
 
     <payroll.overridesOpen><![CDATA[
-        SELECT * FROM brs.get_all_users_overrides_earned_in_open_payroll(:payrollId::integer)
+        SELECT * FROM brs.get_all_users_overrides_earned_in_open_payroll(:payrollId::bigint)
     ]]></payroll.overridesOpen>
 
     <payroll.overridesSnapshot><![CDATA[
-        SELECT * FROM brs.get_all_users_overrides_earned_in_payroll_snapshot(:payrollId::integer)
+        SELECT * FROM brs.get_all_users_overrides_earned_in_payroll_snapshot(:payrollId::bigint)
     ]]></payroll.overridesSnapshot>
 
     <payroll.addActionHistory><![CDATA[
@@ -180,7 +180,7 @@
     ]]></payroll.checkSummaryPreparationStatus>
 
     <payroll.getCurrentSummary><![CDATA[
-        SELECT brs.get_commission_summary(:positionId::int)
+        SELECT brs.get_commission_summary(:positionId::bigint)
     ]]></payroll.getCurrentSummary>
 
     <payroll.getSummary><![CDATA[
@@ -196,13 +196,13 @@
     <payroll.getAccountReviewForClosers><![CDATA[
      SELECT array_to_json(array_agg(row_to_json(sub_rows)))
 FROM (SELECT *
-      FROM brs.get_commission_account_details(:payrollId::int, :selectedProjectIds::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
+      FROM brs.get_commission_account_details(:payrollId::bigint, :selectedProjectIds::bigint[], :customerId::bigint, :salesRepId::bigint, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::bigint, :commissionPlanId::bigint)) sub_rows
     ]]></payroll.getAccountReviewForClosers>
 
   <payroll.getAccountReviewForSetters><![CDATA[
      SELECT array_to_json(array_agg(row_to_json(sub_rows)))
 FROM (SELECT *
-      FROM brs.get_commission_account_details_for_setters(:payrollId::int, :selectedProjectIds::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
+      FROM brs.get_commission_account_details_for_setters(:payrollId::bigint, :selectedProjectIds::bigint[], :customerId::bigint, :salesRepId::bigint, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::bigint, :commissionPlanId::bigint)) sub_rows
     ]]></payroll.getAccountReviewForSetters>
 
     <payroll.getPayrollSearchDetailForClosers><![CDATA[

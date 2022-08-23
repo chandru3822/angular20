@@ -1,11 +1,12 @@
-CREATE OR REPLACE FUNCTION brs.get_allocation_by_zone(p_postal_code_zone_id integer)
+drop function if exists brs.get_allocation_by_zone(p_postal_code_zone_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_allocation_by_zone(p_postal_code_zone_id bigint)
     RETURNS table
             (
-                user_id                  integer,
-                postal_code_zone_user_id integer,
-                company_timezone_id             integer,
+                user_id                  bigint,
+                postal_code_zone_user_id bigint,
+                company_timezone_id             bigint,
                 timezone                        varchar,
-                zone_id                  integer,
+                zone_id                  bigint,
                 full_name                character varying,
                 prescribed_allocation    numeric,
                 target_lead_allocation   numeric,

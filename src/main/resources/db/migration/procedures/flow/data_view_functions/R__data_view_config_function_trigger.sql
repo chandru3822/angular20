@@ -7,7 +7,7 @@ declare
   v_sql                 text;
   z                     record;
   v_value               text;
-  v_company_process_ids integer[];
+  v_company_process_ids bigint[];
 BEGIN
   select quote_literal(array_agg(id)::text), array_agg(distinct company_process_id)
   into v_project_ids,v_company_process_ids
@@ -84,6 +84,7 @@ CREATE TRIGGER contact_details_trg
   --  when (new.temp_geo_attempted is false)
 EXECUTE PROCEDURE flow.contact_details();
 
+drop function if exists flow.update_contact_custom_field_value_details();
 CREATE OR REPLACE FUNCTION flow.update_contact_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
@@ -92,11 +93,11 @@ declare
   z             record;
   x             record;
   v_project_ids text;
-  v_company_id  integer;
+  v_company_id  bigint;
   v_sql         character varying;
   v_value       character varying;
   v_count       bigint;
-  v_company_process_ids integer[];
+  v_company_process_ids bigint[];
 BEGIN
   select quote_literal(array_agg(p.id)::text),array_agg(distinct p.company_process_id)
   into v_project_ids,v_company_process_ids
@@ -187,7 +188,7 @@ CREATE TRIGGER update_contact_custom_field_value_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_contact_custom_field_value_details();
 
-
+drop function if exists flow.project_details();
 CREATE OR REPLACE FUNCTION flow.project_details()
   RETURNS TRIGGER AS
 $body$
@@ -196,7 +197,7 @@ declare
   v_sql         text;
   v_insert_sql  text;
   z             record;
-  v_company_id  integer;
+  v_company_id  bigint;
   v_project_ids text;
   v_value       text;
   y             record;
@@ -309,7 +310,7 @@ CREATE TRIGGER project_project_details_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.project_details();
 
-
+drop function if exists flow.update_project_custom_field_value_details();
 CREATE OR REPLACE FUNCTION flow.update_project_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
@@ -318,11 +319,11 @@ declare
   v_project_ids text;
   z             record;
   x             record;
-  v_company_id  integer;
+  v_company_id  bigint;
   v_sql         character varying;
   v_value       character varying;
-  v_count       integer;
-  v_company_process_id integer;
+  v_count       bigint;
+  v_company_process_id bigint;
 BEGIN
 
   select company_id,p.company_process_id
@@ -411,19 +412,20 @@ CREATE TRIGGER update_project_custom_field_value_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_custom_field_value_details();
 
+drop function if exists flow.update_project_process_step_details();
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_details()
   RETURNS TRIGGER AS
 $body$
 
 declare
-  v_project_id           integer;
+  v_project_id           bigint;
   v_sql                  text;
   z                      record;
   x                      record;
-  v_company_id           integer;
+  v_company_id           bigint;
   v_project_ids          text;
   v_value                character varying;
-  v_company_process_id integer;
+  v_company_process_id bigint;
 BEGIN
 
   select p.id, c.company_id,p.company_process_id
@@ -520,22 +522,22 @@ CREATE TRIGGER update_project_process_step_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_process_step_details();
 
-
+drop function if exists flow.update_project_process_step_custom_field_value_details();
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
 
 declare
   v_project_ids text;
-  v_project_id  integer;
+  v_project_id  bigint;
   v_sql         character varying;
   v_value       character varying;
-  v_project_id1 integer;
-  v_company_id  integer;
+  v_project_id1 bigint;
+  v_company_id  bigint;
   z             record;
   x             record;
-  v_company_process_id integer;
   v_main boolean default false;
+  v_company_process_id bigint;
 BEGIN
   select pps.project_id, c.company_id
   into v_project_id,v_company_id
@@ -627,20 +629,21 @@ CREATE TRIGGER project_process_step_custom_field_value_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_process_step_custom_field_value_details();
 
+drop function if exists flow.update_project_process_step_event_details();
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_event_details()
   RETURNS TRIGGER AS
 $body$
 
 declare
-  v_project_id           integer;
+  v_project_id           bigint;
   v_sql                  text;
   z                      record;
   x                      record;
-  v_company_id           integer;
+  v_company_id           bigint;
   v_project_ids          text;
   v_value                character varying;
-  v_event_status_type_id integer;
-  v_company_process_id integer;
+  v_event_status_type_id bigint;
+  v_company_process_id bigint;
 BEGIN
 
   if new.archived is false then
@@ -785,20 +788,21 @@ CREATE TRIGGER update_project_process_step_event_trg
 EXECUTE PROCEDURE flow.update_project_process_step_event_details();
 
 
+drop function if exists flow.update_project_process_step_event_custom_field_value_details();
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_event_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
 
 declare
-  v_project_id  integer;
+  v_project_id  bigint;
   v_sql         character varying;
   v_value       character varying;
-  v_project_id1 integer;
+  v_project_id1 bigint;
   z             record;
   x             record;
-  v_company_id  integer;
+  v_company_id  bigint;
   v_project_ids text;
-  v_company_process_id integer;
+  v_company_process_id bigint;
 BEGIN
 
   select pps.project_id, c.company_id
@@ -906,7 +910,7 @@ CREATE TRIGGER update_project_process_step_event_custom_field_value_trg
 EXECUTE PROCEDURE flow.update_project_process_step_event_custom_field_value_details();
 
 
-
+drop function if exists flow.reset_data_view_columns_from_process_step();
 CREATE OR REPLACE FUNCTION flow.reset_data_view_columns_from_process_step()
   RETURNS TRIGGER AS
 $body$
@@ -914,11 +918,11 @@ $body$
 declare
   v_sql                     text;
   v_old_process_steps_found bigint;
-  v_count                   integer = 0;
+  v_count                   bigint = 0;
   z                         record;
   x                         record;
-  v_company_id              integer;
-  v_project_id              integer;
+  v_company_id              bigint;
+  v_project_id              bigint;
   v_value                   text;
   v_project_ids             text;
 BEGIN
@@ -1195,7 +1199,7 @@ CREATE TRIGGER reset_data_view_columns_from_process_step_trg
 EXECUTE PROCEDURE flow.reset_data_view_columns_from_process_step();
 
 
-
+drop function if exists flow.reset_data_view_columns_from_process_step_event();
 CREATE OR REPLACE FUNCTION flow.reset_data_view_columns_from_process_step_event()
   RETURNS TRIGGER AS
 $body$
@@ -1203,11 +1207,11 @@ $body$
 declare
   v_sql                           text;
   v_old_process_steps_event_found bigint;
-  v_count                         integer = 0;
+  v_count                         bigint = 0;
   z                               record;
   x                               record;
-  v_company_id                    integer;
-  v_project_id                    integer;
+  v_company_id                    bigint;
+  v_project_id                    bigint;
   v_project_ids                   text;
 BEGIN
 
@@ -1327,7 +1331,7 @@ CREATE TRIGGER reset_data_view_columns_from_process_step_trg
 EXECUTE PROCEDURE flow.reset_data_view_columns_from_process_step_event();
 
 
-
+drop function if exists flow.insert_data_view_maintenance();
 CREATE OR REPLACE FUNCTION flow.insert_data_view_maintenance()
   RETURNS TRIGGER AS
 $body$
@@ -1346,7 +1350,7 @@ BEGIN
        from (select array_agg(company_process_ids) me
              from deleted_company_process_ids) as foo
        where foo.me is not null
-          or foo.me != '{}'::integer[]);
+          or foo.me != '{}'::bigint[]);
 
     insert into flow.data_view_maintenance(data_view_id, processed, date_created, company_process_ids,
                                            company_process_ids_added)
@@ -1357,7 +1361,7 @@ BEGIN
        from (select array_agg(company_process_ids) as me
              from deleted_company_process_ids) as foo
        where foo.me is not null
-          or foo.me != '{}'::integer[]);
+          or foo.me != '{}'::bigint[]);
   end if;
 
   RETURN NULL;
@@ -1374,13 +1378,13 @@ CREATE TRIGGER data_view_company_process_ids_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.insert_data_view_maintenance();
 
-
+drop function if exists flow.contact_search();
 CREATE OR REPLACE FUNCTION flow.contact_search()
   RETURNS TRIGGER AS
 $$
 declare
-  v_owner_org_ids      integer[];
-  v_owner_position_ids integer[];
+  v_owner_org_ids      bigint[];
+  v_owner_position_ids bigint[];
 BEGIN
 
   if ((new.owner_user_position_id is null and old.owner_user_position_id is not null)
@@ -1430,12 +1434,13 @@ CREATE TRIGGER contact_search_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.contact_search();
 
+drop function if exists flow.project_search();
 CREATE OR REPLACE FUNCTION flow.project_search()
   RETURNS TRIGGER AS
 $$
 declare
-  v_owner_org_ids      integer[];
-  v_owner_position_ids integer[];
+  v_owner_org_ids      bigint[];
+  v_owner_position_ids bigint[];
 BEGIN
 
   if ((new.user_position_id is null and old.user_position_id is not null)

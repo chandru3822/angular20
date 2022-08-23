@@ -1,4 +1,4 @@
--- drop function if exists flow.is_syntax_valid(query text);
+drop function if exists flow.is_syntax_valid(query text);
 
 create or replace function flow.is_syntax_valid(query text)
   returns bool

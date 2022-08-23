@@ -360,7 +360,7 @@ where pse.process_step_id = :processStepId
   ]]></processStepEvent.updateActionDisplayOrder>
 
   <processStepEvent.duplicateAction><![CDATA[
-    select * from flow.duplicate_event_action(:actionId::int, :userId::int, :companyId::int);
+    select * from flow.duplicate_event_action(:actionId::bigint, :userId::bigint, :companyId::bigint);
   ]]></processStepEvent.duplicateAction>
 
   <processStepEvent.getStepEventAction><![CDATA[

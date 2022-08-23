@@ -72,7 +72,7 @@
                                                                   and up5.archived is false
                                                                   and cf.archived is false)
                                                      WHEN rp.position_id = 4
-                                                         THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                                         THEN up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
                                                     END
@@ -170,7 +170,7 @@
                                                     and up5.archived is false
                                                     and cf.archived is false)
                               WHEN rp.position_id = 4
-                                  THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                                  THEN up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
                              END
@@ -243,6 +243,6 @@
 
     <residual.clonePlan><![CDATA[
         SELECT clone_residual_plan AS id
-        FROM brs.clone_residual_plan(:planId::int, :startDate::DATE, :users::int[], :createdBy::int)
+        FROM brs.clone_residual_plan(:planId::bigint, :startDate::DATE, :users::bigint[], :createdBy::bigint)
     ]]></residual.clonePlan>
 </sql>

@@ -1,7 +1,11 @@
-﻿CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline(p_custom_start_date date,
+﻿drop function if exists brs.rpt_closer_funnel_appts_created_pipeline(p_custom_start_date date,
+                                                                     p_custom_end_date date,
+                                                                     p_brs_provided_source_ids bigint[],
+                                                                     p_self_gen_source_ids bigint[]);
+CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline(p_custom_start_date date,
                                                                         p_custom_end_date date,
-                                                                        p_brs_provided_source_ids integer[],
-                                                                        p_self_gen_source_ids integer[])
+                                                                        p_brs_provided_source_ids bigint[],
+                                                                        p_self_gen_source_ids bigint[])
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS

@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION flow.update_user_org_user_position(p_user_ids integer[])
+drop function if exists flow.update_user_org_user_position(p_user_ids bigint[]);
+  CREATE OR REPLACE FUNCTION flow.update_user_org_user_position(p_user_ids bigint[])
     RETURNS VOID AS
 $BODY$
 DECLARE

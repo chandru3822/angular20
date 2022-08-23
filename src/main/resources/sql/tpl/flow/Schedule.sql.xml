@@ -2,7 +2,7 @@
   <schedule.getUserPositionIdsForUsers><![CDATA[
     select id
     from flow.user_position up
-    where user_id = any(array[ :userIds ]::int[])
+    where user_id = any(array[ :userIds ]::bigint[])
   ]]></schedule.getUserPositionIdsForUsers>
 
   <schedule.getEventsByProject><![CDATA[
@@ -119,7 +119,7 @@
                  then ppse.start_time between :startTime::timestamp and :endTime::timestamp OR
                       ppse.end_time between :startTime::timestamp and :endTime::timestamp else 1=1 end
       and case when :isParent
-                 then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                 then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                else ps.company_id = :companyId end
       and ps.archived is not true
       and case when :includeCancelled::boolean is false
@@ -127,12 +127,12 @@
          else true end -- dont include cancelled events unless they told us to, we include active events on cancelled PS cuz BR told us to
       and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
       and ppse.resource_id is not null
-      and ppse.resource_id = any(array[ :combined ]::int[])
+      and ppse.resource_id = any(array[ :combined ]::bigint[])
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
     select *
-    from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::int[], array[ :userIds ]::int[]);
+    from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::bigint[], array[ :userIds ]::bigint[]);
  ]]></schedule.getAvailability>
 
   <schedule.getProjects><![CDATA[
@@ -186,7 +186,7 @@
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id
     where case when :isParent
-                 then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                 then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                else ps.company_id = :companyId end
       and ps.archived is not true
       and p.archived is false
@@ -207,7 +207,7 @@
 
   <schedule.getAvailableProjectResources><![CDATA[
     select *
-      from flow.get_system_list_options(:companyId::integer, :systemListId::integer, true, array[ :systemListOptionIds ]::integer[], :resourceId::integer)
+      from flow.get_system_list_options(:companyId::bigint, :systemListId::bigint, true, array[ :systemListOptionIds ]::bigint[], :resourceId::bigint)
 ]]></schedule.getAvailableProjectResources>
 
   <schedule.getProject><![CDATA[
@@ -250,7 +250,7 @@
                                                    SELECT array_to_json(array_agg(row_to_json(sys)))
                                                    FROM (
                                                           select *
-                                                          from flow.get_system_list_options(ps.company_id::integer, sl.id::integer, true, cf.system_list_option_ids::integer[])
+                                                          from flow.get_system_list_options(ps.company_id::bigint, sl.id::bigint, true, cf.system_list_option_ids::bigint[])
                                                         ) sys), '[]') else '[]' end as resources
 from flow.project_process_step_event ppse
        inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
@@ -270,16 +270,16 @@ from flow.project_process_step_event ppse
        inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
        inner join flow.system_list sl on sl.id = csl.system_list_id
 where case when :isParent
-             then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+             then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
            else ps.company_id = :companyId end
   and ps.archived is not true
   and pse.archived is not true
   and ppse.archived is not true
-  and case when :eventId::int is not null then pse.event_id = :eventId::int else 1=1 end
-  and case when :projectProcessStepEventId::int is not null then ppse.id = :projectProcessStepEventId::int else 1=1 end
-  and case when :projectId::int is not null then pps.project_id = :projectId::int else 1=1 end
-  and case when :processStepStatusTypeId::int is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::int end
-  and case when :eventStatusTypeId::int is null then 1=1 else cest.event_status_type_id = :eventStatusTypeId::int end
+  and case when :eventId::bigint is not null then pse.event_id = :eventId::bigint else 1=1 end
+  and case when :projectProcessStepEventId::bigint is not null then ppse.id = :projectProcessStepEventId::bigint else 1=1 end
+  and case when :projectId::bigint is not null then pps.project_id = :projectId::bigint else 1=1 end
+  and case when :processStepStatusTypeId::bigint is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::bigint end
+  and case when :eventStatusTypeId::bigint is null then 1=1 else cest.event_status_type_id = :eventStatusTypeId::bigint end
 
   ]]></schedule.getProject>
 
@@ -295,7 +295,7 @@ where case when :isParent
     where c.archived is not true
       and p.archived is not true
       and case when :isParent
-                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                else c.company_id = :companyId end
       and ((p.id::text like '%' || :search || '%') or
            (p.project_name_search like '%' || lower(trim(translate(:search, '*,.& ', ''))) || '%'))

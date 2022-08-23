@@ -1,9 +1,11 @@
--- DROP FUNCTION IF EXISTS flow.user_org_hierarchy(integer) cascade;
+-- DROP FUNCTION IF EXISTS flow.user_org_hierarchy(bigint) cascade;
 -- dont forget to add flow.user_positions_vw back after dropping this function
+drop function if exists flow.org_hierarchy_filter_down_search(
+  p_org_ids bigint[]);
 CREATE OR REPLACE FUNCTION flow.org_hierarchy_filter_down_search(
-    p_org_ids integer[])
-  RETURNS TABLE(id integer ,parent_org_id integer,org_name text,org_level_id integer,active_flag boolean,
-                org_type_id integer ,org_type text) AS
+    p_org_ids bigint[])
+  RETURNS TABLE(id bigint ,parent_org_id bigint,org_name text,org_level_id bigint,active_flag boolean,
+                org_type_id bigint ,org_type text) AS
 $BODY$
 declare
 

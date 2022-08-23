@@ -1,14 +1,14 @@
--- drop FUNCTION if exists flow.get_project_process_step_event_requirements_with_values(INTEGER, INTEGER[]);
+ drop FUNCTION if exists flow.get_project_process_step_event_requirements_with_values(bigint, bigint[]);
 
-CREATE OR REPLACE FUNCTION flow.get_project_process_step_event_requirements_with_values(p_project_process_step_id INTEGER, p_requirement_ids INTEGER[])
+CREATE OR REPLACE FUNCTION flow.get_project_process_step_event_requirements_with_values(p_project_process_step_id bigint, p_requirement_ids bigint[])
 
-  RETURNS TABLE (id int, project_id int, process_step_requirement_type_id int, process_step_id int, operator_type_id int, requirement_value varchar, custom_field_group_assignment_id int,
-                 company_function_id int, fail_if_no_reference_step_found boolean, reference_process_step_id int, requirement_nbr int, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id int, modified_by_id int,
-                 archived boolean, secondary_requirement_value varchar, data_type_requirement_id int, list_of_value_id int, list_of_value_ids json, operator_type varchar,
-                 process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
-                 company_system_list_id int, system_list_option_id int, custom_sql_option_id int, time_zone varchar, project_custom_field_value_id int, project_process_step_id int, text_value text,
-                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric_value numeric, int_value int, int_array_value json, system_list_option_ids json,
-                 data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
+  RETURNS TABLE (id bigint, project_id bigint, process_step_requirement_type_id bigint, process_step_id bigint, operator_type_id bigint, requirement_value varchar, custom_field_group_assignment_id bigint,
+                 company_function_id bigint, fail_if_no_reference_step_found boolean, reference_process_step_id bigint, requirement_nbr bigint, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id bigint, modified_by_id bigint,
+                 archived boolean, secondary_requirement_value varchar, data_type_requirement_id bigint, list_of_value_id bigint, list_of_value_ids json, operator_type varchar,
+                 process_step_requirement_type varchar, parent_id bigint, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
+                 company_system_list_id bigint, system_list_option_id bigint, custom_sql_option_id bigint, time_zone varchar, project_custom_field_value_id bigint, project_process_step_id bigint, text_value text,
+                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric_value numeric, int_value bigint, int_array_value json, system_list_option_ids json,
+                 data_type_requirement json, list_of_value json, list_of_values json, data_type_id bigint, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
                  company_function_params json, available_list_of_values json) AS
 
 $BODY$
@@ -199,7 +199,7 @@ BEGIN
       psr.archived is not true and
       cfga.archived is not true and
       pps.id = p_project_process_step_id and
-      psr.id = any (array[p_requirement_ids]::int[])
+      psr.id = any (array[p_requirement_ids]::bigint[])
     order by psr.requirement_nbr;
 
 END;

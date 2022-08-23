@@ -1,4 +1,5 @@
-create or replace function flow.delete_project_process_step(p_project_process_step_id bigint)
+drop function if exists flow.delete_project_process_step(p_project_process_step_id bigint);
+  create or replace function flow.delete_project_process_step(p_project_process_step_id bigint)
 returns boolean
 as
 $$

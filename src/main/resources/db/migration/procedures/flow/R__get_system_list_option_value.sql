@@ -1,11 +1,11 @@
--- drop function flow.get_system_list_option_value(int, int);
+ drop function flow.get_system_list_option_value(bigint, bigint);
 
-create or replace function flow.get_system_list_option_value(p_company_system_list_id int, p_int_value int)
+create or replace function flow.get_system_list_option_value(p_company_system_list_id bigint, p_int_value bigint)
 
-returns table (id int, name text) as
+returns table (id bigint, name text) as
 
 $$
-declare v_system_list_id int;
+declare v_system_list_id bigint;
 begin
 
 SELECT csl.system_list_id

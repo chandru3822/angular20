@@ -1,13 +1,15 @@
-CREATE OR REPLACE FUNCTION flow.exact_field_value_compare(p_project_id integer, p_pps_id integer, p_ppse_id integer,
-                                                          p_cfga_id_1 integer, p_cfga_id_2 integer)
+drop function if exists flow.exact_field_value_compare(p_project_id bigint, p_pps_id bigint, p_ppse_id bigint,
+                                                       p_cfga_id_1 bigint, p_cfga_id_2 bigint);
+CREATE OR REPLACE FUNCTION flow.exact_field_value_compare(p_project_id bigint, p_pps_id bigint, p_ppse_id bigint,
+                                                          p_cfga_id_1 bigint, p_cfga_id_2 bigint)
                                                           --at first i needed p_pps_id, now i dont but i left it in so that if we ever need it we have it....jk, it was just more work to take it out than it was to leave it
   returns boolean AS
 $BODY$
 declare
   v_cfga_1_value          text;
   v_cfga_2_value          text;
-  v_cfga_1_company_id     int;
-  v_cfga_2_company_id     int;
+  v_cfga_1_company_id     bigint;
+  v_cfga_2_company_id     bigint;
 BEGIN
 
   --verify that both cfga ids come from the same company (which also ensures they are valid cfga ids)
@@ -26,10 +28,10 @@ BEGIN
   --only continue if both company ids are the same
   if (v_cfga_1_company_id = v_cfga_2_company_id) then
     select * into v_cfga_1_value
-    from flow.get_cfv_value_as_text(p_project_id::int, p_ppse_id::int, p_cfga_id_1);
+    from flow.get_cfv_value_as_text(p_project_id::bigint, p_ppse_id::bigint, p_cfga_id_1);
 
     select * into v_cfga_2_value
-    from flow.get_cfv_value_as_text(p_project_id::int, p_ppse_id::int, p_cfga_id_2);
+    from flow.get_cfv_value_as_text(p_project_id::bigint, p_ppse_id::bigint, p_cfga_id_2);
 
   end if;
 

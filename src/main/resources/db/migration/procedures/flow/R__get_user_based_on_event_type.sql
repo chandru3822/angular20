@@ -1,9 +1,11 @@
-CREATE OR REPLACE FUNCTION flow.get_user_based_on_event_type(p_project_id integer,
-                                                             p_event_type_id integer)
-    RETURNS integer AS
+drop function if exists flow.get_user_based_on_event_type(p_project_id bigint,
+                                                          p_event_type_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_user_based_on_event_type(p_project_id bigint,
+                                                             p_event_type_id bigint)
+    RETURNS bigint AS
 $BODY$
 declare
-    v_user_id integer;
+    v_user_id bigint;
 BEGIN
         select pv.int_value
         into v_user_id

@@ -1,20 +1,20 @@
-drop FUNCTION if exists flow.get_data_view_field_configs(p_data_view_id integer,
+drop function if exists flow.get_data_view_field_configs(p_data_view_id bigint,
                                                          p_object_code varchar,
-                                                         p_cfga_id integer);
-CREATE OR REPLACE FUNCTION flow.get_data_view_field_configs(p_data_view_id integer,
+                                                         p_cfga_id bigint);
+CREATE OR REPLACE FUNCTION flow.get_data_view_field_configs(p_data_view_id bigint,
                                                            p_object_code varchar,
-                                                           p_cfga_id integer)
+                                                           p_cfga_id bigint)
   RETURNS TABLE
           (
-            dvfc_id                    integer,
+            dvfc_id                    bigint,
             field_to_update            varchar,
             update_first_value_only    boolean,
             update_first_value_only_id varchar,
             column_name                varchar,
             contains_children          boolean,
-            data_type_id               integer,
-            process_step_event_id      integer,
-            process_step_id            integer,
+            data_type_id               bigint,
+            process_step_event_id      bigint,
+            process_step_id            bigint,
             reset_values_on_main       boolean
           )
 AS

@@ -36,7 +36,7 @@
     from flow.position p
              inner join flow.org_type ot on ot.id = p.org_type_id
     where case when :isParent
-            then p.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            then p.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else p.company_id = :companyId end
         and p.schedulable is true
         and p.archived is not true

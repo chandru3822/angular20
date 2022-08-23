@@ -1,7 +1,13 @@
-CREATE OR REPLACE FUNCTION flow.company_event_specific_tasks(p_company_id integer,
-                                                             p_resource_id integer,
-                                                             p_project_process_step_event_id integer,
-                                                             p_project_id integer,
+drop function if exists flow.company_event_specific_tasks(p_company_id bigint,
+                                                          p_resource_id bigint,
+                                                          p_project_process_step_event_id bigint,
+                                                          p_project_id bigint,
+                                                          p_action text,
+                                                          p_start_time timestamp);
+CREATE OR REPLACE FUNCTION flow.company_event_specific_tasks(p_company_id bigint,
+                                                             p_resource_id bigint,
+                                                             p_project_process_step_event_id bigint,
+                                                             p_project_id bigint,
                                                              p_action text,
                                                              p_start_time timestamp default null)
   RETURNS void AS

@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.process_proposal_log_history()
+drop function if exists brs.process_proposal_log_history();
+  CREATE OR REPLACE FUNCTION brs.process_proposal_log_history()
   RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$

@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_ids integer[],p_period_end date )
+drop function if exists brs.get_commissions_earned(p_project_ids bigint[],p_period_end date );
+CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_ids bigint[],p_period_end date )
     RETURNS NUMERIC AS
 $BODY$
 DECLARE

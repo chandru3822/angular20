@@ -70,7 +70,7 @@
   </rebate.assignPaymentsToBatch>
 
   <rebate.createBatch><![CDATA[
-    insert into brs.project_rebate_batch(project_rebate_payment_ids, updated_by_user_id) VALUES (array[ :paymentIds ]::integer[], :userId);
+    insert into brs.project_rebate_batch(project_rebate_payment_ids, updated_by_user_id) VALUES (array[ :paymentIds ]::bigint[], :userId);
   ]]></rebate.createBatch>
 
   <rebate.getBatchDetails>

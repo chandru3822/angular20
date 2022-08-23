@@ -1,11 +1,13 @@
-CREATE OR REPLACE FUNCTION brs.get_tournament_user_score_drill_down(p_tournament_id integer, p_start_date date,
-                                                                    p_end_date date, p_user_id integer)
+drop function if exists brs.get_tournament_user_score_drill_down(p_tournament_id bigint, p_start_date date,
+                                                                 p_end_date date, p_user_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_tournament_user_score_drill_down(p_tournament_id bigint, p_start_date date,
+                                                                    p_end_date date, p_user_id bigint)
     RETURNS setof json
 AS
 $BODY$
 declare
     v_timezone              varchar;
-    v_tournament_formula_id integer;
+    v_tournament_formula_id bigint;
     v_tournament_start_date date;
 BEGIN
 

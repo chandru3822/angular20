@@ -1,8 +1,8 @@
--- DROP FUNCTION brs.get_setter_office_ranking(integer, integer);
+-- DROP FUNCTION brs.get_setter_office_ranking(bigint, bigint);
 
 -- SELECT * FROM brs.get_setter_office_ranking(13, 30);
-
-CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit integer,  p_time_interval character varying, p_days integer DEFAULT 30)
+drop function if exists brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint);
+  CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint DEFAULT 30)
     RETURNS SETOF JSON AS
 $BODY$
 BEGIN
@@ -14,7 +14,7 @@ BEGIN
                total_appointments,
                total_pitches,
                (case when total_appointments = 0 then 0
-                    else ((total_pitches::numeric(10,2) / total_appointments) * 100)::integer
+                    else ((total_pitches::numeric(10,2) / total_appointments) * 100)::bigint
                     end
                ) as pitch_percentage,
                (case when (
@@ -31,7 +31,7 @@ BEGIN
                 (select count(1)::bigint
                  from brs.project_details pd2
                      inner join flow.contact c2 on c2.id = pd2.contact_id
-                     inner join flow.user_position up2 on (up2.user_id = pd2.setter_user_id and up2.primary_flag is true and up2.position_id in (select unnest(string_to_array(value, ',')::int[])
+                     inner join flow.user_position up2 on (up2.user_id = pd2.setter_user_id and up2.primary_flag is true and up2.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
                      inner join flow.org o2 on (o2.id = up2.org_id and o2.active_flag is true)
@@ -52,7 +52,7 @@ BEGIN
                 rank() over (order by count(1) desc) as rank
             from brs.project_details pd
                 inner join flow.contact c on c.id = pd.contact_id
-                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::int[])
+                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS') and up.archived is not true)
                 inner join flow.org o on (o.id = up.org_id and o.active_flag is true)

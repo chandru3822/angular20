@@ -1,14 +1,15 @@
+drop function if exists flow.create_work_queue_cycle();
 CREATE OR REPLACE FUNCTION flow.create_work_queue_cycle()
   RETURNS TRIGGER AS
 $$
 declare
-  v_new_work_queue_type_id         integer;
-  v_pswqtpsst_id                   integer;
-  v_process_step_status_type_id    integer;
+  v_new_work_queue_type_id         bigint;
+  v_pswqtpsst_id                   bigint;
+  v_process_step_status_type_id    bigint;
   v_old                            record;
-  v_work_type_ids                  integer[];
-  v_company_project_status_type_id integer;
-  v_project_status_type_id         integer;
+  v_work_type_ids                  bigint[];
+  v_company_project_status_type_id bigint;
+  v_project_status_type_id         bigint;
   x                                record;
 BEGIN
 
@@ -176,13 +177,13 @@ CREATE TRIGGER create_work_queue_cycle_trg
 EXECUTE PROCEDURE flow.create_work_queue_cycle();
 
 
-
+drop function if exists flow.project_work_queue_cycle();
 CREATE OR REPLACE FUNCTION flow.project_work_queue_cycle()
   RETURNS TRIGGER AS
 $$
 declare
   x                            record;
-  v_new_project_status_type_id integer;
+  v_new_project_status_type_id bigint;
 BEGIN
 
   select project_status_type_id

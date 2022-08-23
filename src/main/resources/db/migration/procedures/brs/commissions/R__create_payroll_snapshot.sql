@@ -1,14 +1,17 @@
+drop function if exists  brs.create_payroll_snapshot(
+  IN p_payroll_id bigint,
+  IN p_updated_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.create_payroll_snapshot(
-    IN p_payroll_id integer,
-    IN p_updated_by_id integer)
+    IN p_payroll_id bigint,
+    IN p_updated_by_id bigint)
     RETURNS BOOLEAN
     LANGUAGE plpgsql AS
 $BODY$
 DECLARE
     d             RECORD;
     ou            RECORD;
-    v_snapshot_id INT;
-    v_position_id integer;
+    v_snapshot_id bigint;
+    v_position_id bigint;
 BEGIN
 
     select position_id
@@ -106,11 +109,11 @@ BEGIN
                 IF v_snapshot_id IS NOT NULL
                 THEN
                     FOR ou IN SELECT *
-                              FROM json_to_recordset(d.overrides_per_user) AS overrides_per_user (id INT,
+                              FROM json_to_recordset(d.overrides_per_user) AS overrides_per_user (id bigint,
                                                                                                   first_name VARCHAR,
                                                                                                   last_name VARCHAR,
                                                                                                   total NUMERIC(10, 2),
-                                                                                                  milestone_id INT)
+                                                                                                  milestone_id bigint)
                         LOOP
                             --     this is so we have access to the override breakdown by user
                             INSERT INTO brs.project_override_commission_snapshot (project_commission_snapshot_id,
@@ -207,11 +210,11 @@ BEGIN
                 IF v_snapshot_id IS NOT NULL
                 THEN
                     FOR ou IN SELECT *
-                              FROM json_to_recordset(d.overrides_per_user) AS overrides_per_user (id INT,
+                              FROM json_to_recordset(d.overrides_per_user) AS overrides_per_user (id bigint,
                                                                                                   first_name VARCHAR,
                                                                                                   last_name VARCHAR,
                                                                                                   total NUMERIC(10, 2),
-                                                                                                  milestone_id INT)
+                                                                                                  milestone_id bigint)
                         LOOP
                             --     this is so we have access to the override breakdown by user
                             INSERT INTO brs.setter_project_override_commission_snapshot (setter_project_commission_snapshot_id,

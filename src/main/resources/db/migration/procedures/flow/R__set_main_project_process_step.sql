@@ -1,16 +1,16 @@
--- drop function if exists flow.set_main_project_process_step(int, int, int, int);
+drop function if exists flow.set_main_project_process_step(p_project_process_step_id bigint, p_active_company_process_step_status_type_id bigint, p_cancelled_company_process_step_status_type_id bigint, p_user_id bigint);
 
-CREATE OR REPLACE FUNCTION flow.set_main_project_process_step(p_project_process_step_id int, p_active_company_process_step_status_type_id int, p_cancelled_company_process_step_status_type_id int, p_user_id int)
+  CREATE OR REPLACE FUNCTION flow.set_main_project_process_step(p_project_process_step_id bigint, p_active_company_process_step_status_type_id bigint, p_cancelled_company_process_step_status_type_id bigint, p_user_id bigint)
   RETURNS void
   LANGUAGE plpgsql AS
 $$
 DECLARE
-  v_project_id int;
-  v_process_step_id int;
-  v_company_id int;
-  v_company_active_status_ids int[];
-  v_previous_main_project_process_step_id int;
-  v_previous_main_company_process_step_status_type_id int;
+  v_project_id bigint;
+  v_process_step_id bigint;
+  v_company_id bigint;
+  v_company_active_status_ids bigint[];
+  v_previous_main_project_process_step_id bigint;
+  v_previous_main_company_process_step_status_type_id bigint;
 BEGIN
 
   select pps.project_id, pps.process_step_id, cp.company_id into v_project_id, v_process_step_id, v_company_id

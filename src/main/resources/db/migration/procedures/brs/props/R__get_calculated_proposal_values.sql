@@ -1,10 +1,10 @@
-drop function if exists brs.get_calculated_proposal_values(integer, boolean);
+drop function if exists brs.get_calculated_proposal_values(bigint, boolean);
 drop type if exists brs.calculated_proposal_value;
 
 create type brs.calculated_proposal_value as
 (
-  proposal_id                                      integer,
-  project_id                                       integer,
+  proposal_id                                      bigint,
+  project_id                                       bigint,
   proposal_archived                                boolean,
   contact_first_name                               varchar,
   contact_last_name                                varchar,
@@ -37,7 +37,7 @@ create type brs.calculated_proposal_value as
   monthly_payment_all_credits_to_loan_after_term   numeric,
   monthly_payment_no_credits_to_loan_after_term    numeric,
   system_size                                      numeric,
-  first_year_production_estimate                   integer,
+  first_year_production_estimate                   bigint,
   total_system_cost                                numeric,
   referral_promotion                               numeric,
   total_loan_amount                                numeric,
@@ -45,7 +45,7 @@ create type brs.calculated_proposal_value as
   federal_tax_incentive_rate                       numeric,
   net_system_cost                                  numeric,
   utility_company                                  text,
-  estimated_annual_energy_consumption_kwh          integer,
+  estimated_annual_energy_consumption_kwh          bigint,
   current_estimated_annual_utility_bill            numeric,
   current_estimated_cost_per_kwh                   numeric,
   utility_cost_escalator                           numeric,
@@ -58,14 +58,14 @@ create type brs.calculated_proposal_value as
   panel_degradation_factor                         numeric,
   system_production_25_year                        numeric,
   estimated_offset                                 numeric,
-  led_light_bulbs                                  integer,
-  smart_thermostat                                 integer,
+  led_light_bulbs                                  bigint,
+  smart_thermostat                                 bigint,
   total_ee_reduction                               numeric,
-  panel_warranty                                   integer,
-  inverter_warranty                                integer,
+  panel_warranty                                   bigint,
+  inverter_warranty                                bigint,
   down_payment_amount                              numeric,
-  version_id                                       integer,
-  project_process_step_id                          integer,
+  version_id                                       bigint,
+  project_process_step_id                          bigint,
   friends_and_family                               boolean,
   production_factor                                numeric,
   funding_range                                    numeric,
@@ -81,14 +81,14 @@ create type brs.calculated_proposal_value as
   equipment_panel_adder                            numeric,
   equipment_storage_adder                          numeric,
   misc_adders                                      numeric,
-  panel_brand_id                                   integer,
-  panel_watts                                      integer,
+  panel_brand_id                                   bigint,
+  panel_watts                                      bigint,
   above_line_rebate                                numeric,
-  state_id                                         integer,
-  utility_company_id                               integer,
+  state_id                                         bigint,
+  utility_company_id                               bigint,
   dealer_fee                                       numeric,
-  eto_rebate_unit_type_id                          integer,
-  federal_unit_type_id                             integer,
+  eto_rebate_unit_type_id                          bigint,
+  federal_unit_type_id                             bigint,
   inverter_efficiency                              numeric,
   initial_payment_factor                           numeric,
   reamortization_factor                            numeric,
@@ -111,21 +111,21 @@ create type brs.calculated_proposal_value as
   reamortized_payment_factor_without_itc_paydown   numeric,
   secondary_monthly_payment_no_credits_to_loan     numeric,
   panel_brand                                      varchar,
-  panel_quantity                                   integer,
-  inverter_brand_id                                integer,
+  panel_quantity                                   bigint,
+  inverter_brand_id                                bigint,
   inverter_brand                                   varchar,
   aurora_design_id                                 text,
   product_name                                     varchar,
-  proposal_nbr                                     integer,
+  proposal_nbr                                     bigint,
   other_adder_and_discount                         text,
   other_adder_and_discount_amount                  numeric,
   adder_name                                       text,
   non_solar_cap                                    numeric,
   required_down_payment                            numeric,
-  storage_type_id                                  integer,
+  storage_type_id                                  bigint,
   storage_type                                     varchar,
   financier                                        varchar,
-  financier_id                                     integer,
+  financier_id                                     bigint,
   loan_price_storage                               numeric,
   cash_price_storage                               numeric,
   main_panel_upgrade_cost                          numeric,
@@ -142,8 +142,8 @@ create type brs.calculated_proposal_value as
 drop type brs.excluded_proposal_value;
 create type brs.excluded_proposal_value as
 (
-  version_id                                     integer,
-  project_process_step_id                        integer,
+  version_id                                     bigint,
+  project_process_step_id                        bigint,
   friends_and_family                             boolean,
   production_factor                              numeric,
   funding_range                                  numeric,
@@ -159,14 +159,14 @@ create type brs.excluded_proposal_value as
   equipment_panel_adder                          numeric,
   equipment_storage_adder                        numeric,
   misc_adders                                    numeric,
-  panel_brand_id                                 integer,
-  panel_watts                                    integer,
+  panel_brand_id                                 bigint,
+  panel_watts                                    bigint,
   above_line_rebate                              numeric,
-  state_id                                       integer,
-  utility_company_id                             integer,
+  state_id                                       bigint,
+  utility_company_id                             bigint,
   dealer_fee                                     numeric,
-  eto_rebate_unit_type_id                        integer,
-  federal_unit_type_id                           integer,
+  eto_rebate_unit_type_id                        bigint,
+  federal_unit_type_id                           bigint,
   inverter_efficiency                            numeric,
   initial_payment_factor                         numeric,
   reamortization_factor                          numeric,
@@ -187,18 +187,18 @@ create type brs.excluded_proposal_value as
   cost_of_solar                                  numeric,
   monthly_cost_30_year_average_with_solar        numeric,
   reamortized_payment_factor_without_itc_paydown numeric,
-  proposal_id                                    integer,
-  project_id                                     integer,
+  proposal_id                                    bigint,
+  project_id                                     bigint,
   proposal_archived                              boolean,
   panel_brand                                    character varying,
-  inverter_brand_id                              integer,
+  inverter_brand_id                              bigint,
   inverter_brand                                 varchar,
   aurora_design_id                               text,
-  proposal_nbr                                   integer,
-  storage_type_id                                integer,
+  proposal_nbr                                   bigint,
+  storage_type_id                                bigint,
   storage_type                                   varchar,
   financier                                      varchar,
-  financier_id                                   integer,
+  financier_id                                   bigint,
   loan_price_storage                             numeric,
   cash_price_storage                             numeric,
   main_panel_upgrade_cost                        numeric,
@@ -213,7 +213,7 @@ create type brs.excluded_proposal_value as
 );
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
-  p_proposal_id integer,
+  p_proposal_id bigint,
   p_insert_prop_log_history boolean default false)
 
   RETURNS TABLE
@@ -224,10 +224,10 @@ AS
 $BODY$
 declare
   v_aurora_design_summary                            jsonb;
-  v_version_id                                       integer;
-  v_project_process_step_id                          integer;
-  v_estimated_annual_energy_consumption_kwh          integer;
-  v_first_year_production_estimate                   integer;
+  v_version_id                                       bigint;
+  v_project_process_step_id                          bigint;
+  v_estimated_annual_energy_consumption_kwh          bigint;
+  v_first_year_production_estimate                   bigint;
   v_friends_and_family                               boolean;
   v_system_size                                      numeric;
   v_production_factor                                numeric;
@@ -244,11 +244,11 @@ declare
   v_equipment_panel_adder                            numeric;
   v_equipment_storage_adder                          numeric;
   v_misc_adders                                      numeric;
-  v_panel_brand_id                                   integer;
-  v_panel_watts                                      integer;
+  v_panel_brand_id                                   bigint;
+  v_panel_watts                                      bigint;
   v_above_line_rebate                                numeric;
-  v_state_id                                         integer;
-  v_utility_company_id                               integer;
+  v_state_id                                         bigint;
+  v_utility_company_id                               bigint;
   v_eto_rebate                                       numeric;
   v_csu_rebate                                       numeric;
   v_total_loan_amount                                numeric;
@@ -269,8 +269,8 @@ declare
   v_total_savings_25_years                           numeric;
   v_total_savings_30_years                           numeric;
   v_dealer_fee                                       numeric;
-  v_eto_rebate_unit_type_id                          integer;
-  v_federal_unit_type_id                             integer;
+  v_eto_rebate_unit_type_id                          bigint;
+  v_federal_unit_type_id                             bigint;
   v_monthly_cost_today_without_solar                 numeric;
   v_monthly_cost_today_with_solar                    numeric;
   v_monthly_cost_today_avg_remaining_electrical_bill numeric;
@@ -287,14 +287,14 @@ declare
   v_current_estimated_annual_utility_bill            numeric;
   v_system_production_25_year                        numeric;
   v_estimated_offset                                 numeric;
-  v_led_light_bulbs                                  integer;
+  v_led_light_bulbs                                  bigint;
   v_apr                                              numeric;
-  v_smart_thermostat                                 integer;
+  v_smart_thermostat                                 bigint;
   v_loan_term                                        numeric;
   v_total_ee_reduction                               numeric;
   v_assumed_payment_by_month_18                      numeric;
-  v_panel_warranty                                   integer;
-  v_inverter_warranty                                integer;
+  v_panel_warranty                                   bigint;
+  v_inverter_warranty                                bigint;
   v_inverter_efficiency                              numeric;
   v_initial_payment_factor                           numeric;
   v_col_springs_rebate                               numeric;
@@ -318,10 +318,10 @@ declare
   v_cost_of_solar                                    numeric;
   v_monthly_cost_30_year_average_with_solar          numeric;
   v_reamortized_payment_factor_without_itc_paydown   numeric;
-  v_unit_type_state_rebate                           integer;
+  v_unit_type_state_rebate                           bigint;
   v_secondary_monthly_payment_no_credits_to_loan     numeric;
-  v_proposal_id                                      integer;
-  v_project_id                                       integer;
+  v_proposal_id                                      bigint;
+  v_project_id                                       bigint;
   v_proposal_archived                                boolean;
   v_contact_first_name                               character varying;
   v_contact_last_name                                character varying;
@@ -335,21 +335,21 @@ declare
   v_project_state                                    character varying;
   v_project_state_abbrev                             character varying;
   v_panel_brand                                      character varying;
-  v_panel_quantity                                   integer;
+  v_panel_quantity                                   bigint;
   v_inverter_brand                                   varchar;
-  v_inverter_brand_id                                integer;
+  v_inverter_brand_id                                bigint;
   v_aurora_design_id                                 text;
   v_product_name                                     character varying;
-  v_proposal_nbr                                     integer;
+  v_proposal_nbr                                     bigint;
   v_other_adder_and_discount                         text;
   v_other_adder_and_discount_amount                  numeric;
   v_adder                                            text;
   v_required_down_payment                            numeric;
   v_non_solar_cap                                    numeric;
-  v_storage_type_id                                  integer;
+  v_storage_type_id                                  bigint;
   v_storage_type                                     varchar;
   v_financier                                        varchar;
-  v_financier_id                                     integer;
+  v_financier_id                                     bigint;
   v_cash_price_storage                               numeric;
   v_loan_price_storage                               numeric;
   v_main_panel_upgrade_cost                          numeric;
@@ -559,7 +559,7 @@ BEGIN
                                             group_uuid_finance_product as (select vv.proposal_group_uuid
                                                                            from version_values vv
                                                                                   inner join proposal_finance_product pfp
-                                                                                             on (vv.value ->> 'intValue')::integer = pfp.int_value
+                                                                                             on (vv.value ->> 'intValue')::bigint = pfp.int_value
                                                                            where vv.object_code = 'PROPOSAL_FINANCE_PRODUCTS'
                                                                              and vv.field_id = 128
                                                                              and vv.proposal_version_id <= v_version_id),
@@ -588,7 +588,7 @@ BEGIN
                                             group_uuid_utility as (select vv.proposal_group_uuid, uc.utility_company
                                                                    from version_values vv
                                                                           inner join utility_company uc
-                                                                                     on (vv.value ->> 'intValue')::integer = uc.utility_company
+                                                                                     on (vv.value ->> 'intValue')::bigint = uc.utility_company
                                                                    where vv.object_code = 'PROPOSAL_PRICING'
                                                                      and vv.field_id = 85
                                                                      and vv.proposal_version_id <= v_version_id),
@@ -609,8 +609,8 @@ BEGIN
                                             group_uuid_financier as (select vv.proposal_group_uuid
                                                                      from version_values vv
                                                                             inner join financier f
-                                                                                       on (vv.value ->> 'intValue')::integer =
-                                                                                          f.intvalue::integer
+                                                                                       on (vv.value ->> 'intValue')::bigint =
+                                                                                          f.intvalue::bigint
                                                                                          and vv.field_id = 102
                                                                      where vv.object_code = 'PROPOSAL_FINANCIERS'
                                                                        and vv.proposal_version_id <= v_version_id),
@@ -652,7 +652,7 @@ BEGIN
                                             group_uuid_federal_rebate as (select vv.proposal_group_uuid
                                                                           from version_values vv
                                                                           where vv.object_code = 'PROPOSAL_REBATE'
-                                                                            and (vv.value ->> 'intValue')::integer = 453
+                                                                            and (vv.value ->> 'intValue')::bigint = 453
                                                                             and vv.custom_field_group_assignment_id = 96
                                                                             and vv.proposal_version_id <= v_version_id),
                                             federal_rebate_results as (select vv2.proposal_group_uuid,
@@ -670,7 +670,7 @@ BEGIN
                                             group_uuid_referral_rebate as (select vv.proposal_group_uuid
                                                                            from version_values vv
                                                                            where vv.object_code = 'PROPOSAL_REBATE'
-                                                                             and (vv.value ->> 'intValue')::integer = 535
+                                                                             and (vv.value ->> 'intValue')::bigint = 535
                                                                              and vv.custom_field_group_assignment_id = 150
                                                                              and vv.proposal_version_id <= v_version_id),
                                             referral_rebate_results as (select vv2.proposal_group_uuid,
@@ -694,7 +694,7 @@ BEGIN
                                                              where prop.id = p_proposal_id),
                                             group_uuid_state_rebate as (select vv.proposal_group_uuid
                                                                         from version_values vv
-                                                                               inner join state_rebate sr on (vv.value ->> 'intValue')::integer = sr.state_id
+                                                                               inner join state_rebate sr on (vv.value ->> 'intValue')::bigint = sr.state_id
                                                                         where vv.object_code = 'PROPOSAL_REBATE'
                                                                           and vv.field_id = 86
                                                                           and vv.proposal_version_id <= v_version_id),
@@ -723,7 +723,7 @@ BEGIN
                                             group_uuid_utility_rebate as (select vv.proposal_group_uuid
                                                                           from version_values vv
                                                                                  inner join utility_rebate sr
-                                                                                            on (vv.value ->> 'intValue')::integer = sr.utility_company
+                                                                                            on (vv.value ->> 'intValue')::bigint = sr.utility_company
                                                                           where vv.object_code = 'PROPOSAL_REBATE'
                                                                             and vv.proposal_version_id <= v_version_id),
                                             utility_rebate_results as (select vv2.proposal_group_uuid,
@@ -750,7 +750,7 @@ BEGIN
 --                                             group_uuid_equipment_type_inverter as (select vv.proposal_group_uuid
 --                                                                                    from version_values vv
 --                                                                                           inner join equipment_type_inverter eti
---                                                                                                      on (vv.value ->> 'intValue')::integer = eti.int_value
+--                                                                                                      on (vv.value ->> 'intValue')::bigint = eti.int_value
 --                                                                                    where vv.object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
 --                                                                                      and vv.field_id = 131
 --                                                                                      and vv.proposal_version_id <= v_version_id),
@@ -778,7 +778,7 @@ BEGIN
 --                                             group_uuid_equipment_type_panel as (select vv.proposal_group_uuid
 --                                                                                 from version_values vv
 --                                                                                        inner join equipment_type_panel etp
---                                                                                                   on (vv.value ->> 'intValue')::integer = etp.int_value
+--                                                                                                   on (vv.value ->> 'intValue')::bigint = etp.int_value
 --                                                                                 where vv.object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
 --                                                                                   and vv.field_id = 130
 --                                                                                   and vv.proposal_version_id <= v_version_id),
@@ -809,7 +809,7 @@ BEGIN
                                                                                          inner join equipment_type_storage ets
                                                                                                     on vv.proposal_version_id <= ets.proposal_version_id
                                                                                   where vv.object_code = 'PROPOSAL_STORAGE_DETAILS'
-                                                                                    and (vv.value ->> 'intValue')::integer = v_storage_type_id
+                                                                                    and (vv.value ->> 'intValue')::bigint = v_storage_type_id
                                                                                     and vv.custom_field_group_assignment_id = 186),
                                             equipment_type_storage_results as (select vv2.proposal_group_uuid,
                                                                                       vv2.field_id,
@@ -826,7 +826,7 @@ BEGIN
                                             group_uuid_equipment_type_smart_thermostat as (select vv.proposal_group_uuid
                                                                                            from version_values vv
                                                                                            where vv.object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
-                                                                                             and (vv.value ->> 'intValue')::integer = 536::integer
+                                                                                             and (vv.value ->> 'intValue')::bigint = 536::bigint
                                                                                              and vv.custom_field_group_assignment_id = 118),
                                             equipment_type_smart_thermostat_results as (select vv2.proposal_group_uuid,
                                                                                                vv2.field_id,
@@ -843,7 +843,7 @@ BEGIN
                                             group_uuid_equipment_type_led_lightbulbs as (select vv.proposal_group_uuid
                                                                                          from version_values vv
                                                                                          where vv.object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
-                                                                                           and (vv.value ->> 'intValue')::integer = 537::integer
+                                                                                           and (vv.value ->> 'intValue')::bigint = 537::bigint
                                                                                            and vv.custom_field_group_assignment_id = 118),
                                             equipment_type_led_lightbulbs_results as (select vv2.proposal_group_uuid,
                                                                                              vv2.field_id,
@@ -865,7 +865,7 @@ BEGIN
                                                                                           pcfv.custom_field_group_assignment_id =
                                                                                           146
                                                                      where prop.id = p_proposal_id),
-                                            test as (select foo.id, array_agg(foo.my_value)::int[] as my_value
+                                            test as (select foo.id, array_agg(foo.my_value)::bigint[] as my_value
                                                      from (select vv.id,
                                                                   jsonb_array_elements((vv.value ->> 'intArrayValue')::jsonb) as my_value
                                                            from version_values vv
@@ -904,7 +904,7 @@ BEGIN
                                                               where p.id = p_proposal_id),
                                             group_uuid_source_adders as (select vv.proposal_group_uuid, sa.source
                                                                          from version_values vv
-                                                                                inner join source_adders sa on (vv.value ->> 'intValue')::integer = sa.source
+                                                                                inner join source_adders sa on (vv.value ->> 'intValue')::bigint = sa.source
                                                                          where vv.object_code = 'PROPOSAL_SOURCE_STATE_ADDERS'
                                                                            and vv.field_id = 121
                                                                            and vv.proposal_version_id <= v_version_id),
@@ -957,7 +957,7 @@ BEGIN
                                                              where prop.id = p_proposal_id),
                                             group_uuid_proposal_panel_detail as (select vv.proposal_group_uuid
                                                                                  from version_values vv
-                                                                                 where (vv.value ->> 'intValue')::integer = v_panel_brand_id
+                                                                                 where (vv.value ->> 'intValue')::bigint = v_panel_brand_id
                                                                                    and vv.custom_field_group_assignment_id = 170
                                                                                    and vv.object_code = 'PROPOSAL_PANEL_DETAIL'
                                                                                    and vv.field_id = 138),
@@ -967,7 +967,7 @@ BEGIN
                                                                                                          on guppd.proposal_group_uuid =
                                                                                                             vv.proposal_group_uuid
                                                                                                            and
-                                                                                                            (vv.value ->> 'value')::integer =
+                                                                                                            (vv.value ->> 'value')::bigint =
                                                                                                             v_panel_watts and
                                                                                                             vv.custom_field_group_assignment_id =
                                                                                                             171
@@ -997,7 +997,7 @@ BEGIN
                                             group_uuid_proposal_inverter as (select vv.proposal_group_uuid
                                                                              from version_values vv
                                                                                     inner join proposal_inverter_details eti
-                                                                                               on (vv.value ->> 'intValue')::integer = eti.int_value
+                                                                                               on (vv.value ->> 'intValue')::bigint = eti.int_value
                                                                              where vv.object_code = 'PROPOSAL_INVERTER_DETAILS'
                                                                                and vv.field_id = 131
                                                                                and vv.proposal_version_id <= v_version_id),
@@ -1018,7 +1018,7 @@ BEGIN
                                               ucr.field_name,
                                               ucr.data_type_id,
                                               ucr.value,
-                                              ucr.utility_company::integer,
+                                              ucr.utility_company::bigint,
                                               ucr.object_code,
                                               ucr.int_value
                                        from utility_company_results ucr
@@ -1028,7 +1028,7 @@ BEGIN
                                               fcr.field_name,
                                               fcr.data_type_id,
                                               fcr.value,
-                                              null::integer,
+                                              null::bigint,
                                               fcr.object_code,
                                               fcr.int_value
                                        from financier_company_results fcr
@@ -1038,7 +1038,7 @@ BEGIN
                                               fpcr.field_name,
                                               fpcr.data_type_id,
                                               fpcr.value,
-                                              fpcr.intValue::integer,
+                                              fpcr.intValue::bigint,
                                               fpcr.object_code,
                                               fpcr.intValue
                                        from finance_product_company_results fpcr
@@ -1048,7 +1048,7 @@ BEGIN
                                               zar.field_name,
                                               zar.data_type_id,
                                               zar.value,
-                                              null::integer,
+                                              null::bigint,
                                               zar.object_code,
                                               zar.int_value
                                        from zone_adder_results zar
@@ -1058,7 +1058,7 @@ BEGIN
                                               frr.field_name,
                                               frr.data_type_id,
                                               frr.value,
-                                              null::integer,
+                                              null::bigint,
                                               frr.object_code,
                                               frr.int_value
                                        from federal_rebate_results frr
@@ -1068,7 +1068,7 @@ BEGIN
                                               rrr.field_name,
                                               rrr.data_type_id,
                                               rrr.value,
-                                              null::integer,
+                                              null::bigint,
                                               rrr.object_code,
                                               rrr.int_value
                                        from referral_rebate_results rrr
@@ -1078,7 +1078,7 @@ BEGIN
                                               srr.field_name,
                                               srr.data_type_id,
                                               srr.value,
-                                              null::integer,
+                                              null::bigint,
                                               srr.object_code,
                                               srr.int_value
                                        from state_rebate_results srr
@@ -1088,7 +1088,7 @@ BEGIN
                                               urr.field_name,
                                               urr.data_type_id,
                                               urr.value,
-                                              null::integer,
+                                              null::bigint,
                                               urr.object_code,
                                               urr.int_value
                                        from utility_rebate_results urr
@@ -1098,7 +1098,7 @@ BEGIN
 --                                               etir.field_name,
 --                                               etir.data_type_id,
 --                                               etir.value,
---                                               null::integer,
+--                                               null::bigint,
 --                                               etir.object_code,
 --                                               etir.intValue
 --                                        from equipment_type_inverter_results etir
@@ -1108,7 +1108,7 @@ BEGIN
 --                                               etpr.field_name,
 --                                               etpr.data_type_id,
 --                                               etpr.value,
---                                               null::integer,
+--                                               null::bigint,
 --                                               etpr.object_code,
 --                                               etpr.intValue
 --                                        from equipment_type_panel_results etpr
@@ -1118,7 +1118,7 @@ BEGIN
                                               etpsr.field_name,
                                               etpsr.data_type_id,
                                               etpsr.value,
-                                              null::integer,
+                                              null::bigint,
                                               etpsr.object_code,
                                               etpsr.intValue
                                        from equipment_type_storage_results etpsr
@@ -1128,7 +1128,7 @@ BEGIN
                                               etstr.field_name,
                                               etstr.data_type_id,
                                               etstr.value,
-                                              null::integer,
+                                              null::bigint,
                                               etstr.object_code,
                                               etstr.intValue
                                        from equipment_type_smart_thermostat_results etstr
@@ -1138,7 +1138,7 @@ BEGIN
                                               etllr.field_name,
                                               etllr.data_type_id,
                                               etllr.value,
-                                              null::integer,
+                                              null::bigint,
                                               etllr.object_code,
                                               etllr.intValue
                                        from equipment_type_led_lightbulbs_results etllr
@@ -1148,7 +1148,7 @@ BEGIN
                                               pmr.field_name,
                                               pmr.data_type_id,
                                               pmr.value,
-                                              null::integer,
+                                              null::bigint,
                                               pmr.object_code,
                                               pmr.int_value
                                        from proposal_misc_results pmr
@@ -1158,7 +1158,7 @@ BEGIN
                                               sar.field_name,
                                               sar.data_type_id,
                                               sar.value,
-                                              null::integer,
+                                              null::bigint,
                                               sar.object_code,
                                               sar.int_value
                                        from source_adder_results sar
@@ -1168,7 +1168,7 @@ BEGIN
                                               ssar.field_name,
                                               ssar.data_type_id,
                                               ssar.value,
-                                              null::integer,
+                                              null::bigint,
                                               ssar.object_code,
                                               ssar.int_value
                                        from small_system_adder_results ssar
@@ -1178,7 +1178,7 @@ BEGIN
                                               ppdr.field_name,
                                               ppdr.data_type_id,
                                               ppdr.value,
-                                              null::integer,
+                                              null::bigint,
                                               ppdr.object_code,
                                               ppdr.int_value
                                        from proposal_panel_detail_results ppdr
@@ -1188,7 +1188,7 @@ BEGIN
                                               pir.field_name,
                                               pir.data_type_id,
                                               pir.value,
-                                              null::integer,
+                                              null::bigint,
                                               pir.object_code,
                                               pir.intValue
                                        from proposal_inverter_results pir
@@ -1196,9 +1196,9 @@ BEGIN
                                        select null::uuid,
                                               oa.field_id,
                                               oa.field_name,
-                                              3::integer,
+                                              3::bigint,
                                               oa.numeric_value::text,
-                                              null::integer,
+                                              null::bigint,
                                               'OTHER_ADDERS',
                                               null::text
                                        from other_adders oa
@@ -1271,7 +1271,7 @@ BEGIN
   with smart_thermostat as (select proposal_group_uuid
                             from proposal_value
                             where field_id = 117
-                              and int_value::integer = 536
+                              and int_value::bigint = 536
                               and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
   select value::numeric
   into v_smart_thermostat_value
@@ -1283,7 +1283,7 @@ BEGIN
   with smart_thermostat as (select proposal_group_uuid
                             from proposal_value
                             where field_id = 117
-                              and int_value::integer = 536
+                              and int_value::bigint = 536
                               and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
   select value::numeric
   into v_energy_efficiency_reduction_thermostat
@@ -1295,7 +1295,7 @@ BEGIN
   with light_bulbs as (select proposal_group_uuid
                        from proposal_value
                        where field_id = 117
-                         and int_value::integer = 537
+                         and int_value::bigint = 537
                          and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
   select value::numeric
   into v_led_light_bulbs_value
@@ -1307,7 +1307,7 @@ BEGIN
   with light_bulbs as (select proposal_group_uuid
                        from proposal_value
                        where field_id = 117
-                         and int_value::integer = 537
+                         and int_value::bigint = 537
                          and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
   select value::numeric
   into v_energy_efficiency_reduction_light_bulbs
@@ -1323,14 +1323,14 @@ BEGIN
     and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
   raise notice 'v_loan_term = % ',v_loan_term;
 
-  select value::integer
+  select value::bigint
   into v_panel_warranty
   from proposal_value
   where field_id = 143
     and object_code = 'PROPOSAL_PANEL_DETAIL';
   raise notice 'v_panel_warranty = % ',v_panel_warranty;
 
-  select value::integer
+  select value::bigint
   into v_inverter_warranty
   from proposal_value
   where field_id = 143
@@ -1353,7 +1353,7 @@ BEGIN
                          from proposal_value
                          where field_id = 86
                            and object_code = 'PROPOSAL_REBATE')
-  select int_value::integer
+  select int_value::bigint
   into v_unit_type_state_rebate
   from proposal_value pv1
          inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
@@ -1533,13 +1533,13 @@ BEGIN
   if v_state_id = 37 then
     with group_record as (select proposal_group_uuid
                           from proposal_value pv
-                          where pv.field_id::integer = 93
-                            and int_value::integer = 451
+                          where pv.field_id::bigint = 93
+                            and int_value::bigint = 451
                             and exists(select pv1.proposal_group_uuid
                                        from proposal_value pv1
                                        where pv.proposal_group_uuid = pv1.proposal_group_uuid
                                          and pv1.field_id = 85
-                                         and int_value::integer = v_utility_company_id))
+                                         and int_value::bigint = v_utility_company_id))
     select value::numeric,
            (select int_value as unit_type_id
             from proposal_value pv1
@@ -1548,7 +1548,7 @@ BEGIN
     into v_eto_rebate,v_eto_rebate_unit_type_id
     from proposal_value pv2
            inner join group_record gp on gp.proposal_group_uuid = pv2.proposal_group_uuid
-    where pv2.field_id::integer = 98;
+    where pv2.field_id::bigint = 98;
 
     if v_eto_rebate_unit_type_id = 460 then
       v_eto_rebate = v_eto_rebate * v_system_size * 1000;
@@ -1565,7 +1565,7 @@ BEGIN
                                  from proposal_value
                                  where field_id = 85
                                    and object_code = 'PROPOSAL_REBATE'
-                                   and int_value::integer = v_utility_company_id)
+                                   and int_value::bigint = v_utility_company_id)
     select value::numeric
     into v_csu_rebate
     from proposal_value pv
@@ -1599,8 +1599,8 @@ BEGIN
   with referral_promotion as (select proposal_group_uuid
                                from proposal_value pv
                               where object_code = 'PROPOSAL_REBATE'
-                                and pv.field_id::integer = 93
-                                and pv.int_value::integer = 535)
+                                and pv.field_id::bigint = 93
+                                and pv.int_value::bigint = 535)
   select value::numeric
   into v_referral_promotion
   from proposal_value pv1
@@ -1629,8 +1629,8 @@ BEGIN
   with federal as (select proposal_group_uuid
                    from proposal_value pv
                    where object_code = 'PROPOSAL_REBATE'
-                     and pv.field_id::integer = 93
-                     and pv.int_value::integer = 449)
+                     and pv.field_id::bigint = 93
+                     and pv.int_value::bigint = 449)
   select value::numeric,
          (select int_value as unit_type_id
           from proposal_value pv1

@@ -1,3 +1,4 @@
+drop function if exists brs.ahj_design_audit();
 CREATE OR REPLACE FUNCTION brs.ahj_design_audit()
     RETURNS TRIGGER AS $$
 BEGIN
@@ -55,7 +56,7 @@ CREATE TRIGGER ahj_design_custom_field_value_audit_trg
     after INSERT or update or delete ON brs.ahj_design_custom_field_value
     FOR EACH ROW EXECUTE PROCEDURE brs.ahj_design_audit();
 
-
+drop function if exists brs.ahj_inspection_audit();
 CREATE OR REPLACE FUNCTION brs.ahj_inspection_audit()
   RETURNS TRIGGER AS $$
 BEGIN
@@ -113,7 +114,7 @@ CREATE TRIGGER ahj_inspection_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.ahj_inspection_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.ahj_inspection_audit();
 
-
+drop function if exists brs.ahj_permit_audit();
 CREATE OR REPLACE FUNCTION brs.ahj_permit_audit()
   RETURNS TRIGGER AS $$
 BEGIN
@@ -171,7 +172,7 @@ CREATE TRIGGER ahj_permit_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.ahj_permit_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.ahj_permit_audit();
 
-
+drop function if exists brs.ahj_utility_audit();
 CREATE OR REPLACE FUNCTION brs.ahj_utility_audit()
   RETURNS TRIGGER AS $$
 BEGIN
@@ -229,7 +230,7 @@ CREATE TRIGGER ahj_utility_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.ahj_utility_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.ahj_utility_audit();
 
-
+drop function if exists brs.commission_override_audit();
 CREATE OR REPLACE FUNCTION brs.commission_override_audit()
   RETURNS TRIGGER AS $$
 BEGIN
@@ -287,7 +288,7 @@ CREATE TRIGGER commission_override_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.commission_override_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.commission_override_audit();
 
-
+drop function if exists brs.proposal_audit();
 CREATE OR REPLACE FUNCTION brs.proposal_audit()
   RETURNS TRIGGER AS $$
 BEGIN
@@ -345,7 +346,7 @@ CREATE TRIGGER proposal_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.proposal_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.proposal_audit();
 
-
+drop function if exists brs.proposal_version_audit();
 CREATE OR REPLACE FUNCTION brs.proposal_version_audit()
   RETURNS TRIGGER AS $$
 BEGIN

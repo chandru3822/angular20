@@ -1,6 +1,11 @@
-CREATE OR REPLACE FUNCTION flow.get_secondary_detail_value(p_list_of_value_id integer,
-                                                           p_company_system_list_id integer,
-                                                           p_value integer,
+drop function if exists flow.get_secondary_detail_value(p_list_of_value_id bigint,
+                                                        p_company_system_list_id bigint,
+                                                        p_value bigint,
+                                                        p_custom_field_sql_column character varying,
+                                                        p_custom_field_sql_reference_table character varying);
+CREATE OR REPLACE FUNCTION flow.get_secondary_detail_value(p_list_of_value_id bigint,
+                                                           p_company_system_list_id bigint,
+                                                           p_value bigint,
                                                            p_custom_field_sql_column character varying,
                                                            p_custom_field_sql_reference_table character varying)
   RETURNS text AS

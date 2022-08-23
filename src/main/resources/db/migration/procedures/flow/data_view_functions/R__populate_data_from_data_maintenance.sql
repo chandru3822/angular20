@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_id integer,p_company_process_ids integer[] default null)
+drop function if exists flow.populate_data_from_data_maintenance(p_data_view_id bigint,p_company_process_ids bigint[] );
+CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_id bigint,p_company_process_ids bigint[] default null)
   RETURNS text
 AS
 $BODY$
@@ -12,14 +13,14 @@ declare
   v_second_value             character varying;
   v_columns                  character varying;
   v_table                    character varying;
-  v_in_contact               integer = 0;
-  v_in_project               integer = 0;
-  v_in_ppscfv                integer = 0;
-  v_in_project_details       integer = 0;
-  v_in_contact_details       integer = 0;
-  v_in_pps                   integer = 0;
-  v_in_event_details         integer = 0;
-  v_in_event                 integer = 0;
+  v_in_contact               bigint = 0;
+  v_in_project               bigint = 0;
+  v_in_ppscfv                bigint = 0;
+  v_in_project_details       bigint = 0;
+  v_in_contact_details       bigint = 0;
+  v_in_pps                   bigint = 0;
+  v_in_event_details         bigint = 0;
+  v_in_event                 bigint = 0;
   v_alias_value              varchar;
   v_schema_name              varchar;
   v_table_name               varchar;
@@ -96,7 +97,7 @@ BEGIN
     v_sql = v_sql || $$ from flow.contact c
                               inner join flow.project p on p.contact_id = c.id
                               where p.company_process_id = any('$$ || z.company_process_ids::text ||
-            $$'::integer[])), $$;
+            $$'::bigint[])), $$;
   end if;
 
   --PROJECT UPDATE
@@ -164,7 +165,7 @@ BEGIN
   if v_in_project > 0 then
     v_sql = trim(trailing ' ,' from v_sql);
     v_sql = v_sql || $$ from flow.$$ || z.object_type || $$ p
-    where p.company_process_id = any('$$ || z.company_process_ids::text || $$'::integer[])), $$;
+    where p.company_process_id = any('$$ || z.company_process_ids::text || $$'::bigint[])), $$;
   end if;
 
 

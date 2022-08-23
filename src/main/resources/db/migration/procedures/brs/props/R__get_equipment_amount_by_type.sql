@@ -1,5 +1,5 @@
 drop function if exists brs.get_equipment_amount_by_type(
-  p_adder_id integer,
+  p_adder_id bigint,
   p_system_size numeric,
   p_object_code varchar);
 CREATE OR REPLACE FUNCTION brs.get_equipment_amount_by_type(
@@ -9,7 +9,7 @@ CREATE OR REPLACE FUNCTION brs.get_equipment_amount_by_type(
 AS
 $BODY$
 declare
-  v_unit_type_id integer;
+  v_unit_type_id bigint;
   v_amount       numeric;
   v_adder_amount numeric;
 BEGIN

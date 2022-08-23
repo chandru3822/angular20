@@ -1,9 +1,7 @@
--- DROP FUNCTION brs.get_installer_dashboard_rankings(DATE, DATE);
-
--- SELECT * FROM brs.get_installer_dashboard_rankings('01/01/2021', '05/01/2021');
-
-CREATE OR REPLACE FUNCTION brs.get_installer_dashboard_rankings(p_start_date DATE, p_end_date DATE, p_company_id integer,
-                                                                    p_parent_company_id integer, p_is_parent boolean)
+drop function if exists brs.get_installer_dashboard_rankings(p_start_date DATE, p_end_date DATE, p_company_id bigint,
+                                                             p_parent_company_id bigint, p_is_parent boolean);
+CREATE OR REPLACE FUNCTION brs.get_installer_dashboard_rankings(p_start_date DATE, p_end_date DATE, p_company_id bigint,
+                                                                    p_parent_company_id bigint, p_is_parent boolean)
     RETURNS SETOF JSON AS
 $BODY$
 BEGIN
@@ -52,7 +50,7 @@ RETURN QUERY SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                                                     project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
                                                                                                                           and process_step_id =
                                                                                                                               (select id from flow.process_step
-                                                                                                                               where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[]))
+                                                                                                                               where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::bigint[]))
 
 
                                        ) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))

@@ -1,13 +1,14 @@
-CREATE OR REPLACE FUNCTION brs.populate_system_and_financial_fields_for_booking(p_project_id integer,p_process_step_id integer,p_project_process_step_id integer)
+drop function if exists brs.populate_system_and_financial_fields_for_booking(p_project_id bigint,p_process_step_id bigint,p_project_process_step_id bigint);
+CREATE OR REPLACE FUNCTION brs.populate_system_and_financial_fields_for_booking(p_project_id bigint,p_process_step_id bigint,p_project_process_step_id bigint)
     RETURNS void
     LANGUAGE plpgsql
 AS
 $function$
 declare
-    v_proposal_history_id integer;
+    v_proposal_history_id bigint;
     _key   text;
     _value text;
-    v_company_id integer;
+    v_company_id bigint;
     v_loan_type varchar;
 BEGIN
 
@@ -146,7 +147,7 @@ BEGIN
                                             where cf.parent_custom_field_id = 10306
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
-                                              and cfg.process_step_id = p_process_step_id), plh.number_of_leds::integer,
+                                              and cfg.process_step_id = p_process_step_id), plh.number_of_leds::bigint,
                                             (select cfga.id
                                             from flow.custom_field cf
                                                      inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -154,7 +155,7 @@ BEGIN
                                             where cf.parent_custom_field_id = 10415
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
-                                              and cfg.process_step_id = p_process_step_id), plh.number_of_ecobees::integer,
+                                              and cfg.process_step_id = p_process_step_id), plh.number_of_ecobees::bigint,
                                             (select cfga.id
                                             from flow.custom_field cf
                                                      inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -198,7 +199,7 @@ BEGIN
                               where cf.parent_custom_field_id = 10329
                                 and cfga.archived is false and cf.archived is false and cfg.archived is false
                                 and cf.company_id = v_company_id
-                                and cfg.process_step_id = p_process_step_id), plh.panel_wattage::integer,
+                                and cfg.process_step_id = p_process_step_id), plh.panel_wattage::bigint,
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -214,7 +215,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10328
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), plh.panel_number::integer,
+                               and cfg.process_step_id = p_process_step_id), plh.panel_number::bigint,
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -268,7 +269,7 @@ BEGIN
                                                                                        inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                   and cf.company_id = v_company_id
                                                                                   and cf.parent_custom_field_id = 10460 and cf.archived is false
-                                                                              where plh.loan_term::integer = lov2.name::integer),
+                                                                              where plh.loan_term::bigint = lov2.name::bigint),
 --                             (select cfga.id
 --                              from flow.custom_field cf
 --                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -354,7 +355,7 @@ BEGIN
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
        -- raise notice 'cfga% value %',_key,_value;
-      perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
+      perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value);
     END LOOP;
 
 

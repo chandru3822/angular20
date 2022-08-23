@@ -1,14 +1,14 @@
-DROP FUNCTION IF EXISTS flow.set_sms_project_owner_history(integer, integer,integer[],integer,boolean,boolean);
-CREATE OR REPLACE FUNCTION flow.set_sms_project_owner_history(p_project_id integer, p_sms_team_id integer,
-                                                          p_user_ids integer[],
-                                                          p_current_user_id integer,
+DROP FUNCTION IF EXISTS flow.set_sms_project_owner_history(bigint, bigint,bigint[],bigint,boolean,boolean);
+CREATE OR REPLACE FUNCTION flow.set_sms_project_owner_history(p_project_id bigint, p_sms_team_id bigint,
+                                                          p_user_ids bigint[],
+                                                          p_current_user_id bigint,
                                                           p_add boolean default false,
                                                           p_remove_team boolean default false)
   RETURNS void as
 $BODY$
 declare
-v_team_count integer;
-  v_project_message_owner_history_id integer;
+v_team_count bigint;
+  v_project_message_owner_history_id bigint;
 BEGIN
 
   if p_add is true then
@@ -72,7 +72,7 @@ where pmoh.sms_team_id = p_sms_team_id and
 
 else
       with update_data as (
-        select unnest(p_user_ids)::integer as user_id
+        select unnest(p_user_ids)::bigint as user_id
       )
 update flow.project_message_owner_history pmoh
 set date_removed = now(),

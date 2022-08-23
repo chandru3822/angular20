@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION brs.process_design_log_history() RETURNS trigger
+drop function if exists brs.process_design_log_history();
+  CREATE OR REPLACE FUNCTION brs.process_design_log_history() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$

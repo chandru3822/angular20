@@ -1,20 +1,22 @@
--- DROP FUNCTION flow.search_contacts(character varying, integer, boolean, boolean, integer, integer, integer);
-CREATE OR REPLACE FUNCTION flow.search_contacts_by_user(p_searchterm character varying, p_company_id integer,
-                                                        p_is_parent boolean, p_user_id integer,
-                                                        p_limit integer, p_offset integer)
+ DROP FUNCTION if exists flow.search_contacts_by_user(p_searchterm character varying, p_company_id bigint,
+                                                      p_is_parent boolean, p_user_id bigint,
+                                                      p_limit bigint, p_offset bigint);
+CREATE OR REPLACE FUNCTION flow.search_contacts_by_user(p_searchterm character varying, p_company_id bigint,
+                                                        p_is_parent boolean, p_user_id bigint,
+                                                        p_limit bigint, p_offset bigint)
   RETURNS TABLE
           (
-            id               integer,
+            id               bigint,
             first_name       character varying,
             last_name        character varying,
             full_name        text,
             email            character varying,
             phone            character varying,
             mobile           character varying,
-            company_id       integer,
-            contact_type_id  integer,
+            company_id       bigint,
+            contact_type_id  bigint,
             contact_type     character varying,
-            company_state_id integer,
+            company_state_id bigint,
             state            character varying,
             abbreviation     character varying,
             latitude         double precision,
@@ -30,9 +32,9 @@ DECLARE
   v_clean_phone_search_term   VARCHAR;
   v_clean_email_search_term   VARCHAR;
   v_clean_address_search_term VARCHAR;
-  v_company_ids               INTEGER[];
+  v_company_ids               bigint[];
   v_clean_id_search_term      varchar;
-  v_position_ids              integer[];
+  v_position_ids              bigint[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.&', '')));
   v_clean_phone_search_term = right(trim(translate(p_searchterm, '+-(). ', '')), 10);
