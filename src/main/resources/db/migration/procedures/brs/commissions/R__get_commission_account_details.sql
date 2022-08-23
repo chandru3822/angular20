@@ -124,11 +124,11 @@ BEGIN
                    end                                                            AS remaining_value_overrides,
                coalesce(foo.total_commissions,0) + coalesce(foo.total_overrides,0) AS project_total_value
         FROM (
-                 SELECT p.id as project_id,
-                        c.id as customer_id,
+                 SELECT p.id::bigint as project_id,
+                        c.id::bigint as customer_id,
                         p.project_name,
                         pd.system_size,
-                        u.id as closer_user_id,
+                        u.id::bigint as closer_user_id,
                         (select text_value
                          from flow.user_custom_field_value ucfv
                          where custom_field_group_assignment_id = 19176
@@ -208,7 +208,7 @@ BEGIN
                                   inner join brs.override_plan_status ops on ops.id = op.status_id
                          WHERE po.project_id = p.id and op.position_id = 1
                         )                                                       AS override_plan_status,
-                        (SELECT op.id AS override_plan_id
+                        (SELECT op.id::bigint AS override_plan_id
                          FROM brs.override_plan op
                                   inner join brs.project_override po on po.override_plan_id = op.id
                          WHERE po.project_id = p.id and op.position_id = 1
@@ -224,7 +224,7 @@ BEGIN
                                   inner join brs.commission_plan_status cps on cps.id = cp.status_id
                          WHERE pc.project_id = p.id and cp.position_id = 1
                         )                                                       AS commission_plan_status,
-                        (SELECT cp.id AS commission_plan_id
+                        (SELECT cp.id::bigint AS commission_plan_id
                          FROM brs.commission_plan cp
                                   inner join brs.project_commission pc on pc.commission_plan_id = cp.id
                          WHERE pc.project_id = p.id and cp.position_id = 1

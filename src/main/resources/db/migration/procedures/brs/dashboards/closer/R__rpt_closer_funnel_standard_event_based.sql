@@ -119,22 +119,22 @@ BEGIN
                    else true end
            group by f.id, f.name, f.display_order, f.funnel_type_id
          )
-    select coalesce(fs.id, f.id)                                           as id,
+    select coalesce(fs.id, f.id)::bigint                                           as id,
            coalesce(fs.name, f.name)                                       as name,
-           coalesce(fs.display_order, f.display_order)                     as display_order,
-           coalesce(fs.funnel_type_id, f.funnel_type_id)                   as funnel_type_id,
-           coalesce(fs.today_count, 0)                                     as today_count,
+           coalesce(fs.display_order, f.display_order) ::bigint                    as display_order,
+           coalesce(fs.funnel_type_id, f.funnel_type_id)::bigint                   as funnel_type_id,
+           coalesce(fs.today_count, 0)::bigint                                     as today_count,
            case
              when f.show_checked_in_column is true
-               then coalesce(fs.checked_in_today_count, 0) end             as checked_in_today_count,
-           coalesce(fs.week_to_date_count, 0)                              as week_to_date_count,
+               then coalesce(fs.checked_in_today_count, 0)::bigint end             as checked_in_today_count,
+           coalesce(fs.week_to_date_count, 0)::bigint                              as week_to_date_count,
            case
              when f.show_checked_in_column
-               then coalesce(fs.checked_in_week_to_date_count, 0) end      as checked_in_week_to_date_count,
-           coalesce(fs.custom_date_range_count, 0)                         as custom_date_range_count,
+               then coalesce(fs.checked_in_week_to_date_count, 0)::bigint end      as checked_in_week_to_date_count,
+           coalesce(fs.custom_date_range_count, 0)::bigint                         as custom_date_range_count,
            case
              when f.show_checked_in_column
-               then coalesce(fs.checked_in_custom_date_range_count, 0) end as checked_in_custom_date_range_count
+               then coalesce(fs.checked_in_custom_date_range_count, 0)::bigint end as checked_in_custom_date_range_count
     from funnel_stats fs
            right outer join brs.funnel f on f.id = fs.id
     where f.archived is false

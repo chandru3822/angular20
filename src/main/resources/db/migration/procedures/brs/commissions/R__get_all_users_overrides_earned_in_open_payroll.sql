@@ -54,7 +54,7 @@ BEGIN
       create index milestone2_milestone_two_complete_date on milestone_two_projects(milestone_two_complete_date);
 
         RETURN QUERY
-            select foo.project_id,
+            select foo.project_id::bigint,
                    foo.closer,
                    foo.project_name,
                    foo.system_size,
@@ -156,7 +156,7 @@ BEGIN
 
         when v_position_id = 4 then
             RETURN QUERY
-                select foo.project_id,
+                select foo.project_id::bigint,
                        foo.closer,
                        foo.project_name,
                        foo.system_size,
