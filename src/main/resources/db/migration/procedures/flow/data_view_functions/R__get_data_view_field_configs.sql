@@ -47,7 +47,7 @@ BEGIN
       select dvfc.id::bigint                                          as dvfc_id,
              dvfc.field_to_update,
              dvfc.update_first_value_only,
-             dvfc.update_first_value_only_id::bigint,
+             dvfc.update_first_value_only_id,
              df.column_name,
              exists(select id
                     from flow.data_view_child_field_config dvcvc2
