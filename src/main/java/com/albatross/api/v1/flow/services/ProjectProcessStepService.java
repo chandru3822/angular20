@@ -7,6 +7,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
+import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
@@ -69,6 +70,7 @@ public class ProjectProcessStepService {
   private final CustomFieldValueService customFieldValueService;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
+  private final MarketoService marketoService;
   private final ListOfValueService listOfValueService;
 
   @Value("${aws.storageBucket}")
@@ -1077,7 +1079,7 @@ public class ProjectProcessStepService {
               systemValues.put("companyId", user.getCompanyId());
 
               if (functionAbbreviation.equals("brs")) {
-                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, listOfValueService);
+                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
                 Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
                 method.invoke(functionClass, childFunction, systemValues);
               } else {

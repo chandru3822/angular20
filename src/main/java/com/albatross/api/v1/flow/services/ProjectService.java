@@ -252,19 +252,8 @@ public class ProjectService {
 
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
-
-    return sqlCache.get(
-        "project.get",
-        ImmutableMap.of(
-            "projectId",
-            projectId,
-            "companyId",
-            user.getCompanyId(),
-            "isParent",
-            user.isParentCompany(),
-            "parentCompanyId",
-            user.getHighestParentCompanyId()),
-        new ProjectMapper<>(Project.class, om));
+    Map<String, Object> params = ImmutableMap.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
+    return sqlCache.get("project.get", params, new ProjectMapper<>(Project.class, om));
   }
 
   public void deleteProject(Long projectId) {
