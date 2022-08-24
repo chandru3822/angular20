@@ -73,7 +73,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left" v-if="useProcessStepHeaders">
                 <v-btn text small class="primary--text"
-                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepIdStepId}`">
+                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Project Name'] }}
                 </v-btn>
               </td>
