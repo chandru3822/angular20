@@ -29,7 +29,7 @@ public class ElectronicDocumentService {
   private final int PERMITTING_DOC_TYPE = 0;
   private final int UTILITY_DOC_TYPE = 1;
 
-  public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
+  public Page<InstallAgreementProject> getProjects(String query, Pageable pageable, Boolean showCancelled) {
     User user = securityService.getCurrentUser();
     Boolean viewAll =
         securityService.userHasFeatureAccessLevel(
@@ -47,6 +47,7 @@ public class ElectronicDocumentService {
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
+    params.put("showCancelled", showCancelled);
 
     List<InstallAgreementProject> results =
         sqlCache.query("electronicDocument.getProjects", params, InstallAgreementProject.class);
