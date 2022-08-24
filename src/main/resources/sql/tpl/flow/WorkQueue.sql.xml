@@ -51,7 +51,7 @@
                                                       FROM flow.white_listed_position wlp
                                                       WHERE wlp.white_list_type_id = 10
                                                         AND wlp.archived is not true
-                                                        AND wlp.work_queue_type_id = wqt.id) else 1=1 end
+                                                        AND wlp.work_queue_type_id = wqt.id)::bigint[] else 1=1 end
     union all
     select wqt.id as work_queue_type_id,
            wqt.work_queue_type,
@@ -109,7 +109,7 @@
                                                       FROM flow.white_listed_position wlp
                                                       WHERE wlp.white_list_type_id = 10
                                                         AND wlp.archived is not true
-                                                        AND wlp.work_queue_type_id = wqt.id) else 1=1 end
+                                                        AND wlp.work_queue_type_id = wqt.id)::bigint[] else 1=1 end
     order by work_queue_category_display_order, work_queue_type_display_order
   ]]></workQueue.getWorkQueueCards>
 
@@ -136,7 +136,7 @@
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.white_list_type_id = 10
                                                             AND wlp.archived is not true
-                                                            AND wlp.work_queue_type_id = wqt.id) else true end
+                                                            AND wlp.work_queue_type_id = wqt.id)::bigint[] else true end
     from flow.work_queue_type wqt
     where wqt.id = :workQueueTypeId
   ]]></workQueue.userCanAccessData>

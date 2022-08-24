@@ -1,3 +1,5 @@
+-- last updated 8/23/2022
+
 drop view if exists brs.proposal_version_custom_field_value_vw;
 create or replace view brs.proposal_version_custom_field_value_vw as
 (
@@ -6,7 +8,7 @@ select pvcfv.id,
        pvcfg.proposal_group_uuid,
        pvcfg.proposal_version_id,
        pvcfv.value,
-       cf.id as field_id,
+       cf.id                                       as field_id,
        cf.field_code,
        cf.field_name,
        ot.object_code,

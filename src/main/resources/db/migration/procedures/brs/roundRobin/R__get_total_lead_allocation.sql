@@ -148,18 +148,20 @@ BEGIN
                  from round_robin_users rru
                           left join brs.cached_appointment ca on rru.user_id = ca.user_id
              )
-        select foo3.postal_code_zone_user_id, foo3.user_id,
-               foo3.company_timezone_id, foo3.timezone,
+        select foo3.postal_code_zone_user_id::bigint,
+               foo3.user_id::bigint,
+               foo3.company_timezone_id::bigint,
+               foo3.timezone,
                foo3.actual_lead_allocation - foo3.total_lead_allocation as distance_from_actual_to_target,
                foo3.total_lead_allocation,
                foo3.actual_lead_allocation,
                foo3.score,
-               foo3.lead_gen_num,
-               foo3.lead_gen_den,
-               foo3.self_gen,
-               foo3.avail,
-               foo3.appointment_count_with_interval,
-               foo3.appointment_count,
+               foo3.lead_gen_num::bigint,
+               foo3.lead_gen_den::bigint,
+               foo3.self_gen::bigint,
+               foo3.avail::bigint,
+               foo3.appointment_count_with_interval::bigint,
+               foo3.appointment_count::bigint,
                foo3.manual_allocation
         from (
                  select foo2.postal_code_zone_user_id, foo2.user_id,

@@ -16,12 +16,12 @@ $$
 BEGIN
 return query
 select  DISTINCT ON (u.last_name, u.first_name, u.id)
-       u.id as user_id,
+       u.id::bigint as user_id,
        u.first_name,
        u.last_name,
        concat(u.first_name, ' ', u.last_name) as full_name,
        ust.has_access,
-       up.id as user_position_id,
+       up.id::bigint as user_position_id,
        p.position
 from flow.position p
        inner join flow.user_position up on up.position_id = p.id

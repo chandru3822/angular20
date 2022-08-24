@@ -20,8 +20,8 @@ public class ElectronicDocumentController {
   private final ElectronicDocumentService electronicDocumentService;
 
   @GetMapping(value = "/projects")
-  public Page<InstallAgreementProject> getProjects(@RequestParam String query, Pageable pageable) {
-    return electronicDocumentService.getProjects(query, pageable);
+  public Page<InstallAgreementProject> getProjects(@RequestParam String query, Pageable pageable, Boolean showCancelled) {
+    return electronicDocumentService.getProjects(query, pageable, showCancelled);
   }
 
   @GetMapping(value = "/getPermittingDocuments/{projectId}")

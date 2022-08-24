@@ -27,7 +27,7 @@ BEGIN
     case when (p_view_all) THEN
         RETURN QUERY
             SELECT
-                p.id                                                             AS project_id,
+                p.id::bigint                                                            AS project_id,
                 p.project_name,
                 c.email,
                 concat(p.street1, ', ', p.city, ', ' ,s.state, ' ', p.postal_code) AS address,
@@ -48,7 +48,7 @@ BEGIN
         ELSE
             RETURN QUERY
                 SELECT
-                    p.id                                                             AS project_id,
+                    p.id::bigint                                                             AS project_id,
                     p.project_name,
                     c.email,
                     concat(p.street1, ', ' ,p.city, ', ', s.state, ' ' ,p.postal_code) AS address,
