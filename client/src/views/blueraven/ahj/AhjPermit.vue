@@ -2,6 +2,7 @@
 <template>
   <v-row no-gutters id="ahj-permit">
     <v-col class="ahj-form-btns py-1" cols="12">
+      <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
       <v-btn v-if="dataWasChanged"
              color="primary" text
              @click="resetForm"
@@ -22,6 +23,7 @@
           <AhjCard :group = group
                    :user-can-edit="userCanEdit"
                    :callback="(field) => updateDirtyValue(field)"
+                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           >
           </AhjCard>
         </v-col>
@@ -172,6 +174,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
 
 export default {
   name: 'ahjPermit',
@@ -190,6 +193,7 @@ export default {
     },
   },
   data: () => ({
+    CollapseExpandEnum,
     ahjId: null,
     itemType: 'permit',
     snackbar: {},
@@ -212,6 +216,7 @@ export default {
     editBrsTechnicianPermitPickupAndDeliveryInstructions: false,
     editCancellationAndRefundInstructions: false,
     editBrsTechnicianPermitSubmissionInstructions: false,
+    expandedAll: CollapseExpandEnum.EXPANDED,
     // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
     ahjPermit: {
       submissionChecklist: [],
@@ -410,6 +415,14 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
 
+    },
+
+    toggleMinimizeAll(){
+      if(this.expandedAll !== CollapseExpandEnum.COLLAPSED){
+        this.expandedAll = CollapseExpandEnum.COLLAPSED
+      } else {
+        this.expandedAll = CollapseExpandEnum.EXPANDED
+      }
     }
   },
   async created() {
