@@ -126,7 +126,7 @@
         :mobile-breakpoint="0"
         :footer-props="footerProps"
         :server-items-length="totalProjects"
-        hide-default-header
+        fixed-header
         class="elevation-1"
         id="inbox-message-list"
       >
@@ -733,4 +733,10 @@ a {
   background-color: #1F3C73 !important;
 }
 
+::v-deep {
+  .v-data-table__wrapper {
+    height: calc(100vh - 250px);
+    min-height: 300px;
+  }
+}
 </style>
