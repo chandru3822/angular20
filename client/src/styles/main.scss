@@ -109,6 +109,18 @@ $default-text: rgba(0,0,0,0.87);
 .disabled-label {
   color: #9E9E9E !important;
 }
+/* theme the calendar */
+.fc-button-primary {
+  color: white;
+  background-color: var(--v-primary-base) !important;
+  border-color: var(--v-primary-base) !important;
+}
+
+.fc-button-primary:hover {
+  color: white;
+  background-color: var(--v-primary-base) !important;
+  border-color: var(--v-primary-base) !important;
+}
 
 /* theme the date time picker */
 .theme-datetime .vdatetime-popup__header,
