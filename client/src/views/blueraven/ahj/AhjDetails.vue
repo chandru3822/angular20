@@ -8,7 +8,7 @@
               <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
             </v-btn>
 
-            <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
+            <div class="flex-display justify-space-between align-center px-4 mb-4" style="width: 100%">
               <div class="page-title">AHJ</div>
               <div class="page-info">
                 <div>{{ ahj.name }}</div>
@@ -25,7 +25,7 @@
               </v-tab>
             </v-tabs>
 
-            <router-view class="px-3" />
+            <router-view class="px-2" />
           </v-col>
         </v-row>
       </v-col>
