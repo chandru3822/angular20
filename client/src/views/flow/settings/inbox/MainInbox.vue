@@ -123,6 +123,8 @@
         :items="projectsFiltered"
         :options.sync="options"
         disable-sort
+        ref="pageable-table"
+        :page.sync="page"
         :mobile-breakpoint="0"
         :footer-props="footerProps"
         :server-items-length="totalProjects"
@@ -241,6 +243,7 @@ export default {
       selectableTeams: [],
       reloadInProgress: false,
       totalProjects: 0,
+      page: 1,
       initialLoad: true
     }
   },
@@ -626,6 +629,13 @@ export default {
           this.reloadProjects()
         }
       }
+    },
+    page() {
+      let table = this.$refs['pageable-table'];
+      let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+      this.$vuetify.goTo(table); // to table
+      this.$vuetify.goTo(table, {container: wrapper}); // to header
     }
   },
   created() {

@@ -65,6 +65,8 @@
             :headers="headers"
             :items="contacts"
             :fixed-header="true"
+            ref="pageable-table"
+            :page.sync="page"
             :options.sync="options"
             disable-sort
             :mobile-breakpoint="0"
@@ -158,6 +160,7 @@ export default {
         'items-per-page-options': [25, 50, 100, 1000],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
+      page: 1,
       options: {
         itemsPerPage: 100
       },
@@ -184,6 +187,13 @@ export default {
       },
       deep: true,
     },
+    page() {
+      //this will also scroll when the rows per page changes IF not on the first page, which is correct behavior since it is resetting the search page back to 0
+      let table = this.$refs['pageable-table'];
+      let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+      // this.$vuetify.goTo(table); // to table
+      this.$vuetify.goTo(table, {container: wrapper}); // to header
+    }
   },
   beforeRouteEnter(to, from, next) {
     //if coming to this page from the contact details - use the previously used search

@@ -38,6 +38,8 @@
           :headers="filterHeaders()"
           :items="results"
           :fixed-header="true"
+          ref="pageable-table"
+          :page.sync="page"
           :loading="dataLoading"
           :options.sync="options"
           item-key="projectProcessStepEventId"
@@ -226,6 +228,7 @@ export default {
       queueHasOwningPositions: false,
       noResults: true,
       totalItems: 0,
+      page: 1,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 1000],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
@@ -245,6 +248,13 @@ export default {
     //   },
     //   deep: true,
     // },
+    page() {
+      let table = this.$refs['pageable-table'];
+      let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+      this.$vuetify.goTo(table); // to table
+      this.$vuetify.goTo(table, {container: wrapper}); // to header
+    }
   },
   computed: {},
   async created() {
