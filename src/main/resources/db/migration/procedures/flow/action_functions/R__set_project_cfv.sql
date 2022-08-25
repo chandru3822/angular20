@@ -1,5 +1,5 @@
 drop function if exists flow.set_project_cfv(p_project_id bigint, p_user_id bigint,p_cfga bigint, p_value_to_save text, p_override_existing boolean);
-CREATE OR REPLACE FUNCTION flow.set_project_cfv(p_project_id bigint, p_user_id bigint,p_cfga bigint, p_value_to_save text, p_override_existing boolean default true)
+CREATE OR REPLACE FUNCTION flow.set_project_cfv(p_project_id bigint, p_user_id bigint,p_cfga bigint, p_value_to_save text, p_override_existing boolean default false)
     returns boolean AS
 $BODY$
 declare
