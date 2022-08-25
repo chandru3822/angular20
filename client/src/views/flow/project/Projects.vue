@@ -91,7 +91,7 @@
               </td>
               <td class="text-left">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
-                  {{project.dateCreated | formatDate('date')}}
+                  {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
                 </router-link>
               </td>
             </tr>
