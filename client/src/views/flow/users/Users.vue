@@ -788,6 +788,7 @@
         try {
           const {data} = await getRequest(`/position`)
           this.positions = data
+          debugger
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')

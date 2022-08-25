@@ -6,7 +6,7 @@
     <v-toolbar-items>
       <v-btn
         text x-small color="primary"
-        @click="$emit('clickEdit')"
+        @click.stop="$emit('clickEdit')"
         v-if="showEditBtn">
         <v-icon>edit</v-icon>
       </v-btn>
