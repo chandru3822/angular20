@@ -174,7 +174,8 @@
         </div>
       </template>
       <template v-slot:main-column>
-        <div v-if="user && user.id && !fieldsLoading" style="overflow-x: hidden">
+        <div>
+          <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="albatross-header-3">
               User Summary
@@ -197,55 +198,57 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <v-row class="px-5">
-            <v-col cols="12" class="text-left py-0 px-0">
-              <!--    process field groups-->
-              <v-form ref="userForm">
-                <v-col
-                  class="pt-0"
-                  v-for="(cfg, index) in customFieldGroups"
-                  :key="index"
-                >
-                  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
-                    <v-toolbar-title>
-                      {{ cfg.groupName }}
-                    </v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items>
-                    </v-toolbar-items>
-                  </v-toolbar>
+          <div v-if="user && user.id && !fieldsLoading" style="overflow-x: hidden">
+            <v-row class="px-5">
+              <v-col cols="12" class="text-left py-0 px-0">
+                <!--    process field groups-->
+                <v-form ref="userForm">
+                  <v-col
+                    class="pt-0"
+                    v-for="(cfg, index) in customFieldGroups"
+                    :key="index"
+                  >
+                    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+                      <v-toolbar-title>
+                        {{ cfg.groupName }}
+                      </v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-toolbar-items>
+                      </v-toolbar-items>
+                    </v-toolbar>
 
-                  <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-                    <v-row>
-                      <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
-                                          :key="idx"
-                                          :required="cf.required"
-                                          :readonly="getReadOnly(cf)"
-                                          :callback="populateDirtyCfvs"
-                                          :field="cf"
-                                          :show-field-name="false"></CustomValueInput>
-                      </v-col>
-                      <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
-                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
-                                          :key="idx"
-                                          :required="cf.required"
-                                          :readonly="getReadOnly(cf)"
-                                          :callback="populateDirtyCfvs"
-                                          :field="cf"
-                                          :show-field-name="false"></CustomValueInput>
-                      </v-col>
-                    </v-row>
+                    <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+                      <v-row>
+                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                      </v-row>
 
-                  </v-card>
-                </v-col>
+                    </v-card>
+                  </v-col>
 
-              </v-form>
-            </v-col>
-          </v-row>
-        </div>
-        <div v-else>
-          <SpinnerInline centered :size="50" color="primary"/>
+                </v-form>
+              </v-col>
+            </v-row>
+          </div>
+          <div v-else>
+            <SpinnerInline centered :size="50" color="primary"/>
+          </div>
         </div>
       </template>
       <template v-slot:right-column>
