@@ -49,6 +49,7 @@ public class ElectronicDocumentService {
 
     List<InstallAgreementProject> results =
         sqlCache.query("electronicDocument.getProjects", params, InstallAgreementProject.class);
+
     Integer count =
         sqlCache.queryForObject("electronicDocument.getProjectsCount", params, Integer.class);
 
