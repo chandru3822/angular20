@@ -6,7 +6,7 @@
     <v-toolbar-items>
       <v-btn
         text x-small color="primary"
-        @click="$emit('clickEdit')"
+        @click.stop="$emit('clickEdit')"
         v-if="showEditBtn">
         <v-icon>edit</v-icon>
       </v-btn>
@@ -18,7 +18,7 @@
         <span class="detail-label">{{detail.label}}: </span>
         <span v-if="detail.value" @click="detail.clickable ? $emit(`click-detail`, detail) : null"
               class="detail-item"
-              :class="{'clickable underline primary--text text--lighten-1':detail.clickable}" >
+              :class="{'clickable underline anchor':detail.clickable}" >
           {{detail.value}}
         </span>
       </div>

@@ -41,8 +41,6 @@ public class ElectronicDocumentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
-    params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
@@ -51,6 +49,7 @@ public class ElectronicDocumentService {
 
     List<InstallAgreementProject> results =
         sqlCache.query("electronicDocument.getProjects", params, InstallAgreementProject.class);
+
     Integer count =
         sqlCache.queryForObject("electronicDocument.getProjectsCount", params, Integer.class);
 

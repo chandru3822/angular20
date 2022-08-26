@@ -634,7 +634,7 @@
             d.allDay = false
             d.groupId = `${d.systemListTypeId}${d.resourceId}`
             d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-            d.color = 'gray'
+            d.color = 'var(--v-grey-darken1)'
 
             if(!d.isSlotTime && d.rendering === 'inverse-background') {
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
@@ -668,7 +668,7 @@
                 //these values have already been pre-appended with the 1 or 2
                 groupId: r.id,
                 resourceId: r.id,
-                color: 'gray'
+                color: 'var(--v-grey-darken1)'
               })
           })
 
@@ -946,8 +946,9 @@
     padding-bottom: 0;
   }
 
-  #calendar-container .fc-button-primary {
-    background-color: var(--v-primary-base);
+  #calendar-container > div.calendar-resize-container > div > div.fc-view-container > div > table > tbody > tr > td.fc-time-area.fc-widget-content > div > div > div > div.fc-content > div > table > tbody > tr > td > div > div.fc-bgevent-container > div {
+    color: white !important;
+    font-size: 0.875rem !important;
   }
 
 </style>
@@ -962,6 +963,7 @@
   /* without this when you resize the screen the calendar goes whackadoodle */
   flex: 1 1 auto;
   position: relative;
+
 }
 #calendar-loader {
   height: 100%;

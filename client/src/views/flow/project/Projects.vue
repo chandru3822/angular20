@@ -51,6 +51,8 @@
           :headers="headers"
           :items="projects"
           fixed-header
+          ref="pageable-table"
+          :page.sync="page"
           :options.sync="options"
           disable-sort
           :mobile-breakpoint="0"
@@ -91,7 +93,7 @@
               </td>
               <td class="text-left">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
-                  {{project.dateCreated | formatDate('date')}}
+                  {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
                 </router-link>
               </td>
             </tr>
@@ -167,6 +169,7 @@
         from: null,
         searchQuery: '',
         totalProjects: 0,
+        page: 1,
         isProjectsLoading: false,
         showConfirmDialog: false,
         selectedSmartlistId: 0,
@@ -182,6 +185,13 @@
             this.getProjects()
           }
         }
+      },
+      page() {
+        let table = this.$refs['pageable-table'];
+        let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+        this.$vuetify.goTo(table); // to table
+        this.$vuetify.goTo(table, {container: wrapper}); // to header
       }
     },
     created() {

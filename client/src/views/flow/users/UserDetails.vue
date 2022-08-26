@@ -60,7 +60,12 @@
       </v-form>
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
-    <!--    end dialog -->
+    <!-- Delete Company Access dialog  -->
+    <ConfirmationDialog :open-dialog="!!companyToDelete" @confirm="removeUserCompany" @close-dialog="[companyToDelete.deleteConfirm = false, companyToDelete = null]">
+      Are you sure you want to delete {{ companyToDeleteName }} from this user?
+      <template v-slot:yes>Delete</template>
+    </ConfirmationDialog>
+    <!--    end dialogs -->
     <ThreeColumnLayout :header-hidden="true"
                        :auto-overflow-left="false">
       <template v-slot:left-column>
@@ -131,50 +136,15 @@
               <v-card flat v-for="uc in user.companies"
                       class="user-company-button albatross-body-1">
                 {{ uc.companyName }}
-                <v-dialog
-                  v-if="userIsAdmin"
-                  v-model="uc.deleteConfirm"
-                  width="500">
-                  <template #activator="{ on }">
-                    <v-btn fab small text v-on="on">
-                      <v-icon color="primary">delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="text-h5 grey lighten-2"
-                      primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text class="pt-4">
-                      Are you sure you want to delete {{ uc.companyName }} from this user?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="uc.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="removeUserCompany(uc)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn fab small text color="primary" @click="companyToDelete = uc"><v-icon>delete</v-icon></v-btn>
               </v-card>
             </div>
           </div>
         </div>
       </template>
       <template v-slot:main-column>
-        <div v-if="user && user.id && !fieldsLoading" style="overflow-x: hidden">
+        <div>
+          <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="albatross-header-3">
               User Summary
@@ -197,55 +167,57 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <v-row class="px-5">
-            <v-col cols="12" class="text-left py-0 px-0">
-              <!--    process field groups-->
-              <v-form ref="userForm">
-                <v-col
-                  class="pt-0"
-                  v-for="(cfg, index) in customFieldGroups"
-                  :key="index"
-                >
-                  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
-                    <v-toolbar-title>
-                      {{ cfg.groupName }}
-                    </v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items>
-                    </v-toolbar-items>
-                  </v-toolbar>
+          <div v-if="user && user.id && !fieldsLoading" style="overflow-x: hidden">
+            <v-row class="px-5">
+              <v-col cols="12" class="text-left py-0 px-0">
+                <!--    process field groups-->
+                <v-form ref="userForm">
+                  <v-col
+                    class="pt-0"
+                    v-for="(cfg, index) in customFieldGroups"
+                    :key="index"
+                  >
+                    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+                      <v-toolbar-title>
+                        {{ cfg.groupName }}
+                      </v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-toolbar-items>
+                      </v-toolbar-items>
+                    </v-toolbar>
 
-                  <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-                    <v-row>
-                      <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
-                                          :key="idx"
-                                          :required="cf.required"
-                                          :readonly="getReadOnly(cf)"
-                                          :callback="populateDirtyCfvs"
-                                          :field="cf"
-                                          :show-field-name="false"></CustomValueInput>
-                      </v-col>
-                      <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
-                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
-                                          :key="idx"
-                                          :required="cf.required"
-                                          :readonly="getReadOnly(cf)"
-                                          :callback="populateDirtyCfvs"
-                                          :field="cf"
-                                          :show-field-name="false"></CustomValueInput>
-                      </v-col>
-                    </v-row>
+                    <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+                      <v-row>
+                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                      </v-row>
 
-                  </v-card>
-                </v-col>
+                    </v-card>
+                  </v-col>
 
-              </v-form>
-            </v-col>
-          </v-row>
-        </div>
-        <div v-else>
-          <SpinnerInline centered :size="50" color="primary"/>
+                </v-form>
+              </v-col>
+            </v-row>
+          </div>
+          <div v-else>
+            <SpinnerInline centered :size="50" color="primary"/>
+          </div>
         </div>
       </template>
       <template v-slot:right-column>
@@ -331,6 +303,7 @@ export default {
       addUserCompany: false,
       newCompany: {},
       companyUserStatusTypes: [],
+      companyToDelete: null
     }
   },
   computed: {
@@ -363,6 +336,9 @@ export default {
           value: this.user.username
         }
       ]
+    },
+    companyToDeleteName() {
+      return this.companyToDelete ? this.companyToDelete.companyName : ''
     }
   },
   async created() {
@@ -513,7 +489,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async removeUserCompany(uc) {
+    async removeUserCompany() {
+      const uc = this.companyToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
@@ -685,7 +662,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: solid 1px #C4C4C4;
+  border: solid 1px var(--v-grey-lighten1);
   padding: 10px;
   margin-bottom: 10px;
 }

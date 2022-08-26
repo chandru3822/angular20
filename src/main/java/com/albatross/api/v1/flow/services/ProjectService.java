@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -252,8 +253,14 @@ public class ProjectService {
 
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
+
     Map<String, Object> params = ImmutableMap.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
-    return sqlCache.get("project.get", params, new ProjectMapper<>(Project.class, om));
+      Optional<Project> result = sqlCache.get("project.get", params, new ProjectMapper<>(Project.class, om));
+      if (result.isPresent()) {
+          return result;
+      } else {
+          throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+      }
   }
 
   public void deleteProject(Long projectId) {

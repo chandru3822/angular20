@@ -101,12 +101,12 @@ from projects p
                            inner join flow.project_message_properties pmp on pmp.project_id = p.id
                            left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
                            left join flow.project_message_owner pmo2
-                                     on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id
+                                     on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id and pmo2.archived is false
                            left join flow.user u on pmo2.user_id = u.id
                   where case
                             when :query::varchar is not null then
                                         lower(p.project_name) like '%' || lower(:query) || '%' or
-                                        p.id::varchar like :query or
+                                        p.id::varchar like '%' || lower(:query) || '%'  or
                                         lower(concat(u.first_name, ' ', u.last_name)) like '%' || lower(:query) || '%'
                             else 1 = 1 end
                     and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
@@ -116,7 +116,7 @@ from projects p
                                            when array_length( array [ :ownerIds ]::bigint[], 1) > 0 then
                                                    (pmo3.user_id = any ( array [ :ownerIds ]::bigint[] )) and
                                                    pmo3.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
-                                                   and pmo3.project_id = p.id
+                                                   and pmo3.project_id = p.id and pmo3.archived is false
                                            end) or
                           case
                               when :unassigned is true then

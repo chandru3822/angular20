@@ -168,7 +168,7 @@ BEGIN
       set closer_selected = true
       where id = v_set_closer_appointment_audit_id;
       --set the proposal due date on the process step to the start time
-      perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::bigint, p_appointment_start_time::text);
+      perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::bigint, p_appointment_start_time::text, true);
       --change the status of the event to pending
       update flow.project_process_step_event
         set company_event_status_type_id = 7

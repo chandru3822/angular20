@@ -2,6 +2,7 @@
   <v-dialog
     v-model="show"
     width="500"
+    @click:outside="no"
   >
     <v-card>
       <v-card-title
@@ -67,6 +68,7 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm')
+      this.$emit('close-dialog', false)
       this.show=false
     },
     no() {

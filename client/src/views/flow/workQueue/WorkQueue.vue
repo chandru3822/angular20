@@ -608,7 +608,7 @@ export default {
   height: 20px;
   font-size: 12px;
   padding-top: 8px;
-  color: var(--v-grey-base);
+  color: var(--v-grey-darken2);
 }
 
 .card-metric {

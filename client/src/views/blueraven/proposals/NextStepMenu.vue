@@ -262,11 +262,16 @@ export default {
       }
 
       try {
-        const { data: creditUrl } = await getRequest(`/proposal/${this.proposal.id}/loanApplication`, 'blueraven')
+        const { status, data } = await getRequest(`/proposal/${this.proposal.id}/loanApplication`, 'blueraven')
+        if (status !== 200){
+          this.$snackbar('ERROR', data?.message || 'Error creating credit application')
+          return
+        }
+
         this.$emit('update', { ...this.proposal, creditCheckSubmitted: true })
 
-        if (creditUrl && creditUrl !== 'Quote Updated') {
-          open(creditUrl, '_blank')
+        if (data && data !== 'Quote Updated') {
+          open(data, '_blank')
         }
       } catch (e) {
         this.$snackbar('ERROR', e?.data.message || 'Error creating credit application')
