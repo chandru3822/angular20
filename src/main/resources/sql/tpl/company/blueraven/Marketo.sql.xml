@@ -1,0 +1,18 @@
+<sql>
+<marketo.getHubspotId><![CDATA[
+-- Don't like that this uses hardcoded cfgaId
+select ccfv.text_value
+from flow.contact_custom_field_value ccfv
+where ccfv.contact_id = :contactId and
+      ccfv.custom_field_group_assignment_id = 397
+]]></marketo.getHubspotId>
+
+<marketo.getLeadSource><![CDATA[
+-- Don't like that this uses hardcoded cfgaId
+select lov.name
+from flow.contact_custom_field_value ccfv
+inner join flow.list_of_value lov on lov.id = ccfv.int_value
+where ccfv.contact_id = :contactId and
+      ccfv.custom_field_group_assignment_id = 395
+]]></marketo.getLeadSource>
+</sql>

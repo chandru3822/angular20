@@ -1,0 +1,137 @@
+package com.albatross.api.v1.company.blueraven.services;
+
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.Contact;
+import com.albatross.api.v1.flow.model.project.Project;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class MarketoService {
+
+    private String accessToken;
+
+    private WebClient client;
+
+    @Value("${marketo.host:}")
+    private String host;
+
+    @Value("${marketo.clientId:}")
+    private String clientId;
+
+    @Value("${marketo.secret:}")
+    private String secret;
+
+    private final ObjectMapper om;
+
+    private final SqlCache sqlCache;
+
+    @PostConstruct
+    public void init() {
+        client = WebClient.create(host);
+    }
+
+    private void authenticate() {
+        final String url = String.format("%s/identity/oauth/token?grant_type=client_credentials&client_id=%s&client_secret=%s", host, clientId, secret);
+        WebClient client = WebClient.create();
+        ResponseEntity<String> res = client.get()
+                                           .uri(url)
+                                           .retrieve()
+                                           .toEntity(String.class)
+                                           .block();
+
+        try {
+            JSONObject authResponse = new JSONObject(res.getBody());
+            accessToken = authResponse.getString("access_token");
+        } catch (Exception e) {
+            log.error("MARKETO: Unable to authenticate. err: " + e.getMessage());
+        }
+    }
+
+    @Async
+    public Future<Void> pushContact(Contact contact) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("input", List.of(contactToLead(contact)));
+        body.put("lookupField", "projectId");
+
+        authenticate();
+        ResponseEntity<String> res = client.post()
+            .uri("/rest/v1/leads.json")
+            .header("Authorization", "Bearer " + accessToken)
+            .body(Mono.just(body), Map.class)
+            .retrieve()
+            .toEntity(String.class)
+            .block();
+
+        return new AsyncResult<>(null);
+    }
+
+    @Async
+    public Future<Long> getContactIdByProjectId(Long projectId) {
+        authenticate();
+        ResponseEntity<String> res = client.get()
+                                           .uri(uriBuilder -> uriBuilder
+                                               .path("/rest/v1/leads.json")
+                                               .queryParam("fields", "id,contactId,projectId,lastName,firstName,email,updatedAt,createdAt")
+                                               .queryParam("filterType", "projectId")
+                                               .queryParam("batchSize", 1)
+                                               .queryParam("filterValues", projectId)
+                                               .build()
+                                           )
+                                           .header("Authorization", "Bearer " + accessToken)
+                                           .retrieve()
+                                           .toEntity(String.class)
+                                           .block();
+
+        JSONObject rawResponse = new JSONObject(res.getBody());
+        JSONObject json = (JSONObject) rawResponse.getJSONArray("result").get(0);
+
+        return new AsyncResult<>(json.getLong("contactId"));
+    }
+
+    private Map<String, Object> contactToLead(Contact contact) {
+        Map<String, Object> lead = new HashMap<>();
+        Project project = contact.getProjects().stream().findFirst().orElse(null);
+        if (project == null) {
+            //@TODO: error out
+        }
+        lead.put("projectId", project.getId());
+        lead.put("leadStatus", project.getProjectStatusType());
+        final String leadSource = sqlCache.queryForObject("marketo.getLeadSource", Map.of("contactId", contact.getId()), String.class);
+        lead.put("leadSource", leadSource);
+        final String hubspotId = sqlCache.queryForObject("marketo.getHubspotId", Map.of("contactId", contact.getId()), String.class);
+        lead.put("hubspotId", hubspotId);
+        lead.put("contactId", contact.getId());
+        lead.put("firstName", contact.getFirstName());
+        lead.put("lastName", contact.getLastName());
+        lead.put("address", contact.getStreet1());
+        lead.put("state", contact.getState());
+        lead.put("country", contact.getCountry());
+        lead.put("postalCode", contact.getPostalCode());
+        lead.put("phone", contact.getPhone());
+        lead.put("email", contact.getEmail());
+        lead.put("projectAddress", project.getStreet1());
+        lead.put("projectCity", project.getCity());
+        lead.put("projectState", project.getState());
+        lead.put("projectCountry", project.getCountry());
+        lead.put("projectPostalCode", project.getPostalCode());
+        return lead;
+    }
+}
