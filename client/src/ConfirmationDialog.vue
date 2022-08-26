@@ -68,6 +68,7 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm')
+      this.$emit('close-dialog', false)
       this.show=false
     },
     no() {
