@@ -5,17 +5,21 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
+import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Future;
+
+/**
+ * This class is to hold functions performed by actions which peform async http calls.
+ * Each function should take the action function being ran (ProcessStepActionChildFunction) and a map of system values (this hold contextual values given from the action).
+ * Each function should return void and throw a descriptive exception on failure (exceptions are handled within the action code for transactional purposes).
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,6 +45,8 @@ public class BrsProcessStepActionFunctionService {
     private final GoodleapService goodleapService;
 
     private final AuroraProxy auroraService;
+
+    private final MarketoService marketoService;
 
     private final ListOfValueService listOfValueService;
 
@@ -388,5 +401,12 @@ public class BrsProcessStepActionFunctionService {
 
             throw new RuntimeException(String.format("PPS: Unable to perform MANUAL action for java function: %s *** %s", functionName, e.getMessage()));
         }
+    }
+
+    @SneakyThrows
+//    public void pushContactToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    public void pushContactToMarketo(Contact contact) {
+        Future<Void> worked = marketoService.pushContact(contact);
+        worked.get();
     }
 }
