@@ -166,7 +166,7 @@
                   <td class="text-left">{{ user.fullName }}</td>
                   <td class="text-left">{{ user.position }}</td>
                   <td class="text-right">
-                    <v-btn small text color="primary lighten-1" @click="goToPath(`/user/${user.id}/details`, true)">
+                    <v-btn small text class="anchor" @click="goToPath(`/user/${user.id}/details`, true)">
                       <v-icon>mdi-open-in-new</v-icon>
                     </v-btn>
 
@@ -210,7 +210,7 @@
                                 v-model="item.activeFlag"/>
                   </td>
                   <td class="text-right">
-                    <v-btn small text color="primary lighten-1" @click="goToPath(`/org/${item.id}`, true)">
+                    <v-btn small text class="anchor" @click="goToPath(`/org/${item.id}`, true)">
                       <v-icon>mdi-open-in-new</v-icon>
                     </v-btn>
 
