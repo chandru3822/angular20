@@ -94,6 +94,10 @@ const router = new Router({
           name: 'serverError',
           component: () => import(/* webpackChunkName: "serverError" */ './views/ServerError.vue')
         }, {
+          path: '/dataNotFound',
+          name: 'dataNotFound',
+          component: () => import(/* webpackChunkName: "dataNotFound" */ './views/DataNotFound.vue')
+        }, {
           path: '/accessDenied',
           name: 'accessDenied',
           component: () => import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')

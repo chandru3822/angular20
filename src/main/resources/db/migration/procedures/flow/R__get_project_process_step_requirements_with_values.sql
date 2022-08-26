@@ -15,40 +15,40 @@ $BODY$
 BEGIN
   RETURN QUERY
     select
-      psr.id,
-      pps.project_id,
-      psr.process_step_requirement_type_id,
-      psr.process_step_id,
-      psr.operator_type_id,
+      psr.id::bigint,
+      pps.project_id::bigint,
+      psr.process_step_requirement_type_id::bigint,
+      psr.process_step_id::bigint,
+      psr.operator_type_id::bigint,
       psr.requirement_value,
-      psr.custom_field_group_assignment_id,
-      psr.company_function_id,
+      psr.custom_field_group_assignment_id::bigint,
+      psr.company_function_id::bigint,
       psr.fail_if_no_reference_step_found,
-      psr.reference_process_step_id,
-      psr.requirement_nbr,
+      psr.reference_process_step_id::bigint,
+      psr.requirement_nbr::bigint,
       psr.date_created,
       psr.date_modified,
       psr.immutable,
-      psr.created_by_id,
-      psr.modified_by_id,
+      psr.created_by_id::bigint,
+      psr.modified_by_id::bigint,
       psr.archived,
       psr.secondary_requirement_value,
-      psr.data_type_requirement_id,
-      psr.list_of_value_id,
+      psr.data_type_requirement_id::bigint,
+      psr.list_of_value_id::bigint,
       array_to_json(psr.list_of_value_ids) as list_of_value_ids,
       ot.operator_type,
       psrt.process_step_requirement_type,
-      ps.id as parent_id,
+      ps.id::bigint as parent_id,
       case when psr.data_type_requirement_id is null then true else false end as custom_value,
       ps.process_step_name as parent_name,
       cf.field_name,
       cf.custom_field_sql_key,
-      cf.company_system_list_id,
-      psr.system_list_option_id,
-      psr.custom_sql_option_id,
+      cf.company_system_list_id::bigint,
+      psr.system_list_option_id::bigint,
+      psr.custom_sql_option_id::bigint,
       p.time_zone,
-      case when pps1.id is not null then ppscfv1.id else ppscfv.id end as project_custom_field_value_id,
-      case when pps1.id is not null then ppscfv1.project_process_step_id else ppscfv.project_process_step_id end as "projectprocessStepId",
+      case when pps1.id is not null then ppscfv1.id::bigint else ppscfv.id::bigint end as project_custom_field_value_id,
+      case when pps1.id is not null then ppscfv1.project_process_step_id::bigint else ppscfv.project_process_step_id::bigint end as "projectprocessStepId",
       case when psr.process_step_requirement_type_id = 1 then
                case when pps1.id is not null then ppscfv1.text_value else ppscfv.text_value end
            when psr.process_step_requirement_type_id = 3 then
@@ -85,11 +85,11 @@ BEGIN
                ccfv.numeric_value
           end as "numericValue",
       case when psr.process_step_requirement_type_id = 1 then
-               case when pps1.id is not null then ppscfv1.int_value else ppscfv.int_value end
+               case when pps1.id is not null then ppscfv1.int_value::bigint else ppscfv.int_value::bigint end
            when psr.process_step_requirement_type_id = 3 then
-               pcfv.int_value
+               pcfv.int_value::bigint
            when psr.process_step_requirement_type_id = 4 then
-               ccfv.int_value
+               ccfv.int_value::bigint
           end as "intValue",
       case when psr.process_step_requirement_type_id = 1 then
                case when pps1.id is not null then coalesce(array_to_json(ppscfv1.int_array_value), '[]') else coalesce(array_to_json(ppscfv.int_array_value), '[]') end
@@ -116,7 +116,7 @@ BEGIN
                         from flow.list_of_value lv
                         where lv.id = any (psr.list_of_value_ids)
                       ) lov), '[]') AS list_of_values,
-      coalesce(cdt.data_type_id, df.return_data_type_id) as data_type_id,
+      coalesce(cdt.data_type_id, df.return_data_type_id)::bigint as data_type_id,
       cdt.has_list_values,
       cfn.company_function_name,
       df.function_name,

@@ -20,12 +20,12 @@
               p.street1 as mailing_street1,
               p.street2  as mailing_street2,
               p.postal_code,
-              cy.country,
+              case when cy.country is null then 'United States' else cy.country end,
               p.project_name,
               cp.company_id,
-              pd.total_cash_down_payment,
-              pd.system_size,
-              pd.first_cash_payment_amount,
+              plh.optional_down_payment as total_cash_down_payment,
+              round(plh.system_size::numeric/1000,2) as system_size,
+              round(plh.optional_down_payment::numeric * 0.5, 2) as first_cash_payment_amount,
               pd.total_system_price,
               pd.utility_company,
               plh.interest_rate,
@@ -38,8 +38,8 @@
                    JOIN flow.contact c ON c.id = p.contact_id
                    join flow.company_state cs on cs.id = p.company_state_id
                    join flow.state s on s.id = cs.state_id
-                   join flow.company_country cc on cc.id = p.company_country_id
-                   JOIN flow.country cy on cy.id = cc.country_id
+                   left join flow.company_country cc on cc.id = p.company_country_id
+                   left JOIN flow.country cy on cy.id = cc.country_id
                    JOIN flow.company_process cp on cp.id = p.company_process_id
             WHERE p.id = :projectId and plh.proposal_nbr = :proposalNbr
         ]]>

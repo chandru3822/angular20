@@ -1152,7 +1152,7 @@
   ]]></customFieldValue.project.updateValueUsingCfId>
 
   <customFieldValue.updateValueUsingFunction><![CDATA[
-      select from flow.set_pps_cfv(:projectId::bigint, :userId::bigint, :cfgaId::bigint, :value::text)
+      select from flow.set_pps_cfv(:projectId::bigint, :userId::bigint, :cfgaId::bigint, :value::text, true)
   ]]></customFieldValue.updateValueUsingFunction>
 
 <customFieldValue.getListOfValueIdByCfgaIdAndName><![CDATA[

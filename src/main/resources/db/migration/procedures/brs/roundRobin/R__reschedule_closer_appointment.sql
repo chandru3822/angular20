@@ -57,7 +57,7 @@ BEGIN
   if (v_pps_event_root_status_type_id != 1)
   then
     --dont reset event status here as we shouldn't have made it to here in this scenario
-    return query select false, v_lead_source_id, v_lead_source, 'Calling event must be active';
+    return query select false, v_lead_source_id::bigint, v_lead_source, 'Calling event must be active';
     return;
     --start time must be at least 2 hours away
   elseif (v_event_start_time < (now() + interval '2 hours'))
@@ -65,7 +65,7 @@ BEGIN
     --if failed to reschedule then set status to: Can Not Attend - Needs to be Rescheduled
     update flow.project_process_step_event set company_event_status_type_id = 27 where id = p_pps_event_id;
     return query select false,
-                        v_lead_source_id,
+                        v_lead_source_id::bigint,
                         v_lead_source,
                         'Event start time must be at least 2 hours in the future';
     return;
@@ -74,7 +74,7 @@ BEGIN
   then
     --if failed to reschedule then set status to: Can Not Attend - Needs to be Rescheduled
     update flow.project_process_step_event set company_event_status_type_id = 27 where id = p_pps_event_id;
-    return query select false, v_lead_source_id, v_lead_source, 'Source cannot be Closer Gen or Referral';
+    return query select false, v_lead_source_id::bigint, v_lead_source, 'Source cannot be Closer Gen or Referral';
     return;
     -- must be a first appointment - requirement removed 4/12/22 per holly
 --   elseif (v_closer_appt_outcome is not null)
@@ -141,7 +141,7 @@ BEGIN
           then
             v_failed = false;
             --if we did reschedule then set the closer appt outcome to Closer Cannot Attend: Reassign on the old pps event
-            perform flow.set_pps_event_cfv(p_pps_event_id, 99999999, 4::bigint, 15327::text);
+            perform flow.set_pps_event_cfv(p_pps_event_id, 99999999, 4::bigint, 15327::text, true);
 
             --if we did reschedule then set the status of the current ppsEvent to Can Not Attend - Rescheduled
             update flow.project_process_step_event set company_event_status_type_id = 24 where id = p_pps_event_id;
@@ -153,13 +153,13 @@ BEGIN
             perform brs.send_text_to_closer(v_project_id, p_current_user_id, 1);
 
             --return success
-            return query select true, v_lead_source_id, v_lead_source, null;
+            return query select true, v_lead_source_id::bigint, v_lead_source, null;
             return;
           else
             --if failed to reschedule then set status to: Can Not Attend - Needs to be Rescheduled
             update flow.project_process_step_event set company_event_status_type_id = 27 where id = p_pps_event_id;
             return query select false,
-                                v_lead_source_id,
+                                v_lead_source_id::bigint,
                                 v_lead_source,
                                 'Set Closer Appointment failed to save for unknown reasons.';
             return;
@@ -167,13 +167,13 @@ BEGIN
         else
           --if failed to reschedule then set status to: Can Not Attend - Needs to be Rescheduled
           update flow.project_process_step_event set company_event_status_type_id = 27 where id = p_pps_event_id;
-          return query select false, v_lead_source_id, v_lead_source, 'Failed to add new project process step event';
+          return query select false, v_lead_source_id::bigint, v_lead_source, 'Failed to add new project process step event';
           return;
         end if;
       else
         --if failed to reschedule then set status to: Can Not Attend - Needs to be Rescheduled
         update flow.project_process_step_event set company_event_status_type_id = 27 where id = p_pps_event_id;
-        return query select false, v_lead_source_id, v_lead_source, 'No users available at the selected time';
+        return query select false, v_lead_source_id::bigint, v_lead_source, 'No users available at the selected time';
         return;
       end if;
       return;
@@ -185,7 +185,7 @@ BEGIN
   if (v_failed) then
     --if failed to reschedule then set status to: Can Not Attend - Needs to be Rescheduled
     update flow.project_process_step_event set company_event_status_type_id = 27 where id = p_pps_event_id;
-    return query select false, v_lead_source_id, v_lead_source, 'Unable to reschedule.';
+    return query select false, v_lead_source_id::bigint, v_lead_source, 'Unable to reschedule.';
     return;
   end if;
 

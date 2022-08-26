@@ -29,11 +29,11 @@ with positions as (
           end
     ) as position_ids
 )
-select u.id as user_id,
+select u.id::bigint as user_id,
       u.first_name,
       u.last_name,
       concat(u.first_name, ' ', u.last_name) as full_name,
-      up.id as user_position_id,
+      up.id::bigint as user_position_id,
       p.position
 from positions
 inner join flow.user_position up on up.position_id = any( positions.position_ids)

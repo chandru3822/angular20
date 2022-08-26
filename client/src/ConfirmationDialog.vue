@@ -2,6 +2,7 @@
   <v-dialog
     v-model="show"
     width="500"
+    @click:outside="no"
   >
     <v-card>
       <v-card-title

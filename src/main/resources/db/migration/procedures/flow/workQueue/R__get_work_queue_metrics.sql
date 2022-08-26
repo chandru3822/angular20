@@ -25,8 +25,8 @@ CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics(p_work_queue_type_id bigi
 as
 $$
 declare
-  v_long_window                       bigint;
-  v_short_window                      bigint;
+  v_long_window                       integer;
+  v_short_window                      integer;
   v_long_window_duration_type_id      bigint;
   v_short_window_duration_type_id     bigint;
   v_expected_cycle                    bigint;
@@ -370,11 +370,11 @@ BEGIN
     end;
 
   return query
-    select p_work_queue_type_id,
-           v_short_window_numerator,
-           v_short_window_denominator,
-           v_long_window_numerator,
-           v_long_window_denominator,
+    select p_work_queue_type_id::bigint,
+           v_short_window_numerator::bigint,
+           v_short_window_denominator::bigint,
+           v_long_window_numerator::bigint,
+           v_long_window_denominator::bigint,
            case
              when v_short_window_numerator = 0 and v_short_window_denominator = 0 then
                1
@@ -396,12 +396,12 @@ BEGIN
            v_cycle_duration_type,
            v_expected_target,
            v_inverse_expectation,
-           v_short_window_entered,
-           v_short_window_exited,
-           v_long_window_entered,
-           v_long_window_exited,
-           v_short_window_entered_wip - v_short_window_exited_wip,
-           v_long_window_entered_wip - v_long_window_exited_wip;
+           v_short_window_entered::bigint,
+           v_short_window_exited::bigint,
+           v_long_window_entered::bigint,
+           v_long_window_exited::bigint,
+           (v_short_window_entered_wip - v_short_window_exited_wip)::bigint,
+           (v_long_window_entered_wip - v_long_window_exited_wip)::bigint;
 END
 $$
   LANGUAGE plpgsql VOLATILE

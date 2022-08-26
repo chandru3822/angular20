@@ -23,7 +23,7 @@ BEGIN
                      INNER JOIN subordinates s ON  pps.id =s.parent_project_process_step_id
            --   and pps.main = p_main
         ) SELECT
-              s1.id,s1.process_step_id,s1.main,s1.status_id
+              s1.id::bigint,s1.process_step_id::bigint,s1.main,s1.status_id::bigint
         FROM
             subordinates s1
             inner join flow.project_process_step pps2 on pps2.id = s1.id

@@ -2,6 +2,7 @@ const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_APP_MAPBOX_ACCESS_TOKEN, VUE_APP_MAPB
 
 let constants = {}
 
+constants.NOT_FOUND_404_TEXT = 'FAIL_TO_NOT_FOUND_SCREEN'
 constants.LOCAL_COLOR = 'pink'
 constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'

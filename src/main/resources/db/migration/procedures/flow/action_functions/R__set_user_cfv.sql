@@ -1,5 +1,5 @@
 drop function if exists flow.set_user_cfv(integer, integer, integer, integer, text, boolean);
-CREATE OR REPLACE FUNCTION flow.set_user_cfv(p_user_id integer, p_company_id integer, p_current_user_id integer,p_cfga integer, p_value_to_save text, p_override_existing boolean default true)
+CREATE OR REPLACE FUNCTION flow.set_user_cfv(p_user_id integer, p_company_id integer, p_current_user_id integer,p_cfga integer, p_value_to_save text, p_override_existing boolean default false)
     returns boolean AS
 $BODY$
 declare

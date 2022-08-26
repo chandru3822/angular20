@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.config.ScheduledConfig;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CommunicationService;
@@ -84,9 +85,11 @@ public class UserController {
       @PathVariable Long id, @RequestParam(required = false) Boolean userIsAlbatross) {
     Optional<User> result =
         userService.getUser(id, null != userIsAlbatross ? userIsAlbatross : false);
-    return result.isEmpty()
-        ? ResponseEntity.badRequest().body("Cannot Access User")
-        : ResponseEntity.ok(result);
+    if(result.isEmpty()) {
+      throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+    } else {
+      return ResponseEntity.ok(result);
+    }
   }
 
   @GetMapping(value = "/active")

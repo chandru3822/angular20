@@ -53,6 +53,8 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
+            ref="pageable-table"
+            :page.sync="page"
             :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
@@ -470,6 +472,13 @@
             this.getUsers()
           }
         }
+      },
+      page() {
+        let table = this.$refs['pageable-table'];
+        let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+        this.$vuetify.goTo(table); // to table
+        this.$vuetify.goTo(table, {container: wrapper}); // to header
       }
     },
     data () {
@@ -526,6 +535,7 @@
         msgDialog: false,
         selectedUsersDialog: false,
         messageTab: 1,
+        page: 1,
         fromEmail: '',
         fromEmails: [],
         emailSubject: '',

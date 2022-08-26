@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.albatross.api.v1.flow.model.Contact;
@@ -43,7 +44,7 @@ public class ContactController {
         return new ResponseEntity<>(newContact, HttpStatus.OK);
       }
       else {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact Not Found", new Exception());
+        throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
       }
     }
 

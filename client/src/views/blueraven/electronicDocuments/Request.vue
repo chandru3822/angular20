@@ -1,5 +1,13 @@
 <template>
   <v-container class="pa-0">
+  <v-checkbox
+    class="pt-5 ml-3"
+    dense
+    v-model="showCancelled"
+    label="Show Cancelled"
+    v-show="userCanManage"
+    @change="fetchProjects(searchQuery)"
+  />
   <RequestTable :headers="headers" :projects="projects" :total-items="totalItems" :feature-code="'ELECTRONIC_DOCUMENTS'" :is-loading="dataLoading"
   @openRequest="openRequest($event)" @searchInput="fetchProjects($event)" @submitRequest="submitRequest">
     <template v-slot:dialogContent>
@@ -68,44 +76,48 @@ export default {
     RequestTable,
     Snackbar
   },
-  data: () => ({
-    snackbar: {},
-    dataLoading: true,
-    footerProps: {
-      'items-per-page-options': [25, 50, 100, 500],
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-    },
-    options: {
-      itemsPerPage: 100
-    },
-    projects: [],
-    headers: [
-      {text: 'Customer Name', value: 'customer_name', show: true},
-      {text: 'Address', value: 'address', show: true}
-    ],
-    pagination: {},
-    projectsSearch: '',
-    searchQuery: '',
-    totalItems: 0,
-    documents: [],
-    selectedDocIds: '',
-    project_id: '',
-    customer_name: '',
-    document_name: null,
-    requestDialog: false,
-    templateTypes: [
-      {
-        text: 'Permitting'
+  data() {
+    return {
+      snackbar: {},
+      dataLoading: true,
+      footerProps: {
+        'items-per-page-options': [25, 50, 100, 500],
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
-      {
-        text: 'Utility'
+      options: {
+        itemsPerPage: 100
       },
-      {
-        text: 'Change Order'
-      }
-    ],
-    selectedTempType: 'Permitting'
-  }),
+      projects: [],
+      headers: [
+        {text: 'Customer Name', value: 'customer_name', show: true},
+        {text: 'Address', value: 'address', show: true}
+      ],
+      pagination: {},
+      projectsSearch: '',
+      searchQuery: '',
+      showCancelled: false,
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('ELECTRONIC_DOCUMENTS', 'MANAGE'),
+      totalItems: 0,
+      documents: [],
+      selectedDocIds: '',
+      project_id: '',
+      customer_name: '',
+      document_name: null,
+      requestDialog: false,
+      templateTypes: [
+        {
+          text: 'Permitting'
+        },
+        {
+          text: 'Utility'
+        },
+        {
+          text: 'Change Order'
+        }
+      ],
+      selectedTempType: 'Permitting'
+    }
+  },
   computed: {},
   watch: {
     options: {
@@ -133,12 +145,14 @@ export default {
       try {
         this.dataLoading = true
         const {page, itemsPerPage} = this.options
+        const params = {
+          query: this.searchQuery,
+          showCancelled: this.showCancelled,
+          page: page - 1,
+          size: itemsPerPage
+        }
         const {data} = await getRequestWithParams(`/electronicDocument/projects`, {
-          params: {
-            query: this.searchQuery,
-            page: page - 1,
-            size: itemsPerPage
-          }
+          params
         })
 
         this.projects = data.content;

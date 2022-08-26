@@ -222,8 +222,8 @@
                   :callback="checkAvailabilityDate"
                   :field="availabilityDateField"
                 />
-                <div class="text-right" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primary" class="white--text"
+                <div class="text-right mb-4" v-if="availabilityDateField.dateValue">
+                  <v-btn color="primary" class="white--text mb-2"
                          :loading="remoteSearchLoading"
                          :disabled="inPersonSearchLoading"
                          v-if="showRemoteSearch || userIsAdmin"
@@ -231,7 +231,7 @@
                          @click="getAvailableTimeSlots(true)">
                     Search Remote Appt. Slots
                   </v-btn>
-                  <v-btn color="primary" class="white--text ml-3"
+                  <v-btn color="primary" class="white--text"
                          :loading="inPersonSearchLoading"
                          v-if="schedulerCanEdit || userIsAdmin"
                          :disabled="remoteSearchLoading"
@@ -240,7 +240,7 @@
                     Search In-person Appt. Slots
                   </v-btn>
                 </div>
-                <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
+                <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue && !dateValueChanged"
                           v-model="selectedTimeSlot"
                           class="qa-round-robin-time-select"
                           :items="timeSlots"
@@ -256,7 +256,7 @@
                     {{ data.item.scheduledStartTime | formatDate('timestamp') }}
                   </template>
                 </v-select>
-                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the
+                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue && !dateValueChanged">No Times Available for the
                   Selected Date
                 </div>
                 <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
@@ -417,6 +417,7 @@ export default {
       showRoundRobin: false,
       uniqueAlreadyHasValue: false,
       availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
+      dateValueChanged: false,
       showUnperformableActions: false,
       eventDetailsLoading: true,
       // windowWidth: window.innerWidth,
@@ -869,6 +870,7 @@ export default {
         this.timeSlots = data
         this.remoteSearchLoading = false
         this.inPersonSearchLoading = false
+        this.dateValueChanged = false
       } catch (e) {
         logError(e)
         this.remoteSearchLoading = false
@@ -925,6 +927,10 @@ export default {
       }
     },
     checkAvailabilityDate() {
+      //these values all need reset every time the date selected changes so they dont use a bad date/time combo
+      this.dateValueChanged = true
+      this.selectedTimeSlot = {}
+      this.timeSlots = []
       if (this.availabilityDateField.dateValue !== null) {
         // Limit user to selecting availability dates < 8 days out
         const selectedDate = DateTime.fromISO(this.availabilityDateField.dateValue)
