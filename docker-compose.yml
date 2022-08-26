@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     restart: unless-stopped
-    image: postgres:12.7-alpine
+    image: galien0xffffff/postgres-debugger:14
     ports:
       - "${PGPORT:-5433}:5432"
     environment:
