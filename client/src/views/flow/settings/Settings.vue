@@ -47,7 +47,7 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-card class="px-5 py-2 left-menu square-card" color="#F6F7F8" v-else>
+        <v-card class="px-5 py-2 left-menu square-card" v-else>
           <v-list dense color="transparent">
             <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
@@ -304,6 +304,7 @@ a {
   max-height: 100%;
   height: 100%;
   overflow: auto;
+  background-color: var(--v-grey-lighten4);
 }
 
 .left-column {

@@ -98,7 +98,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-top: 0 !important;
-  background-color: var(--v-secondary-base);
+  background-color: var(--v-grey-lighten4);
   min-height: 100vh;
 
   .app-title {
