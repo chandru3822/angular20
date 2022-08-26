@@ -38,13 +38,14 @@
           :headers="filterHeaders()"
           :items="results"
           :fixed-header="true"
+          ref="pageable-table"
+          :page.sync="page"
           :loading="dataLoading"
           :options.sync="options"
           item-key="projectProcessStepEventId"
           :footer-props="footerProps"
           class="elevation-1 mt-1"
           id="wq-drilldown-table"
-          @click:row="clickRow"
         >
           <template #no-data>
             <span class="default-text-color">No available results</span>
@@ -70,25 +71,45 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left" v-if="useProcessStepHeaders">
-                <v-btn text small class="primary--text"
-                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepIdStepId}`">
+                <router-link class="router-link-td elevation-0 square-card"
+                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Project Name'] }}
-                </v-btn>
+                </router-link>
               </td>
-              <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Name'] }}</td>
-              <td class="text-left" v-if="useProcessStepHeaders">{{ item['Process Step Status Type'] }}</td>
-              <td class="text-left" v-if="useProcessStepHeaders">{{ item['Days In Queue'] }}</td>
-              <td class="text-left" v-if="useProcessStepHeaders">{{ item['State Abbreviation'] }}</td>
               <td class="text-left" v-if="useProcessStepHeaders">
-                <div v-if="item['Owner']">{{ item['Owner'] }}</div>
-                <v-btn v-else-if="userCanOwnProcessStep(item)">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Process Step Name'] }}
+                </router-link>
+              </td>
+              <td class="text-left" v-if="useProcessStepHeaders">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Process Step Status Type'] }}
+                </router-link>
+              </td>
+              <td class="text-left" v-if="useProcessStepHeaders">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Days In Queue'] }}
+                </router-link>
+              </td>
+              <td class="text-left" v-if="useProcessStepHeaders">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['State Abbreviation'] }}
+                </router-link>
+              </td>
+              <td class="text-left" v-if="useProcessStepHeaders">
+                <router-link  v-if="item['Owner']" class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Owner'] }}
+                </router-link>
+                <v-btn text v-else-if="userCanOwnProcessStep(item)" class="px-0">
                   <a @click="assignToUser(item)">Assign to me</a>
                 </v-btn>
               </td>
               <td class="text-left" v-if="useProcessStepHeaders">
-                {{ item['Active Process Steps'] }}
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Active Process Steps'] }}
+                </router-link>
               </td>
               <td v-for="c in customColumns">
                 <a v-if="!useProcessStepHeaders && c.name === 'Project Name'">
@@ -97,23 +118,29 @@
                     {{ item['Project Name'] }}
                   </v-btn>
                 </a>
-                <div v-else>
-                  {{ getColumnValue(item, c) }}
-                </div>
+                  <router-link v-else class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                    {{ getColumnValue(item, c) }}
+                  </router-link>
               </td>
               <td class="note-created-at" v-if="queueHasNotes">
-                {{ item.firstNoteCreatedAt | formatDate('timestamp') }}
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item.firstNoteCreatedAt | formatDate('timestamp') }}
+                </router-link>
               </td>
               <td class="notes-follow-up" v-if="queueHasNotes">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                 {{ item.followUpDate | formatDate('date') }}
+                </router-link>
               </td>
               <td class="notes-column" v-if="queueHasNotes">
                 <div class="flex-display align-center">
+                  <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   <pre class="app-pre-wrapper">
-                     {{ item.firstNoteContent }}
+                      {{ item.firstNoteContent }}
                   </pre>
                   <v-spacer></v-spacer>
                   {{ item.id }}
+                  </router-link>
                   <v-btn small fab text color="primary" @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
@@ -226,6 +253,7 @@ export default {
       queueHasOwningPositions: false,
       noResults: true,
       totalItems: 0,
+      page: 1,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 1000],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
@@ -245,6 +273,13 @@ export default {
     //   },
     //   deep: true,
     // },
+    page() {
+      let table = this.$refs['pageable-table'];
+      let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+      this.$vuetify.goTo(table); // to table
+      this.$vuetify.goTo(table, {container: wrapper}); // to header
+    }
   },
   computed: {},
   async created() {

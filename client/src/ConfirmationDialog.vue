@@ -1,7 +1,8 @@
 <template>
   <v-dialog
     v-model="show"
-    width="500"
+    :width="width || 500"
+    @click:outside="no"
   >
     <v-card>
       <v-card-title
@@ -47,7 +48,8 @@ export default {
     itemToDelete: Object,
     disableConfirm: Boolean,
     hideConfirm: Boolean,
-    confirmClass: String
+    confirmClass: String,
+    width: Number
   },
   data() {
     return {
@@ -67,6 +69,7 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm')
+      this.$emit('close-dialog', false)
       this.show=false
     },
     no() {

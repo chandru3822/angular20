@@ -65,8 +65,6 @@ public class InstallAgreementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
-    params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
@@ -522,11 +520,10 @@ public class InstallAgreementService {
     try {
       final var propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
       if (propLogDetail.isPresent()) {
-        var message =
-          sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
-        return Map.of("message", message);
+        sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, null, true);
+        return Map.of("message", "success");
       }
-      return Map.of("message", "");
+      return Map.of("message", "No proposal found");
 
     } catch (Exception e) {
       log.debug("IARQ: Installation agreement: Failed to update sunpower application: {}", e.getMessage());

@@ -1,14 +1,16 @@
 <template>
   <div id="contact-container">
     <!--    modal for leaving with unsaved fields -->
-    <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath)]" @close-dialog="unsavedFieldsModal = false">
+    <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath)]"
+                        @close-dialog="unsavedFieldsModal = false">
       <template v-slot:title>Confirm</template>
       You have unsaved fields. <br/>
       Are you sure you want to continue without saving?
       <template v-slot:yes>Continue and Don't Save</template>
     </ConfirmationDialog>
     <!--    modal for editing contact fields -->
-    <ConfirmationDialog :open-dialog="showEditModal" :disable-confirm="!contact.firstName || !contact.lastName" @confirm="validateForm()" @close-dialog="showEditModal = false">
+    <ConfirmationDialog :open-dialog="showEditModal" :disable-confirm="!contact.firstName || !contact.lastName"
+                        @confirm="validateForm()" @close-dialog="showEditModal = false">
       <template v-slot:title>Contact Overview</template>
       <v-form ref="contactEditForm">
         <v-card-text class="pt-4 px-0">
@@ -110,7 +112,8 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!-- modal for deleting contact -->
-    <ConfirmationDialog :open-dialog="deleteContactConfirm" @confirm="deleteContact" @close-dialog="deleteContactConfirm = false">
+    <ConfirmationDialog :open-dialog="deleteContactConfirm" @confirm="deleteContact"
+                        @close-dialog="deleteContactConfirm = false">
       <span class="bold error-text">WARNING:</span> This cannot be undone. Are you sure you want to delete this contact?
     </ConfirmationDialog>
     <!--    end dialogs -->
@@ -125,17 +128,19 @@
       </template>
       <template v-slot:header-btn>
         <div class="mt-3">
-          <v-btn text color="primary" v-if="userCanDelete" @click="deleteContactConfirm = true"><v-icon>delete</v-icon></v-btn>
+          <v-btn text color="primary" v-if="userCanDelete" @click="deleteContactConfirm = true">
+            <v-icon>delete</v-icon>
+          </v-btn>
         </div>
       </template>
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto">
-            <PageOverview page-name="Contact"
-                          :show-edit-btn="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())"
-                          @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
-                          :details="overviewDetails"
-            ></PageOverview>
+          <PageOverview page-name="Contact"
+                        :show-edit-btn="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())"
+                        @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
+                        :details="overviewDetails"
+          ></PageOverview>
           <v-divider class="mt-4"></v-divider>
           <v-toolbar color="transparent" flat>
             <v-toolbar-title class="albatross-header-3">Associated Projects</v-toolbar-title>
@@ -180,7 +185,7 @@
                             return-object
                             class="mt-2 qa-process-selector"
                   ></v-select>
-                  <v-btn text :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
+                  <v-btn text color="primary" :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
                     Add Project
                   </v-btn>
                 </v-card>
@@ -203,7 +208,8 @@
         </div>
       </template>
       <template v-slot:main-column>
-        <div v-if="contact && contact.id && !fieldsLoading" style="overflow-x: hidden">
+        <div>
+          <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="albatross-header-3">
               Contact Summary
@@ -226,55 +232,57 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <v-row class="px-5">
-            <v-col cols="12" class="text-left py-0 px-0">
-              <!--    process field groups-->
-              <v-form ref="contactForm">
-                <v-col
-                  class="pt-0"
-                  v-for="(cfg, index) in customFieldGroups"
-                  :key="index"
-                >
-                  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
-                    <v-toolbar-title>
-                      {{ cfg.groupName }}
-                    </v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items>
-                    </v-toolbar-items>
-                  </v-toolbar>
+          <div v-if="contact && contact.id && !fieldsLoading" style="overflow-x: hidden">
+            <v-row class="px-5">
+              <v-col cols="12" class="text-left py-0 px-0">
+                <!--    process field groups-->
+                <v-form ref="contactForm">
+                  <v-col
+                    class="pt-0"
+                    v-for="(cfg, index) in customFieldGroups"
+                    :key="index"
+                  >
+                    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+                      <v-toolbar-title>
+                        {{ cfg.groupName }}
+                      </v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-toolbar-items>
+                      </v-toolbar-items>
+                    </v-toolbar>
 
-                  <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-                    <v-row>
-                      <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
-                                          :key="idx"
-                                          :required="cf.required"
-                                          :readonly="getReadOnly(cf)"
-                                          :callback="populateDirtyCfvs"
-                                          :field="cf"
-                                          :show-field-name="false"></CustomValueInput>
-                      </v-col>
-                      <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
-                        <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
-                                          :key="idx"
-                                          :required="cf.required"
-                                          :readonly="getReadOnly(cf)"
-                                          :callback="populateDirtyCfvs"
-                                          :field="cf"
-                                          :show-field-name="false"></CustomValueInput>
-                      </v-col>
-                    </v-row>
+                    <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+                      <v-row>
+                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                      </v-row>
 
-                  </v-card>
-                </v-col>
+                    </v-card>
+                  </v-col>
 
-              </v-form>
-            </v-col>
-          </v-row>
-        </div>
-        <div v-else>
-          <SpinnerInline centered :size="50" color="primary"/>
+                </v-form>
+              </v-col>
+            </v-row>
+          </div>
+          <div v-else>
+            <SpinnerInline centered :size="50" color="primary"/>
+          </div>
         </div>
       </template>
       <template v-slot:right-column>
@@ -391,7 +399,7 @@ export default {
         zip: [!(!this.contact.postalCode && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId))) || "Required when other address fields are populated"]
       }
     },
-    overviewDetails (){
+    overviewDetails() {
       return [
         {
           label: 'Date Created',
@@ -428,11 +436,11 @@ export default {
           type: constants.OVERVIEW_FIELD_TYPES.OWNER,
           value: this.contact.owner
         }
-        ]
+      ]
     }
   },
   async created() {
-    console.log('routed param',this.$route.params.contactId)
+    console.log('routed param', this.$route.params.contactId)
     let requests = [this.getContact(), this.getCustomFieldGroups()]
     await Promise.all(requests).then(async () => {
       this.fieldsLoading = false

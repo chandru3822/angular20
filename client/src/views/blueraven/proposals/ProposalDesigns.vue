@@ -18,15 +18,17 @@
         </div>
       </v-col>
     </v-row>
-    <v-divider/>
+    <v-divider />
     <v-toolbar flat color="transparent">
       <v-toolbar-title class="proposal-designs-title">Designs and Proposals</v-toolbar-title>
     </v-toolbar>
     <v-row class="mx-2">
-      <v-card v-for="(d, idx) in designs" :key="idx"
-              width="355" height="535" class="pa-4 proposal-card">
+      <v-card v-for="(d, idx) in designs"
+              :key="idx"
+              width="355"
+              height="535"
+              class="pa-4 proposal-card">
 
-        <div style="font-size: 8pt;">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
           <img-proxy
             name="designImg"
@@ -54,6 +56,14 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
+        <div class="design-small-gray" v-if="project.id">
+          <router-link
+            :to="{ name : 'projectProcessStep', params: {projectId: project.id, processStepId: d.projectProcessStepId}}"
+            target="_blank">
+            Open Process Step
+          </router-link>
+          <v-icon small>mdi-open-in-new</v-icon>
+        </div>
         <v-btn color="primary"
                dark
                class="mt-4 one-hunned text-capitalize font-weight-bold"
@@ -68,7 +78,7 @@
             class="proposal-container"
             @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
-              <v-list-item-title class="proposal-title" >
+              <v-list-item-title class="proposal-title">
                 <span v-if="!proposal.name">Proposal {{ proposal.id }}</span>
                 <span v-else>{{ proposal.name }}</span>
                 <v-icon v-if="proposal.locked" small>mdi-lock</v-icon>
@@ -76,8 +86,9 @@
               <v-list-item-subtitle>
                 <v-container class="design-small-gray subtitle-container">
                   <v-row>
-                    <v-col class="pt-2 pb-0">more info</v-col> <!--todo: use actual info here-->
-                    <v-col class="pt-2 pb-0 text-right">{{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+                    <v-col class="pt-2 pb-0"></v-col> <!--todo: use actual info here-->
+                    <v-col class="pt-2 pb-0 text-right">
+                      {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
                     </v-col>
                   </v-row>
                 </v-container>
@@ -119,8 +130,8 @@
         <v-card-title
           color="blackText"
           class="text-h6 text-capitalize pa-0 font-weight-bold"
-          primary-title
-        >Request New design
+          primary-title>
+          Request New design
           <v-spacer />
           <v-icon color="black" large @click="showNewDesignRequestForm = false">mdi-close</v-icon>
         </v-card-title>
@@ -183,14 +194,7 @@
 
 <script>
 
-import {
-  formatPhoneNumber,
-  getRequest,
-  getSnackbar,
-  handleHidingGlobalLoader,
-  logError,
-  postRequest
-} from '@/helpers/helpers'
+import { formatPhoneNumber, getRequest, handleHidingGlobalLoader, logError, postRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
@@ -312,8 +316,7 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        const snackbar = getSnackbar('ERROR', `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`, true)
-        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+        this.$snackbar('ERROR', `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`, true)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

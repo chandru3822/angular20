@@ -24,7 +24,7 @@ BEGIN
             from flow.project_process_step pps
                      INNER JOIN subordinates s ON s.parent_project_process_step_id = pps.id
         ) SELECT
-              s1.id
+              s1.id::bigint
         FROM
             subordinates s1
             inner join flow.project_process_step pps2 on pps2.id = s1.id

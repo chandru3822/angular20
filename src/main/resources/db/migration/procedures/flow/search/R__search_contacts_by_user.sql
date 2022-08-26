@@ -56,17 +56,17 @@ BEGIN
   case
     when p_searchterm is not null and p_searchterm != '' then
       RETURN QUERY
-      SELECT limited_contacts.id,
+      SELECT limited_contacts.id::bigint,
              limited_contacts.first_name,
              limited_contacts.last_name,
              limited_contacts.full_name,
              limited_contacts.email,
              limited_contacts.phone,
              limited_contacts.mobile,
-             limited_contacts.company_id,
-             limited_contacts.contact_type_id,
+             limited_contacts.company_id::bigint,
+             limited_contacts.contact_type_id::bigint,
              limited_contacts.contact_type,
-             limited_contacts.company_state_id,
+             limited_contacts.company_state_id::bigint,
              limited_contacts.state,
              limited_contacts.abbreviation,
              limited_contacts.latitude,
@@ -116,17 +116,17 @@ BEGIN
             limit p_limit offset p_offset) as limited_contacts;
     else
       RETURN QUERY
-      SELECT limited_contacts.id,
+      SELECT limited_contacts.id::bigint,
              limited_contacts.first_name,
              limited_contacts.last_name,
              limited_contacts.full_name,
              limited_contacts.email,
              limited_contacts.phone,
              limited_contacts.mobile,
-             limited_contacts.company_id,
-             limited_contacts.contact_type_id,
+             limited_contacts.company_id::bigint,
+             limited_contacts.contact_type_id::bigint,
              limited_contacts.contact_type,
-             limited_contacts.company_state_id,
+             limited_contacts.company_state_id::bigint,
              limited_contacts.state,
              limited_contacts.abbreviation,
              limited_contacts.latitude,

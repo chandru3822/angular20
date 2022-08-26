@@ -29,7 +29,7 @@ BEGIN
 
     case when v_position_id = 1 then
         RETURN QUERY select results.closer,
-                            results.project_id,
+                            results.project_id::bigint,
                             results.customer_name,
                             results.system_size,
                             results.overrides_earned,
@@ -81,7 +81,7 @@ BEGIN
                      where results.overrides_earned - results.prior_pay != 0;
         when v_position_id = 4 then
             RETURN QUERY select results.closer,
-                                results.project_id,
+                                results.project_id::bigint,
                                 results.customer_name,
                                 results.system_size,
                                 results.overrides_earned,

@@ -83,7 +83,7 @@ $default-text: rgba(0,0,0,0.87);
   letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--v-secondary-base);
+  background-color: var(--v-grey-lighten4);
   min-height: 100vh;
   max-height: 100vh;
   overflow: hidden;
@@ -108,6 +108,18 @@ $default-text: rgba(0,0,0,0.87);
 
 .disabled-label {
   color: #9E9E9E !important;
+}
+/* theme the calendar */
+.fc-button-primary {
+  color: white;
+  background-color: var(--v-primary-base) !important;
+  border-color: var(--v-primary-base) !important;
+}
+
+.fc-button-primary:hover {
+  color: white;
+  background-color: var(--v-primary-base) !important;
+  border-color: var(--v-primary-base) !important;
 }
 
 /* theme the date time picker */

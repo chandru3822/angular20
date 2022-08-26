@@ -9,10 +9,10 @@ $BODY$
 DECLARE
 BEGIN
     return query
-     select a.project_process_step_id,
-                    a.process_status_id,
+     select a.project_process_step_id::bigint,
+                    a.process_status_id::bigint,
                     a.main,
-                    a.user_position_id
+                    a.user_position_id::bigint
              from flow.find_active_process_step_in_downline(p_project_process_step_id,p_process_step_id) as a
              order by main desc,process_status_id,row_number desc limit 1;
 

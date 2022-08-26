@@ -30,7 +30,10 @@ BEGIN
                      INNER JOIN subordinates s ON s.id = pps.parent_project_process_step_id
           where ps.id = any (p_process_step_ids)
         ) SELECT
-            s1.*
+            s1.id::bigint,s1.process_step_name,s1.parent_project_process_step_id::bigint,
+            s1.process_step_id::bigint,s1.completed_date,s1.row_number1::bigint,
+            s1.process_status_id::bigint,s1.main,s1.user_position_id::bigint,
+            s1.date_created
         FROM
             subordinates s1
         where

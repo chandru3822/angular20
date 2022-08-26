@@ -412,6 +412,7 @@
           this.snackbar = getSnackbar('ERROR', 'Error deleting user position')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
+        this.positionToDelete = null
       }
     },
 

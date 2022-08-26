@@ -1,16 +1,19 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserOrgAccess;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.org.OrgExportTemplate;
 import com.albatross.api.v1.flow.model.org.OrgFilter;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -127,7 +130,11 @@ public class OrgService {
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
     Optional<Org> result = sqlCache.get("org.getOne", params, new OrgMapper<>(Org.class, om));
-    return result.orElse(null);
+    if(result.isPresent()) {
+      return result.get();
+    } else {
+      throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+    }
   }
 
   public Org saveOrg(Org org) {

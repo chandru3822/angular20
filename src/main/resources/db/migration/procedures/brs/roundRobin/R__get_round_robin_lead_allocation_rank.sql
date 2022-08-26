@@ -141,11 +141,11 @@ BEGIN
              )
 
         select
-            foo2.user_id,
+            foo2.user_id::bigint,
             foo2.closer_name,
             foo2.lead_gen_fdc,
-            foo2.self_gen,
-            foo2.average_availability,
+            foo2.self_gen::bigint,
+            foo2.average_availability::bigint,
             coalesce(foo2.manual_allocation,
                     case when foo2.sum_manual_allocation is null then
                      foo2.score else

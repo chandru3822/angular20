@@ -110,7 +110,9 @@ public class SunpowerService {
     }
 
     projectDetails.put("installStateName", state);
-    projectDetails.put("installZipCode", contact.getPostalCode());
+
+    String contactZipcode = contact.getPostalCode().substring(0,5);
+    projectDetails.put("installZipCode", contactZipcode);
     applicantDetails.put("isPrimary", true);
 
 
@@ -132,11 +134,11 @@ public class SunpowerService {
     applicantDetails.put("mailingStreet", contact.getStreet1());
     applicantDetails.put("mailingCity", contact.getCity());
     applicantDetails.put("mailingStateName", state);
-    applicantDetails.put("mailingZipCode", contact.getPostalCode());
+    applicantDetails.put("mailingZipCode", contactZipcode);
     applicantDetails.put("residenceStreet", contact.getStreet1());
     applicantDetails.put("residenceCity", contact.getCity());
     applicantDetails.put("residenceStateName", state);
-    applicantDetails.put("residenceZipCode", contact.getPostalCode());
+    applicantDetails.put("residenceZipCode", contactZipcode);
 
     applicantsArray.put(applicantDetails);
 
