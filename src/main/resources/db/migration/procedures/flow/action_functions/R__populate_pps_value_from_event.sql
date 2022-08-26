@@ -61,7 +61,7 @@ BEGIN
     IF (v_value_to_save is not null)
     THEN
       -- 22680 = cfga for proposal due date on the Schedule Closer Appt process step
-      perform flow.set_pps_cfv(p_project_id, 99999999, p_pps_cfga_id::bigint, v_value_to_save::text);
+      perform flow.set_pps_cfv(p_project_id, 99999999, p_pps_cfga_id::bigint, v_value_to_save::text, true);
     END IF;
   END IF;
 

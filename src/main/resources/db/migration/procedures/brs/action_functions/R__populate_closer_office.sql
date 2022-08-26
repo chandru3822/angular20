@@ -31,7 +31,7 @@ BEGIN
 
   if(v_value_to_save is not null) then
     --only save if we found a value
-    perform flow.set_project_cfv(p_project_id, p_user_id, 23202, v_value_to_save);
+    perform flow.set_project_cfv(p_project_id, p_user_id, 23202, v_value_to_save, true);
   end if;
 
 END

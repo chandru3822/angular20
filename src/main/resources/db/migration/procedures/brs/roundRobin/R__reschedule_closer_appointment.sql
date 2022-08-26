@@ -141,7 +141,7 @@ BEGIN
           then
             v_failed = false;
             --if we did reschedule then set the closer appt outcome to Closer Cannot Attend: Reassign on the old pps event
-            perform flow.set_pps_event_cfv(p_pps_event_id, 99999999, 4::bigint, 15327::text);
+            perform flow.set_pps_event_cfv(p_pps_event_id, 99999999, 4::bigint, 15327::text, true);
 
             --if we did reschedule then set the status of the current ppsEvent to Can Not Attend - Rescheduled
             update flow.project_process_step_event set company_event_status_type_id = 24 where id = p_pps_event_id;
