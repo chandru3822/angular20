@@ -53,3 +53,44 @@ BEGIN
 
 END
 $function$
+
+
+alter table flow.project_custom_field_value alter column int_value type bigint;
+alter table flow.project_custom_field_value alter column int_array_value type bigint[];
+
+alter table flow.contact_custom_field_value alter column int_value type bigint;
+alter table flow.contact_custom_field_value alter column int_array_value type bigint[];
+
+alter table flow.project_process_step_custom_field_value alter column int_value type bigint;
+alter table flow.project_process_step_custom_field_value alter column int_array_value type bigint[];
+
+alter table flow.project_process_step_event_custom_field_value alter column int_value type bigint;
+alter table flow.project_process_step_event_custom_field_value alter column int_array_value type bigint[];
+
+alter table brs.ahj_inspection_custom_field_value alter column int_value type bigint;
+alter table brs.ahj_inspection_custom_field_value alter column int_array_value type bigint[];
+
+alter table brs.ahj_inspection_custom_field_value alter column int_value type bigint;
+alter table brs.ahj_inspection_custom_field_value alter column int_array_value type bigint[];
+
+alter table brs.ahj_design_custom_field_value alter column int_value type bigint;
+alter table brs.ahj_design_custom_field_value alter column int_array_value type bigint[];
+
+alter table brs.ahj_permit_custom_field_value alter column int_value type bigint;
+alter table brs.ahj_permit_custom_field_value alter column int_array_value type bigint[];
+
+alter table brs.ahj_utility_custom_field_value alter column int_value type bigint;
+alter table brs.ahj_utility_custom_field_value alter column int_array_value type bigint[];
+
+alter table brs.commission_override_custom_field_value alter column int_value type bigint;
+alter table brs.commission_override_custom_field_value alter column int_array_value type bigint[];
+
+alter table brs.proposal_custom_field_value alter column int_value type bigint;
+alter table brs.proposal_custom_field_value alter column int_array_value type bigint[];
+
+alter table flow.organization_custom_field_value alter column int_value type bigint;
+alter table flow.organization_custom_field_value alter column int_array_value type bigint[];
+
+
+alter table flow.user_custom_field_value alter column int_value type bigint;
+alter table flow.user_custom_field_value alter column int_array_value type bigint[];
