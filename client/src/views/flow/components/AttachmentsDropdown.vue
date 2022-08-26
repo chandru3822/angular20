@@ -35,7 +35,7 @@
                   v-if="!objectTypeId && (!projectProcessStepId && getNonPrimaryCount(type.attachmentTypeId) !== 0)"
                   @click.native.stop="type.showNonPrimary = !type.showNonPrimary"
                   elevation="0"
-
+                  color="primary" text
                   class="expansion-panel-btn"
               >
                 <span v-if="type.showNonPrimary">Hide non-primary</span>

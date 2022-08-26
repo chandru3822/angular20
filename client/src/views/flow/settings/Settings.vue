@@ -307,7 +307,7 @@ a {
 }
 
 .left-column {
-  background-color: #F6F7F8;
+  background-color: var(--v-grey-lighten4);
   height: 100%;
   max-height: 100%;
 }
