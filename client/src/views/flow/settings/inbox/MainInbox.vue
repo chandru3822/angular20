@@ -12,7 +12,7 @@
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
                                @joinConversation="joinConversation" />
-      <v-toolbar prominent elevation="4" color="#F5F6F7" class="py-4 sticky-toolbar">
+      <v-toolbar prominent elevation="4" color="grey lighten-4" class="py-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
           <v-text-field
             prepend-inner-icon="search"
