@@ -164,7 +164,6 @@
         this.link = Object.assign({}, link)
       },
       async saveLink() {
-        debugger
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.link.linkTypeId = this.linkTypeId
 
