@@ -8,6 +8,7 @@
         Select Folder
         <v-spacer></v-spacer>
         <v-btn
+            text color="primary"
           class="elevation-0 text-capitalize"
           @click="$emit('cancel')"
         >
