@@ -20,14 +20,13 @@
     <!-- UPPER SECTION -->
     <v-form ref="ahjInspectionForm">
       <v-row class="mb-4 group-row" no-gutters>
-        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">
+        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">
         <AhjCard :group = group
                  :user-can-edit="userCanEdit"
                  :expanded-all="expandedAll"
                  :callback="(field) => updateDirtyValue(field)"
                  @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-        >
-        </AhjCard>
+        ></AhjCard>
         </v-col>
       </v-row>
 
@@ -264,7 +263,7 @@ export default {
     saveConfirmDialog: false,
     dataWasChanged: false,
     dataReady: false,
-    customFieldGroupAssignments: [],
+    customFieldGroups: [],
     editSchedulingNote: false,
     editDocumentationNote: false,
     editInstructionsForBRSTech: false,
@@ -345,7 +344,7 @@ export default {
           data,
           status
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-        this.customFieldGroupAssignments = cloneDeep(data)
+        this.customFieldGroups = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -363,7 +362,7 @@ export default {
       }
     },
     getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
       return match ? match.customFieldValues : []
     },
     showOtherField(int, list) {
@@ -371,7 +370,7 @@ export default {
       return match ? match.showOther : false
     },
     resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroupAssignments.forEach(group => {
+      this.customFieldGroups.forEach(group => {
         group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
       })
     },
@@ -407,7 +406,7 @@ export default {
           }
         }
 
-        this.ahjInspection.customFieldGroups = this.customFieldGroupAssignments
+        this.ahjInspection.customFieldGroups = this.customFieldGroups
         const {
           data,
           status

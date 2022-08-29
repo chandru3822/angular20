@@ -1,17 +1,19 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-links">
   <v-card class="mb-3">
-    <v-toolbar class="primary">
+    <v-toolbar class="primary" @click="toggleCollapseExpand">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
-        <v-icon v-show="!addMode && !editMode" @click="addLink" class="white--text">add</v-icon>
+        <v-icon v-show="!addMode && !editMode" @click.stop="[toggleCollapseExpand(), addLink()]" class="white--text">add</v-icon>
         <v-icon v-show="addMode || editMode"
-                @click="hideCtrls" class="white--text">remove</v-icon>
+                @click.stop="hideCtrls" class="white--text">remove</v-icon>
       </v-btn>
+      <v-icon v-if="showExpanded" class="white--text">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
     </v-toolbar>
+    <v-card-text v-if="expanded">
     <v-form v-show="addMode || editMode"
             ref="linkForm" class="px-3 pt-4 pb-3">
       <v-text-field v-model="link.name" required label="Name" filled></v-text-field>
@@ -54,8 +56,7 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No links found
     </div>
-
-
+    </v-card-text>
   </v-card>
 </template>
 
@@ -64,6 +65,7 @@
 
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
 
   export default {
     name: "AhjLinks",
@@ -94,7 +96,12 @@
       isNested: {
         type: Boolean,
         default: false
-      }
+      },
+      showExpanded: {
+        type: Boolean,
+        default: false
+      },
+      expandedAll: CollapseExpandEnum
     },
     data () {
       return {
@@ -111,12 +118,22 @@
         addMode: false,
         editMode: false,
         validUrl: false,
-        linksCopy: this.links
+        linksCopy: this.links,
+        expanded: true
       }
     },
     computed: {
       linkInfoEntered() {
         return this.link.name && this.link.link && this.validUrl
+      }
+    },
+    watch: {
+      expandedAll(){
+        if(this.expandedAll === CollapseExpandEnum.EXPANDED && this.expanded !== true) {
+          this.expanded = true
+        } else if(this.expandedAll === CollapseExpandEnum.COLLAPSED && this.expanded === true){
+          this.expanded = false
+        }
       }
     },
     methods: {
@@ -130,13 +147,16 @@
         }
       },
       hideCtrls() {
+        this.$refs.linkForm.reset()
         this.addMode = false
         this.editMode = false
       },
       addLink() {
+        if(!this.expanded){
+          this.toggleCollapseExpand()
+        }
         this.editMode = false
         this.addMode = true
-        this.$refs.linkForm.reset()
       },
       editLink(link) {
         this.addMode = false
@@ -144,6 +164,7 @@
         this.link = Object.assign({}, link)
       },
       async saveLink() {
+        debugger
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.link.linkTypeId = this.linkTypeId
 
@@ -158,6 +179,7 @@
             this.linksCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Link added')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$refs.contactForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
@@ -180,6 +202,7 @@
             this.linksCopy[updatedLinkIndex].notes = res.data.notes
             this.snackbar = getSnackbar('SUCCESS', 'Link updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$refs.linkForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
@@ -209,6 +232,13 @@
         }
         this.editMode = false
         this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+      toggleCollapseExpand(){
+        if(this.expanded && (this.addMode || this.editMode)){
+          this.hideCtrls()
+        }
+        this.expanded = !this.expanded
+        this.$emit('toggle-collapse-expand', this.expanded)
       }
     }
   }

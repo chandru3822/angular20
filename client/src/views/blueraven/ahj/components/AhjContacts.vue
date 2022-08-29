@@ -1,17 +1,19 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-contacts">
-  <v-card class="pb-2 mb-3">
-    <v-toolbar class="primary mb-2">
+  <v-card class="mb-3">
+    <v-toolbar class="primary mb-2" @click="toggleCollapseExpand">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
-        <v-icon v-show="!addMode && !editMode" @click="addContact" class="white--text">add</v-icon>
+        <v-icon v-show="!addMode && !editMode" @click.stop="addContact" class="white--text">add</v-icon>
         <v-icon v-show="addMode || editMode"
-                @click="hideCtrls" class="white--text">remove</v-icon>
+                @click.stop="hideCtrls" class="white--text">remove</v-icon>
       </v-btn>
+      <v-icon v-if="showExpanded" class="white--text">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
     </v-toolbar>
+    <v-card-text v-if="expanded">
     <v-form v-show="addMode || editMode"
             ref="contactForm" class="pa-3">
       <v-text-field v-model="contact.name" required filled
@@ -43,7 +45,7 @@
       </div>
     </v-form>
     <div v-for="(contact, index) in contacts" :key="contact.id"
-         v-show="contacts.length > 0" class="px-3 py-1">
+         v-show="contacts.length > 0" class="px-3">
       <dl class="horizontal-dl"
           :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
         <dt v-if="contact.name" class="font-weight-bold">Name</dt>
@@ -74,8 +76,7 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
     </div>
-
-
+    </v-card-text>
   </v-card>
 </template>
 
@@ -84,6 +85,7 @@
 
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
 
   export default {
     name: "AhjContact",
@@ -114,7 +116,12 @@
       isNested: {
         type: Boolean,
         default: false
-      }
+      },
+      showExpanded: {
+        type: Boolean,
+        default: false
+      },
+      expandedAll: CollapseExpandEnum
     },
     data () {
       return {
@@ -132,18 +139,31 @@
         },
         addMode: false,
         editMode: false,
-        contactsCopy: this.contacts
+        contactsCopy: this.contacts,
+        expanded: true
+      }
+    },
+    watch: {
+      expandedAll(){
+        if(this.expandedAll === CollapseExpandEnum.EXPANDED && this.expanded !== true) {
+          this.expanded = true
+        } else if(this.expandedAll === CollapseExpandEnum.COLLAPSED && this.expanded === true){
+          this.expanded = false
+        }
       }
     },
     methods: {
       hideCtrls() {
+        this.$refs.contactForm.reset()
         this.addMode = false
         this.editMode = false
       },
       addContact() {
+        if(!this.expanded){
+          this.toggleCollapseExpand()
+        }
         this.editMode = false
         this.addMode = true
-        this.$refs.contactForm.reset()
       },
       editContact(contact) {
         this.addMode = false
@@ -165,6 +185,7 @@
             this.contactsCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Contact added')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$refs.contactForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding contact')
@@ -189,6 +210,7 @@
             this.contactsCopy[updatedContactIndex].notes = res.data.notes
             this.snackbar = getSnackbar('SUCCESS', 'Contact updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$refs.contactForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding contact')
@@ -218,6 +240,13 @@
         }
         this.editMode = false
         this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+      toggleCollapseExpand(){
+        if(this.expanded && (this.addMode || this.editMode)){
+          this.hideCtrls()
+        }
+        this.expanded = !this.expanded
+        this.$emit('toggle-collapse-expand', this.expanded)
       }
     }
   }
