@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.models.ahj;
 
+import com.albatross.api.v1.flow.model.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,5 +13,8 @@ import java.util.List;
 @Setter
 public class AhjPermitDetail extends AhjPermit {
     private List<AhjLink> submissionLinks, followUpLinks;
-    private List<AhjContact> submissionContacts, followUpContacts;
+    private List<AhjChecklistItem> submissionChecklist, revisionChecklist, asBuiltChecklist, nonStandardChecklist;
+    private List<AhjNote> notes;
+    private List<AhjContact> submissionContacts, followUpContacts, printLocations;
+    private List<User> servicingFots;
 }

@@ -47,6 +47,29 @@ public class AhjPermitController {
         return ahjPermitService.searchAhjsByState(stateId);
     }
 
+    // CHECKLISTS
+    @PostMapping(value = "/{permitId}/checklist")
+    public Optional<AhjChecklistItem> addPermitChecklistItem(@PathVariable Long ahjId,
+                                                             @PathVariable Long permitId,
+                                                             @RequestBody AhjChecklistItem item) {
+        return ahjService.saveChecklistItem(ahjId, permitId, null, item, AhjType.PERMIT);
+    }
+
+    @PutMapping(value = "/{permitId}/checklist/{itemId}")
+    public Optional<AhjChecklistItem> updatePermitChecklistItem(@PathVariable Long ahjId,
+                                                                @PathVariable Long permitId,
+                                                                @PathVariable Long itemId,
+                                                                @RequestBody AhjChecklistItem item) {
+        return ahjService.saveChecklistItem(ahjId, permitId, itemId, item, AhjType.PERMIT);
+    }
+
+    @PutMapping(value = "/{permitId}/checklist/{itemId}/archive")
+    public void deletePermitChecklistItem(@PathVariable Long ahjId,
+                                          @PathVariable Long permitId,
+                                          @PathVariable Long itemId) {
+        ahjService.deleteChecklistItem(ahjId, permitId, itemId);
+    }
+
     // CONTACTS
     @PostMapping(value = "/{permitId}/contacts")
     public Optional<AhjContact> addAhjContact(@PathVariable Long permitId,

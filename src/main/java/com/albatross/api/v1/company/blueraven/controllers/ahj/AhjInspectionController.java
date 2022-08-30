@@ -47,6 +47,29 @@ public class AhjInspectionController {
         return ahjInspectionService.searchAhjsByState(stateId);
     }
 
+    // CHECKLISTS
+    @PostMapping(value = "/{inspectionId}/checklist")
+    public Optional<AhjChecklistItem> addInspectionChecklistItem(@PathVariable Long ahjId,
+                                                                 @PathVariable Long inspectionId,
+                                                                 @RequestBody AhjChecklistItem item) {
+      return ahjService.saveChecklistItem(ahjId, inspectionId, null, item, AhjType.INSPECTION);
+    }
+
+    @PutMapping(value = "/{inspectionId}/checklist/{itemId}")
+    public Optional<AhjChecklistItem> updateInspectionChecklistItem(@PathVariable Long ahjId,
+                                                                    @PathVariable Long inspectionId,
+                                                                    @PathVariable Long itemId,
+                                                                    @RequestBody AhjChecklistItem item) {
+      return ahjService.saveChecklistItem(ahjId, inspectionId, itemId, item, AhjType.INSPECTION);
+    }
+
+    @PutMapping(value = "/{inspectionId}/checklist/{itemId}/archive")
+    public void deleteInspectionChecklistItem(@PathVariable Long ahjId,
+                                              @PathVariable Long inspectionId,
+                                              @PathVariable Long itemId) {
+      ahjService.deleteChecklistItem(ahjId, inspectionId, itemId);
+    }
+
     // CONTACTS
     @PostMapping(value = "/{inspectionId}/contacts")
     public Optional<AhjContact> addAhjContact(@PathVariable Long inspectionId,

@@ -123,6 +123,15 @@ public class AhjPermitService {
     return sqlCache.query("ahj.permit.searchAhjsByState", params, AhjPermit.class);
   }
 
+  // CHECKLISTS
+  public void createPermitChecklistItem(Long permitId, Long itemId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjPermitId", permitId);
+    params.put("ahjChecklistId", itemId);
+
+    sqlCache.update("ahj.permit.checklist.create", params);
+  }
+
   // CONTACTS
   public void savePermitContact(Long permitId, Long contactId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -178,14 +187,30 @@ public class AhjPermitService {
 
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkRef = new TypeReference<>() {};
+      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjNote>> noteTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
+      TypeReference<List<User>> userRef = new TypeReference<>() {};
 
       bw.registerCustomEditor(
           List.class, "submissionLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class, "followUpLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
+
+      bw.registerCustomEditor(
+          List.class, "submissionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
+
+      bw.registerCustomEditor(
+          List.class, "revisionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
+
+      bw.registerCustomEditor(
+          List.class, "asBuiltChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
+
+      bw.registerCustomEditor(
+          List.class,
+          "nonStandardChecklist",
+          new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class, "notes", new JsonCollectionDeserializer(noteTypeRef, objectMapper));
@@ -199,6 +224,14 @@ public class AhjPermitService {
           List.class,
           "followUpContacts",
           new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+
+      bw.registerCustomEditor(
+          List.class,
+          "printLocations",
+          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
+
+      bw.registerCustomEditor(
+          List.class, "servicingFots", new JsonCollectionDeserializer(userRef, objectMapper));
     }
   }
 }

@@ -93,6 +93,59 @@
                                 WHERE auc.ahj_utility_id = u.id AND c.archived IS FALSE AND c.contact_type_id = 8
                             ) contacts), '[]') AS contacts,
           coalesce((
+                       SELECT array_to_json(array_agg(row_to_json(checklist)))
+                       FROM (
+                                SELECT
+                                    ac.id,
+                                    ac.description,
+                                    ac.display_order AS "displayOrder"
+                                FROM brs.ahj_checklist ac
+                                         INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+                                WHERE ac.archived IS FALSE
+                                  AND ac.checklist_type_id = 4
+                                  AND auc.ahj_utility_id = u.id
+                                ORDER BY ac.display_order
+                            ) checklist), '[]') AS submission_checklist,
+          coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
+                    FROM (
+                             SELECT
+                                 ac.id,
+                                 ac.description,
+                                 ac.display_order AS "displayOrder"
+                             FROM brs.ahj_checklist ac
+                                      INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+                             WHERE ac.archived IS FALSE
+                               AND ac.checklist_type_id = 5
+                               AND auc.ahj_utility_id = u.id
+                             ORDER BY ac.display_order) checklist
+                   ), '[]') AS approval_checklist,
+          coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
+                    FROM (
+                             SELECT
+                                 ac.id,
+                                 ac.description,
+                                 ac.display_order AS "displayOrder"
+                             FROM brs.ahj_checklist ac
+                                      INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+                             WHERE ac.archived IS FALSE
+                               AND ac.checklist_type_id = 6
+                               AND auc.ahj_utility_id = u.id
+                             ORDER BY ac.display_order) checklist
+                   ), '[]') AS pto_checklist,
+          coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
+                    FROM (
+                             SELECT
+                                 ac.id,
+                                 ac.description,
+                                 ac.display_order AS "displayOrder"
+                             FROM brs.ahj_checklist ac
+                                      INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+                             WHERE ac.archived IS FALSE
+                               AND ac.checklist_type_id = 7
+                               AND auc.ahj_utility_id = u.id
+                             ORDER BY ac.display_order) checklist
+                   ), '[]') AS utility_inspection_checklist,
+          coalesce((
                        SELECT array_to_json(array_agg(row_to_json(links)))
                        FROM (
                                 SELECT
@@ -255,6 +308,52 @@
       WHERE id = :contactId
     ]]>
   </ahj.utility.contact.delete>
+
+  <!-- CHECKLIST -->
+  <ahj.utility.checklist.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_checklist WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.findById>
+
+  <ahj.utility.checklist.add>
+    <![CDATA[
+      WITH auc AS (
+        insert into brs.ahj_checklist (description, display_order, date_created, created_by_id, date_modified, modified_by_id, checklist_type_id, failed_inspection_resource_id, failed_inspection_date, failed_inspection_project)
+        values (:description, :displayOrder, now(), :currentUser, now(), :currentUser, :checklistTypeId, :failedInspectionResourceId, :failedInspectionDate, :failedInspectionProject)
+        returning id
+      )
+      INSERT INTO brs.ahj_utility_checklist (ahj_utility_id, ahj_checklist_id)
+      SELECT :ahjUtilityId, auc.id
+      FROM auc
+      RETURNING ahj_checklist_id;
+    ]]>
+  </ahj.utility.checklist.add>
+
+  <ahj.utility.checklist.update>
+    <![CDATA[
+      UPDATE brs.ahj_checklist
+      SET description = :description,
+          display_order = :displayOrder,
+          modified_by_id = :currentUser,
+          date_modified = now(),
+          checklist_type_id = :checklistTypeId,
+          failed_inspection_resource_id = :failedInspectionResourceId,
+          failed_inspection_date = :failedInspectionDate,
+          failed_inspection_project = :failedInspectionProject
+      WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.update>
+
+  <ahj.utility.checklist.delete>
+    <![CDATA[
+      UPDATE brs.ahj_checklist
+      SET archived = TRUE,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.delete>
 
   <!-- LINK -->
   <ahj.utility.link.findById>
