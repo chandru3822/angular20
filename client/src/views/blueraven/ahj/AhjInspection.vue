@@ -21,12 +21,12 @@
     <v-form ref="ahjInspectionForm">
       <v-row class="mb-4 group-row" no-gutters>
         <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">
-        <AhjCard :group = group
+        <AhjCustomFields :group = group
                  :user-can-edit="userCanEdit"
                  :expanded-all="expandedAll"
                  :callback="(field) => updateDirtyValue(field)"
                  @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-        ></AhjCard>
+        ></AhjCustomFields>
         </v-col>
       </v-row>
 
@@ -235,12 +235,12 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import orderBy from "lodash.orderby";
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
+import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
 
 export default {
   name: 'ahjInspection',
   components: {
-    AhjCard,
+    AhjCustomFields,
     AhjChecklist,
     AhjContact,
     AhjLink,

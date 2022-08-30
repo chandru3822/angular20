@@ -47,17 +47,16 @@
             <v-row class="mb-4 group-row" no-gutters>
               <!-- FIRST COLUMN -->
               <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">
-                <AhjCard :group = group
+                <AhjCustomFields :group = group
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
                          :callback="(field) => updateDirtyValue(field)"
                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-                ></AhjCard>
+                ></AhjCustomFields>
               </v-col>
             </v-row>
             <!-- LOWER SECTION -->
             <h1 class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
-            <!-- FIRST ROW -->
             <v-row no-gutters>
               <v-col cols="12" md="6" class="group px-2 py-2">
               <!-- CONTACTS -->
@@ -72,6 +71,11 @@
                         :expanded-all="expandedAll"
                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
             ></AhjContact>
+                <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll">
+                  <AhjDocument title="Utility Rate Documents" :documents="utilityRateDocs" :document-type-id="7" :ahj-id="ahjUtility.id" :user-can-edit="userCanEdit" is-nested></AhjDocument>
+                  <AhjDocument title="Submission Detail Documents" :documents="submissionDocs" :document-type-id="6" :ahj-id="ahjUtility.id" :user-can-edit="userCanEdit" is-nested></AhjDocument>
+                  <AhjDocument title="Approval Detail Documents" :documents="approvalDocs" :document-type-id="25" :ahj-id="ahjUtility.id" :user-can-edit="userCanEdit" is-nested></AhjDocument>
+                </AhjCard>
               </v-col>
               <v-col v-if="dataReady" class="group px-2 py-2">
                 <ahj-link title="All Links"
@@ -106,20 +110,22 @@ import AhjRequirement from "../components/AhjRequirements"
 import {AppMutations} from "@/stores/AppStore"
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
-import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
+import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
 export default {
   name: "ahjUtilityDetails",
   components: {
-    AhjCard,
+    AhjCustomFields,
     AhjChecklist,
     AhjContact,
     AhjDocument,
     AhjDocumentsButton,
     AhjLink,
     AhjRequirement,
-    CustomValueInput
+    CustomValueInput,
+    AhjCard
   },
   computed: {
     userCanEdit() {
@@ -148,6 +154,9 @@ export default {
       utilityRequirements: []
     },
     documents: [],
+    utilityRateDocs: [],
+    submissionDocs: [],
+    approvalDocs: [],
     financiers: [],
     allLinks: [],
     expandedAll: CollapseExpandEnum.EXPANDED
@@ -170,6 +179,32 @@ export default {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error retrieving AHJ Utility")
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getAllDocuments(){
+      await this.getDocuments(6)
+      await this.getDocuments(7)
+      await this.getDocuments(25)
+    },
+    async getDocuments(docTypeId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const params = {sourceId: this.ahjUtility.id, attachmentTypeId: docTypeId}
+        const {data, status} = await getRequestWithParams('/attachment', {params})
+        switch (docTypeId){
+          case 6: this.submissionDocs = cloneDeep(data)
+                break
+          case 7: this.utilityRateDocs = cloneDeep(data)
+                break
+          case 25: this.approvalDocs = cloneDeep(data)
+                break
+          default: this.documents = cloneDeep(data)
+        }
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -270,7 +305,9 @@ export default {
     this.getAhjUtility().then(() => {
       this.getFinancierList().then(() => {
         this.getCustomFieldGroupAssignmentsForScreen().then(() => {
-          this.dataReady = true
+          this.getAllDocuments().then(() => {
+            this.dataReady = true
+          })
         })
       })
     })

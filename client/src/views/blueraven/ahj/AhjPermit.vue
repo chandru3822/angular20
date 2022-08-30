@@ -20,12 +20,12 @@
     <v-form ref="ahjPermitForm">
       <v-row class="mb-4 group-row" no-gutters>
         <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">
-          <AhjCard :group = group
+          <AhjCustomFields :group = group
                    :user-can-edit="userCanEdit"
                    :callback="(field) => updateDirtyValue(field)"
                    @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           >
-          </AhjCard>
+          </AhjCustomFields>
         </v-col>
       </v-row>
 
@@ -173,13 +173,13 @@ import AhjServicingFot from './components/AhjServicingFots'
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
+import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
 
 export default {
   name: 'ahjPermit',
   components: {
-    AhjCard,
+    AhjCustomFields,
     AhjChecklist,
     AhjContact,
     AhjDocument,

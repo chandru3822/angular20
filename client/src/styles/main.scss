@@ -476,7 +476,9 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   font-size: 0.875rem;
 }
 
- .albatross-subtitle-1 {
+ .albatross-subtitle-1,
+ .albatross-subtitle-1 > .v-toolbar__content > .v-toolbar__title
+ {
    font-weight: bold;
    font-size: 1rem;
    line-height: 1.6;
