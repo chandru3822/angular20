@@ -12,6 +12,4 @@ import java.util.List;
 @Setter
 public class AhjDesignDetail extends AhjDesign {
     private List<AhjContact> contacts;
-    private List<AhjRequirement> designRequirements, electricalRequirements, structuralRequirements,
-                                 utilityRequirements;
 }

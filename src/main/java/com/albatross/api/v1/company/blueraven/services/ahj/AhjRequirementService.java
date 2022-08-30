@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -23,14 +22,6 @@ public class AhjRequirementService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final NamedParameterJdbcTemplate jdbc;
-
-  public List<AhjRequirement> getRequirementHistory(Long ahjId, Long originalRequirementId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjId", ahjId);
-    params.put("originalRequirementId", originalRequirementId);
-
-    return sqlCache.query("ahj.requirement.history", params, AhjRequirement.class);
-  }
 
   public Optional<AhjRequirement> addRequirement(Long ahjId, AhjRequirement ahjRequirement) {
     User user = securityService.getCurrentUser();

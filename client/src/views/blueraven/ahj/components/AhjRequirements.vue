@@ -36,11 +36,9 @@
               v-for="requirement in requirementsCopy"
               :key="requirement.id">
         <v-list-item v-show="requirementsCopy.length > 0">
-          <v-list-item-action :title="requirement.complete ? 'Mark requirement as incomplete' : 'Mark requirement as complete'"
-                              :class="{'disabled-checkbox': requirement.hasOpenChallenge}"
-                              v-if="userCanEdit"
+          <v-list-item-action v-if="userCanEdit"
                               @click="saveRequirement(requirement, true)">
-            <v-checkbox v-model="requirement.complete" :disabled="requirement.hasOpenChallenge || !userCanEdit"></v-checkbox>
+            <v-checkbox v-model="requirement.complete" :disabled="!userCanEdit"></v-checkbox>
           </v-list-item-action>
           <v-list-item-content class="ml-3">
             <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}"
@@ -56,22 +54,11 @@
                                   v-text="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy">
             </v-list-item-subtitle>
           </v-list-item-content>
-          <v-list-item-content class="ml-4 flex-display flex-wrap text-right mr-3">
-            <span v-if="requirement.hasOpenChallenge" style="color: #d00">
-              Active Challenge
-            </span>
-            <AhjRequirementHistory :itemType="itemType"
-                                   :itemId="itemId"
-                                   :originalRequirement="requirement"
-            ></AhjRequirementHistory>
-          </v-list-item-content>
           <v-list-item-action>
-            <v-icon v-if="!requirement.hasOpenChallenge"
-                    @click="editRequirement(requirement)"
+            <v-icon @click="editRequirement(requirement)"
                     title="Edit requirement" small>
               edit
             </v-icon>
-            <div v-if="requirement.hasOpenChallenge" class="icon-placeholder" style="width: 20px; height: 20px"></div>
           </v-list-item-action>
           <v-list-item-action>
             <AhjDocumentsButton title="Notes and requirements"
@@ -185,7 +172,6 @@
   import cloneDeep from 'lodash.clonedeep'
   import orderBy from 'lodash.orderby'
   import AhjDocumentsButton from './AhjDocumentsButton'
-  import AhjRequirementHistory from './AhjRequirementHistory'
 
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
@@ -194,7 +180,6 @@
     name: "AhjRequirements",
     components: {
       AhjDocumentsButton,
-      AhjRequirementHistory,
     },
     props: {
       title: {
@@ -258,13 +243,6 @@
         this.requirement = Object.assign({}, requirement)
       },
       async saveRequirement(requirement, checkboxWasClicked) {
-        // prevents user from marking a requirement with the "Open Challenge" status as complete
-        if (checkboxWasClicked) {
-          if ((requirement && requirement.hasOpenChallenge) || this.requirement.hasOpenChallenge) {
-            return
-          }
-        }
-
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         if (!requirement) {

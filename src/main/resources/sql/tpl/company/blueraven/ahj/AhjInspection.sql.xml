@@ -84,14 +84,6 @@
           coalesce((
                        SELECT array_to_json(array_agg(row_to_json(requirements)))
                        FROM (
-                                WITH open_challenge AS (
-                                    SELECT ahj_id,
-                                           original_requirement_id,
-                                           status_id
-                                    FROM brs.ahj_requirements ar
-                                    WHERE status_id = 3
-                                      AND ar.archived IS NOT TRUE
-                                )
                                 SELECT ar.ahj_id AS "ahjId",
                                        ar.position,
                                        ar.status_id AS "statusId",
@@ -108,13 +100,8 @@
                                        r.description,
                                        r.requirement_type_id AS "requirementTypeId",
                                        ar.original_requirement_id AS "originalRequirementId",
-                                       art.name AS "requirementType",
-                                       CASE WHEN oc.original_requirement_id IS NOT NULL THEN TRUE
-                                            ELSE FALSE
-                                           END AS "hasOpenChallenge"
+                                       art.name AS "requirementType"
                                 FROM brs.ahj_requirements ar
-                                         LEFT JOIN open_challenge oc ON oc.ahj_id = ar.ahj_id
-                                    AND oc.original_requirement_id = ar.original_requirement_id
                                          INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
                                          INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
                                          INNER JOIN flow."user" u ON u.id = ar.created_by_id

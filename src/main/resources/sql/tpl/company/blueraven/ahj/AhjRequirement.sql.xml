@@ -1,32 +1,4 @@
 <sql>
-  <ahj.requirement.history>
-    <![CDATA[
-      SELECT ars.requirement_id id,
-             ars.ahj_id,
-             ar.requirement_type_id,
-             ars.original_requirement_id,
-             ar.description,
-             ars."position",
-             ars.status_id,
-             arst.name AS status,
-             ars.complete,
-             ars.date_created,
-             concat(u.first_name, ' ', u.last_name) AS created_by,
-             ars.created_by_id,
-             ars.date_modified,
-             concat(u2.first_name, ' ', u2.last_name) AS modified_by,
-             ars.modified_by_id
-      FROM brs.ahj_requirements ars
-        JOIN brs.ahj_requirement ar ON ar.id = ars.requirement_id
-        JOIN brs.ahj_requirement_status arst ON arst.id = ars.status_id
-        INNER JOIN flow."user" u ON u.id = ars.created_by_id
-        INNER JOIN flow."user" u2 ON u2.id = ars.modified_by_id
-      WHERE ars.original_requirement_id = :originalRequirementId
-        AND ars.ahj_id = :ahjId
-      ORDER BY arst.display_order, ars.date_created DESC
-    ]]>
-  </ahj.requirement.history>
-
   <ahj.requirement.add>
     <![CDATA[
       WITH ar AS (
@@ -42,13 +14,6 @@
 
   <ahj.requirement.active.detail>
     <![CDATA[
-      WITH open_challenge AS (
-        select ahj_id,
-               original_requirement_id,
-               status_id
-        from brs.ahj_requirements ar
-        where status_id = 3
-      )
       SELECT ar.ahj_id ahjId,
              ar.archived,
              ar.position,
@@ -66,12 +31,7 @@
              r.requirement_type_id requirementTypeId,
              ar.original_requirement_id originalRequirementId,
              art.name requirementType,
-             (case when oc.original_requirement_id is not null then true
-                   else false
-                   end) hasOpenChallenge
       FROM brs.ahj_requirements ar
-        LEFT JOIN open_challenge oc ON oc.ahj_id = ar.ahj_id
-          AND oc.original_requirement_id = ar.original_requirement_id
         INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
         INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
         INNER JOIN flow."user" u ON u.id = ar.created_by_id
