@@ -1,4 +1,4 @@
-package com.albatross.api.v1.company.blueraven.controllers.proposal;
+package com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions;
 
 import com.albatross.api.exception.ApiException;
 
