@@ -47,18 +47,6 @@ public class AhjController {
     ahjService.deleteAhj(id);
   }
 
-  // REQUIREMENTS
-  @GetMapping(value = "/{ahjId}/{itemType}/requirement/{originalRequirementId}/history")
-  public List<AhjRequirement> getRequirementHistory(
-      @PathVariable Long ahjId,
-      @PathVariable String itemType,
-      @PathVariable Long originalRequirementId) {
-    if (itemType.equals("utility")) {
-      return ahjUtilityService.getRequirementHistory(ahjId, originalRequirementId);
-    }
-    return ahjRequirementService.getRequirementHistory(ahjId, originalRequirementId);
-  }
-
   @PostMapping(value = "/{ahjId}/{itemType}/requirement")
   public AhjRequirement addRequirement(
       @PathVariable Long ahjId,

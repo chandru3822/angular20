@@ -14,5 +14,5 @@ public class AhjRequirement {
                  statusId;
     private String description, createdBy, modifiedBy, status, requirementType;
     private Date dateCreated, dateModified;
-    private Boolean complete, hasOpenChallenge, archived;
+    private Boolean complete, archived;
 }

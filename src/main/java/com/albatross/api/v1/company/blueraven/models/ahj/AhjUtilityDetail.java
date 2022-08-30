@@ -13,5 +13,4 @@ import java.util.List;
 public class AhjUtilityDetail extends AhjUtility {
     private List<AhjLink> customerSignatureLinks, ptoLinks, ptoFollowupLinks, submissionLinks;
     private List<AhjContact> contacts;
-    private List<AhjRequirement> utilityRequirements;
 }

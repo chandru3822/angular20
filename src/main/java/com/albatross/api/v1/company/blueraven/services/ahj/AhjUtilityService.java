@@ -262,7 +262,6 @@ public class AhjUtilityService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
 
       bw.registerCustomEditor(
           List.class,
@@ -283,10 +282,6 @@ public class AhjUtilityService {
       bw.registerCustomEditor(
           List.class, "contacts", new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(
-          List.class,
-          "utilityRequirements",
-          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
     }
   }
 }
