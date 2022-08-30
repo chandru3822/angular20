@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalValueFilter;
 import com.albatross.api.v1.company.blueraven.models.*;
@@ -29,6 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
@@ -49,19 +51,39 @@ public class BlueravenProposalController {
     return proposalService.getProposalProjects(query, pageable);
   }
 
-  @GetMapping(value = "/designs/{projectId}")
+  @GetMapping(value = "/projects/{projectId}/designs")
   public List<ProposalDesign> getProposalDesigns(@PathVariable Long projectId) {
     return proposalService.getProposalDesigns(projectId);
   }
 
-  @GetMapping(value = "/design/{projectId}/active")
+  @GetMapping(value = "/projects/{projectId}/designs/active")
   public ProposalDesign getActiveDesign(@PathVariable Long projectId) {
-    return proposalService.getActiveDesign(projectId);
+    return proposalService.getActiveDesign(projectId).orElse(null);
   }
 
-  @PostMapping(value = "/design")
-  public List<ProposalDesign> requestNewDesign(@RequestParam Long projectId, @RequestParam String description, @RequestParam String dueDate, @RequestParam(required = false) List<MultipartFile> attachments, @RequestParam(required = false) List<MultipartFile> utilityBillAttachments, @AuthenticationPrincipal UserAccountDetails details) throws IOException {
-    return proposalService.requestNewDesign(projectId, description, dueDate, attachments, utilityBillAttachments, details);
+  @PostMapping(value = "/projects/{projectId}/designs")
+  public List<ProposalDesign> requestNewDesign(@PathVariable Long projectId,
+                                               @Valid @ModelAttribute CreateNewDesignRequest request,
+                                               @AuthenticationPrincipal UserAccountDetails details) throws IOException {
+    return proposalService.requestNewDesign(projectId, request.description, request.dueDate, request.attachments, request.utilityBillAttachments, details);
+  }
+
+  @PostMapping(value = "/projects/{projectId}/postalCode")
+  public ProposalDesign requestPostalCodeApproval(@PathVariable Long projectId,
+                                                  @Valid @RequestBody ProposalPostalApprovalRequest request,
+                                                  @AuthenticationPrincipal UserAccountDetails details) {
+    return proposalService.requestPostalCodeApproval(projectId, request.comments, details.getTrueUserId()).orElse(null);
+  }
+
+  @GetMapping(value = "/projects/{projectId}/postalCode")
+  public ProposalPostalCodeStatus checkPostalCodeApproval(@PathVariable Long projectId) {
+    return proposalService.checkPostalCodeApproval(projectId);
+  }
+
+  @PostMapping
+  public Optional<Proposal> addProposal(@RequestBody Proposal proposal,
+                                        @AuthenticationPrincipal UserAccountDetails details) {
+    return proposalService.addProposal(proposal, details);
   }
 
   @GetMapping(value = "/{proposalId}")
@@ -99,7 +121,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping(value = "/{proposalId}/sendDocs")
-  public Optional<DocRequestResponse> sendDocs(@PathVariable Long proposalId, @RequestBody SendDocRequest docRequest, @AuthenticationPrincipal UserAccountDetails details) {
+  public Optional<DocRequestResponse> sendDocs(@PathVariable Long proposalId, @Valid @RequestBody SendDocRequest docRequest, @AuthenticationPrincipal UserAccountDetails details) {
 
     return getLockedProposal(proposalId)
       .map(proposal -> {
@@ -150,8 +172,17 @@ public class BlueravenProposalController {
       });
   }
 
+  @PostMapping(value = "/{proposalId}/duplicate")
+  public Optional<Proposal> createProposalDuplicate(@PathVariable Long proposalId,
+                                                    @AuthenticationPrincipal UserAccountDetails details) {
+    return proposalService.createProposalDuplicate(proposalId, details.getTrueUserId());
+  }
+
   @GetMapping(value = "/{proposalId}/template")
-  public Optional<ProposalTemplate> getProposalTemplate(@PathVariable Long proposalId, @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1") Long templateId, @Parameter(hidden = true) @RequestParam(value = "type", defaultValue = "MOBILE") ProposalGeneratedType proposalGeneratedType, @Parameter(hidden = true) @RequestParam(value = "debug", defaultValue = "false") boolean isDebug) {
+  public Optional<ProposalTemplate> getProposalTemplate(@PathVariable Long proposalId,
+                                                        @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1") Long templateId,
+                                                        @Parameter(hidden = true) @RequestParam(value = "type", defaultValue = "MOBILE") ProposalGeneratedType proposalGeneratedType,
+                                                        @Parameter(hidden = true) @RequestParam(value = "debug", defaultValue = "false") boolean isDebug) {
     return proposalService.getProposalTemplate(proposalId, templateId, proposalGeneratedType, isDebug);
   }
 
@@ -184,17 +215,20 @@ public class BlueravenProposalController {
     return ResponseEntity.ok(responseBody);
   }
 
-  @PostMapping
-  public Optional<Proposal> addProposal(@RequestBody Proposal proposal, @AuthenticationPrincipal UserAccountDetails details) {
-    return proposalService.addProposal(proposal, details);
-  }
 
   @GetMapping(value = "/{proposalId}/filter")
-  public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId, ProposalValueFilter filter) {
+  public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
+                                                     ProposalValueFilter filter) {
     final Proposal proposal = proposalService.getProposal(proposalId).orElseThrow(NotFoundException::new);
-
     final List<Long> filterIds = proposalVersionService.getProposalValuesFilterIds(proposal.getProposalVersionId(), filter);
     return new ProposalFilterResponse(filterIds);
+  }
+
+
+  public record CreateNewDesignRequest(@NotEmpty String description,
+                                       @NotEmpty String dueDate,
+                                       List<MultipartFile> attachments,
+                                       List<MultipartFile> utilityBillAttachments) {
   }
 
   public record SendDocRequest(@NotNull LoanDocType docType, boolean isSpanish) {
@@ -207,6 +241,9 @@ public class BlueravenProposalController {
   }
 
   public record ProposalNameUpdateRequest(@NotBlank String name) {
+  }
+
+  public record ProposalPostalApprovalRequest(String comments) {
   }
 
   @Data

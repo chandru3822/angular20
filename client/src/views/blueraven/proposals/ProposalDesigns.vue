@@ -110,32 +110,44 @@
           </v-icon>
         </div>
       </v-card>
-      <v-card width="355" height="535" class="proposal-card request-new"
-              :class="{'disable-new': (activeDesign && null != activeDesign.projectId) || !requestSuccessful}">
-        <v-btn :disabled="(activeDesign && null != activeDesign.projectId) || !requestSuccessful"
-               text color="primary" @click="showNewDesignRequestForm = true">
+      <v-card
+        width="355"
+        height="535"
+        class="proposal-card request-new"
+        :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
+        <v-btn text
+               :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
+               color="primary"
+               @click="handleNewRequest">
           <v-icon :size="60">add</v-icon>
         </v-btn>
         <div class="mt-5 primary--text">
           Request New Design
         </div>
-        <div class="request-new-details" v-if="activeDesign && null != activeDesign.projectId">
+
+        <div class="request-new-details" v-if="hasActiveDesign">
+          <div>
+            <router-link
+              :to="{ name : 'projectProcessStep', params: {projectId: project.id, processStepId: activeDesign.projectProcessStepId}}"
+              target="_blank">
+              Open Process Step
+            </router-link>
+            <v-icon small>mdi-open-in-new</v-icon>
+          </div>
+
+          Current Step: {{ activeDesign.processStepName }} <br />
           Last Requested: {{ activeDesign.dateCreated | formatDate('date') }} <br />
           Current Status: {{ activeDesign.companyProcessStepStatusType }}
+          <div v-if="activeDesign.comments">
+            Comments: {{ activeDesign.comments }}
+          </div>
         </div>
       </v-card>
     </v-row>
     <v-dialog width="500" v-model="showNewDesignRequestForm">
-      <v-card class="pa-6">
-        <v-card-title
-          color="blackText"
-          class="text-h6 text-capitalize pa-0 font-weight-bold"
-          primary-title>
-          Request New design
-          <v-spacer />
-          <v-icon color="black" large @click="showNewDesignRequestForm = false">mdi-close</v-icon>
-        </v-card-title>
-        <v-card-text class="pt-4 px-0">
+      <v-card>
+        <v-card-title>Request New Design</v-card-title>
+        <v-card-text>
           Describe your request (Required)
           <v-textarea required
                       auto-grow
@@ -177,14 +189,54 @@
 
         </v-card-text>
 
-        <v-card-actions class="pa-0">
+        <v-card-actions>
           <v-spacer />
+          <v-btn text
+                 class="text-capitalize"
+                 @click="showNewDesignRequestForm = false">
+            Cancel
+          </v-btn>
           <v-btn
             color="primary"
             class="white--text text-capitalize font-weight-bold"
             :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
             @click="requestNewDesign()">
             Request
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog width="500" v-model="showNewPostalCodeRequestForm">
+      <v-card>
+        <v-card-title class="text-capitalize">
+          Unapproved Zip Code
+        </v-card-title>
+        <v-card-subtitle>This home lies outside of approved zones. Zip code needs to be approved before requesting a new
+          design.
+        </v-card-subtitle>
+        <v-card-text>
+          Additional comments (optional)
+          <v-textarea required
+                      auto-grow
+                      outlined
+                      counter="250"
+                      color="#808588"
+                      v-model="newDesignRequest.description" />
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text
+                 class="text-capitalize"
+                 @click="showNewPostalCodeRequestForm = false">
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            class="white--text text-capitalize font-weight-bold"
+            @click="requestPostalCodeApproval(newDesignRequest.description)">
+            Request Approval
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -216,6 +268,8 @@ export default {
       newDesignRequest: {},
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       showNewDesignRequestForm: false,
+      showNewPostalCodeRequestForm: false,
+      lockNewRequests: false,
       project: {},
       activeDesign: {},
       requestSuccessful: false,
@@ -229,12 +283,29 @@ export default {
     this.getCompletedProposalDesigns()
     await this.getActiveDesign()
   },
+  computed: {
+    hasActiveDesign() {
+      return !!this.activeDesign?.projectId
+    }
+  },
   methods: {
+    async handleNewRequest() {
+      this.lockNewRequests = true
+      const { data } = await getRequest(`/proposal/projects/${this.projectId}/postalCode`, 'blueraven')
+
+      if (data?.approved) {
+        this.showNewDesignRequestForm = true
+      } else {
+        this.showNewPostalCodeRequestForm = true
+      }
+
+      this.lockNewRequests = false
+
+    },
     async requestNewDesign() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const formData = new FormData()
-        formData.append('projectId', this.projectId)
         formData.append('description', this.newDesignRequest.description)
         formData.append('dueDate', this.newDesignRequest.dueDate)
 
@@ -246,7 +317,10 @@ export default {
           formData.append('utilityBillAttachments', a)
         })
 
-        const { data, status } = await postRequest(`/proposal/design`, formData, 'blueraven')
+        const {
+          data,
+          status
+        } = await postRequest(`/proposal/projects/${this.projectId}/designs`, formData, 'blueraven')
         //this endpoint returns all the designs because adding a new one could possibly remove (cancel) an existing one
         this.designs = data
         await this.getActiveDesign()
@@ -256,6 +330,24 @@ export default {
       } catch (e) {
         logError(e)
         this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
+      }
+    },
+    async requestPostalCodeApproval(comments) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        const {
+          data,
+          status
+        } = await postRequest(`/proposal/projects/${this.projectId}/postalCode`, { comments }, 'blueraven')
+        this.activeDesign = data
+        this.newDesignRequest = {}
+        this.showNewPostalCodeRequestForm = false
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
       }
     },
     disableAddSlice(proposalCount, offset) {
@@ -267,8 +359,8 @@ export default {
       return pageCount === offset
     },
     async getProposalProject() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const { data, status } = await getRequest(`/project/${this.projectId}`)
         this.project = data
         handleHidingGlobalLoader(this, status)
@@ -278,12 +370,10 @@ export default {
       }
     },
     async getCompletedProposalDesigns() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data, status } = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven', [])
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const { data, status } = await getRequest(`/proposal/projects/${this.projectId}/designs`, 'blueraven', [])
         this.designs = data
-        //this was causing a race condition sometimes when refreshing the screen. and i dont think we need this here since we do a separate request to get the active one
-        // this.activeDesign = data.find(d => d.processStepStatusTypeId === 1) || {}
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -291,11 +381,14 @@ export default {
       }
     },
     async getActiveDesign() {
-      this.requestSuccessful = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data, status } = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
-        console.log('active design here', data)
+        this.requestSuccessful = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        const {
+          data,
+          status
+        } = await getRequest(`/proposal/projects/${this.projectId}/designs/active`, 'blueraven', [])
         this.activeDesign = data
         this.requestSuccessful = true
         handleHidingGlobalLoader(this, status)
@@ -306,12 +399,11 @@ export default {
       }
     },
     async addProposal(design) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        let params = {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const { data, status } = await postRequest(`/proposal`, {
           projectProcessStepId: design.projectProcessStepId
-        }
-        const { data, status } = await postRequest(`/proposal`, params, 'blueraven')
+        }, 'blueraven')
         this.$router.push({ name: 'proposal', params: { proposalId: data.id } })
         handleHidingGlobalLoader(this, status)
       } catch (e) {
