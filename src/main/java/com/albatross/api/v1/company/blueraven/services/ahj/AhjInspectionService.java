@@ -127,15 +127,6 @@ public class AhjInspectionService {
     return sqlCache.query("ahj.inspection.searchAhjsByState", params, AhjInspection.class);
   }
 
-  // CHECKLISTS
-  public void createInspectionChecklistItem(Long inspectionId, Long itemId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjInspectionId", inspectionId);
-    params.put("ahjChecklistId", itemId);
-
-    sqlCache.update("ahj.inspection.checklist.create", params);
-  }
-
   // CONTACTS
   public void saveInspectionContact(Long inspectionId, Long contactId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -227,7 +218,6 @@ public class AhjInspectionService {
 
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjNoteTemplate>> noteTemplateTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
@@ -242,31 +232,6 @@ public class AhjInspectionService {
       bw.registerCustomEditor(
           List.class, "resultsLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(
-          List.class, "failureChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "schedulingChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "obtainingResultsChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "reinspectionsChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "schedulingWithAhjChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "schedulingWithBrsTechnicianChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class,

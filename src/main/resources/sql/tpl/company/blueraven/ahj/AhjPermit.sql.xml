@@ -42,102 +42,6 @@
           ) contacts), '[]'
         ) AS followUpContacts,
         coalesce((
-          SELECT array_to_json(array_agg(row_to_json(contacts)))
-          FROM (
-            SELECT
-              c.id,
-              c.name,
-              c.title,
-              c.email,
-              c.phone_number AS "phoneNumber",
-              c.address,
-              c.notes,
-              c.hours
-            FROM brs.ahj_contact c
-              INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
-            WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 7
-          ) contacts), '[]'
-        ) AS printLocations,
-        coalesce((
-          SELECT array_to_json(array_agg(row_to_json(notes)))
-          FROM (
-            SELECT
-              n.id,
-              n.note,
-              n.date_created,
-              n.date_modified,
-              n.created_by_id                                      AS "createdById",
-              concat(created_by.first_name, ' ', created_by.last_name) AS "createdBy",
-              n.modified_by_id                                      AS "modifiedById",
-              concat(modified_by.first_name, ' ', modified_by.last_name) AS "modifiedBy"
-            FROM brs.ahj_note n
-              INNER JOIN flow."user" created_by ON n.created_by_id = created_by.id
-              INNER JOIN flow."user" modified_by ON n.modified_by_id = modified_by.id
-              INNER JOIN brs.ahj_permit_note apn ON n.id = apn.ahj_note_id
-            WHERE apn.ahj_permit_id = p.id AND n.archived IS FALSE AND n.note_type_id = 1
-          ) AS notes), '[]'
-        ) AS notes,
-        coalesce((
-          SELECT array_to_json(array_agg(row_to_json(checklist)))
-          FROM (
-            SELECT
-              ac.id,
-              ac.description,
-              ac.display_order AS "displayOrder"
-            FROM brs.ahj_checklist ac
-              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
-            WHERE ac.archived IS FALSE
-              AND ac.checklist_type_id = 1
-              AND apc.ahj_permit_id = p.id
-            ORDER BY ac.display_order) checklist
-          ), '[]'
-        ) AS submissionChecklist,
-        coalesce((
-          SELECT array_to_json(array_agg(row_to_json(checklist)))
-          FROM (
-            SELECT
-              ac.id,
-              ac.description,
-              ac.display_order AS "displayOrder"
-            FROM brs.ahj_checklist ac
-              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
-            WHERE ac.archived IS FALSE
-              AND ac.checklist_type_id = 2
-              AND apc.ahj_permit_id = p.id
-            ORDER BY ac.display_order) checklist
-          ), '[]'
-        ) AS revisionChecklist,
-        coalesce((
-          SELECT array_to_json(array_agg(row_to_json(checklist)))
-          FROM (
-            SELECT
-              ac.id,
-              ac.description,
-              ac.display_order AS "displayOrder"
-            FROM brs.ahj_checklist ac
-              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
-            WHERE ac.archived IS FALSE
-              AND ac.checklist_type_id = 3
-              AND apc.ahj_permit_id = p.id
-            ORDER BY ac.display_order) checklist
-          ), '[]'
-        ) AS asBuiltChecklist,
-      coalesce((
-                 SELECT array_to_json(array_agg(row_to_json(checklist)))
-                 FROM (
-                        SELECT
-                          ac.id,
-                          ac.description,
-                          ac.display_order AS "displayOrder"
-                        FROM brs.ahj_checklist ac
-                               INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
-                        WHERE ac.archived IS FALSE
-                          AND ac.checklist_type_id = 14
-                          AND apc.ahj_permit_id = p.id
-                        ORDER BY ac.display_order) checklist
-               ), '[]'
-        ) AS nonStandardChecklist,
-        coalesce((
           SELECT array_to_json(array_agg(row_to_json(links)))
           FROM (
             SELECT
@@ -170,35 +74,7 @@
               AND apl.link_type_id = 5
               AND apl.ahj_permit_id = p.id) links
           ), '[]'
-        ) AS followUpLinks,
-        coalesce((
-          SELECT array_to_json(array_agg(row_to_json(fots)))
-          FROM (
-            SELECT
-              upv.user_id AS "id",
-              upv.first_name AS "firstName",
-              upv.last_name AS "lastName",
-              concat(upv.first_name,' ',upv.last_name) AS "fullName",
-              (select array_to_json(array_agg(row_to_json(fots)))
-               from (select o.id AS "orgId",
-                            upv.org_level_id AS "orgLevelId",
-                            o.org_name AS "orgName",
-                            upv.position_level AS "positionLevel"
-                     from flow.org o
-                     where o.id = upv.org_id) fots
-              ) AS "hierarchy"
-            FROM flow.user_positions_vw upv
-              INNER JOIN flow.org o ON o.id = upv.org_id
-              LEFT JOIN flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
-              LEFT JOIN brs.ahj ON ahj.metro_area_id = ocfv.int_value
-            WHERE upv.end_date IS NULL
-              AND upv.user_archived IS FALSE
-              and upv.archived is not true
-              AND upv.primary_flag IS TRUE
-              AND o.org_type_id = 8
-              AND ahj.id = p.ahj_id) fots
-        ), '[]'
-      ) AS servicingFots
+        ) AS followUpLinks
       FROM brs.ahj_permit p
         INNER JOIN brs.ahj ahj ON ahj.id = p.ahj_id
         LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
@@ -314,14 +190,6 @@
         AND ahj.archived IS FALSE
     ]]>
   </ahj.permit.searchAhjsByState>
-
-  <!-- CHECKLIST -->
-  <ahj.permit.checklist.create>
-    <![CDATA[
-      INSERT INTO brs.ahj_permit_checklist (ahj_permit_id, ahj_checklist_id)
-      VALUES (:ahjPermitId, :ahjChecklistId)
-    ]]>
-  </ahj.permit.checklist.create>
 
   <!-- CONTACT -->
   <ahj.permit.contact.create>

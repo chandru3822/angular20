@@ -82,101 +82,6 @@
                    ), '[]'
               ) AS fee_contacts,
           coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(checklist)))
-                       FROM (
-                                SELECT
-                                    ac.id,
-                                    ac.description,
-                                    ac.display_order AS "displayOrder",
-                                    ac.failed_inspection_date AS "failedInspectionDate",
-                                    ac.failed_inspection_resource_id AS "failedInspectionResourceId",
-                                    ac.failed_inspection_project AS "failedInspectionProject",
-                                    o.org_name AS "resource"
-                                FROM brs.ahj_checklist ac
-                                         INNER JOIN brs.ahj_inspection_checklist aic ON ac.id = aic.ahj_checklist_id
-                                         INNER JOIN flow.org o ON o.id = ac.failed_inspection_resource_id
-                                WHERE ac.archived IS FALSE
-                                  AND aic.ahj_inspection_id = i.id
-                                  AND ac.checklist_type_id = 8
-                                ORDER BY ac.display_order) checklist
-                   ), '[]'
-              ) AS failureChecklist,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(checklist)))
-                       FROM (
-                                SELECT
-                                    ac.id,
-                                    ac.description,
-                                    ac.display_order AS "displayOrder"
-                                FROM brs.ahj_checklist ac
-                                         INNER JOIN brs.ahj_inspection_checklist aic ON ac.id = aic.ahj_checklist_id
-                                WHERE ac.archived IS FALSE
-                                  AND aic.ahj_inspection_id = i.id
-                                  AND ac.checklist_type_id = 9
-                                ORDER BY ac.display_order) checklist
-                   ), '[]'
-              ) AS schedulingChecklist,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(checklist)))
-                       FROM (
-                                SELECT
-                                    ac.id,
-                                    ac.description,
-                                    ac.display_order AS "displayOrder"
-                                FROM brs.ahj_checklist ac
-                                         INNER JOIN brs.ahj_inspection_checklist aic ON ac.id = aic.ahj_checklist_id
-                                WHERE ac.archived IS FALSE
-                                  AND aic.ahj_inspection_id = i.id
-                                  AND ac.checklist_type_id = 10
-                                ORDER BY ac.display_order) checklist
-                   ), '[]'
-              ) AS obtainingResultsChecklist,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(checklist)))
-                       FROM (
-                                SELECT
-                                    ac.id,
-                                    ac.description,
-                                    ac.display_order AS "displayOrder"
-                                FROM brs.ahj_checklist ac
-                                         INNER JOIN brs.ahj_inspection_checklist aic ON ac.id = aic.ahj_checklist_id
-                                WHERE ac.archived IS FALSE
-                                  AND aic.ahj_inspection_id = i.id
-                                  AND ac.checklist_type_id = 11
-                                ORDER BY ac.display_order) checklist
-                   ), '[]'
-              ) AS reinspectionsChecklist,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(checklist)))
-                       FROM (
-                                SELECT
-                                    ac.id,
-                                    ac.description,
-                                    ac.display_order AS "displayOrder"
-                                FROM brs.ahj_checklist ac
-                                         INNER JOIN brs.ahj_inspection_checklist aic ON ac.id = aic.ahj_checklist_id
-                                WHERE ac.archived IS FALSE
-                                  AND aic.ahj_inspection_id = i.id
-                                  AND ac.checklist_type_id = 12
-                                ORDER BY ac.display_order) checklist
-                   ), '[]'
-              ) AS schedulingWithAhjChecklist,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(checklist)))
-                       FROM (
-                                SELECT
-                                    ac.id,
-                                    ac.description,
-                                    ac.display_order AS "displayOrder"
-                                FROM brs.ahj_checklist ac
-                                         INNER JOIN brs.ahj_inspection_checklist aic ON ac.id = aic.ahj_checklist_id
-                                WHERE ac.archived IS FALSE
-                                  AND aic.ahj_inspection_id = i.id
-                                  AND ac.checklist_type_id = 13
-                                ORDER BY ac.display_order) checklist
-                   ), '[]'
-              ) AS schedulingWithBrsTechnicianChecklist,
-          coalesce((
                        SELECT array_to_json(array_agg(row_to_json(requirements)))
                        FROM (
                                 WITH open_challenge AS (
@@ -443,14 +348,6 @@
         AND ahj.archived IS FALSE
     ]]>
   </ahj.inspection.searchAhjsByState>
-
-  <!-- CHECKLIST -->
-  <ahj.inspection.checklist.create>
-    <![CDATA[
-      INSERT INTO brs.ahj_inspection_checklist (ahj_inspection_id, ahj_checklist_id)
-      VALUES (:ahjInspectionId, :ahjChecklistId)
-    ]]>
-  </ahj.inspection.checklist.create>
 
   <!-- CONTACT -->
   <ahj.inspection.contact.create>
