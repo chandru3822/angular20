@@ -1,21 +1,21 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-links">
-  <v-card class="mb-3">
-    <v-toolbar class="primary" @click="toggleCollapseExpand">
-      <v-toolbar-title class="white--text font-weight-bold" :title="title">
-        {{ title }}
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
-        <v-icon v-show="!addMode && !editMode" @click.stop="[toggleCollapseExpand(), addLink()]" class="white--text">add</v-icon>
-        <v-icon v-show="addMode || editMode"
-                @click.stop="hideCtrls" class="white--text">remove</v-icon>
-      </v-btn>
-      <v-icon v-if="showExpanded" class="white--text">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
-    </v-toolbar>
-    <v-card-text v-if="expanded">
-    <v-form v-show="addMode || editMode"
-            ref="linkForm" class="px-3 pt-4 pb-3">
+  <AhjCard
+      :title="title"
+      :expanded-all="expandedAll"
+      :edit-mode="editMode"
+      show-add show-expanded
+      :user-can-edit="userCanEdit"
+      :add-btn-disabled="!linkInfoEntered"
+      @hide-ctrls="hideCtrls"
+      @save-new="saveLink(true)"
+      @save-update="saveLink(false)"
+      @delete-item="deleteLink"
+      @toggle-collapse-expand="$emit('toggle-collapse-expand')"
+  >
+    <template v-slot:addOrEdit>
+    <v-form
+            ref="linkForm">
       <v-text-field v-model="link.name" required label="Name" filled></v-text-field>
       <v-text-field v-model="link.link" required type="url"
                     :rules="[urlRule]" label="URL" filled></v-text-field>
@@ -25,19 +25,8 @@
                   style="margin: 15px 0 -15px 0"
                   v-model="link.notes">
       </v-textarea>
-      <div class="link-btns">
-        <v-btn color="primary" text @click="hideCtrls"
-           class="cancel-link">Cancel</v-btn>
-        <v-btn v-show="editMode" dark v-if="userCanEdit"
-               @click="deleteLink" class="error">
-          Delete
-        </v-btn>
-        <v-btn @click="saveLink" color="primary" class="white--text"
-               :disabled="!linkInfoEntered">
-          {{ addMode ? 'Add' : 'Update' }}
-        </v-btn>
-      </div>
     </v-form>
+    </template>
     <v-list v-show="links.length > 0" v-for="(link, index) of links"
             :key="link.id" class="px-2" :style="{'border-radius': index === links.length - 1 ? '5px !important' : '',
                                                  'border': index === links.length - 1 ? 'none !important' : ''}">
@@ -56,8 +45,7 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No links found
     </div>
-    </v-card-text>
-  </v-card>
+  </AhjCard>
 </template>
 
 <script>
@@ -66,29 +54,18 @@
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+  import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
   export default {
     name: "AhjLinks",
-
+    components: {AhjCard},
     props: {
-      title: {
-        type: String
-      },
-      linkTypeId: {
-        type: Number
-      },
-      userCanEdit: {
-        type: Boolean
-      },
-      itemId: {
-        type: Number
-      },
-      itemType: {
-        type: String
-      },
-      ahjId: {
-        type: Number
-      },
+      title:  String,
+      linkTypeId: Number,
+      userCanEdit: Boolean,
+      itemId: Number,
+      itemType: String,
+      ahjId: Number,
       links: {
         type: Array,
         default: () => []
@@ -115,25 +92,14 @@
           password: null,
           notes: null
         },
-        addMode: false,
         editMode: false,
         validUrl: false,
         linksCopy: this.links,
-        expanded: true
       }
     },
     computed: {
       linkInfoEntered() {
         return this.link.name && this.link.link && this.validUrl
-      }
-    },
-    watch: {
-      expandedAll(){
-        if(this.expandedAll === CollapseExpandEnum.EXPANDED && this.expanded !== true) {
-          this.expanded = true
-        } else if(this.expandedAll === CollapseExpandEnum.COLLAPSED && this.expanded === true){
-          this.expanded = false
-        }
       }
     },
     methods: {
@@ -148,26 +114,17 @@
       },
       hideCtrls() {
         this.$refs.linkForm.reset()
-        this.addMode = false
         this.editMode = false
-      },
-      addLink() {
-        if(!this.expanded){
-          this.toggleCollapseExpand()
-        }
-        this.editMode = false
-        this.addMode = true
       },
       editLink(link) {
-        this.addMode = false
         this.editMode = true
         this.link = Object.assign({}, link)
       },
-      async saveLink() {
+      async saveLink(newLink) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.link.linkTypeId = this.linkTypeId
 
-        if (this.addMode) {
+        if (newLink) {
           try {
             let res = null
             if (this.itemType === 'utility') {
@@ -178,13 +135,12 @@
             this.linksCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Link added')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$refs.contactForm.reset()
+            this.$refs.linkForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.addMode = false
         } else {
           try {
             let res = null
@@ -207,7 +163,6 @@
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.editMode = false
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -229,15 +184,10 @@
           this.snackbar = getSnackbar('ERROR', 'Error deleting link')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-        this.editMode = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
       toggleCollapseExpand(){
-        if(this.expanded && (this.addMode || this.editMode)){
-          this.hideCtrls()
-        }
-        this.expanded = !this.expanded
-        this.$emit('toggle-collapse-expand', this.expanded)
+        this.$emit('toggle-collapse-expand')
       }
     }
   }
