@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 @Slf4j
@@ -114,10 +116,10 @@ public class MarketoService {
         }
         lead.put("projectId", project.getId());
         lead.put("leadStatus", project.getProjectStatusType());
-        final String leadSource = sqlCache.queryForObject("marketo.getLeadSource", Map.of("contactId", contact.getId()), String.class);
-        lead.put("leadSource", leadSource);
-        final String hubspotId = sqlCache.queryForObject("marketo.getHubspotId", Map.of("contactId", contact.getId()), String.class);
-        lead.put("hubspotId", hubspotId);
+        Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", contact.getId()), new SingleColumnRowMapper<>(String.class));
+        leadSource.ifPresent(l -> lead.put("leadSource", l));
+        Optional<String> hubspotId = sqlCache.get("marketo.getHubspotId", Map.of("contactId", contact.getId()), new SingleColumnRowMapper<>(String.class));
+        hubspotId.ifPresent(h -> lead.put("hubspotId", h));
         lead.put("contactId", contact.getId());
         lead.put("firstName", contact.getFirstName());
         lead.put("lastName", contact.getLastName());
