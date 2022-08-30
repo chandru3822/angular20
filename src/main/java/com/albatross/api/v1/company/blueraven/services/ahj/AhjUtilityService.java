@@ -148,48 +148,6 @@ public class AhjUtilityService {
     sqlCache.update("ahj.utility.contact.delete", params);
   }
 
-  // CHECKLISTS
-  public Optional<AhjChecklistItem> getChecklistItemById(Long id) {
-    HashMap<String, Object> idMap = new HashMap<>();
-    idMap.put("id", id);
-
-    return sqlCache.get("ahj.checklist.findById", idMap, AhjChecklistItem.class);
-  }
-
-  public Optional<AhjChecklistItem> saveChecklistItem(
-      Long utilityId, Long itemId, AhjChecklistItem item) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjUtilityId", utilityId);
-    params.put("description", item.getDescription());
-    params.put("displayOrder", item.getDisplayOrder());
-    params.put("checklistTypeId", item.getChecklistTypeId());
-    params.put("currentUser", currentUser.trueUserId());
-    params.put("failedInspectionResourceId", item.getFailedInspectionResourceId());
-    params.put("failedInspectionDate", item.getFailedInspectionDate());
-    params.put("failedInspectionProject", item.getFailedInspectionProject());
-
-    if (itemId == null) {
-      itemId = sqlCache.updateReturningId("ahj.utility.checklist.add", params, "id").longValue();
-    } else {
-      params.put("id", itemId);
-      sqlCache.update("ahj.utility.checklist.update", params);
-    }
-
-    return getChecklistItemById(itemId);
-  }
-
-  public void deleteChecklistItem(Long itemId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", itemId);
-    params.put("currentUser", currentUser.trueUserId());
-
-    sqlCache.update("ahj.utility.checklist.delete", params);
-  }
-
   // LINKS
   public Optional<AhjLink> saveUtilityLink(Long utilityId, Long linkId, AhjLink link) {
     User currentUser = securityService.getCurrentUser();
@@ -303,7 +261,6 @@ public class AhjUtilityService {
 
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
 
@@ -322,20 +279,6 @@ public class AhjUtilityService {
 
       bw.registerCustomEditor(
           List.class, "submissionLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "submissionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "approvalChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "ptoChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "utilityInspectionChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class, "contacts", new JsonCollectionDeserializer(contactTypeRef, objectMapper));
