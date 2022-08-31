@@ -104,7 +104,7 @@ BEGIN
             WHERE c.company_id = ANY (v_company_ids)
               and c.archived is not true
               and c.date_created is not null
-              and (c.owner_position_ids && v_position_ids)
+              and (c.owner_position_ids::bigint[] && v_position_ids)
               and
                       ((c.id::text like '%' || v_clean_name_search_term || '%') or
                        (c.contact_full_name_search like '%' || v_clean_name_search_term || '%') or
@@ -164,7 +164,7 @@ BEGIN
             WHERE c.company_id = ANY (v_company_ids)
               and c.archived is not true
               and c.date_created is not null
-              and (c.owner_position_ids && v_position_ids)
+              and (c.owner_position_ids::bigint[] && v_position_ids)
             order by c.date_created desc
             limit p_limit offset p_offset) as limited_contacts;
 
