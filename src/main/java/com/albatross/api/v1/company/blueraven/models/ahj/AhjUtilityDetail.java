@@ -11,6 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 public class AhjUtilityDetail extends AhjUtility {
-    private List<AhjLink> customerSignatureLinks, ptoLinks, ptoFollowupLinks, submissionLinks;
+    private List<AhjLink> links;
     private List<AhjContact> contacts;
 }

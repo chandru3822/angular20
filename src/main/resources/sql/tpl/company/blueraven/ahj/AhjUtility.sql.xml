@@ -105,57 +105,9 @@
                                     aul.notes
                                 FROM brs.ahj_utility_link aul
                                 WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 6
+                                  AND aul.link_type_id = 10
                                   AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS customer_signature_links,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(links)))
-                       FROM (
-                                SELECT
-                                    aul.id,
-                                    aul.name,
-                                    aul.link,
-                                    aul.username,
-                                    aul.link_type_id AS "linkTypeId",
-                                    aul.password,
-                                    aul.notes
-                                FROM brs.ahj_utility_link aul
-                                WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 7
-                                  AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS pto_links,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(links)))
-                       FROM (
-                                SELECT
-                                    aul.id,
-                                    aul.name,
-                                    aul.link,
-                                    aul.username,
-                                    aul.link_type_id AS "linkTypeId",
-                                    aul.password,
-                                    aul.notes
-                                FROM brs.ahj_utility_link aul
-                                WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 8
-                                  AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS pto_followup_links,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(links)))
-                       FROM (
-                                SELECT
-                                    aul.id,
-                                    aul.name,
-                                    aul.link,
-                                    aul.username,
-                                    aul.link_type_id AS "linkTypeId",
-                                    aul.password,
-                                    aul.notes
-                                FROM brs.ahj_utility_link aul
-                                WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 9
-                                  AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS submission_links
+                   ), '[]') AS links
       FROM brs.ahj_utility u
                LEFT JOIN flow.list_of_value lov ON lov.id = u.metro_area_id
                left join flow.company_state cs on cs.id = u.company_state_id

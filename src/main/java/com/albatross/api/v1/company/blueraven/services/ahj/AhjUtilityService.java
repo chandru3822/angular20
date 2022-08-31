@@ -265,19 +265,8 @@ public class AhjUtilityService {
 
       bw.registerCustomEditor(
           List.class,
-          "customerSignatureLinks",
+          "links",
           new JsonCollectionDeserializer(linkTypeRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "ptoLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "ptoFollowupLinks",
-          new JsonCollectionDeserializer(linkTypeRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "submissionLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class, "contacts", new JsonCollectionDeserializer(contactTypeRef, objectMapper));
