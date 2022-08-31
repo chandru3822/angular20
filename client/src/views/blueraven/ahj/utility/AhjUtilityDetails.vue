@@ -56,7 +56,7 @@
               </v-col>
             </v-row>
             <!-- LOWER SECTION -->
-            <h1 class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
+            <h1 id="links" class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
             <v-row no-gutters>
               <v-col cols="12" md="6" class="group px-2 py-2">
               <!-- CONTACTS -->
@@ -72,9 +72,8 @@
                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
             ></AhjContact>
                 <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll">
-                  <AhjDocument title="Utility Rate Documents" :documents="utilityRateDocs" :document-type-id="7" :ahj-id="ahjUtility.id" :user-can-edit="userCanEdit" is-nested></AhjDocument>
-                  <AhjDocument title="Submission Detail Documents" :documents="submissionDocs" :document-type-id="6" :ahj-id="ahjUtility.id" :user-can-edit="userCanEdit" is-nested></AhjDocument>
-                  <AhjDocument title="Approval Detail Documents" :documents="approvalDocs" :document-type-id="25" :ahj-id="ahjUtility.id" :user-can-edit="userCanEdit" is-nested></AhjDocument>
+                  <AhjAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit" :attachment-types="AhjUtilityDocumentTypes" :attachments="documents" :source-id="ahjUtility.id">
+                  ></AhjAttachments>
                 </AhjCard>
               </v-col>
               <v-col v-if="dataReady" class="group px-2 py-2">
@@ -83,7 +82,7 @@
                           :linkTypeId="10"
                           :itemId="ahjUtility.id"
                           :itemType="itemType"
-                          :links="allLinks"
+                          :links="ahjUtility.links"
                           :isNested="false"
                           show-expanded
                           :expanded-all="expandedAll"
@@ -111,12 +110,14 @@ import {AppMutations} from "@/stores/AppStore"
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
-import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+import {CollapseExpandEnum, AhjUtilityDocumentTypes} from "@/views/blueraven/ahj/AhjConstants";
 import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
+import AhjAttachments from "@/views/blueraven/ahj/components/AhjAttachments";
 
 export default {
   name: "ahjUtilityDetails",
   components: {
+    AhjAttachments,
     AhjCustomFields,
     AhjChecklist,
     AhjContact,
@@ -134,6 +135,7 @@ export default {
   },
   data: () => ({
     CollapseExpandEnum,
+    AhjUtilityDocumentTypes,
     ahjUtilityId: null,
     itemType: "utility",
     snackbar: {},
@@ -158,8 +160,8 @@ export default {
     submissionDocs: [],
     approvalDocs: [],
     financiers: [],
-    allLinks: [],
-    expandedAll: CollapseExpandEnum.EXPANDED
+    expandedAll: CollapseExpandEnum.EXPANDED,
+    isDocumentsLoading: true
   }),
   methods: {
     updateDirtyValue(item) {
@@ -172,7 +174,7 @@ export default {
         const {data, status} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, "blueraven")
         this.ahjUtility = cloneDeep(data)
         window.document.title = `AHJ Utility - ${this.ahjUtility.name}`
-        this.allLinks = orderBy([...this.ahjUtility.customerSignatureLinks, ...this.ahjUtility.ptoLinks, ...this.ahjUtility.ptoFollowupLinks, ...this.ahjUtility.submissionLinks], link => link.name?.toLowerCase())
+        this.ahjUtility.links = orderBy(this.ahjUtility.links, link => link.name?.toLowerCase())
         this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name?.toLowerCase())
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -183,24 +185,18 @@ export default {
       }
     },
     async getAllDocuments(){
-      await this.getDocuments(6)
-      await this.getDocuments(7)
-      await this.getDocuments(25)
+      this.isDocumentsLoading = true
+      for(const docType of this.AhjUtilityDocumentTypes){
+      await this.getDocuments(docType.attachmentTypeId)
+      }
+      this.isDocumentsLoading = false
     },
     async getDocuments(docTypeId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const params = {sourceId: this.ahjUtility.id, attachmentTypeId: docTypeId}
         const {data, status} = await getRequestWithParams('/attachment', {params})
-        switch (docTypeId){
-          case 6: this.submissionDocs = cloneDeep(data)
-                break
-          case 7: this.utilityRateDocs = cloneDeep(data)
-                break
-          case 25: this.approvalDocs = cloneDeep(data)
-                break
-          default: this.documents = cloneDeep(data)
-        }
+         this.documents = cloneDeep(data).concat(this.documents)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

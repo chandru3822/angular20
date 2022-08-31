@@ -33,7 +33,7 @@
 
 <script>
 import CustomValueInput from "@/views/flow/components/CustomValueInput";
-import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
 export default {
   name: "AhjCustomFields",

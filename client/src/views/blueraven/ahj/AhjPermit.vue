@@ -174,7 +174,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
-import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
 export default {
   name: 'ahjPermit',

@@ -229,7 +229,7 @@ import AhjLink from './components/AhjLinks'
 import AhjNoteTemplate from './components/AhjNoteTemplates'
 import AhjRequirement from './components/AhjRequirements'
 import AhjServicingFot from './components/AhjServicingFots'
-import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'

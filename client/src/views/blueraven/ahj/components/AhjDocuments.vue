@@ -39,7 +39,7 @@
   import { Actions } from '@/store'
   import { AppMutations } from '@/stores/AppStore'
 
-
+  //DEPRECATED; USE AhjAttachments INSTEAD
   export default {
     name: "AhjDocuments",
     props: {

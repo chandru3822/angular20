@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
 export default {
   name: "AhjCard",

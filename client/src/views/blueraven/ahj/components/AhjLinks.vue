@@ -53,7 +53,7 @@
 
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjEnums";
+  import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
   import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
   export default {

@@ -14,7 +14,7 @@
         </v-btn>
         <a v-if="!item.edit" :href="item.presignedUrl"
            class="type link text-left text-decoration-none">
-          {{ item.editableNameCopy }}
+          {{ allowEdit ? item.editableNameCopy : item.filename }}
         </a>
         <v-text-field
             v-else
@@ -26,7 +26,7 @@
       </v-col>
       <v-col cols="4" class="text-center px-1 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
       <v-col cols="2" class="text-right pa-0">
-        <v-btn v-if="!item.edit" dense small text color="primary" class="px-0" @click="[item.edit = true, renderTicker++]">
+        <v-btn v-if="!item.edit && allowEdit" dense small text color="primary" class="px-0" @click="[item.edit = true, renderTicker++]">
           <v-icon>edit</v-icon>
         </v-btn>
         <v-btn v-if="item.edit" dense text color="primary" small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
@@ -61,7 +61,11 @@ export default {
   props: {
     attachments: Array,
     displayType: Object,
-    showNonPrimaryDocs: Boolean
+    showNonPrimaryDocs: Boolean,
+    allowEdit: {
+      type: Boolean,
+      default: true
+    }
   },
   data () {
     return {
@@ -118,6 +122,8 @@ export default {
       const id = this.attachmentToDelete.id
       try {
         await deleteAttachment(id)
+        let deletedDocumentIndex = this.attachments.findIndex(i => i.id === id)
+        this.attachments.splice([deletedDocumentIndex], 1)
         this.snackbar = getSnackbar('SUCCESS', 'Document Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
