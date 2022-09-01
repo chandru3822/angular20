@@ -52,10 +52,6 @@
           {
             label: 'Inspection',
             path: '/ahj/' + this.ahjId + '/inspection'
-          },
-          {
-            label: 'Design Requirements',
-            path: '/ahj/' + this.ahjId + '/design'
           }
         ]
       }
