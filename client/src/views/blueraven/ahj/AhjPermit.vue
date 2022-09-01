@@ -1,5 +1,6 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
+  <v-card class="mx-4 mt-6">
   <v-row no-gutters id="ahj-permit">
     <v-col class="ahj-form-btns py-1" cols="12">
       <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
@@ -158,6 +159,7 @@
 
     </v-form>
   </v-row>
+  </v-card>
 </template>
 
 <script>

@@ -1,5 +1,6 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
+  <v-card class="mx-4 mt-6">
   <v-container>
   <v-row class="px-2" no-gutters>
     <v-col class="ahj-form-btns py-1" cols="12">
@@ -218,6 +219,7 @@
     </v-dialog>
     </v-form>
   </v-container>
+  </v-card>
 </template>
 
 <script>

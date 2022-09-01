@@ -3,8 +3,10 @@
   <v-container id="ahj-utility-details-container">
     <v-row>
       <v-col cols="12" class="pt-0">
+
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
+          <v-card class="mx-4 pb-4">
             <v-btn id="back-btn" text color="primary" class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
               <v-icon>arrow_left</v-icon>
               <span id="back-btn-text">Back to menu</span>
@@ -21,10 +23,11 @@
 <!--            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(&#45;&#45;v-secondary-base)">-->
 <!--              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>-->
 <!--            </v-tabs>-->
+        </v-card>
           </v-col>
         </v-row>
-
         <v-row dense>
+        <v-card class="mx-2 mt-6">
           <v-col class="ahj-form-btns" cols="12">
             <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
             <v-btn v-if="dataWasChanged"
@@ -91,6 +94,7 @@
               </v-col>
             </v-row>
           </v-form>
+        </v-card>
         </v-row>
       </v-col>
     </v-row>

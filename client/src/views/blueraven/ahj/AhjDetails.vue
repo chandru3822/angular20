@@ -4,6 +4,7 @@
       <v-col cols="12" class="pt-0">
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
+            <v-card class="mx-4">
             <v-btn id="back-btn" text color="primary" class="pl-1 pr-2" :to="'/ahj'">
               <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
             </v-btn>
@@ -17,14 +18,14 @@
               </div>
             </div>
 
-            <v-tabs id="fixed-tabs-bar" class="" background-color="var(--v-secondary-base)">
+            <v-tabs id="fixed-tabs-bar" class="pl-0">
               <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path"
                      class="text-capitalize ma-0"
-                     :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+                     :style="{'margin-left': index === 0 ? '0' : '0'}">
                 {{ tab.label }}
               </v-tab>
             </v-tabs>
-
+            </v-card>
             <router-view class="px-2" />
           </v-col>
         </v-row>
@@ -89,7 +90,6 @@
     top: -12px;
     z-index: 2;
     opacity: 0.95;
-    border-top: 1px solid #E6E6E6;
     border-bottom: 1px solid #E6E6E6;
     .v-tab:hover {
       color: var(--v-primary-base);
