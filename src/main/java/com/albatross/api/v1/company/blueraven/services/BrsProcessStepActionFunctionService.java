@@ -16,7 +16,6 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -339,7 +338,9 @@ public class BrsProcessStepActionFunctionService {
 
                 //IDing by field name is about a generic as we can get as of now, but not ideal
                 if (paramName.contains("System Size")) {
-                    params.put("numericValue", new BigDecimal(design.get("system_size_stc").toString()));
+                    // Divide by 1000 to get kilowatt system size
+                    float systemSizeInKw = Float.parseFloat(design.get("system_size_stc").toString()) / 1000;
+                    params.put("numericValue", systemSizeInKw);
                     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                 } else if (paramName.contains("Panel Quantity")) {
                     params.put("intValue", panelQuantity);
