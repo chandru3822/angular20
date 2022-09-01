@@ -14,6 +14,7 @@
           :showFieldName="false"
           :field="field"
           :filled-style="true"
+          :lock-feature="true"
       />
       <v-textarea v-if="showOtherField(field.intValue, field.listOfValues)"
                   v-model="field.textValue"
