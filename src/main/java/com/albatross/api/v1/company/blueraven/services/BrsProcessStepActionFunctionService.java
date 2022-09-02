@@ -8,7 +8,6 @@ import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
-import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +18,6 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -352,7 +349,9 @@ public class BrsProcessStepActionFunctionService {
 
                 //IDing by field name is about a generic as we can get as of now, but not ideal
                 if (paramName.contains("System Size")) {
-                    params.put("numericValue", new BigDecimal(design.get("system_size_stc").toString()));
+                    // Divide by 1000 to get kilowatt system size
+                    float systemSizeInKw = Float.parseFloat(design.get("system_size_stc").toString()) / 1000;
+                    params.put("numericValue", systemSizeInKw);
                     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                 } else if (paramName.contains("Panel Quantity")) {
                     params.put("intValue", panelQuantity);
