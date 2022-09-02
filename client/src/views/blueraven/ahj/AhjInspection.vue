@@ -21,32 +21,26 @@
     <!-- UPPER SECTION -->
     <v-form ref="ahjInspectionForm">
       <v-row class="mb-4 group-row" no-gutters>
-        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">
-        <AhjCustomFields :group = group
-                 :user-can-edit="userCanEdit"
-                 :expanded-all="expandedAll"
-                 :callback="(field) => updateDirtyValue(field)"
-                 @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-        ></AhjCustomFields>
-        </v-col>
+        <TwoColumnMasonry :custom-field-groups= customFieldGroups
+                           :user-can-edit="userCanEdit"
+                           :expanded-all="expandedAll"
+                           :callback="(field) => updateDirtyValue(field)"
+                           @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED">
+        </TwoColumnMasonry>
+          <!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">-->
+<!--        <AhjCustomFields :group = group-->
+<!--                 :user-can-edit="userCanEdit"-->
+<!--                 :expanded-all="expandedAll"-->
+<!--                 :callback="(field) => updateDirtyValue(field)"-->
+<!--                 @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
+<!--        ></AhjCustomFields>-->
+<!--        </v-col>-->
       </v-row>
 
       <!-- LOWER SECTION -->
       <h1 class="pb-2 mb-4 lower-section">Links and Contacts</h1>
       <!-- FIRST ROW -->
       <v-row no-gutters>
-        <v-col cols="12" md="4" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Utility Service Department Contacts"
-                      :contactTypeId="9"
-                      :user-can-edit="userCanEdit"
-                      :itemId="ahjInspection.id"
-                      :itemType="itemType"
-                      :ahjId="ahjId"
-                      :contacts="ahjInspection.utilityServiceDeptContacts"
-                      :isNested="true"
-          ></AhjContact>
-        </v-col>
         <v-col cols="12" md="4" class="px-1">
           <AhjLink v-if="dataReady"
                    title="Scheduling Links"
@@ -121,17 +115,23 @@
                       :contacts="ahjInspection.obtainingResultsContacts"
           ></AhjContact>
         </v-col>
-
         <v-col cols="12" md="3" class="px-1">
-          <AhjServicingFot v-if="dataReady"
-                           :servicingFots="ahjInspection.servicingFots"
-          ></AhjServicingFot>
+          <AhjContact v-if="dataReady"
+                      title="Utility Service Department Contacts"
+                      :contactTypeId="9"
+                      :user-can-edit="userCanEdit"
+                      :itemId="ahjInspection.id"
+                      :itemType="itemType"
+                      :ahjId="ahjId"
+                      :contacts="ahjInspection.utilityServiceDeptContacts"
+                      :isNested="true"
+          ></AhjContact>
         </v-col>
       </v-row>
 
       <!-- THIRD ROW -->
       <v-row no-gutters class="mb-3">
-        <v-col cols="12" md="12" class="px-1">
+        <v-col cols="12" md="6" class="px-1">
           <AhjChecklist v-if="dataReady" id="lower-checklist"
                         title="Noteworthy Reasons for Previous Inspection Failures"
                         :checklistTypeId="8"
@@ -142,6 +142,11 @@
                         :ahjId="ahjId"
                         :checklistItems="ahjInspection.failureChecklist"
           ></AhjChecklist>
+        </v-col>
+        <v-col cols="12" md="6" class="px-1">
+          <AhjServicingFot v-if="dataReady"
+                           :servicingFots="ahjInspection.servicingFots"
+          ></AhjServicingFot>
         </v-col>
       </v-row>
 
@@ -238,10 +243,12 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, 
 import orderBy from "lodash.orderby";
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
+import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
   name: 'ahjInspection',
   components: {
+    TwoColumnMasonry,
     AhjCustomFields,
     AhjChecklist,
     AhjContact,
