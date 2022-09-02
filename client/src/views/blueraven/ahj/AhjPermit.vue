@@ -1,7 +1,7 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-card class="mx-4 mt-6">
-  <v-row no-gutters id="ahj-permit">
+  <v-row no-gutters class="px-2" id="ahj-permit">
     <v-col class="ahj-form-btns py-1" cols="12">
       <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
       <v-btn v-if="dataWasChanged"
@@ -17,17 +17,24 @@
       >Save
       </v-btn>
     </v-col>
+  </v-row>
 
     <v-form ref="ahjPermitForm">
       <v-row class="mb-4 group-row" no-gutters>
-        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">
-          <AhjCustomFields :group = group
-                   :user-can-edit="userCanEdit"
-                   :callback="(field) => updateDirtyValue(field)"
-                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-          >
-          </AhjCustomFields>
-        </v-col>
+        <TwoColumnMasonry :custom-field-groups="customFieldGroupAssignments"
+                          :user-can-edit="userCanEdit"
+                          :expanded-all="expandedAll"
+                          :callback="(field) => updateDirtyValue(field)"
+                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+        ></TwoColumnMasonry>
+<!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">-->
+<!--          <AhjCustomFields :group = group-->
+<!--                   :user-can-edit="userCanEdit"-->
+<!--                   :callback="(field) => updateDirtyValue(field)"-->
+<!--                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
+<!--          >-->
+<!--          </AhjCustomFields>-->
+<!--        </v-col>-->
       </v-row>
 
       <h1 class="pb-2 mb-4"
@@ -158,7 +165,6 @@
     </v-dialog>
 
     </v-form>
-  </v-row>
   </v-card>
 </template>
 
@@ -177,10 +183,12 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, 
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
+import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
   name: 'ahjPermit',
   components: {
+    TwoColumnMasonry,
     AhjCustomFields,
     AhjChecklist,
     AhjContact,
@@ -524,6 +532,17 @@ table {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
+}
+.row {
+  width: 100%;
+}
+
+.group-row {
+  justify-content: space-between;
+}
+
+.col-gap {
+  width: 3em;
 }
 
 .other-field {

@@ -27,7 +27,8 @@
           </v-col>
         </v-row>
         <v-row dense>
-        <v-card class="mx-2 mt-6">
+        <v-card class="mx-2 mt-6 px-2 py-3 one-hunned">
+          <v-row no-gutters>
           <v-col class="ahj-form-btns" cols="12">
             <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
             <v-btn v-if="dataWasChanged"
@@ -45,18 +46,24 @@
             >Save
             </v-btn>
           </v-col>
-
-          <v-form ref="ahjUtilityForm" class="one-hunned">
+          </v-row>
+          <v-form ref="ahjUtilityForm">
+            <!-- UPPER SECTION -->
             <v-row class="mb-4 group-row" no-gutters>
-              <!-- FIRST COLUMN -->
-              <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">
-                <AhjCustomFields :group = group
-                         :user-can-edit="userCanEdit"
-                         :expanded-all="expandedAll"
-                         :callback="(field) => updateDirtyValue(field)"
-                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-                ></AhjCustomFields>
-              </v-col>
+              <TwoColumnMasonry :custom-field-groups="customFieldGroups"
+                                :user-can-edit="userCanEdit"
+                                :expanded-all="expandedAll"
+                                :callback="(field) => updateDirtyValue(field)"
+                                @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+              ></TwoColumnMasonry>
+<!--              <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">-->
+<!--                <AhjCustomFields :group = group-->
+<!--                         :user-can-edit="userCanEdit"-->
+<!--                         :expanded-all="expandedAll"-->
+<!--                         :callback="(field) => updateDirtyValue(field)"-->
+<!--                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
+<!--                ></AhjCustomFields>-->
+<!--              </v-col>-->
             </v-row>
             <!-- LOWER SECTION -->
             <h1 id="links" class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
@@ -117,10 +124,12 @@ import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
 import {CollapseExpandEnum, AhjUtilityDocumentTypes} from "@/views/blueraven/ahj/AhjConstants";
 import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 import AhjAttachments from "@/views/blueraven/ahj/components/AhjAttachments";
+import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
   name: "ahjUtilityDetails",
   components: {
+    TwoColumnMasonry,
     AhjAttachments,
     AhjCustomFields,
     AhjChecklist,
@@ -404,7 +413,10 @@ export default {
 
 .group-row {
   justify-content: space-between;
-  width: 100%;
+}
+
+.col-gap {
+  width: 3em;
 }
 
 .lower-section {

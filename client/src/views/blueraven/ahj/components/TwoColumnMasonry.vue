@@ -6,7 +6,7 @@
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
                          :callback="(field) => updateDirtyValue(field)"
-                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                         @toggle-collapse-expand="$emit('toggle-collapse-expand')"
                          class="my-2"
         ></AhjCustomFields>
     </v-col>
@@ -15,7 +15,7 @@
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
                          :callback="(field) => callback(field)"
-                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                         @toggle-collapse-expand="$emit('toggle-collapse-expand')"
                          class="my-2"
         ></AhjCustomFields>
     </v-col>
