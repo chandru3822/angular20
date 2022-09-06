@@ -90,26 +90,4 @@ public class AhjInspectionController {
       ahjInspectionService.deleteInspectionLink(ahjId, inspectionId, linkId);
     }
 
-    // NOTE TEMPLATES
-    @PostMapping(value = "/{inspectionId}/noteTemplates")
-    public Optional<AhjNoteTemplate> addNoteTemplate(@PathVariable Long ahjId,
-                                                     @PathVariable Long inspectionId,
-                                                     @RequestBody AhjNoteTemplate noteTemplate) {
-      return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, null, noteTemplate);
-    }
-
-    @PutMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}")
-    public Optional<AhjNoteTemplate> updateNoteTemplate(@PathVariable Long ahjId,
-                                                        @PathVariable Long inspectionId,
-                                                        @PathVariable Long noteTemplateId,
-                                                        @RequestBody AhjNoteTemplate noteTemplate) {
-      return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, noteTemplateId, noteTemplate);
-    }
-
-    @PutMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}/archive")
-    public void deleteNoteTemplate(@PathVariable Long ahjId,
-                                   @PathVariable Long inspectionId,
-                                   @PathVariable Long noteTemplateId) {
-      ahjInspectionService.deleteNoteTemplate(ahjId, inspectionId, noteTemplateId);
-    }
 }

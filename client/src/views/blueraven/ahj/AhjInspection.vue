@@ -231,7 +231,6 @@ import cloneDeep from 'lodash.clonedeep'
 import AhjChecklist from './components/AhjChecklist'
 import AhjContact from './components/AhjContacts'
 import AhjLink from './components/AhjLinks'
-import AhjNoteTemplate from './components/AhjNoteTemplates'
 import AhjRequirement from './components/AhjRequirements'
 import AhjServicingFot from './components/AhjServicingFots'
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
@@ -251,7 +250,6 @@ export default {
     AhjChecklist,
     AhjContact,
     AhjLink,
-    AhjNoteTemplate,
     AhjRequirement,
     AhjServicingFot,
     CustomValueInput
@@ -286,7 +284,6 @@ export default {
       schedulingChecklist: [],
       obtainingResultsChecklist: [],
       reinspectionsChecklist: [],
-      noteTemplates: [],
       utilityServiceDeptContacts: [],
       schedulingLinks: [],
       fotLinks: [],

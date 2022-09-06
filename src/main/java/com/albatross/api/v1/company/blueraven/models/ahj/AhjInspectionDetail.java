@@ -14,8 +14,6 @@ import java.util.List;
 public class AhjInspectionDetail extends AhjInspection {
     private List<AhjLink> schedulingLinks, fotLinks, resultsLinks;
     private List<AhjRequirement> installationRequirements;
-    private List<AhjNoteTemplate> noteTemplates;
-    private List<AhjContact> utilityServiceDeptContacts, schedulingContacts, obtainingResultsContacts,
-                             feeContacts;
+    private List<AhjContact> utilityServiceDeptContacts, schedulingContacts, obtainingResultsContacts, feeContacts;
     private List<User> servicingFots;
 }

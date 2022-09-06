@@ -194,18 +194,7 @@
                                   AND o.org_type_id = 8
                                   AND ahj.id = i.ahj_id) fots
                    ), '[]'
-              ) AS servicingFots,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(noteTemplates)))
-                       FROM (
-                                SELECT n.id,
-                                       n.title,
-                                       n.note
-                                FROM brs.ahj_base_note_template n
-                                         INNER JOIN brs.ahj_inspection_base_note bn ON n.id = bn.ahj_base_note_template_id
-                                WHERE bn.ahj_inspection_id = i.id AND n.archived IS FALSE) AS noteTemplates
-                   ), '[]'
-              ) AS noteTemplates
+              ) AS servicingFots
       FROM brs.ahj_inspection i
                INNER JOIN brs.ahj ahj ON ahj.id = i.ahj_id
                LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
@@ -382,46 +371,4 @@
       WHERE id = :id
     ]]>
   </ahj.inspection.link.delete>
-
-  <!-- NOTE TEMPLATE -->
-  <ahj.inspection.note.template.findById>
-    <![CDATA[
-      SELECT *
-      FROM brs.ahj_base_note_template
-      WHERE id = :id
-    ]]>
-  </ahj.inspection.note.template.findById>
-
-  <ahj.inspection.note.template.create>
-    <![CDATA[
-      INSERT INTO brs.ahj_base_note_template (title, note)
-      VALUES (:title, :note)
-    ]]>
-  </ahj.inspection.note.template.create>
-
-  <ahj.inspection.note.template.join>
-    <![CDATA[
-      INSERT INTO brs.ahj_inspection_base_note (ahj_inspection_id, ahj_base_note_template_id)
-      VALUES (:inspectionId, :noteTemplateId)
-    ]]>
-  </ahj.inspection.note.template.join>
-
-  <ahj.inspection.note.template.update>
-    <![CDATA[
-      UPDATE brs.ahj_base_note_template
-      SET title = :title,
-          note = :note,
-          date_modified = now()
-      WHERE id = :id
-    ]]>
-  </ahj.inspection.note.template.update>
-
-  <ahj.inspection.note.template.delete>
-    <![CDATA[
-      UPDATE brs.ahj_base_note_template
-      SET archived = TRUE,
-          date_modified = now()
-      WHERE id = :id
-    ]]>
-  </ahj.inspection.note.template.delete>
 </sql>
