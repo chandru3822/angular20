@@ -47,7 +47,7 @@ public class AhjPermitService {
 
     // add a blank permit and return that
     var created =
-        sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class));
+        sqlCache.get("ahj.permit.create", params, new SingleColumnRowMapper<>(Integer.class));
 
     if (created.isPresent()) {
       return sqlCache.get(
@@ -62,43 +62,9 @@ public class AhjPermitService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("depositAmount", permit.getDepositAmount());
-    params.put("averagePermitFee", permit.getAveragePermitFee());
-    params.put("engineeringLetterRequired", permit.getEngineeringLetterRequired());
-    params.put("printLocation", permit.getPrintLocation());
-    params.put("stampedPlan", permit.getStampedPlan());
-    params.put("businessLicense", permit.getBusinessLicense());
-    params.put("contractorLicense", permit.getContractorLicense());
-    params.put("businessLicenseExpirationDate", permit.getBusinessLicenseExpirationDate());
-    params.put("contractorLicenseExpirationDate", permit.getContractorLicenseExpirationDate());
     params.put("currentUser", currentUser.trueUserId());
-    params.put("otherLicense", permit.getOtherLicense());
-    params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
-    params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
-    params.put("asBuiltFeeAmount", permit.getAsBuiltFeeAmount());
-    params.put("followUpFeeAmount", permit.getFollowUpFeeAmount());
-    params.put("deliveryFeeAmount", permit.getDeliveryFeeAmount());
-    params.put("approvalTimeline", permit.getApprovalTimeline());
-    params.put("documentsAvailable", permit.getDocumentsAvailable());
-    params.put(
-        "brsTechnicianPermitSubmissionInstructions",
-        permit.getBrsTechnicianPermitSubmissionInstructions());
-    params.put("cancellationAndRefundInstructions", permit.getCancellationAndRefundInstructions());
-    params.put(
-        "brsTechnicianPermitPickupAndDeliveryInstructions",
-        permit.getBrsTechnicianPermitPickupAndDeliveryInstructions());
-    params.put("approvalInstructions", permit.getApprovalInstructions());
-
-    // NOTES
-    params.put("submissionNote", permit.getSubmissionNote());
-    params.put("revisionNote", permit.getRevisionNote());
-    params.put("asBuiltNote", permit.getAsBuiltNote());
-    params.put("nonStandardNote", permit.getNonStandardNote());
-    params.put("deliveryNote", permit.getDeliveryNote());
 
     if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState() && permit.getAhjIds().size() > 0) {
-      params.put("ahjIds", permit.getAhjIds());
-      sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
           ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permit.getPermitIds());
     } else {
@@ -107,8 +73,6 @@ public class AhjPermitService {
       if (permitId == null) {
         sqlCache.updateReturningId("ahj.permit.create", params, "id").longValue();
       } else {
-        params.put("id", permitId);
-        sqlCache.update("ahj.permit.update", params);
         blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
             ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permitId);
       }

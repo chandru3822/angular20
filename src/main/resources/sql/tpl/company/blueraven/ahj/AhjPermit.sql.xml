@@ -84,100 +84,10 @@
     ]]>
   </ahj.permit.detailByAhj>
 
-  <ahj.permit.createBlank><![CDATA[
-    INSERT INTO brs.ahj_permit
-    (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required, print_location, stamped_plan,
-     archived, date_created, created_by_id,  date_modified, modified_by_id, business_license_expiration_date,
-     contractor_license_expiration_date, business_license, contractor_license)
-    VALUES
-        (:ahjId, null, null, null, null, null,
-         false, now(), :currentUser,now(), :currentUser, null,
-         null, null, null)
-    RETURNING id
-  ]]></ahj.permit.createBlank>
-
   <ahj.permit.create><![CDATA[
-  INSERT INTO brs.ahj_permit
-  (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
-   print_location, stamped_plan, date_created, created_by_id,date_modified, modified_by_id, business_license, contractor_license,
-   business_license_expiration_date, contractor_license_expiration_date)
-  VALUES
-      (:ahjId, :depositAmount, :averagePermitFee, :engineeringLetterRequired,
-       :printLocation, :stampedPlan, now(), :currentUser, now(), :currentUser, :businessLicense, :contractorLicense,
-       :businessLicenseExpirationDate, :contractorLicenseExpirationDate)
+    INSERT INTO brs.ahj_permit(ahj_id, date_created, created_by_id, date_modified, modified_by_id)
+    VALUES(:ahjId, now(), :currentUser, now(), :currentUser)
   ]]></ahj.permit.create>
-
-  <ahj.permit.update>
-    <![CDATA[
-      UPDATE brs.ahj_permit
-      SET ahj_id = :ahjId,
-          deposit_amount = :depositAmount,
-          average_permit_fee = :averagePermitFee,
-          engineering_letter_required = :engineeringLetterRequired,
-          print_location = :printLocation,
-          stamped_plan = :stampedPlan,
-          date_modified = now(),
-          modified_by_id = :currentUser,
-          business_license = :businessLicense,
-          contractor_license = :contractorLicense,
-          business_license_expiration_date = :businessLicenseExpirationDate,
-          contractor_license_expiration_date = :contractorLicenseExpirationDate,
-          other_license = :otherLicense,
-          other_license_expiration_date = :otherLicenseExpirationDate,
-          revision_fee_amount = :revisionFeeAmount,
-          as_built_fee_amount = :asBuiltFeeAmount,
-          follow_up_fee_amount = :followUpFeeAmount,
-          delivery_fee_amount = :deliveryFeeAmount,
-          approval_timeline = :approvalTimeline,
-          documents_available = :documentsAvailable,
-          brs_technician_permit_submission_instructions = :brsTechnicianPermitSubmissionInstructions,
-          cancellation_and_refund_instructions = :cancellationAndRefundInstructions,
-          brs_technician_permit_pickup_and_delivery_instructions = :brsTechnicianPermitPickupAndDeliveryInstructions,
-          approval_instructions = :approvalInstructions,
-
-          submission_note = :submissionNote,
-          revision_note = :revisionNote,
-          as_built_note = :asBuiltNote,
-          non_standard_note = :nonStandardNote,
-          delivery_note = :deliveryNote
-      WHERE id = :id
-    ]]>
-  </ahj.permit.update>
-
-  <ahj.permit.updateAllAhjPermitsInState>
-    <![CDATA[
-      UPDATE brs.ahj_permit
-      SET deposit_amount = :depositAmount,
-          average_permit_fee = :averagePermitFee,
-          engineering_letter_required = :engineeringLetterRequired,
-          print_location = :printLocation,
-          stamped_plan = :stampedPlan,
-          date_modified = now(),
-          modified_by_id = :currentUser,
-          business_license = :businessLicense,
-          contractor_license = :contractorLicense,
-          business_license_expiration_date = :businessLicenseExpirationDate,
-          contractor_license_expiration_date = :contractorLicenseExpirationDate,
-          other_license = :otherLicense,
-          other_license_expiration_date = :otherLicenseExpirationDate,
-          revision_fee_amount = :revisionFeeAmount,
-          as_built_fee_amount = :asBuiltFeeAmount,
-          follow_up_fee_amount = :followUpFeeAmount,
-          delivery_fee_amount = :deliveryFeeAmount,
-          approval_timeline = :approvalTimeline,
-          documents_available = :documentsAvailable,
-          brs_technician_permit_submission_instructions = :brsTechnicianPermitSubmissionInstructions,
-          cancellation_and_refund_instructions = :cancellationAndRefundInstructions,
-          brs_technician_permit_pickup_and_delivery_instructions = :brsTechnicianPermitPickupAndDeliveryInstructions,
-          approval_instructions = :approvalInstructions,
-          submission_note = :submissionNote,
-          revision_note = :revisionNote,
-          as_built_note = :asBuiltNote,
-          non_standard_note = :nonStandardNote,
-          delivery_note = :deliveryNote
-      WHERE ahj_id IN (:ahjIds)
-    ]]>
-  </ahj.permit.updateAllAhjPermitsInState>
 
   <ahj.permit.searchAhjsByState>
     <![CDATA[

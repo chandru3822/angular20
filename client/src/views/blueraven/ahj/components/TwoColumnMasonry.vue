@@ -5,7 +5,7 @@
         <AhjCustomFields v-for="group in firstColGroups" :group = group
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
-                         :callback="(field) => updateDirtyValue(field)"
+                         :callback="(field) => callback(field)"
                          @toggle-collapse-expand="$emit('toggle-collapse-expand')"
                          class="my-2"
         ></AhjCustomFields>

@@ -294,6 +294,7 @@ public class BlueravenCustomFieldGroupService {
             + "                                cfv.timestamp_value as \"timestampValue\",\n"
             + "                                cfv.boolean_value as \"booleanValue\",\n"
             + "                                cfv.text_value as \"textValue\",\n"
+            + "                                cfv.rich_text_value as \"richTextValue\",\n"
             + "                                cfv.numeric_value as \"numericValue\",\n"
             + "                                cfv.int_value as \"intValue\",\n"
             + "                                cfv.int_array_value as \"intArrayValue\",\n"

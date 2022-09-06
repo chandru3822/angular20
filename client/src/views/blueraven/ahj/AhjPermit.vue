@@ -1,23 +1,26 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-card class="mx-4 mt-6">
-  <v-row no-gutters class="px-2" id="ahj-permit">
-    <v-col class="ahj-form-btns py-1" cols="12">
-      <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
-      <v-btn v-if="dataWasChanged"
-             color="primary" text
-             @click="resetForm"
-         class="cancel-link"
-         style="margin-right: 10px"
-      >Cancel</v-btn>
-      <v-btn class="white--text mr-0 save-btn"
-             v-if="userCanEdit"
-             color="primary"
-             @click="validateForm()"
-      >Save
-      </v-btn>
-    </v-col>
-  </v-row>
+    <v-row no-gutters class="px-2" id="ahj-permit">
+      <v-col class="ahj-form-btns py-1" cols="12">
+        <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
+          {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
+        </v-btn>
+        <v-btn v-if="dataWasChanged"
+               color="primary" text
+               @click="resetForm"
+               class="cancel-link"
+               style="margin-right: 10px"
+        >Cancel
+        </v-btn>
+        <v-btn class="white--text mr-0 save-btn"
+               v-if="userCanEdit"
+               color="primary"
+               @click="validateForm()"
+        >Save
+        </v-btn>
+      </v-col>
+    </v-row>
 
     <v-form ref="ahjPermitForm">
       <v-row class="mb-4 group-row" no-gutters>
@@ -27,14 +30,14 @@
                           :callback="(field) => updateDirtyValue(field)"
                           @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
         ></TwoColumnMasonry>
-<!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">-->
-<!--          <AhjCustomFields :group = group-->
-<!--                   :user-can-edit="userCanEdit"-->
-<!--                   :callback="(field) => updateDirtyValue(field)"-->
-<!--                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
-<!--          >-->
-<!--          </AhjCustomFields>-->
-<!--        </v-col>-->
+        <!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">-->
+        <!--          <AhjCustomFields :group = group-->
+        <!--                   :user-can-edit="userCanEdit"-->
+        <!--                   :callback="(field) => updateDirtyValue(field)"-->
+        <!--                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
+        <!--          >-->
+        <!--          </AhjCustomFields>-->
+        <!--        </v-col>-->
       </v-row>
 
       <h1 class="pb-2 mb-4"
@@ -121,25 +124,28 @@
 
           <v-divider></v-divider>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn @click="saveDialog = false"
-                 color="primary" text
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn v-if="ahjPermit.updateAllInState"
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="saveConfirmDialog = true"
-          >Save</v-btn>
-          <v-btn v-else
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjPermit"
-          >Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn @click="saveDialog = false"
+                   color="primary" text
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn v-if="ahjPermit.updateAllInState"
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="saveConfirmDialog = true"
+            >Save
+            </v-btn>
+            <v-btn v-else
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjPermit"
+            >Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
       <v-dialog v-model="saveConfirmDialog" max-width="500">
         <v-card>
@@ -151,18 +157,20 @@
             Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
           </v-card-text>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="saveConfirmDialog = false"
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjPermit"
-          >Yes</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveConfirmDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjPermit"
+            >Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
     </v-form>
   </v-card>
@@ -248,12 +256,6 @@ export default {
       item.valueWasChanged = true
       this.dataWasChanged = true
     },
-    reformatDates() {
-      // Reformat dates to remove timestamps
-      this.ahjPermit.businessLicenseExpirationDate = this.ahjPermit.businessLicenseExpirationDate ? moment(this.ahjPermit.businessLicenseExpirationDate).format('YYYY-MM-DD') : null
-      this.ahjPermit.contractorLicenseExpirationDate = this.ahjPermit.contractorLicenseExpirationDate ? moment(this.ahjPermit.contractorLicenseExpirationDate).format('YYYY-MM-DD') : null
-      this.ahjPermit.otherLicenseExpirationDate = this.ahjPermit.otherLicenseExpirationDate ? moment(this.ahjPermit.otherLicenseExpirationDate).format('YYYY-MM-DD') : null
-    },
     validateForm() {
       //checks for required fields prior to opening the save dialog
       if (this.$refs.ahjPermitForm.validate()) {
@@ -289,7 +291,6 @@ export default {
         this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name.toLowerCase())
         this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name.toLowerCase())
         this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name.toLowerCase())
-        this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
         this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
         this.ahjPermit.updateAllInState = false
         handleHidingGlobalLoader(this, status)
@@ -334,11 +335,10 @@ export default {
       this.dataReady = false
       this.getAhjPermit().then(() => {
         this.getCustomFieldGroupAssignmentsForScreen()
-        this.reformatDates()
         this.dataReady = true
       })
     },
-    async getCanellationDocuments() {
+    async getCancellationDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 462}
@@ -414,7 +414,6 @@ export default {
         this.ahjPermit.updateAllInState = false
         this.dataWasChanged = false
         this.resetCustomFieldValueWasChangedFlags()
-        this.reformatDates()
         let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : 'Permit updated successfully'
         this.snackbar = getSnackbar('SUCCESS', successMessage)
         handleHidingGlobalLoader(this, status)
@@ -427,8 +426,8 @@ export default {
 
     },
 
-    toggleMinimizeAll(){
-      if(this.expandedAll !== CollapseExpandEnum.COLLAPSED){
+    toggleMinimizeAll() {
+      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
         this.expandedAll = CollapseExpandEnum.COLLAPSED
       } else {
         this.expandedAll = CollapseExpandEnum.EXPANDED
@@ -438,10 +437,9 @@ export default {
   async created() {
     this.ahjId = parseInt(this.$route.params.ahjId)
     this.getAhjPermit().then(() => {
-      this.reformatDates()
       this.getCustomFieldGroupAssignmentsForScreen()
       this.getDocuments()
-      this.getCanellationDocuments()
+      this.getCancellationDocuments()
       this.dataReady = true
     })
   }
@@ -533,6 +531,7 @@ table {
   flex-flow: row nowrap;
   align-items: center;
 }
+
 .row {
   width: 100%;
 }
