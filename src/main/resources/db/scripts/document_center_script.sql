@@ -36,24 +36,8 @@ alter table flow.event_attachment_type
   add column if not exists allow_upload boolean not null default false;
 alter table flow.event_attachment_type
   add column if not exists focused boolean not null default false;
-alter table flow.contact_attachment_type
-  add column if not exists linkable boolean not null default false;
-alter table flow.contact_attachment_type
-  add column if not exists allow_upload boolean not null default false;
-alter table flow.contact_attachment_type
-  add column if not exists focused boolean not null default false;
-alter table flow.org_attachment_type
-  add column if not exists linkable boolean not null default false;
-alter table flow.org_attachment_type
-  add column if not exists allow_upload boolean not null default false;
-alter table flow.org_attachment_type
-  add column if not exists focused boolean not null default false;
-alter table flow.user_attachment_type
-  add column if not exists linkable boolean not null default false;
-alter table flow.user_attachment_type
-  add column if not exists allow_upload boolean not null default false;
-alter table flow.user_attachment_type
-  add column if not exists focused boolean not null default false;
+
+
 
 alter table flow.custom_field_group
 add column if not exists attachment_type_id int references flow.attachment_type(id);
@@ -261,3 +245,21 @@ alter table flow.user_attachment
   add column if not exists archived boolean not null default false;
 alter table flow.org_attachment
   add column if not exists archived boolean not null default false;
+alter table flow.contact_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.contact_attachment_type
+  add column if not exists allow_upload boolean not null default false;
+alter table flow.contact_attachment_type
+  add column if not exists focused boolean not null default false;
+alter table flow.org_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.org_attachment_type
+  add column if not exists allow_upload boolean not null default false;
+alter table flow.org_attachment_type
+  add column if not exists focused boolean not null default false;
+alter table flow.user_attachment_type
+  add column if not exists linkable boolean not null default false;
+alter table flow.user_attachment_type
+  add column if not exists allow_upload boolean not null default false;
+alter table flow.user_attachment_type
+  add column if not exists focused boolean not null default false;

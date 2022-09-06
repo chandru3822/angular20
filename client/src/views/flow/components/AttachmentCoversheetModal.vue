@@ -110,7 +110,7 @@
               <div v-if="isImage" class="one-hunned">
                 <v-img name="coversheetPreview"
                        class="preview-image"
-                       :src="existingAttachment.presignedUrl"></v-img>
+                       :src="fileSrcUrl"></v-img>
               </div>
               <div v-else-if="isPdf" class="one-hunned">
                 <div v-if="pdfIsLoading" class="text-center">
@@ -118,7 +118,7 @@
                 </div>
                 <vue-pdf-embed
                   ref="pdfRef"
-                  :source="existingAttachment.presignedUrl"
+                  :source="fileSrcUrl"
                   :page="pdfPage"
                   @rendered="handleDocumentRender"
                 />
@@ -221,7 +221,8 @@ export default {
       isPdf: false,
       pdfPage: 1,
       pdfPageCount: 1,
-      pdfIsLoading: true
+      pdfIsLoading: true,
+      fileSrcUrl: null
     }
   },
   created() {
@@ -247,13 +248,17 @@ export default {
       this.fileDetails = {}
       this.saveError = false
       this.errorMsg = null
+      this.fileSrcUrl = null
       this.isPdf = false
       this.isImage = false
       this.pdfPage = 1
       this.pdfPageCount = 1
 
-      this.isPdf = this.existingAttachment.fileExtension === 'pdf'
-      this.isImage = this.imageFileExtensions.includes(this.existingAttachment.fileExtension)
+      //handle urls/extensions for new files prior to upload and also existing files with presigned urls
+      let fileExtension = this.file && this.file.name ? this.file?.name?.substr(this.file?.name?.lastIndexOf('.') + 1) : this.existingAttachment.fileExtension
+      this.isPdf = fileExtension === 'pdf'
+      this.isImage = this.imageFileExtensions.includes(fileExtension)
+      this.fileSrcUrl = this.file && this.file.name ? URL.createObjectURL(this.file) : this.existingAttachment.presignedUrl
 
       //required so that both new and existing files work since the objects aren't identical
       this.fileDetails = cloneDeep(this.existingAttachment)

@@ -16,6 +16,33 @@
                 <v-icon>close</v-icon>
               </v-btn>
             </div>
+            <div class="mt-3 preview-main-container">
+              <div v-if="a.isImage" class="one-hunned">
+                <v-img name="coversheetPreview"
+                       class="preview-image"
+                       :src="a.presignedUrl"></v-img>
+              </div>
+              <div v-else-if="a.isPdf" class="one-hunned">
+                <div v-if="pdfIsLoading" class="text-center">
+                  <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
+                </div>
+                <vue-pdf-embed
+                  ref="pdfRef"
+                  :source="a.presignedUrl"
+                  :page="pdfPage"
+                  @rendered="handleDocumentRender"
+                />
+              </div>
+              <div v-else class="height-one-hunned one-hunned">
+                <v-card class="square-card no-preview-container" >
+                  <div class="text-center">
+                    <v-icon :size="200" color="white">mdi-image-frame</v-icon>
+
+                    <div class="mt-5">No Preview Available</div>
+                  </div>
+                </v-card>
+              </div>
+            </div>
             <v-btn @click="closeModal(a)">
               View
             </v-btn>
@@ -91,6 +118,8 @@ import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import orderBy from 'lodash.orderby'
+import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: "AttachmentCompareModal",
@@ -101,7 +130,9 @@ export default {
   },
   components: {
     DatetimePickerInput,
-    CustomValueInput
+    CustomValueInput,
+    VuePdfEmbed,
+    SpinnerInline
   },
   watch: {
     showModal: function (visible) {
@@ -114,11 +145,16 @@ export default {
   data() {
     return {
       timezone: this.$store.state.user.details.timezone.value,
+      imageFileExtensions: constants.IMAGE_FILE_EXTENSIONS,
       attachmentsCopy: [],
       attachmentWithFields: [],
       allFields: [],
       leftCols: 2,
-      attachmentCols: 2
+      attachmentCols: 2,
+      isImage: false,
+      isPdf: false,
+      pdfPage: 1,
+      pdfIsLoading: true,
     }
   },
   created() {
@@ -171,10 +207,22 @@ export default {
       this.allFields = []
       this.attachmentsCopy = []
       this.attachmentWithFields = []
+      this.isPdf = false
+      this.isImage = false
+      this.pdfPage = 1
 
       //required since we cant mutate props that come from parent
       this.attachmentsCopy = this.attachments
+
+      this.attachmentsCopy.forEach(a => {
+        //need to determine if file is image or is pdf
+        a.isImage = this.imageFileExtensions.includes(a.fileExtension)
+        a.isPdf = a.fileExtension === 'pdf'
+      })
       await this.getCustomFields()
+    },
+    handleDocumentRender() {
+      this.pdfIsLoading = false
     },
     async getCustomFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -254,4 +302,12 @@ export default {
   line-height: 25px;
 }
 
+.no-preview-container {
+  background-color: var(--v-grey-lighten2);
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>

@@ -294,7 +294,7 @@
 
   <attachment.getComparisonFields><![CDATA[
     select *
-    from flow.get_attachment_compare_fields(:attachmentId::int);
+    from flow.get_attachment_compare_fields(:attachmentId::bigint);
   ]]></attachment.getComparisonFields>
 
 </sql>

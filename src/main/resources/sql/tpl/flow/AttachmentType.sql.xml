@@ -1001,14 +1001,14 @@
            oat.linkable,
            oat.allow_upload,
            oat.display_order,
-          case when :allowUpload::boolean is true then (
+           (
              select cfga.id
              from flow.custom_field_group_assignment cfga
-             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
+                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
              where cfga.archived is false
-             and cfg.archived is false
+               and cfg.archived is false
              limit 1
-           ) is not null else false end as has_fields_assigned
+           ) is not null as has_fields_assigned
     from flow.contact_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId
@@ -1029,14 +1029,14 @@
            oat.linkable,
            oat.allow_upload,
            oat.display_order,
-         case when :allowUpload::boolean is true then (
+          (
              select cfga.id
              from flow.custom_field_group_assignment cfga
-             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
+                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
              where cfga.archived is false
-             and cfg.archived is false
+               and cfg.archived is false
              limit 1
-           ) is not null else false end as has_fields_assigned
+           ) is not null as has_fields_assigned
     from flow.user_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId
@@ -1057,14 +1057,14 @@
            oat.linkable,
            oat.allow_upload,
            oat.display_order,
-            case when :allowUpload::boolean is true then (
+           (
              select cfga.id
              from flow.custom_field_group_assignment cfga
-             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
+                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
              where cfga.archived is false
-             and cfg.archived is false
+               and cfg.archived is false
              limit 1
-           ) is not null else false end as has_fields_assigned
+           ) is not null as has_fields_assigned
     from flow.org_attachment_type oat
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId

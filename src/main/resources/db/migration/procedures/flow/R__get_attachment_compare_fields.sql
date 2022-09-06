@@ -1,19 +1,22 @@
--- DROP FUNCTION IF EXISTS flow.get_attachment_compare_fields(integer);
-CREATE OR REPLACE FUNCTION flow.get_attachment_compare_fields(p_attachment_id INTEGER)
+-- DROP FUNCTION IF EXISTS flow.get_attachment_compare_fields(bigint);
+CREATE OR REPLACE FUNCTION flow.get_attachment_compare_fields(p_attachment_id bigint)
 
   RETURNS TABLE
           (
-            custom_field_id                  int,
-            ancillary_custom_field_id        int,
+            custom_field_id                  bigint,
+            ancillary_custom_field_id        bigint,
             field_name                       character varying,
-            data_type_id                     int,
-            default_field_id                 int,
-            attachment_id                    int,
+            data_type_id                     bigint,
+            default_field_id                 bigint,
+            attachment_id                    bigint,
             object_type_id                   int,
-            project_id                       int,
-            custom_field_group_assignment_id int,
+            project_id                       bigint,
+            contact_id                       bigint,
+            user_id                          bigint,
+            org_id                           bigint,
+            custom_field_group_assignment_id bigint,
             text_value                       text,
-            int_value                        int,
+            int_value                        bigint,
             int_array_value                  json,
             date_value                       date,
             timestamp_value                  timestamp,
@@ -22,7 +25,7 @@ CREATE OR REPLACE FUNCTION flow.get_attachment_compare_fields(p_attachment_id IN
             rich_text_value                  text,
             has_list_values                  boolean,
             custom_field_sql_key             character varying,
-            company_system_list_id           int,
+            company_system_list_id           bigint,
             list_of_values                   json,
             system_list_option_ids           json
           )
@@ -30,7 +33,7 @@ AS
 
 $BODY$
 declare
-  v_source_id      int;
+  v_source_id      bigint;
   v_object_type_id int;
 BEGIN
 
@@ -40,17 +43,20 @@ BEGIN
 
   return query
     --native fields, always use this query
-    select cf.id                                                     as custom_field_id,
-           null::int                                                 as ancillary_custom_field_id,
+    select cf.id::bigint                                             as custom_field_id,
+           null::bigint                                              as ancillary_custom_field_id,
            cf.field_name,
            cdt.data_type_id,
-           null::int                                                 as default_field_id,
+           null::bigint                                              as default_field_id,
            a.id                                                      as attachment_id,
            v_object_type_id                                          as object_type_id,
-           null::int                                                 as project_id,
+           null::bigint                                              as project_id,
+           null::bigint                                              as contact_id,
+           null::bigint                                              as user_id,
+           null::bigint                                              as org_id,
            cfga.id                                                   as custom_field_group_assignment_id,
            acfv.text_value,
-           acfv.int_value,
+           acfv.int_value::bigint,
            coalesce(array_to_json(acfv.int_array_value), '[]')::json as int_array_value,
            acfv.date_value,
            acfv.timestamp_value,
@@ -75,8 +81,6 @@ BEGIN
                                and (lov.archived is not true OR
                                     (lov.archived is true AND (lov.id = acfv.int_value)
                                       OR lov.id = any (acfv.int_array_value)))
-                             order by case when cf.sort_list_values_alphabetically is true then lov.name end,
-                                      case when cf.sort_list_values_alphabetically is false then lov.display_order end
                            ) listOfValues), '[]')                    AS "listOfValues",
            array_to_json(cf.system_list_option_ids)::json            as system_list_option_ids
     from flow.attachment a
@@ -91,7 +95,8 @@ BEGIN
       and cfga.archived is false
     union all
     select *
-    from flow.get_attachment_compare_fields_for_object(p_attachment_id, v_source_id, v_object_type_id)
+    from flow.get_attachment_compare_fields_for_object(p_attachment_id::bigint, v_source_id::bigint,
+                                                       v_object_type_id::int)
     order by field_name;
 
 
