@@ -85,7 +85,7 @@
                      @click="validateForm()"
                      class="text-capitalize font-weight-bold"
               >
-                Save and Reflect
+                Save
               </v-btn>
             </div>
           </v-card>
@@ -109,18 +109,15 @@
               <div class="d-flex align-center">
                 <div class="proposal-title">Proposal <span>#{{ proposal.proposalNbr }}</span></div>
                 <v-spacer />
-                <!--              <v-btn depressed-->
-                <!--                     :disabled="dirtyCfvs.length === 0"-->
-                <!--                     class="proposal-container-buttons text-capitalize font-weight-bold">Present-->
-                <!--              </v-btn>-->
-                <!--                <v-btn class="proposal-container-buttons text-capitalize"-->
-                <!--                       :disabled="proposal.locked || dirtyCfvs.length > 0"-->
-                <!--                       @click="saveProposal"-->
-                <!--                >-->
-                <!--                  Save Proposal-->
-                <!--                </v-btn>-->
                 <v-btn v-if="pages && pages.length"
-                  class="proposal-container-buttons text-capitalize"
+                       class="proposal-container-buttons text-capitalize"
+                       :disabled="dirtyCfvs.length > 0"
+                       @click="duplicate">
+                  Duplicate
+                </v-btn>
+                <v-btn v-if="pages && pages.length"
+                       :disabled="dirtyCfvs.length > 0"
+                       class="proposal-container-buttons text-capitalize"
                        @click="downloadPdf">
                   Download
                 </v-btn>
@@ -318,6 +315,29 @@ export default {
         this.dirtyCfvs.push(field)
       }
       await this.buildFilters(field)
+    },
+    async duplicate() {
+      if (this.dirtyCfvs.length > 0) {
+        return
+      }
+
+      try {
+        const { data, status } = await postRequest(`/proposal/${this.proposalId}/duplicate`, {}, 'blueraven')
+        if (data?.id) {
+          const { href } = this.$router.resolve({
+            name: 'proposal',
+            params: { proposalId: data.id }
+          })
+          this.$snackbar('SUCCESS', `Duplicate proposal #${data?.proposalNbr} created in new tab. <br/> <a href="${href}">Click to open again</a>`, true)
+          window.open(href, '_blank')
+        }
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        this.$snackbar('ERROR', e?.data?.message || 'Error creating duplicate')
+
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async downloadPdf() {
       try {

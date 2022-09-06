@@ -70,7 +70,7 @@
                 <v-card flat v-if="addPosition" color="transparent" class="px-4">
                   <v-select
                     v-model="positionId"
-                    :items="positions"
+                    :items="selectablePositions"
                     label="Positions"
                     item-text="position"
                     item-value="id"
@@ -339,6 +339,11 @@ export default {
   computed: {
     filterTeams () {
       return this.teams.filter(tmp => !tmp.archived)
+    },
+    selectablePositions () {
+      return this.positions.filter(p => {
+        return this.expandedItem?.positions?.find(po => po.positionId === p.positionId) == null
+      })
     }
   },
   methods: {

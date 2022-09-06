@@ -151,7 +151,7 @@
         <div class="albatross-header-4 d-flex align-baseline">Overview
           <a small text color="anchor" v-if="$store.getters.userHasFeature('SCHEDULE')"
                  class="px-0 d-flex align-baseline" target="_blank"
-                 :to="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+                 :href="`/schedule?projectProcessStepEventId=${ppsEventId}`">
             <span color="anchor" class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
             <v-icon color="anchor" class="scheduler-button-icon">mdi-open-in-new</v-icon>
           </a>
