@@ -142,7 +142,6 @@ public class AhjPermitService {
 
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkRef = new TypeReference<>() {};
-      TypeReference<List<AhjNote>> noteTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
 
       bw.registerCustomEditor(
@@ -150,9 +149,6 @@ public class AhjPermitService {
 
       bw.registerCustomEditor(
           List.class, "followUpLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "notes", new JsonCollectionDeserializer(noteTypeRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class,

@@ -46,7 +46,7 @@ public class AhjInspectionService {
     // add a blank inspection and return that
     var created =
         sqlCache.get(
-            "ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class));
+            "ahj.inspection.create", params, new SingleColumnRowMapper<>(Integer.class));
 
     if (created.isPresent()) {
       return sqlCache.get(
@@ -62,40 +62,10 @@ public class AhjInspectionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("inspectionFee", inspection.getInspectionFee());
-    params.put("reInspectionFee", inspection.getReInspectionFee());
-    params.put("paymentMethod", inspection.getPaymentMethod());
-    params.put("inspectionTimeWindow", inspection.getInspectionTimeWindow());
-    params.put("brsInspectionRep", inspection.getBrsInspectionRep());
-    params.put("portalUrl", inspection.getPortalUrl());
-    params.put("portalUsername", inspection.getPortalUsername());
-    params.put("portalPassword", inspection.getPortalPassword());
-    params.put("obtainingResultsMethod", inspection.getObtainingResultsMethod());
-    params.put("approvalDocumentMethod", inspection.getApprovalDocumentMethod());
-    params.put("obtainingResultsPortalUrl", inspection.getObtainingResultsPortalUrl());
-    params.put("obtainingResultsPortalUsername", inspection.getObtainingResultsPortalUsername());
-    params.put("obtainingResultsPortalPassword", inspection.getObtainingResultsPortalPassword());
-    params.put("businessLicense", inspection.getBusinessLicense());
-    params.put("contractorLicense", inspection.getContractorLicense());
     params.put("currentUser", currentUser.trueUserId());
-    params.put("ladderRequired", inspection.getLadderRequired());
-    params.put("timeWindow", inspection.getTimeWindow());
-    params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
-    params.put("timeWindowPhone", inspection.getTimeWindowPhone());
-    params.put("requiredInspectionTypes", inspection.getRequiredInspectionTypes());
-
-    // NOTES
-    params.put("schedulingNote", inspection.getSchedulingNote());
-    params.put("technicianInstructionNote", inspection.getTechnicianInstructionNote());
-    params.put("schedulingWithCustomerNote", inspection.getSchedulingWithCustomerNote());
-    params.put("obtainingResultsNote", inspection.getObtainingResultsNote());
-    params.put("reinspectionNote", inspection.getReinspectionNote());
-    params.put("documentationNote", inspection.getDocumentationNote());
-    params.put("mpuInspectionNote", inspection.getMpuInspectionNote());
 
     if (inspection.getUpdateAllInState() != null && inspection.getUpdateAllInState() && inspection.getAhjIds().size() > 0) {
       params.put("ahjIds", inspection.getAhjIds());
-      sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
           ObjectType.AHJ_INSPECTION.textValue(),
           inspection.getCustomFieldGroups(),
@@ -104,11 +74,9 @@ public class AhjInspectionService {
       params.put("ahjId", ahjId);
 
       if (inspectionId == null) {
-        inspectionId =
-            sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
+        inspectionId = sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
       } else {
         params.put("id", inspectionId);
-        sqlCache.update("ahj.inspection.update", params);
         blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
             ObjectType.AHJ_INSPECTION.textValue(), inspection.getCustomFieldGroups(), inspectionId);
       }
