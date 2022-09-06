@@ -586,7 +586,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
         } else {
-          query.append(String.format(" sort(brs.project_details.%s) %s sort(array%s::bigint[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" sort(brs.project_details.%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
@@ -1295,7 +1295,7 @@ public class SmartlistService {
                 referenceTable = newReferenceTable;
               }
             }
-            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::bigint[]", referenceTable);
+            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::int[]", referenceTable);
           } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
             String referenceColumn;
@@ -1498,7 +1498,7 @@ public class SmartlistService {
             if (r.getDataTypeRequirementId() != null) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+              whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
@@ -1859,7 +1859,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
@@ -2271,7 +2271,7 @@ public class SmartlistService {
           if (r.getDataTypeRequirementId() != null) {
             whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
-            whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+            whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
           }
         } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
           //if this is a text requirement using null/not null requirement
@@ -2644,7 +2644,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
@@ -3188,7 +3188,7 @@ public class SmartlistService {
             if (r.getDataTypeRequirementId() != null) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+              whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
@@ -4011,7 +4011,7 @@ public class SmartlistService {
             case 5:
             case 13:
                 if (r.getSmartlistSystemListId() != null) {
-                  return String.format("sort(array[%s]::bigint[])", r.getListOfValueId());
+                  return String.format("sort(array[%s]::int[])", r.getListOfValueId());
                 }
                 if (r.getIsCustomValue()) {
                     return requirementValue;
@@ -4826,7 +4826,7 @@ public class SmartlistService {
         if (i.getDataTypeRequirementId() != null) {
           clause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          clause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+          clause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (i.getDataTypeId() == 3 || i.getDataTypeId() == 4 || (i.getDataTypeRequirementId() != null && i.getSecondaryRequirementValue() == null && i.getDataTypeId() != 1 && i.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
