@@ -1684,7 +1684,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-            referenceLocation = String.format("array[%s.%s]::bigint[]", r.getJoinTable(), r.getJoinColumn());
+            referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -1698,7 +1698,7 @@ public class SmartlistService {
 
           projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
           final String column = (r.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
         }
       } else if (r.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -2160,7 +2160,7 @@ public class SmartlistService {
             referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
           }
           if (r.getSmartlistSystemListId() != 1) {
-            referenceLocation = String.format("array[%s]::bigint[]", referenceLocation);
+            referenceLocation = String.format("array[%s]::int[]", referenceLocation);
           }
         } else if (r.getSmartlistFieldId() != null) {
           //smartlist system fields
@@ -2474,7 +2474,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-          referenceLocation = String.format("array[%s.%s]::bigint[]", r.getJoinTable(), r.getJoinColumn());
+          referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -2488,7 +2488,7 @@ public class SmartlistService {
 
           projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
           final String column = (r.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
         }
       } else if (r.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -3077,7 +3077,7 @@ public class SmartlistService {
               referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
             }
             if (r.getSmartlistSystemListId() != 1) {
-              referenceLocation = String.format("array[%s]::bigint[]", referenceLocation);
+              referenceLocation = String.format("array[%s]::int[]", referenceLocation);
             }
           } else if (r.getSmartlistFieldId() != null) {
             //smartlist system fields
@@ -4666,7 +4666,7 @@ public class SmartlistService {
       if (i.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(i.getSmartlistSystemListId())) {
-          referenceLocation = String.format("array[%s.%s]::bigint[]", i.getJoinTable(), i.getJoinColumn());
+          referenceLocation = String.format("array[%s.%s]::int[]", i.getJoinTable(), i.getJoinColumn());
         } else if (i.getSmartlistSystemListId() == 2 || i.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -4680,7 +4680,7 @@ public class SmartlistService {
 
           additionalJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, i.getPpsTable()));
           final String column = (i.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
         }
       } else if (i.getSmartlistFieldId() != null) {
         //smartlist (system) fields
