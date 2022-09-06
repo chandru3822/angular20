@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">User Profile Admin</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userIsAdmin" :to="`/settings/userProfile`">
+            <v-btn text color="primary" v-if="userIsAdmin" :to="`/settings/userProfile`">
               Back to User Profile
             </v-btn>
           </v-toolbar-items>
