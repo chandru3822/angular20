@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -398,15 +399,25 @@ public class BrsProcessStepActionFunctionService {
             Optional<String> leadStatus = sqlCache.get("marketo.getLeadStatus", Map.of("contactId", project.getContactId()), new SingleColumnRowMapper<>(String.class));
             leadStatus.ifPresent(l -> lead.put("leadStatus", l));
 
+            List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
+
             //@TODO: If updating project status, set that field here
-            final String projectStatusParam = func.getActionParamDynamicValues().get(1).getDynamicValue();
-            if (!projectStatusParam.isEmpty()) {
+            final String projectStatusParam = paramValues.get(0).getDynamicValue();
+            if (!projectStatusParam.isBlank()) {
                 lead.put("projectStatus", projectStatusParam);
             }
 
+            Optional<Map<String, Object>> results;
+
             //@TODO: Check if updating other fields and add to map here.
             //appointmentTime
+
             //finalDesignApprovedDate
+            if (!paramValues.get(2).getDynamicValue().isBlank()) {
+                final Long finalDesignApprovedCfgaId = Long.parseLong(paramValues.get(2).getDynamicValue());
+                results = sqlCache.get("marketo.getFieldValuesByCfgaId", Map.of("cfgaId", finalDesignApprovedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("finalDesignApprovedDate", r.get("dateValue").toString()));
+            }
             //installationStartTime
             //substantialCompletionDate
             //inspectionStartTime
