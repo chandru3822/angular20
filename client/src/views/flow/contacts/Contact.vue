@@ -195,7 +195,8 @@
           <div class="mx-2">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
-                    @click="goToPath(`/project/${p.id}/details`)">
+                    :href="`/project/${p.id}/details`"
+                    target="_blank">
               {{ p.projectName }}
               <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->

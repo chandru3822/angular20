@@ -97,13 +97,13 @@
               :search="search"
               :display-type="type"
               :allow-upload="allowUpload"
-              :show-linked="linkable"
+              :load-linked="loadLinked"
               :attachments="attachments"
               :projectId="projectId"
               :projectProcessStepId="projectProcessStepId"
               :userId="userId"
               :contactId="contactId"
-              :compare="!allowUpload && !linkable && compare"
+              :compare="!allowUpload && !loadLinked && compare"
               :orgId="orgId"
               :objectTypeId="objectTypeId"
               :projectProcessStepEventId="projectProcessStepEventId"
@@ -144,7 +144,7 @@ export default {
   },
   props: {
     allowUpload: Boolean,
-    linkable: Boolean,
+    loadLinked: Boolean,
     focused: Boolean,
     activityTab: Boolean, //this tells us whether to show the search and compare buttons
     forceShowUploadBtn: Boolean,
@@ -256,9 +256,12 @@ export default {
     },
     loadAllPageDetails() {
       //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
-      if ((!this.objectTypeId || this.objectTypeId === 1) && !this.focused && !this.allowUpload && !this.linkable) {
+      let params = {}
+      if ((!this.objectTypeId || this.objectTypeId === 1) && !this.focused && !this.allowUpload && !this.loadLinked) {
         this.typePath = `/combined/project`
         this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
+        params.ppsEventId = this.projectProcessStepEventId
+        params.ppsId = this.projectProcessStepId
       } else {
         if (this.projectProcessStepEventId) {
           this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
@@ -284,21 +287,22 @@ export default {
         }
       }
 
-      //if focused override attachment path to get all in project
+      //if focused then override attachment path to get all in project
       if (this.focused) {
         this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
       }
 
       if (this.typePath && this.attachmentPath) {
-        this.fetchAttachmentTypes()
+        this.fetchAttachmentTypes(params)
         this.fetchAttachments()
       }
     },
-    fetchAttachmentTypes: async function () {
+    fetchAttachmentTypes: async function (typeParams) {
       this.attachmentTypesLoading = true
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, {
         params: {
-          linkable: this.linkable,
+          ...typeParams,
+          linkable: this.loadLinked,
           allowUpload: this.allowUpload,
           focused: this.focused
         }
@@ -309,7 +313,7 @@ export default {
     fetchAttachments: async function () {
       const {data} = await getRequestWithParams(this.attachmentPath, {
         params: {
-          linked: this.linkable
+          linked: this.loadLinked
         }
       })
       data.forEach(d => {
@@ -324,7 +328,7 @@ export default {
     getTypeCount: function (typeId) {
       try {
         return this.attachments.filter(a => {
-          return a.attachmentTypeId === typeId && !a.archived && a.linked === this.linkable
+          return a.attachmentTypeId === typeId && !a.archived && a.linked === this.loadLinked
             && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)
         })?.length || 0
       } catch {

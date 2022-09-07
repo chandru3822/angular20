@@ -41,10 +41,10 @@
           <v-btn small v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
             <v-icon>delete</v-icon>
           </v-btn>
-          <v-btn small v-if="!allowUpload && !showLinked" text color="primary" @click="linkAttachment(item, true)" class="px-0">
+          <v-btn small v-if="!allowUpload && !loadLinked && displayType.linkable" text color="primary" @click="linkAttachment(item, true)" class="px-0">
             <v-icon>link</v-icon>
           </v-btn>
-          <v-btn small v-if="!allowUpload && showLinked" text color="primary" @click="linkAttachment(item, false)" class="px-0">
+          <v-btn small v-if="!allowUpload && loadLinked" text color="primary" @click="linkAttachment(item, false)" class="px-0">
             <v-icon>mdi-link-off</v-icon>
           </v-btn>
           <ConfirmationDialog
@@ -87,7 +87,8 @@ export default {
     attachments: Array,
     search: String,
     displayType: Object,
-    showLinked: Boolean,
+    //loadLinked = the component for the linked sections. if true should only be able to unlink the attachments from here
+    loadLinked: Boolean,
     allowUpload: Boolean,
     compare: Boolean,
     projectId: Number,
@@ -118,7 +119,7 @@ export default {
         return []
       } else {
         return this.attachments.filter(a => {
-          return !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.showLinked
+          return !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.loadLinked
             && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)
         })
       }

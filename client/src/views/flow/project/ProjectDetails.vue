@@ -128,7 +128,7 @@
                 <AttachmentsFolderList :object-type-id="1"
                                        :project-id="projectId"
                                        is-card
-                                       :linkable="true"/>
+                                       :load-linked="true"/>
               </v-col>
             </div>
           </div>

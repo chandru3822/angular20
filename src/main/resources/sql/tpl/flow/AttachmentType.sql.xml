@@ -939,28 +939,64 @@
   ]]></attachmentType.event.deleteType>
 
   <attachmentType.getCombinedTypesForProject><![CDATA[
-    select distinct at.attachment_type,
-                    oat.attachment_type_id
-    from flow.project_attachment_type oat
-           inner join flow.attachment_type at on oat.attachment_type_id = at.id
-    where oat.company_id = :companyId
-      and oat.archived is not true  -- 27
-    union
-    select distinct at.attachment_type,
-                    psat.attachment_type_id
-    from flow.process_step_attachment_type psat
-         inner join flow.attachment_type at on at.id = psat.attachment_type_id
-    where psat.archived is not true
-      and at.company_id = :companyId -- 68
-    union
-    select distinct at.attachment_type,
-                    eat.attachment_type_id
-    from flow.event_attachment_type eat
-           inner join flow.attachment_type at on at.id = eat.attachment_type_id
-           inner join flow.event e on eat.event_id = e.id
-    where  eat.archived is not true
-      and e.company_id = :companyId
-    order by attachment_type
+    with types as (
+        select distinct at.attachment_type,
+                        oat.attachment_type_id
+        from flow.project_attachment_type oat
+               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+        where oat.company_id = :companyId
+          and oat.archived is not true -- 27
+        union
+        select distinct at.attachment_type,
+                        psat.attachment_type_id
+        from flow.process_step_attachment_type psat
+               inner join flow.attachment_type at on at.id = psat.attachment_type_id
+        where psat.archived is not true
+          and at.company_id = :companyId -- 68
+        union
+        select distinct at.attachment_type,
+                        eat.attachment_type_id
+        from flow.event_attachment_type eat
+               inner join flow.attachment_type at on at.id = eat.attachment_type_id
+               inner join flow.event e on eat.event_id = e.id
+        where eat.archived is not true
+          and e.company_id = :companyId
+        order by attachment_type
+      ), types_with_linkable as (
+        select t.*,
+               case
+                 when :ppsId::bigint is null and :ppsEventId::bigint is null then
+                   (select linkable
+                    from flow.project_attachment_type pat
+                    where pat.company_id = :companyId
+                      and pat.attachment_type_id = t.attachment_type_id
+                      and pat.archived is false)
+                 when :ppsId::bigint is not null and :ppsEventId::bigint is null then
+                   (select linkable
+                    from flow.project_process_step pps
+                           inner join flow.process_step ps on ps.id = pps.process_step_id
+                           inner join flow.process_step_attachment_type p on p.process_step_id = ps.id
+                    where pps.id = :ppsId::bigint
+                      and p.attachment_type_id = t.attachment_type_id
+                      and p.archived is false
+                   )
+                 when :ppsEventId::bigint is not null then
+                   (select linkable
+                    from flow.project_process_step_event ppse
+                           inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
+                           inner join flow.event e2 on e2.id = pse.event_id
+                           inner join flow.event_attachment_type eat2 on eat2.event_id = e2.id
+                    where ppse.id = :ppsEventId::bigint
+                      and eat2.attachment_type_id = t.attachment_type_id
+                      and eat2.archived is false
+                   )
+                 else false end as linkable
+        from types t
+      )
+      select attachment_type,
+             attachment_type_id,
+             coalesce(linkable, false) as linkable
+      from types_with_linkable
   ]]></attachmentType.getCombinedTypesForProject>
 
   <attachmentType.project.getAssignedTypes><![CDATA[

@@ -241,7 +241,7 @@
           <v-toolbar-title class="albatross-body-2">Linked Documents</v-toolbar-title>
         </v-toolbar>
         <AttachmentsFolderList :object-type-id="1"
-                               :linkable="true"
+                               :load-linked="true"
                                :show-title="true"
                                is-card
                                title="Linked Documents"/>

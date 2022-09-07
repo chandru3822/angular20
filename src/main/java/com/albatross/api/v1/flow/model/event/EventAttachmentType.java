@@ -15,7 +15,7 @@ public class EventAttachmentType {
 
   private Long id, eventId, attachmentTypeId, createdById, modifiedById, companyId, displayOrder, processStepId; //i needed the processStepId only and didn't want to make another object. sry.
   private String attachmentType;
-  private Boolean archived, readOnly, hasFieldsAssigned;
+  private Boolean archived, readOnly, hasFieldsAssigned, linkable, allowUpload, focused;
   private Date dateCreated, dateModified;
 }
 

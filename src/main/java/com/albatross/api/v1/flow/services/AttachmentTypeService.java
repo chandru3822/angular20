@@ -233,11 +233,13 @@ public class AttachmentTypeService {
   }
 
   //these endpoints are for the non-admin side of things
-  public List<ObjectTypeAttachmentType> getCombinedTypesForProject() {
+  public List<ObjectTypeAttachmentType> getCombinedTypesForProject(Long ppsId, Long ppsEventId) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("ppsId", ppsId);
+    params.put("ppsEventId", ppsEventId);
     return sqlCache.query("attachmentType.getCombinedTypesForProject", params, ObjectTypeAttachmentType.class);
   }
 
