@@ -131,18 +131,6 @@
       <!-- THIRD ROW -->
       <v-row no-gutters class="mb-3">
         <v-col cols="12" md="6" class="px-1">
-          <AhjChecklist v-if="dataReady" id="lower-checklist"
-                        title="Noteworthy Reasons for Previous Inspection Failures"
-                        :checklistTypeId="8"
-                        :isNested="false"
-                        :itemId="ahjInspection.id"
-                        :user-can-edit="userCanEdit"
-                        :itemType="itemType"
-                        :ahjId="ahjId"
-                        :checklistItems="ahjInspection.failureChecklist"
-          ></AhjChecklist>
-        </v-col>
-        <v-col cols="12" md="6" class="px-1">
           <AhjServicingFot v-if="dataReady"
                            :servicingFots="ahjInspection.servicingFots"
           ></AhjServicingFot>
@@ -269,22 +257,8 @@ export default {
     dataWasChanged: false,
     dataReady: false,
     customFieldGroups: [],
-    editSchedulingNote: false,
-    editDocumentationNote: false,
-    editInstructionsForBRSTech: false,
-    editCustomerNote: false,
-    editObtainingResultsNote: false,
-    editReinspectionNote: false,
-    editMPUNote: false,
     expandedAll: CollapseExpandEnum.EXPANDED,
     ahjInspection: {
-      reinspectionFeeAmount: null,
-      schedulingWithAhjChecklist: [],
-      schedulingWithBrsTechnicianChecklist: [],
-      schedulingChecklist: [],
-      obtainingResultsChecklist: [],
-      reinspectionsChecklist: [],
-      utilityServiceDeptContacts: [],
       schedulingLinks: [],
       fotLinks: [],
       resultsLinks: [],
@@ -292,7 +266,6 @@ export default {
       feeContacts: [],
       obtainingResultsContacts: [],
       servicingFots: [],
-      failureChecklist: [],
       installationRequirements: []
     }
   }),
@@ -322,15 +295,6 @@ export default {
           data.servicingFots = []
         }
 
-        data.installationRequirements.forEach(requirement => {
-          if (requirement.dateCreated && requirement.createdBy) {
-            requirement.formattedDateCreated = moment(requirement.dateCreated).format('MM/DD/YY h:mm A')
-          }
-
-          if (requirement.dateModified && requirement.modifiedBy) {
-            requirement.formattedDateModified = moment(requirement.dateModified).format('MM/DD/YY h:mm A')
-          }
-        })
         this.ahjInspection = cloneDeep(data)
         this.ahjInspection.updateAllInState = false
         handleHidingGlobalLoader(this, status)

@@ -112,8 +112,6 @@ public class AhjService {
         ahjPermitService.savePermitContact(id, contactId);
       } else if (AhjType.INSPECTION.equals(ahjType)) {
         ahjInspectionService.saveInspectionContact(id, contactId);
-      } else {
-        ahjDesignService.saveDesignContact(id, contactId);
       }
 
     } else {
