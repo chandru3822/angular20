@@ -5,25 +5,23 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
-import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.ListOfValueService;
+import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Future;
 
 /**
@@ -46,6 +44,17 @@ public class BrsProcessStepActionFunctionService {
     private final MarketoService marketoService;
 
     private final ListOfValueService listOfValueService;
+
+    private final ProjectService projectService;
+
+    private String formatErrorMessage(ProcessStepActionChildFunction func, String message) {
+        final String originalFuncName = func.getFunctionName();
+        final int dot = originalFuncName.indexOf('.');
+        final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
+        final String functionType = (func.getRunInBackend()) ? "MANUAL" : "AUTOTRIGGER";
+
+        throw new RuntimeException(String.format("PPS: Unable to perform %s action for java function: %s *** %s", functionType, functionName, message));
+    }
 
     public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
 
@@ -76,11 +85,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -112,11 +117,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -142,11 +143,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -180,11 +177,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -211,11 +204,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (Exception e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -252,11 +241,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (Exception e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -394,18 +379,44 @@ public class BrsProcessStepActionFunctionService {
                 }
             }
         } catch (Exception e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform MANUAL action for java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
-    @SneakyThrows
-//    public void pushContactToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-    public void pushContactToMarketo(Contact contact) {
-        Future<Void> worked = marketoService.pushContact(contact);
-        worked.get();
+    public void pushDataToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+        final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+        Project project = projectService.getProject(projectId).orElse(null);
+
+        if (project == null) {
+            throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+        }
+
+        try {
+            Map<String, Object> lead = marketoService.projectToLead(project);
+            Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", project.getContactId()), new SingleColumnRowMapper<>(String.class));
+            leadSource.ifPresent(l -> lead.put("leadSource", l));
+            Optional<String> leadStatus = sqlCache.get("marketo.getLeadStatus", Map.of("contactId", project.getContactId()), new SingleColumnRowMapper<>(String.class));
+            leadStatus.ifPresent(l -> lead.put("leadStatus", l));
+
+            //@TODO: If updating project status, set that field here
+            final String projectStatusParam = func.getActionParamDynamicValues().get(1).getDynamicValue();
+            if (!projectStatusParam.isEmpty()) {
+                lead.put("projectStatus", projectStatusParam);
+            }
+
+            //@TODO: Check if updating other fields and add to map here.
+            //appointmentTime
+            //finalDesignApprovedDate
+            //installationStartTime
+            //substantialCompletionDate
+            //inspectionStartTime
+            //inspectionPassedDate
+            //energizedDate
+
+            Future<Void> worked = marketoService.pushData(lead);
+            worked.get();
+        } catch (Exception e) {
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+        }
     }
 }

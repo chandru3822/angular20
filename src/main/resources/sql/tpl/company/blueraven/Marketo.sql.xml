@@ -1,11 +1,12 @@
 <sql>
-<marketo.getHubspotId><![CDATA[
+<marketo.getLeadStatus><![CDATA[
 -- Don't like that this uses hardcoded cfgaId
-select ccfv.text_value
+select lov.name
 from flow.contact_custom_field_value ccfv
+inner join flow.list_of_value lov on lov.id = ccfv.int_value
 where ccfv.contact_id = :contactId and
-      ccfv.custom_field_group_assignment_id = 397
-]]></marketo.getHubspotId>
+      ccfv.custom_field_group_assignment_id = 399
+]]></marketo.getLeadStatus>
 
 <marketo.getLeadSource><![CDATA[
 -- Don't like that this uses hardcoded cfgaId

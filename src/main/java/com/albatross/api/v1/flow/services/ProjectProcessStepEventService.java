@@ -63,6 +63,8 @@ public class ProjectProcessStepEventService {
   private final MarketoService marketoService;
   private final ListOfValueService listOfValueService;
 
+  private final ProjectService projectService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -512,7 +514,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService, projectService);
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);
           } else {

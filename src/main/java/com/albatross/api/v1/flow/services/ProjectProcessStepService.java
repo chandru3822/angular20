@@ -1079,7 +1079,7 @@ public class ProjectProcessStepService {
               systemValues.put("companyId", user.getCompanyId());
 
               if (functionAbbreviation.equals("brs")) {
-                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService, projectService);
                 Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
                 method.invoke(functionClass, childFunction, systemValues);
               } else {

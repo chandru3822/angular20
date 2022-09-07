@@ -26,6 +26,8 @@ public class Project {
       companyCountryId,
       createdById;
   private String projectName,
+      firstName,
+      lastName,
       processName,
       projectStatusType,
       state,

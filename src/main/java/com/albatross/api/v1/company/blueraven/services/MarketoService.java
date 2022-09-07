@@ -68,9 +68,9 @@ public class MarketoService {
     }
 
     @Async
-    public Future<Void> pushContact(Contact contact) {
+    public Future<Void> pushData(Map<String, Object> lead) {
         Map<String, Object> body = new HashMap<>();
-        body.put("input", List.of(contactToLead(contact)));
+        body.put("input", List.of(lead));
         body.put("lookupField", "projectId");
 
         authenticate();
@@ -91,7 +91,7 @@ public class MarketoService {
         ResponseEntity<String> res = client.get()
                                            .uri(uriBuilder -> uriBuilder
                                                .path("/rest/v1/leads.json")
-                                               .queryParam("fields", "id,contactId,projectId,lastName,firstName,email,updatedAt,createdAt")
+                                               .queryParam("fields", "id,projectId,lastName,firstName,email,updatedAt,createdAt")
                                                .queryParam("filterType", "projectId")
                                                .queryParam("batchSize", 1)
                                                .queryParam("filterValues", projectId)
@@ -108,32 +108,17 @@ public class MarketoService {
         return new AsyncResult<>(json.getLong("contactId"));
     }
 
-    private Map<String, Object> contactToLead(Contact contact) {
+    public Map<String, Object> projectToLead(Project project) {
         Map<String, Object> lead = new HashMap<>();
-        Project project = contact.getProjects().stream().findFirst().orElse(null);
-        if (project == null) {
-            //@TODO: error out
-        }
         lead.put("projectId", project.getId());
-        lead.put("leadStatus", project.getProjectStatusType());
-        Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", contact.getId()), new SingleColumnRowMapper<>(String.class));
-        leadSource.ifPresent(l -> lead.put("leadSource", l));
-        Optional<String> hubspotId = sqlCache.get("marketo.getHubspotId", Map.of("contactId", contact.getId()), new SingleColumnRowMapper<>(String.class));
-        hubspotId.ifPresent(h -> lead.put("hubspotId", h));
-        lead.put("contactId", contact.getId());
-        lead.put("firstName", contact.getFirstName());
-        lead.put("lastName", contact.getLastName());
-        lead.put("address", contact.getStreet1());
-        lead.put("state", contact.getState());
-        lead.put("country", contact.getCountry());
-        lead.put("postalCode", contact.getPostalCode());
-        lead.put("phone", contact.getPhone());
-        lead.put("email", contact.getEmail());
-        lead.put("projectAddress", project.getStreet1());
-        lead.put("projectCity", project.getCity());
-        lead.put("projectState", project.getState());
-        lead.put("projectCountry", project.getCountry());
-        lead.put("projectPostalCode", project.getPostalCode());
+        lead.put("firstName", project.getFirstName());
+        lead.put("lastName", project.getLastName());
+        lead.put("address", project.getStreet1());
+        lead.put("state", project.getState());
+        lead.put("country", project.getCountry());
+        lead.put("postalCode", project.getPostalCode());
+        lead.put("phone", project.getPhone());
+        lead.put("email", project.getEmail());
         return lead;
     }
 }
