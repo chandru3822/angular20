@@ -6,6 +6,8 @@
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
                          :callback="(field) => callback(field)"
+                         :hardcoded-docs="hardcodedDocs"
+                         :source-id="sourceId"
                          @toggle-collapse-expand="$emit('toggle-collapse-expand')"
                          class="my-2"
         ></AhjCustomFields>
@@ -15,6 +17,8 @@
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
                          :callback="(field) => callback(field)"
+                         :hardcoded-docs="hardcodedDocs"
+                         :source-id="sourceId"
                          @toggle-collapse-expand="$emit('toggle-collapse-expand')"
                          class="my-2"
         ></AhjCustomFields>
@@ -34,6 +38,8 @@ export default {
     customFieldGroups: Array,
     userCanEdit: Boolean,
     expandedAll: CollapseExpandEnum,
+    hardcodedDocs: Map,
+    sourceId: Number,
     callback:Function
   },
   data:() => ({

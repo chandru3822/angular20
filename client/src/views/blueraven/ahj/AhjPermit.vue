@@ -24,10 +24,12 @@
 
     <v-form ref="ahjPermitForm">
       <v-row class="mb-4 group-row" no-gutters>
-        <TwoColumnMasonry :custom-field-groups="customFieldGroupAssignments"
+        <TwoColumnMasonry :custom-field-groups="customFieldGroups"
                           :user-can-edit="userCanEdit"
                           :expanded-all="expandedAll"
                           :callback="(field) => updateDirtyValue(field)"
+                          :hardcoded-docs="hardCodedDocsMap"
+                          :source-id="ahjId"
                           @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
         ></TwoColumnMasonry>
         <!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">-->
@@ -209,6 +211,22 @@ export default {
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
     },
+    hardCodedDocsMap(){
+      const docsMap = new Map()
+      docsMap.set(5, {
+        title: "Documents Required for Inspection",
+        documents: this.inspectionDocuments,
+        attachmentType1: 1 ,
+        attachmentType: "All Documents"
+      })
+      docsMap.set(24, {
+        title: "Documents Required for Refund/Cancellation",
+        documents: this.cancellationDocuments,
+        attachmentTypeId: 462 ,
+        attachmentType: "All Documents"
+      })
+      return docsMap
+    }
   },
   data: () => ({
     CollapseExpandEnum,
@@ -219,7 +237,7 @@ export default {
     saveConfirmDialog: false,
     dataWasChanged: false,
     dataReady: false,
-    customFieldGroupAssignments: [],
+    customFieldGroups: [],
     approvalRequiredOptions: [{id: null, name: ''}],
     submittalMethods: [{id: null, name: ''}],
     businessLicenseMenu: false,
@@ -248,7 +266,7 @@ export default {
       followUpContacts: [],
       servicingFots: []
     },
-    documents: [],
+    inspectionDocuments: [],
     cancellationDocuments: [],
   }),
   methods: {
@@ -308,7 +326,7 @@ export default {
           data,
           status
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-        this.customFieldGroupAssignments = cloneDeep(data)
+        this.customFieldGroups = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -317,7 +335,7 @@ export default {
       }
     },
     getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
       return match ? match.customFieldValues : []
     },
     showOtherField(int, list) {
@@ -325,7 +343,7 @@ export default {
       return match ? match.showOther : false
     },
     resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroupAssignments.forEach(group => {
+      this.customFieldGroups.forEach(group => {
         group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
       })
     },
@@ -351,12 +369,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getDocuments() {
+    async getInspectionDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
         const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.documents = cloneDeep(data)
+        this.inspectionDocuments = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -388,7 +406,7 @@ export default {
           }
         }
 
-        this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
+        this.ahjPermit.customFieldGroups = this.customFieldGroups
         const {
           data,
           status
@@ -438,7 +456,7 @@ export default {
     this.ahjId = parseInt(this.$route.params.ahjId)
     this.getAhjPermit().then(() => {
       this.getCustomFieldGroupAssignmentsForScreen()
-      this.getDocuments()
+      this.getInspectionDocuments()
       this.getCancellationDocuments()
       this.dataReady = true
     })

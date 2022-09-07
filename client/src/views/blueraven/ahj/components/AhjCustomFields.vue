@@ -28,6 +28,17 @@
                   class="other-field override-readonly-font-color"
       ></v-textarea>
     </div>
+    <div v-if="!!hardcodedDocs && !!hardcodedDocs.get(group.id)">
+      <AhjCard :title="hardcodedDocs.get(group.id).title">
+      <AhjAttachments
+          :attachments="hardcodedDocs.get(group.id).documents"
+          :attachment-types="[{attachmentTypeId:hardcodedDocs.get(group.id).attachmentTypeId, attachmentType: hardcodedDocs.get(group.id).attachmentType}]"
+          :user-can-edit="userCanEdit"
+          :source-id="sourceId"
+      ></AhjAttachments>
+      </AhjCard>
+    </div>
+
   </v-card-text>
   </v-card>
 </template>
@@ -35,17 +46,25 @@
 <script>
 import CustomValueInput from "@/views/flow/components/CustomValueInput";
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
+import AhjDocuments from "@/views/blueraven/ahj/components/AhjDocuments";
+import AhjAttachments from "@/views/blueraven/ahj/components/AhjAttachments";
+import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
 export default {
   name: "AhjCustomFields",
   components: {
+    AhjCard,
+    AhjAttachments,
+    AhjDocuments,
     CustomValueInput
   },
   props: {
     group: Object,
     userCanEdit: Boolean,
     expandedAll: CollapseExpandEnum,
-    callback: Function
+    callback: Function,
+    hardcodedDocs:Map,
+    sourceId: Number
 
   },
   data: () => ({
