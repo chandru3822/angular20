@@ -423,6 +423,11 @@ public class BrsProcessStepActionFunctionService {
             //inspectionStartTime
             //inspectionPassedDate
             //energizedDate
+            if (!paramValues.get(7).getDynamicValue().isBlank()) {
+                final Long energizedCfgaId = Long.parseLong(paramValues.get(7).getDynamicValue());
+                results = sqlCache.get("marketo.getFieldValuesByCfgaId", Map.of("cfgaId", energizedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("energizedDate", r.get("dateValue").toString()));
+            }
 
             Future<Void> worked = marketoService.pushData(lead);
             worked.get();
