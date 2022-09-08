@@ -40,4 +40,10 @@ where pps.project_id = :projectId and
 order by ppse.date_modified desc
 limit 1
 ]]></marketo.getStartTimeByProcessStepEventId>
+
+<marketo.getEnergizedDate><![CDATA[
+select pd.energized_date "energizedDate"
+from brs.project_details pd
+where pd.project_id = :projectId
+]]></marketo.getEnergizedDate>
 </sql>

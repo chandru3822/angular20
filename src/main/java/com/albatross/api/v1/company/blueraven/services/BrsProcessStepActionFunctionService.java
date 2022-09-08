@@ -453,11 +453,11 @@ public class BrsProcessStepActionFunctionService {
             }
 
             //energizedDate
-//            if (!paramValues.get(7).getDynamicValue().isBlank()) {
-//                final Long energizedCfgaId = Long.parseLong(paramValues.get(7).getDynamicValue());
-//                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", energizedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
-//                results.ifPresent(r -> lead.put("energizedDate", r.get("dateValue").toString()));
-//            }
+            final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
+            if (updateEnergizedDate) {
+                results = sqlCache.get("marketo.getEnergizedDate", Map.of("projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("energizedDate", r.get("energizedDate").toString()));
+            }
 
             Future<Void> worked = marketoService.pushData(lead);
             worked.get();
