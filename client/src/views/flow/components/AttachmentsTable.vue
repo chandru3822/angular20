@@ -35,17 +35,21 @@
           {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{ item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY') }}
         </v-col>
         <v-col cols="2" class="text-right pa-0">
-          <v-btn small text color="primary" :href="item.presignedUrl">
-            <v-icon>mdi-tray-arrow-down</v-icon>
+          <v-btn small v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
+                 :disabled="performingLink"
+                 text color="primary" @click="linkAttachment(item, true)" class="px-0">
+            <v-icon>link</v-icon>
+          </v-btn>
+          <v-btn small v-if="!allowUpload && loadLinked"
+                 :disabled="performingLink"
+                 text color="primary" @click="linkAttachment(item, false)" class="px-0">
+            <v-icon>mdi-link-off</v-icon>
           </v-btn>
           <v-btn small v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
             <v-icon>delete</v-icon>
           </v-btn>
-          <v-btn small v-if="!allowUpload && !loadLinked && displayType.linkable" text color="primary" @click="linkAttachment(item, true)" class="px-0">
-            <v-icon>link</v-icon>
-          </v-btn>
-          <v-btn small v-if="!allowUpload && loadLinked" text color="primary" @click="linkAttachment(item, false)" class="px-0">
-            <v-icon>mdi-link-off</v-icon>
+          <v-btn small text color="primary" :href="item.presignedUrl">
+            <v-icon>mdi-tray-arrow-down</v-icon>
           </v-btn>
           <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
@@ -75,6 +79,7 @@ import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import Vue2Filters from 'vue2-filters'
+import {ProjectMutations} from "@/stores/ProjectStore"
 
 export default {
   name: "AttachmentsTable",
@@ -99,6 +104,7 @@ export default {
     projectProcessStepId: Number,
     projectProcessStepEventId: Number,
     compareCallback: Function,
+    deleteCallback: Function,
     countSelected: Number
 
   },
@@ -110,7 +116,8 @@ export default {
       attachmentDeleteConfirm: false,
       attachmentToDelete: {},
       linkAttachmentPath: null,
-      maxSelectable: 3
+      maxSelectable: 3,
+      performingLink: false,
     }
   },
   computed: {
@@ -143,6 +150,9 @@ export default {
       const id = this.attachmentToDelete.id
       try {
         await deleteAttachment(id)
+        this.deleteCallback(id)
+        //this value tells the right pane to update when a file is deleted
+        this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
         this.snackbar = getSnackbar('SUCCESS', 'Document Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
@@ -155,6 +165,8 @@ export default {
 
     },
     async linkAttachment(attachment, doLink) {
+      try {
+      this.performingLink = true
       if(this.projectProcessStepEventId) {
         this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/linkAttachment/${attachment.id}`
       } else if(this.projectProcessStepId) {
@@ -175,6 +187,20 @@ export default {
       const {data} = await postRequestWithRequestParams(`${this.linkAttachmentPath}`, null, { doLink})
       if(!doLink) {
         attachment.archived = true
+        //this value tells the right pane to update after a file is unlinked from the center pane
+        //definitely better ways to handle this but fully refreshing is what we are doing for now
+        this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+      } else {
+        attachment.linkedToSelected = true
+      }
+      this.performingLink = false
+      this.snackbar = getSnackbar('SUCCESS', 'Document Linked')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Linking Document')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     startDelete(item) {

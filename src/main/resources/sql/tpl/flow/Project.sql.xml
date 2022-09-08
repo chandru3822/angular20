@@ -509,6 +509,7 @@
         a.archived,
         pa.linked,
         att.attachment_type,
+        (select * from flow.attachment_linked(a.id::bigint, :projectId::bigint, :ppsId::bigint, :ppsEventId::bigint)) as linked_to_selected,
         orgn.*
       from flow.project_attachment pa
              inner join flow.attachment a on a.id = pa.attachment_id
@@ -539,6 +540,7 @@
         a.archived,
         ppsa.linked,
         att.attachment_type,
+        (select * from flow.attachment_linked(a.id::bigint, :projectId::bigint, :ppsId::bigint, :ppsEventId::bigint)) as linked_to_selected,
         orgn.*
       from flow.project_process_step_attachment ppsa
              inner join flow.attachment a on a.id = ppsa.attachment_id
@@ -570,6 +572,7 @@
         a.archived,
         ppsa.linked,
         att.attachment_type,
+        (select * from flow.attachment_linked(a.id::bigint, :projectId::bigint, :ppsId::bigint, :ppsEventId::bigint)) as linked_to_selected,
         orgn.*
       from flow.project_process_step_event_attachment ppsa
              inner join flow.attachment a on a.id = ppsa.attachment_id

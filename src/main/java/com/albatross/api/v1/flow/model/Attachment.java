@@ -12,5 +12,5 @@ public class Attachment {
       presignedUrl, uploadedBy, processStepName, publicUrl, originLocation, originPath, displayName;
     private Date dateCreated, dateModified;
     private UUID uuid;
-    private Boolean archived, show, linked;
+    private Boolean archived, show, linked, linkedToSelected;
 }

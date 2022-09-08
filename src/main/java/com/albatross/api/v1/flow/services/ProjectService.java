@@ -477,10 +477,12 @@ public class ProjectService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  public List<Attachment> getCombinedAttachments(Long projectId) {
+  public List<Attachment> getCombinedAttachments(Long projectId, Long ppsId, Long ppsEventId) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
+    params.put("ppsId", ppsId);
+    params.put("ppsEventId", ppsEventId);
     params.put("companyId", currentUser.getCompanyId());
     // Get project attachments
     List<Attachment> attachments =

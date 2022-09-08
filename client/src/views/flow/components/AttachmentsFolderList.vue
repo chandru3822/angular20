@@ -108,6 +108,7 @@
               :objectTypeId="objectTypeId"
               :projectProcessStepEventId="projectProcessStepEventId"
               :compare-callback="toggleAttachmentToCompare"
+              :delete-callback="attachmentDeleted"
               :count-selected="selectedAttachmentsForCompare.length"
             ></AttachmentsTable>
           </v-expansion-panel-content>
@@ -238,6 +239,9 @@ export default {
         this.selectedAttachmentsForCompare = this.selectedAttachmentsForCompare.filter(a => a.id !== attachment.id)
       }
     },
+    attachmentDeleted(id) {
+      this.attachments = this.attachments.filter(a => a.id !== id)
+    },
     fileUploaded(attachment, error) {
       if(error) {
         this.snackbar = getSnackbar('ERROR', error.message)
@@ -290,11 +294,13 @@ export default {
       //if focused then override attachment path to get all in project
       if (this.focused) {
         this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
+        params.ppsEventId = this.projectProcessStepEventId
+        params.ppsId = this.projectProcessStepId
       }
 
       if (this.typePath && this.attachmentPath) {
         this.fetchAttachmentTypes(params)
-        this.fetchAttachments()
+        this.fetchAttachments(params)
       }
     },
     fetchAttachmentTypes: async function (typeParams) {
@@ -310,9 +316,10 @@ export default {
       this.attachmentTypes = data
       this.attachmentTypesLoading = false
     },
-    fetchAttachments: async function () {
+    fetchAttachments: async function (extraParams) {
       const {data} = await getRequestWithParams(this.attachmentPath, {
         params: {
+          ...extraParams,
           linked: this.loadLinked
         }
       })

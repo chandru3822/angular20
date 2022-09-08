@@ -133,8 +133,10 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/{projectId}/combinedAttachments")
-  public ResponseEntity<List<Attachment>> getProjectCombinedAttachments(@PathVariable Long projectId) {
-    return new ResponseEntity<>(projectService.getCombinedAttachments(projectId), HttpStatus.OK);
+  public ResponseEntity<List<Attachment>> getProjectCombinedAttachments(@PathVariable Long projectId,
+                                                                        @RequestParam(required = false) Long ppsId,
+                                                                        @RequestParam(required = false) Long ppsEventId) {
+    return new ResponseEntity<>(projectService.getCombinedAttachments(projectId, ppsId, ppsEventId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{projectId}/linkAttachment/{attachmentId}")
