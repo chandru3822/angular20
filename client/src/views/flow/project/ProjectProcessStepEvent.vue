@@ -4,8 +4,11 @@
       No Matching Event Found
     </div>
   </v-main>
-  <v-main ref="ppseFieldsContainer" class="pa-0 relative height-one-hunned overflow-y-auto" v-else-if="!eventDetailsLoading">
-    <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath, query)]" @close-dialog="unsavedFieldsModal = false">
+  <v-main ref="ppseFieldsContainer" class="pa-0 relative height-one-hunned overflow-y-auto"
+          v-else-if="!eventDetailsLoading">
+    <ConfirmationDialog :open-dialog="unsavedFieldsModal"
+                        @confirm="[navigationOverride = true, goToPath(toPath, query)]"
+                        @close-dialog="unsavedFieldsModal = false">
       <template v-slot:title>Confirm</template>
       You have unsaved fields. Are you sure you want to continue without saving?
       <template v-slot:yes>Continue and Don't Save</template>
@@ -24,9 +27,13 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
-                 small text color="primary" class="align-self-end" @click="showDeleteDialog = true"><v-icon>delete</v-icon></v-btn>
-          <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteEvent" @close-dialog="showDeleteDialog=false">
+          <v-btn
+            v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+            small text color="primary" class="align-self-end" @click="showDeleteDialog = true">
+            <v-icon>delete</v-icon>
+          </v-btn>
+          <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteEvent"
+                              @close-dialog="showDeleteDialog=false">
             Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
           </ConfirmationDialog>
         </v-toolbar-items>
@@ -35,10 +42,10 @@
         <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
           <v-card class="square-card" :class="{'mt-2': idx !== 0}"
                   v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
-            <v-card-text class="flex-display pa-0"  :style="{'color': b.color}">
+            <v-card-text class="flex-display pa-0" :style="{'color': b.color}">
               <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
               <div :style="{'background-color': b.bgColor + 20}" class="one-hunned">
-                <pre class="app-pre-wrapper px-3 py-2">{{b.content}}</pre>
+                <pre class="app-pre-wrapper px-3 py-2">{{ b.content }}</pre>
               </div>
             </v-card-text>
           </v-card>
@@ -86,36 +93,34 @@
           </v-btn>
         </div>
       </div>
-      <v-toolbar flat color="secondary" class="cfg-detail-header">
-        <v-toolbar-title class="albatross-header-3">
-          Event Documents
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
-            <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
-            <v-icon v-else>mdi-chevron-down</v-icon>
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-col cols="12" class="text-left py-0 px-0" v-if="!collapsedAttachments">
-        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar cfg-detail-header">
-          <v-toolbar-title class="albatross-body-2">Uploaded Documents</v-toolbar-title>
+      <div v-if="selectedEvent.hasAttachmentTypesAssigned">
+        <v-toolbar flat color="secondary" class="cfg-detail-header">
+          <v-toolbar-title class="albatross-header-3">
+            Event Documents
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
+              <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
+              <v-icon v-else>mdi-chevron-down</v-icon>
+            </v-btn>
+          </v-toolbar-items>
         </v-toolbar>
-          <AttachmentsFolderList :object-type-id="1"
-                               :allow-upload="true"
-                               :show-title="true"
-                                 is-card
-                               title="Uploaded Documents"/>
-        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar cfg-detail-header">
-          <v-toolbar-title class="albatross-body-2">Linked Documents</v-toolbar-title>
-        </v-toolbar>
-        <AttachmentsFolderList :object-type-id="1"
-                               :load-linked="true"
-                               :show-title="true"
-                               is-card
-                               title="Linked Documents"/>
-      </v-col>
+        <v-row>
+          <v-col cols="12" class="text-left py-0 px-0 pb-4" v-if="!collapsedAttachments">
+            <AttachmentsFolderList :object-type-id="1"
+                                   :allow-upload="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Uploaded Documents"/>
+            <AttachmentsFolderList :object-type-id="1"
+                                   :load-linked="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Linked Documents"/>
+          </v-col>
+        </v-row>
+      </div>
       <div class="fixed-toolbar padding-left-1">
         <v-toolbar flat color="secondary" class="cfg-name-toolbar px-0">
           <v-toolbar-title class="albatross-header-3">
@@ -150,8 +155,8 @@
       <v-form ref="eventFieldForm" class="px-0" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
           <a small text color="anchor" v-if="$store.getters.userHasFeature('SCHEDULE')"
-                 class="px-0 d-flex align-baseline" target="_blank"
-                 :href="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+             class="px-0 d-flex align-baseline" target="_blank"
+             :href="`/schedule?projectProcessStepEventId=${ppsEventId}`">
             <span color="anchor" class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
             <v-icon color="anchor" class="scheduler-button-icon">mdi-open-in-new</v-icon>
           </a>
@@ -256,7 +261,8 @@
                     {{ data.item.scheduledStartTime | formatDate('timestamp') }}
                   </template>
                 </v-select>
-                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue && !dateValueChanged">No Times Available for the
+                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue && !dateValueChanged">No Times
+                  Available for the
                   Selected Date
                 </div>
                 <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
@@ -805,8 +811,7 @@ export default {
         this.$emit('refresh-upcoming-events')
         //go to the process step
         this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
-      }
-      catch (e) {
+      } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

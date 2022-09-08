@@ -274,6 +274,7 @@
       <template v-slot:right-column>
         <ProjectActivity v-if="org && org.id"
                          :org-id="orgId"
+                         :object-type-id="5"
                          :force-show-upload-btn="true"
                          :show-sms-tab="false"></ProjectActivity>
       </template>

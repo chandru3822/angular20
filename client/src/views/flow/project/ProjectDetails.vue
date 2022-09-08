@@ -38,7 +38,7 @@
                     :key="index"
                     @click="menuOpen = false">
                     <v-list-item-content>
-                      <v-list-item-title>{{item.attachmentType}}</v-list-item-title>
+                      <v-list-item-title>{{ item.attachmentType }}</v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
                 </template>
@@ -113,21 +113,17 @@
             </div>
             <div v-else>
               <v-col class="py-0">
-                <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-                  <v-toolbar-title class="albatross-header-4-new">Uploaded Documents</v-toolbar-title>
-                </v-toolbar>
-                  <AttachmentsFolderList :object-type-id="1"
-                                         :project-id="projectId"
-                                         is-card
-                                         :allow-upload="true"/>
-              </v-col>
-              <v-col>
-                <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-                  <v-toolbar-title class="albatross-header-4-new">Linked Documents</v-toolbar-title>
-                </v-toolbar>
                 <AttachmentsFolderList :object-type-id="1"
                                        :project-id="projectId"
                                        is-card
+                                       title="Uploaded Documents"
+                                       :allow-upload="true"/>
+              </v-col>
+              <v-col>
+                <AttachmentsFolderList :object-type-id="1"
+                                       :project-id="projectId"
+                                       is-card
+                                       title="Linked Documents"
                                        :load-linked="true"/>
               </v-col>
             </div>
@@ -218,11 +214,13 @@ export default {
 
   methods: {
     async loadProjectTypes() {
-      const {data} = await getRequestWithParams(`/attachmentType/objectType/project`, { params: {
+      const {data} = await getRequestWithParams(`/attachmentType/objectType/project`, {
+        params: {
           linkable: false,
           allowUpload: true,
           focused: false
-        }})
+        }
+      })
       this.attachmentTypes = data
     },
     setSplitColumnValue() {

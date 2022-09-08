@@ -28,6 +28,12 @@ BEGIN
              ps.id as "processStepId",
              ps.company_id as "companyId",
              ps.readonly,
+             case when (select psat.id
+                        from flow.process_step_attachment_type psat
+                        where psat.process_step_id = ps.id
+                          and psat.archived is false
+                          and (psat.linkable is true or psat.allow_upload is true)
+                        limit 1) is null then false else true end as "hasAttachmentTypesAssigned",
              coalesce((
                         SELECT array_to_json(array_agg(row_to_json(wlp)))
                         FROM (

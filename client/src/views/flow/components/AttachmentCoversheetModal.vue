@@ -333,7 +333,6 @@ export default {
         //reset error message when trying to upload new file
         this.error = {}
         if (this.file && this.file.size > 0) {
-          console.log('file here', this.file)
           await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
             null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
               (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :

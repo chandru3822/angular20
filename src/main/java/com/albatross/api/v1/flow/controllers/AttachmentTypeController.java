@@ -265,9 +265,10 @@ public class AttachmentTypeController {
 
   //these endpoints are for the non-admin side of things
   @GetMapping(value = "/combined/project", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectTypeAttachmentType> getCombinedTypesForProject(@RequestParam(required = false) Long ppsId,
+  public List<ObjectTypeAttachmentType> getCombinedTypesForProject(@RequestParam Boolean focused,
+                                                                   @RequestParam(required = false) Long ppsId,
                                                                    @RequestParam(required = false) Long ppsEventId) {
-    return attachmentTypeService.getCombinedTypesForProject(ppsId, ppsEventId);
+    return attachmentTypeService.getCombinedTypesForProject(ppsId, ppsEventId, focused);
   }
 
   @GetMapping(value = "/objectType/project", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -60,6 +60,12 @@ select ppse.*,
        pps.company_process_step_status_type_id,
        cpsst.process_step_status_type_id,
        pse.unique_behavior_type_id,
+       case when (select eat.id
+       from flow.event_attachment_type eat
+         where eat.event_id = e.id
+         and eat.archived is false
+         and (eat.linkable is true or eat.allow_upload is true)
+         limit 1) is null then false else true end as has_attachment_types_assigned,
        coalesce((
                   SELECT array_to_json(array_agg(row_to_json(availableResources)))
                   FROM (

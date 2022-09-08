@@ -26,7 +26,7 @@
     <div v-if="loadingDetails" class="one-hunned text-center">
       <SpinnerInline :size="40" color="primary"/>
     </div>
-    <div v-else>
+    <div v-else-if="attachmentTypes.length > 0" :class="{'px-3': isCard}">
       <div v-if="activityTab" class="px-5">
         <v-text-field
           v-model="search"
@@ -48,8 +48,13 @@
           Compare
         </v-btn>
       </div>
-      <div v-if="attachmentTypes.length === 0" class="text-center albatross-body-2">No attachments available</div>
-      <v-card v-else class="text-left square-card" :class="{'elevation-0': !isCard || attachments.length === 0}">
+      <v-toolbar v-if="title" color="transparent" class="elevation-0 process-step-toolbar cfg-name-toolbar">
+        <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
+                                  'albatross-body-2': this.smallTitle}">
+          {{ title }}
+        </v-toolbar-title>
+      </v-toolbar>
+      <v-card class="text-left square-card" :class="{'elevation-0': !isCard}">
         <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
           <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
             <v-expansion-panel-header class="albatross-body-1">
@@ -154,6 +159,8 @@ export default {
     allowUpload: Boolean,
     loadLinked: Boolean,
     focused: Boolean,
+    smallTitle: Boolean,
+    title: String,
     activityTab: Boolean, //this tells us whether to show the search and compare buttons
     forceShowUploadBtn: Boolean,
     projectId: Number,
@@ -269,8 +276,11 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
         this.attachments.push(attachment)
-        //this value tells the right pane to update when a file is uploaded
-        this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+        if(!this.forceShowUploadBtn) {
+          //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
+          //this value tells the right pane to update when a file is uploaded
+          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+        }
       }
       this.$store.commit(AppMutations.SET_LOADING, false)
     },
@@ -283,7 +293,7 @@ export default {
       //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
       this.loadingDetails = true
       let params = {}
-      if ((!this.objectTypeId || this.objectTypeId === 1) && !this.focused && !this.allowUpload && !this.loadLinked) {
+      if ((!this.objectTypeId || this.objectTypeId === 1) && !this.allowUpload && !this.loadLinked) {
         this.typePath = `/combined/project`
         this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
         params.ppsEventId = this.projectProcessStepEventId
@@ -314,11 +324,11 @@ export default {
       }
 
       //if focused then override attachment path to get all in project
-      if (this.focused) {
-        this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
-        params.ppsEventId = this.projectProcessStepEventId
-        params.ppsId = this.projectProcessStepId
-      }
+      // if (this.focused) {
+      //   this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
+      //   params.ppsEventId = this.projectProcessStepEventId
+      //   params.ppsId = this.projectProcessStepId
+      // }
 
       if (this.typePath && this.attachmentPath) {
         let requests = [this.fetchAttachmentTypes(params), this.fetchAttachments(params)]
