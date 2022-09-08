@@ -240,7 +240,11 @@ public class AttachmentTypeService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("ppsId", ppsId);
     params.put("ppsEventId", ppsEventId);
-    String sqlKey = focused ? "attachmentType.getFocusedTypesForProject" : "attachmentType.getCombinedTypesForProject";
+    String sqlKey = "attachmentType.getCombinedTypesForProject";
+    if(focused) {
+      sqlKey = null != ppsEventId ? "attachmentType.getFocusedTypesForPpsEvent" :
+               null != ppsId ? "attachmentType.getFocusedTypesForPps" : "attachmentType.getFocusedTypesForProject";
+    }
     return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
   }
 
