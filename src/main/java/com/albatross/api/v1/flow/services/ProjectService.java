@@ -18,6 +18,7 @@ import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEven
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -507,7 +508,8 @@ public class ProjectService {
     metadata.setContentLength(contentLength);
     metadata.setContentType(contentType);
 
-    s3.putObject(new PutObjectRequest(storageBucket, key, inputStream, metadata));
+    final PutObjectRequest putObjectRequest = new PutObjectRequest(storageBucket, key, inputStream, metadata);
+    s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(filename));
