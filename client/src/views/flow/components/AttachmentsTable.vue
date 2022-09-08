@@ -16,7 +16,8 @@
     </v-dialog>
     <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
     <v-container v-else dense :key="renderTicker" id="attachment-table">
-      <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment" :key="item.processStepId">
+      <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment"
+             :key="item.processStepId">
         <v-col cols="6" class="text-left pa-1">
           <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
                       v-model="item.compare"
@@ -32,7 +33,9 @@
           </a>
         </v-col>
         <v-col cols="4" class="text-center px-1 attachment-info">
-          {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{ item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY') }}
+          {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{
+            item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')
+          }}
         </v-col>
         <v-col cols="2" class="text-right pa-0">
           <v-btn small v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
@@ -153,6 +156,10 @@ export default {
         this.deleteCallback(id)
         //this value tells the right pane to update when a file is deleted
         this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+
+        //only emit a change event if something was linked, only the actively showing linked section will update
+        this.$root.$emit('attachmentDeleted', id)
+
         this.snackbar = getSnackbar('SUCCESS', 'Document Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
@@ -166,36 +173,41 @@ export default {
     },
     async linkAttachment(attachment, doLink) {
       try {
-      this.performingLink = true
-      if(this.projectProcessStepEventId) {
-        this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/linkAttachment/${attachment.id}`
-      } else if(this.projectProcessStepId) {
-        this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/linkAttachment/${attachment.id}`
-      } else if(this.projectId) {
-        this.linkAttachmentPath = `/project/${this.projectId}/linkAttachment/${attachment.id}`
-      } else if (this.objectTypeId === 2) {
-        //contact
-        this.linkAttachmentPath = `/contact/${this.contactId}/linkAttachment/${attachment.id}`
-      } else if (this.objectTypeId === 5) {
-        //org
-        this.linkAttachmentPath = `/org/${this.orgId}/linkAttachment/${attachment.id}`
-      } else if (this.objectTypeId === 3) {
-        //user
-        this.linkAttachmentPath = `/user/${this.userId}/linkAttachment/${attachment.id}`
-      }
+        this.performingLink = true
+        if (this.projectProcessStepEventId) {
+          this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/linkAttachment/${attachment.id}`
+        } else if (this.projectProcessStepId) {
+          this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/linkAttachment/${attachment.id}`
+        } else if (this.projectId) {
+          this.linkAttachmentPath = `/project/${this.projectId}/linkAttachment/${attachment.id}`
+        } else if (this.objectTypeId === 2) {
+          //contact
+          this.linkAttachmentPath = `/contact/${this.contactId}/linkAttachment/${attachment.id}`
+        } else if (this.objectTypeId === 5) {
+          //org
+          this.linkAttachmentPath = `/org/${this.orgId}/linkAttachment/${attachment.id}`
+        } else if (this.objectTypeId === 3) {
+          //user
+          this.linkAttachmentPath = `/user/${this.userId}/linkAttachment/${attachment.id}`
+        }
 
-      const {data} = await postRequestWithRequestParams(`${this.linkAttachmentPath}`, null, { doLink})
-      if(!doLink) {
-        attachment.archived = true
-        //this value tells the right pane to update after a file is unlinked from the center pane
-        //definitely better ways to handle this but fully refreshing is what we are doing for now
-        this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
-      } else {
-        attachment.linkedToSelected = true
-      }
-      this.performingLink = false
-      this.snackbar = getSnackbar('SUCCESS', 'Document Linked')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        const {data} = await postRequestWithRequestParams(`${this.linkAttachmentPath}`, null, {doLink})
+        if (!doLink) {
+          attachment.archived = true
+          attachment.linked = false
+          attachment.linkedToSelected = false
+          //this value tells the right pane to update after a file is unlinked from the center pane
+          //definitely better ways to handle this but fully refreshing is what we are doing for now
+          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+        } else {
+          attachment.linkedToSelected = true
+          //only emit a change event if something was linked, only the actively showing linked section will update
+          this.$root.$emit('newAttachmentLinked', attachment)
+        }
+
+        this.performingLink = false
+        this.snackbar = getSnackbar('SUCCESS', 'Document Linked')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Linking Document')

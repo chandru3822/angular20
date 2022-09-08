@@ -23,100 +23,105 @@
                               :close-callback="closeCompareModal">
       </AttachmentCompareModal>
     </v-dialog>
-    <div v-if="activityTab" class="px-5">
-      <v-text-field
-        v-model="search"
-        prepend-inner-icon="search"
-        clearable
-        label="Search all project documents"
-        single-line
-        hide-details
-      ></v-text-field>
-
-      <v-btn class="my-4" @click="compare = false" v-if="compare">
-        Cancel Comparison
-      </v-btn>
-      <v-btn color="primary" class="my-4" @click="showCompareModal = true" v-if="compare"
-             :disabled="selectedAttachmentsForCompare.length === 0">
-        Confirm Comparison
-      </v-btn>
-      <v-btn color="primary" class="my-4" @click="compare = true" v-else>
-        Compare
-      </v-btn>
+    <div v-if="loadingDetails" class="one-hunned text-center">
+      <SpinnerInline :size="40" color="primary"/>
     </div>
-    <div v-if="attachmentTypes.length === 0" class="text-center albatross-body-2">No attachments available</div>
-    <v-card v-else class="text-left square-card" :class="{'elevation-0': !isCard || attachments.length === 0}">
-      <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
-        <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
-          <v-expansion-panel-header class="albatross-body-1">
-            <template v-slot:default="{ open }">
-              <v-row v-if="(allowUpload || forceShowUploadBtn)"
-                     class="file-hover d-flex"
-                     :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId !== type.attachmentTypeId}"
-                     @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
-                     @dragend="dragTypeId = null"
-                     @dragleave="dragTypeId = null"
-                     @drop.prevent="addDragDocument($event, type)"
-                     @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
-              >
-                <v-icon class="child-drag-elements" color="primary">upload</v-icon>
-              </v-row>
-              <v-row no-gutters class="align-center" :class="{'bold' : open}">
-                <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">
-                  folder
-                </v-icon>
-                {{ `${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})` }}
-                <v-spacer></v-spacer>
-                <input
-                  :id="`fileInput${type.attachmentTypeId}`"
-                  type="file"
-                  :accept="acceptedFileTypes"
-                  @change='doUpload($event.target.files, type)'
-                  style="display: none"
-                  @click.stop=""
-                  ref='fileInput'
-                >
-                <div class="expansion-panel-header-open" v-if="open"
-                     key="0">
-                </div>
-                <span
-                  v-else
-                  key="1"
-                >
-                </span>
-                <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
-                       elevation="0" text color="primary" class="text-capitalize"
-                       :disabled="dragTypeId === type.attachmentTypeId">
-                  Upload
-                </v-btn>
-              </v-row>
-            </template>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <AttachmentsTable
-              :search="search"
-              :display-type="type"
-              :allow-upload="allowUpload || forceShowUploadBtn"
-              :load-linked="loadLinked"
-              :attachments="attachments"
-              :projectId="projectId"
-              :projectProcessStepId="projectProcessStepId"
-              :userId="userId"
-              :contactId="contactId"
-              :compare="!allowUpload && !loadLinked && compare"
-              :orgId="orgId"
-              :objectTypeId="objectTypeId"
-              :projectProcessStepEventId="projectProcessStepEventId"
-              :compare-callback="toggleAttachmentToCompare"
-              :delete-callback="attachmentDeleted"
-              :count-selected="selectedAttachmentsForCompare.length"
-            ></AttachmentsTable>
-          </v-expansion-panel-content>
-          <v-divider v-if="index !== attachmentTypes.length - 1" class="mx-3"></v-divider>
-        </v-expansion-panel>
-      </v-expansion-panels>
-    </v-card>
+    <div v-else>
+      <div v-if="activityTab" class="px-5">
+        <v-text-field
+          v-model="search"
+          prepend-inner-icon="search"
+          clearable
+          label="Search all project documents"
+          single-line
+          hide-details
+        ></v-text-field>
 
+        <v-btn class="my-4" @click="compare = false" v-if="compare">
+          Cancel Comparison
+        </v-btn>
+        <v-btn color="primary" class="my-4" @click="showCompareModal = true" v-if="compare"
+               :disabled="selectedAttachmentsForCompare.length === 0">
+          Confirm Comparison
+        </v-btn>
+        <v-btn color="primary" class="my-4" @click="compare = true" v-else>
+          Compare
+        </v-btn>
+      </div>
+      <div v-if="attachmentTypes.length === 0" class="text-center albatross-body-2">No attachments available</div>
+      <v-card v-else class="text-left square-card" :class="{'elevation-0': !isCard || attachments.length === 0}">
+        <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
+          <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
+            <v-expansion-panel-header class="albatross-body-1">
+              <template v-slot:default="{ open }">
+                <v-row v-if="(allowUpload || forceShowUploadBtn)"
+                       class="file-hover d-flex"
+                       :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId !== type.attachmentTypeId}"
+                       @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
+                       @dragend="dragTypeId = null"
+                       @dragleave="dragTypeId = null"
+                       @drop.prevent="addDragDocument($event, type)"
+                       @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
+                >
+                  <v-icon class="child-drag-elements" color="primary">upload</v-icon>
+                </v-row>
+                <v-row no-gutters class="align-center" :class="{'bold' : open}">
+                  <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">
+                    folder
+                  </v-icon>
+                  {{ `${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})` }}
+                  <v-spacer></v-spacer>
+                  <input
+                    :id="`fileInput${type.attachmentTypeId}`"
+                    type="file"
+                    :accept="acceptedFileTypes"
+                    @change='doUpload($event.target.files, type)'
+                    style="display: none"
+                    @click.stop=""
+                    ref='fileInput'
+                  >
+                  <div class="expansion-panel-header-open" v-if="open"
+                       key="0">
+                  </div>
+                  <span
+                    v-else
+                    key="1"
+                  >
+                </span>
+                  <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
+                         elevation="0" text color="primary" class="text-capitalize"
+                         :disabled="dragTypeId === type.attachmentTypeId">
+                    Upload
+                  </v-btn>
+                </v-row>
+              </template>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <AttachmentsTable
+                :search="search"
+                :display-type="type"
+                :allow-upload="allowUpload || forceShowUploadBtn"
+                :load-linked="loadLinked"
+                :attachments="attachments"
+                :projectId="projectId"
+                :projectProcessStepId="projectProcessStepId"
+                :userId="userId"
+                :contactId="contactId"
+                :compare="!allowUpload && !loadLinked && compare"
+                :orgId="orgId"
+                :objectTypeId="objectTypeId"
+                :projectProcessStepEventId="projectProcessStepEventId"
+                :compare-callback="toggleAttachmentToCompare"
+                :delete-callback="attachmentDeleted"
+                :count-selected="selectedAttachmentsForCompare.length"
+              ></AttachmentsTable>
+            </v-expansion-panel-content>
+            <v-divider v-if="index !== attachmentTypes.length - 1" class="mx-3"></v-divider>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-card>
+
+    </div>
   </div>
 </template>
 
@@ -135,13 +140,15 @@ import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversh
 import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
 import constants from "@/helpers/constants";
 import {ProjectMutations} from "@/stores/ProjectStore";
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: "AttachmentsFolderList",
   components: {
     AttachmentsTable,
     AttachmentCoversheetModal,
-    AttachmentCompareModal
+    AttachmentCompareModal,
+    SpinnerInline
   },
   props: {
     allowUpload: Boolean,
@@ -166,6 +173,7 @@ export default {
       eventId: null,
       tempFile: {},
       fileToUpload: null,
+      loadingDetails: true,
       projectProcessStepId: null,
       projectProcessStepEventId: null,
       selectedAttachmentsForCompare: [],
@@ -220,6 +228,19 @@ export default {
     this.loadAllPageDetails();
   },
   computed: {},
+  mounted() {
+    if (this.loadLinked) {
+      //if in the linked section and a new record was linked, add it here
+      this.$root.$on('newAttachmentLinked', data => {
+        data.linked = true
+        this.attachments.push(data)
+      })
+      //if in the linked section and a linked attachment is archived, remove it
+      this.$root.$on('attachmentDeleted', id => {
+        this.attachments = this.attachments.filter(a => a.id !== id)
+      })
+    }
+  },
   methods: {
     closeCoversheet() {
       this.showCoversheetModal = false
@@ -243,7 +264,7 @@ export default {
       this.attachments = this.attachments.filter(a => a.id !== id)
     },
     fileUploaded(attachment, error) {
-      if(error) {
+      if (error) {
         this.snackbar = getSnackbar('ERROR', error.message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
@@ -258,8 +279,9 @@ export default {
       this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
       this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
     },
-    loadAllPageDetails() {
+    async loadAllPageDetails() {
       //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
+      this.loadingDetails = true
       let params = {}
       if ((!this.objectTypeId || this.objectTypeId === 1) && !this.focused && !this.allowUpload && !this.loadLinked) {
         this.typePath = `/combined/project`
@@ -299,9 +321,10 @@ export default {
       }
 
       if (this.typePath && this.attachmentPath) {
-        this.fetchAttachmentTypes(params)
-        this.fetchAttachments(params)
+        let requests = [this.fetchAttachmentTypes(params), this.fetchAttachments(params)]
+        await Promise.all(requests)
       }
+      this.loadingDetails = false
     },
     fetchAttachmentTypes: async function (typeParams) {
       this.attachmentTypesLoading = true
