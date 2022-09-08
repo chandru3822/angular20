@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -410,29 +411,45 @@ public class BrsProcessStepActionFunctionService {
             Optional<Map<String, Object>> results;
 
             //@TODO: Check if updating other fields and add to map here.
-            //appointmentTime
+            //closerAppointmentStartTime
+            if (!paramValues.get(1).getDynamicValue().isBlank()) {
+                final Long closerAppointmentPseId = Long.parseLong(paramValues.get(1).getDynamicValue());
+                results = sqlCache.get("marketo.getEventStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("closerAppointmentStartTime", formatDateTimeForMarketo(r.get("startTime"))));
+            }
 
             //finalDesignApprovedDate
             if (!paramValues.get(2).getDynamicValue().isBlank()) {
                 final Long finalDesignApprovedCfgaId = Long.parseLong(paramValues.get(2).getDynamicValue());
-                results = sqlCache.get("marketo.getFieldValuesByCfgaId", Map.of("cfgaId", finalDesignApprovedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", finalDesignApprovedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
                 results.ifPresent(r -> lead.put("finalDesignApprovedDate", r.get("dateValue").toString()));
             }
             //installationStartTime
             //substantialCompletionDate
+            if (!paramValues.get(4).getDynamicValue().isBlank()) {
+                final Long substantialCompletionDateCfgaId = Long.parseLong(paramValues.get(4).getDynamicValue());
+                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", substantialCompletionDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("substantialCompletionDate", r.get("dateValue").toString()));
+            }
+
             //inspectionStartTime
             //inspectionPassedDate
             //energizedDate
-            if (!paramValues.get(7).getDynamicValue().isBlank()) {
-                final Long energizedCfgaId = Long.parseLong(paramValues.get(7).getDynamicValue());
-                results = sqlCache.get("marketo.getFieldValuesByCfgaId", Map.of("cfgaId", energizedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
-                results.ifPresent(r -> lead.put("energizedDate", r.get("dateValue").toString()));
-            }
+//            if (!paramValues.get(7).getDynamicValue().isBlank()) {
+//                final Long energizedCfgaId = Long.parseLong(paramValues.get(7).getDynamicValue());
+//                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", energizedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+//                results.ifPresent(r -> lead.put("energizedDate", r.get("dateValue").toString()));
+//            }
 
             Future<Void> worked = marketoService.pushData(lead);
             worked.get();
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
+    }
+
+    private String formatDateTimeForMarketo(Object rawDate) {
+        LocalDateTime date = LocalDateTime.parse(rawDate.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]"));
+        return date + "+00:00";
     }
 }

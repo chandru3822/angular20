@@ -17,7 +17,7 @@ where ccfv.contact_id = :contactId and
       ccfv.custom_field_group_assignment_id = 395
 ]]></marketo.getLeadSource>
 
-<marketo.getFieldValuesByCfgaId><![CDATA[
+<marketo.getPpsFieldValueByCfgaId><![CDATA[
 select cfga.id,
        ppscfv.date_value "dateValue",
        ppscfv.timestamp_value "timestampValue"
@@ -27,5 +27,17 @@ inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps
 where cfga.id = :cfgaId and
       pps.project_id = :projectId and
       pps.main is true
-]]></marketo.getFieldValuesByCfgaId>
+]]></marketo.getPpsFieldValueByCfgaId>
+
+<marketo.getEventStartTimeByProcessStepEventId><![CDATA[
+select ppse.start_time "startTime"
+from flow.project_process_step_event ppse
+inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+where pps.project_id = :projectId and
+      ppse.process_step_event_id = :pseId and
+      ppse.archived is not true and
+      pps.archived is not true
+order by ppse.date_modified desc
+limit 1
+]]></marketo.getEventStartTimeByProcessStepEventId>
 </sql>
