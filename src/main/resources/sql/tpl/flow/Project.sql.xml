@@ -513,11 +513,13 @@
       from flow.project_attachment pa
              inner join flow.attachment a on a.id = pa.attachment_id
              inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow.project_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false
              left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
              inner join flow."user" u on u.id = a.created_by_id
       where pa.project_id = :projectId
         and a.company_id = :companyId
         and pa.archived is not true
+        and att.archived is false
         and pa.linked is not true
         and a.archived is not true
       union
@@ -543,6 +545,7 @@
              inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
              inner join flow.process_step ps on pps.process_step_id = ps.id
              inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow.process_step_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false and uat.process_step_id = ps.id
              inner join flow."user" u on u.id = a.created_by_id
              left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
       where pps.project_id = :projectId
@@ -575,6 +578,7 @@
              inner join flow.event e on pse.event_id = e.id
              inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
              inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow.event_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false and uat.event_id = e.id
              inner join flow."user" u on u.id = a.created_by_id
              left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
       where pps.project_id = :projectId
@@ -608,6 +612,7 @@
       inner join flow.attachment a on a.id = pa.attachment_id
       inner join flow.attachment_type att on a.attachment_type_id = att.id
       inner join flow."user" u on u.id = a.created_by_id
+      inner join flow.project_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false
       left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where pa.project_id = :projectId
       and a.company_id = :companyId

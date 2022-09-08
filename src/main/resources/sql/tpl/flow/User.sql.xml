@@ -809,6 +809,7 @@
            inner join flow.attachment a on a.id = ua.attachment_id
            inner join flow."user" u ON a.created_by_id = u.id
            inner join flow.attachment_type att on a.attachment_type_id = att.id
+           inner join flow.user_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false
            left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where ua.user_id = :userId
       and a.company_id = :companyId

@@ -331,6 +331,7 @@ where ppse.id = :id
       where ppsa.project_process_step_event_id = :projectProcessStepEventId
         and ppsa.archived is not true
         and a.archived is not true
+        and att.archived is false
         and case when :linked is true then ppsa.linked is true else ppsa.linked is false end
         and a.archived is not true
         and ppsa.archived is not true

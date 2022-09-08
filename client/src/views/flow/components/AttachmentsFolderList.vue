@@ -96,7 +96,7 @@
             <AttachmentsTable
               :search="search"
               :display-type="type"
-              :allow-upload="allowUpload"
+              :allow-upload="allowUpload || forceShowUploadBtn"
               :load-linked="loadLinked"
               :attachments="attachments"
               :projectId="projectId"
