@@ -414,7 +414,7 @@ public class BrsProcessStepActionFunctionService {
             //closerAppointmentStartTime
             if (!paramValues.get(1).getDynamicValue().isBlank()) {
                 final Long closerAppointmentPseId = Long.parseLong(paramValues.get(1).getDynamicValue());
-                results = sqlCache.get("marketo.getEventStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
+                results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
                 results.ifPresent(r -> lead.put("closerAppointmentStartTime", formatDateTimeForMarketo(r.get("startTime"))));
             }
 
@@ -425,6 +425,12 @@ public class BrsProcessStepActionFunctionService {
                 results.ifPresent(r -> lead.put("finalDesignApprovedDate", r.get("dateValue").toString()));
             }
             //installationStartTime
+            if (!paramValues.get(3).getDynamicValue().isBlank()) {
+                final Long installationStartTimePseId = Long.parseLong(paramValues.get(3).getDynamicValue());
+                results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("installationStartTime", formatDateTimeForMarketo(r.get("startTime"))));
+            }
+
             //substantialCompletionDate
             if (!paramValues.get(4).getDynamicValue().isBlank()) {
                 final Long substantialCompletionDateCfgaId = Long.parseLong(paramValues.get(4).getDynamicValue());
