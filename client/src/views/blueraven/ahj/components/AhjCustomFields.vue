@@ -4,15 +4,16 @@
     {{group.groupName}}
     <v-icon class="white--text">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
   </v-card-title>
-  <v-card-text v-if="expanded" class="pa-4">
+  <v-card-text v-if="expanded" class="px-4 pt-4 pb-1">
     <div v-if="!group || group.customFieldValues.length === 0" class="centered default-text-color">No fields available</div>
-    <div v-for="field in group.customFieldValues" :key="field.id" class="mb-3">
+    <div v-for="field in group.customFieldValues" :key="field.id" class="mb-5">
       <CustomValueInput
           :callback="(field) => callback(field)"
           :readonly="!userCanEdit"
           :required="field.required"
           :showFieldName="false"
           :field="field"
+          hide-details
           :filled-style="true"
           :lock-feature="true"
       />
@@ -23,6 +24,7 @@
                   @change="[field.valueWasChanged = true, callback(field)]"
                   label="Other Value"
                   filled
+                  hide-details
                   auto-grow
                   :rows="1"
                   class="other-field override-readonly-font-color"
