@@ -616,8 +616,13 @@ export default {
   vertical-align: bottom;
 }
 
-#wq-drilldown-table .v-data-table-header th {
-  white-space: nowrap;
+
+#wq-drilldown-table .v-data-table-header th{
+  max-width: 175px;
+}
+
+.router-link-td {
+  min-width: 50px;
 }
 
 .wq-follow-up-switch label {
