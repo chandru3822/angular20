@@ -1,19 +1,8 @@
 <template>
   <v-container class="pa-0">
     <v-row>
-    <v-col class="group" cols="12" md="6">
-        <AhjCustomFields v-for="group in firstColGroups" :group = group
-                         :user-can-edit="userCanEdit"
-                         :expanded-all="expandedAll"
-                         :callback="(field) => callback(field)"
-                         :hardcoded-docs="hardcodedDocs"
-                         :source-id="sourceId"
-                         @toggle-collapse-expand="$emit('toggle-collapse-expand')"
-                         class="my-2"
-        ></AhjCustomFields>
-    </v-col>
-    <v-col v-if="$vuetify.breakpoint.mdAndUp" class="group" cols="12" md="6">
-        <AhjCustomFields v-for="group in secondColGroups" :group = group
+    <v-col class="group" cols="12" md="6" v-for="n in numberOfCols">
+        <AhjCustomFields v-for="group in getGroupsByCol(n)" :group = group
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
                          :callback="(field) => callback(field)"
@@ -47,21 +36,44 @@ export default {
 
   }),
   computed: {
-    firstColGroups(){
+    numberOfCols(){
       if(this.$vuetify.breakpoint.mdAndUp) {
-        return this.customFieldGroups.filter((_,i) => i % 2 === 0)
+        return 2
       }
-      return this.customFieldGroups
-    },
-    secondColGroups(){
-      if(this.$vuetify.breakpoint.mdAndUp) {
-        return this.customFieldGroups.filter((_, i) => i % 2 === 1)
-      }
-      return []
+      return 1
     }
 
   },
   methods: {
+    getGroupsByCol(colNumber) {
+      if (this.$vuetify.breakpoint.mdAndUp) {
+        return this.customFieldGroups.filter(cfg => cfg.groupColumnOrder === colNumber)
+            .sort((cfg1, cfg2) => {
+              if (cfg1.groupOrder < cfg2.groupOrder) {
+                return -1
+              }
+              if (cfg1.groupOrder > cfg2.groupOrder) {
+                return 1
+              }
+              return 0
+            })
+      }
+      //if smaller than md, we only have one column, so we just need to make sure things are in the right order
+      return this.customFieldGroups.sort((cfg1, cfg2) => {
+        if(cfg1.groupColumnOrder > cfg2.groupColumnOrder) {
+          return 1
+        }
+        if (cfg1.groupColumnOrder <= cfg2.groupColumnOrder){
+          if (cfg1.groupOrder < cfg2.groupOrder) {
+            return -1
+          }
+          if (cfg1.groupOrder > cfg2.groupOrder) {
+            return 1
+          }
+          return 0
+        }
+      })
+    }
   }
 }
 </script>

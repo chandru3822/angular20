@@ -282,6 +282,7 @@ public class BlueravenCustomFieldGroupService {
         "select cfg.id,\n"
             + "       cfg.group_name as \"groupName\",\n"
             + "       cfg.group_order as \"groupOrder\",\n"
+            + "       cfg.group_column_order as \"groupColumnOrder\",\n"
             + "       coalesce((\n"
             + "                  SELECT array_to_json(array_agg(row_to_json(fields)))\n"
             + "                  FROM (\n"

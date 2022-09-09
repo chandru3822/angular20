@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 public class CustomFieldGroup {
 
-  private Long id, objectTypeId, groupOrder;
+  private Long id, objectTypeId, groupOrder, groupColumnOrder;
   private String groupName, objectType;
   private Boolean archived;
 
