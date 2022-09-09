@@ -415,7 +415,7 @@ public class BrsProcessStepActionFunctionService {
             if (!paramValues.get(1).getDynamicValue().isBlank()) {
                 final Long closerAppointmentPseId = Long.parseLong(paramValues.get(1).getDynamicValue());
                 results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
-                results.ifPresent(r -> lead.put("closerAppointmentStartTime", formatDateTimeForMarketo(r.get("startTime"))));
+                results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
             }
 
             //finalDesignApprovedDate
@@ -428,7 +428,7 @@ public class BrsProcessStepActionFunctionService {
             if (!paramValues.get(3).getDynamicValue().isBlank()) {
                 final Long installationStartTimePseId = Long.parseLong(paramValues.get(3).getDynamicValue());
                 results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                results.ifPresent(r -> lead.put("installationStartTime", formatDateTimeForMarketo(r.get("startTime"))));
+                results.ifPresent(r -> lead.put("installationStartTime", marketoService.formatDateTime(r.get("startTime"))));
             }
 
             //substantialCompletionDate
@@ -442,7 +442,7 @@ public class BrsProcessStepActionFunctionService {
             if (!paramValues.get(5).getDynamicValue().isBlank()) {
                 final Long inspectionStartTimePseId = Long.parseLong(paramValues.get(5).getDynamicValue());
                 results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", inspectionStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                results.ifPresent(r -> lead.put("inspectionStartTime", formatDateTimeForMarketo(r.get("startTime"))));
+                results.ifPresent(r -> lead.put("inspectionStartTime", marketoService.formatDateTime(r.get("startTime"))));
             }
 
             //inspectionPassedDate
@@ -464,10 +464,5 @@ public class BrsProcessStepActionFunctionService {
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
-    }
-
-    private String formatDateTimeForMarketo(Object rawDate) {
-        LocalDateTime date = LocalDateTime.parse(rawDate.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]"));
-        return date + "+00:00";
     }
 }

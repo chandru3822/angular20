@@ -1,7 +1,6 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -17,10 +15,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Future;
 
 @Slf4j
@@ -120,5 +119,14 @@ public class MarketoService {
         lead.put("phone", project.getPhone());
         lead.put("email", project.getEmail());
         return lead;
+    }
+
+    public String formatDateTime(Object rawDate) {
+        try {
+            LocalDateTime date = LocalDateTime.parse(rawDate.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]"));
+            return date + "+00:00";
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to parse given datetime for Marketo");
+        }
     }
 }

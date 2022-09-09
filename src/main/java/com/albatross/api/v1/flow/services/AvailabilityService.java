@@ -4,6 +4,7 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
@@ -55,6 +56,8 @@ public class AvailabilityService {
   private final CustomFieldValueService customFieldValueService;
   private final UserPositionService userPositionService;
   private final MapboxApiService mapboxApiService;
+
+  private final MarketoService marketoService;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -757,6 +760,9 @@ public class AvailabilityService {
                 results.get(0).setEventActions(projectProcessStepEvent.getEventActions());
               });
 
+          Optional<Project> project = projectService.getProject(request.getProjectId());
+          Date appointmentStartTime = results.get(0).getAppointmentStartTime();
+
           // on success send email to the closer
           String closerEmail = results.get(0).getUserEmail();
           if (null != closerEmail) {
@@ -765,7 +771,6 @@ public class AvailabilityService {
                 ScheduledConfig.class.getResourceAsStream(
                     "/communication/templates/closer-appointment.ftl.html");
             String template = IOUtils.toString(inputStream);
-            Optional<Project> project = projectService.getProject(request.getProjectId());
             String projectAddress = "";
             String timeZoneAbbreviation = "";
             String startTime = "";
@@ -785,7 +790,7 @@ public class AvailabilityService {
               SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy h:mm a");
               TimeZone tz = TimeZone.getTimeZone(timeZoneAbbreviation);
               dateFormat.setTimeZone(tz);
-              startTime = dateFormat.format(results.get(0).getAppointmentStartTime());
+              startTime = dateFormat.format(appointmentStartTime);
             }
 
             Map<String, Object> context = new HashMap<>();
@@ -802,6 +807,13 @@ public class AvailabilityService {
                 "Blue Raven Sales Operation",
                 user.trueUserId());
           }
+
+          // push data to Marketo
+          project.ifPresent(p -> {
+              Map<String, Object> marketoLead = marketoService.projectToLead(p);
+              marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+              marketoService.pushData(marketoLead);
+          });
 
           return ResponseEntity.ok(results.get(0));
         } else {
