@@ -71,7 +71,7 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr class="clickable v-data-table-row" :class="{'shaded-row': index % 2}">
               <td class="text-left" v-if="useProcessStepHeaders">
                 <router-link class="router-link-td elevation-0 square-card"
                              :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
@@ -619,6 +619,11 @@ export default {
 
 #wq-drilldown-table .v-data-table-header th{
   max-width: 175px;
+}
+
+#wq-drilldown-table .v-data-table-row td{
+  min-height: 3em;
+  height: inherit;
 }
 
 .router-link-td {
