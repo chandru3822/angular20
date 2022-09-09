@@ -202,7 +202,7 @@
                 </v-card>
 
                 <!--              <v-btn class="white&#45;&#45;text"-->
-                <!--                     color="primaryButton"-->
+                <!--                     color="primary"-->
                 <!--                     @click="saveEventAction(action)"-->
                 <!--              >Save Action</v-btn>-->
                 <div v-if="action.actionTypeId === 1">
@@ -278,7 +278,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="[al.archived = true, deleteLinkFromAction(action.id, al.id)]">
                                 Yes
