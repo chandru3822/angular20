@@ -37,6 +37,7 @@
        c.city,
        c.company_state_id,
        s.state,
+       cs.active as active_state,
        comp.company_name,
        c.postal_code,
        c.company_country_id,
