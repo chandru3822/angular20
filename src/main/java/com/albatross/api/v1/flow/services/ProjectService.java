@@ -352,7 +352,7 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact)
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress)
       throws Exception {
     User user = securityService.getCurrentUser();
 
@@ -367,47 +367,32 @@ public class ProjectService {
       params.put("createdById", user.trueUserId());
       params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
       params.put("processId", processId);
-      params.put("street1", contact.getStreet1());
-      params.put("city", contact.getCity());
-      params.put("companyStateId", contact.getCompanyStateId());
-      params.put("companyCountryId", contact.getCompanyCountryId());
-      params.put("postalCode", contact.getPostalCode());
+      //only save address fields if contact is in an active state
+      params.put("street1", saveAddress ? contact.getStreet1() : null);
+      params.put("city", saveAddress ? contact.getCity() : null);
+      params.put("companyStateId", saveAddress ? contact.getCompanyStateId() : null);
+      params.put("companyCountryId", saveAddress ? contact.getCompanyCountryId() : null);
+      params.put("postalCode", saveAddress ? contact.getPostalCode() : null);
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
-      // with my most recent changes the contact should already have a valid lat/long if the address
-      // was valid
-      params.put("latitude", contact.getLatitude());
-      params.put("longitude", contact.getLongitude());
-      String timezone = null;
-      if (null != contact.getLatitude() && null != contact.getLongitude()) {
-        // if we have a lat/long then attempt to load the timezone
-        timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+      // with my most recent changes the contact should already have a valid lat/long if the address was valid
+      // we only insert the lat/long/timezone stuff if the contact is in an active State, otherwise they will have to update the project with a valid address
+      if(saveAddress) {
+        params.put("latitude", contact.getLatitude());
+        params.put("longitude", contact.getLongitude());
+        String timezone = null;
+        if (null != contact.getLatitude() && null != contact.getLongitude()) {
+          // if we have a lat/long then attempt to load the timezone
+          timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+        }
+        params.put("timezone", timezone);
+      } else {
+        params.put("latitude", null);
+        params.put("longitude", null);
+        params.put("timezone", null);
       }
-      params.put("timezone", timezone);
-
-      //      List<Double> coordinates =
-      // mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(),
-      // contact.getState(), contact.getPostalCode()));
-      //      Double latitude = null, longitude = null;
-      //      String timezone = null;
-      //      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1))
-      // {
-      //        //1 = lat, 0 = long
-      //        latitude = coordinates.get(1);
-      //        longitude = coordinates.get(0);
-      //
-      //        if(null != latitude && null != longitude) {
-      //          //if we have a lat/long then attempt to load the timezone
-      //          timezone = mapboxApiService.getTimezone(latitude, longitude);
-      //        }
-      //      }
-      //      params.put("latitude", latitude);
-      //      params.put("longitude", longitude);
-      //      params.put("timezone", timezone);
 
       Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
-      // load coordinates when new project added
-      //      project.ifPresent(value -> getProjectCoordinates(value, id));
       return getProject(id);
     } else {
       throw new ResponseStatusException(
