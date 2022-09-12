@@ -46,7 +46,7 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"

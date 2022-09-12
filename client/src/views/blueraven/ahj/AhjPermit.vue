@@ -292,7 +292,7 @@
             </v-card-text>
           </v-card>
           <v-card class="mb-3">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
+            <v-card-title class="primary white--text font-weight-bold">
               Cancellation and Refund Details
             </v-card-title>
             <v-card-text class="mt-4">
