@@ -48,11 +48,13 @@ export default {
 <style lang="scss" scoped>
 .proposal-page {
   //padding and height are set in the print css
-  padding: 20px;
-  min-height: 600px;
+  //padding: 20px;
+  min-height: 794px;
+  width: 1125px;
   overflow: hidden;
   background-color: white;
   box-shadow: 0 0 5px 0 darkgrey;
+  box-sizing: border-box;
 
   &:not(:last-child) {
     //border-bottom: 1px solid red;

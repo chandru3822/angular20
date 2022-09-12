@@ -9,9 +9,9 @@ import TableRow from '@tiptap/extension-table-row'
 import TableHeader from '@tiptap/extension-table-header'
 import { VueRenderer } from '@tiptap/vue-2'
 import tippy from 'tippy.js'
+import Fuse from 'fuse.js'
 import { getRequest } from '@/helpers/helpers'
 import ReplacementList from './ReplacementList'
-import Fuse from 'fuse.js'
 
 const suggestion = {
   char: '{',

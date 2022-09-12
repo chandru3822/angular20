@@ -3,7 +3,7 @@
     <div
       class="screen"
       :style="{
-        transform: `scale(${zoom / 100})`,
+        transform: `translateX(0vw) scale(${zoom / 100})`,
       }"
     >
       <slot />
@@ -33,15 +33,19 @@ export default {
   name: 'Viewport',
   components: { ZoomControl },
   mounted() {
-    //TODO: make sure to remove handler
     document
-      .getElementsByClassName('screen')[0]
+      .getElementsByClassName('viewport')[0]
       .addEventListener('mousedown', this.handleClick, false)
+  },
+  beforeDestroy() {
+    // document
+    //   .getElementsByClassName('viewport')[0]
+    //   .removeEventListener('mousedown', this.handleClick, false)
   },
   data() {
     return {
       isZoomable: false,
-      zoom: 100
+      zoom: 75
     }
   },
   methods: {
@@ -51,6 +55,8 @@ export default {
       if (type) {
         const id = parseInt(closest.getAttribute('data-id'), 10)
         this.$store.commit(ProposalMutations.SET_SELECTED, id)
+      } else {
+        this.$store.commit(ProposalMutations.SET_SELECTED, null)
       }
     }
   }
@@ -60,9 +66,10 @@ export default {
 .viewport {
   user-select: none;
   display: flex;
-  justify-content: center;
-  height: calc(100vh - 105px);
-  padding: 0 20px;
+  flex: 1;
+  justify-content: flex-start;
+  align-content: center;
+  height: calc(100vh - 115px);
   overflow: auto;
   border: 1px solid #f5f5f5;
   background-image: linear-gradient(
@@ -85,10 +92,10 @@ export default {
 }
 
 .screen {
-  width: 700px;
+  //scroll-snap-type: y mandatory;
+  //overflow: auto;
   margin: 25px auto;
   transform-origin: center top;
-  position: relative;
 
   & .spacer {
     height: 100px;
