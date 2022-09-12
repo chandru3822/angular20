@@ -456,7 +456,11 @@ public class BrsProcessStepActionFunctionService {
             final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
             if (updateEnergizedDate) {
                 results = sqlCache.get("marketo.getEnergizedDate", Map.of("projectId", projectId), new ColumnMapRowMapper());
-                results.ifPresent(r -> lead.put("energizedDate", r.get("energizedDate").toString()));
+                results.ifPresent(r -> {
+                    if (r.get("energizedDate") != null) {
+                        lead.put("energizedDate", r.get("energizedDate").toString());
+                    }
+                });
             }
 
             String result = marketoService.pushData(lead);
