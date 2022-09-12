@@ -4,7 +4,7 @@
       <v-toolbar-title class="app-title">Proposal Versions</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <v-btn text color="primary" :to="'/settings/proposalDesigner'">
+        <v-btn text color="primary" :to="{'name' : 'proposalDesigner'}">
           <span>Designer</span>
         </v-btn>
       </v-toolbar-items>

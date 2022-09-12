@@ -1,18 +1,42 @@
 <template>
-  <v-row class="pane" align-content="start">
+  <fragment>
     <fragment v-if="type === 'TextBlock'">
-      <v-col cols="12" sm="12">
-        <v-select
-          v-model="cssStyle.textAlign"
-          :items="textAlignItems"
-          label="Text Align"
-          @change="doUpdateStyles({'textAlign': $event})"
+      <div>
+        <v-card-title>Typography</v-card-title>
+        <v-btn-toggle v-model="cssStyle.textAlign">
+          <v-btn small value="left">
+            <v-icon>mdi-format-align-left</v-icon>
+          </v-btn>
+
+          <v-btn small value="center">
+            <v-icon>mdi-format-align-center</v-icon>
+          </v-btn>
+
+          <v-btn small value="right">
+            <v-icon>mdi-format-align-right</v-icon>
+          </v-btn>
+
+          <v-btn small value="justify">
+            <v-icon>mdi-format-align-justify</v-icon>
+          </v-btn>
+        </v-btn-toggle>
+
+        <v-text-field outlined dense
+          v-model="cssStyle.fontWeight"
+          label="Font Weight"
+          @change="doUpdateStyles({'fontWeight': $event})"
         />
-      </v-col>
-      <v-col cols="12" sm="12">
-        <font-size-widget :value="cssStyle.fontSize" @input="doUpdateStyles($event)" />
-      </v-col>
-      <v-col cols="12" sm="12">
+        <v-text-field outlined dense
+                      v-model="cssStyle.lineHeight"
+                      label="Line Height"
+                      @change="doUpdateStyles({'lineHeight': $event})"
+        />
+        <size-widget label="Font Size" attr="fontSize" :value="cssStyle.fontSize" @input="doUpdateStyles($event)" />
+
+      </div>
+
+      <div>
+        <v-card-title>Colors</v-card-title>
         <color-widget :value="cssStyle.color" @input="doUpdateStyles($event)">
           <template #title>
             <span class="flex-grow-1">
@@ -20,91 +44,86 @@
             </span>
           </template>
         </color-widget>
-      </v-col>
+
+        <color-widget :value="cssStyle.backgroundColor" attr="backgroundColor" @input="doUpdateStyles($event)">
+          <template #title>
+            <span class="flex-grow-1">
+            Background Color
+            </span>
+          </template>
+        </color-widget>
+      </div>
 
     </fragment>
-    <!--    TODO: text transform-->
-    <!--    TODO: border -->
-    <!--    TODO: margin -->
-    <!--    TODO: padding -->
-    <!--    TODO: width -->
-    <!--    TODO: more flex options (esp when parent is flex container) -->
-
     <!--    -->
     <fragment v-if="type === 'PageBlock' || type === 'ContainerBlock'">
-      <image-selector-widget ref="imageSelector" />
-      <v-btn @click="openSelectImage('@backgroundImage')">Open Image</v-btn>
-      <v-btn text @click="doUpdateStyles({'@backgroundImage' : undefined })">Clear Image</v-btn>
+      <div>
+        <v-card-title>Background</v-card-title>
+        <div>
+          <image-selector-widget ref="imageSelector" />
+          <v-btn @click="openSelectImage('@backgroundImage')">Open Image</v-btn>
+          <v-btn text @click="doUpdateStyles({'@backgroundImage' : undefined })">Clear Image</v-btn>
+        </div>
 
-      <v-col cols="12" sm="12" v-if="cssStyle.backgroundImage">
-        <v-select
+        <v-select dense
+          v-if="cssStyle.backgroundImage"
           v-model="cssStyle.backgroundSize"
           :items="backgroundSizeItems"
           label="Background Size"
           @change="doUpdateStyles({'backgroundSize': $event})"
         />
-      </v-col>
+      </div>
       <!--      TODO: backgroundPosition-->
+
     </fragment>
 
-    <v-col cols="12" sm="12">
-      <v-select
-        v-model="cssStyle.display"
-        :items="displayItems"
-        label="Display"
-        @change="doUpdateStyles({'display': $event})"
+    <div>
+      <v-card-title>Props</v-card-title>
+      <v-select outlined dense
+                v-model="cssStyle.display"
+                :items="displayItems"
+                label="Display"
+                @change="doUpdateStyles({'display': $event})"
       />
-    </v-col>
 
-
-    <!--    TODO: needs to take a string / needs a unit 'px'  / 'vw' / etc-->
-    <!--    <v-col cols="12" sm="12">-->
-    <!--      <v-subheader class="pl-0">-->
-    <!--        Width-->
-    <!--      </v-subheader>-->
-    <!--      <v-slider-->
-    <!--        dense-->
-    <!--        thumb-label-->
-    <!--        v-model="cssStyle.width"-->
-    <!--        max="100"-->
-    <!--        min="0"-->
-    <!--      />-->
-    <!--    </v-col>-->
-
-    <!--    TODO: support grid ... somehow -->
-
-    <fragment v-if="isFlex">
-      <v-col cols="12" sm="12" v-if="isFlex">
-        <v-select
-          v-model="cssStyle.flexDirection"
-          :items="flexDirectionItems"
-          label="Direction"
-          @change="doUpdateStyles({'flexDirection': $event})"
+      <fragment v-if="isFlex">
+        <v-select outlined dense
+                  v-model="cssStyle.flexDirection"
+                  :items="flexDirectionItems"
+                  label="Direction"
+                  @change="doUpdateStyles({'flexDirection': $event})"
         />
-      </v-col>
-      <v-col cols="12" sm="12" v-if="isFlex">
-        <v-select
-          v-model="cssStyle.justifyContent"
-          :items="flexJustifyItems"
-          label="Justify"
-          @change="doUpdateStyles({'justifyContent': $event})"
+        <v-select outlined dense
+                  v-model="cssStyle.justifyContent"
+                  :items="flexJustifyItems"
+                  label="Justify"
+                  @change="doUpdateStyles({'justifyContent': $event})"
         />
-      </v-col>
-      <v-col cols="12" sm="12" v-if="isFlex">
-        <v-select
-          v-model="cssStyle.alignItems"
-          :items="flexAlignItems"
-          label="Align"
-          @change="doUpdateStyles({'alignItems': $event})"
+        <v-select outlined dense
+                  v-model="cssStyle.alignItems"
+                  :items="flexAlignItems"
+                  label="Align"
+                  @change="doUpdateStyles({'alignItems': $event})"
         />
-      </v-col>
-    </fragment>
-  </v-row>
+      </fragment>
+    </div>
+
+    <div>
+      <v-card-title>Padding</v-card-title>
+      <space-widget attr="padding" :value="cssStyle.padding" @input="doUpdateStyles($event)"/>
+    </div>
+
+<!--    <div>-->
+<!--      <v-card-title>Margin</v-card-title>-->
+<!--      <space-widget attr="margin" :value="cssStyle.margin" @input="doUpdateStyles($event)"/>-->
+<!--    </div>-->
+  </fragment>
 </template>
 <script>
 import ImageSelectorWidget from './ImageSelectorWidget'
-import FontSizeWidget from './FontSizeWidget'
+import SizeWidget from './SizeWidget'
 import ColorWidget from './ColorWidget'
+import SpaceWidget from './SpaceWidget'
 import { Fragment } from 'vue-frag'
 
 export default {
@@ -121,7 +140,7 @@ export default {
       }
     }
   },
-  components: { Fragment, FontSizeWidget, ColorWidget, ImageSelectorWidget },
+  components: { Fragment, SizeWidget, ColorWidget, ImageSelectorWidget, SpaceWidget },
   computed: {
     isFlex() {
       return this.cssStyle?.display === 'flex'
@@ -133,7 +152,7 @@ export default {
   data() {
     return {
       style: {},
-      textAlignItems: ['left', 'center', 'right', 'justify'],
+      paddingToggle: null,
       displayItems: ['block', 'flex'],
       flexDirectionItems: ['row', 'row-reverse', 'column', 'column-reverse'],
       flexJustifyItems: ['flex-start', 'space-between', 'center', 'space-around', 'flex-end'],
@@ -143,6 +162,7 @@ export default {
   },
   methods: {
     doUpdateStyles(styles) {
+      // console.log({styles, applied: {...this.cssStyle, ...styles}})
       this.$emit('input', { ...this.cssStyle, ...styles })
     },
     async openSelectImage(attribute = '@backgroundImage') {
@@ -155,7 +175,5 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.pane {
-  border-bottom: 1px solid #f5f5f5;
-}
+
 </style>

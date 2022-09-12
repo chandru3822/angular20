@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div id="designer">
+    <!--    <div class="dpi"></div>-->
     <div class="toolbar">
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
@@ -43,21 +44,62 @@
         <span>Generate PDF Preview</span>
       </v-tooltip>
     </div>
-    <div class="proposal-designer">
-      <viewport>
-        <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="debug" :editable="editable" />
-      </viewport>
-      <panel>
-        <!--      TODO: add themeClass-->
-        <!--      TODO: need to be able to edit theme -->
-        <image-panel v-if="selected && selected.blockType === 'ImageBlock'" @input="updateValue" />
 
-        <style-panel
-          :type="selected.blockType"
-          :cssStyle="selected.blockStyle"
-          v-if="selected"
-          @input="updateStyles" />
-      </panel>
+    <div class="proposal-designer">
+      <div class="main-content">
+        <text-menu-widget class="text-menu" v-if="activeEditor" :editor="activeEditor" />
+        <viewport class="main-viewport" ref="viewport">
+          <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="debug" :editable="editable" />
+        </viewport>
+      </div>
+      <div class="main-sidebar">
+        <v-tabs v-model="tabs">
+          <v-tab>Editor</v-tab>
+          <v-tab>Tree</v-tab>
+        </v-tabs>
+        <v-tabs-items v-model="tabs">
+          <v-tab-item>
+            <v-card v-if="selected">
+
+              <!--              TODO: themes and more styles + drag and drop -->
+              <v-card-title>
+                <v-tooltip>
+                  <template #activator="{on, attrs}">
+                    <v-btn v-bind="attrs" v-on="on" @click="focusViewport" :disabled="!selected" icon text>
+                      <v-icon>mdi-image-filter-center-focus-weak</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Focus</span>
+                </v-tooltip>
+                {{ selected.blockType }}
+              </v-card-title>
+              <v-card-subtitle class="clickable"
+                               v-if="parent"
+                               @click="selectNode(parent.id)">^ {{ parent.blockType }}
+              </v-card-subtitle>
+
+              <div class="pa-4">
+                <!--                  <add-component-panel @input="addComponent" />-->
+
+                <!--      TODO: add themeClass-->
+                <!--      TODO: need to be able to edit theme -->
+                <image-panel v-if="selected && selected.blockType === 'ImageBlock'" @input="updateValue" />
+
+                <style-panel
+                  :type="selected.blockType"
+                  :cssStyle="selected.blockStyle"
+                  v-if="selected"
+                  @input="updateStyles" />
+              </div>
+            </v-card>
+          </v-tab-item>
+          <v-tab-item>
+            <v-card class="mx-auto pa-4" flat>
+              <nested-tree :children="pages" @select="focusNode" />
+            </v-card>
+          </v-tab-item>
+        </v-tabs-items>
+      </div>
     </div>
   </div>
 </template>
@@ -65,9 +107,11 @@
 import './styles/proposals.scss'
 import { mapState } from 'vuex'
 import Viewport from './viewport/Viewport'
-import Panel from './panel/Panel'
 import StylePanel from './panel/Style'
 import ImagePanel from './panel/Image'
+import NestedTree from './panel/NestedTree'
+import AddComponentPanel from './panel/AddComponentWidget'
+import TextMenuWidget from './panel/TextMenuWidget'
 import ProposalTemplate from './ProposalTemplate'
 import { ProposalActions, ProposalMutations } from './store'
 import { apiRequest } from '@/helpers/helpers'
@@ -95,20 +139,33 @@ const StyleFixerMixin = {
 
 export default {
   name: 'ProposalDesigner',
-  components: { ProposalTemplate, Viewport, Panel, StylePanel, ImagePanel },
+  components: {
+    ProposalTemplate,
+    Viewport,
+    StylePanel,
+    ImagePanel,
+    NestedTree,
+    AddComponentPanel,
+    TextMenuWidget
+  },
   mixins: [StyleFixerMixin, VuexUndoRedoMixin],
   created() {
     this.$store.dispatch(ProposalActions.FETCH_TEMPLATE)
   },
   data() {
     return {
+      tabs: null,
       debug: false,
-      editable: true
+      editable: true,
+      dragging: false
     }
   },
   computed: {
     selected() {
       return this.$store.getters.selectedBlock
+    },
+    parent() {
+      return this.$store.getters.findById(this.selected.parentId)
     },
     pages() {
       return this.template?.filter(x => x.parentId === undefined)
@@ -116,11 +173,23 @@ export default {
     isSaveable() {
       return this.$store.getters.modifiedBlocks?.length > 0
     },
+    activeEditor() {
+      return this.$store.getters.activeEditor
+    },
     ...mapState({
       template: (state) => state.proposal.template
     })
   },
   methods: {
+    addComponent({ blockType, blockTypeId, blockValue }) {
+      this.$store.commit(ProposalMutations.ADD_COMPONENT, {
+        parentId: this.selected.id,
+        blockType,
+        blockTypeId,
+        blockValue,
+        order: 1
+      })
+    },
     updateValue(value) {
       this.$store.commit(ProposalMutations.SET_VALUE, { blockId: this.selected.id, value })
     },
@@ -161,11 +230,40 @@ export default {
       await this.$store.dispatch(ProposalActions.SAVE_TEMPLATE)
       this.reset()
       this.$store.commit(AppMutations.SET_LOADING, false)
+    },
+    selectNode(id) {
+      this.$store.commit(ProposalMutations.SET_SELECTED, id)
+      // this.focusNode(id)
+    },
+    focusViewport() {
+      if (!this.selected) {
+        return
+      }
+
+      this.focusNode(this.selected.id)
+    },
+    focusNode(id) {
+      const vp = this.$refs.viewport.$el
+      const nodes = vp.querySelectorAll(`[data-id="${id}"]`)
+      if (nodes.length > 0) {
+        const rect = nodes[0].getBoundingClientRect()
+        const top = vp.scrollTop + rect.top - 220
+        vp.scrollTo({ top, behavior: 'smooth' })
+      }
     }
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
+
+#designer {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .toolbar {
   position: sticky;
   top: 0;
@@ -175,12 +273,35 @@ export default {
 }
 
 .proposal-designer {
-  display: flex;
-  //TODO: reset
-  // change font color to black by default
+  background-color: white;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 1fr;
+  grid-template-rows: 1fr;
+  grid-column-gap: 0;
+  grid-row-gap: 0;
+  height: calc(100vh - 120px);
+
   & p {
     margin: 0 !important;
     padding: 0 !important;
   }
 }
+
+.main-content {
+  grid-area: 1 / 1 / 2 / 2;
+}
+
+.main-sidebar {
+  grid-area: 1 / 2 / 2 / 3;
+  overflow: auto;
+  height: calc(100vh - 115px);
+}
+
+//.dpi {
+//  height: 1in;
+//  width: 1in;
+//  left: 100%;
+//  position: fixed;
+//  top: 100%;
+//}
 </style>

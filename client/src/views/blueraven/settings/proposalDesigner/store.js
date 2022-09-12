@@ -12,7 +12,11 @@ export const ProposalMutations = {
   RESET: 'proposal::resetChanged',
   SET_SELECTED: 'proposal::setSelected',
   SET_STYLE: 'proposal::setStyle',
-  SET_VALUE: 'proposal::setValue'
+  SET_VALUE: 'proposal::setValue',
+  ADD_COMPONENT: 'proposal::addComponent',
+  REGISTER_EDITOR: 'proposal::registerEditor',
+  DEREGISTER_EDITOR: 'proposal::deRegisterEditor',
+  UPDATE_POSITION: 'proposal:updatePosition'
 }
 
 const removedUndefined = (object) => {
@@ -51,7 +55,8 @@ export default {
       _template: [],
       template: [],
       theme: {},
-      selectedId: undefined
+      selectedId: undefined,
+      editors: {}
     }
   },
   mutations: {
@@ -88,6 +93,40 @@ export default {
           return { ...block, modified: true, blockValue: cloneDeep(value) }
         })
       }
+    },
+    // [ProposalMutations.ADD_COMPONENT](state, { blockType, blockTypeId, blockValue, blockStyle, blockOrder, parentId }) {
+    //   const newBlock = {
+    //     id: 99999,
+    //     blockType,
+    //     blockTypeId,
+    //     blockValue,
+    //     blockStyle,
+    //     blockOrder,
+    //     parentId
+    //   }
+    //   console.log({ newBlock })
+    //   state.template = [...state.template, newBlock]
+    // },
+    [ProposalMutations.UPDATE_POSITION](state, { blockId, parentId, pos }) {
+      const found = state.template.find(block => block.id === blockId)
+      console.log({found: found.blockOrder, blockId, parentId, pos})
+      if (found) {
+        state.template = state.template.map(block => {
+          if (block.id !== blockId) {
+            return block
+          }
+          return { ...block, blockOrder: pos, parentId, modified: true }
+        })
+      }
+    },
+    [ProposalMutations.REGISTER_EDITOR](state, { blockId, editor }) {
+      if (state.editors === undefined) {
+        state.editors = {}
+      }
+      state.editors[blockId] = editor
+    },
+    [ProposalMutations.DEREGISTER_EDITOR](state, { blockId }) {
+      delete state.editors[blockId]
     }
   },
   actions: {
@@ -137,6 +176,18 @@ export default {
 
     selectedBlock(state) {
       return state.template.find((b) => b.id === state.selectedId)
+    },
+
+    activeEditor(state, getters) {
+      if (!getters.selectedBlock) {
+        return null
+      }
+      return state.editors[getters.selectedBlock.id] ?? null
+    },
+
+    findById: (state) => (id) => {
+      if (!id) return null
+      return state.template.find(b => b.id === id)
     },
 
     filterByParentId: (state) => (parentId) => {
