@@ -121,8 +121,7 @@ public class ProjectProcessStepService {
 
     PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    PutObjectResult result = s3.putObject(objectRequest
-      .withCannedAcl(CannedAccessControlList.PublicRead));
+    PutObjectResult result = s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
 

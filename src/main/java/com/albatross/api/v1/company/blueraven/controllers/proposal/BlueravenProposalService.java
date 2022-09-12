@@ -28,6 +28,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -202,7 +203,17 @@ public class BlueravenProposalService {
   public Optional<ProposalTemplate> getProposalTemplate(Long proposalId, Long templateId, ProposalGeneratedType generatedType, boolean isDebug) {
     return getProposal(proposalId)
       .map(proposal -> {
-        final var context = getCalculatedProposalValues(proposal.getId(), generatedType, false);
+        Map<String, Object> context = new HashMap<>();
+        try {
+          context = getCalculatedProposalValues(proposal.getId(), generatedType, false);
+        } catch (Exception e) {
+          log.error("[BRS PROPOSAL] Error generating proposal", e);
+
+          if (!(e instanceof DataIntegrityViolationException)) {
+            throw new ApiException("Error generating proposal template");
+          }
+        }
+
         return proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug);
       });
   }
@@ -225,29 +236,24 @@ public class BlueravenProposalService {
     getProposal(proposalId)
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
-    try {
-      final Map<String, Object> context =
-        sqlCache.queryForMap(
-          "proposal.getCalculatedProposalValues",
-          Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
+    final Map<String, Object> context =
+      sqlCache.queryForMap(
+        "proposal.getCalculatedProposalValues",
+        Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
 
-      final Map<String, Object> proposalAttachments =
-        sqlCache
-          .query("proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class)
-          .stream()
-          .collect(
-            Collectors.toMap(
-              this::mapAttachmentTypeToProposalType,
-              attachment -> buildUri(attachment.getUuid().toString(), proposalGeneratedType),
-              (img1, img2) -> img1)); // if we have multiple just return one
+    final Map<String, Object> proposalAttachments =
+      sqlCache
+        .query("proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class)
+        .stream()
+        .collect(
+          Collectors.toMap(
+            this::mapAttachmentTypeToProposalType,
+            attachment -> buildUri(attachment.getUuid().toString(), proposalGeneratedType),
+            (img1, img2) -> img1)); // if we have multiple just return one
 
-      context.putAll(proposalAttachments);
+    context.putAll(proposalAttachments);
 
-      return context;
-    } catch (Exception e) {
-      log.error("[BRS PROPOSAL] Error generating context", e);
-      throw new ApiException("Error generating context for template");
-    }
+    return context;
   }
 
   @Transactional

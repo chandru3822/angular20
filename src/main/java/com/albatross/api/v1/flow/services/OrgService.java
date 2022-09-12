@@ -14,6 +14,7 @@ import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.org.OrgExportTemplate;
 import com.albatross.api.v1.flow.model.org.OrgFilter;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -336,7 +337,7 @@ public class OrgService {
         new PutObjectRequest(
             storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    s3.putObject(objectRequest);
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     Map<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));

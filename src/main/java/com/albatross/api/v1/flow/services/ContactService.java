@@ -386,7 +386,7 @@ public class ContactService {
 
     // create project (use contact_full_name as project_name)
     Optional<Project> project =
-        projectService.insertProject(contact.getId(), process.getId(), contact);
+        projectService.insertProject(contact.getId(), process.getId(), contact, contact.isActiveState());
 
     // get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps =
@@ -468,7 +468,7 @@ public class ContactService {
         new PutObjectRequest(
             storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
-    s3.putObject(objectRequest);
+    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));

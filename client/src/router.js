@@ -1190,17 +1190,6 @@ const router = new Router({
             }
           },
         },
-        // {
-        //   name: 'projectProcessStep',
-        //   path: '/project/:projectId/processStep/:processStepId',
-        //   component: () => {
-        //     if (store.getters.userHasFeature('PROCESS_STEPS')) {
-        //       return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
-        //     } else {
-        //       return accessDenied()
-        //     }
-        //   }
-        // },
         {
           path: '/project/:projectId',
           name: 'project',
