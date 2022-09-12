@@ -1,8 +1,6 @@
 package com.albatross.api.v1.company.blueraven.services;
 
-import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.project.Project;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -37,10 +35,6 @@ public class MarketoService {
 
     @Value("${marketo.secret:}")
     private String secret;
-
-    private final ObjectMapper om;
-
-    private final SqlCache sqlCache;
 
     @PostConstruct
     public void init() {
