@@ -459,8 +459,7 @@ public class BrsProcessStepActionFunctionService {
                 results.ifPresent(r -> lead.put("energizedDate", r.get("energizedDate").toString()));
             }
 
-            Future<Void> worked = marketoService.pushData(lead);
-            worked.get();
+            String result = marketoService.pushData(lead);
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }

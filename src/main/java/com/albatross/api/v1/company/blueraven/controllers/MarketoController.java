@@ -34,12 +34,12 @@ public class MarketoController {
 
     private final BrsProcessStepActionFunctionService brsProcessStepActionFunctionService;
 
-    @SneakyThrows
-    @GetMapping(value = "/lead")
-    public Contact getLead() {
-        Future<Long> contactId = marketoService.getContactIdByProjectId(1234L);
-        return contactService.getContact(contactId.get());
-    }
+//    @SneakyThrows
+//    @GetMapping(value = "/lead")
+//    public Contact getLead() {
+//        Future<Long> contactId = marketoService.getContactIdByProjectId(1234L);
+//        return contactService.getContact(contactId.get());
+//    }
 
     @GetMapping(value = "/pushLead")
     public ResponseEntity<Void> pushLead() {

@@ -5,11 +5,10 @@ import com.albatross.api.v1.flow.model.project.Project;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Value;;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -20,7 +19,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 @Slf4j
 @Service
@@ -49,9 +47,14 @@ public class MarketoService {
         client = WebClient.create(host);
     }
 
+    /*
+      @TODO: We call this function before every other Marketo API call to ensure auth token is valid. If an issues iss caused by this,
+             we can check time since last token refresh (Marketo tokens are good for 5 min) and only refresh when expiration is close
+     */
     private void authenticate() {
         final String url = String.format("%s/identity/oauth/token?grant_type=client_credentials&client_id=%s&client_secret=%s", host, clientId, secret);
         WebClient client = WebClient.create();
+        //@TODO: This is blocking. If issues arise for this feature, might need to make async
         ResponseEntity<String> res = client.get()
                                            .uri(url)
                                            .retrieve()
@@ -66,46 +69,53 @@ public class MarketoService {
         }
     }
 
-    @Async
-    public Future<Void> pushData(Map<String, Object> lead) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("input", List.of(lead));
-        body.put("lookupField", "projectId");
+    public String pushData(Map<String, Object> lead) {
+        try {
+            Map<String, Object> body = new HashMap<>();
+            body.put("input", List.of(lead));
+            body.put("lookupField", "projectId");
 
-        authenticate();
-        ResponseEntity<String> res = client.post()
-            .uri("/rest/v1/leads.json")
-            .header("Authorization", "Bearer " + accessToken)
-            .body(Mono.just(body), Map.class)
-            .retrieve()
-            .toEntity(String.class)
-            .block();
+            authenticate();
 
-        return new AsyncResult<>(null);
+            //@TODO: This is blocking. If issues arise for this feature, might need to make async
+            ResponseEntity<JSONObject> res = client.post()
+                                                   .uri("/rest/v1/leads.json")
+                                                   .header("Authorization", "Bearer " + accessToken)
+                                                   .body(Mono.just(body), Map.class)
+                                                   .retrieve()
+                                                   .toEntity(JSONObject.class)
+                                                   .block();
+
+            JSONArray results = new JSONArray(res.getBody().get("result"));
+            JSONObject status = results.getJSONObject(0);
+            return status.getString("status");
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("MARKETO: Unable to push data: %s", e.getMessage()));
+        }
     }
 
-    @Async
-    public Future<Long> getContactIdByProjectId(Long projectId) {
-        authenticate();
-        ResponseEntity<String> res = client.get()
-                                           .uri(uriBuilder -> uriBuilder
-                                               .path("/rest/v1/leads.json")
-                                               .queryParam("fields", "id,projectId,lastName,firstName,email,updatedAt,createdAt")
-                                               .queryParam("filterType", "projectId")
-                                               .queryParam("batchSize", 1)
-                                               .queryParam("filterValues", projectId)
-                                               .build()
-                                           )
-                                           .header("Authorization", "Bearer " + accessToken)
-                                           .retrieve()
-                                           .toEntity(String.class)
-                                           .block();
-
-        JSONObject rawResponse = new JSONObject(res.getBody());
-        JSONObject json = (JSONObject) rawResponse.getJSONArray("result").get(0);
-
-        return new AsyncResult<>(json.getLong("contactId"));
-    }
+//    @Async
+//    public Future<Long> getContactIdByProjectId(Long projectId) {
+//        authenticate();
+//        ResponseEntity<String> res = client.get()
+//                                           .uri(uriBuilder -> uriBuilder
+//                                               .path("/rest/v1/leads.json")
+//                                               .queryParam("fields", "id,projectId,lastName,firstName,email,updatedAt,createdAt")
+//                                               .queryParam("filterType", "projectId")
+//                                               .queryParam("batchSize", 1)
+//                                               .queryParam("filterValues", projectId)
+//                                               .build()
+//                                           )
+//                                           .header("Authorization", "Bearer " + accessToken)
+//                                           .retrieve()
+//                                           .toEntity(String.class)
+//                                           .block();
+//
+//        JSONObject rawResponse = new JSONObject(res.getBody());
+//        JSONObject json = (JSONObject) rawResponse.getJSONArray("result").get(0);
+//
+//        return new AsyncResult<>(json.getLong("contactId"));
+//    }
 
     public Map<String, Object> projectToLead(Project project) {
         Map<String, Object> lead = new HashMap<>();

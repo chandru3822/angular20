@@ -810,9 +810,18 @@ public class AvailabilityService {
 
           // push data to Marketo
           project.ifPresent(p -> {
-              Map<String, Object> marketoLead = marketoService.projectToLead(p);
-              marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
-              marketoService.pushData(marketoLead);
+              try {
+                  Map<String, Object> marketoLead = marketoService.projectToLead(p);
+                  marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+                  String result = marketoService.pushData(marketoLead);
+                  // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
+                  if (result.equals("created")) {
+                      marketoLead.put("projectStatus", "Appointment Scheduled");
+                      marketoService.pushData(marketoLead);
+                  }
+              } catch (Exception e) {
+                  log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
+              }
           });
 
           return ResponseEntity.ok(results.get(0));
