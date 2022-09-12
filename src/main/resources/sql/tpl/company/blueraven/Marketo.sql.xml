@@ -1,0 +1,49 @@
+<sql>
+<marketo.getLeadStatus><![CDATA[
+-- Don't like that this uses hardcoded cfgaId
+select lov.name
+from flow.contact_custom_field_value ccfv
+inner join flow.list_of_value lov on lov.id = ccfv.int_value
+where ccfv.contact_id = :contactId and
+      ccfv.custom_field_group_assignment_id = 399
+]]></marketo.getLeadStatus>
+
+<marketo.getLeadSource><![CDATA[
+-- Don't like that this uses hardcoded cfgaId
+select lov.name
+from flow.contact_custom_field_value ccfv
+inner join flow.list_of_value lov on lov.id = ccfv.int_value
+where ccfv.contact_id = :contactId and
+      ccfv.custom_field_group_assignment_id = 395
+]]></marketo.getLeadSource>
+
+<marketo.getPpsFieldValueByCfgaId><![CDATA[
+select cfga.id,
+       ppscfv.date_value "dateValue",
+       ppscfv.timestamp_value "timestampValue"
+from flow.project_process_step_custom_field_value ppscfv
+inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
+inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+where cfga.id = :cfgaId and
+      pps.project_id = :projectId and
+      pps.main is true
+]]></marketo.getPpsFieldValueByCfgaId>
+
+<marketo.getStartTimeByProcessStepEventId><![CDATA[
+select ppse.start_time "startTime"
+from flow.project_process_step_event ppse
+inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+where pps.project_id = :projectId and
+      ppse.process_step_event_id = :pseId and
+      ppse.archived is not true and
+      pps.archived is not true
+order by ppse.date_modified desc
+limit 1
+]]></marketo.getStartTimeByProcessStepEventId>
+
+<marketo.getEnergizedDate><![CDATA[
+select pd.energized_date "energizedDate"
+from brs.project_details pd
+where pd.project_id = :projectId
+]]></marketo.getEnergizedDate>
+</sql>

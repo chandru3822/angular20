@@ -68,7 +68,9 @@
                         p.latitude,
                         p.longitude,
                         p.postal_code as "postalCode",
+                        s.state,
                         s.abbreviation as "stateAbbreviation",
+                        c.country,
                         p.date_created as "dateCreated",
                         p.company_project_status_type_id as "companyProjectStatusTypeId",
                         cpst.project_status_type_id as "projectStatusTypeId",
@@ -79,6 +81,8 @@
                         inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
                         left join flow.company_state cs on cs.id = p.company_state_id
                         left join flow.state s on s.id = cs.state_id
+                        left join flow.company_country cc on cc.id = p.company_country_id
+                        left join flow.country c on c.id = cc.country_id
                      where p.contact_id = c.id
                      and p.archived is false
                  ) projects), '[]') AS "projects",
