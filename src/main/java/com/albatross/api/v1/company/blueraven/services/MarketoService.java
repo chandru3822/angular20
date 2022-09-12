@@ -72,15 +72,16 @@ public class MarketoService {
             authenticate();
 
             //@TODO: This is blocking. If issues arise for this feature, might need to make async
-            ResponseEntity<JSONObject> res = client.post()
+            ResponseEntity<String> res = client.post()
                                                    .uri("/rest/v1/leads.json")
                                                    .header("Authorization", "Bearer " + accessToken)
                                                    .body(Mono.just(body), Map.class)
                                                    .retrieve()
-                                                   .toEntity(JSONObject.class)
+                                                   .toEntity(String.class)
                                                    .block();
 
-            JSONArray results = new JSONArray(res.getBody().get("result"));
+            JSONObject resultBody = new JSONObject(res.getBody());
+            JSONArray results = resultBody.getJSONArray("result");
             JSONObject status = results.getJSONObject(0);
             return status.getString("status");
         } catch (Exception e) {
