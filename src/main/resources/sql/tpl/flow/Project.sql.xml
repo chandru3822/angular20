@@ -620,7 +620,8 @@
     where pa.project_id = :projectId
       and a.company_id = :companyId
       and pa.archived is false
-      and case when :linked is true then pa.linked is true else pa.linked is false end
+      and uat.archived is false
+      and case when :linked is true then pa.linked is true and uat.linkable is true else pa.linked is false end
       and a.archived is not true
     order by pa.date_created desc;
   ]]></project.getAttachments>

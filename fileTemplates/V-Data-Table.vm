@@ -7,7 +7,7 @@
           <v-toolbar-title class="app-title">${UPPER_ITEM}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/new${UPPER_ITEM}" color="primaryCustom">
+            <v-btn text to="/new${UPPER_ITEM}" color="primary">
               <v-icon>add</v-icon>
               Add ${UPPER_ITEM}
             </v-btn>
@@ -59,7 +59,7 @@
                     Cancel
                   </v-btn>
                   <v-btn
-                          color="primaryCustom"
+                          color="primary"
                           text
                           @click="export${UPPER_ITEM}"
                   >

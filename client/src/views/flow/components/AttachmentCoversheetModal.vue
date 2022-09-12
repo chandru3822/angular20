@@ -77,8 +77,17 @@
                          class=" mt-1 px-0 coversheet-save-bar">
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                  <v-btn text color="primary" small @click="closeModal()">
-                    {{ isExisting ? 'Cancel' : 'Cancel Upload' }}
+                  <ConfirmationDialog :open-dialog="confirmClose" @confirm="closeModal()" @close-dialog="confirmClose = null">
+                    <template v-slot:title>Cancel</template>
+                    Are you sure you want to cancel this upload?
+                    <template v-slot:yes>Yes</template>
+                    <template v-slot:no>No</template>
+                  </ConfirmationDialog>
+                  <v-btn text v-if="isExisting" color="primary" small @click="closeModal()">
+                    Cancel
+                  </v-btn>
+                  <v-btn text v-else color="primary" small @click="confirmClose = true">
+                    Cancel
                   </v-btn>
                   <div>
                     <v-btn small :loading="fieldsSaving"
@@ -171,6 +180,7 @@ import {getCustomFieldReadOnly} from "@/services/customFieldService"
 import cloneDeep from 'lodash.clonedeep'
 import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
 import SpinnerInline from '@/components/SpinnerInline'
+import ConfirmationDialog from "@/ConfirmationDialog"
 
 export default {
   name: "AttachmentCoversheetModal",
@@ -192,7 +202,8 @@ export default {
     DatetimePickerInput,
     CustomValueInput,
     VuePdfEmbed,
-    SpinnerInline
+    SpinnerInline,
+    ConfirmationDialog
   },
   watch: {
     showModal: function (visible) {
@@ -222,7 +233,8 @@ export default {
       pdfPage: 1,
       pdfPageCount: 1,
       pdfIsLoading: true,
-      fileSrcUrl: null
+      fileSrcUrl: null,
+      confirmClose: false
     }
   },
   created() {
@@ -251,6 +263,7 @@ export default {
       this.fileSrcUrl = null
       this.isPdf = false
       this.isImage = false
+      this.confirmClose = false
       this.pdfPage = 1
       this.pdfPageCount = 1
 

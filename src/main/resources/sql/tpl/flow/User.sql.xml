@@ -813,7 +813,8 @@
            left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where ua.user_id = :userId
       and a.company_id = :companyId
-      and case when :linked is true then ua.linked is true else ua.linked is false end
+      and uat.archived is false
+      and case when :linked is true then ua.linked is true and uat.linkable is true else ua.linked is false end
       and ua.archived is not true
       and a.archived is not true
     order by ua.date_created desc

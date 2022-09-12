@@ -35,8 +35,8 @@
               ></v-text-field>
             </div>
             <v-btn
-              color="primaryCustom"
-              class="white--text mr-2"
+              color="primary"
+              class="mr-2"
               :disabled="!newGroup.groupName"
               @click="saveFieldGroup()">
               Save
@@ -191,7 +191,7 @@
                                     No
                                   </v-btn>
                                   <v-btn
-                                    color="primaryCustom"
+                                    color="primary"
                                     text
                                     @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.customFieldGroupAssignmentId)]">
                                     Yes

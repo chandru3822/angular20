@@ -308,7 +308,8 @@
            inner join flow.org_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false
            left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where oa.org_id = :orgId
-      and case when :linked is true then oa.linked is true else oa.linked is false end
+      and uat.archived is false
+      and case when :linked is true then oa.linked is true and uat.linkable is true else oa.linked is false end
       and a.company_id = :companyId
       and oa.archived is false
       and a.archived is not true

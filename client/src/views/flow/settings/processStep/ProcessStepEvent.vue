@@ -278,7 +278,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primaryCustom"
+                                color="primary"
                                 text
                                 @click="[al.archived = true, deleteLinkFromAction(action.id, al.id)]">
                                 Yes

@@ -216,7 +216,7 @@
                                           @change="changedMinMax(cf)"
                                           :disabled="!userCanEdit"
                                           v-model.number="cf.maxValue" />
-                            <v-btn text color="primaryCustom" @click="saveMinMax(cf)"
+                            <v-btn text color="primary" @click="saveMinMax(cf)"
                                    :disabled="!cf.minMaxValueChanged">
                               <v-icon>save</v-icon>
                             </v-btn>
