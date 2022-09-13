@@ -30,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -813,6 +814,10 @@ public class AvailabilityService {
               try {
                   Map<String, Object> marketoLead = marketoService.projectToLead(p);
                   marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+                  Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", p.getContactId()), new SingleColumnRowMapper<>(String.class));
+                  leadSource.ifPresent(l -> marketoLead.put("leadSource", l));
+                  Optional<String> leadStatus = sqlCache.get("marketo.getLeadStatus", Map.of("contactId", p.getContactId()), new SingleColumnRowMapper<>(String.class));
+                  leadStatus.ifPresent(l -> marketoLead.put("leadStatus", l));
                   String result = marketoService.pushData(marketoLead);
                   // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
                   if (result.equals("created")) {
