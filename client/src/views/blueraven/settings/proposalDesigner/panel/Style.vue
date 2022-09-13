@@ -105,6 +105,11 @@
                   label="Align"
                   @change="doUpdateStyles({'alignItems': $event})"
         />
+        <v-text-field outlined dense
+                      v-model="cssStyle.flexBasis"
+                      label="Flex Basis"
+                      @change="doUpdateStyles({'flexBasis': $event})"
+        />
       </fragment>
     </div>
 
@@ -112,11 +117,6 @@
       <v-card-title>Padding</v-card-title>
       <space-widget attr="padding" :value="cssStyle.padding" @input="doUpdateStyles($event)"/>
     </div>
-
-<!--    <div>-->
-<!--      <v-card-title>Margin</v-card-title>-->
-<!--      <space-widget attr="margin" :value="cssStyle.margin" @input="doUpdateStyles($event)"/>-->
-<!--    </div>-->
   </fragment>
 </template>
 <script>
