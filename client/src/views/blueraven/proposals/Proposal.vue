@@ -191,7 +191,7 @@ export default {
       if (this.proposal?.name) {
         return this.proposal.name
       }
-      return `New Proposal`
+      return `Proposal #${this.proposalId}`
     },
     pages() {
       return this.template?.filter(x => x.parentId === undefined)
