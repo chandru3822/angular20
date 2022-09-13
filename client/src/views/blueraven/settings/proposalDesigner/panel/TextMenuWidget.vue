@@ -13,10 +13,35 @@
         <v-icon>mdi-format-strikethrough</v-icon>
       </v-btn>
 
-<!--      <v-btn icon @click="editor.chain().focus().setParagraph().run()"-->
-<!--             :class="{ 'is-active': editor.isActive('paragraph') }">-->
-<!--        <v-icon>mdi-format-paragraph</v-icon>-->
-<!--      </v-btn>-->
+      <!--      TODO: add in font size -->
+      <v-btn icon @click="editor.chain().focus().setParagraph().run()"
+             :class="{ 'is-active': editor.isActive('paragraph') }">
+        <v-icon>mdi-format-paragraph</v-icon>
+      </v-btn>
+      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+             :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }">
+        <v-icon>mdi-format-header-1</v-icon>
+      </v-btn>
+      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+             :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
+        <v-icon>mdi-format-header-2</v-icon>
+      </v-btn>
+      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+             :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }">
+        <v-icon>mdi-format-header-3</v-icon>
+      </v-btn>
+      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
+             :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }">
+        <v-icon>mdi-format-header-4</v-icon>
+      </v-btn>
+      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
+             :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }">
+        <v-icon>mdi-format-header-5</v-icon>
+      </v-btn>
+      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
+             :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }">
+        <v-icon>mdi-format-header-6</v-icon>
+      </v-btn>
       <v-btn icon @click="editor.chain().focus().toggleSuperscript().run()"
              :class="{ 'is-active': editor.isActive('superscript') }">
         <v-icon>mdi-format-superscript</v-icon>

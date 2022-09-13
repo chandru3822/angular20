@@ -12,6 +12,36 @@
         font-family: 'Lato', sans-serif;
         font-size: 12pt;
       }
+
+      h1, h2, h3, h4, h5, h6 {
+        padding: 0;
+        margin: 0;
+      }
+
+      table {
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+        font-size: inherit;
+      }
+
+      table td,
+      table th {
+        min-width: 1em;
+        border: 2px solid transparent;
+        padding: 3px 5px;
+        vertical-align: top;
+        box-sizing: border-box;
+        position: relative;
+      }
+
+      table td > *,
+      table th > * {
+        word-break: break-word;
+        margin-bottom: 0;
+      }
     </style>
 
     <style media="print">
