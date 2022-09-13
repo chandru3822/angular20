@@ -71,7 +71,7 @@
 <#macro hardBreak node=""><br /></#macro>
 <#macro text node>${addMarks(node.text, node.marks![])}</#macro>
 <#macro mention node>
-  <#local fallback>## ${node.attrs.id} ## </#local>
+  <#local fallback><span title="## ${node.attrs.id} ##" style="outline: 1px solid red;">missing</span></#local>
 <#--  <#local fallback></#local>-->
   ${addMarks(node.text!fallback, node.marks![])}
 </#macro>

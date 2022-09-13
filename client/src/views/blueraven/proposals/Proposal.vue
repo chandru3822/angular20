@@ -283,13 +283,13 @@ export default {
         const { data, status } = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
         this.proposal = data
         this.dirtyCfvs = []
-        this.$snackbar('SUCCESS', 'Fields Updated')
+        this.$snackbar('SUCCESS', 'Proposal Updated')
         await this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, { proposalId: this.proposalId })
 
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        const msg = e?.data?.message || 'Error Saving Fields'
+        const msg = e?.data?.message || 'Error Saving Proposal'
         this.$snackbar('ERROR', msg)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
