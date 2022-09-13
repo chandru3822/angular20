@@ -38,24 +38,24 @@
           </v-dialog>
 
         </div>
-        <div v-else-if="selectedOption === 2 && !isSidebarCollapsed">
+        <div v-else-if="selectedOption === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
           <v-btn-toggle
               v-model="toggleFocused"
               mandatory
               borderless
               color="primary"
-              class="d-inline-block pa-0">
+              class="d-inline-block pa-0 one-hunned">
             <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
                    :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
                    class="text-capitalize"
-                   width="50%"
+                   style="width: 50% !important;"
             >
               Focused
             </v-btn>
             <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
                    :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
                    class="text-capitalize"
-                   width="50%"
+                   style="width: 50% !important;"
             >
               All
             </v-btn>
@@ -434,11 +434,15 @@ export default {
 .v-btn-toggle .v-btn {
   border: 1px solid var(--v-primary-base) !important;
   height: 30px !important;
-  width: 166px !important;
+  width: 168px !important;
 
   &:not(:last-child) {
     border-right: none !important;
   }
+}
+
+.toggle-btn {
+  width: 50% !important;
 }
 </style>
 
