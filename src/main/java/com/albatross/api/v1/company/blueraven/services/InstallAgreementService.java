@@ -288,11 +288,11 @@ public class InstallAgreementService {
       PandaDocProjectDetails pd = deets.get();
       final String loanType = pd.getLoanType();
 
-      if (loanType == null) {
+      if (loanType == null || loanType.trim().equals("")) {
         throw new ApiException("Loan Type required and not found");
       }
 
-      if (loanType.contains("Sunlight")) {
+      if (loanType.toLowerCase().contains("sunlight")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
 
         try {
@@ -309,7 +309,7 @@ public class InstallAgreementService {
         } catch (Exception e) {
           throw new Exception(e.getMessage(), e);
         }
-      } else if (loanType.contains("LoanPal")) {
+      } else if (loanType.toLowerCase().contains("loanpal")) {
         // Check if this project has already had a credit check via Sunlight, if so throw error
         Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
         if (creditLastCheckedBy.isPresent()) {

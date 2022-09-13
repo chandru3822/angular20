@@ -25,16 +25,15 @@ public class ProposalRqueueListeners {
 
   @RqueueListener(value = "proposal_job", numRetries = "2")
   public void doGenerateFinalPDF(ProposalJobMessage job) {
-
     // system needs to be aware of a user to access methods
     setBlueravenSystemUser();
 
     proposalService.getProposal(job.proposalId())
       .ifPresent(proposal -> {
-        log.debug("[Proposal] Generating final PDF for proposalId={}", job.proposalId());
+        log.info("[Proposal] Generating final PDF for proposalId={}", job.proposalId());
         proposalService.generateProposalPDF(proposal.getId(), 1L, true)
           .ifPresent(baos -> {
-            log.debug("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
+            log.info("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
 
             projectService.addAttachment(
               proposal.getProjectId(),

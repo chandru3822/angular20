@@ -406,7 +406,7 @@ with published_proposal as (select proposal_version_id from brs.primary_company_
                                                        and ppscfv1.custom_field_group_assignment_id =
                                                            23623 -- postal code comments
                                          left join flow.project_process_step_custom_field_value ppscfv2
-                                                   on ppscfv1.project_process_step_id = pps.id
+                                                   on ppscfv2.project_process_step_id = pps.id
                                                        and ppscfv2.custom_field_group_assignment_id =
                                                            23496 -- postal code approval
                                 where pps.project_id = :projectId

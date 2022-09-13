@@ -223,6 +223,7 @@ public class BlueravenProposalService {
           final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, isFinal);
           return proposalTemplateService.generatePdf(templateId, context, false);
         } catch (IOException | TemplateException e) {
+          log.error("Error generating proposal template");
           throw new ApiException(e);
         }
       });
