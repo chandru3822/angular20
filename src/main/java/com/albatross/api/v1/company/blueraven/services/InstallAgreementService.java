@@ -304,8 +304,7 @@ public class InstallAgreementService {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
 
         try {
-          return sunpowerService.saveLoanFields(
-            propLogDetail.get(), projectId, proposalNbr, sendVia, false);
+          return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
         } catch (Exception e) {
           throw new Exception(e.getMessage(), e);
         }
