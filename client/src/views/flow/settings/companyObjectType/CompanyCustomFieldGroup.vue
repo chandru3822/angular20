@@ -1,35 +1,13 @@
 <template>
   <v-container class="custom-field-group-container">
     <v-row>
-      <v-col cols="12" class="shrink pt-0">
-        <router-link :to="`/settings/companyObjectTypes`">Back</router-link>
-        <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
-            {{ objectType.objectType }} - Custom Field Groups
-          </v-toolbar-title>
-          <v-spacer />
-          <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-container>
-          <v-card flat class="mb-4">
-            Note: Some company specific screens ignore the display order and group name of Custom Fields Groups
-            represented here.
-          </v-card>
-          <v-text-field v-if="addNew"
-                        v-model="newGroup.groupName"
-                        placeholder="Enter new group name"
-                        append-outer-icon="save"
-                        @click:append-outer="addCustomFieldGroup"
-                        label="Custom Field Group" />
-
-          <v-data-table
+      <v-col cols="12">
+        <v-container v-for="n in numberOfCols">
+        <span v-if="objectType && objectType.customColumns" class="albatross-header-4 mb-2">Column {{n===1 ? 'One' : 'Two'}}</span>
+        <v-data-table
+            :id="n"
             :headers="headers"
-            :items="filterCustomFieldGroups()"
+            :items="getGroupsByCol(n)"
             :items-per-page="-1"
             single-expand
             :sort-by="['groupOrder']"
@@ -37,7 +15,7 @@
             :expanded.sync="expanded"
             hide-default-footer
             hide-default-header
-            class="elevation-1 fix-column-width-bug mb-5"
+            class="elevation-1 fix-column-width-bug mb-5 draggable-table"
           >
             <template #no-data>
               <span class="default-text-color">No available field groups</span>
@@ -48,7 +26,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
+              <tr :class="{'shaded-row': index % 2}">
                 <td style="width: 50px">
                   <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
@@ -283,7 +261,6 @@ export default {
       snackbar: {},
       constants,
       addNew: false,
-      objectType: {},
       newFieldType: 'native',
       deleteError: false,
       deleteHeader: null,
@@ -300,7 +277,6 @@ export default {
       },
       addField: false,
       newField: {},
-      customFieldGroups: [],
       availableCustomFields: [],
       companyId: this.$store.state.user.details.companyId,
       //if you set this to a value it doesn't update when the route param changes
@@ -319,72 +295,60 @@ export default {
       cFieldToDelete: null
     }
   },
+  props :{
+    objectType: Object,
+    customFieldGroups: Array,
+  },
   computed: {
     cfgToDeleteName(){
       return this.cfgToDelete ? this.cfgToDelete.groupName : ''
     },
     cFieldToDeleteName(){
       return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
+    },
+    numberOfCols(){
+      if(this.objectType && this.objectType.customColumns) {
+        return 2
+      }
+      return 1
     }
   },
   mounted() {
-    let table = document.querySelector('tbody')
+    let tables = document.querySelectorAll('tbody')
     const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({ newIndex, oldIndex }) {
-        const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
-        _self.customFieldGroups.splice(newIndex, 0, rowSelected)
-        let fieldGroupsClone = cloneDeep(_self.customFieldGroups)
-        fieldGroupsClone.forEach((g, idx) => {
-          g.groupOrder = idx
-        })
-        _self.saveGroupChanges(fieldGroupsClone)
-      }
-    })
+    // debugger
+    console.log(this.objectType.customColumns)
+    console.log(tables)
+    for(const table of tables) {
+      Sortable.create(table, {
+        group: {name: 'fieldGroups', pull: true, put: true},
+        handle: '.handle',
+        connectWith: '.connectedSortable',
+        onEnd({to, from, newIndex, oldIndex, oldDraggableIndex, newDraggableIndex}) {
+          debugger
+          const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
+          if(to != from){
+            debugger
+            rowSelected.groupColumnOrder = to.parentElement.parentElement.parentElement.id
+          }
+          _self.customFieldGroups.splice(newIndex, 0, rowSelected)
+          let fieldGroupsClone = cloneDeep(_self.customFieldGroups)
+          fieldGroupsClone.forEach((g, idx) => {
+            g.groupOrder = idx
+          })
+          _self.saveGroupChanges(fieldGroupsClone)
+        }
+      })
+    }
   },
   created() {
-    this.getObjectType()
-    this.getCustomFieldGroups()
+
   },
   methods: {
     changedMinMax(cf) {
       this.$set(cf, 'minMaxValueChanged', true)
     },
-    async getObjectType() {
-      //we have to get the object type details to determine if it can use ancillary fields
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data, status } = await getRequest(`/objectType/getByType/${this.$route.params.id}`, 'blueraven')
-        this.objectType = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCustomFieldGroups() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data, status } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
-          params: {
-            companyObjectTypeId: this.$route.params.id
-          }
-        }, 'blueraven')
-        this.customFieldGroups = cloneDeep(data.map(d => {
-          d.customFields.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
-          return d
-        }))
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+
     async fetchAvailableCustomFields(groupId) {
       try {
         if (this.addField && this.newFieldType === 'native') {
@@ -468,25 +432,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async addCustomFieldGroup() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newGroup.objectTypeId = parseInt(this.$route.params.id)
-        const { data, status } = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup, 'blueraven')
-        this.newGroup = {}
-        this.addNew = false
-        // add the new type to the list
-        this.customFieldGroups.push(data)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Custom Field Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async assignCustomField(cfg, isAncillary) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -516,6 +461,7 @@ export default {
       }
     },
     async saveGroupChanges(groups) {
+      debugger;
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { status } = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
@@ -598,6 +544,7 @@ export default {
       }
     },
     async saveFieldChanges(fields) {
+      debugger
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -629,6 +576,21 @@ export default {
       return this.customFieldGroups.filter(cfgt => {
         return !cfgt.archived
       })
+    },
+    getGroupsByCol(colNumber) {
+      if(this.objectType && this.objectType.customColumns) {
+        return this.filterCustomFieldGroups().filter(cfg => cfg.groupColumnOrder === colNumber)
+            .sort((cfg1, cfg2) => {
+              if (cfg1.groupOrder < cfg2.groupOrder) {
+                return -1
+              }
+              if (cfg1.groupOrder > cfg2.groupOrder) {
+                return 1
+              }
+              return 0
+            })
+      }
+      return this.filterCustomFieldGroups()
     },
     async loadFieldsByParent() {
       this.$store.commit(AppMutations.SET_LOADING, true)

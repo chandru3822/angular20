@@ -60,18 +60,31 @@ export default {
       }
       //if smaller than md, we only have one column, so we just need to make sure things are in the right order
       return this.customFieldGroups.sort((cfg1, cfg2) => {
-        if(cfg1.groupColumnOrder > cfg2.groupColumnOrder) {
+        if (cfg1.groupOrder < cfg2.groupOrder) {
+          return -1
+        }
+        if (cfg1.groupOrder > cfg2.groupOrder) {
           return 1
         }
-        if (cfg1.groupColumnOrder <= cfg2.groupColumnOrder){
-          if (cfg1.groupOrder < cfg2.groupOrder) {
-            return -1
-          }
-          if (cfg1.groupOrder > cfg2.groupOrder) {
+        if (cfg1.groupOrder === cfg2.groupOrder) {
+          if(cfg1.groupColumnOrder > cfg2.groupColumnOrder){
             return 1
           }
-          return 0
+          return -1
         }
+        //alternate sorting method
+        // if(cfg1.groupColumnOrder > cfg2.groupColumnOrder) {
+        //   return 1
+        // }
+        // if (cfg1.groupColumnOrder <= cfg2.groupColumnOrder){
+        //   if (cfg1.groupOrder < cfg2.groupOrder) {
+        //     return -1
+        //   }
+        //   if (cfg1.groupOrder > cfg2.groupOrder) {
+        //     return 1
+        //   }
+        //   return 0
+        // }
       })
     }
   }

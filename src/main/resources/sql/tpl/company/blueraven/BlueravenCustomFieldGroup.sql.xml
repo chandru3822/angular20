@@ -78,6 +78,7 @@ order by cfg.group_order, cfg.group_name
     update brs.custom_field_group
       set group_name = :groupName,
           group_order = :groupOrder,
+          group_column_order = :groupColumnOrder,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
@@ -95,7 +96,6 @@ order by cfg.group_order, cfg.group_name
                                     cfga.field_order                                as "fieldOrder",
                                     cfga.required                                   as "required",
                                     cfga.conditional_on_cfga_id                     as "conditionalOnId",
-                                    cfga.
                                     cfga.archived,
                                     cf.field_name as "fieldName"
                              FROM brs.custom_field_group_assignment cfga

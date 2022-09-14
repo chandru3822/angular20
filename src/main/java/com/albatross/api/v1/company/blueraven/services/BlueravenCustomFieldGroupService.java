@@ -136,6 +136,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("id", customFieldGroup.getId());
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
+    params.put("groupColumnOrder", customFieldGroup.getGroupColumnOrder());
     params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldGroup", params);
