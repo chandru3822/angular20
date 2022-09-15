@@ -24,6 +24,7 @@
         <v-toolbar dense flat color="transparent">
           <v-toolbar-title class="new-proposal-header">
             <editable-input :editable="!proposal.locked"
+                            :display-text="proposal.displayName"
                             :value="defaultProposalName"
                             @input="handleNameChange" />
 
@@ -191,7 +192,7 @@ export default {
       if (this.proposal?.name) {
         return this.proposal.name
       }
-      return `Proposal #${this.proposalId}`
+      return 'New Proposal'
     },
     pages() {
       return this.template?.filter(x => x.parentId === undefined)
