@@ -177,12 +177,11 @@
             @change="uploadFiles"
           />
 
-<!--          TODO: change this to date & time -->
           <DatetimePickerInput
             v-model="newDesignRequest.dueDate"
             :timezone="timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
+            type="timestamp"
+            :format="'MMMM DD, YYYY, h:mm A'"
             :min-date="minDate"
             label="Pick a due date and time (Required)"
           />
