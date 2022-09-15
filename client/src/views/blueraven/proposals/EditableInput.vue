@@ -1,6 +1,6 @@
 <template>
   <div class="editable-input d-flex pa-0 align-center">
-    <span v-if="!isEditMode">{{ name }}</span>
+    <span v-if="!isEditMode">{{ displayText || name }}</span>
     <v-text-field v-else v-model="name" solo single-line flat autofocus />
     <div v-if="editable">
       <v-btn small icon @click="handleEdit" class="pl-2" v-if="editable">
@@ -18,6 +18,7 @@
 export default {
   props: {
     value: { type: String, required: true },
+    displayText: { type: String },
     editable: {
       type: Boolean,
       default: false

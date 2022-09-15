@@ -40,7 +40,7 @@ public class ProposalRqueueListeners {
               PROPOSAL_ATTACHMENT_TYPE,
               baos.getContentLength(),
               baos.getContentType(),
-              String.format("proposal-%s", proposal.getId()),
+              proposal.getDisplayName(),
               baos.getInputStream());
 
             log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
