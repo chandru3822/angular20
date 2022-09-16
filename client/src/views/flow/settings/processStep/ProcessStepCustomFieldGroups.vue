@@ -73,6 +73,7 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
+              v-if="localCustomFieldGroups && localCustomFieldGroups.length > 0"
               :key="componentKey"
               :headers="headers"
               :items="filterCustomFieldGroups()"
@@ -447,7 +448,11 @@
             let rowsClone = cloneDeep(_self.localCustomFieldGroups)
 
             let rowsToSave = []
+            console.log('cfgs',_self.customFieldGroups)
+            console.log('local',_self.localCustomFieldGroups)
+            console.log('clone',rowsClone)
             rowsClone.forEach((r, idx) => {
+              console.log('rrrrrrrrrr',r)
               //check if the row needs to be saved before updating display order
               //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
               let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
@@ -502,6 +507,9 @@
         customFieldGroupToDelete: null,
         assignmentToDelete: null
       }
+    },
+    created () {
+      console.log('randaLogger',this.customFieldGroups)
     },
     computed: {
       localCustomFieldGroups: {

@@ -173,14 +173,14 @@
         endDate: moment().format('YYYY-MM-DD'),
         weekNum: 1,
         currentPeriod: Math.ceil(moment().isoWeek() / 4),
-        dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
+        dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
         isLoading: true,
         drilldownIsLoading: true,
         dashValues: [],
         drilldownData: [],
         singleDateRange: false,
-        singleDateRanges: ['Yesterday', 'Today'],
-        loadTargetsRanges:  ['Yesterday', 'Today', 'Current Week', 'Last Week'],
+        singleDateRanges: ['Yesterday', 'Today', 'Tomorrow'],
+        loadTargetsRanges:  ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Last Week'],
         footerProps: {
           showFirstLastPage: !constants.IS_MOBILE,
           firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
@@ -228,10 +228,10 @@
         return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
       },
       startOfWeek () {
-        return moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
+        return moment().startOf('isoWeek').format('YYYY-MM-DD')
       },
       endOfWeek () {
-        return moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+        return moment().endOf('week').add(1, 'days').format('YYYY-MM-DD')
       }
     },
     methods: {
@@ -298,6 +298,10 @@
             this.startDate = moment().startOf('day').format('YYYY-MM-DD')
             this.endDate = moment().endOf('day').format('YYYY-MM-DD')
             break
+          case 'Tomorrow':
+            this.startDate = moment().startOf('day').add(1, 'days').format('YYYY-MM-DD')
+            this.endDate = moment().endOf('day').add(1, 'days').format('YYYY-MM-DD')
+            break
           case 'Current Week':
             this.startDate = this.startOfWeek
             this.endDate = this.endOfWeek
@@ -307,8 +311,8 @@
             this.endDate = this.endOfPeriod
             break
           case 'Last Week':
-            this.startDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').startOf('isoWeek').format('YYYY-MM-DD')
-            this.endDate = moment(this.momentStartOfPeriod).clone().add((this.weekNum - 2), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+            this.startDate = moment().startOf('isoWeek').subtract(7, 'days').format('YYYY-MM-DD')
+            this.endDate = moment().startOf('isoWeek').subtract(1, 'days').format('YYYY-MM-DD')
             break
           case 'Last Period':
             this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod)
