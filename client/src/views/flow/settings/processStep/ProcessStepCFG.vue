@@ -23,6 +23,7 @@
     data () {
       return {
         snackbar: {},
+        loading: true,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
@@ -45,10 +46,12 @@
     methods: {
       async getProcessStepDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        this.loading = true
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
           this.processStep = data
+          this.loading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)

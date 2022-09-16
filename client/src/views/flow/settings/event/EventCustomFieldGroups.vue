@@ -226,7 +226,7 @@
             Save
           </v-btn>
           <v-btn
-              text color="primary"
+            text color="primary"
             @click="[newGroup = {}, createNew = false]">
             Cancel
           </v-btn>
@@ -289,7 +289,9 @@
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
                       </v-btn>
-                      <v-btn text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
+                      <v-btn text color="primary" @click="cfgToDelete=item">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
                     </div>
                   </td>
                 </tr>
@@ -440,7 +442,9 @@
                               </v-list-item>
                             </v-list>
                           </v-menu>
-                          <v-btn text color="primary" v-if="userCanEdit" @click="[cFieldToDelete=cf, cfgToDelete=cfg]"><v-icon>delete</v-icon></v-btn>
+                          <v-btn text color="primary" v-if="userCanEdit" @click="[cFieldToDelete=cf]">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
                         </v-list-item>
                         <v-divider v-if="cf.edit"></v-divider>
                       </v-list>
@@ -454,20 +458,21 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-dialog="cfgToDelete && !cFieldToDelete"
-        @confirm="deleteWithChecks(cfgToDelete, cfgToDelete.id, null)"
-        @close-dialog="cfgToDelete=null">
+      :open-dialog="cfgToDelete && !cFieldToDelete"
+      @confirm="deleteWithChecks(cfgToDelete, cfgToDelete.id, null)"
+      @close-dialog="cfgToDelete=null">
       <span class="error--text">WARNING:</span>
       By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
-      Are you sure you want to delete this Custom Field Group: <strong>{{cfgToDeleteName}}</strong>?
+      Are you sure you want to delete this Custom Field Group: <strong>{{ cfgToDeleteName }}</strong>?
     </ConfirmationDialog>
     <ConfirmationDialog
-        :open-dialog="!!cFieldToDelete"
-        @confirm="[addField=false, newField={}, deleteWithChecks(cFieldToDelete, null, cFieldToDelete.id)]"
-        @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
+      :open-dialog="!!cFieldToDelete"
+      @confirm="[addField=false, newField={}, deleteWithChecks(cFieldToDelete, null, cFieldToDelete.id)]"
+      @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
       <span class="error--text">WARNING:</span>
-      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
-      Are you sure you want to delete this field from {{cfgToDeleteName}}: <strong>{{cFieldToDeleteName}}</strong>?
+      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another
+      group please cancel and move the field. <br/><br/>
+      Are you sure you want to delete this field from {{ cfgToDeleteName }}: <strong>{{ cFieldToDeleteName }}</strong>?
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -480,6 +485,7 @@ import {getEventTypes} from '@/services/scheduleService'
 import {
   getRequest,
   putRequest,
+  deleteRequest,
   postRequest,
   getRequestWithParams,
   getSnackbar
@@ -581,10 +587,10 @@ export default {
         return orderBy(val, v => v.groupOrder)
       }
     },
-    cfgToDeleteName(){
+    cfgToDeleteName() {
       return this.cfgToDelete ? this.cfgToDelete.groupName : ''
     },
-    cFieldToDeleteName(){
+    cFieldToDeleteName() {
       return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
     }
   },
@@ -640,14 +646,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await postRequest(`/event/${this.eventId}/saveChangesToDefaultFields`, this.event)
-        if(this.event.startTimePositionsChanged || (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0)) {
-          this.saveWhiteListedPositions(6, (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0) ? [] :this.event.startTimeWhiteListedPositions)
+        if (this.event.startTimePositionsChanged || (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0)) {
+          this.saveWhiteListedPositions(6, (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0) ? [] : this.event.startTimeWhiteListedPositions)
         }
-        if(this.event.endTimePositionsChanged || (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0)) {
+        if (this.event.endTimePositionsChanged || (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0)) {
           this.saveWhiteListedPositions(7, (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0) ? [] : this.event.endTimeWhiteListedPositions)
         }
-        if(this.event.resourcePositionsChanged || (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0)) {
-          this.saveWhiteListedPositions(8,  (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0) ? [] : this.event.resourceWhiteListedPositions)
+        if (this.event.resourcePositionsChanged || (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0)) {
+          this.saveWhiteListedPositions(8, (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0) ? [] : this.event.resourceWhiteListedPositions)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Event Changes Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -707,31 +713,12 @@ export default {
     async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        let params = {
-          customFieldGroupId, customFieldGroupAssignmentId
-        }
-        const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
-        if (data?.length > 0) {
-          this.deleteError = true
-          item.deleteConfirm = false
-          this.fieldsInUse = data
-          let errorMsg = 'Group Cannot Be Deleted'
-          this.deleteHeader = 'Error Deleting Custom Field Group'
-          this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
-          if (null !== customFieldGroupAssignmentId) {
-            errorMsg = 'Field Cannot Be Deleted'
-            this.deleteHeader = 'Error Deleting Custom Field from Group'
-            this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
-          }
-          this.snackbar = getSnackbar('ERROR', errorMsg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.fieldsInUse = []
-          item.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+        let url = customFieldGroupAssignmentId ? `/customFieldGroup/deleteFieldFromGroup/${customFieldGroupAssignmentId}` : `/customFieldGroup/${customFieldGroupId}`
+        await deleteRequest(url)
+        this.fieldsInUse = []
+        item.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

@@ -926,7 +926,12 @@ public class SmartlistService {
       } else if (f.getDataTypeId() == 1) {
         query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        if (timezone != null) {
+//          query.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
+          query.append(String.format("  to_char(%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, timezone, f.getName()));
+        } else {
+          query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        }
       } else if (f.getDataTypeId() == 7 && f.getSmartlistSystemListId() == null) {
           query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
