@@ -102,7 +102,7 @@
                 <router-link  v-if="item['Owner']" class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Owner'] }}
                 </router-link>
-                <v-btn text v-else-if="userCanOwnProcessStep(item)" class="px-0">
+                <v-btn outlined text v-else-if="userCanOwnProcessStep(item)" class="text-capitalize primary--text">
                   <a @click="assignToUser(item)">Assign to me</a>
                 </v-btn>
               </td>
@@ -624,6 +624,10 @@ export default {
 #wq-drilldown-table .v-data-table-row td{
   min-height: 3em;
   height: inherit;
+}
+
+#wq-drilldown-table > div.v-data-table__wrapper > table > tbody > tr > td > button.primary--text.v-btn--outlined{
+  border-color: var(--v-primary-base) !important;
 }
 
 .router-link-td {
