@@ -80,7 +80,7 @@
                                   AND c.archived IS FALSE
                                   AND c.contact_type_id = 4) contacts
                    ), '[]'
-              ) AS fee_contacts
+              ) AS fee_contacts,
           coalesce((
                        SELECT array_to_json(array_agg(row_to_json(links)))
                        FROM (
