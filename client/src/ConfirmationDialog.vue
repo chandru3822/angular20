@@ -49,7 +49,8 @@ export default {
     disableConfirm: Boolean,
     hideConfirm: Boolean,
     confirmClass: String,
-    width: Number
+    width: Number,
+    parentClose: Boolean
   },
   data() {
     return {
@@ -69,7 +70,9 @@ export default {
   methods: {
     yes(){
       this.$emit('confirm')
-      this.$emit('close-dialog', false)
+      if(!this.parentClose) {
+        this.$emit('close-dialog', false)
+      }
       this.show=false
     },
     no() {
