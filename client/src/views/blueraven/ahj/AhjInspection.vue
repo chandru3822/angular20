@@ -79,7 +79,7 @@
 
       <!-- SECOND ROW -->
       <v-row no-gutters>
-        <v-col cols="12" md="3" class="px-1">
+        <v-col cols="12" md="4" class="px-1">
           <AhjContact v-if="dataReady"
                       title="Scheduling Contacts"
                       :contactTypeId="2"
@@ -91,7 +91,7 @@
           ></AhjContact>
         </v-col>
 
-        <v-col cols="12" md="3" class="px-1">
+        <v-col cols="12" md="4" class="px-1">
           <AhjContact v-if="dataReady"
                       title="Inspector Contacts"
                       :contactTypeId="4"
@@ -103,7 +103,7 @@
           ></AhjContact>
         </v-col>
 
-        <v-col cols="12" md="3" class="px-1">
+        <v-col cols="12" md="4" class="px-1">
           <AhjContact v-if="dataReady"
                       title="Obtaining Results Contacts"
                       :contactTypeId="3"
@@ -114,7 +114,11 @@
                       :contacts="ahjInspection.obtainingResultsContacts"
           ></AhjContact>
         </v-col>
-        <v-col cols="12" md="3" class="px-1">
+      </v-row>
+
+      <!-- THIRD ROW -->
+      <v-row no-gutters class="mb-3">
+        <v-col cols="12" md="4" class="px-1">
           <AhjContact v-if="dataReady"
                       title="Utility Service Department Contacts"
                       :contactTypeId="9"
@@ -126,24 +130,16 @@
                       :isNested="true"
           ></AhjContact>
         </v-col>
-      </v-row>
-
-      <!-- THIRD ROW -->
-      <v-row no-gutters class="mb-3">
-        <v-col cols="12" md="6" class="px-1">
+        <v-col cols="12" md="4" class="px-1">
           <AhjServicingFot v-if="dataReady"
                            :servicingFots="ahjInspection.servicingFots"
           ></AhjServicingFot>
         </v-col>
-      </v-row>
-
-      <!-- FOURTH ROW -->
-      <v-row no-gutters class="mb-6">
-        <v-col cols="12" md="12" class="px-1">
+        <v-col cols="12" md="4" class="px-1">
           Randa put the custom field thing here
         </v-col>
       </v-row>
-
+      
       <v-dialog v-model="saveDialog" max-width="700">
         <v-card>
           <v-card-title>
@@ -253,8 +249,7 @@ export default {
       schedulingContacts: [],
       feeContacts: [],
       obtainingResultsContacts: [],
-      servicingFots: [],
-      installationRequirements: []
+      servicingFots: []
     }
   }),
   methods: {
