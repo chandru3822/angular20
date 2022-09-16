@@ -128,7 +128,7 @@
                           placeholder="Select..."
                           height="35px"
                           class="user-filter-select"
-                          @input="getUsers()"
+                          @input="getUsers(true)"
                 >
                   <v-list-item
                       slot="prepend-item"
@@ -167,7 +167,7 @@
                           height="35px"
                           outlined
                           class="user-filter-select"
-                          @input="getUsers(false)"
+                          @input="getUsers(true)"
                 >
                   <template
                       slot="selection"
@@ -617,7 +617,7 @@
         this.$router.push({name: 'userDetails', params: {id}})
       },
       debounceGetUsers: debounce( function () {
-        this.getUsers()
+        this.getUsers(true)
       }, 500),
       async getAllUsers () {
         // Get allUsers once
@@ -651,8 +651,12 @@
           // this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getUsers () {
+      async getUsers (resetPage) {
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
+
+        if(resetPage) {
+          this.options.page = 1
+        }
 
         if(this.source){
           this.source.cancel()
@@ -809,10 +813,10 @@
         this.$nextTick(() => {
           if (this.selectAll) {
             this.filters.statuses = []
-            this.getUsers()
+            this.getUsers(true)
           } else {
             this.filters.statuses = this.statuses.map(s => s.id)
-            this.getUsers()
+            this.getUsers(true)
           }
         })
       },
@@ -913,7 +917,7 @@
 
         this.selectAllUsers = false
         //reload the users
-        this.getUsers()
+        this.getUsers(true)
       },
       itemChecked(level, item) {
         if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
