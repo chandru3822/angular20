@@ -181,10 +181,7 @@
 <script>
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
-import moment from 'moment'
-import AhjChecklist from './components/AhjChecklist'
 import AhjContact from './components/AhjContacts'
-import AhjDocument from './components/AhjDocuments'
 import AhjLink from './components/AhjLinks'
 import AhjServicingFot from './components/AhjServicingFots'
 
@@ -200,9 +197,7 @@ export default {
   components: {
     TwoColumnMasonry,
     AhjCustomFields,
-    AhjChecklist,
     AhjContact,
-    AhjDocument,
     AhjLink,
     AhjServicingFot,
     CustomValueInput

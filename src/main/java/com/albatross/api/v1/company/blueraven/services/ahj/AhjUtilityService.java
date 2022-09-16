@@ -4,7 +4,10 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
-import com.albatross.api.v1.company.blueraven.models.ahj.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjContact;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjLink;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtility;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtilityDetail;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -13,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -182,73 +183,6 @@ public class AhjUtilityService {
     params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.update("ahj.utility.link.delete", params);
-  }
-
-  // REQUIREMENTS
-  public List<AhjRequirement> getRequirementHistory(Long utilityId, Long originalRequirementId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("utilityId", utilityId);
-    params.put("originalRequirementId", originalRequirementId);
-
-    return sqlCache.query("ahj.utility.requirement.history", params, AhjRequirement.class);
-  }
-
-  public Optional<AhjRequirement> addRequirement(Long utilityId, AhjRequirement ahjRequirement) {
-    User user = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("utilityId", utilityId);
-    params.put("requirementTypeId", 4);
-    params.put("statusId", 1);
-    params.put("position", ahjRequirement.getPosition());
-    params.put("createdById", user.trueUserId());
-    params.put("modifiedById", user.trueUserId());
-    params.put("description", ahjRequirement.getDescription());
-
-    var created =
-        sqlCache.get(
-            "ahj.utility.requirement.add", params, new SingleColumnRowMapper<>(Integer.class));
-    if (created.isPresent()) {
-      params.put("originalRequirementId", created.get());
-      return sqlCache.get("ahj.utility.requirement.active.detail", params, AhjRequirement.class);
-    }
-    return Optional.empty();
-  }
-
-  public Optional<AhjRequirement> updateRequirement(
-      Long utilityId, Long requirementId, AhjRequirement ahjRequirement) {
-    User user = securityService.getCurrentUser();
-
-    String sqlQuery =
-        "SELECT * FROM brs.ahj_update_requirement(:utilityId::bigint, null, :requirementId::bigint, :description::varchar, :position::bigint, :complete::boolean, :statusId::bigint, :userId::bigint, :archived::boolean)";
-
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("utilityId", utilityId);
-    parameters.addValue("requirementId", requirementId);
-    parameters.addValue("description", ahjRequirement.getDescription());
-    parameters.addValue("position", ahjRequirement.getPosition());
-    parameters.addValue("complete", ahjRequirement.getComplete());
-    parameters.addValue("statusId", ahjRequirement.getStatusId());
-    parameters.addValue("userId", user.trueUserId());
-    parameters.addValue("archived", ahjRequirement.getArchived());
-
-    jdbc.queryForList(sqlQuery, parameters, String.class);
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("originalRequirementId", ahjRequirement.getOriginalRequirementId());
-    params.put("utilityId", utilityId);
-
-    return sqlCache.get("ahj.utility.requirement.active.detail", params, AhjRequirement.class);
-  }
-
-  public void archiveRequirement(Long originalRequirementId) {
-    User user = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("originalRequirementId", originalRequirementId);
-    params.put("modifiedById", user.trueUserId());
-
-    sqlCache.update("ahj.utility.requirement.archive", params);
   }
 
   public static class AhjUtilityDetailMapper<T> extends BeanPropertyRowMapper<T> {

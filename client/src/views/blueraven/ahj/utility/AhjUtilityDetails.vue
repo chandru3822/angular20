@@ -111,12 +111,8 @@
 <script>
 import cloneDeep from "lodash.clonedeep"
 import orderBy from "lodash.orderby"
-import AhjChecklist from "../components/AhjChecklist"
 import AhjContact from "../components/AhjContacts"
-import AhjDocument from "../components/AhjDocuments"
-import AhjDocumentsButton from "../components/AhjDocumentsButton"
 import AhjLink from "../components/AhjLinks"
-import AhjRequirement from "../components/AhjRequirements"
 import {AppMutations} from "@/stores/AppStore"
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
@@ -132,12 +128,8 @@ export default {
     TwoColumnMasonry,
     AhjAttachments,
     AhjCustomFields,
-    AhjChecklist,
     AhjContact,
-    AhjDocument,
-    AhjDocumentsButton,
     AhjLink,
-    AhjRequirement,
     CustomValueInput,
     AhjCard
   },

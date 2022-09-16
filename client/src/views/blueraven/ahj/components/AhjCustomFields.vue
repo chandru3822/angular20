@@ -48,7 +48,6 @@
 <script>
 import CustomValueInput from "@/views/flow/components/CustomValueInput";
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
-import AhjDocuments from "@/views/blueraven/ahj/components/AhjDocuments";
 import AhjAttachments from "@/views/blueraven/ahj/components/AhjAttachments";
 import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
@@ -57,7 +56,6 @@ export default {
   components: {
     AhjCard,
     AhjAttachments,
-    AhjDocuments,
     CustomValueInput
   },
   props: {

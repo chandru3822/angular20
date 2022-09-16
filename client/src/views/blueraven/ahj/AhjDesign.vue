@@ -35,8 +35,6 @@
 
 <script>
 import cloneDeep from 'lodash.clonedeep'
-import AhjDocumentsButton from './components/AhjDocumentsButton'
-import AhjRequirement from './components/AhjRequirements'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
@@ -44,8 +42,6 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, 
 export default {
   name: 'ahjDesign',
   components: {
-    AhjDocumentsButton,
-    AhjRequirement,
     CustomValueInput
   },
   computed: {

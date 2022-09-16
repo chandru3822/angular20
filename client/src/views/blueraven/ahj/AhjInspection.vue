@@ -140,14 +140,7 @@
       <!-- FOURTH ROW -->
       <v-row no-gutters class="mb-6">
         <v-col cols="12" md="12" class="px-1">
-          <AhjRequirement v-if="dataReady"
-                          title="AHJ Specific Installation Requirements"
-                          :transparent="false"
-                          :requirementTypeId="5"
-                          :itemType="itemType"
-                          :itemId="ahjId"
-                          :requirements="ahjInspection.installationRequirements"
-          ></AhjRequirement>
+          Randa put the custom field thing here
         </v-col>
       </v-row>
 
@@ -214,12 +207,9 @@
 </template>
 
 <script>
-import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
-import AhjChecklist from './components/AhjChecklist'
 import AhjContact from './components/AhjContacts'
 import AhjLink from './components/AhjLinks'
-import AhjRequirement from './components/AhjRequirements'
 import AhjServicingFot from './components/AhjServicingFots'
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
@@ -235,10 +225,8 @@ export default {
   components: {
     TwoColumnMasonry,
     AhjCustomFields,
-    AhjChecklist,
     AhjContact,
     AhjLink,
-    AhjRequirement,
     AhjServicingFot,
     CustomValueInput
   },
