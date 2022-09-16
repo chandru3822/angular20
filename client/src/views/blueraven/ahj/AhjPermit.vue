@@ -1,6 +1,6 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-card class="mx-4 mt-6">
+  <v-card class="mx-4 mt-6 square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="ahj-form-btns py-1" cols="12">
         <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
@@ -292,7 +292,7 @@ export default {
 
           data.servicingFots = orderBy(data.servicingFots, fot => {
             if (fot.hierarchy && fot.hierarchy.orgName) {
-              return fot.hierarchy.orgName.toLowerCase()
+              return fot.hierarchy.orgName?.toLowerCase()
             }
           })
         } else {
@@ -301,10 +301,10 @@ export default {
 
         this.ahjPermit = cloneDeep(data)
         window.document.title = `AHJ - ${this.ahjPermit.ahjName}`
-        this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name.toLowerCase())
-        this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name.toLowerCase())
-        this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name.toLowerCase())
-        this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
+        this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name?.toLowerCase())
+        this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name?.toLowerCase())
+        this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name?.toLowerCase())
+        this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name?.toLowerCase())
         this.ahjPermit.updateAllInState = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {

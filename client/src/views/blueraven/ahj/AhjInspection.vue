@@ -1,30 +1,33 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-card class="mx-4 mt-6">
-  <v-row class="px-2" no-gutters>
-    <v-col class="ahj-form-btns py-1" cols="12">
-      <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
-      <v-btn color="primary" text v-if="dataWasChanged"
-         @click="resetForm"
-         class="cancel-link text-capitalize"
-         style="margin-right: 10px"
-      >Cancel</v-btn>
-      <v-btn class="text-capitalize mr-0 save-btn"
-             v-if="userCanEdit"
-             color="primary"
-             @click="validateForm()"
-      >Save
-      </v-btn>
-    </v-col>
-  </v-row>
+  <v-card class="mx-4 mt-6 square-card pb-2" v-if="dataReady">
+    <v-row class="px-2" no-gutters>
+      <v-col class="ahj-form-btns py-1" cols="12">
+        <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
+          {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
+        </v-btn>
+        <v-btn color="primary" text v-if="dataWasChanged"
+               @click="resetForm"
+               class="cancel-link text-capitalize"
+               style="margin-right: 10px"
+        >Cancel
+        </v-btn>
+        <v-btn class="text-capitalize mr-0 save-btn"
+               v-if="userCanEdit"
+               color="primary"
+               @click="validateForm()"
+        >Save
+        </v-btn>
+      </v-col>
+    </v-row>
     <!-- UPPER SECTION -->
     <v-form ref="ahjInspectionForm">
       <v-row class="mb-4 group-row" no-gutters>
-        <TwoColumnMasonry :custom-field-groups= customFieldGroups
-                           :user-can-edit="userCanEdit"
-                           :expanded-all="expandedAll"
-                           :callback="(field) => updateDirtyValue(field)"
-                           @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED">
+        <TwoColumnMasonry :custom-field-groups=customFieldGroups
+                          :user-can-edit="userCanEdit"
+                          :expanded-all="expandedAll"
+                          :callback="(field) => updateDirtyValue(field)"
+                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED">
         </TwoColumnMasonry>
       </v-row>
 
@@ -33,8 +36,7 @@
       <!-- FIRST ROW -->
       <v-row no-gutters>
         <v-col cols="12" md="4" class="px-1">
-          <AhjLink v-if="dataReady"
-                   title="Scheduling Links"
+          <AhjLink title="Scheduling Links"
                    :linkTypeId="1"
                    :user-can-edit="userCanEdit"
                    :itemId="ahjInspection.id"
@@ -45,8 +47,7 @@
         </v-col>
 
         <v-col cols="12" md="4" class="px-1">
-          <AhjLink v-if="dataReady"
-                   title="Links for FOT"
+          <AhjLink title="Links for FOT"
                    :linkTypeId="2"
                    :user-can-edit="userCanEdit"
                    :itemId="ahjInspection.id"
@@ -57,8 +58,7 @@
         </v-col>
 
         <v-col cols="12" md="4" class="px-1">
-          <AhjLink v-if="dataReady"
-                   title="Results Links"
+          <AhjLink title="Results Links"
                    :linkTypeId="3"
                    :user-can-edit="userCanEdit"
                    :itemId="ahjInspection.id"
@@ -72,8 +72,7 @@
       <!-- SECOND ROW -->
       <v-row no-gutters>
         <v-col cols="12" md="4" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Scheduling Contacts"
+          <AhjContact title="Scheduling Contacts"
                       :contactTypeId="2"
                       :user-can-edit="userCanEdit"
                       :itemId="ahjInspection.id"
@@ -84,8 +83,7 @@
         </v-col>
 
         <v-col cols="12" md="4" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Inspector Contacts"
+          <AhjContact title="Inspector Contacts"
                       :contactTypeId="4"
                       :user-can-edit="userCanEdit"
                       :itemId="ahjInspection.id"
@@ -96,8 +94,7 @@
         </v-col>
 
         <v-col cols="12" md="4" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Obtaining Results Contacts"
+          <AhjContact title="Obtaining Results Contacts"
                       :contactTypeId="3"
                       :itemId="ahjInspection.id"
                       :user-can-edit="userCanEdit"
@@ -111,8 +108,7 @@
       <!-- THIRD ROW -->
       <v-row no-gutters class="mb-5">
         <v-col cols="12" md="4" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Utility Service Department Contacts"
+          <AhjContact title="Utility Service Department Contacts"
                       :contactTypeId="9"
                       :user-can-edit="userCanEdit"
                       :itemId="ahjInspection.id"
@@ -123,8 +119,7 @@
           ></AhjContact>
         </v-col>
         <v-col cols="12" md="4" class="px-1">
-          <AhjServicingFot v-if="dataReady"
-                           :servicingFots="ahjInspection.servicingFots"
+          <AhjServicingFot :servicingFots="ahjInspection.servicingFots"
           ></AhjServicingFot>
         </v-col>
         <v-col cols="12" md="4" class="px-1">
@@ -153,24 +148,27 @@
 
           <v-divider></v-divider>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="saveDialog = false"
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn v-if="ahjInspection.updateAllInState"
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="saveConfirmDialog = true"
-          >Save</v-btn>
-          <v-btn v-else
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjInspection"
-          >Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn v-if="ahjInspection.updateAllInState"
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="saveConfirmDialog = true"
+            >Save
+            </v-btn>
+            <v-btn v-else
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjInspection"
+            >Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
       <v-dialog v-model="saveConfirmDialog" max-width="500">
         <v-card>
@@ -182,18 +180,20 @@
             Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
           </v-card-text>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="saveConfirmDialog = false"
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjInspection"
-          >Yes</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveConfirmDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjInspection"
+            >Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-form>
   </v-card>
 </template>
@@ -376,8 +376,8 @@ export default {
 
     },
 
-    toggleMinimizeAll(){
-      if(this.expandedAll !== CollapseExpandEnum.COLLAPSED){
+    toggleMinimizeAll() {
+      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
         this.expandedAll = CollapseExpandEnum.COLLAPSED
       } else {
         this.expandedAll = CollapseExpandEnum.EXPANDED

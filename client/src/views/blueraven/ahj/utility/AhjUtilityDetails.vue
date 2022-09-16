@@ -6,102 +6,108 @@
 
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-          <v-card class="mx-4 pb-4">
-            <v-btn id="back-btn" text color="primary" class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
-              <v-icon>arrow_left</v-icon>
-              <span id="back-btn-text">Back to menu</span>
-            </v-btn>
+            <v-card class="mx-4 pb-4 square-card">
+              <v-btn id="back-btn" text color="primary" class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
+                <v-icon>arrow_left</v-icon>
+                <span id="back-btn-text">Back to menu</span>
+              </v-btn>
 
-            <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
-              <div class="page-title">Utility</div>
-              <div class="page-info">
-                <div>{{ ahjUtility.name }}</div>
-                <div>{{ ahjUtility.metroArea }}</div>
+              <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
+                <div class="page-title">Utility</div>
+                <div class="page-info">
+                  <div>{{ ahjUtility.name }}</div>
+                  <div>{{ ahjUtility.metroArea }}</div>
+                </div>
               </div>
-            </div>
 
-<!--            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(&#45;&#45;v-secondary-base)">-->
-<!--              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>-->
-<!--            </v-tabs>-->
-        </v-card>
+              <!--            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(&#45;&#45;v-secondary-base)">-->
+              <!--              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>-->
+              <!--            </v-tabs>-->
+            </v-card>
           </v-col>
         </v-row>
         <v-row dense>
-        <v-card class="mx-2 mt-6 px-2 py-3 one-hunned">
-          <v-row no-gutters>
-          <v-col class="ahj-form-btns" cols="12">
-            <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">{{expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'}}</v-btn>
-            <v-btn v-if="dataWasChanged"
-               @click="resetForm"
-                   text
-                   color="primary"
-               class="cancel-link"
-               style="margin-right: 10px"
-            >Cancel</v-btn>
-            <v-btn id="save-btn"
-                   v-if="userCanEdit"
-                   color="primary"
-                   class="white--text mr-0"
-                   @click="validateForm()"
-            >Save
-            </v-btn>
-          </v-col>
-          </v-row>
-          <v-form ref="ahjUtilityForm">
-            <!-- UPPER SECTION -->
-            <v-row class="mb-4 group-row" no-gutters>
-              <TwoColumnMasonry :custom-field-groups="customFieldGroups"
-                                :user-can-edit="userCanEdit"
-                                :expanded-all="expandedAll"
-                                :callback="(field) => updateDirtyValue(field)"
-                                @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-              ></TwoColumnMasonry>
-<!--              <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">-->
-<!--                <AhjCustomFields :group = group-->
-<!--                         :user-can-edit="userCanEdit"-->
-<!--                         :expanded-all="expandedAll"-->
-<!--                         :callback="(field) => updateDirtyValue(field)"-->
-<!--                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
-<!--                ></AhjCustomFields>-->
-<!--              </v-col>-->
-            </v-row>
-            <!-- LOWER SECTION -->
-            <h1 id="links" class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
+          <v-card class="mx-2 mt-6 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
-              <v-col cols="12" md="6" class="group px-2 py-2">
-              <!-- CONTACTS -->
-            <AhjContact v-if="dataReady"
-                        title="Contacts"
-                        :user-can-edit="userCanEdit"
-                        :contactTypeId="8"
-                        :itemId="ahjUtility.id"
-                        :itemType="itemType"
-                        :contacts="ahjUtility.contacts"
-                        show-expanded
-                        :expanded-all="expandedAll"
-                        @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-            ></AhjContact>
-                <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll">
-                  <AhjAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit" :attachment-types="AhjUtilityDocumentTypes" :attachments="documents" :source-id="ahjUtility.id">
-                  ></AhjAttachments>
-                </AhjCard>
-              </v-col>
-              <v-col v-if="dataReady" class="group px-2 py-2">
-                <ahj-link title="All Links"
-                          :user-can-edit="userCanEdit"
-                          :linkTypeId="10"
-                          :itemId="ahjUtility.id"
-                          :itemType="itemType"
-                          :links="ahjUtility.links"
-                          :isNested="false"
-                          show-expanded
-                          :expanded-all="expandedAll"
-                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-                ></ahj-link>
+              <v-col class="ahj-form-btns" cols="12">
+                <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
+                  {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
+                </v-btn>
+                <v-btn v-if="dataWasChanged"
+                       @click="resetForm"
+                       text
+                       color="primary"
+                       class="cancel-link"
+                       style="margin-right: 10px"
+                >Cancel
+                </v-btn>
+                <v-btn id="save-btn"
+                       v-if="userCanEdit"
+                       color="primary"
+                       class="white--text mr-0"
+                       @click="validateForm()"
+                >Save
+                </v-btn>
               </v-col>
             </v-row>
-          </v-form>
-        </v-card>
+            <v-form ref="ahjUtilityForm">
+              <!-- UPPER SECTION -->
+              <v-row class="mb-4 group-row" no-gutters>
+                <TwoColumnMasonry :custom-field-groups="customFieldGroups"
+                                  :user-can-edit="userCanEdit"
+                                  :expanded-all="expandedAll"
+                                  :callback="(field) => updateDirtyValue(field)"
+                                  @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                ></TwoColumnMasonry>
+                <!--              <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">-->
+                <!--                <AhjCustomFields :group = group-->
+                <!--                         :user-can-edit="userCanEdit"-->
+                <!--                         :expanded-all="expandedAll"-->
+                <!--                         :callback="(field) => updateDirtyValue(field)"-->
+                <!--                         @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
+                <!--                ></AhjCustomFields>-->
+                <!--              </v-col>-->
+              </v-row>
+              <!-- LOWER SECTION -->
+              <h1 id="links" class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
+              <v-row no-gutters>
+                <v-col cols="12" md="6" class="group px-2 py-2">
+                  <!-- CONTACTS -->
+                  <AhjContact v-if="dataReady"
+                              title="Contacts"
+                              :user-can-edit="userCanEdit"
+                              :contactTypeId="8"
+                              :itemId="ahjUtility.id"
+                              :itemType="itemType"
+                              :contacts="ahjUtility.contacts"
+                              show-expanded
+                              :expanded-all="expandedAll"
+                              @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                  ></AhjContact>
+                  <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll">
+                    <AhjAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit"
+                                    :attachment-types="AhjUtilityDocumentTypes" :attachments="documents"
+                                    :source-id="ahjUtility.id">
+                      >
+                    </AhjAttachments>
+                  </AhjCard>
+                </v-col>
+                <v-col v-if="dataReady" class="group px-2 py-2">
+                  <ahj-link title="All Links"
+                            :user-can-edit="userCanEdit"
+                            :linkTypeId="10"
+                            :itemId="ahjUtility.id"
+                            :itemType="itemType"
+                            :links="ahjUtility.links"
+                            :isNested="false"
+                            show-expanded
+                            :expanded-all="expandedAll"
+                            @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                  ></ahj-link>
+                </v-col>
+              </v-row>
+            </v-form>
+          </v-card>
         </v-row>
       </v-col>
     </v-row>
@@ -189,10 +195,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getAllDocuments(){
+    async getAllDocuments() {
       this.isDocumentsLoading = true
-      for(const docType of this.AhjUtilityDocumentTypes){
-      await this.getDocuments(docType.attachmentTypeId)
+      for (const docType of this.AhjUtilityDocumentTypes) {
+        await this.getDocuments(docType.attachmentTypeId)
       }
       this.isDocumentsLoading = false
     },
@@ -201,7 +207,7 @@ export default {
       try {
         const params = {sourceId: this.ahjUtility.id, attachmentTypeId: docTypeId}
         const {data, status} = await getRequestWithParams('/attachment', {params})
-         this.documents = cloneDeep(data).concat(this.documents)
+        this.documents = cloneDeep(data).concat(this.documents)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -291,8 +297,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    toggleMinimizeAll(){
-      if(this.expandedAll !== CollapseExpandEnum.COLLAPSED){
+    toggleMinimizeAll() {
+      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
         this.expandedAll = CollapseExpandEnum.COLLAPSED
       } else {
         this.expandedAll = CollapseExpandEnum.EXPANDED
