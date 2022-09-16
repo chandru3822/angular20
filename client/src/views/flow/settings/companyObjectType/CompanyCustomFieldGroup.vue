@@ -2,12 +2,12 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-container v-for="n in numberOfCols">
+        <v-container v-for="n in 2">
         <span v-if="objectType && objectType.customColumns" class="albatross-header-4 mb-2">Column {{n===1 ? 'One' : 'Two'}}</span>
         <v-data-table
             :id="n"
             :headers="headers"
-            :items="getGroupsByCol(n)"
+            :items="groupsByColumn[n]"
             :items-per-page="-1"
             single-expand
             :sort-by="['groupOrder']"
@@ -16,6 +16,7 @@
             hide-default-footer
             hide-default-header
             class="elevation-1 fix-column-width-bug mb-5 draggable-table"
+            :hidden="n>1 && !objectType.customColumns"
           >
             <template #no-data>
               <span class="default-text-color">No available field groups</span>
@@ -292,12 +293,26 @@ export default {
       selectedAncillaryField: {},
       ancillaryCustomFields: [],
       cfgToDelete: null,
-      cFieldToDelete: null
+      cFieldToDelete: null,
+      groupsByColumn:[],
+      columnChangeCount: 0,
+      count: 0
     }
   },
   props :{
     objectType: Object,
     customFieldGroups: Array,
+  },
+  watch: {
+    expanded(){
+      this.count++
+      console.log(this.count)
+      console.log(this.expanded)
+      debugger
+    },
+    objectType(){
+      this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
+    }
   },
   computed: {
     cfgToDeleteName(){
@@ -316,7 +331,6 @@ export default {
   mounted() {
     let tables = document.querySelectorAll('tbody')
     const _self = this
-    // debugger
     console.log(this.objectType.customColumns)
     console.log(tables)
     for(const table of tables) {
@@ -325,23 +339,44 @@ export default {
         handle: '.handle',
         connectWith: '.connectedSortable',
         onEnd({to, from, newIndex, oldIndex, oldDraggableIndex, newDraggableIndex}) {
-          debugger
-          const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
-          if(to != from){
-            debugger
-            rowSelected.groupColumnOrder = to.parentElement.parentElement.parentElement.id
+          const fromColumnNumber = parseInt(from.parentElement.parentElement.parentElement.id)
+          const toColumnNumber = parseInt(to.parentElement.parentElement.parentElement.id)
+          //if the to and from tables don't match, move from old column to new column
+          // if the tp and from tables DO match, it doesn't matter which one we use here
+          const rowSelected = _self.groupsByColumn[fromColumnNumber].splice(oldIndex, 1)[0]
+          rowSelected.groupColumnOrder = toColumnNumber //make sure the groupColumnOrder value is correct
+          console.log(rowSelected)
+          //put the selected group into the correct column at the new Index
+          _self.groupsByColumn[rowSelected.groupColumnOrder].splice(newIndex, 0, rowSelected)
+          //make sure each group in every column has the correct groupOrder
+          // and concat all columns into a single array for updating
+          let groupsClone = cloneDeep(_self.groupsByColumn)
+
+          let updatedGroups = []
+          for(let i =1; i<=_self.numberOfCols; i++) {
+           groupsClone[i].forEach((g, idx) => {
+             let save = g.newDisplayOrder === undefined ? g.groupOrder !== idx : g.newDisplayOrder !== idx
+              //update display order
+              g.groupOrder = idx
+              //save only rows that changed
+              if (save) {
+                _self.groupsByColumn[i][idx].newDisplayOrder = idx
+                updatedGroups.push(g)
+              }
+              g.groupOrder = idx
+            })
           }
-          _self.customFieldGroups.splice(newIndex, 0, rowSelected)
-          let fieldGroupsClone = cloneDeep(_self.customFieldGroups)
-          fieldGroupsClone.forEach((g, idx) => {
-            g.groupOrder = idx
-          })
-          _self.saveGroupChanges(fieldGroupsClone)
+          _self.saveGroupChanges(updatedGroups)
+          _self.columnChangeCount++
         }
       })
     }
   },
   created() {
+    // for( let i=1; i<=this.numberOfCols; i++) {
+    //   this.groupsByColumn.push(this.getGroupsByCol(i))
+    // }
+    this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
 
   },
   methods: {
@@ -461,7 +496,6 @@ export default {
       }
     },
     async saveGroupChanges(groups) {
-      debugger;
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { status } = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
@@ -544,7 +578,6 @@ export default {
       }
     },
     async saveFieldChanges(fields) {
-      debugger
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
