@@ -344,10 +344,10 @@ export default {
           //if the to and from tables don't match, move from old column to new column
           // if the tp and from tables DO match, it doesn't matter which one we use here
           const rowSelected = _self.groupsByColumn[fromColumnNumber].splice(oldIndex, 1)[0]
-          rowSelected.groupColumnOrder = toColumnNumber //make sure the groupColumnOrder value is correct
+          rowSelected.columnNumber = toColumnNumber //make sure the columnNumber value is correct
           console.log(rowSelected)
           //put the selected group into the correct column at the new Index
-          _self.groupsByColumn[rowSelected.groupColumnOrder].splice(newIndex, 0, rowSelected)
+          _self.groupsByColumn[rowSelected.columnNumber].splice(newIndex, 0, rowSelected)
           //make sure each group in every column has the correct groupOrder
           // and concat all columns into a single array for updating
           let groupsClone = cloneDeep(_self.groupsByColumn)
@@ -612,7 +612,7 @@ export default {
     },
     getGroupsByCol(colNumber) {
       if(this.objectType && this.objectType.customColumns) {
-        return this.filterCustomFieldGroups().filter(cfg => cfg.groupColumnOrder === colNumber)
+        return this.filterCustomFieldGroups().filter(cfg => cfg.columnNumber === colNumber)
             .sort((cfg1, cfg2) => {
               if (cfg1.groupOrder < cfg2.groupOrder) {
                 return -1

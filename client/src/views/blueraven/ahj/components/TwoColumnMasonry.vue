@@ -47,7 +47,7 @@ export default {
   methods: {
     getGroupsByCol(colNumber) {
       if (this.$vuetify.breakpoint.mdAndUp) {
-        return this.customFieldGroups.filter(cfg => cfg.groupColumnOrder === colNumber)
+        return this.customFieldGroups.filter(cfg => cfg.columnNumber === colNumber)
             .sort((cfg1, cfg2) => {
               if (cfg1.groupOrder < cfg2.groupOrder) {
                 return -1
@@ -67,16 +67,16 @@ export default {
           return 1
         }
         if (cfg1.groupOrder === cfg2.groupOrder) {
-          if(cfg1.groupColumnOrder > cfg2.groupColumnOrder){
+          if(cfg1.columnNumber > cfg2.columnNumber){
             return 1
           }
           return -1
         }
         //alternate sorting method
-        // if(cfg1.groupColumnOrder > cfg2.groupColumnOrder) {
+        // if(cfg1.columnNumber > cfg2.columnNumber) {
         //   return 1
         // }
-        // if (cfg1.groupColumnOrder <= cfg2.groupColumnOrder){
+        // if (cfg1.columnNumber <= cfg2.columnNumber){
         //   if (cfg1.groupOrder < cfg2.groupOrder) {
         //     return -1
         //   }

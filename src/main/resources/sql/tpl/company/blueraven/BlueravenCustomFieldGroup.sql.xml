@@ -78,7 +78,7 @@ order by cfg.group_order, cfg.group_name
     update brs.custom_field_group
       set group_name = :groupName,
           group_order = :groupOrder,
-          group_column_order = :groupColumnOrder,
+          column_number = :columnNumber,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
