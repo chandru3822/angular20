@@ -70,23 +70,6 @@ public class AhjUtilityService {
     params.put("utilityName", utility.getName());
     params.put("metroAreaId", utility.getMetroAreaId());
     params.put("companyStateId", utility.getCompanyStateId());
-    params.put("timelinesAndStages", utility.getTimelinesAndStages());
-    params.put("regulatedBy", utility.getRegulatedBy());
-    params.put("monthlyFacilityCharge", utility.getMonthlyFacilityCharge());
-    params.put("populationOfService", utility.getPopulationOfService());
-    params.put("netMeteringRate", utility.getNetMeteringRate());
-    params.put("rebateRates", utility.getRebateRates());
-    params.put("utilityRateNotes", utility.getUtilityRateNotes());
-    params.put("customerSignatureInstructions", utility.getCustomerSignatureInstructions());
-    params.put("expectedApprovalTimeline", utility.getExpectedApprovalTimeline());
-    params.put("rejectionInstructions", utility.getRejectionInstructions());
-    params.put("notes", utility.getNotes());
-    params.put("overviewOfSubmissionProcess", utility.getOverviewOfSubmissionProcess());
-    params.put("submissionInstructions", utility.getSubmissionInstructions());
-    params.put("timelines", utility.getTimelines());
-    params.put("ptoFollowupInstructions", utility.getPtoFollowupInstructions());
-    params.put("finalCompletionInstructions", utility.getFinalCompletionInstructions());
-    params.put("financierId", utility.getFinancierId());
     params.put("archived", utility.getArchived());
 
     Long id;

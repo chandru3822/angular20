@@ -5,7 +5,7 @@
     <v-icon class="white--text">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
   </v-card-title>
   <v-card-text v-if="expanded" class="px-4 pt-4 pb-1">
-    <div v-if="!group || group.customFieldValues.length === 0" class="centered default-text-color">No fields available</div>
+    <div v-if="!group || !group.customFieldValues || group.customFieldValues.length === 0" class="centered default-text-color">No fields available</div>
     <div v-for="field in group.customFieldValues" :key="field.id" class="mb-5">
       <CustomValueInput
           :callback="(field) => callback(field)"

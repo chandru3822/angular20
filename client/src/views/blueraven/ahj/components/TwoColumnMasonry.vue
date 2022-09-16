@@ -2,7 +2,7 @@
   <v-container class="pa-0">
     <v-row>
     <v-col class="group" cols="12" md="6" v-for="n in numberOfCols">
-        <AhjCustomFields v-for="group in getGroupsByCol(n)" :group = group
+        <AhjCustomFieldGroup v-for="group in getGroupsByCol(n)" :group = group
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"
                          :callback="(field) => callback(field)"
@@ -10,7 +10,7 @@
                          :source-id="sourceId"
                          @toggle-collapse-expand="$emit('toggle-collapse-expand')"
                          class="my-2"
-        ></AhjCustomFields>
+        ></AhjCustomFieldGroup>
     </v-col>
     </v-row>
   </v-container>
@@ -18,11 +18,11 @@
 
 <script>
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
-import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
+import AhjCustomFieldGroup from "@/views/blueraven/ahj/components/AhjCustomFieldGroup";
 
 export default {
   name: "TwoColumnMasonry",
-  components: {AhjCustomFields},
+  components: {AhjCustomFieldGroup},
   props: {
     customFieldGroups: Array,
     userCanEdit: Boolean,

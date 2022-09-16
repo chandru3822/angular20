@@ -116,7 +116,7 @@ import AhjLink from "../components/AhjLinks"
 import {AppMutations} from "@/stores/AppStore"
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
-import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
+import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFieldGroup";
 import {CollapseExpandEnum, AhjUtilityDocumentTypes} from "@/views/blueraven/ahj/AhjConstants";
 import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 import AhjAttachments from "@/views/blueraven/ahj/components/AhjAttachments";

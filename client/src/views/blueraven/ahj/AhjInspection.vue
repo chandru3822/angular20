@@ -26,14 +26,6 @@
                            :callback="(field) => updateDirtyValue(field)"
                            @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED">
         </TwoColumnMasonry>
-          <!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">-->
-<!--        <AhjCustomFields :group = group-->
-<!--                 :user-can-edit="userCanEdit"-->
-<!--                 :expanded-all="expandedAll"-->
-<!--                 :callback="(field) => updateDirtyValue(field)"-->
-<!--                 @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
-<!--        ></AhjCustomFields>-->
-<!--        </v-col>-->
       </v-row>
 
       <!-- LOWER SECTION -->
@@ -117,7 +109,7 @@
       </v-row>
 
       <!-- THIRD ROW -->
-      <v-row no-gutters class="mb-3">
+      <v-row no-gutters class="mb-5">
         <v-col cols="12" md="4" class="px-1">
           <AhjContact v-if="dataReady"
                       title="Utility Service Department Contacts"
@@ -136,10 +128,14 @@
           ></AhjServicingFot>
         </v-col>
         <v-col cols="12" md="4" class="px-1">
-          Randa put the custom field thing here
+          <AhjCustomFieldGroup :group="installationRequirementGroup"
+                               :user-can-edit="userCanEdit"
+                               :expanded-all="expandedAll"
+                               @toggle-collapse-expand="$emit('toggle-collapse-expand')"
+          ></AhjCustomFieldGroup>
         </v-col>
       </v-row>
-      
+
       <v-dialog v-model="saveDialog" max-width="700">
         <v-card>
           <v-card-title>
@@ -213,14 +209,14 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import orderBy from "lodash.orderby";
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFields";
+import AhjCustomFieldGroup from "@/views/blueraven/ahj/components/AhjCustomFieldGroup";
 import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
   name: 'ahjInspection',
   components: {
     TwoColumnMasonry,
-    AhjCustomFields,
+    AhjCustomFieldGroup,
     AhjContact,
     AhjLink,
     AhjServicingFot,
@@ -241,6 +237,7 @@ export default {
     dataWasChanged: false,
     dataReady: false,
     customFieldGroups: [],
+    installationRequirementGroup: {},
     expandedAll: CollapseExpandEnum.EXPANDED,
     ahjInspection: {
       schedulingLinks: [],
@@ -296,6 +293,7 @@ export default {
           status
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
         this.customFieldGroups = cloneDeep(data)
+        this.installationRequirementGroup = this.customFieldGroups.find(cfg => cfg.id === 45)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

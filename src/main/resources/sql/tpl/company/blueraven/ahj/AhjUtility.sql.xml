@@ -40,24 +40,7 @@
         metro_area_id = :metroAreaId,
         company_state_id = :companyStateId,
         date_modified = now(),
-        modified_by_id = :currentUser,
-        timelines_and_stages = :timelinesAndStages,
-        regulated_by = :regulatedBy,
-        monthly_facility_charge = :monthlyFacilityCharge,
-        population_of_service = :populationOfService,
-        net_metering_rate = :netMeteringRate,
-        rebate_rates = :rebateRates,
-        utility_rate_notes = :utilityRateNotes,
-        customer_signature_instructions = :customerSignatureInstructions,
-        expected_approval_timeline = :expectedApprovalTimeline,
-        rejection_instructions = :rejectionInstructions,
-        notes = :notes,
-        overview_of_submission_process = :overviewOfSubmissionProcess,
-        submission_instructions = :submissionInstructions,
-        timelines = :timelines,
-        pto_followup_instructions = :ptoFollowupInstructions,
-        final_completion_instructions = :finalCompletionInstructions,
-        financier_id = :financierId
+        modified_by_id = :currentUser
       WHERE id = :id
     ]]>
   </ahj.utility.update>
@@ -71,7 +54,6 @@
     <![CDATA[
       SELECT
           u.*,
-          f.name AS "financier",
           lov.name as metro_area,
           cs.state_id,
           s.state,
@@ -112,7 +94,6 @@
                LEFT JOIN flow.list_of_value lov ON lov.id = u.metro_area_id
                left join flow.company_state cs on cs.id = u.company_state_id
                left join flow.state s on s.id = cs.state_id
-               LEFT JOIN brs.financier f ON f.id = u.financier_id
       WHERE u.id = :id
     ]]>
   </ahj.utility.detailById>
