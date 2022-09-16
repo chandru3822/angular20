@@ -12,7 +12,7 @@
             single-expand
             :sort-by="['groupOrder']"
             :sort-desc="[false]"
-            :expanded.sync="expanded"
+            :expanded.sync="expanded[n]"
             hide-default-footer
             hide-default-header
             class="elevation-1 fix-column-width-bug mb-5 draggable-table"
@@ -56,13 +56,13 @@
                     </div>
                     <v-btn small text color="primary"
                            v-if="userCanAdd"
-                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
-                      <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
+                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]">
+                      <v-icon v-if="addField && expanded[n].includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
                     <v-btn small text color="primary"
-                           @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                      <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
+                           @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]">
+                      <v-icon v-if="expanded[n].includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
                     <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
@@ -287,7 +287,11 @@ export default {
         { text: 'Name', value: 'groupName', show: true },
         { text: null, value: 'icons', show: true }
       ],
-      expanded: [],
+      // expanded: [ undefined, [], [] ],
+      expanded: {
+        1: [],
+        2: []
+      },
       parent: {},
       parentObjects: [],
       selectedAncillaryField: {},
@@ -304,12 +308,6 @@ export default {
     customFieldGroups: Array,
   },
   watch: {
-    expanded(){
-      this.count++
-      console.log(this.count)
-      console.log(this.expanded)
-      debugger
-    },
     objectType(){
       this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
     }
@@ -331,8 +329,6 @@ export default {
   mounted() {
     let tables = document.querySelectorAll('tbody')
     const _self = this
-    console.log(this.objectType.customColumns)
-    console.log(tables)
     for(const table of tables) {
       Sortable.create(table, {
         group: {name: 'fieldGroups', pull: true, put: true},
@@ -373,17 +369,12 @@ export default {
     }
   },
   created() {
-    // for( let i=1; i<=this.numberOfCols; i++) {
-    //   this.groupsByColumn.push(this.getGroupsByCol(i))
-    // }
     this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
-
   },
   methods: {
     changedMinMax(cf) {
       this.$set(cf, 'minMaxValueChanged', true)
     },
-
     async fetchAvailableCustomFields(groupId) {
       try {
         if (this.addField && this.newFieldType === 'native') {
