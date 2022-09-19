@@ -519,7 +519,7 @@ export default {
 }
 
 .reply-note {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-style: italic;
 }
 
