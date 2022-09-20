@@ -5,7 +5,10 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.*;
@@ -13,6 +16,7 @@ import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroup
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
@@ -24,6 +28,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +50,8 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 @RequiredArgsConstructor
 public class BlueravenProposalService {
+  private static final Long CREATE_PROPOSAL_DESIGN_ID = 3507L;
+  private static final Long ZIP_CODE_APPROVAL_ID = 3546L;
   private final SqlCache sqlCache;
   private final ObjectMapper om;
   private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
@@ -57,7 +64,7 @@ public class BlueravenProposalService {
   private final AppProperties appProperties;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
@@ -70,13 +77,10 @@ public class BlueravenProposalService {
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
-  public List<ProposalDesign> getProposalDesigns(Long projectId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-
+  public List<ProposalDesign> getProposalDesigns(@NonNull Long projectId) {
     List<ProposalDesign> results =
       sqlCache.query(
-        "proposal.getDesigns", params, new ProposalDesignMapper<>(ProposalDesign.class, om));
+        "proposal.getDesigns", Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
     for (ProposalDesign pd : results) {
       for (Attachment a : pd.getAttachments()) {
         attachmentService.setAttachmentPresignedUrl(a);
@@ -85,9 +89,8 @@ public class BlueravenProposalService {
     return results;
   }
 
-  public ProposalDesign getActiveDesign(@NonNull Long projectId) {
-    return sqlCache.get("proposal.getActiveDesign", Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om))
-      .orElse(null);
+  public Optional<ProposalDesign> getActiveDesign(@NonNull Long projectId) {
+    return sqlCache.get("proposal.getActiveDesign", Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
   }
 
   public List<ProposalDesign> requestNewDesign(
@@ -99,21 +102,16 @@ public class BlueravenProposalService {
     @NonNull UserAccountDetails currentUser)
     throws IOException {
 
-    // create new "create proposal design" step (active, cancel others)
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("processStepId", 3507);
-    params.put("userPositionId", null);
-    params.put("userId", currentUser.getTrueUserId());
-    params.put("companyId", 3L);
-    params.put("parentProjectProcessStepId", null);
-    params.put("initialCompanyProcessStepStatusTypeId", 1L);
-    params.put("existingCompanyProcessStepStatusTypeId", 3L);
+    final Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
 
-    Long ppsId =
-      sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
-    //    Long ppsId = 3822530L;
-    log.info("the new ppsId is: {}", ppsId);
+    final ProposalPostalCodeStatus proposalPostalCodeStatus = getPostalCodeApprovalStatus(project.getId());
+    if (!proposalPostalCodeStatus.isApproved()) {
+      throw new UnapprovedPostalCodeProposalException();
+    }
+
+    // create new "create proposal design" step (active, cancel others)
+    Long ppsId = insertProjectProcessStep(projectId, CREATE_PROPOSAL_DESIGN_ID, currentUser.getTrueUserId());
+    log.debug("the new ppsId is: {}", ppsId);
     // upload attachments to the new step
     if (null != attachments && attachments.size() > 0) {
       for (MultipartFile a : attachments) {
@@ -130,16 +128,31 @@ public class BlueravenProposalService {
 
     // save custom field data for description and due date
     // cfgaId for description field on proposal = 22679
-    params.put("cfgaId", 22679);
-    params.put("value", description);
-    sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
+    updateCustomFieldValue(projectId, currentUser.getTrueUserId(), 22679L, description);
 
     // cfgaId for due date field on proposal = 22678
-    params.put("cfgaId", 22678);
-    params.put("value", dueDate);
-    sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
+    updateCustomFieldValue(projectId, currentUser.getTrueUserId(), 22678L, dueDate);
 
     return getProposalDesigns(projectId);
+  }
+
+  private void updateCustomFieldValue(@NonNull Long projectId, @NonNull Long userId, @NonNull Long cfgaId, @NonNull String value) {
+    final Map<String, Object> params = Map.of("projectId", projectId, "userId", userId, "cfgaId", cfgaId, "value", value);
+    sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
+  }
+
+  private Long insertProjectProcessStep(@NonNull Long projectId, @NonNull Long processStepId, @NonNull Long userId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("processStepId", processStepId);
+    params.put("userPositionId", null);
+    params.put("userId", userId);
+    params.put("companyId", 3L);
+    params.put("parentProjectProcessStepId", null);
+    params.put("initialCompanyProcessStepStatusTypeId", 1L);
+    params.put("existingCompanyProcessStepStatusTypeId", 3L);
+
+    return sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
   }
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
@@ -160,15 +173,14 @@ public class BlueravenProposalService {
   }
 
   public Optional<Proposal> updateProposalCustomFieldValues(Long proposalId, List<CustomFieldValue> cfvs) {
-    getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
-
-    blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, proposalId, ObjectType.PROPOSAL);
+    final Proposal unlockedProposal = getUnlockedProposal(proposalId);
+    blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, unlockedProposal.getId(), ObjectType.PROPOSAL);
     return getProposal(proposalId);
   }
 
   public Optional<Proposal> addProposal(Proposal proposal, @NonNull UserAccountDetails currentUser) {
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
 
     Long proposalVersionId =
@@ -189,7 +201,17 @@ public class BlueravenProposalService {
   public Optional<ProposalTemplate> getProposalTemplate(Long proposalId, Long templateId, ProposalGeneratedType generatedType, boolean isDebug) {
     return getProposal(proposalId)
       .map(proposal -> {
-        final var context = getCalculatedProposalValues(proposal.getId(), generatedType, false);
+        Map<String, Object> context = new HashMap<>();
+        try {
+          context = getCalculatedProposalValues(proposal.getId(), generatedType, false);
+        } catch (Exception e) {
+          log.error("[BRS PROPOSAL] Error generating proposal", e);
+
+          if (!(e instanceof DataIntegrityViolationException)) {
+            throw new ApiException("Error generating proposal template");
+          }
+        }
+
         return proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug);
       });
   }
@@ -201,6 +223,7 @@ public class BlueravenProposalService {
           final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, isFinal);
           return proposalTemplateService.generatePdf(templateId, context, false);
         } catch (IOException | TemplateException e) {
+          log.error("Error generating proposal template");
           throw new ApiException(e);
         }
       });
@@ -263,7 +286,7 @@ public class BlueravenProposalService {
   }
 
   public Proposal setProposalName(@NonNull Long proposalId, @NonNull String proposalName, @NonNull UserAccountDetails currentUser) {
-    final Proposal proposal = getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+    final Proposal proposal = getUnlockedProposal(proposalId);
 
     sqlCache.update("proposal.setProposalName", Map.of(
       "id", proposalId,
@@ -274,6 +297,10 @@ public class BlueravenProposalService {
     proposal.setName(proposalName);
 
     return proposal;
+  }
+
+  private Proposal getUnlockedProposal(@NonNull Long proposalId) {
+    return getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
   }
 
   private URI buildUri(String uuid, ProposalGeneratedType proposalGeneratedType) {
@@ -296,6 +323,45 @@ public class BlueravenProposalService {
     }
 
     return "UNKNOWN";
+  }
+
+  public Optional<Proposal> createProposalDuplicate(@NonNull Long proposalId, @NonNull Long userId) {
+    Long newProposalId = sqlCache.queryForObject("proposal.duplicate", Map.of(
+      "proposalId", proposalId,
+      "userId", userId
+    ), Long.class);
+    return getProposal(newProposalId);
+  }
+
+  public ProposalPostalCodeStatus checkPostalCodeApproval(@NonNull Long projectId) {
+    final Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
+    return getPostalCodeApprovalStatus(project.getId());
+  }
+
+  @Transactional
+  public Optional<ProposalDesign> requestPostalCodeApproval(@NonNull Long projectId, String comments, @NonNull Long userId) {
+    final Long ppsId = insertProjectProcessStep(projectId, ZIP_CODE_APPROVAL_ID, userId);
+    log.debug("Requested Postal Code Approval - PPS #{}", ppsId);
+
+    if (comments != null) {
+//    Zip Code Approval Notes
+      updateCustomFieldValue(projectId, userId, 23623L, comments);
+    }
+
+    return getActiveDesign(projectId);
+  }
+
+  /**
+   * Checks to see if project postal code is in the approved list of postal codes for the current published proposal settings
+   *
+   * @return
+   */
+  private ProposalPostalCodeStatus getPostalCodeApprovalStatus(@NonNull Long projectId) {
+    final ProposalPostalCodeStatus other = new ProposalPostalCodeStatus();
+    other.setApproved(false);
+
+    final Map<String, Object> params = Map.of("projectId", projectId);
+    return sqlCache.get("proposal.postalCodeApproved", params, ProposalPostalCodeStatus.class).orElse(other);
   }
 
   public static class ProposalDesignMapper<T> extends BeanPropertyRowMapper<T> {

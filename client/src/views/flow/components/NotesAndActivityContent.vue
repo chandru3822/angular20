@@ -270,7 +270,7 @@
                       <v-spacer></v-spacer>
                       {{ cn.dateCreated | formatDate('timestamp') }}
                     </v-card-title>
-                    <v-card-text class="reply-note pb-1">
+                    <v-card-text class="reply-note pb-1 default-text-color">
                       <pre class="app-pre-wrapper">{{ cn.note }}</pre>
                     </v-card-text>
                   </v-card>
@@ -519,7 +519,7 @@ export default {
 }
 
 .reply-note {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-style: italic;
 }
 

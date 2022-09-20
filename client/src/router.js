@@ -468,8 +468,10 @@ const router = new Router({
               component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Winners.vue')
             }
           ]
-        },
+        } ,
         //END TOURNAMENT STUFF
+
+        ProposalDesignerRoutes,
 
         {
           path: '/settings',
@@ -478,7 +480,6 @@ const router = new Router({
           component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
           children: [
             ProposalVersionSettingsRoutes,
-            ProposalDesignerRoutes,
             {
               path: 'attachments',
               meta: {title: 'Albatross - Settings'},
@@ -1153,17 +1154,6 @@ const router = new Router({
             }
           },
         },
-        // {
-        //   name: 'projectProcessStep',
-        //   path: '/project/:projectId/processStep/:processStepId',
-        //   component: () => {
-        //     if (store.getters.userHasFeature('PROCESS_STEPS')) {
-        //       return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
-        //     } else {
-        //       return accessDenied()
-        //     }
-        //   }
-        // },
         {
           path: '/project/:projectId',
           name: 'project',

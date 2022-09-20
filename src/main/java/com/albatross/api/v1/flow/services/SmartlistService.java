@@ -586,7 +586,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
         } else {
-          query.append(String.format(" sort(brs.project_details.%s) %s sort(array%s::bigint[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" sort(brs.project_details.%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         query.append(String.format(" brs.project_details.%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
@@ -926,7 +926,12 @@ public class SmartlistService {
       } else if (f.getDataTypeId() == 1) {
         query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        if (timezone != null) {
+//          query.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
+          query.append(String.format("  to_char(%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, timezone, f.getName()));
+        } else {
+          query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        }
       } else if (f.getDataTypeId() == 7 && f.getSmartlistSystemListId() == null) {
           query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
@@ -1295,7 +1300,7 @@ public class SmartlistService {
                 referenceTable = newReferenceTable;
               }
             }
-            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::bigint[]", referenceTable);
+            referenceLocation = (r.getSmartlistFieldId() == 1) ? String.format("\"%s\".id", referenceTable) : String.format("array[\"%s\".id]::int[]", referenceTable);
           } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
             String referenceColumn;
@@ -1498,7 +1503,7 @@ public class SmartlistService {
             if (r.getDataTypeRequirementId() != null) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+              whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
@@ -1684,7 +1689,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-            referenceLocation = String.format("array[%s.%s]::bigint[]", r.getJoinTable(), r.getJoinColumn());
+            referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -1698,7 +1703,7 @@ public class SmartlistService {
 
           projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
           final String column = (r.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
         }
       } else if (r.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -1859,7 +1864,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
@@ -2160,7 +2165,7 @@ public class SmartlistService {
             referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
           }
           if (r.getSmartlistSystemListId() != 1) {
-            referenceLocation = String.format("array[%s]::bigint[]", referenceLocation);
+            referenceLocation = String.format("array[%s]::int[]", referenceLocation);
           }
         } else if (r.getSmartlistFieldId() != null) {
           //smartlist system fields
@@ -2271,7 +2276,7 @@ public class SmartlistService {
           if (r.getDataTypeRequirementId() != null) {
             whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
-            whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+            whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
           }
         } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
           //if this is a text requirement using null/not null requirement
@@ -2474,7 +2479,7 @@ public class SmartlistService {
       if (r.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(r.getSmartlistSystemListId())) {
-          referenceLocation = String.format("array[%s.%s]::bigint[]", r.getJoinTable(), r.getJoinColumn());
+          referenceLocation = String.format("array[%s.%s]::int[]", r.getJoinTable(), r.getJoinColumn());
         } else if (r.getSmartlistSystemListId() == 2 || r.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -2488,7 +2493,7 @@ public class SmartlistService {
 
           projectsValueJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, r.getPpsTable()));
           final String column = (r.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
         }
       } else if (r.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -2644,7 +2649,7 @@ public class SmartlistService {
         if (r.getDataTypeRequirementId() != null) {
           projectsWhereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+          projectsWhereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
@@ -3077,7 +3082,7 @@ public class SmartlistService {
               referenceLocation = "flow.company_process_step_status_type.process_step_status_type_id";
             }
             if (r.getSmartlistSystemListId() != 1) {
-              referenceLocation = String.format("array[%s]::bigint[]", referenceLocation);
+              referenceLocation = String.format("array[%s]::int[]", referenceLocation);
             }
           } else if (r.getSmartlistFieldId() != null) {
             //smartlist system fields
@@ -3188,7 +3193,7 @@ public class SmartlistService {
             if (r.getDataTypeRequirementId() != null) {
               whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
             } else {
-              whereClause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+              whereClause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
             }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
             //if this is a text requirement using null/not null requirement
@@ -4011,7 +4016,7 @@ public class SmartlistService {
             case 5:
             case 13:
                 if (r.getSmartlistSystemListId() != null) {
-                  return String.format("sort(array[%s]::bigint[])", r.getListOfValueId());
+                  return String.format("sort(array[%s]::int[])", r.getListOfValueId());
                 }
                 if (r.getIsCustomValue()) {
                     return requirementValue;
@@ -4666,7 +4671,7 @@ public class SmartlistService {
       if (i.getSmartlistSystemListId() != null) {
         //smartlist system lists
         if (List.of(1L, 3L, 5L).contains(i.getSmartlistSystemListId())) {
-          referenceLocation = String.format("array[%s.%s]::bigint[]", i.getJoinTable(), i.getJoinColumn());
+          referenceLocation = String.format("array[%s.%s]::int[]", i.getJoinTable(), i.getJoinColumn());
         } else if (i.getSmartlistSystemListId() == 2 || i.getSmartlistSystemListId() == 4) {
           final String processStepStatusTable = UUID.randomUUID().toString();
 
@@ -4680,7 +4685,7 @@ public class SmartlistService {
 
           additionalJoins.append(String.format(" left join flow.company_process_step_status_type \"%s\" on \"%s\".id = \"%s\".company_process_step_status_type_id", processStepStatusTable, processStepStatusTable, i.getPpsTable()));
           final String column = (i.getSmartlistSystemListId() == 2) ? "id" : "process_step_status_type_id";
-          referenceLocation = String.format("array[\"%s\".%s]::bigint[]", processStepStatusTable, column);
+          referenceLocation = String.format("array[\"%s\".%s]::int[]", processStepStatusTable, column);
         }
       } else if (i.getSmartlistFieldId() != null) {
         //smartlist (system) fields
@@ -4826,7 +4831,7 @@ public class SmartlistService {
         if (i.getDataTypeRequirementId() != null) {
           clause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         } else {
-          clause.append(String.format(" sort(%s) %s sort(array%s::bigint[]) and ", referenceLocation, operator, requirementValue));
+          clause.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
         }
       } else if (i.getDataTypeId() == 3 || i.getDataTypeId() == 4 || (i.getDataTypeRequirementId() != null && i.getSecondaryRequirementValue() == null && i.getDataTypeId() != 1 && i.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement

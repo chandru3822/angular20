@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <v-card flat>
     <image-selector-widget ref="imageSelector" />
     <v-btn @click="openSelectImage('backgroundImage')">Open Image</v-btn>
-  </div>
+  </v-card>
 </template>
 <script>
 import ImageSelectorWidget from './ImageSelectorWidget'

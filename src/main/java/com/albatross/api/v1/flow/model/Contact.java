@@ -38,6 +38,8 @@ public class Contact {
       companyName;
   private Date dateCreated;
   private Boolean ownerReadOnly;
+  //used to tell contact conversion to copy address fields or not
+  private boolean activeState;
   private Double latitude, longitude;
   // tells server to update geolocation
   private Boolean reloadCoordinates = false;

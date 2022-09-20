@@ -1,6 +1,7 @@
 export default {
+  name: 'proposalDesigner',
   path: 'proposalDesigner',
-  meta: { title: 'Albatross - Settings - Proposal Designer' },
+  meta: { title: 'Albatross - Proposal Designer' },
   component: () =>
     import(/* webpackChunkName: "proposalDesigner" */ './ProposalDesigner.vue')
 }

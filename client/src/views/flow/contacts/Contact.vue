@@ -9,7 +9,7 @@
       <template v-slot:yes>Continue and Don't Save</template>
     </ConfirmationDialog>
     <!--    modal for editing contact fields -->
-    <ConfirmationDialog :open-dialog="showEditModal" :disable-confirm="!contact.firstName || !contact.lastName"
+    <ConfirmationDialog :open-dialog="showEditModal" parent-close
                         @confirm="validateForm()" @close-dialog="showEditModal = false">
       <template v-slot:title>Contact Overview</template>
       <v-form ref="contactEditForm">
@@ -17,12 +17,14 @@
           <div>
             <v-text-field
               v-model="tempContact.firstName"
+              :rules="requiredRules"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Contact First Name"
             ></v-text-field>
             <v-text-field
               v-model="tempContact.lastName"
+              :rules="requiredRules"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Contact Last Name"
@@ -185,7 +187,7 @@
                             return-object
                             class="mt-2 qa-process-selector"
                   ></v-select>
-                  <v-btn text color="primary" :disabled="!selectedProcess" @click="convertToCustomer" id="qa-add-project-button">
+                  <v-btn text color="primary" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
                     Add Project
                   </v-btn>
                 </v-card>
@@ -344,6 +346,7 @@ export default {
       contact: {},
       getStatusClass,
       formatPhoneNumber,
+      requiredRules: constants.BASIC_REQUIRED_RULE,
       postalCodeRules: constants.POSTAL_CODE_RULES,
       cityRules: constants.CITY_RULES,
       emailRules: constants.EMAIL_RULES,
@@ -662,7 +665,10 @@ export default {
         const {data, status} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$router.push({name: 'projectDetails', params: {projectId: data.id}})
+        // this.$router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
+        // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
+        let path = data.companyStateId ? `/project/${data.id}/details` : `/project/${data.id}/details?checkAddress=true`
+        this.$router.push(path)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

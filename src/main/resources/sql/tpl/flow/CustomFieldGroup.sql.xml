@@ -23,6 +23,14 @@
     where id = :id
   ]]></customFieldGroup.updateCustomFieldGroup>
 
+  <customFieldGroup.delete><![CDATA[
+    update flow.custom_field_group
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    where id = :id
+  ]]></customFieldGroup.delete>
+
   <customFieldGroup.deleteCustomFieldGroup><![CDATA[
     update flow.custom_field_group
       set archived = true,

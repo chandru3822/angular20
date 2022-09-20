@@ -56,6 +56,7 @@ from flow.project_message_owner_history
 where project_id = p_project_id
   and sms_team_id = p_sms_team_id
   and date_created is not null
+  and date_removed is null
   and user_id is null;
 update flow.project_message_owner_history
 set date_removed = now(),
@@ -68,7 +69,8 @@ set date_removed = now(),
     date_modified = now(),
     modified_by_id = p_current_user_id
 where pmoh.sms_team_id = p_sms_team_id and
-        pmoh.project_id = p_project_id;
+      pmoh.project_id = p_project_id and
+      pmoh.date_removed is null;
 
 else
       with update_data as (
@@ -81,7 +83,8 @@ set date_removed = now(),
     from update_data ud
 where ud.user_id = pmoh.user_id and
     pmoh.sms_team_id = p_sms_team_id and
-    pmoh.project_id = p_project_id;
+    pmoh.project_id = p_project_id and
+    date_removed is null;
 end if;
 end if;
 

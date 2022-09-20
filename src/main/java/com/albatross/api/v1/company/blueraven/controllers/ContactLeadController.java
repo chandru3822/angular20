@@ -274,4 +274,14 @@ public class ContactLeadController {
   public void updateContactBlueink(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/sunflowr", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSunflowr(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/colossus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactColossus(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

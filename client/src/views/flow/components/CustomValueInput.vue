@@ -77,7 +77,7 @@
 
         <!--        12 is the new SYSTEM_readonly field. but i think we can use this same field as id=10 will ALWAYS be readonly and (never required i think)-->
         <v-textarea
-          v-if="field.dataTypeId === 5 || field.dataTypeId === 12"
+          v-if="field.dataTypeId === 5 || field.dataTypeId === 12 || (field.dataTypeId === 8 && field.systemReadonly)"
           auto-grow
           rows="1"
           :required="required"
@@ -176,7 +176,7 @@
         </v-autocomplete>
 
         <v-autocomplete
-          v-if="field.dataTypeId === 8"
+          v-if="field.dataTypeId === 8 && !field.systemReadonly"
           v-model="field.intValue"
           text
           :required="required"

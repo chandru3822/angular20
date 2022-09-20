@@ -5,6 +5,12 @@
       <template v-slot:title>Project Overview</template>
       <v-form ref="projectEditForm">
         <div>
+          <div class="error-text" v-if="checkAddress">
+            Please enter a valid project address.
+          </div>
+          <div class="error-text" v-else-if="!stateIsActive()">
+            Project address is in a non-active state. Please update project address to an active state.
+          </div>
           <v-text-field
             v-model="tempProject.projectName"
             :readonly="!userCanEdit"
@@ -37,7 +43,19 @@
             @change="tempProject.reloadCoordinates = true"
             label="Postal Code"
           ></v-text-field>
-          <v-autocomplete v-model="tempProject.companyStateId"
+          <div v-if="tempProject.companyStateId && !stateIsActive() && !editState">
+            <v-text-field
+              type="text"
+              v-model="tempProject.state"
+              :readonly="true"
+              :disabled="true"
+              label="State"
+              hide-details
+            ></v-text-field>
+            <a class="edit-state-link" @click="editState = true">Click here to edit state</a>
+          </div>
+          <v-autocomplete v-else
+                          v-model="tempProject.companyStateId"
                           :items="states"
                           label="State"
                           :readonly="!userCanEdit"
@@ -124,7 +142,7 @@
             page-name="Project"
             :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
                     || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())"
-            @clickEdit="[getStatesAndCountries(), getOwners(), getStatuses(), tempProject = cloneDeep(project), showEditProjectModal = true]"
+            @clickEdit="showEditModal()"
             :details="overviewDetails"
           ></PageOverview>
           <div class="mx-4 address-details">
@@ -183,7 +201,7 @@ import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import ActiveEvents from '@/views/flow/project/ActiveEvents'
 import {getCompanyProjectStatusTypes, getStatusColor} from "@/services/projectStatusTypeService"
 import constants from "@/helpers/constants";
-import {getCompanyStates} from "@/services/stateService";
+import {getActiveStates, getCompanyStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
 import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "../../../ConfirmationDialog";
@@ -202,6 +220,7 @@ export default {
     return {
       snackbar: {},
       cloneDeep,
+      editState: false,
       //used for if the make edits then hit cancel
       tempProject: {},
       updateEventKey: 0,
@@ -213,6 +232,7 @@ export default {
       statesLoading: true,
       countriesLoading: true,
       showEditProjectModal: false,
+      checkAddress: this.$route.query?.checkAddress === 'true',
       statuses: [],
       getStatusColor,
       availableOwners: [],
@@ -291,6 +311,11 @@ export default {
   mounted() {
   },
   methods: {
+    stateIsActive() {
+      //states is already a list of company states
+      let companyStateIds = this.states.map(s => s.id)
+      return companyStateIds.includes(this.tempProject.companyStateId)
+    },
     collapseSide(side) {
       if(side === 'left') {
         this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
@@ -298,12 +323,26 @@ export default {
         this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
       }
     },
+    async showEditModal() {
+      //doing all this in a method so we can call it when the page loads if needed
+      let requests = [
+        this.getStatesAndCountries(),
+        this.getOwners(),
+        this.getStatuses()
+      ]
+      await Promise.all(requests)
+      this.tempProject = cloneDeep(this.project)
+      this.showEditProjectModal = true
+    },
     getProject: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
         window.document.title = `${this.project.projectName} - Project Details`
+        if(this.checkAddress) {
+          this.showEditModal()
+        }
         this.projectLoading = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -402,7 +441,7 @@ export default {
     getCompanyStates: async function () {
       try {
         this.statesLoading = true
-        const {data, status} = await getCompanyStates()
+        const {data, status} = await getActiveStates()
         this.states = data
         this.statesLoading = false
       } catch (e) {
@@ -432,7 +471,15 @@ export default {
         this.updateOwner()
         //have to wait for this one to complete or it doesn't have the right values to display fresh ones
         await this.updateStatus()
-        //set project values if they hit save
+        //set project values if they hit save, have to update state stuff differently cuz there are multiple values needed
+        let selectedState = this.states.find(s => s.id === this.tempProject.companyStateId)
+        this.tempProject.state = selectedState?.state || null
+        this.tempProject.stateAbbreviation = selectedState?.abbreviation || null
+        //if they entered a valid address then stop asking for it
+        if(this.tempProject.companyStateId && this.stateIsActive()) {
+          this.$router.replace({'query': null})
+          this.checkAddress = false
+        }
         this.project = cloneDeep(this.tempProject)
         this.showEditProjectModal = false
       }
@@ -572,5 +619,9 @@ export default {
   padding: 10px !important;
 }
 
+.edit-state-link {
+  margin-bottom: 3px;
+  font-size: 11px;
+}
 </style>
 
