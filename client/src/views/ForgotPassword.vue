@@ -23,7 +23,7 @@
                     Cancel
                   </router-link>
                   <v-spacer></v-spacer>
-                  <v-btn color="primaryButton" @click="validate" dark>Submit</v-btn>
+                  <v-btn color="primary" @click="validate" dark>Submit</v-btn>
                 </v-card-actions>
               </v-form>
             </v-card-text>

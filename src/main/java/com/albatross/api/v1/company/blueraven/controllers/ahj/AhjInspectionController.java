@@ -47,29 +47,6 @@ public class AhjInspectionController {
         return ahjInspectionService.searchAhjsByState(stateId);
     }
 
-    // CHECKLISTS
-    @PostMapping(value = "/{inspectionId}/checklist")
-    public Optional<AhjChecklistItem> addInspectionChecklistItem(@PathVariable Long ahjId,
-                                                                 @PathVariable Long inspectionId,
-                                                                 @RequestBody AhjChecklistItem item) {
-      return ahjService.saveChecklistItem(ahjId, inspectionId, null, item, AhjType.INSPECTION);
-    }
-
-    @PutMapping(value = "/{inspectionId}/checklist/{itemId}")
-    public Optional<AhjChecklistItem> updateInspectionChecklistItem(@PathVariable Long ahjId,
-                                                                    @PathVariable Long inspectionId,
-                                                                    @PathVariable Long itemId,
-                                                                    @RequestBody AhjChecklistItem item) {
-      return ahjService.saveChecklistItem(ahjId, inspectionId, itemId, item, AhjType.INSPECTION);
-    }
-
-    @PutMapping(value = "/{inspectionId}/checklist/{itemId}/archive")
-    public void deleteInspectionChecklistItem(@PathVariable Long ahjId,
-                                              @PathVariable Long inspectionId,
-                                              @PathVariable Long itemId) {
-      ahjService.deleteChecklistItem(ahjId, inspectionId, itemId);
-    }
-
     // CONTACTS
     @PostMapping(value = "/{inspectionId}/contacts")
     public Optional<AhjContact> addAhjContact(@PathVariable Long inspectionId,
@@ -113,26 +90,4 @@ public class AhjInspectionController {
       ahjInspectionService.deleteInspectionLink(ahjId, inspectionId, linkId);
     }
 
-    // NOTE TEMPLATES
-    @PostMapping(value = "/{inspectionId}/noteTemplates")
-    public Optional<AhjNoteTemplate> addNoteTemplate(@PathVariable Long ahjId,
-                                                     @PathVariable Long inspectionId,
-                                                     @RequestBody AhjNoteTemplate noteTemplate) {
-      return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, null, noteTemplate);
-    }
-
-    @PutMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}")
-    public Optional<AhjNoteTemplate> updateNoteTemplate(@PathVariable Long ahjId,
-                                                        @PathVariable Long inspectionId,
-                                                        @PathVariable Long noteTemplateId,
-                                                        @RequestBody AhjNoteTemplate noteTemplate) {
-      return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, noteTemplateId, noteTemplate);
-    }
-
-    @PutMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}/archive")
-    public void deleteNoteTemplate(@PathVariable Long ahjId,
-                                   @PathVariable Long inspectionId,
-                                   @PathVariable Long noteTemplateId) {
-      ahjInspectionService.deleteNoteTemplate(ahjId, inspectionId, noteTemplateId);
-    }
 }

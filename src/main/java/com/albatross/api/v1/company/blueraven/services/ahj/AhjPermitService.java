@@ -47,7 +47,7 @@ public class AhjPermitService {
 
     // add a blank permit and return that
     var created =
-        sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class));
+        sqlCache.get("ahj.permit.create", params, new SingleColumnRowMapper<>(Integer.class));
 
     if (created.isPresent()) {
       return sqlCache.get(
@@ -62,43 +62,9 @@ public class AhjPermitService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("depositAmount", permit.getDepositAmount());
-    params.put("averagePermitFee", permit.getAveragePermitFee());
-    params.put("engineeringLetterRequired", permit.getEngineeringLetterRequired());
-    params.put("printLocation", permit.getPrintLocation());
-    params.put("stampedPlan", permit.getStampedPlan());
-    params.put("businessLicense", permit.getBusinessLicense());
-    params.put("contractorLicense", permit.getContractorLicense());
-    params.put("businessLicenseExpirationDate", permit.getBusinessLicenseExpirationDate());
-    params.put("contractorLicenseExpirationDate", permit.getContractorLicenseExpirationDate());
     params.put("currentUser", currentUser.trueUserId());
-    params.put("otherLicense", permit.getOtherLicense());
-    params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
-    params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
-    params.put("asBuiltFeeAmount", permit.getAsBuiltFeeAmount());
-    params.put("followUpFeeAmount", permit.getFollowUpFeeAmount());
-    params.put("deliveryFeeAmount", permit.getDeliveryFeeAmount());
-    params.put("approvalTimeline", permit.getApprovalTimeline());
-    params.put("documentsAvailable", permit.getDocumentsAvailable());
-    params.put(
-        "brsTechnicianPermitSubmissionInstructions",
-        permit.getBrsTechnicianPermitSubmissionInstructions());
-    params.put("cancellationAndRefundInstructions", permit.getCancellationAndRefundInstructions());
-    params.put(
-        "brsTechnicianPermitPickupAndDeliveryInstructions",
-        permit.getBrsTechnicianPermitPickupAndDeliveryInstructions());
-    params.put("approvalInstructions", permit.getApprovalInstructions());
-
-    // NOTES
-    params.put("submissionNote", permit.getSubmissionNote());
-    params.put("revisionNote", permit.getRevisionNote());
-    params.put("asBuiltNote", permit.getAsBuiltNote());
-    params.put("nonStandardNote", permit.getNonStandardNote());
-    params.put("deliveryNote", permit.getDeliveryNote());
 
     if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState() && permit.getAhjIds().size() > 0) {
-      params.put("ahjIds", permit.getAhjIds());
-      sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
           ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permit.getPermitIds());
     } else {
@@ -107,8 +73,6 @@ public class AhjPermitService {
       if (permitId == null) {
         sqlCache.updateReturningId("ahj.permit.create", params, "id").longValue();
       } else {
-        params.put("id", permitId);
-        sqlCache.update("ahj.permit.update", params);
         blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
             ObjectType.AHJ_PERMIT.textValue(), permit.getCustomFieldGroups(), permitId);
       }
@@ -121,15 +85,6 @@ public class AhjPermitService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
     return sqlCache.query("ahj.permit.searchAhjsByState", params, AhjPermit.class);
-  }
-
-  // CHECKLISTS
-  public void createPermitChecklistItem(Long permitId, Long itemId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjPermitId", permitId);
-    params.put("ahjChecklistId", itemId);
-
-    sqlCache.update("ahj.permit.checklist.create", params);
   }
 
   // CONTACTS
@@ -187,33 +142,13 @@ public class AhjPermitService {
 
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkRef = new TypeReference<>() {};
-      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
-      TypeReference<List<AhjNote>> noteTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
-      TypeReference<List<User>> userRef = new TypeReference<>() {};
 
       bw.registerCustomEditor(
           List.class, "submissionLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class, "followUpLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "submissionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "revisionChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "asBuiltChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "nonStandardChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "notes", new JsonCollectionDeserializer(noteTypeRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class,
@@ -224,14 +159,6 @@ public class AhjPermitService {
           List.class,
           "followUpContacts",
           new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "printLocations",
-          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "servicingFots", new JsonCollectionDeserializer(userRef, objectMapper));
     }
   }
 }

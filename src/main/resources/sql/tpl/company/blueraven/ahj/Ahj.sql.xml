@@ -91,53 +91,6 @@
     ]]>
   </ahj.delete>
 
-  <!-- CHECKLIST -->
-  <ahj.checklist.findById>
-    <![CDATA[
-      SELECT *
-      FROM brs.ahj_checklist
-      WHERE id = :id
-    ]]>
-  </ahj.checklist.findById>
-
-  <ahj.checklist.create>
-    <![CDATA[
-      INSERT INTO brs.ahj_checklist
-        (description, display_order, date_created, created_by_id, date_modified, modified_by_id, checklist_type_id,
-         failed_inspection_resource_id, failed_inspection_date, failed_inspection_project)
-      VALUES
-        (:description, :displayOrder, now(), :currentUser, now(), :currentUser, :checklistTypeId,
-         :failedInspectionResourceId, :failedInspectionDate, :failedInspectionProject)
-    ]]>
-  </ahj.checklist.create>
-
-  <ahj.checklist.update>
-    <![CDATA[
-      UPDATE brs.ahj_checklist
-      SET
-        description = :description,
-        display_order = :displayOrder,
-        date_modified = now(),
-        modified_by_id = :currentUser,
-        checklist_type_id = :checklistTypeId,
-        failed_inspection_resource_id = :failedInspectionResourceId,
-        failed_inspection_date = :failedInspectionDate,
-        failed_inspection_project = :failedInspectionProject
-      WHERE id = :id
-    ]]>
-  </ahj.checklist.update>
-
-  <ahj.checklist.delete>
-    <![CDATA[
-      UPDATE brs.ahj_checklist
-      SET
-        archived = TRUE,
-        date_modified = now(),
-        modified_by_id = :currentUser
-      WHERE id = :id
-    ]]>
-  </ahj.checklist.delete>
-
   <!-- CONTACT -->
   <ahj.contact.findById>
     <![CDATA[

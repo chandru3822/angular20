@@ -79,7 +79,7 @@
                 Reset to Default
               </v-btn>
               <v-spacer />
-              <v-btn color="primaryButton"
+              <v-btn color="primary"
                      depressed
                      :dark="dirtyCfvs.length !== 0"
                      :disabled="dirtyCfvs.length === 0"

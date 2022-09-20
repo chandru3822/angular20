@@ -237,20 +237,22 @@
           </template>
         </v-autocomplete>
 
-        <div v-if="field.dataTypeId === 13">
+        <div v-if="field.dataTypeId === 13" class="one-hunned">
           <!-- this hidden text field makes the form's required fields validation work -->
           <v-text-field style="display: none;" v-model="field.richTextValue" :required="required" :rules="rules">
           </v-text-field>
-          <div class="rich-text-label" v-if="!hideLabel && !showFieldName">
+          <div class="albatross-body-1 default-text-color d-flex align-baseline mb-2 pa-1" v-if="!hideLabel && !showFieldName">
             {{ getFieldName() }}
+            <v-icon v-if="locked && lockFeature" @click="locked=false" small color="primary" class="ml-3">mdi-lock</v-icon>
+            <v-icon v-if="!locked && lockFeature" @click="locked=true" small color="primary" class="ml-3">mdi-lock-open</v-icon>
           </div>
           <quill-editor
             :options="toolbarOptions"
-            class="rich-text-editor"
+            class="rich-text-editor albatross-body-2"
             :class="{'rich-text-editor-required': required && !field.richTextValue,
-                     'rich-text-editor-readonly': readonly}"
+                     'rich-text-editor-readonly': readonly || (locked && lockFeature)}"
             :readonly="readonly"
-            :disabled="readonly"
+            :disabled="readonly || (locked && lockFeature)"
             @change="(q) => doRichTextFieldCallback(field, q)"
             v-model="field.richTextValue"
           />
@@ -306,6 +308,10 @@ export default {
       default: false
     },
     hideDetails: {
+      type: Boolean,
+      default: false
+    },
+    lockFeature: {
       type: Boolean,
       default: false
     },
@@ -385,7 +391,8 @@ export default {
       },
       requiredRules: constants.BASIC_REQUIRED_RULE,
       arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
-      timezone: this.$store.state.user.details?.timezone?.value
+      timezone: this.$store.state.user.details?.timezone?.value,
+      locked: true,
     }
   },
   // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
@@ -438,6 +445,9 @@ export default {
 <style lang="scss">
 .rich-text-editor .ql-container {
   height: auto !important;
+  width: 100%;
+  color: rgba(0,0,0,0.87); //default-text-color
+  font-size: 0.875rem; //albatross-body-2
 }
 
 .rich-text-editor-readonly .ql-toolbar {
@@ -445,7 +455,11 @@ export default {
 }
 
 .rich-text-editor-readonly .ql-container {
-  border-top: solid 1px #ccc !important;
+  //border-top: solid 1px #ccc !important;
+  border:none;
+  border-radius: 0.25em;
+  background-color: var(--v-grey-lighten3);
+  padding: 0.25em 0.0625em;
 }
 
 .rich-text-editor-required {

@@ -46,7 +46,7 @@ public class AhjInspectionService {
     // add a blank inspection and return that
     var created =
         sqlCache.get(
-            "ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class));
+            "ahj.inspection.create", params, new SingleColumnRowMapper<>(Integer.class));
 
     if (created.isPresent()) {
       return sqlCache.get(
@@ -62,40 +62,10 @@ public class AhjInspectionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("inspectionFee", inspection.getInspectionFee());
-    params.put("reInspectionFee", inspection.getReInspectionFee());
-    params.put("paymentMethod", inspection.getPaymentMethod());
-    params.put("inspectionTimeWindow", inspection.getInspectionTimeWindow());
-    params.put("brsInspectionRep", inspection.getBrsInspectionRep());
-    params.put("portalUrl", inspection.getPortalUrl());
-    params.put("portalUsername", inspection.getPortalUsername());
-    params.put("portalPassword", inspection.getPortalPassword());
-    params.put("obtainingResultsMethod", inspection.getObtainingResultsMethod());
-    params.put("approvalDocumentMethod", inspection.getApprovalDocumentMethod());
-    params.put("obtainingResultsPortalUrl", inspection.getObtainingResultsPortalUrl());
-    params.put("obtainingResultsPortalUsername", inspection.getObtainingResultsPortalUsername());
-    params.put("obtainingResultsPortalPassword", inspection.getObtainingResultsPortalPassword());
-    params.put("businessLicense", inspection.getBusinessLicense());
-    params.put("contractorLicense", inspection.getContractorLicense());
     params.put("currentUser", currentUser.trueUserId());
-    params.put("ladderRequired", inspection.getLadderRequired());
-    params.put("timeWindow", inspection.getTimeWindow());
-    params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
-    params.put("timeWindowPhone", inspection.getTimeWindowPhone());
-    params.put("requiredInspectionTypes", inspection.getRequiredInspectionTypes());
-
-    // NOTES
-    params.put("schedulingNote", inspection.getSchedulingNote());
-    params.put("technicianInstructionNote", inspection.getTechnicianInstructionNote());
-    params.put("schedulingWithCustomerNote", inspection.getSchedulingWithCustomerNote());
-    params.put("obtainingResultsNote", inspection.getObtainingResultsNote());
-    params.put("reinspectionNote", inspection.getReinspectionNote());
-    params.put("documentationNote", inspection.getDocumentationNote());
-    params.put("mpuInspectionNote", inspection.getMpuInspectionNote());
 
     if (inspection.getUpdateAllInState() != null && inspection.getUpdateAllInState() && inspection.getAhjIds().size() > 0) {
       params.put("ahjIds", inspection.getAhjIds());
-      sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
           ObjectType.AHJ_INSPECTION.textValue(),
           inspection.getCustomFieldGroups(),
@@ -104,11 +74,9 @@ public class AhjInspectionService {
       params.put("ahjId", ahjId);
 
       if (inspectionId == null) {
-        inspectionId =
-            sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
+        inspectionId = sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
       } else {
         params.put("id", inspectionId);
-        sqlCache.update("ahj.inspection.update", params);
         blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
             ObjectType.AHJ_INSPECTION.textValue(), inspection.getCustomFieldGroups(), inspectionId);
       }
@@ -125,15 +93,6 @@ public class AhjInspectionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
     return sqlCache.query("ahj.inspection.searchAhjsByState", params, AhjInspection.class);
-  }
-
-  // CHECKLISTS
-  public void createInspectionChecklistItem(Long inspectionId, Long itemId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjInspectionId", inspectionId);
-    params.put("ahjChecklistId", itemId);
-
-    sqlCache.update("ahj.inspection.checklist.create", params);
   }
 
   // CONTACTS
@@ -183,40 +142,6 @@ public class AhjInspectionService {
     sqlCache.update("ahj.inspection.link.delete", params);
   }
 
-  // NOTE TEMPLATES
-  public Optional<AhjNoteTemplate> saveNoteTemplate(
-      Long ahjId, Long inspectionId, Long noteTemplateId, AhjNoteTemplate noteTemplate) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("inspectionId", inspectionId);
-    params.put("title", noteTemplate.getTitle());
-    params.put("note", noteTemplate.getNote());
-
-    if (noteTemplateId == null) {
-      noteTemplateId =
-          sqlCache
-              .updateReturningId("ahj.inspection.note.template.create", params, "id")
-              .longValue();
-
-      params.put("inspectionId", inspectionId);
-      params.put("noteTemplateId", noteTemplateId);
-      sqlCache.update("ahj.inspection.note.template.join", params);
-    } else {
-      params.put("id", noteTemplateId);
-      sqlCache.update("ahj.inspection.note.template.update", params);
-    }
-
-    HashMap<String, Object> idParam = new HashMap<>();
-    idParam.put("id", noteTemplateId);
-    return sqlCache.get("ahj.inspection.note.template.findById", idParam, AhjNoteTemplate.class);
-  }
-
-  public void deleteNoteTemplate(Long ahjId, Long inspectionId, Long noteTemplateId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", noteTemplateId);
-
-    sqlCache.update("ahj.inspection.note.template.delete", params);
-  }
-
   public static class AhjInspectionDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -227,9 +152,6 @@ public class AhjInspectionService {
 
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
-      TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjNoteTemplate>> noteTemplateTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
 
@@ -242,41 +164,6 @@ public class AhjInspectionService {
       bw.registerCustomEditor(
           List.class, "resultsLinks", new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
-      bw.registerCustomEditor(
-          List.class, "failureChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "schedulingChecklist", new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "obtainingResultsChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "reinspectionsChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "schedulingWithAhjChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "schedulingWithBrsTechnicianChecklist",
-          new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "installationRequirements",
-          new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class,
-          "noteTemplates",
-          new JsonCollectionDeserializer(noteTemplateTypeRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class,

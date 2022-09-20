@@ -136,6 +136,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("id", customFieldGroup.getId());
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
+    params.put("columnNumber", customFieldGroup.getColumnNumber());
     params.put("modifiedById", user.trueUserId());
 
     sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldGroup", params);
@@ -282,6 +283,7 @@ public class BlueravenCustomFieldGroupService {
         "select cfg.id,\n"
             + "       cfg.group_name as \"groupName\",\n"
             + "       cfg.group_order as \"groupOrder\",\n"
+            + "       cfg.column_number as \"columnNumber\",\n"
             + "       coalesce((\n"
             + "                  SELECT array_to_json(array_agg(row_to_json(fields)))\n"
             + "                  FROM (\n"
@@ -294,6 +296,7 @@ public class BlueravenCustomFieldGroupService {
             + "                                cfv.timestamp_value as \"timestampValue\",\n"
             + "                                cfv.boolean_value as \"booleanValue\",\n"
             + "                                cfv.text_value as \"textValue\",\n"
+            + "                                cfv.rich_text_value as \"richTextValue\",\n"
             + "                                cfv.numeric_value as \"numericValue\",\n"
             + "                                cfv.int_value as \"intValue\",\n"
             + "                                cfv.int_array_value as \"intArrayValue\",\n"
