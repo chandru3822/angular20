@@ -8,31 +8,34 @@
 import { mapState } from 'vuex'
 import constants from '@/helpers/constants'
 
+const styleUpdatedFn = function(el, binding) {
+  const replacer = {
+    'backgroundImage': (value) => {
+      return `url(${constants.VUE_APP_BASE_API}/public/image/${value}?q=80&w=1080)`
+    }
+  }
+  Object.entries(binding?.value).forEach(([key, value]) => {
+    let newVal = value
+    let newKey = key
+
+    if (newKey.startsWith('@')) {
+      newKey = newKey.split('@')[1]
+      const replacerElement = replacer[newKey]
+      if (value !== undefined && replacerElement) {
+        newVal = replacerElement(value)
+      }
+    }
+    el.style[newKey] = (newVal !== undefined) ? newVal : ''
+  })
+}
+
 export default {
   name: 'PageBlock',
   props: ['blockStyle', 'themeKey'],
   directives: {
     'proposal-style': {
-      update: function(el, binding) {
-        const replacer = {
-          'backgroundImage': (value) => {
-            return `url(${constants.VUE_APP_BASE_API}/public/image/${value}?q=80&w=1080)`
-          }
-        }
-        Object.entries(binding?.value).forEach(([key, value]) => {
-          let newVal = value
-          let newKey = key
-
-          if (newKey.startsWith('@')) {
-            newKey = newKey.split('@')[1]
-            const replacerElement = replacer[newKey]
-            if (value !== undefined && replacerElement) {
-              newVal = replacerElement(value)
-            }
-          }
-          el.style[newKey] = (newVal !== undefined) ? newVal : ''
-        })
-      }
+      bind: styleUpdatedFn,
+      update: styleUpdatedFn
     }
   },
   computed: {
@@ -47,17 +50,13 @@ export default {
 </script>
 <style lang="scss" scoped>
 .proposal-page {
-  //padding and height are set in the print css
-  //padding: 20px;
   min-height: 794px;
-  width: 1125px;
   overflow: hidden;
   background-color: white;
   box-shadow: 0 0 5px 0 darkgrey;
   box-sizing: border-box;
 
   &:not(:last-child) {
-    //border-bottom: 1px solid red;
     margin-bottom: 10px;
   }
 }

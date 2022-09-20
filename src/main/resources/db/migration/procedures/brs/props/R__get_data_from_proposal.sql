@@ -52,7 +52,7 @@ begin
                           'custom_fields.1st Year Production Estimate (kWh)',
                           (year_1_kwh_output),
                           'custom_fields.Panel Brand',
-                          substring(panel,1,position(' ' in panel)-1),
+                          substring(panel FROM '[a-zA-Z]*'),
                           'custom_fields.Panel Watts',
                           (panel_wattage),
                           'custom_fields.Panel Quantity',

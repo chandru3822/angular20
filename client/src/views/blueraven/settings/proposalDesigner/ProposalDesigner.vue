@@ -254,6 +254,13 @@ export default {
   }
 }
 </script>
+<style  lang="scss">
+.proposal-designer {
+  .proposal-page{
+    width: 1125px;
+  }
+}
+</style>
 <style lang="scss" scoped>
 
 #designer {
