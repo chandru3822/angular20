@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import VueCompositionApi from '@vue/composition-api'
 import Vuetify from '@/plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
 import Vue2Filters from 'vue2-filters'
@@ -25,7 +24,6 @@ const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
 
-Vue.use(VueCompositionApi)
 Vue.use(NotificationPlugin, { store })
 Vue.use(SnackbarPlugin, { store })
 Vue.use(Vue2Filters)

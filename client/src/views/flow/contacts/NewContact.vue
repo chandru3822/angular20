@@ -104,7 +104,7 @@ import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
-const { VUE_APP_ENV } =  import.meta.env
+const { VITE_ENV } =  import.meta.env
 
 export default {
   name: 'NewContact',
@@ -153,7 +153,7 @@ export default {
   },
   created () {
     //todo: use only for testing
-    if(VUE_APP_ENV === 'local') {
+    if(VITE_ENV === 'local') {
       // this.setFakeContact()
     }
     this.getCompanyStates()

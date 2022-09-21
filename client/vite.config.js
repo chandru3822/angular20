@@ -18,10 +18,22 @@ export default {
       { find: '@', replacement: path.resolve(__dirname, './src') },
     ]
   },
+  css: {
+    // https://vitejs.dev/config/#css-preprocessoroptions
+    preprocessorOptions: {
+      sass: {
+        additionalData: [
+          // vuetify variable overrides
+          '@import "@/styles/variables.scss"',
+          '',
+        ].join('\n'),
+      },
+    },
+  },
   build: {
     sourcemap: true
   },
   optimizeDeps: {
-    include: ['map-promisified', 'mapbox-gl']
+    include: ['mapbox-gl']
   }
 }
