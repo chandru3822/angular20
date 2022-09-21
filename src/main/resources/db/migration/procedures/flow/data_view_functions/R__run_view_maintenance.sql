@@ -1,3 +1,4 @@
+drop function if exists flow.run_view_maintenance();
 CREATE OR REPLACE function flow.run_view_maintenance()
   returns table
           (
@@ -8,7 +9,7 @@ $BODY$
 declare
   x       record;
   v_sql   text;
-  v_count integer;
+  v_count bigint;
 BEGIN
 
   create temp table sql_statements

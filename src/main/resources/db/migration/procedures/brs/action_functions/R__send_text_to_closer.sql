@@ -1,11 +1,11 @@
--- drop function brs.send_text_to_closer(integer, integer, integer);
-CREATE OR REPLACE FUNCTION brs.send_text_to_closer(p_project_id integer, p_current_user_id integer, p_message_type_id int)
+drop function if exists brs.send_text_to_closer(bigint, bigint, bigint);
+CREATE OR REPLACE FUNCTION brs.send_text_to_closer(p_project_id bigint, p_current_user_id bigint, p_message_type_id bigint)
     RETURNS void
     LANGUAGE plpgsql
 AS
 $function$
 declare
-    v_closer_user_id int;
+    v_closer_user_id bigint;
     v_closer_phone_number text;
     v_closer_first_name text;
     v_contact_name text;
@@ -126,6 +126,18 @@ BEGIN
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
                  concat('Hi ', v_closer_first_name, ', your follow-up is needed from the proposals team on project: ', v_contact_name,', ', p_project_id, '. Access the open "Follow-up" process step on this account to see the needed information.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 14 then
+          -- do the message for id 14 = change order sent to customer
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('A change order for ', v_contact_name, ' has been sent to the customer for review/signature'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 15 then
+          -- do the message for id 15 = change order created
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('A change order for ', v_contact_name, ' has been created and will be sent out soon'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;

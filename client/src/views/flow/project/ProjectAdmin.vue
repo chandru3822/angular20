@@ -53,11 +53,11 @@
           >
 
             <template #no-data>
-              No available process steps
+              <span class="default-text-color">No available process steps</span>
             </template>
 
             <template #no-results>
-              No available process steps
+              <span class="default-text-color">No available process steps</span>
             </template>
 
             <template #item="{item: projectProcessStep}">
@@ -138,33 +138,11 @@
               </tr>
             </template>
           </v-data-table>
-          <v-dialog
-            v-model="showPpsHistory"
-            min-width="1000">
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
-              >
-                Project Process Step History
-              </v-card-title>
-
-              <v-card-text class="pt-3">
-                <PpsHistoryTable :selected-pps-history="selectedPpsHistory"></PpsHistoryTable>
-              </v-card-text>
-
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="[showPpsHistory = false, selectedPpsHistory = []]">
-                  Close
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+          <ConfirmationDialog :open-dialog="showPpsHistory" hide-confirm width="1000" @close-dialog="[showPpsHistory = false, selectedPpsHistory = []]">
+            <template v-slot:title>Project Process Step History</template>
+            <PpsHistoryTable :selected-pps-history="selectedPpsHistory"></PpsHistoryTable>
+            <template v-slot:no>Close</template>
+          </ConfirmationDialog>
         </v-col>
       </v-col>
     </v-row>

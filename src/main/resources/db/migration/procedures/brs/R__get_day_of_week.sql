@@ -1,8 +1,9 @@
+drop function if exists brs.get_day_of_week(p_date timestamp);
 CREATE OR REPLACE FUNCTION brs.get_day_of_week(p_date timestamp)
-    returns integer AS
+    returns bigint AS
 $BODY$
 declare
-    v_dow integer;
+    v_dow bigint;
 BEGIN
     select extract(dow from p_date)
     into v_dow;

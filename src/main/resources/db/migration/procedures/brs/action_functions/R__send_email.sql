@@ -1,7 +1,7 @@
--- drop function brs.send_email(integer, integer, integer, character varying, character varying, character varying);
-CREATE OR REPLACE FUNCTION brs.send_email(p_project_id integer,
-                                          p_current_user_id integer,
-                                          p_message_type_id int,
+drop function if exists brs.send_email(bigint, bigint, bigint, character varying, character varying, character varying);
+CREATE OR REPLACE FUNCTION brs.send_email(p_project_id bigint,
+                                          p_current_user_id bigint,
+                                          p_message_type_id bigint,
                                           p_from_email character varying,
                                           p_from_display_name character varying,
                                           p_subject character varying,

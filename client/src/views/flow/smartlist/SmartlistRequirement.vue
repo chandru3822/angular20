@@ -200,11 +200,11 @@
     single-expand
   >
     <template #no-data>
-      No requirements for this process step
+      <span class="default-text-color">No requirements for this process step</span>
     </template>
 
     <template #no-results>
-      No requirements for this process step
+      <span class="default-text-color">No requirements for this process step</span>
     </template>
 
     <template #item="{item: requirement, index}">
@@ -389,6 +389,7 @@
 
           <v-btn
             text
+            color="primary"
             :disabled="isSaveExpandedRequirementDisabled"
             @click="updateRequirement(expandedRequirement)"
           >

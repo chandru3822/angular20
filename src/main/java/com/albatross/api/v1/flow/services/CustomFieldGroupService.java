@@ -92,6 +92,16 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
   }
 
+  public void deleteGroup(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", currentUser.trueUserId());
+
+    sqlCache.update("customFieldGroup.delete", params);
+  }
+
   public void saveUseParentData(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 

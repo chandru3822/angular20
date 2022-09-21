@@ -12,11 +12,11 @@
           class="elevation-0"
         >
           <template #no-data>
-            No active process steps
+            <span class="default-text-color">No active process steps</span>
           </template>
 
           <template #no-results>
-            No active process steps
+            <span class="default-text-color">No active process steps</span>
           </template>
 
           <template #item="{ item, index }">

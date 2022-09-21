@@ -1,22 +1,22 @@
 <sql>
   <contact.searchDownline><![CDATA[
     select *
-    from flow.search_contacts_with_down_line(:query::character varying, :companyId::int,
+    from flow.search_contacts_with_down_line(:query::character varying, :companyId::bigint,
                                                             :isParent::boolean,
-                                                            :userId::int,
-                                                            :limit::int, :offset::int)
+                                                            :userId::bigint,
+                                                            :limit::bigint, :offset::bigint)
   ]]></contact.searchDownline>
 
   <contact.search><![CDATA[
     select *
-    from flow.search_contacts(:query::character varying, :companyId::int,
-                              :isParent::boolean,:limit::int, :offset::int)
+    from flow.search_contacts(:query::character varying, :companyId::bigint,
+                              :isParent::boolean,:limit::bigint, :offset::bigint)
   ]]></contact.search>
 
   <contact.searchByOwner><![CDATA[
     select *
-    from flow.search_contacts_by_user(:query::character varying, :companyId::int,
-                                   :isParent::boolean,:userId::int,:limit::int, :offset::int)
+    from flow.search_contacts_by_user(:query::character varying, :companyId::bigint,
+                                   :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint)
   ]]></contact.searchByOwner>
 
   <contact.getById><![CDATA[
@@ -37,6 +37,7 @@
        c.city,
        c.company_state_id,
        s.state,
+       coalesce(cs.active, false) as active_state,
        comp.company_name,
        c.postal_code,
        c.company_country_id,
@@ -67,7 +68,9 @@
                         p.latitude,
                         p.longitude,
                         p.postal_code as "postalCode",
+                        s.state,
                         s.abbreviation as "stateAbbreviation",
+                        ctr.country,
                         p.date_created as "dateCreated",
                         p.company_project_status_type_id as "companyProjectStatusTypeId",
                         cpst.project_status_type_id as "projectStatusTypeId",
@@ -78,6 +81,8 @@
                         inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
                         left join flow.company_state cs on cs.id = p.company_state_id
                         left join flow.state s on s.id = cs.state_id
+                        left join flow.company_country cc on cc.id = p.company_country_id
+                        left join flow.country ctr on ctr.id = cc.country_id
                      where p.contact_id = c.id
                      and p.archived is false
                  ) projects), '[]') AS "projects",
@@ -105,7 +110,7 @@
              left join flow.country ctr on ctr.id = cc.country_id
     where c.id = :contactId
       and case when :isParent then c.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else c.company_id = :companyId end
             and c.archived is not true
 
@@ -140,7 +145,7 @@
       left join flow.country ct on ct.id = cc.country_id
     where p.id = :projectId
        and case when :isParent then c.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else c.company_id = :companyId end
             and c.archived is not true
   ]]></contact.getByProjectId>
@@ -212,7 +217,7 @@
   ]]></contact.updateLatLongTemp>
 
   <contact.getOwners><![CDATA[
-    select * from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
+    select * from flow.get_contact_available_owners(:companyId::bigint, :inParentCompany)
   ]]></contact.getOwners>
 
   <contact.updateOwner><![CDATA[

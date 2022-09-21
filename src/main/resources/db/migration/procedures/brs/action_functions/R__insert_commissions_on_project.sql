@@ -1,16 +1,17 @@
-CREATE OR REPLACE FUNCTION brs.insert_commissions_on_project(p_project_id integer)
+drop FUNCTION if exists brs.insert_commissions_on_project(p_project_id bigint);
+CREATE OR REPLACE FUNCTION brs.insert_commissions_on_project(p_project_id bigint)
     RETURNS void
     LANGUAGE plpgsql
 AS
 $function$
 declare
-    v_override_plan_id                 integer;
-    v_commission_plan_id               integer;
-    v_residual_plan_id                 integer;
-    v_user_id                          integer;
-    v_company_feature_id               integer;
-    v_company_id                       integer;
-    v_custom_field_group_assignment_id integer;
+    v_override_plan_id                 bigint;
+    v_commission_plan_id               bigint;
+    v_residual_plan_id                 bigint;
+    v_user_id                          bigint;
+    v_company_feature_id               bigint;
+    v_company_id                       bigint;
+    v_custom_field_group_assignment_id bigint;
     v_override_plan_found              bigint;
     v_commission_plan_found             bigint;
     v_start_date                       timestamp;

@@ -1,12 +1,15 @@
-﻿CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard_drilldown(p_custom_start_date date, p_custom_end_date date,
-                                                               p_company_id integer, p_milestone_type_id integer,
+﻿drop function if exists brs.rpt_company_dashboard_drilldown(p_custom_start_date date, p_custom_end_date date,
+                                                            p_company_id bigint, p_milestone_type_id bigint,
+                                                            p_load_partners boolean);
+CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard_drilldown(p_custom_start_date date, p_custom_end_date date,
+                                                               p_company_id bigint, p_milestone_type_id bigint,
                                                                p_load_partners boolean default false)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
 $function$
 declare
-  v_company_ids integer[];
+  v_company_ids bigint[];
 BEGIN
   if p_load_partners is false then
     select array_agg(id) as ids
@@ -486,9 +489,9 @@ BEGIN
                                  pd.project_id,
                                  s.abbreviation                         state,
                                  pd.source_name,
-                                 pd.ahj_final_inspection_verified    as date_value,
-                                 'AHJ FinalInspection Verified Date' as date_label,
-                                 'date'                              as date_type
+                                 pd.ahj_final_inspection_verified     as date_value,
+                                 'AHJ Final Inspection Verified Date' as date_label,
+                                 'date'                               as date_type
                           from brs.project_details pd
                                  inner join flow.project p on p.id = pd.project_id
                                  inner join flow.contact c on c.id = p.contact_id

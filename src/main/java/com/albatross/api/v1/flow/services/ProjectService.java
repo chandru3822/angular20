@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableMap;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -39,7 +41,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,6 +48,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -252,32 +254,14 @@ public class ProjectService {
 
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
-    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    // pretty sure we don't show the user's image anywhere anymore and s3 stuff is slow. taking out
-    // for now.
-    //    if (project.isPresent()
-    //        && null != project.get().getOwner()
-    //        && null != project.get().getOwner().getUserId()) {
-    //      String presignedUrl =
-    //          attachmentService.getAttachmentPresignedUrl(
-    //              project.get().getOwner().getUserId(),
-    //              com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
-    //      project.get().getOwner().setPresignedUrl(presignedUrl);
-    //    }
-
-    return sqlCache.get(
-        "project.get",
-        ImmutableMap.of(
-            "projectId",
-            projectId,
-            "companyId",
-            user.getCompanyId(),
-            "isParent",
-            isParent,
-            "parentCompanyId",
-            user.getHighestParentCompanyId()),
-        new ProjectMapper<>(Project.class, om));
+    Map<String, Object> params = ImmutableMap.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
+      Optional<Project> result = sqlCache.get("project.get", params, new ProjectMapper<>(Project.class, om));
+      if (result.isPresent()) {
+          return result;
+      } else {
+          throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+      }
   }
 
   public void deleteProject(Long projectId) {
@@ -368,7 +352,7 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact)
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress)
       throws Exception {
     User user = securityService.getCurrentUser();
 
@@ -383,47 +367,32 @@ public class ProjectService {
       params.put("createdById", user.trueUserId());
       params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
       params.put("processId", processId);
-      params.put("street1", contact.getStreet1());
-      params.put("city", contact.getCity());
-      params.put("companyStateId", contact.getCompanyStateId());
-      params.put("companyCountryId", contact.getCompanyCountryId());
-      params.put("postalCode", contact.getPostalCode());
+      //only save address fields if contact is in an active state
+      params.put("street1", saveAddress ? contact.getStreet1() : null);
+      params.put("city", saveAddress ? contact.getCity() : null);
+      params.put("companyStateId", saveAddress ? contact.getCompanyStateId() : null);
+      params.put("companyCountryId", saveAddress ? contact.getCompanyCountryId() : null);
+      params.put("postalCode", saveAddress ? contact.getPostalCode() : null);
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
 
-      // with my most recent changes the contact should already have a valid lat/long if the address
-      // was valid
-      params.put("latitude", contact.getLatitude());
-      params.put("longitude", contact.getLongitude());
-      String timezone = null;
-      if (null != contact.getLatitude() && null != contact.getLongitude()) {
-        // if we have a lat/long then attempt to load the timezone
-        timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+      // with my most recent changes the contact should already have a valid lat/long if the address was valid
+      // we only insert the lat/long/timezone stuff if the contact is in an active State, otherwise they will have to update the project with a valid address
+      if(saveAddress) {
+        params.put("latitude", contact.getLatitude());
+        params.put("longitude", contact.getLongitude());
+        String timezone = null;
+        if (null != contact.getLatitude() && null != contact.getLongitude()) {
+          // if we have a lat/long then attempt to load the timezone
+          timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+        }
+        params.put("timezone", timezone);
+      } else {
+        params.put("latitude", null);
+        params.put("longitude", null);
+        params.put("timezone", null);
       }
-      params.put("timezone", timezone);
-
-      //      List<Double> coordinates =
-      // mapboxApiService.getLatLong(stringifyAddress(contact.getStreet1(), contact.getCity(),
-      // contact.getState(), contact.getPostalCode()));
-      //      Double latitude = null, longitude = null;
-      //      String timezone = null;
-      //      if(!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1))
-      // {
-      //        //1 = lat, 0 = long
-      //        latitude = coordinates.get(1);
-      //        longitude = coordinates.get(0);
-      //
-      //        if(null != latitude && null != longitude) {
-      //          //if we have a lat/long then attempt to load the timezone
-      //          timezone = mapboxApiService.getTimezone(latitude, longitude);
-      //        }
-      //      }
-      //      params.put("latitude", latitude);
-      //      params.put("longitude", longitude);
-      //      params.put("timezone", timezone);
 
       Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
-      // load coordinates when new project added
-      //      project.ifPresent(value -> getProjectCoordinates(value, id));
       return getProject(id);
     } else {
       throw new ResponseStatusException(
@@ -451,7 +420,7 @@ public class ProjectService {
             });
   }
 
-  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+  private String stringifyAddress(String street1, String city, String state, String postalCode) {
     StringJoiner sj = new StringJoiner(", ");
     sj.add(street1);
     sj.add(city);
@@ -460,7 +429,7 @@ public class ProjectService {
     return sj.toString();
   }
 
-  public String getProjectAddress(Project project) {
+  private String getProjectAddress(Project project) {
     StringJoiner sj = new StringJoiner(", ");
     sj.add(project.getStreet1());
     sj.add(project.getCity());
@@ -488,44 +457,40 @@ public class ProjectService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped
-  // code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long projectId, Long attachmentTypeId)
+  public Attachment addAttachment(MultipartFile file, @NonNull Long projectId, Long attachmentTypeId)
       throws IOException {
-    User currentUser = securityService.getCurrentUser();
-
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
+    return addAttachment(projectId, attachmentTypeId, file.getSize(), file.getContentType(), file.getOriginalFilename(), new ByteArrayInputStream(file.getBytes()));
+  }
+
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
+  public Attachment addAttachment(@NonNull Long projectId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream){
+    User currentUser = securityService.getCurrentUser();
 
     // had to change this so that a parent looking at a child project could still see project
     // statuses
-    HashMap<String, Object> p2 = new HashMap<>();
-    p2.put("projectId", projectId);
-    Long companyId = sqlCache.queryForObject("project.getCompanyId", p2, Long.class);
+    Long companyId = sqlCache.queryForObject("project.getCompanyId", Map.of("projectId", projectId), Long.class);
 
     // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key =
-        String.format(
-            currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+      String.format(
+        currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(file.getSize());
-    metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
+    metadata.setContentLength(contentLength);
+    metadata.setContentType(contentType);
 
-    PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
-
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    final PutObjectRequest putObjectRequest = new PutObjectRequest(storageBucket, key, inputStream, metadata);
+    s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
-    params.put("contentType", file.getContentType());
+    params.put("filename", CleanString.cleanFilename(filename));
+    params.put("contentType", contentType);
     params.put("key", key);
-    params.put("size", file.getSize());
+    params.put("size", contentLength);
     params.put("createdById", currentUser.trueUserId());
     params.put("companyId", companyId);
     params.put("attachmentTypeId", attachmentTypeId);

@@ -28,11 +28,11 @@
             class="elevation-1 fix-column-width-bug org-table square-card"
         >
           <template #no-data>
-            No available organizations
+            <span class="default-text-color">No available organizations</span>
           </template>
 
           <template #no-results>
-            No available organizations
+            <span class="default-text-color">No available organizations</span>
           </template>
 
           <template v-slot:body.prepend>
@@ -57,6 +57,12 @@
               </td>
               <td>
                 <v-text-field dense outlined hide-details
+                              v-model="search.stateAbbreviation"
+                              @blur="setLocalStorage"
+                              placeholder="State"></v-text-field>
+              </td>
+              <td>
+                <v-text-field dense outlined hide-details
                               @blur="setLocalStorage"
                               v-model="search.active" placeholder="Active"></v-text-field>
               </td>
@@ -68,6 +74,7 @@
               <td class="text-left">{{item.orgName}}</td>
               <td class="text-left">{{item.orgType}}</td>
               <td class="text-left">{{item.parentOrgName}}</td>
+              <td class="text-left">{{item.stateAbbreviation}}</td>
               <td class="text-left">{{item.activeFlag ? 'Yes' : 'No'}}</td>
             </tr>
           </template>
@@ -120,6 +127,14 @@
                 return true
               } else {
                 return value && value.toLowerCase().includes(this.search.parent.toLowerCase())
+              }
+            }},
+          { text: 'State', value: 'stateAbbreviation', show: true,
+            filter: value => {
+              if (!this.search.stateAbbreviation) {
+                return true
+              } else {
+                return value && value.toLowerCase().includes(this.search.stateAbbreviation.toLowerCase())
               }
             }},
           { text: 'Active', value: 'activeFlag', show: true,

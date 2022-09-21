@@ -95,7 +95,7 @@
                           </v-btn>
                         </div>
                       </template>
-                      <span>getDeleteTooltip(item)</span>
+                      <span>{{ getDeleteTooltip(item) }}</span>
                     </v-tooltip>
                   </td>
                 </tr>

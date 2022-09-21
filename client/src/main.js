@@ -10,8 +10,10 @@ import axios from 'axios'
 import { UserMutations } from '@/stores/UserStore'
 import { AppMutations } from '@/stores/AppStore'
 import { NotificationPlugin } from '@/plugins/notifications/NotificationPlugin'
+import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
+import constants from '@/helpers/constants'
 
 import '@/styles/main.scss'
 
@@ -24,9 +26,8 @@ const JWT_EXPIRED = 'invalid token'
 Vue.config.productionTip = false
 
 Vue.use(VueCompositionApi)
-Vue.use(NotificationPlugin,  {
-  store
-})
+Vue.use(NotificationPlugin, { store })
+Vue.use(SnackbarPlugin, { store })
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
 
@@ -136,6 +137,8 @@ axios.interceptors.response.use(
           store.commit(UserMutations.LOGIN_ERROR, msg)
           router.push({ name: 'login' })
         }
+      } else if (response?.data?.message === constants.NOT_FOUND_404_TEXT && status === 404) {
+        router.push({ path: `/dataNotFound` })
       } else if (status >= 500 && status <= 599) {
         //remove the loading spinner that was likely turned on before this error happened
         store.commit(AppMutations.SET_LOADING, false)

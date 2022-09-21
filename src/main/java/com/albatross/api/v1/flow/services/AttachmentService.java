@@ -439,12 +439,9 @@ public class AttachmentService {
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
 
-    PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
-
+    final PutObjectRequest objectRequest = new PutObjectRequest(
+      storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
     s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();

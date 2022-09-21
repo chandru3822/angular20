@@ -215,6 +215,7 @@
     display: inline-block;
     margin: 0 10px;
   }
+
   .account-img{
     margin-left: 10px;
   }

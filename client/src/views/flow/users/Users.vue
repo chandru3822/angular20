@@ -53,6 +53,8 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
+            ref="pageable-table"
+            :page.sync="page"
             :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
@@ -62,11 +64,11 @@
             class="elevation-1 fix-column-width-bug user-table"
         >
           <template #no-data>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #no-results>
-            No available users
+            <span class="default-text-color">No available users</span>
           </template>
 
           <template #header="{ props: { headers } }">
@@ -126,7 +128,7 @@
                           placeholder="Select..."
                           height="35px"
                           class="user-filter-select"
-                          @input="getUsers()"
+                          @input="getUsers(true)"
                 >
                   <v-list-item
                       slot="prepend-item"
@@ -165,7 +167,7 @@
                           height="35px"
                           outlined
                           class="user-filter-select"
-                          @input="getUsers(false)"
+                          @input="getUsers(true)"
                 >
                   <template
                       slot="selection"
@@ -229,11 +231,11 @@
           class="elevation-1"
         >
           <template #no-data>
-            No users available
+            <span class="default-text-color">No users available</span>
           </template>
 
           <template #no-results>
-            No users available
+            <span class="default-text-color">No users available</span>
           </template>
 
           <template #item="{ item, index }">
@@ -311,12 +313,13 @@
             </template>
           </v-autocomplete>
 
-          <v-select attach label="From"
+          <v-select attach
+                    label="From"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"
                       item-value="email"
-            ></v-select>
+            />
 
             <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
             <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
@@ -333,6 +336,7 @@
                 v-model="emailFile"
                 label="Upload attachment(s)"
                 @change="uploadEmailAttachment"
+                @click:clear="[emailFile=null, emailAttachments = []]"
                 style="width: 255px"
             />
 
@@ -340,7 +344,7 @@
             <v-card-actions class="flex-display justify-end px-4 pt-0">
               <v-btn
                 text color="primary"
-                @click="msgDialog = false">
+                @click="cancelSendMessageDialog">
                 Cancel
               </v-btn>
               <v-btn
@@ -413,6 +417,7 @@
                 label="Upload image"
                 v-model="textFile"
                 @change="uploadTextAttachment"
+                @click:clear="[textFile = null, textMediaUrls = []]"
                 style="width: 245px"
             />
 
@@ -420,7 +425,7 @@
             <v-card-actions class="flex-display justify-end px-4 pt-0">
               <v-btn
                 text color="primary"
-                @click="msgDialog = false">
+                @click="cancelSendMessageDialog">
                 Cancel
               </v-btn>
               <v-btn
@@ -470,6 +475,13 @@
             this.getUsers()
           }
         }
+      },
+      page() {
+        let table = this.$refs['pageable-table'];
+        let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+        this.$vuetify.goTo(table); // to table
+        this.$vuetify.goTo(table, {container: wrapper}); // to header
       }
     },
     data () {
@@ -526,6 +538,7 @@
         msgDialog: false,
         selectedUsersDialog: false,
         messageTab: 1,
+        page: 1,
         fromEmail: '',
         fromEmails: [],
         emailSubject: '',
@@ -593,11 +606,18 @@
       this.getEmailSenders()
     },
     methods: {
+      cancelSendMessageDialog(){
+        this.textMediaUrls = []
+        this.emailAttachments = []
+        this.emailFile = null
+        this.textFile = null
+        this.msgDialog = false
+      },
       clickRow(id){
         this.$router.push({name: 'userDetails', params: {id}})
       },
       debounceGetUsers: debounce( function () {
-        this.getUsers()
+        this.getUsers(true)
       }, 500),
       async getAllUsers () {
         // Get allUsers once
@@ -631,8 +651,12 @@
           // this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getUsers () {
+      async getUsers (resetPage) {
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
+
+        if(resetPage) {
+          this.options.page = 1
+        }
 
         if(this.source){
           this.source.cancel()
@@ -789,10 +813,10 @@
         this.$nextTick(() => {
           if (this.selectAll) {
             this.filters.statuses = []
-            this.getUsers()
+            this.getUsers(true)
           } else {
             this.filters.statuses = this.statuses.map(s => s.id)
-            this.getUsers()
+            this.getUsers(true)
           }
         })
       },
@@ -893,7 +917,7 @@
 
         this.selectAllUsers = false
         //reload the users
-        this.getUsers()
+        this.getUsers(true)
       },
       itemChecked(level, item) {
         if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
@@ -952,6 +976,10 @@
               this.emailMessage= defaultEmailMessage
               this.fromEmail = ''
               this.textMessage= ''
+              this.textMediaUrls = []
+              this.emailAttachments = []
+              this.emailFile = null
+              this.textFile = null
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           }  catch (e) {
@@ -970,6 +998,10 @@
       },
       uploadTextAttachment: async function (file) {
         try {
+          if (!file){
+            return
+          }
+
           this.$store.commit(AppMutations.SET_LOADING, true)
           // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
@@ -1090,7 +1122,7 @@
   }
   .count-span {
     font-size: 0.85em;
-    color: grey;
+    color: var(--v-grey-darken2);
   }
   .user-selected {
     margin-left: 150px;

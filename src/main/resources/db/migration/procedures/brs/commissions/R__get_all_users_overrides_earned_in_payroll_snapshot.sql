@@ -1,8 +1,9 @@
-CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_payroll_snapshot(p_payroll_id integer)
+drop function if exists brs.get_all_users_overrides_earned_in_payroll_snapshot(p_payroll_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_payroll_snapshot(p_payroll_id bigint)
     RETURNS TABLE
             (
                 closer                TEXT,
-                project_id            integer,
+                project_id            bigint,
                 customer_name         CHARACTER VARYING(200),
                 system_size           NUMERIC(10, 2),
                 overrides_earned      NUMERIC,
@@ -19,7 +20,7 @@ AS
 $BODY$
 declare
     v_period_end_date date;
-    v_position_id     integer;
+    v_position_id     bigint;
 BEGIN
     select period_end, position_id
     into v_period_end_date,v_position_id
@@ -28,7 +29,7 @@ BEGIN
 
     case when v_position_id = 1 then
         RETURN QUERY select results.closer,
-                            results.project_id,
+                            results.project_id::bigint,
                             results.customer_name,
                             results.system_size,
                             results.overrides_earned,
@@ -80,7 +81,7 @@ BEGIN
                      where results.overrides_earned - results.prior_pay != 0;
         when v_position_id = 4 then
             RETURN QUERY select results.closer,
-                                results.project_id,
+                                results.project_id::bigint,
                                 results.customer_name,
                                 results.system_size,
                                 results.overrides_earned,

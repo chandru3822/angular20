@@ -1,6 +1,10 @@
+drop function if exists brs.create_payroll(
+  IN p_current_user bigint,
+  in p_position_id bigint
+);
 CREATE OR REPLACE FUNCTION brs.create_payroll(
-  IN p_current_user INTEGER,
-  in p_position_id integer
+  IN p_current_user bigint,
+  in p_position_id bigint
 )
   RETURNS BOOLEAN
 LANGUAGE plpgsql AS

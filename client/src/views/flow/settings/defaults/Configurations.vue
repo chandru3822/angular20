@@ -19,11 +19,11 @@
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            No Configuration Values
+            <span class="default-text-color">No Configuration Values</span>
           </template>
 
           <template #no-results>
-            No Configuration Values
+            <span class="default-text-color">No Configuration Values</span>
           </template>
 
           <template #item="{ item, index }">

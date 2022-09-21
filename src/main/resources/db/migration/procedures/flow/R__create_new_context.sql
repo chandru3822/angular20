@@ -1,9 +1,11 @@
-CREATE OR REPLACE FUNCTION flow.create_new_context(p_company_name varchar,p_aws_bucket varchar,
-                                                   p_parent_company_id integer, p_user_id integer)
+drop function if exists flow.create_new_context(p_company_name varchar,p_aws_bucket varchar,
+                                                p_parent_company_id bigint, p_user_id bigint);
+  CREATE OR REPLACE FUNCTION flow.create_new_context(p_company_name varchar,p_aws_bucket varchar,
+                                                   p_parent_company_id bigint, p_user_id bigint)
   RETURNS void AS
 $BODY$
 declare
-v_company_id integer;
+v_company_id bigint;
 BEGIN
     insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)
     values(p_company_name,p_aws_bucket,p_aws_bucket,1,2)

@@ -2,12 +2,12 @@ DROP FUNCTION IF EXISTS brs.get_residual_account_details(date);
 /*MILESTONE 1 9 MILESTONE 2 35*/
 CREATE OR REPLACE FUNCTION brs.get_residual_account_details(p_date date)
     RETURNS TABLE(
-                     project_id                                  INTEGER,
-                     customer_id                                 INT,
+                     project_id                                  bigint,
+                     customer_id                                 bigint,
                      customer_name                               VARCHAR,
                      system_size                                 NUMERIC(10,2),
                      locked                                      BOOLEAN,
-                     closer_user_id                              INT,
+                     closer_user_id                              bigint,
                      closer                                      TEXT,
                      closer_is_terminated                        BOOLEAN,
                      source_name                                 VARCHAR,
@@ -33,10 +33,10 @@ CREATE OR REPLACE FUNCTION brs.get_residual_account_details(p_date date)
                      overrides_per_user                          JSON,
                      override_plan                               TEXT,
                      override_plan_status                        character VARYING,
-                     override_plan_id                            INT,
+                     override_plan_id                            bigint,
                      commission_plan                             TEXT,
                      commission_plan_status                      character VARYING,
-                     commission_plan_id                          INT,
+                     commission_plan_id                          bigint,
                      total_commissions                           NUMERIC(10,2),
                      total_overrides                             NUMERIC(10,2),
                      commission_earned                           NUMERIC(10,2),

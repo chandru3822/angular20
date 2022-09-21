@@ -7,6 +7,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
+import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
@@ -58,7 +59,11 @@ public class ProjectProcessStepEventService {
   private final ObjectMapper om;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
+
+  private final MarketoService marketoService;
   private final ListOfValueService listOfValueService;
+
+  private final ProjectService projectService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -509,7 +514,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, listOfValueService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService, projectService);
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);
           } else {
@@ -585,7 +590,6 @@ public class ProjectProcessStepEventService {
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
 
     PutObjectRequest objectRequest =
         new PutObjectRequest(

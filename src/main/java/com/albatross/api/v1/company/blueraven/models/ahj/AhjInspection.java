@@ -11,14 +11,7 @@ import java.util.List;
 @Data
 public class AhjInspection {
     private Long id, ahjId, stateId, companyStateId;
-    private Double inspectionFee, reInspectionFee;
-    private String paymentMethod, inspectionTimeWindow, brsInspectionRep, portalUrl, portalUsername,
-                   portalPassword, ladderRequired, obtainingResultsMethod, approvalDocumentMethod,
-                   obtainingResultsPortalUrl, obtainingResultsPortalUsername, obtainingResultsPortalPassword,
-                   businessLicense, contractorLicense, timeWindowCallTime, timeWindow, timeWindowPhone,
-                   requiredInspectionTypes, schedulingNote, technicianInstructionNote,
-                   schedulingWithCustomerNote, obtainingResultsNote, reinspectionNote, documentationNote,
-                   mpuInspectionNote, stateName, ahjName;
+    private String stateName, ahjName;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

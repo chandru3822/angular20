@@ -1,6 +1,7 @@
--- drop function if exists flow.populate_pps_value_from_event(integer, integer, text);
-CREATE OR REPLACE FUNCTION flow.populate_pps_value_from_event(p_project_id integer, p_pps_event_id integer,
-                                                              p_pps_cfga_id integer, p_property_to_save text)
+drop function if exists flow.populate_pps_value_from_event(p_project_id bigint, p_pps_event_id bigint,
+                                                           p_pps_cfga_id bigint, p_property_to_save text);
+CREATE OR REPLACE FUNCTION flow.populate_pps_value_from_event(p_project_id bigint, p_pps_event_id bigint,
+                                                              p_pps_cfga_id bigint, p_property_to_save text)
   RETURNS void
   LANGUAGE plpgsql
 AS
@@ -60,7 +61,7 @@ BEGIN
     IF (v_value_to_save is not null)
     THEN
       -- 22680 = cfga for proposal due date on the Schedule Closer Appt process step
-      perform flow.set_pps_cfv(p_project_id, 99999999, p_pps_cfga_id::integer, v_value_to_save::text);
+      perform flow.set_pps_cfv(p_project_id, 99999999, p_pps_cfga_id::bigint, v_value_to_save::text, true);
     END IF;
   END IF;
 

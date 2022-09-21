@@ -1,7 +1,8 @@
-CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id integer, p_time_interval integer)
+drop function if exists brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint);
+CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint)
     RETURNS table
             (
-                user_id              integer,
+                user_id              bigint,
                 closer_name          text,
                 lead_gen_fdc         numeric,
                 self_gen             bigint,
@@ -140,11 +141,11 @@ BEGIN
              )
 
         select
-            foo2.user_id,
+            foo2.user_id::bigint,
             foo2.closer_name,
             foo2.lead_gen_fdc,
-            foo2.self_gen,
-            foo2.average_availability,
+            foo2.self_gen::bigint,
+            foo2.average_availability::bigint,
             coalesce(foo2.manual_allocation,
                     case when foo2.sum_manual_allocation is null then
                      foo2.score else

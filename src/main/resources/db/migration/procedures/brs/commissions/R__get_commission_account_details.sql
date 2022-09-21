@@ -1,16 +1,16 @@
-DROP FUNCTION IF EXISTS brs.get_commission_account_details(integer,BIGINT [],INTEGER,INTEGER,DATE,DATE,INTEGER,INTEGER);
+DROP FUNCTION IF EXISTS brs.get_commission_account_details(bigint,BIGINT [],bigint,bigint,DATE,DATE,bigint,bigint);
 /*MILESTONE 1 175 MILESTONE 2 35*/
-CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id         integer,
+CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id         bigint,
                                                               p_project_ids         BIGINT [],
-                                                              p_contact_id   INTEGER,
-                                                              p_sales_rep          INTEGER,
+                                                              p_contact_id   bigint,
+                                                              p_sales_rep          bigint,
                                                               p_cancel_start_date  DATE,
                                                               p_cancel_end_date    DATE,
-                                                              p_override_plan_id   INTEGER,
-                                                              p_commission_plan_id INTEGER)
+                                                              p_override_plan_id   bigint,
+                                                              p_commission_plan_id bigint)
     RETURNS TABLE(
-                     project_id                                  INTEGER,
-                     customer_id                                 INT,
+                     project_id                                  bigint,
+                     customer_id                                 bigint,
                      customer_name                               VARCHAR,
                      system_size                                 NUMERIC(10,2),
                      user_id                              bigint,
@@ -39,10 +39,10 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      overrides_per_user                          JSON,
                      override_plan                               TEXT,
                      override_plan_status                        character VARYING,
-                     override_plan_id                            INT,
+                     override_plan_id                            bigint,
                      commission_plan                             TEXT,
                      commission_plan_status                      character VARYING,
-                     commission_plan_id                          INT,
+                     commission_plan_id                          bigint,
                      total_commissions                           NUMERIC(10,2),
                      total_overrides                             NUMERIC(10,2),
                      commission_earned                           NUMERIC(10,2),
@@ -124,11 +124,11 @@ BEGIN
                    end                                                            AS remaining_value_overrides,
                coalesce(foo.total_commissions,0) + coalesce(foo.total_overrides,0) AS project_total_value
         FROM (
-                 SELECT p.id as project_id,
-                        c.id as customer_id,
+                 SELECT p.id::bigint as project_id,
+                        c.id::bigint as customer_id,
                         p.project_name,
                         pd.system_size,
-                        u.id as closer_user_id,
+                        u.id::bigint as closer_user_id,
                         (select text_value
                          from flow.user_custom_field_value ucfv
                          where custom_field_group_assignment_id = 19176
@@ -208,7 +208,7 @@ BEGIN
                                   inner join brs.override_plan_status ops on ops.id = op.status_id
                          WHERE po.project_id = p.id and op.position_id = 1
                         )                                                       AS override_plan_status,
-                        (SELECT op.id AS override_plan_id
+                        (SELECT op.id::bigint AS override_plan_id
                          FROM brs.override_plan op
                                   inner join brs.project_override po on po.override_plan_id = op.id
                          WHERE po.project_id = p.id and op.position_id = 1
@@ -224,7 +224,7 @@ BEGIN
                                   inner join brs.commission_plan_status cps on cps.id = cp.status_id
                          WHERE pc.project_id = p.id and cp.position_id = 1
                         )                                                       AS commission_plan_status,
-                        (SELECT cp.id AS commission_plan_id
+                        (SELECT cp.id::bigint AS commission_plan_id
                          FROM brs.commission_plan cp
                                   inner join brs.project_commission pc on pc.commission_plan_id = cp.id
                          WHERE pc.project_id = p.id and cp.position_id = 1
@@ -301,7 +301,7 @@ BEGIN
                         0::numeric AS override_adjustments,
                         (SELECT coalesce(sum(amount), 0)
                          FROM brs.project_commission_ledger dcl
-                         WHERE dcl.project_id = p.id::integer
+                         WHERE dcl.project_id = p.id::bigint
                            AND dcl.ledger_type_id = 1
                            and dcl.position_id = 1)
                             AS commission_paid_to_date,

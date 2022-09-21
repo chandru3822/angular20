@@ -15,11 +15,11 @@
           class="elevation-1">
 
           <template #no-data>
-            No available object types
+            <span class="default-text-color">No available object types</span>
           </template>
 
           <template #no-results>
-            No available object types
+            <span class="default-text-color">No available object types</span>
           </template>
 
           <template #item="{ item, index }">

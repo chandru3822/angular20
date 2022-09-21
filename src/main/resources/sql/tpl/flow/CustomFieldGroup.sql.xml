@@ -2,7 +2,7 @@
   <customFieldGroup.insertCustomFieldGroup><![CDATA[
     insert into flow.custom_field_group(group_name, company_object_type_id, group_order, process_step_id, event_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:groupName, :companyObjectTypeId,
-    (select coalesce(max(group_order) + 1, 0) from flow.custom_field_group where case when :processStepId::int is not null then process_step_id = :processStepId::int else company_object_type_id = :companyObjectTypeId end),
+    (select coalesce(max(group_order) + 1, 0) from flow.custom_field_group where case when :processStepId::bigint is not null then process_step_id = :processStepId::bigint else company_object_type_id = :companyObjectTypeId end),
     :processStepId, :eventId, :createdById, now(), :createdById, now())
   ]]></customFieldGroup.insertCustomFieldGroup>
 
@@ -22,6 +22,14 @@
           date_modified = now()
     where id = :id
   ]]></customFieldGroup.updateCustomFieldGroup>
+
+  <customFieldGroup.delete><![CDATA[
+    update flow.custom_field_group
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    where id = :id
+  ]]></customFieldGroup.delete>
 
   <customFieldGroup.deleteCustomFieldGroup><![CDATA[
     update flow.custom_field_group
@@ -143,12 +151,12 @@
     from flow.process_step_requirement psr
              inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
              inner join flow.process_step ps on ps.id = psr.process_step_id
-    where case when :processStepId::int is not null then ps.id != :processStepId:: int and cfga.id in (
+    where case when :processStepId::bigint is not null then ps.id != :processStepId:: int and cfga.id in (
         select cfga4.id
         from flow.custom_field_group cfg2
                  inner join flow.custom_field_group_assignment cfga4 on cfga4.custom_field_group_id = cfg2.id
-        where cfg2.process_step_id = :processStepId::int                  )
-               when :customFieldGroupAssignmentId::int is not null then cfga.id = :customFieldGroupAssignmentId::int
+        where cfg2.process_step_id = :processStepId::bigint                  )
+               when :customFieldGroupAssignmentId::bigint is not null then cfga.id = :customFieldGroupAssignmentId::bigint
         else cfga.custom_field_group_id = :customFieldGroupId end
         and psr.archived is not true
           and ps.archived is not true
@@ -164,12 +172,12 @@
              left join flow.process_step ps on ps.id = cfg.process_step_id
              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
              inner join flow.object_type ot on ot.id = cot.object_type_id
-    where case when :processStepId::int is not null then ps.id != :processStepId:: int and cfga1.id in (
+    where case when :processStepId::bigint is not null then ps.id != :processStepId:: int and cfga1.id in (
         select cfga3.id
         from flow.custom_field_group cfg3
                  inner join flow.custom_field_group_assignment cfga3 on cfga3.custom_field_group_id = cfg3.id
-        where cfg3.process_step_id = :processStepId::int                  )
-               when :customFieldGroupAssignmentId::int is not null then cfga1.id = :customFieldGroupAssignmentId::int
+        where cfg3.process_step_id = :processStepId::bigint                  )
+               when :customFieldGroupAssignmentId::bigint is not null then cfga1.id = :customFieldGroupAssignmentId::bigint
         else cfga1.custom_field_group_id = :customFieldGroupId end
         and cfga1.archived is not true
         and cfg.archived is not true

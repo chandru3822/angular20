@@ -265,8 +265,8 @@ public class PandaDocService {
     validateFields(
         tokens,
         "Deal.Total Cash Down Payment",
-        "Deal.System Size",
-        "Deal.First Cash Payment Amount");
+        "Deal.System Size"
+    );
   }
 
   /**

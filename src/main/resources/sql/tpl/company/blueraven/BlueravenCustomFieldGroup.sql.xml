@@ -24,9 +24,9 @@ select cfg.*,
                               ot.object_type                                  as "objectType"
                        FROM brs.custom_field_group_assignment cfga
                                 inner join brs.custom_field cf on cf.id = cfga.custom_field_id
-                                inner join brs.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                inner join brs.custom_field_group cfg3 on cfg3.id = cfga.custom_field_group_id
                                 inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-                                inner join brs.object_type ot on cfg.object_type_id = ot.id
+                                inner join brs.object_type ot on cfg3.object_type_id = ot.id
                        WHERE cfga.custom_field_group_id = cfg.id
                          AND cfga.archived is not true
                          and cfg.object_type_id = :objectTypeId
@@ -70,14 +70,15 @@ order by cfg.group_order, cfg.group_name
   ]]></blueravenCustomFieldGroup.assignment.getByObjectTypeId>
 
   <blueravenCustomFieldGroup.insertCustomFieldGroup><![CDATA[
-    insert into brs.custom_field_group(group_name, object_type_id, group_order, created_by_id, date_created, modified_by_id, date_modified)
-    values (:groupName, :objectTypeId, (select coalesce(max(group_order) + 1, 0) from brs.custom_field_group where object_type_id = :objectTypeId), :createdById, now(), :createdById, now())
+    insert into brs.custom_field_group(group_name, object_type_id, group_order, created_by_id, date_created, modified_by_id, date_modified, column_number)
+    values (:groupName, :objectTypeId, (select coalesce(max(group_order) + 1, 0) from brs.custom_field_group where object_type_id = :objectTypeId), :createdById, now(), :createdById, now(), 1)
   ]]></blueravenCustomFieldGroup.insertCustomFieldGroup>
 
   <blueravenCustomFieldGroup.updateCustomFieldGroup><![CDATA[
     update brs.custom_field_group
       set group_name = :groupName,
           group_order = :groupOrder,
+          column_number = :columnNumber,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
@@ -95,7 +96,6 @@ order by cfg.group_order, cfg.group_name
                                     cfga.field_order                                as "fieldOrder",
                                     cfga.required                                   as "required",
                                     cfga.conditional_on_cfga_id                     as "conditionalOnId",
-                                    cfga.
                                     cfga.archived,
                                     cf.field_name as "fieldName"
                              FROM brs.custom_field_group_assignment cfga

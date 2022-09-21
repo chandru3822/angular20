@@ -1,6 +1,6 @@
--- drop function if exists flow.get_contact_available_owners(int, boolean);
+drop function if exists flow.get_contact_available_owners(bigint, boolean);
 
-create or replace function flow.get_contact_available_owners(p_company_id int, p_in_parent_company boolean)
+create or replace function flow.get_contact_available_owners(p_company_id bigint, p_in_parent_company boolean)
 
 returns table (
     user_id bigint,
@@ -8,7 +8,7 @@ returns table (
     last_name varchar,
     full_name text,
     has_access boolean,
-    user_position_id int,
+    user_position_id bigint,
     "position" varchar
 ) as
 
@@ -16,12 +16,12 @@ $$
 BEGIN
 return query
 select  DISTINCT ON (u.last_name, u.first_name, u.id)
-       u.id as user_id,
+       u.id::bigint as user_id,
        u.first_name,
        u.last_name,
        concat(u.first_name, ' ', u.last_name) as full_name,
        ust.has_access,
-       up.id as user_position_id,
+       up.id::bigint as user_position_id,
        p.position
 from flow.position p
        inner join flow.user_position up on up.position_id = p.id

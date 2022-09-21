@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION flow.project_process_step_cancelled_date()
+drop function if exists flow.project_process_step_cancelled_date();
+  CREATE OR REPLACE FUNCTION flow.project_process_step_cancelled_date()
   RETURNS TRIGGER AS
 $$
 DECLARE

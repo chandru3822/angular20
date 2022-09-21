@@ -2,12 +2,15 @@
   <org.getAllForCompany><![CDATA[
     select o.*,
            p.org_name as parentOrgName,
-           ot.org_type
+           ot.org_type,
+           s.abbreviation as state_abbreviation
     from flow.org o
-        left join flow.org p on p.id = o.parent_org_id
-        inner join flow.org_type ot on ot.id = o.org_type_id
+      left join flow.org p on p.id = o.parent_org_id
+      inner join flow.org_type ot on ot.id = o.org_type_id
+      left join flow.company_state cs on o.company_state_id = cs.id
+      left join flow.state s on cs.state_id = s.id
     where o.company_id = :companyId
-        and o.archived is not true
+      and o.archived is not true
     order by o.org_name
   ]]></org.getAllForCompany>
 
@@ -47,10 +50,10 @@
              inner join flow.org_type ot on ot.id = o.org_type_id
              left join flow.company_state cs on cs.id = o.company_state_id
     where case when :isParent and :isSchedulingTool
-        then o.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+        then o.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
         else (o.company_id = :companyId OR (:isSchedulingTool AND o.company_id = :parentCompanyId AND o.available_to_children is true )) end
-      and case when :companyStateId::integer is not null
-          then o.company_state_id = :companyStateId::integer and o.schedulable is true
+      and case when :companyStateId::bigint is not null
+          then o.company_state_id = :companyStateId::bigint and o.schedulable is true
           else o.schedulable is true end
       and o.archived is not true
       and o.active_flag is true
@@ -159,6 +162,7 @@
         left join flow.org p on p.id = o.parent_org_id
         inner join flow.org_type ot on ot.id = o.org_type_id
     where o.id = :id
+      and o.archived is false
       and o.company_id = :companyId
   ]]></org.getOne>
 
@@ -207,9 +211,9 @@
   ]]></org.deleteOrgFilter>
 
   <org.getOrgsByHierarchyFilter><![CDATA[
-    select * from flow.org_hierarchy_filter_down(ARRAY[ :selectedOrgs ]::integer[])
+    select * from flow.org_hierarchy_filter_down(ARRAY[ :selectedOrgs ]::bigint[])
     union
-    select * from flow.org_hierarchy_filter_up(ARRAY[ :selectedOrgs ]::integer[])
+    select * from flow.org_hierarchy_filter_up(ARRAY[ :selectedOrgs ]::bigint[])
     order by org_level_id, org_name;
   ]]></org.getOrgsByHierarchyFilter>
 

@@ -2,14 +2,14 @@ drop function if exists brs.get_monthly_cost_average_without_solar(
   p_khw_rate numeric,
   p_utility_cost_escalator numeric,
   p_estimated_annual_consumption numeric,
-  p_number_of_months integer,
-  p_years integer);
+  p_number_of_months bigint,
+  p_years bigint);
 CREATE OR REPLACE FUNCTION brs.get_monthly_cost_average_without_solar(
   p_khw_rate numeric,
   p_utility_cost_escalator numeric,
   p_estimated_annual_consumption numeric,
-  p_number_of_months integer,
-  p_years integer)
+  p_number_of_months bigint,
+  p_years bigint)
   returns numeric
 AS
 $BODY$

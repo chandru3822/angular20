@@ -29,7 +29,7 @@
                 <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn :loading="loginLoading" type="submit"
-                       color="primaryButton" class="white--text">Save
+                       color="primary" class="white--text">Save
                 </v-btn>
                 </v-card-actions>
               </v-form>

@@ -16,11 +16,11 @@
       <v-col
         v-if="userIsMasquerading"
         cols="12"
-        style="font-size: 18px; text-align: center; background-color: red; color: white;"
+        style="font-size: 18px; text-align: center; background-color: var(--v-error-base); color: white;"
       >
         BE CAREFUL!! YOU ARE MASQUERADING!!
         <v-btn :disabled="clearingMasquerade" :loading="clearingMasquerade"
-               @click="clearMasquerade()"
+               @click="clearMasquerade()" class="primary--text"
         >
           CLEAR
         </v-btn>
@@ -77,7 +77,7 @@
                 <v-list-item-title>{{ tab.label }}
                   <v-badge
                     class="notif-badge"
-                    color="#F35858"
+                    color="error lighten-2"
                     v-if="tab.label == 'Inbox' && smsNotification.length > 0"
                   >
                   </v-badge>

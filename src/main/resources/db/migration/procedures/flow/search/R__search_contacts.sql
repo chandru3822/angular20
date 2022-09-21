@@ -1,20 +1,25 @@
--- DROP FUNCTION flow.search_contacts(character varying, integer, boolean, boolean, integer, integer, integer);
-CREATE OR REPLACE FUNCTION flow.search_contacts(p_searchterm character varying, p_company_id integer,
+DROP FUNCTION IF EXISTS flow.search_contacts(p_searchterm character varying, p_company_id bigint,
+                                             p_is_parent boolean,
+                                             p_limit bigint, p_offset bigint);
+
+CREATE OR REPLACE FUNCTION flow.search_contacts(p_searchterm character varying,
+                                                p_company_id bigint,
                                                 p_is_parent boolean,
-                                                p_limit integer, p_offset integer)
+                                                p_limit bigint,
+                                                p_offset bigint)
   RETURNS TABLE
           (
-            id               integer,
+            id               bigint,
             first_name       character varying,
             last_name        character varying,
             full_name        text,
             email            character varying,
             phone            character varying,
             mobile           character varying,
-            company_id       integer,
-            contact_type_id  integer,
+            company_id       bigint,
+            contact_type_id  bigint,
             contact_type     character varying,
-            company_state_id integer,
+            company_state_id bigint,
             state            character varying,
             abbreviation     character varying,
             latitude         double precision,
@@ -30,7 +35,7 @@ DECLARE
   v_clean_phone_search_term   VARCHAR;
   v_clean_email_search_term   VARCHAR;
   v_clean_address_search_term VARCHAR;
-  v_company_ids               INTEGER[];
+  v_company_ids               bigint[];
   v_clean_id_search_term      varchar;
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.&', '')));
@@ -47,19 +52,18 @@ BEGIN
   end if;
 
   case
-    when p_searchterm is not null and p_searchterm != '' then
-      RETURN QUERY
-      SELECT limited_contacts.id,
+    when p_searchterm is not null and p_searchterm != '' then RETURN QUERY
+      SELECT limited_contacts.id::bigint,
              limited_contacts.first_name,
              limited_contacts.last_name,
              limited_contacts.full_name,
              limited_contacts.email,
              limited_contacts.phone,
              limited_contacts.mobile,
-             limited_contacts.company_id,
-             limited_contacts.contact_type_id,
+             limited_contacts.company_id::bigint,
+             limited_contacts.contact_type_id::bigint,
              limited_contacts.contact_type,
-             limited_contacts.company_state_id,
+             limited_contacts.company_state_id::bigint,
              limited_contacts.state,
              limited_contacts.abbreviation,
              limited_contacts.latitude,
@@ -97,27 +101,26 @@ BEGIN
             WHERE c.company_id = ANY (v_company_ids)
               and c.date_created is not null
               and c.archived is not true
-              and
-                  ((c.id::text like '%' || v_clean_name_search_term || '%')
-               or (c.contact_full_name_search like '%' || v_clean_name_search_term || '%')
-               or (c.contact_street_search like '%' || v_clean_address_search_term || '%')
-               or (c.contact_email_search like '%' || v_clean_email_search_term || '%')
-               or (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%')
-               or (c.contact_phone_search like '%' || v_clean_phone_search_term || '%'))
+              and ((c.id::text like '%' || v_clean_name_search_term || '%')
+              or (c.contact_full_name_search like '%' || v_clean_name_search_term || '%')
+              or (c.contact_street_search like '%' || v_clean_address_search_term || '%')
+              or (c.contact_email_search like '%' || v_clean_email_search_term || '%')
+              or (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%')
+              or (c.contact_phone_search like '%' || v_clean_phone_search_term || '%'))
             order by c.date_created desc
             limit p_limit offset p_offset) as limited_contacts;
     else RETURN QUERY
-      SELECT limited_contacts.id,
+      SELECT limited_contacts.id::bigint,
              limited_contacts.first_name,
              limited_contacts.last_name,
              limited_contacts.full_name,
              limited_contacts.email,
              limited_contacts.phone,
              limited_contacts.mobile,
-             limited_contacts.company_id,
-             limited_contacts.contact_type_id,
+             limited_contacts.company_id::bigint,
+             limited_contacts.contact_type_id::bigint,
              limited_contacts.contact_type,
-             limited_contacts.company_state_id,
+             limited_contacts.company_state_id::bigint,
              limited_contacts.state,
              limited_contacts.abbreviation,
              limited_contacts.latitude,

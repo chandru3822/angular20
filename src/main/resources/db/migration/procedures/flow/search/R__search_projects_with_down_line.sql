@@ -1,14 +1,20 @@
-create or replace function flow.search_projects_with_down_line(p_searchterm character varying, p_company_id integer,
-                                                               p_user_id integer, p_is_parent boolean, p_limit integer,
-                                                               p_offset integer,
-                                                               p_company_project_status_type_id integer DEFAULT NULL::integer,
+drop function if exists flow.search_projects_with_down_line(p_searchterm character varying, p_company_id bigint,
+                                                            p_user_id bigint, p_is_parent boolean, p_limit bigint,
+                                                            p_offset bigint,
+                                                            p_company_project_status_type_id bigint,
+                                                            p_sort_column character varying,
+                                                            p_sort_direction character varying );
+create or replace function flow.search_projects_with_down_line(p_searchterm character varying, p_company_id bigint,
+                                                               p_user_id bigint, p_is_parent boolean, p_limit bigint,
+                                                               p_offset bigint,
+                                                               p_company_project_status_type_id bigint DEFAULT NULL::bigint,
                                                                p_sort_column character varying DEFAULT NULL::character varying,
                                                                p_sort_direction character varying DEFAULT NULL::character varying)
   returns TABLE
           (
-            id                             integer,
+            id                             bigint,
             project_name                   character varying,
-            contact_id                     integer,
+            contact_id                     bigint,
             date_created                   timestamp without time zone,
             street1                        character varying,
             street2                        character varying,
@@ -18,7 +24,7 @@ create or replace function flow.search_projects_with_down_line(p_searchterm char
             postalcode                     character varying,
             latitude                       double precision,
             longitude                      double precision,
-            company_project_status_type_id integer,
+            company_project_status_type_id bigint,
             project_status_type            character varying,
             contact                        jsonb
           )
@@ -26,14 +32,14 @@ create or replace function flow.search_projects_with_down_line(p_searchterm char
 as
 $$
 DECLARE
-  v_company_ids               INTEGER[];
-  v_org_ids                   integer[];
+  v_company_ids               bigint[];
+  v_org_ids                   bigint[];
   v_clean_name_search_term    VARCHAR;
   v_clean_id_search_term      VARCHAR;
   v_clean_phone_search_term   VARCHAR;
   v_clean_email_search_term   VARCHAR;
   v_clean_address_search_term VARCHAR;
-  v_position_ids              integer[];
+  v_position_ids              bigint[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = right(trim(translate(p_searchterm, '+-(). ', '')), 10);
@@ -60,9 +66,9 @@ BEGIN
   case
     when p_searchterm is not null and p_searchterm != '' then
       RETURN QUERY
-      SELECT limited_projects.id,
+      SELECT limited_projects.id::bigint,
              limited_projects.project_name,
-             limited_projects.contact_id,
+             limited_projects.contact_id::bigint,
              limited_projects.date_created,
              limited_projects.street1,
              limited_projects.street2,
@@ -72,13 +78,13 @@ BEGIN
              limited_projects."postalCode",
              limited_projects.latitude,
              limited_projects.longitude,
-             limited_projects.company_project_status_type_id,
+             limited_projects.company_project_status_type_id::bigint,
              limited_projects.project_status_type,
              limited_projects.contact
       FROM (select *
-            from (select p.id,
+            from (select p.id::bigint,
                          p.project_name,
-                         p.contact_id,
+                         p.contact_id::bigint,
                          p.date_created,
                          p.street1,
                          p.street2,
@@ -88,7 +94,7 @@ BEGIN
                          p.postal_code                            as "postalCode",
                          p.latitude,
                          p.longitude,
-                         p.company_project_status_type_id,
+                         p.company_project_status_type_id::bigint,
                          cpst.project_status_type,
                          (select row_to_json(contact1)
                           from (select c.id,
@@ -102,7 +108,7 @@ BEGIN
                          left join flow.state s on s.id = cs.state_id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                    and (c.owner_org_ids::bigint[] && v_org_ids or c.owner_position_ids::bigint[] && v_position_ids)
                     and
                               ((p.id::text like '%' || v_clean_name_search_term || '%') or
                               (p.project_name_search like '%' || v_clean_name_search_term || '%') or
@@ -112,9 +118,9 @@ BEGIN
                             cpst.id = p_company_project_status_type_id
                           else 1 = 1 end
                   union
-                  select p.id,
+                  select p.id::bigint,
                          p.project_name,
-                         p.contact_id,
+                         p.contact_id::bigint,
                          p.date_created,
                          p.street1,
                          p.street2,
@@ -124,7 +130,7 @@ BEGIN
                          p.postal_code                            as "postalCode",
                          p.latitude,
                          p.longitude,
-                         p.company_project_status_type_id,
+                         p.company_project_status_type_id::bigint,
                          cpst.project_status_type,
                          (select row_to_json(contact1)
                           from (select c.id,
@@ -138,7 +144,7 @@ BEGIN
                          left join flow.state s on s.id = cs.state_id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_org_ids && v_org_ids)
+                    and (c.owner_org_ids::bigint[] && v_org_ids)
                     and
                               ((c.contact_email_search like '%' || v_clean_email_search_term || '%') or
                               (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%') or
@@ -163,9 +169,9 @@ BEGIN
             limit p_limit offset p_offset) as limited_projects;
     else
       return query
-      SELECT limited_projects.id,
+      SELECT limited_projects.id::bigint,
                 limited_projects.project_name,
-                limited_projects.contact_id,
+                limited_projects.contact_id::bigint,
                 limited_projects.date_created,
                 limited_projects.street1,
                 limited_projects.street2,
@@ -175,12 +181,12 @@ BEGIN
                 limited_projects."postalCode",
                 limited_projects.latitude,
                 limited_projects.longitude,
-                limited_projects.company_project_status_type_id,
+                limited_projects.company_project_status_type_id::bigint,
                 limited_projects.project_status_type,
                 limited_projects.contact
-         FROM (select p.id,
+         FROM (select p.id::bigint,
                       p.project_name,
-                      p.contact_id,
+                      p.contact_id::bigint,
                       p.date_created,
                       p.street1,
                       p.street2,
@@ -190,7 +196,7 @@ BEGIN
                       p.postal_code                            as "postalCode",
                       p.latitude,
                       p.longitude,
-                      p.company_project_status_type_id,
+                      p.company_project_status_type_id::bigint,
                       cpst.project_status_type,
                       (select row_to_json(contact1)
                        from (select c.id,
@@ -204,7 +210,7 @@ BEGIN
                       left join flow.state s on s.id = cs.state_id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
-                 and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                 and (c.owner_org_ids::bigint[] && v_org_ids or c.owner_position_ids::bigint[] && v_position_ids)
                  and case
                        when p_company_project_status_type_id is not null then
                          cpst.id = p_company_project_status_type_id

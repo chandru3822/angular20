@@ -1,10 +1,12 @@
--- Function: brs.get_data_from_proposal(integer, integer)
+-- Function: brs.get_data_from_proposal(bigint, bigint)
 
--- DROP FUNCTION brs.get_data_from_proposal(integer, integer);
-
+-- DROP FUNCTION brs.get_data_from_proposal(bigint, bigint);
+drop function if exists brs.get_data_from_proposal(
+  p_project_id bigint,
+  p_proposal_nbr bigint);
 CREATE OR REPLACE FUNCTION brs.get_data_from_proposal(
-  p_project_id integer,
-  p_proposal_nbr integer)
+  p_project_id bigint,
+  p_proposal_nbr bigint)
   RETURNS SETOF json AS
 $BODY$
 declare
@@ -22,7 +24,7 @@ begin
                           'custom_fields.System Size',
                           round(system_size::numeric/1000,3),
                           'custom_fields.Proposal Number',
-                          proposal_nbr::integer,
+                          proposal_nbr::bigint,
                           'custom_fields.Proof of Homeowner''s Insurance Required?',
                           case when state = 'Florida' and  round(system_size::numeric/1000,3) >= 10 THEN
                             'Yes'
@@ -50,7 +52,7 @@ begin
                           'custom_fields.1st Year Production Estimate (kWh)',
                           (year_1_kwh_output),
                           'custom_fields.Panel Brand',
-                          substring(panel,1,position(' ' in panel)-1),
+                          substring(panel FROM '[a-zA-Z]*'),
                           'custom_fields.Panel Watts',
                           (panel_wattage),
                           'custom_fields.Panel Quantity',
@@ -58,13 +60,13 @@ begin
                           'custom_fields.Inverter Brand',
                           (inverter_custom_getting),
                           'custom_fields.Energy Kit Required',
-                          case when (number_of_ecobees)::integer > 0 or (number_of_leds)::integer > 0 then 'Yes' else 'No' end,
+                          case when (number_of_ecobees)::bigint > 0 or (number_of_leds)::bigint > 0 then 'Yes' else 'No' end,
                           'custom_fields.Smart Thermostat Quantity',
-                          case when (number_of_ecobees) is null then 0 else (number_of_ecobees)::integer end,
+                          case when (number_of_ecobees) is null then 0 else (number_of_ecobees)::bigint end,
                           'custom_fields.LED Lightbulb Quantity',
-                          case when (number_of_leds) is null then 0 else (number_of_leds)::integer end,
+                          case when (number_of_leds) is null then 0 else (number_of_leds)::bigint end,
                           'custom_fields.Total Promotion Amount',
-                          coalesce(((promotion_eighteen_months_free)::numeric),0)::integer,
+                          coalesce(((promotion_eighteen_months_free)::numeric),0)::bigint,
                           'custom_fields.Does Not Qualify for ETO',
                           case when cs.state_id != 37 then TRUE else FALSE end,
                           'custom_fields.Total Cash Down Payment',
@@ -82,7 +84,7 @@ begin
                           'custom_fields.Secondary Loan Amount',
                           case when (secondary_loan_amount)::numeric is null then '0.00'::text else round((secondary_loan_amount)::numeric,2)::text end,
                           'custom_fields.Annual Utility Usage (kWh)',
-                          coalesce(round(((total_yearly_usage_pre_solar)::numeric),2),0)::integer,
+                          coalesce(round(((total_yearly_usage_pre_solar)::numeric),2),0)::bigint,
                           'custom_fields.Interior Conduit Run',
                           case when (hidden_conduit_adder)::text = 'Yes' then true else false end,
                           'custom_fields.Pre-Solar Cost per kWh ($)',
@@ -92,28 +94,28 @@ begin
                           'custom_fields.Total System Price',
                           round((coalesce((loan_amount)::NUMERIC,0.00::NUMERIC) +
                            coalesce((secondary_loan_amount)::NUMERIC,0.00::NUMERIC) +
-                           coalesce((optional_down_payment)::NUMERIC,0.00::NUMERIC)),2)::integer,
+                           coalesce((optional_down_payment)::NUMERIC,0.00::NUMERIC)),2)::bigint,
                           'custom_fields.5% ITC Down Payment Amount',
                           round((coalesce((loan_amount)::NUMERIC,0.00::NUMERIC) +
                            coalesce((secondary_loan_amount)::NUMERIC,0.00::NUMERIC) +
-                           coalesce((optional_down_payment)::NUMERIC,0.00::NUMERIC))*.05,2)::integer,
+                           coalesce((optional_down_payment)::NUMERIC,0.00::NUMERIC))*.05,2)::bigint,
                           'custom_fields.First Cash Payment Amount',
                           case when (v_loan_type = 'Cash') THEN
-                                   coalesce(round((coalesce((loan_amount)::NUMERIC ,0.00::NUMERIC)) *.5 ,2),0)::integer end,
+                                   coalesce(round((coalesce((loan_amount)::NUMERIC ,0.00::NUMERIC)) *.5 ,2),0)::bigint end,
                           'custom_fields.Estimated ITC',
                           coalesce(round(((itc)::numeric),2),0)::numeric,
                           'custom_fields.Estimated State Tax Credit',
-                          coalesce(round(((state_tax_credit)::numeric),2),0)::integer,
+                          coalesce(round(((state_tax_credit)::numeric),2),0)::bigint,
                           --'custom_fields.Non-Standard Installation Work',
                           --json_build_array(proposal->>'Non-Standard Work 1',proposal->>'Non-Standard Work 2',proposal->>'Non-Standard Work 3'),
                           'custom_fields.Notice of Cancellation Deadline',
                           (((now() AT TIME ZONE 'US/Mountain') :: DATE) + 3) :: DATE,
                          'custom_fields.Utility Rebate Amount ($ to BRS)',
                           case when cs.state_id = 37 then
-                                   coalesce(round(((current_oet_rebate)::numeric),2),0)::integer
+                                   coalesce(round(((current_oet_rebate)::numeric),2),0)::bigint
                            when ((utility_name)::text = 'NV Energy' OR (utility_name)::text = 'Colorado Springs' OR (utility_name)::text = 'ComEd') then
-                               coalesce(round(((down_payment_above_line_incentive)::numeric),2) - round(((optional_down_payment)::numeric),2),0)::integer
-                           else 0::integer end,
+                               coalesce(round(((down_payment_above_line_incentive)::numeric),2) - round(((optional_down_payment)::numeric),2),0)::bigint
+                           else 0::bigint end,
                           'custom_fields.Ancillary Expense Type 1',
                           non_standard_work_1,
                           'custom_fields.Ancillary Expense Type 2',

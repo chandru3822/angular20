@@ -1,10 +1,10 @@
-DROP FUNCTION IF EXISTS flow.remove_sms_team_project_owners(integer, integer, integer, integer, integer);
-CREATE OR REPLACE FUNCTION flow.remove_sms_team_project_owners(p_sms_team_id integer, p_org_id integer, p_position_id integer,
-                                                       p_user_id integer, p_current_user_id integer)
+DROP FUNCTION IF EXISTS flow.remove_sms_team_project_owners(bigint, bigint, bigint, bigint, bigint);
+CREATE OR REPLACE FUNCTION flow.remove_sms_team_project_owners(p_sms_team_id bigint, p_org_id bigint, p_position_id bigint,
+                                                       p_user_id bigint, p_current_user_id bigint)
   RETURNS void as
 $BODY$
 declare
-v_user_ids integer[];
+v_user_ids bigint[];
 BEGIN
 
 select array_agg(user_id) as user_id
@@ -101,7 +101,7 @@ set message_read_tsz   = now(),
     date_modified  = now(),
     modified_by_id = p_current_user_id
 where notification_topic_id = 2
-  and (metadata->>'smsTeamId')::integer = p_sms_team_id;
+  and (metadata->>'smsTeamId')::bigint = p_sms_team_id;
 
 else
 update flow.project_message_owner_history
@@ -117,7 +117,7 @@ set message_read_tsz   = now(),
     date_modified  = now(),
     modified_by_id = p_current_user_id
 where notification_topic_id = 2
-  and (metadata->>'smsTeamId')::integer = p_sms_team_id
+  and (metadata->>'smsTeamId')::bigint = p_sms_team_id
   and user_id = any (v_user_ids);
 
 end if;

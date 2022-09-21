@@ -24,11 +24,11 @@
       class="elevation-1"
     >
       <template #no-data>
-        No projects available
+        <span class="default-text-color">No projects available</span>
       </template>
 
       <template #no-results>
-        No projects available
+        <span class="default-text-color">No projects available</span>
       </template>
 
       <template #item="{ item, index }">

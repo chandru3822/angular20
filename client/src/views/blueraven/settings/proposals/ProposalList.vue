@@ -4,7 +4,7 @@
       <v-toolbar-title class="app-title">Proposal Versions</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <v-btn text color="primary" :to="'/settings/proposalDesigner'">
+        <v-btn text color="primary" :to="{'name' : 'proposalDesigner'}">
           <span>Designer</span>
         </v-btn>
       </v-toolbar-items>
@@ -32,9 +32,9 @@
                     v-if="item.status">
               {{ item.status | capitalize }}
             </v-chip>
-            <v-chip class="ma-2"
+            <v-chip class="ma-2 default-text-color"
                     label
-                    color="blue"
+                    color="primary lighten-9"
                     v-if="item.primaryVersion">
               Current
             </v-chip>

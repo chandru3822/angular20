@@ -1,17 +1,21 @@
--- drop function if exists flow.update_project_process_step_status(integer, integer, integer, integer, integer, integer);
-
-CREATE OR REPLACE FUNCTION flow.update_project_process_step_status(p_project_id integer, p_process_step_id integer,
-                                                                   p_project_process_step_id integer,
-                                                                   p_company_process_step_status_typeId integer,
-                                                                   p_process_step_status_type_id integer,
-                                                                   p_user_id integer,
-                                                                   p_cancelled_company_status_id integer)
+drop function if exists flow.update_project_process_step_status(p_project_id bigint, p_process_step_id bigint,
+                                                                p_project_process_step_id bigint,
+                                                                p_company_process_step_status_typeId bigint,
+                                                                p_process_step_status_type_id bigint,
+                                                                p_user_id bigint,
+                                                                p_cancelled_company_status_id bigint);
+  CREATE OR REPLACE FUNCTION flow.update_project_process_step_status(p_project_id bigint, p_process_step_id bigint,
+                                                                   p_project_process_step_id bigint,
+                                                                   p_company_process_step_status_typeId bigint,
+                                                                   p_process_step_status_type_id bigint,
+                                                                   p_user_id bigint,
+                                                                   p_cancelled_company_status_id bigint)
     RETURNS void
     LANGUAGE plpgsql AS
 $$
 DECLARE
-    v_count      integer;
-    v_company_id integer;
+    v_count      bigint;
+    v_company_id bigint;
 BEGIN
 
     -- Get count of active PPS other than the one we're updating

@@ -478,13 +478,13 @@
             </template>
 
             <template #no-data>
-              <div class="my-3 funnel-drilldown-no-data-msg">
+              <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
                 No data is available for the selected date range.
               </div>
             </template>
 
             <template #no-results>
-              <div class="my-3 funnel-drilldown-no-data-msg">
+              <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
                 No matching records found.
               </div>
             </template>
@@ -493,7 +493,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primary"
                  @click="closeFunnelDrilldownDialog">
             Close
           </v-btn>

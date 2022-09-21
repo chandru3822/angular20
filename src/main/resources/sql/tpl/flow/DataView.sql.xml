@@ -51,6 +51,7 @@
                              dvfc.field_to_update as "fieldToUpdate",
                              dvfc.update_first_value_only as "updateFirstValueOnly",
                              dvfc.reset_on_new as "resetOnNew",
+                             dvfc.reset_values_on_main as "resetValuesOnMain",
                              dvfc.archived,
                              coalesce((
                                         SELECT array_to_json(array_agg(row_to_json(childFields)))
@@ -106,8 +107,8 @@
   ]]></dataView.getOne>
 
   <dataView.addFieldConfig><![CDATA[
-    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id)
-    values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId)
+    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main)
+    values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain)
   ]]></dataView.addFieldConfig>
 
   <dataView.updateFieldConfig><![CDATA[
@@ -119,7 +120,7 @@
   ]]></dataView.updateFieldConfig>
 
   <dataView.addColumnToTable><![CDATA[
-    select from flow.add_column_to_data_view(:id::int, null::int)
+    select from flow.add_column_to_data_view(:id::bigint, null::bigint)
   ]]></dataView.addColumnToTable>
 
   <dataView.getFieldConfig><![CDATA[
@@ -137,6 +138,7 @@
            dvfc.field_to_update as "fieldToUpdate",
            dvfc.update_first_value_only as "updateFirstValueOnly",
            dvfc.reset_on_new as "resetOnNew",
+           dvfc.reset_values_on_main as "resetValuesOnMain",
            dvfc.archived,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(childFields)))
@@ -253,7 +255,7 @@
   ]]></dataView.updateChildFieldConfig>
 
   <dataView.addChildColumnToTable><![CDATA[
-    select from flow.add_column_to_data_view(:fieldId::int, :id::int)
+    select from flow.add_column_to_data_view(:fieldId::bigint, :id::bigint)
   ]]></dataView.addChildColumnToTable>
 
   <dataView.getChildFieldConfig><![CDATA[
@@ -283,7 +285,7 @@
   ]]></dataView.update>
 
   <dataView.addTableForView><![CDATA[
-    select from flow.initialize_data_view_table(:companyId::int, :viewName::character varying, :companyProcessIds::int[])
+    select from flow.initialize_data_view_table(:companyId::bigint, :viewName::character varying, :companyProcessIds::bigint[])
   ]]></dataView.addTableForView>
 
   <dataView.getDataView><![CDATA[

@@ -85,10 +85,10 @@
         class="elevation-1"
     >
       <template #no-data>
-        No available apps
+        <span class="default-text-color">No available apps</span>
       </template>
       <template #no-results>
-        No available apps
+        <span class="default-text-color">No available apps</span>
       </template>
 
       <template #item="{ item, index }">

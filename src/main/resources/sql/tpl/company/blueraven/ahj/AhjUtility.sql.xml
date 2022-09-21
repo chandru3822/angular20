@@ -40,24 +40,7 @@
         metro_area_id = :metroAreaId,
         company_state_id = :companyStateId,
         date_modified = now(),
-        modified_by_id = :currentUser,
-        timelines_and_stages = :timelinesAndStages,
-        regulated_by = :regulatedBy,
-        monthly_facility_charge = :monthlyFacilityCharge,
-        population_of_service = :populationOfService,
-        net_metering_rate = :netMeteringRate,
-        rebate_rates = :rebateRates,
-        utility_rate_notes = :utilityRateNotes,
-        customer_signature_instructions = :customerSignatureInstructions,
-        expected_approval_timeline = :expectedApprovalTimeline,
-        rejection_instructions = :rejectionInstructions,
-        notes = :notes,
-        overview_of_submission_process = :overviewOfSubmissionProcess,
-        submission_instructions = :submissionInstructions,
-        timelines = :timelines,
-        pto_followup_instructions = :ptoFollowupInstructions,
-        final_completion_instructions = :finalCompletionInstructions,
-        financier_id = :financierId
+        modified_by_id = :currentUser
       WHERE id = :id
     ]]>
   </ahj.utility.update>
@@ -71,7 +54,6 @@
     <![CDATA[
       SELECT
           u.*,
-          f.name AS "financier",
           lov.name as metro_area,
           cs.state_id,
           s.state,
@@ -93,59 +75,6 @@
                                 WHERE auc.ahj_utility_id = u.id AND c.archived IS FALSE AND c.contact_type_id = 8
                             ) contacts), '[]') AS contacts,
           coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(checklist)))
-                       FROM (
-                                SELECT
-                                    ac.id,
-                                    ac.description,
-                                    ac.display_order AS "displayOrder"
-                                FROM brs.ahj_checklist ac
-                                         INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
-                                WHERE ac.archived IS FALSE
-                                  AND ac.checklist_type_id = 4
-                                  AND auc.ahj_utility_id = u.id
-                                ORDER BY ac.display_order
-                            ) checklist), '[]') AS submission_checklist,
-          coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
-                    FROM (
-                             SELECT
-                                 ac.id,
-                                 ac.description,
-                                 ac.display_order AS "displayOrder"
-                             FROM brs.ahj_checklist ac
-                                      INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
-                             WHERE ac.archived IS FALSE
-                               AND ac.checklist_type_id = 5
-                               AND auc.ahj_utility_id = u.id
-                             ORDER BY ac.display_order) checklist
-                   ), '[]') AS approval_checklist,
-          coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
-                    FROM (
-                             SELECT
-                                 ac.id,
-                                 ac.description,
-                                 ac.display_order AS "displayOrder"
-                             FROM brs.ahj_checklist ac
-                                      INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
-                             WHERE ac.archived IS FALSE
-                               AND ac.checklist_type_id = 6
-                               AND auc.ahj_utility_id = u.id
-                             ORDER BY ac.display_order) checklist
-                   ), '[]') AS pto_checklist,
-          coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
-                    FROM (
-                             SELECT
-                                 ac.id,
-                                 ac.description,
-                                 ac.display_order AS "displayOrder"
-                             FROM brs.ahj_checklist ac
-                                      INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
-                             WHERE ac.archived IS FALSE
-                               AND ac.checklist_type_id = 7
-                               AND auc.ahj_utility_id = u.id
-                             ORDER BY ac.display_order) checklist
-                   ), '[]') AS utility_inspection_checklist,
-          coalesce((
                        SELECT array_to_json(array_agg(row_to_json(links)))
                        FROM (
                                 SELECT
@@ -158,106 +87,13 @@
                                     aul.notes
                                 FROM brs.ahj_utility_link aul
                                 WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 6
+                                  AND aul.link_type_id = 10
                                   AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS customer_signature_links,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(links)))
-                       FROM (
-                                SELECT
-                                    aul.id,
-                                    aul.name,
-                                    aul.link,
-                                    aul.username,
-                                    aul.link_type_id AS "linkTypeId",
-                                    aul.password,
-                                    aul.notes
-                                FROM brs.ahj_utility_link aul
-                                WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 7
-                                  AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS pto_links,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(links)))
-                       FROM (
-                                SELECT
-                                    aul.id,
-                                    aul.name,
-                                    aul.link,
-                                    aul.username,
-                                    aul.link_type_id AS "linkTypeId",
-                                    aul.password,
-                                    aul.notes
-                                FROM brs.ahj_utility_link aul
-                                WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 8
-                                  AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS pto_followup_links,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(links)))
-                       FROM (
-                                SELECT
-                                    aul.id,
-                                    aul.name,
-                                    aul.link,
-                                    aul.username,
-                                    aul.link_type_id AS "linkTypeId",
-                                    aul.password,
-                                    aul.notes
-                                FROM brs.ahj_utility_link aul
-                                WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 9
-                                  AND aul.ahj_utility_id = u.id) links
-                   ), '[]') AS submission_links,
-          coalesce((
-                       SELECT array_to_json(array_agg(row_to_json(requirements)))
-                       FROM (
-                                WITH open_challenge AS (
-                                    SELECT
-                                        utility_id,
-                                        original_requirement_id,
-                                        status_id
-                                    FROM brs.ahj_utility_requirements ar
-                                    WHERE status_id = 3
-                                )
-                                SELECT
-                                    aur.utility_id AS "utilityId",
-                                    aur.position,
-                                    aur.status_id AS "statusId",
-                                    ars.name status,
-                                    aur.complete,
-                                    aur.date_created AS "dateCreated",
-                                    aur.created_by_id AS "createdById",
-                                    concat(u.first_name, ' ', u.last_name) AS "createdBy",
-                                    aur.date_modified AS "dateModified",
-                                    aur.modified_by_id AS "modifiedById",
-                                    concat(u2.first_name, ' ', u2.last_name) AS "modifiedBy",
-                                    ar.id,
-                                    ar.description,
-                                    ar.requirement_type_id AS "requirementTypeId",
-                                    aur.original_requirement_id AS "originalRequirementId",
-                                    CASE
-                                        WHEN oc.original_requirement_id IS NOT NULL THEN true
-                                        ELSE false
-                                        END AS "hasOpenChallenge"
-                                FROM brs.ahj_utility_requirements aur
-                                         LEFT JOIN open_challenge oc ON oc.utility_id = aur.utility_id
-                                    AND oc.original_requirement_id = aur.original_requirement_id
-                                         INNER JOIN brs.ahj_requirement ar ON ar.id = aur.requirement_id
-                                         INNER JOIN flow."user" u ON u.id = aur.created_by_id
-                                         INNER JOIN flow."user" u2 ON u2.id = aur.modified_by_id
-                                         INNER JOIN brs.ahj_requirement_status ars ON ars.id = aur.status_id
-                                WHERE aur.utility_id = :id
-                                  AND aur.status_id = 1
-                                  AND aur.archived IS NOT TRUE
-                                  AND ars.archived IS NOT TRUE
-                                ORDER BY aur.position) requirements
-                   ), '[]') AS utility_requirements
+                   ), '[]') AS links
       FROM brs.ahj_utility u
                LEFT JOIN flow.list_of_value lov ON lov.id = u.metro_area_id
                left join flow.company_state cs on cs.id = u.company_state_id
                left join flow.state s on s.id = cs.state_id
-               LEFT JOIN brs.financier f ON f.id = u.financier_id
       WHERE u.id = :id
     ]]>
   </ahj.utility.detailById>
@@ -309,52 +145,6 @@
     ]]>
   </ahj.utility.contact.delete>
 
-  <!-- CHECKLIST -->
-  <ahj.utility.checklist.findById>
-    <![CDATA[
-      SELECT * FROM brs.ahj_checklist WHERE id = :id
-    ]]>
-  </ahj.utility.checklist.findById>
-
-  <ahj.utility.checklist.add>
-    <![CDATA[
-      WITH auc AS (
-        insert into brs.ahj_checklist (description, display_order, date_created, created_by_id, date_modified, modified_by_id, checklist_type_id, failed_inspection_resource_id, failed_inspection_date, failed_inspection_project)
-        values (:description, :displayOrder, now(), :currentUser, now(), :currentUser, :checklistTypeId, :failedInspectionResourceId, :failedInspectionDate, :failedInspectionProject)
-        returning id
-      )
-      INSERT INTO brs.ahj_utility_checklist (ahj_utility_id, ahj_checklist_id)
-      SELECT :ahjUtilityId, auc.id
-      FROM auc
-      RETURNING ahj_checklist_id;
-    ]]>
-  </ahj.utility.checklist.add>
-
-  <ahj.utility.checklist.update>
-    <![CDATA[
-      UPDATE brs.ahj_checklist
-      SET description = :description,
-          display_order = :displayOrder,
-          modified_by_id = :currentUser,
-          date_modified = now(),
-          checklist_type_id = :checklistTypeId,
-          failed_inspection_resource_id = :failedInspectionResourceId,
-          failed_inspection_date = :failedInspectionDate,
-          failed_inspection_project = :failedInspectionProject
-      WHERE id = :id
-    ]]>
-  </ahj.utility.checklist.update>
-
-  <ahj.utility.checklist.delete>
-    <![CDATA[
-      UPDATE brs.ahj_checklist
-      SET archived = TRUE,
-          modified_by_id = :currentUser,
-          date_modified = now()
-      WHERE id = :id
-    ]]>
-  </ahj.utility.checklist.delete>
-
   <!-- LINK -->
   <ahj.utility.link.findById>
     <![CDATA[
@@ -394,116 +184,4 @@
       WHERE id = :id
     ]]>
   </ahj.utility.link.delete>
-
-  <!-- REQUIREMENT -->
-  <ahj.utility.requirement.history>
-    <![CDATA[
-      SELECT ar.requirement_type_id,
-             ars.utility_id,
-             ars.requirement_id id,
-             ars.original_requirement_id,
-             ar.description,
-             ars."position",
-             ars.status_id,
-             arst.name AS status,
-             ars.complete,
-             ars.date_created,
-             ars.created_by_id,
-             concat(u.first_name, ' ', u.last_name) AS "createdBy",
-             ars.date_modified,
-             concat(u2.first_name, ' ', u2.last_name) AS "modifiedBy",
-             ars.modified_by_id
-      FROM brs.ahj_utility_requirements ars
-        JOIN brs.ahj_requirement ar ON ar.id = ars.requirement_id
-        JOIN brs.ahj_requirement_status arst ON arst.id = ars.status_id
-        INNER JOIN flow."user" u on u.id = ars.created_by_id
-        INNER JOIN flow."user" u2 on u2.id = ars.modified_by_id
-      WHERE ars.original_requirement_id = :originalRequirementId
-        AND ars.utility_id = :utilityId
-      ORDER BY arst.display_order, ars.date_created DESC
-    ]]>
-  </ahj.utility.requirement.history>
-
-  <ahj.utility.requirement.add>
-    <![CDATA[
-      WITH ar AS (
-        INSERT INTO brs.ahj_requirement (requirement_type_id, description, date_created, created_by_id, date_modified, modified_by_id)
-        VALUES (:requirementTypeId, :description, now(), :createdById, now(), :modifiedById)
-        RETURNING id
-      )
-      INSERT INTO brs.ahj_utility_requirements (utility_id, requirement_id, position, status_id, date_created, created_by_id, date_modified, modified_by_id, original_requirement_id)
-      SELECT :utilityId,
-             ar.id,
-             :position,
-             :statusId,
-             now(),
-             :createdById,
-             now(),
-             :modifiedById,
-             ar.id
-      FROM ar
-      RETURNING original_requirement_id;
-    ]]>
-  </ahj.utility.requirement.add>
-
-  <ahj.utility.requirement.active.detail>
-    <![CDATA[
-      WITH open_challenge AS (
-        SELECT utility_id,
-               original_requirement_id,
-               status_id
-        FROM brs.ahj_utility_requirements ar
-        WHERE status_id = 3
-      )
-      SELECT aur.utility_id,
-             aur.position,
-             aur.status_id,
-             ars.name status,
-             aur.complete,
-             aur.date_created,
-             aur.created_by_id,
-             concat(u.first_name, ' ', u.last_name) createdBy,
-             aur.date_modified,
-             aur.modified_by_id,
-             concat(u2.first_name, ' ', u2.last_name) modifiedBy,
-             ar.id,
-             ar.description,
-             ar.requirement_type_id,
-             aur.original_requirement_id,
-             (case when oc.original_requirement_id is not null then true
-                  else false
-                  end) has_open_challenge
-      FROM brs.ahj_utility_requirements aur
-        LEFT JOIN open_challenge oc ON oc.utility_id = aur.utility_id
-          AND oc.original_requirement_id = aur.original_requirement_id
-        INNER JOIN brs.ahj_requirement ar ON ar.id = aur.requirement_id
-        INNER JOIN brs.ahj_requirement_type art ON art.id = ar.requirement_type_id
-        INNER JOIN flow."user" u ON u.id = aur.created_by_id
-        INNER JOIN flow."user" u2 ON u2.id = aur.modified_by_id
-        INNER JOIN brs.ahj_requirement_status ars ON ars.id = aur.status_id
-      WHERE aur.utility_id = :utilityId
-        AND aur.original_requirement_id = :originalRequirementId
-        AND aur.status_id = 1
-        AND aur.archived IS NOT TRUE
-    ]]>
-  </ahj.utility.requirement.active.detail>
-
-  <ahj.utility.requirement.archive>
-    <![CDATA[
-      UPDATE brs.ahj_utility_requirements
-      SET archived = true,
-          status_id = 2,
-          date_modified = now(),
-          modified_by_id = :modifiedById
-      WHERE original_requirement_id = :originalRequirementId;
-
-      UPDATE brs.ahj_requirement
-      SET archived = true,
-          date_modified = now(),
-          modified_by_id = :modifiedById
-      WHERE id IN (select requirement_id
-                   from brs.ahj_utility_requirements
-                   where original_requirement_id = :originalRequirementId);
-    ]]>
-  </ahj.utility.requirement.archive>
 </sql>

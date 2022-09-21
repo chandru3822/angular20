@@ -18,7 +18,6 @@ public class SqlCacheRO extends BaseSqlCache {
 
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
-    super.init();
     setJdbc(new NamedParameterJdbcTemplate(roDataSource.getDs()));
   }
 }

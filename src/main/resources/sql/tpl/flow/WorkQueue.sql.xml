@@ -47,11 +47,11 @@
       and wqt.company_id = :companyId
       and wqt.archived is not true
       and wqt.use_event_data is false
-      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
+      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                                       FROM flow.white_listed_position wlp
                                                       WHERE wlp.white_list_type_id = 10
                                                         AND wlp.archived is not true
-                                                        AND wlp.work_queue_type_id = wqt.id) else 1=1 end
+                                                        AND wlp.work_queue_type_id = wqt.id)::bigint[] else 1=1 end
     union all
     select wqt.id as work_queue_type_id,
            wqt.work_queue_type,
@@ -105,11 +105,11 @@
       and wqt.company_id = :companyId
       and wqt.archived is not true
       and wqt.use_event_data is true
-      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
+      and case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                                       FROM flow.white_listed_position wlp
                                                       WHERE wlp.white_list_type_id = 10
                                                         AND wlp.archived is not true
-                                                        AND wlp.work_queue_type_id = wqt.id) else 1=1 end
+                                                        AND wlp.work_queue_type_id = wqt.id)::bigint[] else 1=1 end
     order by work_queue_category_display_order, work_queue_type_display_order
   ]]></workQueue.getWorkQueueCards>
 
@@ -132,11 +132,11 @@
   ]]></workQueue.getWorkQueueMetrics>
 
   <workQueue.userCanAccessData><![CDATA[
-    select case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
+    select case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.white_list_type_id = 10
                                                             AND wlp.archived is not true
-                                                            AND wlp.work_queue_type_id = wqt.id) else true end
+                                                            AND wlp.work_queue_type_id = wqt.id)::bigint[] else true end
     from flow.work_queue_type wqt
     where wqt.id = :workQueueTypeId
   ]]></workQueue.userCanAccessData>
@@ -153,7 +153,7 @@
         inner join flow."user" u on u.id = up.user_id
         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
     where case when :isParent then ps.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
           else ps.company_id = :companyId end
     order by first_name, last_name
   ]]></workQueue.getWorkQueueOwners>
@@ -178,7 +178,7 @@
                  and ps.archived is not true
                  and case
                          when :isParent then ps.company_id = any
-                                             (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                             (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                          else ps.company_id = :companyId end
                  and pswqtpsst.archived is not true
            ),
@@ -195,7 +195,7 @@
                  and ps.archived is not true
                  and case
                          when :isParent then ps.company_id = any
-                                             (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                             (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                          else ps.company_id = :companyId end
                  and pswqtpsst.archived is not true
            )
@@ -218,11 +218,11 @@
              and p.archived is not true
              and case
                      when :isParent then ps.company_id = any
-                                         (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                         (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                      else ps.company_id = :companyId end
              and case
                      when :unassigned is true then pps.user_position_id is null
-                     when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId
+                     when :unassigned is not true and :userPositionId::bigint is not null then pps.user_position_id = :userPositionId
                      else true end
              and pps.main is true
              and pd.installation_resource in (:crewIds)
@@ -231,7 +231,7 @@ from flow.work_queue_type wqt
          inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
          inner join flow.smartlist s on s.work_queue_type_id = wqt.id
 where case
-          when :workQueueCategoryId::int is not null then wqt.work_queue_category_id = :workQueueCategoryId
+          when :workQueueCategoryId::bigint is not null then wqt.work_queue_category_id = :workQueueCategoryId
           else true end
   and wqt.company_id = :parentCompanyId
   and wqt.archived is not true

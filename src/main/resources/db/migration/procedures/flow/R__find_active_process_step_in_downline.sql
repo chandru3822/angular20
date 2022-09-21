@@ -1,10 +1,13 @@
-CREATE OR REPLACE FUNCTION flow.find_active_process_step_in_downline(
-    p_project_process_step_id integer,
-    p_process_step_ids integer[])
-  RETURNS TABLE(project_process_step_id integer,process_step_name character varying(100),
-                parent_project_process_step_id integer,process_step_id integer,
-                completed_date timestamp,row_number integer,
-                process_status_id integer,main boolean,user_position_id integer,date_created timestamp) AS
+drop function if exists flow.find_active_process_step_in_downline(
+  p_project_process_step_id bigint,
+  p_process_step_ids bigint[]);
+  CREATE OR REPLACE FUNCTION flow.find_active_process_step_in_downline(
+    p_project_process_step_id bigint,
+    p_process_step_ids bigint[])
+  RETURNS TABLE(project_process_step_id bigint,process_step_name character varying(100),
+                parent_project_process_step_id bigint,process_step_id bigint,
+                completed_date timestamp,row_number bigint,
+                process_status_id bigint,main boolean,user_position_id bigint,date_created timestamp) AS
 $BODY$
 BEGIN
     return query
@@ -27,7 +30,10 @@ BEGIN
                      INNER JOIN subordinates s ON s.id = pps.parent_project_process_step_id
           where ps.id = any (p_process_step_ids)
         ) SELECT
-            s1.*
+            s1.id::bigint,s1.process_step_name,s1.parent_project_process_step_id::bigint,
+            s1.process_step_id::bigint,s1.completed_date,s1.row_number1::bigint,
+            s1.process_status_id::bigint,s1.main,s1.user_position_id::bigint,
+            s1.date_created
         FROM
             subordinates s1
         where

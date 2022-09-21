@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="is7oaksAdmin"
+            <v-btn text color="primary" v-if="is7oaksAdmin"
                    @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
@@ -37,11 +37,11 @@
             {{saveErrorMsg}}
           </div>
           <v-btn :disabled="!newDataView.displayName || !newDataView.viewName || selectedCompanyProcesses.length === 0"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="validateForm(newDataView, true)">
             Save
           </v-btn>
-          <v-btn @click="[addNew = !addNew, newDataView = {}]">Cancel</v-btn>
+          <v-btn text color="primary" @click="[addNew = !addNew, newDataView = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -65,7 +65,7 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.viewName }}</td>
               <td class="text-right">
-                <v-btn small text>
+                <v-btn small text color="primary">
                   <v-icon>edit</v-icon>
                 </v-btn>
 

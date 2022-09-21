@@ -40,7 +40,7 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            color="primaryCustom"
+            color="primary"
             text
             dark
             class="white--text"
@@ -128,7 +128,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2}">
                 <td style="width: 50px">
-                  <v-btn text icon small class="handle" v-if="userCanEdit">
+                  <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>

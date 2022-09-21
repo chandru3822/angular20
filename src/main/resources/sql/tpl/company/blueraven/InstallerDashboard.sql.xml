@@ -29,7 +29,7 @@
   ]]></installerDashboard.getInstallationCrew>
 
   <installerDashboard.getPerformanceMetrics><![CDATA[
-    select * from brs.get_installer_dashboard_rankings(:startDate::date,:endDate::date, :companyId::integer, :parentCompanyId::integer, :isParent)
+    select * from brs.get_installer_dashboard_rankings(:startDate::date,:endDate::date, :companyId::bigint, :parentCompanyId::bigint, :isParent)
   ]]></installerDashboard.getPerformanceMetrics>
 
   <installerDashboard.getDashboardValues><![CDATA[
@@ -268,7 +268,7 @@
                                 project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
                                                                                                       and process_step_id =
                                                                                                           (select id from flow.process_step
-                                                                                                           where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[]))
+                                                                                                           where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::bigint[]))
 
 
                    ) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))
@@ -304,7 +304,7 @@
                                               project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
                                             and process_step_id =
                                               (select id from flow.process_step
-                                              where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) as ahj_inspection_fail_reason,
+                                              where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::bigint[])) as ahj_inspection_fail_reason,
 
                                          (select text_value from flow.project_process_step_custom_field_value
                                           where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
@@ -340,7 +340,7 @@
                                                                   project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
                                                                                                                                         and process_step_id =
                                                                                                                                             (select id from flow.process_step
-                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::integer[])) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))) as isNumerator,
+                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::bigint[])) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))) as isNumerator,
                                          coalesce((
                                           SELECT array_to_json(array_agg(row_to_json(notes)))
                                           FROM (

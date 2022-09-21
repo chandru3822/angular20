@@ -93,7 +93,7 @@
 
         <dt class="left-align">&nbsp;</dt>
         <dd>
-          <a v-if="userCanEdit" @click="editMailing = true">click to edit</a>
+          <a x-small text v-if="userCanEdit" class="primary--text clickable" @click="editMailing = true">click to edit</a>
         </dd>
 
       </div>
@@ -163,11 +163,11 @@
             class="elevation-1"
           >
             <template #no-data>
-              No available payment history
+              <span class="default-text-color">No available payment history</span>
             </template>
 
             <template #no-results>
-              No available payment history
+              <span class="default-text-color">No available payment history</span>
             </template>
 
             <template #item="{ item, index }">
@@ -183,12 +183,12 @@
                 <td class="text-left">{{item.name}}</td>
                 <td class="text-left">{{item.check_number}}</td>
                 <td class="text-left">
-                  <a v-if="item.id != null && userCanEdit" @click="openNotesDialog(item)"><v-icon x-small color="primary">{{item.void_note ? 'edit' : 'add'}}</v-icon> Note</a><br/>
+                  <a v-if="item.id != null && userCanEdit" class="primary--text" @click="openNotesDialog(item)"><v-icon x-small color="primary">{{item.void_note ? 'edit' : 'add'}}</v-icon> Note</a><br/>
                   {{item.void_note}}
                 </td>
                 <td class="text-left" style="color: red">
-                  <a v-if="item.payment_state_id === 3 && userCanEdit" @click="openVoidDialog(item)">Void</a>
-                  <a v-if="item.payment_state_id === 5 && userCanEdit" @click="openUnvoidDialog(item)">Unvoid</a>
+                  <a v-if="item.payment_state_id === 3 && userCanEdit" class="primary--text" @click="openVoidDialog(item)">Void</a>
+                  <a v-if="item.payment_state_id === 5 && userCanEdit" class="primary--text" @click="openUnvoidDialog(item)">Unvoid</a>
                 </td>
                   <td>
                       <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
@@ -626,15 +626,12 @@
     dt {
       float: left; width: 100px;
       font-size: 14px;
-      color: black;
     }
 
     dd {
       margin-left: 100px;
       text-align: left;
-      color: black;
       font-size: 14px;
-      color: black;
     }
 
     dl {
@@ -704,12 +701,10 @@
   td {
     width: 200px;
     font-size: 14px;
-    color: black;
   }
 
   th {
     font-size: 14px;
-    color: black;
   }
 
   .error-message {

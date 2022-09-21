@@ -43,7 +43,7 @@
           </v-autocomplete>
 
           <v-btn :disabled="!newTemplate.title || !newTemplate.message || newTemplate.teamIds.length < 1"
-                 color="primaryCustom" class="white--text mr-2"
+                 color="primary" class="white--text mr-2"
                  @click="saveTemplate(newTemplate, true)">
             Save
           </v-btn>
@@ -61,11 +61,11 @@
           class="elevation-1 org-type-table"
         >
           <template #no-data>
-            NO DATA HERE!
+            <span class="default-text-color">NO DATA HERE!</span>
           </template>
 
           <template #no-results>
-            No parameters exist for this function
+            <span class="default-text-color">No parameters exist for this function</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -101,7 +101,7 @@
                 </template>
               </v-autocomplete>
 
-              <v-btn color="primaryCustom" class="white--text mr-2" :disabled="!item.title || !item.message || item.teamIds.length < 1" @click="saveTemplate(item, false)">Save</v-btn>
+              <v-btn color="primary" class="white--text mr-2" :disabled="!item.title || !item.message || item.teamIds.length < 1" @click="saveTemplate(item, false)">Save</v-btn>
             </td>
           </template>
 

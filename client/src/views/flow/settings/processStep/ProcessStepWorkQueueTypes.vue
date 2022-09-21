@@ -43,10 +43,10 @@
             return-object>
             <template #selection="{ item, index }">
                     <span :class="{'bold': item.isRoot}">
-                      <span v-if="index !== 0" class="grey--text">
+                      <span v-if="index !== 0" class="">
                         ,
                       </span>
-                      <span class="grey--text">
+                      <span class="">
                         {{ item.projectStatusType }}
                       </span>
                     </span>
@@ -80,10 +80,10 @@
             return-object>
             <template #selection="{ item, index }">
                     <span :class="{'bold': item.isRoot}">
-                      <span v-if="index !== 0" class="grey--text">
+                      <span v-if="index !== 0" class="">
                         ,
                       </span>
-                      <span class="grey--text">
+                      <span class="">
                         {{ item.processStepStatusType }}
                       </span>
                     </span>
@@ -118,10 +118,10 @@
             return-object>
             <template #selection="{ item, index }">
                     <span :class="{'bold': item.isRoot}">
-                      <span v-if="index !== 0" class="grey--text">
+                      <span v-if="index !== 0" class="">
                         ,
                       </span>
-                      <span class="grey--text">
+                      <span class="">
                         {{ item.eventStatusType }}
                       </span>
                     </span>
@@ -165,11 +165,11 @@
             class="elevation-1 square-card"
           >
             <template #no-data>
-              No available work queue types
+              <span class="default-text-color">No available work queue types</span>
             </template>
 
             <template #no-results>
-              No available work queue types
+              <span class="default-text-color">No available work queue types</span>
             </template>
 
             <template #expanded-item="{ headers, item }">
@@ -188,9 +188,9 @@
                   return-object>
                   <template #selection="{ item: status, index }" v-if="showShit">
                           <span :class="{'bold': status.isRoot}">
-                            <span class="grey--text" v-if="!status.archived">{{ status.projectStatusType }}</span>
+                            <span class="" v-if="!status.archived">{{ status.projectStatusType }}</span>
                             <span v-if="!status.archived && index !== item.projectStatuses.length - 1"
-                                  class="grey--text mr-1">,</span>
+                                  class=" mr-1">,</span>
                           </span>
                   </template>
                   <template #item="data" v-if="showShit">
@@ -225,9 +225,9 @@
                   return-object>
                   <template #selection="{ item: status, index }" v-if="showPsShit">
                           <span :class="{'bold': status.isRoot}">
-                            <span class="grey--text" v-if="!status.archived">{{ status.processStepStatusType }}</span>
+                            <span class="" v-if="!status.archived">{{ status.processStepStatusType }}</span>
                             <span v-if="!status.archived && index !== item.processStepStatuses.length - 1"
-                                  class="grey--text mr-1">,</span>
+                                  class="mr-1">,</span>
                           </span>
                   </template>
                   <template #item="data" v-if="showPsShit">
@@ -263,9 +263,9 @@
                   return-object>
                   <template #selection="{ item: status, index }" v-if="showEventShit">
                           <span :class="{'bold': status.isRoot}">
-                            <span class="grey--text" v-if="!status.archived">{{ status.eventStatusType }}</span>
+                            <span class="" v-if="!status.archived">{{ status.eventStatusType }}</span>
                             <span v-if="!status.archived && index !== item.eventStatuses.length - 1"
-                                  class="grey--text mr-1">,</span>
+                                  class=" mr-1">,</span>
                           </span>
                   </template>
                   <template #item="data" v-if="showEventShit">

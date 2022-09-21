@@ -1,5 +1,11 @@
+drop procedure if exists flow.generate_sql_for_pps(in z record,
+                                                  in p_in_event_details bigint,
+                                                  inout p_sql text ,
+                                                  inout p_text_array_tables character varying[],
+                                                  inout p_text_array_alias_columns character varying[],
+                                                  inout p_text_array_columns       character varying[]);
 CREATE OR REPLACE procedure flow.generate_sql_for_pps(in z record,
-                                                         in p_in_event_details integer,
+                                                         in p_in_event_details bigint,
                                                          inout p_sql text ,
                                                          inout p_text_array_tables character varying[],
                                                          inout p_text_array_alias_columns character varying[],
@@ -71,7 +77,7 @@ BEGIN
                             inner join flow.project p on p.id = pps.project_id
                         where case when $$||v_field_required||$$ is true then pps.$$||z.column_name||
             $$ is not null else 1=1 end and pps.process_step_id = $$ || z.process_step_id || $$
-                        and p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
+                        and p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])
                             order by pps.project_id,pps.date_created $$||v_order||$$ ), $$;
 
 

@@ -1,19 +1,19 @@
-DROP FUNCTION if exists flow.get_work_queue_metrics_for_events(integer);
+DROP FUNCTION if exists flow.get_work_queue_metrics_for_events(bigint);
 
-CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics_for_events(p_work_queue_type_id integer)
+CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics_for_events(p_work_queue_type_id bigint)
   RETURNS table
           (
-            work_queue_type_id                integer,
+            work_queue_type_id                bigint,
 --             work_queue_type                   varchar,
---             work_queue_category_id            integer,
---             work_queue_type_display_order     integer,
---             work_queue_category_display_order integer,
+--             work_queue_category_id            bigint,
+--             work_queue_type_display_order     bigint,
+--             work_queue_category_display_order bigint,
 --             use_event_data                    boolean,
---             smartlist_id                      integer,
+--             smartlist_id                      bigint,
 --             color                             varchar,
---             long_window                       integer,
---             short_window                      integer,
---             expected_cycle                    integer,
+--             long_window                       bigint,
+--             short_window                      bigint,
+--             expected_cycle                    bigint,
             short_window_numerator            bigint,
             short_window_denominator          bigint,
             long_window_numerator             bigint,
@@ -37,20 +37,20 @@ CREATE OR REPLACE FUNCTION flow.get_work_queue_metrics_for_events(p_work_queue_t
 as
 $$
 declare
---   v_work_queue_type_id                integer;
+--   v_work_queue_type_id                bigint;
 --   v_work_queue_type                   varchar;
---   v_work_queue_category_id            integer;
---   v_work_queue_type_display_order     integer;
---   v_work_queue_category_display_order integer;
+--   v_work_queue_category_id            bigint;
+--   v_work_queue_type_display_order     bigint;
+--   v_work_queue_category_display_order bigint;
 --   v_use_event_data                    boolean;
---   v_smartlist_id                      integer;
+--   v_smartlist_id                      bigint;
 --   v_color                             varchar;
   v_long_window                       integer;
   v_short_window                      integer;
-  v_long_window_duration_type_id      integer;
-  v_short_window_duration_type_id     integer;
-  v_expected_cycle                    integer;
-  v_expected_cycle_duration_type_id   integer;
+  v_long_window_duration_type_id      bigint;
+  v_short_window_duration_type_id     bigint;
+  v_expected_cycle                    bigint;
+  v_expected_cycle_duration_type_id   bigint;
   v_expected_target                   numeric;
   v_inverse_expectation               boolean;
   v_short_window_duration_type        varchar;
@@ -439,7 +439,7 @@ BEGIN
 --     and pswqt2.archived is false;
 
   return query
-    select p_work_queue_type_id,
+    select p_work_queue_type_id::bigint,
 --            v_work_queue_type,
 --            v_work_queue_category_id,
 --            v_work_queue_type_display_order,
@@ -450,10 +450,10 @@ BEGIN
 --            v_long_window,
 --            v_short_window,
 --            v_expected_cycle,
-           v_short_window_numerator,
-           v_short_window_denominator,
-           v_long_window_numerator,
-           v_long_window_denominator,
+           v_short_window_numerator::bigint,
+           v_short_window_denominator::bigint,
+           v_long_window_numerator::bigint,
+           v_long_window_denominator::bigint,
            case
              when v_short_window_numerator = 0 and v_short_window_denominator = 0 then
                1
@@ -475,12 +475,12 @@ BEGIN
            v_cycle_duration_type,
            v_expected_target,
            v_inverse_expectation,
-           v_short_window_entered,
-           v_short_window_exited,
-           v_long_window_entered,
-           v_long_window_exited,
-           v_short_window_entered_wip - v_short_window_exited_wip,
-           v_long_window_entered_wip - v_long_window_exited_wip;
+           v_short_window_entered::bigint,
+           v_short_window_exited::bigint,
+           v_long_window_entered::bigint,
+           v_long_window_exited::bigint,
+           (v_short_window_entered_wip - v_short_window_exited_wip)::bigint,
+           (v_long_window_entered_wip - v_long_window_exited_wip)::bigint;
 --            v_current_count;
 END
 $$

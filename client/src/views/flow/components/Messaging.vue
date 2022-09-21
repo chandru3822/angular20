@@ -137,12 +137,12 @@ export default {
           text: '#ffffff'
         },
         receivedMessage: {
-          bg: '#eaeaea',
-          text: '#222222'
+          bg: 'var(--v-grey-lighten3)',
+          text: 'rgba(0,0,0,0.87)'
         },
         userInput: {
-          bg: '#f4f7f9',
-          text: '#1F3C73',
+          bg: 'var(--v-grey-lighten4)',
+          text: 'rgba(0,0,0,0.87)',
           button: '#1F3C73'
         }
       }, // specifies the color scheme for the component

@@ -132,7 +132,7 @@ public class RebateService {
 
   public void createRecurringPayment(RebatePayment rebatePayment){
     User currentUser = securityService.getCurrentUser();
-    String sqlQuery = "select brs.create_rebate_payments(:projectId::integer, :createdById::integer, :totalAmount::numeric , :promotionPayments::integer)";
+    String sqlQuery = "select brs.create_rebate_payments(:projectId::bigint, :createdById::bigint, :totalAmount::numeric , :promotionPayments::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("projectId", rebatePayment.getProjectId());
@@ -147,7 +147,7 @@ public class RebateService {
 
     User currentUser = securityService.getCurrentUser();
 
-    String sqlQuery = "select brs.project_rebate_payments_add_extra_payment(:projectId::integer, :userId::integer, :paymentAmount::NUMERIC)";
+    String sqlQuery = "select brs.project_rebate_payments_add_extra_payment(:projectId::bigint, :userId::bigint, :paymentAmount::NUMERIC)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("projectId", rebatePayment.getProjectId());
@@ -194,7 +194,7 @@ public class RebateService {
 
     User currentUser = securityService.getCurrentUser();
 
-    String sqlQuery = "select brs.update_rebate_payment(:paymentId::integer, :userId::integer, :paymentAmount::NUMERIC)";
+    String sqlQuery = "select brs.update_rebate_payment(:paymentId::bigint, :userId::bigint, :paymentAmount::NUMERIC)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("paymentId", rebatePayment.getPaymentId());
@@ -209,7 +209,7 @@ public class RebateService {
 
     User currentUser = securityService.getCurrentUser();
 
-    String sqlQuery = "select brs.delete_rebate_payment(:paymentId::integer, :userId::integer)";
+    String sqlQuery = "select brs.delete_rebate_payment(:paymentId::bigint, :userId::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("paymentId", paymentId);

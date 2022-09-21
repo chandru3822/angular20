@@ -263,7 +263,7 @@ export default {
 
 .unassigned-team-chip {
   background-color: var(--v-error-lighten4) !important;
-  color: #BD2828 !important;
+  color: var(--v-error-base) !important;
   cursor: default;
 
   &.selected {
@@ -291,6 +291,6 @@ export default {
 }
 
 .remove-dialog-option-info {
-  color: #949494;
+  color: var(--v-grey-darken1);
 }
 </style>

@@ -1,4 +1,5 @@
-create or replace function flow.get_reamortized_monthly_payment(p_rate numeric(15,9), p_periods smallint, p_principal numeric(20,2) )
+drop function if exists flow.get_reamortized_monthly_payment(p_rate numeric(15,9), p_periods smallint, p_principal numeric(20,2) );
+  create or replace function flow.get_reamortized_monthly_payment(p_rate numeric(15,9), p_periods smallint, p_principal numeric(20,2) )
   returns numeric (38,9)
 as
 $BODY$

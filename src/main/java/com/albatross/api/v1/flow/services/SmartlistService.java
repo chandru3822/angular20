@@ -632,15 +632,15 @@ public class SmartlistService {
     StringBuilder whereClause = new StringBuilder();
 
     // Get smartlist system lists
-    withClause.append(String.format(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::int, %s::int)), ", companyId));
-    withClause.append(String.format(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::int, %s::int)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_3\" as (select id, name from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_4\" as (select id, name from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_5\" as (select id, name from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_6\" as (select id, name from flow.get_smartlist_system_list_options(6::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_7\" as (select id, name from flow.get_smartlist_system_list_options(7::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_8\" as (select id, name from flow.get_smartlist_system_list_options(8::bigint, %s::bigint)), ", companyId));
+    withClause.append(String.format(" \"smartlistSystemList_9\" as (select id, name from flow.get_smartlist_system_list_options(9::bigint, %s::bigint)), ", companyId));
 
     // Get tables for system lists
     withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -926,7 +926,12 @@ public class SmartlistService {
       } else if (f.getDataTypeId() == 1) {
         query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        if (timezone != null) {
+//          query.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
+          query.append(String.format("  to_char(%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, timezone, f.getName()));
+        } else {
+          query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        }
       } else if (f.getDataTypeId() == 7 && f.getSmartlistSystemListId() == null) {
           query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
@@ -1245,9 +1250,9 @@ public class SmartlistService {
             final String smartlistSystemListTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
 
             if (List.of(1, 3, 5, 6, 7, 8, 9).contains(r.getSmartlistSystemListId().intValue())) {
-              if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::int, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
+              if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::bigint, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
                 referenceTable = UUID.randomUUID().toString();
-                final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
+                final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::bigint, %s::bigint)", r.getSmartlistSystemListId(), r.getCompanyId());
                 additionalJoins.append(String.format(" left join (%s) \"%s\" on \"%s\".id = %s.%s ", subquery, referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
               } else {
                   referenceTable = requirements.stream()
@@ -1601,11 +1606,11 @@ public class SmartlistService {
     query.append("with ");
 
     // Get smartlist system lists
-    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId));
 
     // Get tables for system lists
     query.append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -2391,11 +2396,11 @@ public class SmartlistService {
     query.append("with ");
 
     // Get smartlist system lists
-    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId));
-    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId));
+    query.append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId));
 
     // Get tables for system lists
     query.append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
@@ -3566,18 +3571,18 @@ public class SmartlistService {
           .toList();
 
         query.append("(")
-          .append(String.format("flow.company_project_status_type.id = any(array%s::int[]) or ", projectStatuses))
-          .append(String.format("flow.project_status_type.id = any(array%s::int[])", projectCategories))
+          .append(String.format("flow.company_project_status_type.id = any(array%s::bigint[]) or ", projectStatuses))
+          .append(String.format("flow.project_status_type.id = any(array%s::bigint[])", projectCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_process_step_status_type.id = any(array%s::int[]) or ", psStatuses))
-          .append(String.format("flow.process_step_status_type.id = any(array%s::int[])", psCategories))
+          .append(String.format("flow.company_process_step_status_type.id = any(array%s::bigint[]) or ", psStatuses))
+          .append(String.format("flow.process_step_status_type.id = any(array%s::bigint[])", psCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_event_status_type.id = any(array%s::int[]) or ", eventStatuses))
-          .append(String.format("flow.event_status_type.id = any(array%s::int[])", eventCategories))
+          .append(String.format("flow.company_event_status_type.id = any(array%s::bigint[]) or ", eventStatuses))
+          .append(String.format("flow.event_status_type.id = any(array%s::bigint[])", eventCategories))
           .append(")) or ");
       }
 
@@ -3676,11 +3681,11 @@ public class SmartlistService {
     var defaultFields = new StringBuilder().append("with ")
 
       // Get smartlist system lists
-      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::int, %s::int)), ", companyId))
-      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::int, %s::int)), ", companyId))
+      .append(String.format("\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_4\" as (select * from flow.get_smartlist_system_list_options(4::bigint, %s::bigint)), ", companyId))
+      .append(String.format("\"smartlistSystemList_5\" as (select * from flow.get_smartlist_system_list_options(5::bigint, %s::bigint)), ", companyId))
 
       // Get tables for system lists
       .append("\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ")
@@ -4343,18 +4348,18 @@ public class SmartlistService {
           .toList();
 
         clause.append("(")
-          .append(String.format("flow.company_project_status_type.id = any(array%s::int[]) or ", projectStatuses))
-          .append(String.format("flow.project_status_type.id = any(array%s::int[])", projectCategories))
+          .append(String.format("flow.company_project_status_type.id = any(array%s::bigint[]) or ", projectStatuses))
+          .append(String.format("flow.project_status_type.id = any(array%s::bigint[])", projectCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_process_step_status_type.id = any(array%s::int[]) or ", psStatuses))
-          .append(String.format("flow.process_step_status_type.id = any(array%s::int[])", psCategories))
+          .append(String.format("flow.company_process_step_status_type.id = any(array%s::bigint[]) or ", psStatuses))
+          .append(String.format("flow.process_step_status_type.id = any(array%s::bigint[])", psCategories))
           .append(")")
 
           .append(" and (")
-          .append(String.format("flow.company_event_status_type.id = any(array%s::int[]) or ", eventStatuses))
-          .append(String.format("flow.event_status_type.id = any(array%s::int[])", eventCategories))
+          .append(String.format("flow.company_event_status_type.id = any(array%s::bigint[]) or ", eventStatuses))
+          .append(String.format("flow.event_status_type.id = any(array%s::bigint[])", eventCategories))
           .append(")) or ");
       }
 

@@ -1,13 +1,13 @@
--- drop function if exists brs.populate_closer_office(integer, integer);
-CREATE OR REPLACE FUNCTION brs.populate_closer_office(p_project_id integer, p_user_id integer)
+drop function if exists brs.populate_closer_office(bigint, bigint);
+CREATE OR REPLACE FUNCTION brs.populate_closer_office(p_project_id bigint, p_user_id bigint)
   RETURNS void
   LANGUAGE plpgsql
 AS
 $function$
 declare
   v_value_to_save text;
-  v_org_id integer;
-  v_org_type_id integer;
+  v_org_id bigint;
+  v_org_type_id bigint;
 BEGIN
   --get the closer office for the user
   --if closer = use closer sales office of the owner of the project
@@ -31,7 +31,7 @@ BEGIN
 
   if(v_value_to_save is not null) then
     --only save if we found a value
-    perform flow.set_project_cfv(p_project_id, p_user_id, 23202, v_value_to_save);
+    perform flow.set_project_cfv(p_project_id, p_user_id, 23202, v_value_to_save, true);
   end if;
 
 END

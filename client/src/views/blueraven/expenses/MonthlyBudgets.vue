@@ -75,11 +75,11 @@
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            No Budgets
+            <span class="default-text-color">No Budgets</span>
           </template>
 
           <template #no-results>
-            No Budgets
+            <span class="default-text-color">No Budgets</span>
           </template>
 
           <template #expanded-item="{ headers, item }">

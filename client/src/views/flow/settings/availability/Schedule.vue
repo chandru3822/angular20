@@ -31,11 +31,11 @@
             class="elevation-1 mt-1"
           >
             <template #no-data>
-              No available days
+              <span class="default-text-color">No available days</span>
             </template>
 
             <template #no-results>
-              No available days
+              <span class="default-text-color">No available days</span>
             </template>
 
             <template #header="{ props: {} }">
@@ -147,11 +147,11 @@
           class="elevation-1 mt-1"
         >
           <template #no-data>
-            No available schedules
+            <span class="default-text-color">No available schedules</span>
           </template>
 
           <template #no-results>
-            No available schedules
+            <span class="default-text-color">No available schedules</span>
           </template>
 
           <template #expanded-item="{ headers, item: schedule }">
@@ -188,11 +188,11 @@
                   class="elevation-1 mt-1"
                 >
                   <template #no-data>
-                    No available days
+                    <span class="default-text-color">No available days</span>
                   </template>
 
                   <template #no-results>
-                    No available days
+                    <span class="default-text-color">No available days</span>
                   </template>
 
                   <template #header="{ props: {} }">

@@ -1,8 +1,8 @@
--- DROP FUNCTION brs.get_setter_performance_report(integer, date, date);
+-- DROP FUNCTION brs.get_setter_performance_report(bigint, date, date);
 
 -- SELECT * FROM brs.get_setter_performance_report(2395038, '2020-07-01', '2020-07-09');
-
-CREATE OR REPLACE FUNCTION brs.get_setter_performance_report(p_user_id integer, p_start_date date, p_end_date date)
+drop function if exists brs.get_setter_performance_report(p_user_id bigint, p_start_date date, p_end_date date);
+  CREATE OR REPLACE FUNCTION brs.get_setter_performance_report(p_user_id bigint, p_start_date date, p_end_date date)
     RETURNS JSON AS
 $BODY$
 DECLARE
@@ -15,7 +15,7 @@ BEGIN
         select rpt.total_appointments,
                rpt.total_pitches,
                (case when rpt.total_appointments = 0 then 0
-                    else ((rpt.total_pitches::numeric(10,2) / rpt.total_appointments) * 100)::integer
+                    else ((rpt.total_pitches::numeric(10,2) / rpt.total_appointments) * 100)::bigint
                     end
                ) as pitch_percentage
         from (select

@@ -88,11 +88,11 @@
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            No Reimbursement Requests
+            <span class="default-text-color">No Reimbursement Requests</span>
           </template>
 
           <template #no-results>
-            No Reimbursement Requests
+            <span class="default-text-color">No Reimbursement Requests</span>
           </template>
 
           <template #item="{ item, index }">

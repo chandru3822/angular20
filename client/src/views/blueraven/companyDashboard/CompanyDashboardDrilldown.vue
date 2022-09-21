@@ -49,7 +49,7 @@
         </template>
 
         <template #no-data>
-          <div class="my-3">
+          <div class="my-3 default-text-color">
             No data was found for the specified date range.
           </div>
         </template>
@@ -59,7 +59,7 @@
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn id="drilldown-close-btn" class="white--text text-capitalize mr-4 mb-2"
-             color="primaryButton" @click="closeCallback">
+             color="primary" @click="closeCallback">
         Close
       </v-btn>
     </v-card-actions>

@@ -13,11 +13,11 @@
           class="elevation-0"
         >
           <template #no-data>
-            No upcoming or past due events
+            <span class="default-text-color">No upcoming or past due events</span>
           </template>
 
           <template #no-results>
-            No upcoming or past due events
+            <span class="default-text-color">No upcoming or past due events</span>
           </template>
 
           <template #item="{ item, index }">

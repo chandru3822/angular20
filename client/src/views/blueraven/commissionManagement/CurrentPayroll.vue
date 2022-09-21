@@ -150,11 +150,11 @@
               id="tester-face"
           >
             <template #no-data>
-              No available accounting data
+              <span class="default-text-color">No available accounting data</span>
             </template>
 
             <template #no-results>
-              No available accounting data
+              <span class="default-text-color">No available accounting data</span>
             </template>
 
             <template v-slot:header.data-table-select="{ on, props }">
@@ -162,7 +162,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }" v-if="positionId === 1">
+              <tr :class="{'shaded-row': index % 2, 'error--text': item.closer_is_terminated }" v-if="positionId === 1">
                 <td v-if="payrollStatus.showSelect">
                   <v-checkbox color="primary" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
@@ -262,7 +262,7 @@
                 <td class="text-left">{{item.current_pay_overrides || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.remaining_value_overrides || 0 | currency('$', 2) }}</td>
               </tr>
-              <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }" v-else>
+              <tr :class="{'shaded-row': index % 2, 'error--text': item.closer_is_terminated }" v-else>
                 <td v-if="payrollStatus.showSelect">
                   <v-checkbox color="primary" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
@@ -656,14 +656,14 @@
             this.payrollStatus.showSelect = false
             this.payrollStatus.action = 'reject'
             this.payrollStatus.actionText = 'Reject'
-            this.payrollStatus.actionColor = 'red'
+            this.payrollStatus.actionColor = 'error'
             this.payrollStatus.secondaryAction = 'approve'
             this.payrollStatus.secondaryActionText = 'Approve'
             this.payrollStatus.secondaryActionColor = 'green'
             break
           case 'REJECTED':
             this.payrollStatus.message = 'This payroll has been Rejected.'
-            this.payrollStatus.color = 'red'
+            this.payrollStatus.color = 'error'
             this.payrollStatus.textColor = 'white'
             this.payrollStatus.showSelect = true
             this.payrollStatus.action = 'submit'

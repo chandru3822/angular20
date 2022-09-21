@@ -70,7 +70,7 @@
                 <span v-else>
                   <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link primary--text">Permit</router-link>
                   <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link primary--text">Inspection</router-link>
-                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link primary--text">Design Requirements</router-link>
+<!--                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link primary&#45;&#45;text">Design Requirements</router-link>-->
                 </span>
                 <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
@@ -83,11 +83,11 @@
           </template>
 
           <template #no-data>
-            <div class="mt-2 mb-4">No records found</div>
+            <div class="mt-2 mb-4 default-text-color">No records found</div>
           </template>
 
           <template #no-results>
-            <div class="mt-2 mb-4">No records found</div>
+            <div class="mt-2 mb-4 default-text-color">No records found</div>
           </template>
         </v-data-table>
 

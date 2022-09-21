@@ -13,7 +13,7 @@
       v-if="!dismissMobileToolbar && showMobileBanner && !noNavRoutes.includes($route.name) && $route.path !== '/apps'"
       class="clickable"
       dense>
-      <v-toolbar-title @click="goToApps">
+      <v-toolbar-title @click="goToApps" class="primary--text">
         Go to App Download Page
         <v-icon color="primary" class="ml-3">
           mdi-arrow-right
@@ -98,7 +98,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-top: 0 !important;
-  background-color: var(--v-secondary-base);
+  background-color: var(--v-grey-lighten4);
   min-height: 100vh;
 
   .app-title {

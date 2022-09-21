@@ -39,9 +39,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -264,12 +262,14 @@ public class ProposalTemplateService {
   }
 
 
-  public void generatePdf(Long templateId, Map<String, Object> context, OutputStream outputStream, HandleContentLength func, boolean isDebug) throws IOException, TemplateException {
+  public ContentAwareByteArrayOutputStream generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws IOException, TemplateException {
     final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT, isDebug);
-    generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle(), outputStream, func);
+    return generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle());
   }
 
-  private void generatePdf(List<ProposalTemplateBlock> blocks, Object theme, OutputStream outputStream, HandleContentLength func) throws IOException, TemplateException {
+  private ContentAwareByteArrayOutputStream generatePdf(List<ProposalTemplateBlock> blocks, Object theme) throws IOException, TemplateException {
+
+    final ContentAwareByteArrayOutputStream outputStream = new ContentAwareByteArrayOutputStream();
 
     final String generatedHtml = generateHtml(blocks, theme);
 
@@ -280,9 +280,15 @@ public class ProposalTemplateService {
       .accept(MediaType.APPLICATION_PDF)
       .body(BodyInserters.fromFormData("html", generatedHtml))
       .exchangeToFlux(response -> {
+
         response.headers().header(HttpHeaders.CONTENT_LENGTH).stream()
           .findFirst()
-          .ifPresent(val -> func.handle(Long.parseLong(val)));
+          .map(Long::valueOf)
+          .ifPresent(outputStream::setContentLength);
+
+        response.headers().header(HttpHeaders.CONTENT_TYPE).stream()
+          .findFirst()
+          .ifPresent(outputStream::setContentType);
 
         if (response.statusCode() == HttpStatus.OK) {
           return response.bodyToFlux(DataBuffer.class);
@@ -294,6 +300,7 @@ public class ProposalTemplateService {
       });
 
     DataBufferUtils.write(pdf, outputStream).blockLast();
+    return outputStream;
   }
 
   private String generateHtml(List<ProposalTemplateBlock> blocks, Object theme) throws TemplateException, IOException {
@@ -331,11 +338,6 @@ public class ProposalTemplateService {
       log.warn("Error creating PGObject for obj={}, msg={}", original, e.getMessage());
       throw new RuntimeException("Error creating object");
     }
-  }
-
-  @FunctionalInterface
-  public interface HandleContentLength {
-    void handle(Long contentLength);
   }
 
   private static class ProposalTemplateBlockMapper

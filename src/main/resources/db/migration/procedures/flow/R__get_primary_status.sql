@@ -1,34 +1,37 @@
-CREATE OR REPLACE FUNCTION flow.get_primary_status(p_project_process_step_id integer,
-                                                   p_project_id integer,
+drop function if exists flow.get_primary_status(p_project_process_step_id bigint,
+                                                p_project_id bigint,
+                                                p_type varchar(2));
+  CREATE OR REPLACE FUNCTION flow.get_primary_status(p_project_process_step_id bigint,
+                                                   p_project_id bigint,
                                                    p_type varchar(2))
     RETURNS boolean AS
 $BODY$
 declare
-    fd_qa_id                   integer;
-    fd_qa_status_type_id       integer;
+    fd_qa_id                   bigint;
+    fd_qa_status_type_id       bigint;
     fd_qa_main                 boolean;
-    fd_customer_id             integer;
-    fd_customer_status_type_id integer;
+    fd_customer_id             bigint;
+    fd_customer_status_type_id bigint;
     fd_customer_main           boolean;
     fd_created_date            timestamp;
-    nr_customer_id             integer;
-    nr_customer_status_type_id integer;
+    nr_customer_id             bigint;
+    nr_customer_status_type_id bigint;
     nr_customer_main           boolean;
     nr_created_date            timestamp;
-    rp_customer_id             integer;
-    rp_customer_status_type_id integer;
+    rp_customer_id             bigint;
+    rp_customer_status_type_id bigint;
     rp_customer_main           boolean;
-    fd_id                      integer;
-    fd_status_id               integer;
+    fd_id                      bigint;
+    fd_status_id               bigint;
     fd_main                    boolean;
-    nr_id                      integer;
-    nr_status_id               integer;
+    nr_id                      bigint;
+    nr_status_id               bigint;
     nr_main                    boolean;
-    rp_id                      integer;
-    rp_status_id               integer;
+    rp_id                      bigint;
+    rp_status_id               bigint;
     rp_main                    boolean;
     rp_created_date            timestamp;
-    v_project_id               integer;
+    v_project_id               bigint;
 
 BEGIN
 

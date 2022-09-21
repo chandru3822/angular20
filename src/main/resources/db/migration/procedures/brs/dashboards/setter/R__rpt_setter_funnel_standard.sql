@@ -1,9 +1,14 @@
--- drop function if exists brs.rpt_setter_funnel_standard(date, date, numeric, integer[], integer[]);
--- drop function if exists brs.rpt_setter_funnel_standard(date, date, numeric, integer[], integer[], boolean);
-CREATE OR REPLACE FUNCTION brs.rpt_setter_funnel_standard(p_custom_start_date date, p_custom_end_date date,
+-- drop function if exists brs.rpt_setter_funnel_standard(date, date, numeric, bigint[], bigint[]);
+-- drop function if exists brs.rpt_setter_funnel_standard(date, date, numeric, bigint[], bigint[], boolean);
+drop function if exists brs.rpt_setter_funnel_standard(p_custom_start_date date, p_custom_end_date date,
+                                                       p_base_expectation numeric,
+                                                       p_user_position_ids bigint[],
+                                                       p_org_ids bigint[],
+                                                       p_is_cohort boolean);
+  CREATE OR REPLACE FUNCTION brs.rpt_setter_funnel_standard(p_custom_start_date date, p_custom_end_date date,
                                                                 p_base_expectation numeric,
-                                                                p_user_position_ids integer[],
-                                                                p_org_ids integer[],
+                                                                p_user_position_ids bigint[],
+                                                                p_org_ids bigint[],
                                                                 p_is_cohort boolean)
   RETURNS SETOF json
   LANGUAGE plpgsql
@@ -11,7 +16,7 @@ AS
 $function$
 declare
   v_whole_company boolean;
-  v_company_id    integer;
+  v_company_id    bigint;
 BEGIN
   --doing this so it is easier to change to allow parameterizing later if needed
   select 3 into v_company_id;

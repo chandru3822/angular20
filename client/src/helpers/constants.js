@@ -2,6 +2,7 @@ const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN, VITE_MAPBOX_STYLE} = 
 
 let constants = {}
 
+constants.NOT_FOUND_404_TEXT = 'FAIL_TO_NOT_FOUND_SCREEN'
 constants.LOCAL_COLOR = 'pink'
 constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'
@@ -116,7 +117,7 @@ constants.SNACKBARS = {
     timeout: 5000,
     // timeout: 5000000,
     text: '',
-    color: 'success',
+    color: 'success lighten-1',
     fontClass: 'secondary--text'
   },
   WARNING: {
@@ -134,7 +135,7 @@ constants.SNACKBARS = {
     mode: '',
     timeout: 5000,
     text: '',
-    color: 'primaryText',
+    color: 'primary',
     fontClass: 'secondary--text'
   }
 }

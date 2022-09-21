@@ -80,53 +80,24 @@
                 </v-col>
 
                 <v-col cols="12" md="4">
-                  <v-dialog
-                    v-model="showObjectTypeDialog"
-                    width="500"
-                  >
-                    <template #activator="{on}">
-                      <v-autocomplete
-                        v-model="smartlist.companyObjectTypeId"
-                        :items="companyObjectTypes"
-                        item-text="objectType"
-                        item-value="companyObjectTypeId"
-                        label="Rows"
-                        placeholder="Select one..."
-                        :rules="requiredRules"
-                        @change="checkObjectTypeChange"
-                        attach
-                      />
-                    </template>
-
-                    <v-card>
-                      <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title
-                      >
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Toggling to this row type will reset your smartlist, are you sure you want to continue?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="[showObjectTypeDialog = false, smartlist.companyObjectTypeId = companyObjectTypes.find(t => t.objectTypeId === originalObjectTypeId).companyObjectTypeId]">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primary"
-                          text
-                          @click="[showObjectTypeDialog = false, toggleSmartlistObjectType()]">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                  <v-autocomplete
+                      v-model="smartlist.companyObjectTypeId"
+                      :items="companyObjectTypes"
+                      item-text="objectType"
+                      item-value="companyObjectTypeId"
+                      label="Rows"
+                      placeholder="Select one..."
+                      :rules="requiredRules"
+                      @change="checkObjectTypeChange"
+                      attach
+                  />
+                  <ConfirmationDialog :open-dialog="showObjectTypeDialog"
+                                      @confirm="[showObjectTypeDialog = false, toggleSmartlistObjectType()]"
+                                      @close-dialog="[showObjectTypeDialog = false, smartlist.companyObjectTypeId = companyObjectTypes.find(t => t.objectTypeId === originalObjectTypeId).companyObjectTypeId]">
+                    <template v-slot:title>Confirm</template>
+                    Toggling to this row type will reset your smartlist, are you sure you want to continue?
+                    <template v-slot:yes>Continue</template>
+                  </ConfirmationDialog>
                 </v-col>
 
                 <v-col
@@ -163,48 +134,62 @@
                     label="Primary Position"
                   />
 
-                  <v-dialog
-                    v-if="!isUserOrgObjectType"
-                    v-model="showToggleDialog"
-                    width="500"
+<!--                  <v-dialog-->
+<!--                    v-if="!isUserOrgObjectType"-->
+<!--                    v-model="showToggleDialog"-->
+<!--                    width="500"-->
+<!--                  >-->
+<!--                    <template #activator="{on}">-->
+<!--                      <v-checkbox-->
+<!--                        v-model="smartlist.projectDetails"-->
+<!--                        label="Project Details"-->
+<!--                        v-on="smartlist.id && on"-->
+<!--                      />-->
+<!--                    </template>-->
+
+<!--                    <v-card>-->
+<!--                      <v-card-title-->
+<!--                        class="text-h5 grey lighten-2"-->
+<!--                        primary-title-->
+<!--                      >-->
+<!--                        Confirm-->
+<!--                      </v-card-title>-->
+
+<!--                      <v-card-text>-->
+<!--                        Toggling project details will reset your smartlist, are you sure you want to continue?-->
+<!--                      </v-card-text>-->
+
+<!--                      <v-divider></v-divider>-->
+
+<!--                      <v-card-actions>-->
+<!--                        <v-spacer></v-spacer>-->
+<!--                        <v-btn-->
+<!--                          @click="resetToggleProjectDetails">-->
+<!--                          No-->
+<!--                        </v-btn>-->
+<!--                        <v-btn-->
+<!--                          color="primary"-->
+<!--                          text-->
+<!--                          @click="[showToggleDialog = false, toggleProjectDetails()]">-->
+<!--                          Yes-->
+<!--                        </v-btn>-->
+<!--                      </v-card-actions>-->
+<!--                    </v-card>-->
+<!--                  </v-dialog>-->
+                  <v-checkbox
+                      v-if="!isUserOrgObjectType"
+                      v-model="smartlist.projectDetails"
+                      label="Project Details"
+                      @click="smartlist.id ? showToggleDialog=true : showToggleDialog"
+                  />
+                  <ConfirmationDialog :open-dialog="showToggleDialog"
+                                      @confirm="[showToggleDialog = false, toggleProjectDetails()]"
+                                      @close-dialog="resetToggleProjectDetails"
                   >
-                    <template #activator="{on}">
-                      <v-checkbox
-                        v-model="smartlist.projectDetails"
-                        label="Project Details"
-                        v-on="smartlist.id && on"
-                      />
-                    </template>
-
-                    <v-card>
-                      <v-card-title
-                        class="text-h5 grey lighten-2"
-                        primary-title
-                      >
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Toggling project details will reset your smartlist, are you sure you want to continue?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="[showToggleDialog = false, smartlist.projectDetails = !smartlist.projectDetails]">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primary"
-                          text
-                          @click="[showToggleDialog = false, toggleProjectDetails()]">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                    <template v-slot:title>Confirm</template>
+                    Toggling project details will reset your smartlist, are you sure you want to continue?
+                    <template v-slot:yes>Continue</template>
+                  </ConfirmationDialog>
                 </v-col>
 
                 <v-col cols="4" md="2">
@@ -632,6 +617,11 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    resetToggleProjectDetails(){
+      debugger
+      this.smartlist.projectDetails = !this.smartlist.projectDetails
+      this.showToggleDialog = false
     },
     checkObjectTypeChange () {
       if (this.smartlist.id) {

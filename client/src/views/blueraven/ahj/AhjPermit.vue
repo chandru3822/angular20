@@ -1,637 +1,45 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-row no-gutters id="ahj-permit">
-    <v-col class="ahj-form-btns py-1" cols="12">
-      <v-btn v-if="dataWasChanged"
-             color="primary" text
-             @click="resetForm"
-         class="cancel-link"
-         style="margin-right: 10px"
-      >Cancel</v-btn>
-      <v-btn class="white--text mr-0 save-btn"
-             v-if="userCanEdit"
-             color="primary"
-             @click="validateForm()"
-      >Save
-      </v-btn>
-    </v-col>
+  <v-card class="mx-4 mt-6 square-card">
+    <v-row no-gutters class="px-2" id="ahj-permit">
+      <v-col class="ahj-form-btns py-1" cols="12">
+        <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
+          {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
+        </v-btn>
+        <v-btn v-if="dataWasChanged"
+               color="primary" text
+               @click="resetForm"
+               class="cancel-link"
+               style="margin-right: 10px"
+        >Cancel
+        </v-btn>
+        <v-btn class="white--text mr-0 save-btn"
+               v-if="userCanEdit"
+               color="primary"
+               @click="validateForm()"
+        >Save
+        </v-btn>
+      </v-col>
+    </v-row>
 
     <v-form ref="ahjPermitForm">
-      <v-row class="mb-4" no-gutters>
-        <!-- FIRST COLUMN -->
-        <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
-          <!-- SUBMISSION DETAILS -->
-          <v-card>
-            <v-card-title class="primary white--text font-weight-bold title-with-icon">
-              Submission Details
-              <router-link :to="'/schedule'" title="Go to Scheduling Tool">
-                <v-icon class="white--text">launch</v-icon>
-              </router-link>
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-text-field v-model="ahjPermit.depositAmount"
-                            @change="dataWasChanged = true"
-                            label="Deposit Amount"
-                            filled
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            prepend-inner-icon="attach_money"
-              ></v-text-field>
-              <v-row>
-                <v-col cols="6">
-                  <v-text-field v-model="ahjPermit.businessLicense"
-                                @change="dataWasChanged = true"
-                                label="Business License"
-                                :readonly="!userCanEdit"
-                                :disabled="!userCanEdit"
-                                filled
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="6">
-                  <v-menu v-model="businessLicenseMenu"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          :close-on-content-click="false"
-                          :nudge-right="40"
-                          transition="scale-transition"
-                          offset-y
-                          min-width="290px">
-                    <template v-slot:activator="{ on }">
-                      <v-text-field v-model="ahjPermit.businessLicenseExpirationDate"
-                                    @change="dataWasChanged = true"
-                                    label="mm/dd/yyyy"
-                                    filled
-                                    append-icon="event"
-                                    readonly
-                                    v-on="on"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate"
-                                   @change="dataWasChanged = true"
-                                   :readonly="!userCanEdit"
-                                   :disabled="!userCanEdit"
-                                   @input="businessLicenseMenu = false"
-                    ></v-date-picker>
-                  </v-menu>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6">
-                  <v-text-field v-model="ahjPermit.contractorLicense"
-                                @change="dataWasChanged = true"
-                                :readonly="!userCanEdit"
-                                :disabled="!userCanEdit"
-                                label="Contractor License"
-                                filled
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="6">
-                  <v-menu v-model="contractorLicenseMenu"
-                          :close-on-content-click="false"
-                          :nudge-right="40"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          transition="scale-transition"
-                          offset-y
-                          min-width="290px">
-                    <template v-slot:activator="{ on }">
-                      <v-text-field v-model="ahjPermit.contractorLicenseExpirationDate"
-                                    @change="dataWasChanged = true"
-                                    label="mm/dd/yyyy"
-                                    filled
-                                    append-icon="event"
-                                    readonly
-                                    v-on="on"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker v-model="ahjPermit.contractorLicenseExpirationDate"
-                                   @change="dataWasChanged = true"
-                                   :readonly="!userCanEdit"
-                                   :disabled="!userCanEdit"
-                                   @input="contractorLicenseMenu = false"
-                    ></v-date-picker>
-                  </v-menu>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="6">
-                  <v-text-field v-model="ahjPermit.otherLicense"
-                                @change="dataWasChanged = true"
-                                :readonly="!userCanEdit"
-                                :disabled="!userCanEdit"
-                                label="Other License"
-                                filled
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="6">
-                  <v-menu v-model="otherLicenseMenu"
-                          :close-on-content-click="false"
-                          :nudge-right="40"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          transition="scale-transition"
-                          offset-y
-                          min-width="290px">
-                    <template v-slot:activator="{ on }">
-                      <v-text-field v-model="ahjPermit.otherLicenseExpirationDate"
-                                    @change="dataWasChanged = true"
-                                    label="mm/dd/yyyy"
-                                    filled
-                                    append-icon="event"
-                                    readonly
-                                    v-on="on"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker v-model="ahjPermit.otherLicenseExpirationDate"
-                                   @change="dataWasChanged = true"
-                                   :readonly="!userCanEdit"
-                                   :disabled="!userCanEdit"
-                                   @input="otherLicenseMenu = false"
-                    ></v-date-picker>
-                  </v-menu>
-                </v-col>
-              </v-row>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  BRS Technician Permit Submission Instructions
-                  <v-btn text color="primary" x-small fab
-                         @click="editBrsTechnicianPermitSubmissionInstructions = !editBrsTechnicianPermitSubmissionInstructions">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.brsTechnicianPermitSubmissionInstructions"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editBrsTechnicianPermitSubmissionInstructions"
-                              :disabled="!userCanEdit || !editBrsTechnicianPermitSubmissionInstructions"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjChecklist v-if="dataReady"
-                            title="Submission Checklist"
-                            :checklistTypeId="1"
-                            :user-can-edit="userCanEdit"
-                            :itemId="ahjPermit.id"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklistItems="ahjPermit.submissionChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  Submission Instructions
-                  <v-btn text x-small fab @click="editSubmissionInstruction = !editSubmissionInstruction">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.submissionNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editSubmissionInstruction"
-                              :disabled="!userCanEdit || !editSubmissionInstruction"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <!-- SECOND COLUMN -->
-        <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
-          <!-- REVISION SUBMISSION DETAILS -->
-          <v-card class="mb-3">
-            <v-card-title class="primary white--text font-weight-bold">
-              Revision Submission Details
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(2)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-text-field v-model="ahjPermit.revisionFeeAmount"
-                            @change="dataWasChanged = true"
-                            label="Fee Amount"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            filled
-                            prepend-inner-icon="attach_money"
-              ></v-text-field>
-              <AhjChecklist v-if="dataReady"
-                            title="Revision Submission Checklist"
-                            :checklistTypeId="2"
-                            :user-can-edit="userCanEdit"
-                            :itemId="ahjPermit.id"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklist-items="ahjPermit.revisionChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  Revision Submission Instructions
-                  <v-btn text color="primary" x-small fab
-                         @click="editRevisionSubmissionInstruction = !editRevisionSubmissionInstruction">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.revisionNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editRevisionSubmissionInstruction"
-                              :disabled="!userCanEdit || !editRevisionSubmissionInstruction"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-            </v-card-text>
-          </v-card>
-          <v-card class="mb-3">
-            <v-card-title class="primaryCustom white--text font-weight-bold">
-              Cancellation and Refund Details
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(24)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  Cancellation and Refund Instructions
-                  <v-btn text color="primary" x-small fab
-                         @click="editCancellationAndRefundInstructions = !editCancellationAndRefundInstructions">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.cancellationAndRefundInstructions"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editCancellationAndRefundInstructions"
-                              :disabled="!userCanEdit || !editCancellationAndRefundInstructions"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjDocument v-if="dataReady"
-                           title="Documents Required for Refund/Cancellation"
-                           :documentTypeId="462"
-                           :user-can-edit="userCanEdit"
-                           :sourceId="ahjPermit.id"
-                           :ahjId="ahjId"
-                           :documents="cancellationDocuments"
-                           :isNested="true"
-              ></AhjDocument>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <!-- THIRD COLUMN -->
-        <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
-          <!-- AS-BUILT SUBMISSION DETAILS -->
-          <v-card>
-            <v-card-title class="primary white--text font-weight-bold">
-              As-Built Submission Details
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(3)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
-                            @change="dataWasChanged = true"
-                            label="Fee Amount"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            filled
-                            prepend-inner-icon="attach_money"
-              ></v-text-field>
-              <AhjChecklist v-if="dataReady"
-                            title="As-Built Submission Checklist"
-                            :checklistTypeId="3"
-                            :itemId="ahjPermit.id"
-                            :user-can-edit="userCanEdit"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklist-items="ahjPermit.asBuiltChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  As-Built Submission Instructions
-                  <v-btn text color="primary" x-small fab @click="editAsBuiltSubmissionInstruction = !editAsBuiltSubmissionInstruction">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.asBuiltNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editAsBuiltSubmissionInstruction"
-                              :disabled="!userCanEdit || !editAsBuiltSubmissionInstruction"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-            </v-card-text>
-          </v-card>
-
-          <v-card>
-            <v-card-title class="primary white--text font-weight-bold">
-              Non Standard Submission Details
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(42)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <AhjChecklist v-if="dataReady"
-                            title="Non Standard Submission Checklist"
-                            :checklistTypeId="14"
-                            :itemId="ahjPermit.id"
-                            :user-can-edit="userCanEdit"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklist-items="ahjPermit.nonStandardChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  Non Standard Submission Instructions
-                  <v-btn text color="primary" x-small fab
-                         @click="editNonStandardSubmissionInstruction = !editNonStandardSubmissionInstruction">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.nonStandardNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editNonStandardSubmissionInstruction"
-                              :disabled="!userCanEdit || !editNonStandardSubmissionInstruction"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <!-- FOURTH COLUMN -->
-        <v-col cols="12" md="3" class="pl-sm-0 pl-md-1 mb-3">
-          <!-- FOLLOW-UP / APPROVAL DETAILS -->
-          <v-card class="mb-3">
-            <v-card-title class="primary white--text font-weight-bold">
-              Follow-up / Approval Details
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <v-text-field v-model="ahjPermit.approvalTimeline"
-                            @change="dataWasChanged = true"
-                            label="Approval Timeline"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            filled
-              ></v-text-field>
-              <v-text-field v-model="ahjPermit.followUpFeeAmount"
-                            @change="dataWasChanged = true"
-                            label="Fee Amount"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            filled
-                            prepend-inner-icon="attach_money"
-              ></v-text-field>
-              <div v-for="item in getCustomFieldsForGroup(4)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-text-field v-model="ahjPermit.documentsAvailable"
-                            @change="dataWasChanged = true"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="When are documents available?"
-                            filled
-              ></v-text-field>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  Approval Instructions
-                  <v-btn text color="primary" x-small fab @click="editApprovalInstructions = !editApprovalInstructions">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.approvalInstructions"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editApprovalInstructions"
-                              :disabled="!userCanEdit || !editApprovalInstructions"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-            </v-card-text>
-          </v-card>
-
-          <!-- DELIVERY DETAILS -->
-          <v-card class="mb-3">
-            <v-card-title class="primary white--text font-weight-bold">
-              Delivery Details
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(5)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-text-field v-model="ahjPermit.deliveryFeeAmount"
-                            @change="dataWasChanged = true"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Fee Amount"
-                            filled
-                            prepend-inner-icon="attach_money"
-              ></v-text-field>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  BRS Technician Permit Pick-up and Delivery Instructions
-                  <v-btn text color="primary" x-small fab
-                         @click="editBrsTechnicianPermitPickupAndDeliveryInstructions = !editBrsTechnicianPermitPickupAndDeliveryInstructions">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.brsTechnicianPermitPickupAndDeliveryInstructions"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editBrsTechnicianPermitPickupAndDeliveryInstructions"
-                              :disabled="!userCanEdit || !editBrsTechnicianPermitPickupAndDeliveryInstructions"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjDocument v-if="dataReady"
-                           title="Documents Required for Inspection"
-                           :documentTypeId="1"
-                           :user-can-edit="userCanEdit"
-                           :sourceId="ahjPermit.id"
-                           :ahjId="ahjId"
-                           :documents="documents"
-                           :isNested="true"
-              ></AhjDocument>
-              <v-card flat class="mt-1 pa-0">
-                <v-card-title class="px-0 pb-0">
-                  Delivery Instructions
-                  <v-btn text color="primary" x-small fab @click="editDeliveryInstruction = !editDeliveryInstruction">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjPermit.deliveryNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editDeliveryInstruction"
-                              :disabled="!userCanEdit || !editDeliveryInstruction"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-            </v-card-text>
-          </v-card>
-        </v-col>
+      <v-row class="mb-4 group-row" no-gutters>
+        <TwoColumnMasonry :custom-field-groups="customFieldGroups"
+                          :user-can-edit="userCanEdit"
+                          :expanded-all="expandedAll"
+                          :callback="(field) => updateDirtyValue(field)"
+                          :hardcoded-docs="hardCodedDocsMap"
+                          :source-id="ahjId"
+                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+        ></TwoColumnMasonry>
+        <!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">-->
+        <!--          <AhjCustomFields :group = group-->
+        <!--                   :user-can-edit="userCanEdit"-->
+        <!--                   :callback="(field) => updateDirtyValue(field)"-->
+        <!--                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"-->
+        <!--          >-->
+        <!--          </AhjCustomFields>-->
+        <!--        </v-col>-->
       </v-row>
 
       <h1 class="pb-2 mb-4"
@@ -718,25 +126,28 @@
 
           <v-divider></v-divider>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn @click="saveDialog = false"
-                 color="primary" text
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn v-if="ahjPermit.updateAllInState"
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="saveConfirmDialog = true"
-          >Save</v-btn>
-          <v-btn v-else
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjPermit"
-          >Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn @click="saveDialog = false"
+                   color="primary" text
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn v-if="ahjPermit.updateAllInState"
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="saveConfirmDialog = true"
+            >Save
+            </v-btn>
+            <v-btn v-else
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjPermit"
+            >Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
       <v-dialog v-model="saveConfirmDialog" max-width="500">
         <v-card>
@@ -748,43 +159,45 @@
             Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
           </v-card-text>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="saveConfirmDialog = false"
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjPermit"
-          >Yes</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveConfirmDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjPermit"
+            >Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
     </v-form>
-  </v-row>
+  </v-card>
 </template>
 
 <script>
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
-import moment from 'moment'
-import AhjChecklist from './components/AhjChecklist'
 import AhjContact from './components/AhjContacts'
-import AhjDocument from './components/AhjDocuments'
 import AhjLink from './components/AhjLinks'
 import AhjServicingFot from './components/AhjServicingFots'
 
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFieldGroup";
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
+import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
   name: 'ahjPermit',
   components: {
-    AhjChecklist,
+    TwoColumnMasonry,
+    AhjCustomFields,
     AhjContact,
-    AhjDocument,
     AhjLink,
     AhjServicingFot,
     CustomValueInput
@@ -793,8 +206,25 @@ export default {
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
     },
+    hardCodedDocsMap(){
+      const docsMap = new Map()
+      docsMap.set(5, {
+        title: "Documents Required for Inspection",
+        documents: this.inspectionDocuments,
+        attachmentType1: 1 ,
+        attachmentType: "All Documents"
+      })
+      docsMap.set(24, {
+        title: "Documents Required for Refund/Cancellation",
+        documents: this.cancellationDocuments,
+        attachmentTypeId: 462 ,
+        attachmentType: "All Documents"
+      })
+      return docsMap
+    }
   },
   data: () => ({
+    CollapseExpandEnum,
     ahjId: null,
     itemType: 'permit',
     snackbar: {},
@@ -802,7 +232,7 @@ export default {
     saveConfirmDialog: false,
     dataWasChanged: false,
     dataReady: false,
-    customFieldGroupAssignments: [],
+    customFieldGroups: [],
     approvalRequiredOptions: [{id: null, name: ''}],
     submittalMethods: [{id: null, name: ''}],
     businessLicenseMenu: false,
@@ -817,6 +247,7 @@ export default {
     editBrsTechnicianPermitPickupAndDeliveryInstructions: false,
     editCancellationAndRefundInstructions: false,
     editBrsTechnicianPermitSubmissionInstructions: false,
+    expandedAll: CollapseExpandEnum.EXPANDED,
     // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
     ahjPermit: {
       submissionChecklist: [],
@@ -830,19 +261,13 @@ export default {
       followUpContacts: [],
       servicingFots: []
     },
-    documents: [],
+    inspectionDocuments: [],
     cancellationDocuments: [],
   }),
   methods: {
     updateDirtyValue(item) {
       item.valueWasChanged = true
       this.dataWasChanged = true
-    },
-    reformatDates() {
-      // Reformat dates to remove timestamps
-      this.ahjPermit.businessLicenseExpirationDate = this.ahjPermit.businessLicenseExpirationDate ? moment(this.ahjPermit.businessLicenseExpirationDate).format('YYYY-MM-DD') : null
-      this.ahjPermit.contractorLicenseExpirationDate = this.ahjPermit.contractorLicenseExpirationDate ? moment(this.ahjPermit.contractorLicenseExpirationDate).format('YYYY-MM-DD') : null
-      this.ahjPermit.otherLicenseExpirationDate = this.ahjPermit.otherLicenseExpirationDate ? moment(this.ahjPermit.otherLicenseExpirationDate).format('YYYY-MM-DD') : null
     },
     validateForm() {
       //checks for required fields prior to opening the save dialog
@@ -867,7 +292,7 @@ export default {
 
           data.servicingFots = orderBy(data.servicingFots, fot => {
             if (fot.hierarchy && fot.hierarchy.orgName) {
-              return fot.hierarchy.orgName.toLowerCase()
+              return fot.hierarchy.orgName?.toLowerCase()
             }
           })
         } else {
@@ -876,11 +301,10 @@ export default {
 
         this.ahjPermit = cloneDeep(data)
         window.document.title = `AHJ - ${this.ahjPermit.ahjName}`
-        this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name.toLowerCase())
-        this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name.toLowerCase())
-        this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name.toLowerCase())
-        this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
-        this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
+        this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name?.toLowerCase())
+        this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name?.toLowerCase())
+        this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name?.toLowerCase())
+        this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name?.toLowerCase())
         this.ahjPermit.updateAllInState = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -897,7 +321,7 @@ export default {
           data,
           status
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-        this.customFieldGroupAssignments = cloneDeep(data)
+        this.customFieldGroups = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -906,7 +330,7 @@ export default {
       }
     },
     getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
       return match ? match.customFieldValues : []
     },
     showOtherField(int, list) {
@@ -914,7 +338,7 @@ export default {
       return match ? match.showOther : false
     },
     resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroupAssignments.forEach(group => {
+      this.customFieldGroups.forEach(group => {
         group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
       })
     },
@@ -924,11 +348,10 @@ export default {
       this.dataReady = false
       this.getAhjPermit().then(() => {
         this.getCustomFieldGroupAssignmentsForScreen()
-        this.reformatDates()
         this.dataReady = true
       })
     },
-    async getCanellationDocuments() {
+    async getCancellationDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 462}
@@ -941,12 +364,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getDocuments() {
+    async getInspectionDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
         const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.documents = cloneDeep(data)
+        this.inspectionDocuments = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -978,7 +401,7 @@ export default {
           }
         }
 
-        this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
+        this.ahjPermit.customFieldGroups = this.customFieldGroups
         const {
           data,
           status
@@ -1004,7 +427,6 @@ export default {
         this.ahjPermit.updateAllInState = false
         this.dataWasChanged = false
         this.resetCustomFieldValueWasChangedFlags()
-        this.reformatDates()
         let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : 'Permit updated successfully'
         this.snackbar = getSnackbar('SUCCESS', successMessage)
         handleHidingGlobalLoader(this, status)
@@ -1015,15 +437,22 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
 
+    },
+
+    toggleMinimizeAll() {
+      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
+        this.expandedAll = CollapseExpandEnum.COLLAPSED
+      } else {
+        this.expandedAll = CollapseExpandEnum.EXPANDED
+      }
     }
   },
   async created() {
     this.ahjId = parseInt(this.$route.params.ahjId)
     this.getAhjPermit().then(() => {
-      this.reformatDates()
       this.getCustomFieldGroupAssignmentsForScreen()
-      this.getDocuments()
-      this.getCanellationDocuments()
+      this.getInspectionDocuments()
+      this.getCancellationDocuments()
       this.dataReady = true
     })
   }
@@ -1114,6 +543,18 @@ table {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
+}
+
+.row {
+  width: 100%;
+}
+
+.group-row {
+  justify-content: space-between;
+}
+
+.col-gap {
+  width: 3em;
 }
 
 .other-field {

@@ -386,7 +386,7 @@ public class ContactService {
 
     // create project (use contact_full_name as project_name)
     Optional<Project> project =
-        projectService.insertProject(contact.getId(), process.getId(), contact);
+        projectService.insertProject(contact.getId(), process.getId(), contact, contact.isActiveState());
 
     // get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps =
@@ -444,7 +444,6 @@ public class ContactService {
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
 
     PutObjectRequest objectRequest =
         new PutObjectRequest(

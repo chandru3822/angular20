@@ -14,7 +14,7 @@
           </span>
       </div>
     </div>
-    <div class="albatross-body-3"
+    <div class="albatross-body-3 grey--text text--darken-2"
          v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
       {{ event.id }}
     </div>

@@ -12,7 +12,7 @@
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
                                @joinConversation="joinConversation" />
-      <v-toolbar prominent elevation="4" color="#F5F6F7" class="py-4 sticky-toolbar">
+      <v-toolbar prominent elevation="4" color="grey lighten-4" class="py-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
           <v-text-field
             prepend-inner-icon="search"
@@ -123,11 +123,14 @@
         :items="projectsFiltered"
         :options.sync="options"
         disable-sort
+        ref="pageable-table"
+        :page.sync="page"
         :mobile-breakpoint="0"
         :footer-props="footerProps"
         :server-items-length="totalProjects"
-        hide-default-header
+        fixed-header
         class="elevation-1"
+        id="inbox-message-list"
       >
         <template #no-data>
           <div class="default-text-color">No available conversations</div>
@@ -158,7 +161,7 @@
                   <span v-if="item.messageHistory.length > 0"
                         class="albatross-body-2 px-2">{{ getTime(item.messageHistory[0].lastMessageSent)
                     }}</span>
-                  <span class="albatross-body-2 px-1 deemphasis">{{ item.state }}</span>
+                  <span class="albatross-body-2 px-1 grey--text text--darken-2">{{ item.state }}</span>
                 </div>
                 <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}
                 </div>
@@ -180,7 +183,7 @@
       </v-data-table>
     </template>
     <template v-slot:collapse-button>
-      <v-btn class="d-inline-block align-self-center" small text
+      <v-btn class="d-inline-block align-self-center" small text color="primary"
              @click="$router.push({path: `/inbox`})">
         <v-icon>close</v-icon>
       </v-btn>
@@ -240,6 +243,7 @@ export default {
       selectableTeams: [],
       reloadInProgress: false,
       totalProjects: 0,
+      page: 1,
       initialLoad: true
     }
   },
@@ -625,6 +629,13 @@ export default {
           this.reloadProjects()
         }
       }
+    },
+    page() {
+      let table = this.$refs['pageable-table'];
+      let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+      this.$vuetify.goTo(table); // to table
+      this.$vuetify.goTo(table, {container: wrapper}); // to header
     }
   },
   created() {
@@ -635,8 +646,8 @@ export default {
 </script>
 
 <style lang="scss">
-#main-inbox-container .v-data-table__wrapper table,
-#main-inbox-container .v-data-table__wrapper tbody{
+#inbox-message-list .v-data-table__wrapper table,
+#inbox-message-list .v-data-table__wrapper tbody{
   width: 100% !important;
   max-width: 100% !important;
   display: block;
@@ -675,7 +686,7 @@ export default {
 .inbox-row {
   min-height: 94px;
   width: 100%;
-  border-bottom: 1px solid #C7C7CC;
+  border-bottom: 1px solid var(--v-grey-lighten1);
   background-color: white;
 }
 
@@ -723,10 +734,6 @@ a {
   text-overflow: ellipsis;
 }
 
-.deemphasis {
-  color: #474747;
-}
-
 .assigned-join-button {
   background-color: #C0C0C0;
   color: #1F3C73 !important;
@@ -736,4 +743,10 @@ a {
   background-color: #1F3C73 !important;
 }
 
+::v-deep {
+  .v-data-table__wrapper {
+    height: calc(100vh - 250px);
+    min-height: 300px;
+  }
+}
 </style>

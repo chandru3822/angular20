@@ -18,15 +18,17 @@
         </div>
       </v-col>
     </v-row>
-    <v-divider></v-divider>
+    <v-divider />
     <v-toolbar flat color="transparent">
       <v-toolbar-title class="proposal-designs-title">Designs and Proposals</v-toolbar-title>
     </v-toolbar>
     <v-row class="mx-2">
-      <v-card v-for="(d, idx) in designs" :key="idx"
-              width="355" height="535" class="pa-4 proposal-card">
+      <v-card v-for="(d, idx) in designs"
+              :key="idx"
+              width="355"
+              height="535"
+              class="pa-4 proposal-card">
 
-        <div style="font-size: 8pt;">PPS_ID: {{ d.projectProcessStepId }} (temp for testing)</div>
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
           <img-proxy
             name="designImg"
@@ -54,23 +56,39 @@
         <div class="mt-3 design-small-gray">
           Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
         </div>
-        <v-btn color="primary" dark class="mt-4 one-hunned text-capitalize font-weight-bold"
+        <div class="design-small-gray" v-if="project.id">
+          <router-link
+            :to="{ name : 'projectProcessStep', params: {projectId: project.id, processStepId: d.projectProcessStepId}}"
+            target="_blank">
+            Open Process Step
+          </router-link>
+          <v-icon small>mdi-open-in-new</v-icon>
+        </div>
+        <v-btn color="primary"
+               dark
+               class="mt-4 one-hunned text-capitalize font-weight-bold"
                @click="addProposal(d)">
           Create new proposal
         </v-btn>
         <v-list v-if="d.proposals.length > 0">
           <v-list-item
             v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
-            :key="index" two-line
+            :key="index"
+            two-line
             class="proposal-container"
             @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
-              <v-list-item-title class="proposal-title">Proposal {{ proposal.id }}</v-list-item-title>
+              <v-list-item-title class="proposal-title">
+                <span>{{ proposal.displayName }}</span>
+                <v-icon v-if="proposal.locked" small>mdi-lock</v-icon>
+              </v-list-item-title>
               <v-list-item-subtitle>
                 <v-container class="design-small-gray subtitle-container">
                   <v-row>
-                    <v-col class="pt-2 pb-0">more info</v-col> <!--todo: use actual info here-->
-                    <v-col class="pt-2 pb-0 text-right">{{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}</v-col>
+                    <v-col class="pt-2 pb-0"></v-col> <!--todo: use actual info here-->
+                    <v-col class="pt-2 pb-0 text-right">
+                      {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+                    </v-col>
                   </v-row>
                 </v-container>
               </v-list-item-subtitle>
@@ -82,46 +100,60 @@
           <v-icon dense
                   class="pr-1 pb-3"
                   :disabled="d.offset === 0"
-                  @click="d.offset--">mdi-chevron-left</v-icon>
+                  @click="d.offset--">mdi-chevron-left
+          </v-icon>
           <v-icon dense
                   class="pl-1 pb-3"
                   :disabled="disableAddSlice(d.proposals.length, d.offset)"
-                  @click="d.offset++">mdi-chevron-right</v-icon>
+                  @click="d.offset++">mdi-chevron-right
+          </v-icon>
         </div>
       </v-card>
-      <v-card width="355" height="535" class="proposal-card request-new"
-              :class="{'disable-new': (activeDesign && null != activeDesign.projectId) || !requestSuccessful}">
-        <v-btn :disabled="(activeDesign && null != activeDesign.projectId) || !requestSuccessful"
-               text color="primary" @click="showNewDesignRequestForm = true">
+      <v-card
+        width="355"
+        height="535"
+        class="proposal-card request-new"
+        :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
+        <v-btn text
+               :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
+               color="primary"
+               @click="handleNewRequest">
           <v-icon :size="60">add</v-icon>
         </v-btn>
         <div class="mt-5 primary--text">
           Request New Design
         </div>
-        <div class="request-new-details" v-if="activeDesign && null != activeDesign.projectId">
+
+        <div class="request-new-details" v-if="hasActiveDesign">
+          <div>
+            <router-link
+              :to="{ name : 'projectProcessStep', params: {projectId: project.id, processStepId: activeDesign.projectProcessStepId}}"
+              target="_blank">
+              Open Process Step
+            </router-link>
+            <v-icon small>mdi-open-in-new</v-icon>
+          </div>
+
+          Current Step: {{ activeDesign.processStepName }} <br />
           Last Requested: {{ activeDesign.dateCreated | formatDate('date') }} <br />
           Current Status: {{ activeDesign.companyProcessStepStatusType }}
+          <div v-if="activeDesign.comments">
+            Comments: {{ activeDesign.comments }}
+          </div>
         </div>
       </v-card>
     </v-row>
     <v-dialog width="500" v-model="showNewDesignRequestForm">
-      <v-card class="pa-6">
-        <v-card-title
-          color="blackText"
-          class="text-h6 text-capitalize pa-0 font-weight-bold"
-          primary-title
-        >Request New design
-          <v-spacer/>
-          <v-icon color="black" large @click="showNewDesignRequestForm = false">mdi-close</v-icon>
-        </v-card-title>
-        <v-card-text class="pt-4 px-0">
+      <v-card>
+        <v-card-title>Request New Design</v-card-title>
+        <v-card-text>
           Describe your request (Required)
           <v-textarea required
                       auto-grow
                       outlined
                       counter="250"
                       color="#808588"
-                      v-model="newDesignRequest.description"/>
+                      v-model="newDesignRequest.description" />
 
           <v-file-input
             dense
@@ -148,22 +180,62 @@
           <DatetimePickerInput
             v-model="newDesignRequest.dueDate"
             :timezone="timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
+            type="timestamp"
+            :format="'MMMM DD, YYYY, h:mm A'"
             :min-date="minDate"
             label="Pick a due date and time (Required)"
           />
 
         </v-card-text>
 
-        <v-card-actions class="pa-0">
-          <v-spacer/>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text
+                 class="text-capitalize"
+                 @click="showNewDesignRequestForm = false">
+            Cancel
+          </v-btn>
           <v-btn
-              color="primary"
-              class="white--text text-capitalize font-weight-bold"
-              :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
-              @click="requestNewDesign()">
+            color="primary"
+            class="white--text text-capitalize font-weight-bold"
+            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
+            @click="requestNewDesign()">
             Request
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog width="500" v-model="showNewPostalCodeRequestForm">
+      <v-card>
+        <v-card-title class="text-capitalize">
+          Unapproved Zip Code
+        </v-card-title>
+        <v-card-subtitle>This home lies outside of approved zones. Zip code needs to be approved before requesting a new
+          design.
+        </v-card-subtitle>
+        <v-card-text>
+          Additional comments (optional)
+          <v-textarea required
+                      auto-grow
+                      outlined
+                      counter="250"
+                      color="#808588"
+                      v-model="newDesignRequest.description" />
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text
+                 class="text-capitalize"
+                 @click="showNewPostalCodeRequestForm = false">
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            class="white--text text-capitalize font-weight-bold"
+            @click="requestPostalCodeApproval(newDesignRequest.description)">
+            Request Approval
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -173,14 +245,7 @@
 
 <script>
 
-import {
-  formatPhoneNumber,
-  getRequest,
-  getSnackbar,
-  handleHidingGlobalLoader,
-  logError,
-  postRequest
-} from '@/helpers/helpers'
+import { formatPhoneNumber, getRequest, handleHidingGlobalLoader, logError, postRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
@@ -202,6 +267,8 @@ export default {
       newDesignRequest: {},
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       showNewDesignRequestForm: false,
+      showNewPostalCodeRequestForm: false,
+      lockNewRequests: false,
       project: {},
       activeDesign: {},
       requestSuccessful: false,
@@ -215,12 +282,29 @@ export default {
     this.getCompletedProposalDesigns()
     await this.getActiveDesign()
   },
+  computed: {
+    hasActiveDesign() {
+      return !!this.activeDesign?.projectId
+    }
+  },
   methods: {
+    async handleNewRequest() {
+      this.lockNewRequests = true
+      const { data } = await getRequest(`/proposal/projects/${this.projectId}/postalCode`, 'blueraven')
+
+      if (data?.approved) {
+        this.showNewDesignRequestForm = true
+      } else {
+        this.showNewPostalCodeRequestForm = true
+      }
+
+      this.lockNewRequests = false
+
+    },
     async requestNewDesign() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const formData = new FormData()
-        formData.append('projectId', this.projectId)
         formData.append('description', this.newDesignRequest.description)
         formData.append('dueDate', this.newDesignRequest.dueDate)
 
@@ -232,8 +316,11 @@ export default {
           formData.append('utilityBillAttachments', a)
         })
 
-        const { data, status } = await postRequest(`/proposal/design`, formData, 'blueraven')
-        //this endpoint returns all of the designs because adding a new one could possible remove (cancel) an existing one
+        const {
+          data,
+          status
+        } = await postRequest(`/proposal/projects/${this.projectId}/designs`, formData, 'blueraven')
+        //this endpoint returns all the designs because adding a new one could possibly remove (cancel) an existing one
         this.designs = data
         await this.getActiveDesign()
         this.newDesignRequest = {}
@@ -242,6 +329,24 @@ export default {
       } catch (e) {
         logError(e)
         this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
+      }
+    },
+    async requestPostalCodeApproval(comments) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        const {
+          data,
+          status
+        } = await postRequest(`/proposal/projects/${this.projectId}/postalCode`, { comments }, 'blueraven')
+        this.activeDesign = data
+        this.newDesignRequest = {}
+        this.showNewPostalCodeRequestForm = false
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
       }
     },
     disableAddSlice(proposalCount, offset) {
@@ -253,8 +358,8 @@ export default {
       return pageCount === offset
     },
     async getProposalProject() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const { data, status } = await getRequest(`/project/${this.projectId}`)
         this.project = data
         handleHidingGlobalLoader(this, status)
@@ -264,12 +369,10 @@ export default {
       }
     },
     async getCompletedProposalDesigns() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data, status } = await getRequest(`/proposal/designs/${this.projectId}`, 'blueraven', [])
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const { data, status } = await getRequest(`/proposal/projects/${this.projectId}/designs`, 'blueraven', [])
         this.designs = data
-        //this was causing a race condition sometimes when refreshing the screen. and i dont think we need this here since we do a separate request to get the active one
-        // this.activeDesign = data.find(d => d.processStepStatusTypeId === 1) || {}
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -277,11 +380,14 @@ export default {
       }
     },
     async getActiveDesign() {
-      this.requestSuccessful = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data, status } = await getRequest(`/proposal/design/${this.projectId}/active`, 'blueraven', [])
-        console.log('active design here',data)
+        this.requestSuccessful = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        const {
+          data,
+          status
+        } = await getRequest(`/proposal/projects/${this.projectId}/designs/active`, 'blueraven', [])
         this.activeDesign = data
         this.requestSuccessful = true
         handleHidingGlobalLoader(this, status)
@@ -292,18 +398,16 @@ export default {
       }
     },
     async addProposal(design) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        let params = {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const { data, status } = await postRequest(`/proposal`, {
           projectProcessStepId: design.projectProcessStepId
-        }
-        const { data, status } = await postRequest(`/proposal`, params, 'blueraven')
+        }, 'blueraven')
         this.$router.push({ name: 'proposal', params: { proposalId: data.id } })
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
-        const snackbar = getSnackbar('ERROR', `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`, true)
-        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+        this.$snackbar('ERROR', `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`, true)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

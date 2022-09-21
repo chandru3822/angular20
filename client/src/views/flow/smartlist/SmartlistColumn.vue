@@ -144,7 +144,7 @@
       >
 
         <v-list-item-action v-if="canEdit">
-          <v-icon>drag_handle</v-icon>
+          <v-icon class="primary--text">drag_handle</v-icon>
         </v-list-item-action>
 
         <v-list-item-content>
@@ -396,7 +396,7 @@ export default {
 
 .smartlist-field {
   font-size: 12px;
-  color: rgba(0,0,0,0.6);
+  color: var(--v-grey-base);
   font-weight: 700; line-height: 18px;
 }
 

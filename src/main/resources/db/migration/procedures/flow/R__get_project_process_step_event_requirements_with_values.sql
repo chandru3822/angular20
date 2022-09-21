@@ -1,40 +1,40 @@
--- drop FUNCTION if exists flow.get_project_process_step_event_requirements_with_values(INTEGER, INTEGER[]);
+ drop FUNCTION if exists flow.get_project_process_step_event_requirements_with_values(bigint, bigint[]);
 
-CREATE OR REPLACE FUNCTION flow.get_project_process_step_event_requirements_with_values(p_project_process_step_id INTEGER, p_requirement_ids INTEGER[])
+CREATE OR REPLACE FUNCTION flow.get_project_process_step_event_requirements_with_values(p_project_process_step_id bigint, p_requirement_ids bigint[])
 
-  RETURNS TABLE (id int, project_id int, process_step_requirement_type_id int, process_step_id int, operator_type_id int, requirement_value varchar, custom_field_group_assignment_id int,
-                 company_function_id int, fail_if_no_reference_step_found boolean, reference_process_step_id int, requirement_nbr int, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id int, modified_by_id int,
-                 archived boolean, secondary_requirement_value varchar, data_type_requirement_id int, list_of_value_id int, list_of_value_ids json, operator_type varchar,
-                 process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
-                 company_system_list_id int, system_list_option_id int, custom_sql_option_id int, time_zone varchar, project_custom_field_value_id int, project_process_step_id int, text_value text,
-                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric_value numeric, int_value int, int_array_value json, system_list_option_ids json,
-                 data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
+  RETURNS TABLE (id bigint, project_id bigint, process_step_requirement_type_id bigint, process_step_id bigint, operator_type_id bigint, requirement_value varchar, custom_field_group_assignment_id bigint,
+                 company_function_id bigint, fail_if_no_reference_step_found boolean, reference_process_step_id bigint, requirement_nbr bigint, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id bigint, modified_by_id bigint,
+                 archived boolean, secondary_requirement_value varchar, data_type_requirement_id bigint, list_of_value_id bigint, list_of_value_ids json, operator_type varchar,
+                 process_step_requirement_type varchar, parent_id bigint, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
+                 company_system_list_id bigint, system_list_option_id bigint, custom_sql_option_id bigint, time_zone varchar, project_custom_field_value_id bigint, project_process_step_id bigint, text_value text,
+                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric_value numeric, int_value bigint, int_array_value json, system_list_option_ids json,
+                 data_type_requirement json, list_of_value json, list_of_values json, data_type_id bigint, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
                  company_function_params json, available_list_of_values json) AS
 
 $BODY$
 BEGIN
   RETURN QUERY
     select
-      psr.id,
-      pps.project_id,
-      psr.process_step_requirement_type_id,
-      pse.process_step_id,
-      psr.operator_type_id,
+      psr.id::bigint,
+      pps.project_id::bigint,
+      psr.process_step_requirement_type_id::bigint,
+      pse.process_step_id::bigint,
+      psr.operator_type_id::bigint,
       psr.requirement_value,
-      psr.custom_field_group_assignment_id,
-      psr.company_function_id,
+      psr.custom_field_group_assignment_id::bigint,
+      psr.company_function_id::bigint,
       psr.fail_if_no_reference_step_found,
-      psr.reference_process_step_id,
-      psr.requirement_nbr,
+      psr.reference_process_step_id::bigint,
+      psr.requirement_nbr::bigint,
       psr.date_created,
       psr.date_modified,
       psr.immutable,
-      psr.created_by_id,
-      psr.modified_by_id,
+      psr.created_by_id::bigint,
+      psr.modified_by_id::bigint,
       psr.archived,
       psr.secondary_requirement_value,
-      psr.data_type_requirement_id,
-      psr.list_of_value_id,
+      psr.data_type_requirement_id::bigint,
+      psr.list_of_value_id::bigint,
       array_to_json(psr.list_of_value_ids) as list_of_value_ids,
       ot.operator_type,
       psrt.process_step_requirement_type,
@@ -43,12 +43,12 @@ BEGIN
       ps.process_step_name as parent_name,
       cf.field_name,
       cf.custom_field_sql_key,
-      cf.company_system_list_id,
-      psr.system_list_option_id,
-      psr.custom_sql_option_id,
+      cf.company_system_list_id::bigint,
+      psr.system_list_option_id::bigint,
+      psr.custom_sql_option_id::bigint,
       p.time_zone,
-      case when pps1.id is not null then ppscfv1.id else ppscfv.id end as project_custom_field_value_id,
-      case when pps1.id is not null then ppscfv1.project_process_step_id else ppscfv.project_process_step_id end as "projectprocessStepId",
+      case when pps1.id is not null then ppscfv1.id::bigint else ppscfv.id::bigint end as project_custom_field_value_id,
+      case when pps1.id is not null then ppscfv1.project_process_step_id::bigint else ppscfv.project_process_step_id::bigint end as "projectprocessStepId",
       case when psr.process_step_requirement_type_id = 1 then
                case when pps1.id is not null then ppscfv1.text_value else ppscfv.text_value end
            when psr.process_step_requirement_type_id = 3 then
@@ -85,11 +85,11 @@ BEGIN
                ccfv.numeric_value
           end as "numericValue",
       case when psr.process_step_requirement_type_id = 1 then
-               case when pps1.id is not null then ppscfv1.int_value else ppscfv.int_value end
+               case when pps1.id is not null then ppscfv1.int_value::bigint else ppscfv.int_value::bigint end
            when psr.process_step_requirement_type_id = 3 then
-               pcfv.int_value
+               pcfv.int_value::bigint
            when psr.process_step_requirement_type_id = 4 then
-               ccfv.int_value
+               ccfv.int_value::bigint
           end as "intValue",
       case when psr.process_step_requirement_type_id = 1 then
                case when pps1.id is not null then coalesce(array_to_json(ppscfv1.int_array_value), '[]') else coalesce(array_to_json(ppscfv.int_array_value), '[]') end
@@ -116,7 +116,7 @@ BEGIN
                         from flow.list_of_value lv
                         where lv.id = any (psr.list_of_value_ids)
                       ) lov), '[]') AS list_of_values,
-      coalesce(cdt.data_type_id, df.return_data_type_id) as data_type_id,
+      coalesce(cdt.data_type_id, df.return_data_type_id)::bigint as data_type_id,
       cdt.has_list_values,
       cfn.company_function_name,
       df.function_name,
@@ -199,7 +199,7 @@ BEGIN
       psr.archived is not true and
       cfga.archived is not true and
       pps.id = p_project_process_step_id and
-      psr.id = any (array[p_requirement_ids]::int[])
+      psr.id = any (array[p_requirement_ids]::bigint[])
     order by psr.requirement_nbr;
 
 END;

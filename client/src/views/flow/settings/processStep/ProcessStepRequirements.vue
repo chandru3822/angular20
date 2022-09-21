@@ -285,7 +285,7 @@
                      :readonly="!userCanEdit"
                      :disabled="!userCanEdit">
             </div>
-            <v-btn :disabled="invalidRequirement"
+            <v-btn :disabled="invalidRequirement" color="primary"
                    @click="saveNewRequirement">
               <v-icon>save</v-icon>
               Save
@@ -306,11 +306,11 @@
               class="elevation-1 fix-column-width-bug square-card"
             >
               <template #no-data>
-                No requirements for this process step
+                <span class="default-text-color">No requirements for this process step</span>
               </template>
 
               <template #no-results>
-                No requirements for this process step
+                <span class="default-text-color">No requirements for this process step</span>
               </template>
 
               <template #expanded-item="{ headers, item }">
@@ -502,7 +502,7 @@
                            :readonly="item.immutable || !userCanEdit"
                            :disabled="item.immutable || !userCanEdit">
                   </div>
-                  <v-btn v-if="userCanEdit" @click="updateRequirement(item)">
+                  <v-btn v-if="userCanEdit" @click="updateRequirement(item)" color="primary">
                     <v-icon>save</v-icon>
                     Save
                   </v-btn>

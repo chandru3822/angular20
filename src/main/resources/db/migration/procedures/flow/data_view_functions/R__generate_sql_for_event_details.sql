@@ -1,5 +1,11 @@
+drop procedure if exists  flow.generate_sql_for_event_details(in z record,
+                                                             in p_in_event_details bigint,
+                                                             inout p_sql text ,
+                                                             inout p_text_array_tables character varying[],
+                                                             inout p_text_array_alias_columns character varying[],
+                                                             inout p_text_array_columns       character varying[]);
 CREATE OR REPLACE procedure flow.generate_sql_for_event_details(in z record,
-                                                         in p_in_event_details integer,
+                                                         in p_in_event_details bigint,
                                                          inout p_sql text ,
                                                          inout p_text_array_tables character varying[],
                                                          inout p_text_array_alias_columns character varying[],
@@ -83,7 +89,7 @@ BEGIN
                         and ppsecfv.custom_field_group_assignment_id = $$ || z.custom_field_group_assignment_id || $$
                         where case when $$||v_field_required||$$ is true then ppsecfv.$$||flow.get_value_based_on_data_type(z.data_type_id)||
             $$ is not null else 1=1 end and
-            p.company_process_id = any('$$||z.company_process_ids::text||$$'::integer[])
+            p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])
                         order by p.id, $$||v_order_by|| v_order ||$$ ), $$;
 
 

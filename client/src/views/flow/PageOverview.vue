@@ -6,7 +6,7 @@
     <v-toolbar-items>
       <v-btn
         text x-small color="primary"
-        @click="$emit('clickEdit')"
+        @click.stop="$emit('clickEdit')"
         v-if="showEditBtn">
         <v-icon>edit</v-icon>
       </v-btn>
@@ -18,7 +18,7 @@
         <span class="detail-label">{{detail.label}}: </span>
         <span v-if="detail.value" @click="detail.clickable ? $emit(`click-detail`, detail) : null"
               class="detail-item"
-              :class="{'clickable underline primary--text text--lighten-1':detail.clickable}" >
+              :class="{'clickable underline anchor':detail.clickable}" >
           {{detail.value}}
         </span>
       </div>
@@ -30,7 +30,7 @@
         <span class="vertical-top detail-label">{{detail.label}}: </span>
         <span class="d-inline-block detail-item vertical-top"
               v-if="detail.value"
-              :class="{'status-active': detail.active,'status-cancelled': !detail.active}">
+              :class="[getStatusColorClass(detail.statusTypeId), {'status-active': detail.active && !detail.statusTypeId,'status-cancelled': !detail.active && !detail.statusTypeId}]">
         {{detail.value}}
         <br/>
         <span v-if="detail.statusType">({{detail.statusType}})</span>
@@ -50,7 +50,7 @@
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.OWNER" class="mt-2">
         <span class="vertical-top detail-label">{{detail.label}}:</span>
         <div v-if="detail.value" class="d-inline-block detail-item vertical-top">
-                <span :class="{'error-text': detail.value.hasAccess}">{{
+                <span :class="{'error-text': !detail.value.hasAccess}">{{
                     detail.value.fullName
                   }} - {{detail.value.position }} <br/></span>
           <span v-if="detail.value.hasAccess">{{ formatPhoneNumber(detail.value.phoneNumber) }}<br/></span>
@@ -64,6 +64,7 @@
 <script>
 import {formatPhoneNumber} from "../../helpers/helpers";
 import constants from "../../helpers/constants"
+import {getStatusColorClass} from "../../services/projectStatusTypeService";
 
 export default {
   name: "PageOverview",
@@ -76,7 +77,8 @@ export default {
   data() {
     return {
       constants,
-      formatPhoneNumber
+      formatPhoneNumber,
+      getStatusColorClass
     }
   },
    methods: {
@@ -90,7 +92,7 @@ export default {
 <style lang="scss" scoped>
 .detail-label {
   font-size: 12px;
-  color: var(--v-grey-darken2);
+  color: var(--v-grey-darken1);
 }
 
 .detail-item {

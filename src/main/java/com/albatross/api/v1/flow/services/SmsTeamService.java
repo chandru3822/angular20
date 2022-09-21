@@ -263,7 +263,7 @@ public class SmsTeamService {
       Long smsTeamId, Long orgId, Long positionId, Long userId) {
     User user = securityService.getCurrentUser();
     String sqlQuery =
-        "SELECT * FROM flow.remove_sms_team_project_owners(:smsTeamId::integer, :orgId::integer, :positionId::integer, :userId::integer, :modifiedById::integer)";
+        "SELECT * FROM flow.remove_sms_team_project_owners(:smsTeamId::bigint, :orgId::bigint, :positionId::bigint, :userId::bigint, :modifiedById::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("smsTeamId", smsTeamId);

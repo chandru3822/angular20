@@ -1,14 +1,20 @@
-create or replace function flow.search_all_projects(p_searchterm character varying, p_company_id integer,
-                                                    p_is_parent boolean, p_limit integer DEFAULT NULL::integer,
-                                                    p_offset integer DEFAULT NULL::integer,
-                                                    p_company_project_status_type_id integer DEFAULT NULL::integer,
+drop function if exists flow.search_all_projects(p_searchterm character varying, p_company_id bigint,
+                                                 p_is_parent boolean, p_limit bigint,
+                                                 p_offset bigint ,
+                                                 p_company_project_status_type_id bigint ,
+                                                 p_sort_column character varying ,
+                                                 p_sort_direction character varying );
+create or replace function flow.search_all_projects(p_searchterm character varying, p_company_id bigint,
+                                                    p_is_parent boolean, p_limit bigint DEFAULT NULL::bigint,
+                                                    p_offset bigint DEFAULT NULL::bigint,
+                                                    p_company_project_status_type_id bigint DEFAULT NULL::bigint,
                                                     p_sort_column character varying DEFAULT NULL::character varying,
                                                     p_sort_direction character varying DEFAULT NULL::character varying)
   returns TABLE
           (
-            id                             integer,
+            id                             bigint,
             project_name                   character varying,
-            contact_id                     integer,
+            contact_id                     bigint,
             date_created                   timestamp without time zone,
             street1                        character varying,
             street2                        character varying,
@@ -18,7 +24,7 @@ create or replace function flow.search_all_projects(p_searchterm character varyi
             postalcode                     character varying,
             latitude                       double precision,
             longitude                      double precision,
-            company_project_status_type_id integer,
+            company_project_status_type_id bigint,
             project_status_type            character varying,
             contact                        jsonb
           )
@@ -31,7 +37,7 @@ DECLARE
   v_clean_phone_search_term   VARCHAR;
   v_clean_email_search_term   VARCHAR;
   v_clean_address_search_term VARCHAR;
-  v_company_ids               INTEGER[];
+  v_company_ids               bigint[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = trim(translate(p_searchterm, '-(). ', ''));
@@ -47,9 +53,9 @@ BEGIN
   end if;
   case
     when p_searchterm is not null and p_searchterm != '' then return query
-      SELECT limited_projects.id,
+      SELECT limited_projects.id::bigint,
              limited_projects.project_name,
-             limited_projects.contact_id,
+             limited_projects.contact_id::bigint,
              limited_projects.date_created,
              limited_projects.street1,
              limited_projects.street2,
@@ -59,13 +65,13 @@ BEGIN
              limited_projects."postalCode",
              limited_projects.latitude,
              limited_projects.longitude,
-             limited_projects.company_project_status_type_id,
+             limited_projects.company_project_status_type_id::bigint,
              limited_projects.project_status_type,
              limited_projects.contact
       FROM (select *
-            from (select p.id,
+            from (select p.id::bigint,
                          p.project_name,
-                         p.contact_id,
+                         p.contact_id::bigint,
                          p.date_created,
                          p.street1,
                          p.street2,
@@ -75,7 +81,7 @@ BEGIN
                          p.postal_code                            as "postalCode",
                          p.latitude,
                          p.longitude,
-                         p.company_project_status_type_id,
+                         p.company_project_status_type_id::bigint,
                          cpst.project_status_type,
                          (select row_to_json(contact1)
                           from (select c.id,
@@ -98,9 +104,9 @@ BEGIN
                             cpst.id = p_company_project_status_type_id
                           else 1 = 1 end
                   union
-                  select p.id,
+                  select p.id::bigint,
                          p.project_name,
-                         p.contact_id,
+                         p.contact_id::bigint,
                          p.date_created,
                          p.street1,
                          p.street2,
@@ -110,7 +116,7 @@ BEGIN
                          p.postal_code                            as "postalCode",
                          p.latitude,
                          p.longitude,
-                         p.company_project_status_type_id,
+                         p.company_project_status_type_id::bigint,
                          cpst.project_status_type,
                          (select row_to_json(contact1)
                           from (select c.id,
@@ -148,9 +154,9 @@ BEGIN
             limit p_limit offset p_offset) as limited_projects;
     else
       return query
-      SELECT limited_projects.id,
+      SELECT limited_projects.id::bigint,
                 limited_projects.project_name,
-                limited_projects.contact_id,
+                limited_projects.contact_id::bigint,
                 limited_projects.date_created,
                 limited_projects.street1,
                 limited_projects.street2,
@@ -160,12 +166,12 @@ BEGIN
                 limited_projects."postalCode",
                 limited_projects.latitude,
                 limited_projects.longitude,
-                limited_projects.company_project_status_type_id,
+                limited_projects.company_project_status_type_id::bigint,
                 limited_projects.project_status_type,
                 limited_projects.contact
-         FROM (select p.id,
+         FROM (select p.id::bigint,
                       p.project_name,
-                      p.contact_id,
+                      p.contact_id::bigint,
                       p.date_created,
                       p.street1,
                       p.street2,
@@ -175,7 +181,7 @@ BEGIN
                       p.postal_code                            as "postalCode",
                       p.latitude,
                       p.longitude,
-                      p.company_project_status_type_id,
+                      p.company_project_status_type_id::bigint,
                       cpst.project_status_type,
                       (select row_to_json(contact1)
                        from (select c.id,

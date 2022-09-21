@@ -46,7 +46,7 @@
   <overridePlan.clone><![CDATA[
     SELECT clone_override_plan AS id
     FROM brs.clone_override_plan(
-    :planId::int, :startDate:: DATE, :assignedUsers::int[], :receivingUsers::int[], :createdBy::int, :userId::int)
+    :planId::bigint, :startDate:: DATE, :assignedUsers::bigint[], :receivingUsers::bigint[], :createdBy::bigint, :userId::bigint)
     ]]></overridePlan.clone>
 
   <overridePlan.getPlanStatus><![CDATA[
@@ -389,14 +389,14 @@ FROM (SELECT u.id                                                             AS
                                                                                   where cf.parent_custom_field_id = 9959 and cf.company_id = 3)
                                                     WHEN :positionId = 4
                                                         THEN p.id IN (4, 5, 6) END)) ELSE 1 = 1 END)
-        and ( case when :planId::int is not null and :isReceiving::boolean is true
+        and ( case when :planId::bigint is not null and :isReceiving::boolean is true
                 then u.id not in (
                     select user_id
                     from brs.override_plan_receiving_user
                     where override_plan_id = :planId
                 ) else 1 = 1 end
             )
-        and ( case when :planId::int is not null and :isReceiving::boolean is false
+        and ( case when :planId::bigint is not null and :isReceiving::boolean is false
                        then u.id not in (
               select user_id
               from brs.override_plan_assigned_user
@@ -474,7 +474,7 @@ FROM (SELECT u.id                                                             AS
                                     and up5.archived is false
                                     and cf.archived is false)
                WHEN op.position_id = 4
-                 THEN up.position_id IN (select unnest(string_to_array(value, ',')::int[])
+                 THEN up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS')
                END

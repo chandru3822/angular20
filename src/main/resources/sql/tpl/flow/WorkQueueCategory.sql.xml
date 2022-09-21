@@ -24,11 +24,11 @@
     where company_id = :companyId
       and archived is not true
       and case when wqc.hidden and not :hiddenWqcOverride and :filtered
-        then array[ :positionIds ]::int[] && (select array_agg(wlp.position_id)
+        then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                               FROM flow.white_listed_position wlp
                                               WHERE wlp.white_list_type_id = 11
                                                 AND wlp.archived is not true
-                                                AND wlp.work_queue_category_id = wqc.id) else 1=1 end
+                                                AND wlp.work_queue_category_id = wqc.id)::bigint[] else 1=1 end
     order by display_order
   ]]></workQueueCategory.getCategoriesForCompany>
 

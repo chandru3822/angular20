@@ -47,6 +47,7 @@ public class BlueravenCustomFieldValueService {
         params.put("timestampValue", cfv.getTimestampValue());
         params.put("booleanValue", cfv.getBooleanValue());
         params.put("textValue", cfv.getTextValue());
+        params.put("richTextValue", cfv.getRichTextValue());
         params.put("numericValue", cfv.getNumericValue());
         params.put("intValue", cfv.getIntValue());
         params.put(
@@ -83,6 +84,7 @@ public class BlueravenCustomFieldValueService {
             HashMap<String, Object> params = new HashMap<>();
             params.put("dateValue", cfv.getDateValue());
             params.put("timestampValue", cfv.getTimestampValue());
+            params.put("richTextValue", cfv.getRichTextValue());
             params.put("booleanValue", cfv.getBooleanValue());
             params.put("textValue", cfv.getTextValue());
             params.put("numericValue", cfv.getNumericValue());
@@ -116,6 +118,7 @@ public class BlueravenCustomFieldValueService {
             + "        timestamp_value = :timestampValue::timestamp,\n"
             + "        boolean_value = :booleanValue,\n"
             + "        text_value = :textValue,\n"
+            + "        rich_text_value = :richTextValue,\n"
             + "        numeric_value = :numericValue,\n"
             + "        int_value = :intValue,\n"
             + "        int_array_value = :intArrayValue,\n"
@@ -139,8 +142,8 @@ public class BlueravenCustomFieldValueService {
             + "_custom_field_value"
             + "("
             + primaryKeyColumn
-            + ", date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)"
-            + " values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :userId, now(), :userId, now())"
+            + ", date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)"
+            + " values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue, :userId, now(), :userId, now())"
             + " ON CONFLICT ("
             + primaryKeyColumn
             + ", custom_field_group_assignment_id)\n"
@@ -149,9 +152,10 @@ public class BlueravenCustomFieldValueService {
             + "        timestamp_value = :timestampValue::timestamp,\n"
             + "        boolean_value = :booleanValue,\n"
             + "        text_value = :textValue,\n"
+            + "        rich_text_value = :richTextValue,\n"
             + "        numeric_value = :numericValue,\n"
             + "        int_value = :intValue,\n"
-            + "        int_array_value = :intArrayValue::int[],\n"
+            + "        int_array_value = :intArrayValue::bigint[],\n"
             + "        modified_by_id = :userId,\n"
             + "        date_modified = now()";
     return sql;
@@ -161,6 +165,7 @@ public class BlueravenCustomFieldValueService {
     return null != cv.getId()
         || null != cv.getDateValue()
         || null != cv.getTimestampValue()
+        || null != cv.getRichTextValue()
         || null != cv.getBooleanValue()
         || null != cv.getTextValue()
         || null != cv.getNumericValue()
@@ -181,6 +186,7 @@ public class BlueravenCustomFieldValueService {
             params.put("timestampValue", cfv.getTimestampValue());
             params.put("booleanValue", cfv.getBooleanValue());
             params.put("textValue", cfv.getTextValue());
+            params.put("richTextValue", cfv.getRichTextValue());
             params.put("numericValue", cfv.getNumericValue());
             params.put("intValue", cfv.getIntValue());
             params.put("intArrayValue", cfv.getIntArrayValue());

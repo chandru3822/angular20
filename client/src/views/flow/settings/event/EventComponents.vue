@@ -44,11 +44,11 @@
             class="elevation-1 square-card mb-2"
           >
             <template #no-data>
-              No available event status types
+              <span class="default-text-color">No available event status types</span>
             </template>
 
             <template #no-results>
-              No available event status types
+              <span class="default-text-color">No available event status types</span>
             </template>
 
             <template #item="{ item, index }">
@@ -96,7 +96,7 @@
                     :key="index">
               <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
                 <v-list-item-action>
-                  <v-icon>drag_handle</v-icon>
+                  <v-icon color="primary">drag_handle</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
                   {{a.attachmentType}}

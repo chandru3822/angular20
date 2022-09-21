@@ -53,11 +53,11 @@
               class="event-table elevation-1 fix-column-width-bug square-card"
             >
               <template #no-data>
-                No events for this process step
+                <span class="default-text-color">No events for this process step</span>
               </template>
 
               <template #no-results>
-                No events for this process step
+                <span class="default-text-color">No events for this process step</span>
               </template>
 
               <template #item="{ item, index }">

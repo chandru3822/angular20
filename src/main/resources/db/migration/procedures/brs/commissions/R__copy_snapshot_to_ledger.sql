@@ -1,6 +1,9 @@
+drop function if exists brs.copy_snapshot_to_ledger(
+  IN p_payroll_id bigint,
+  IN p_updated_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.copy_snapshot_to_ledger(
-    IN p_payroll_id INTEGER,
-    IN p_updated_by_id INTEGER)
+    IN p_payroll_id bigint,
+    IN p_updated_by_id bigint)
     RETURNS BOOLEAN
     LANGUAGE plpgsql AS
 $BODY$
@@ -8,7 +11,7 @@ DECLARE
     d                   RECORD;
     v_total_commissions NUMERIC(10, 2);
     v_total_overrides   NUMERIC(10, 2);
-    v_position_id       integer;
+    v_position_id       bigint;
 
 BEGIN
     select position_id

@@ -1,433 +1,34 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-row no-gutters>
-    <v-col class="ahj-form-btns py-1" cols="12">
-      <v-btn color="primary" text v-if="dataWasChanged"
-         @click="resetForm"
-         class="cancel-link"
-         style="margin-right: 10px"
-      >Cancel</v-btn>
-      <v-btn class="white--text mr-0 save-btn"
-             v-if="userCanEdit"
-             color="primary"
-             @click="validateForm()"
-      >Save
-      </v-btn>
-    </v-col>
-
+  <v-card class="mx-4 mt-6 square-card pb-2" v-if="dataReady">
+    <v-row class="px-2" no-gutters>
+      <v-col class="ahj-form-btns py-1" cols="12">
+        <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
+          {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
+        </v-btn>
+        <v-btn color="primary" text v-if="dataWasChanged"
+               @click="resetForm"
+               class="cancel-link text-capitalize"
+               style="margin-right: 10px"
+        >Cancel
+        </v-btn>
+        <v-btn class="text-capitalize mr-0 save-btn"
+               v-if="userCanEdit"
+               color="primary"
+               @click="validateForm()"
+        >Save
+        </v-btn>
+      </v-col>
+    </v-row>
     <!-- UPPER SECTION -->
     <v-form ref="ahjInspectionForm">
-      <v-row class="mb-4" no-gutters>
-        <!-- FIRST COLUMN -->
-        <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
-          <!-- SCHEDULING WITH AHJ -->
-          <v-card>
-            <v-card-title class="primary white--text font-weight-bold title-with-icon">
-              Scheduling with AHJ
-              <router-link :to="'/schedule'" title="Go to Scheduling Tool"
-                           v-if="this.$store.getters.userHasFeature('SCHEDULE')">
-                <v-icon class="white--text">launch</v-icon>
-              </router-link>
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(17)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              filled
-                              auto-grow
-                              :rows="1"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-text-field v-model="ahjInspection.requiredInspectionTypes"
-                            @change="dataWasChanged = true"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Type of Inspections Required"
-                            filled
-              ></v-text-field>
-              <v-card flat class="pa-0">
-                <v-card-title class="pa-0">
-                  Scheduling Note
-                  <v-btn text color="primary" x-small fab @click="editSchedulingNote = !editSchedulingNote">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjInspection.schedulingNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editSchedulingNote"
-                              :disabled="!userCanEdit || !editSchedulingNote"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjChecklist v-if="dataReady"
-                            title="Checklist"
-                            :checklistTypeId="12"
-                            :itemId="ahjInspection.id"
-                            :user-can-edit="userCanEdit"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklistItems="ahjInspection.schedulingWithAhjChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <!-- SECOND COLUMN -->
-        <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
-          <!-- SCHEDULING WITH BRS TECHNICIAN -->
-          <v-card>
-            <v-card-title class="primary white--text font-weight-bold">
-              Scheduling with BRS Technician
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(18)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              filled
-                              :rows="1"
-                              auto-grow
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-card flat class="pa-0">
-                <v-card-title class="pa-0">
-                  Instructions for BRS Technician
-                  <v-btn text color="primary" x-small fab @click="editInstructionsForBRSTech = !editInstructionsForBRSTech">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjInspection.technicianInstructionNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editInstructionsForBRSTech"
-                              :disabled="!userCanEdit || !editInstructionsForBRSTech"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <v-card flat class="pa-0">
-                <v-card-title class="pa-0">
-                  Documentation Notes
-                  <v-btn text color="primary" x-small fab @click="editDocumentationNote = !editDocumentationNote">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjInspection.documentationNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editDocumentationNote"
-                              :disabled="!userCanEdit || !editDocumentationNote"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjChecklist v-if="dataReady"
-                            title="Checklist"
-                            :checklistTypeId="13"
-                            :user-can-edit="userCanEdit"
-                            :itemId="ahjInspection.id"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklistItems="ahjInspection.schedulingWithBrsTechnicianChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <!-- THIRD COLUMN -->
-        <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
-          <!-- SCHEDULING WITH CUSTOMER -->
-          <v-card class="mb-3">
-            <v-card-title class="primary white--text font-weight-bold">
-              Scheduling with Customer
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(19)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-              </div>
-              <v-text-field v-model="ahjInspection.timeWindowCallTime"
-                            @change="dataWasChanged = true"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Time to Call For Window"
-                            filled
-              ></v-text-field>
-              <v-text-field v-model="ahjInspection.timeWindowPhone"
-                            @change="dataWasChanged = true"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Phone # for Time Window"
-                            filled
-              ></v-text-field>
-              <v-card flat class="pa-0">
-                <v-card-title class="pa-0">
-                  Scheduling with Customer Note
-                  <v-btn text color="primary" x-small fab @click="editCustomerNote = !editCustomerNote">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjInspection.schedulingWithCustomerNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editCustomerNote"
-                              :disabled="!userCanEdit || !editCustomerNote"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjChecklist v-if="dataReady"
-                            title="Scheduling Checklist"
-                            :checklistTypeId="9"
-                            :user-can-edit="userCanEdit"
-                            :itemId="ahjInspection.id"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklistItems="ahjInspection.schedulingChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-            </v-card-text>
-          </v-card>
-
-          <!-- OBTAINING RESULTS -->
-          <v-card>
-            <v-card-title class="primary white--text font-weight-bold">
-              Obtaining Results
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <v-text-field v-model="ahjInspection.obtainingResultsMethod"
-                            @change="dataWasChanged = true"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            label="Obtaining Results Method"
-                            filled
-              ></v-text-field>
-              <div v-for="item in getCustomFieldsForGroup(20)" :key="item.id">
-                <CustomValueInput
-                  :required="item.required"
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              filled
-                              :rows="1"
-                              auto-grow
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-card flat class="pa-0">
-                <v-card-title class="pa-0">
-                  Obtaining Results Notes
-                  <v-btn text color="primary" x-small fab @click="editObtainingResultsNote = !editObtainingResultsNote">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjInspection.obtainingResultsNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editObtainingResultsNote"
-                              :disabled="!userCanEdit || !editObtainingResultsNote"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjChecklist v-if="dataReady"
-                            title="Obtaining Results Checklist"
-                            :checklistTypeId="10"
-                            :user-can-edit="userCanEdit"
-                            :itemId="ahjInspection.id"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklistItems="ahjInspection.obtainingResultsChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <!-- FOURTH COLUMN -->
-        <v-col cols="12" md="3" class="pl-sm-0 pl-md-1 mb-3">
-          <!-- RE-INSPECTIONS -->
-          <v-card class="mb-3">
-            <v-card-title class="primary white--text font-weight-bold">
-              Re-inspections
-            </v-card-title>
-            <v-card-text class="mt-4">
-              <div v-for="item in getCustomFieldsForGroup(21)" :key="item.id">
-                <CustomValueInput
-                  :required="item.required"
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-                <v-textarea v-if="showOtherField(item.intValue, item.listOfValues)"
-                              v-model="item.textValue"
-                              @change="[item.valueWasChanged = true, dataWasChanged = true]"
-                              label="Other Value"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                              filled
-                              :rows="1"
-                              auto-grow
-                              class="other-field override-readonly-font-color"
-                ></v-textarea>
-              </div>
-              <v-text-field v-model="ahjInspection.inspectionFee"
-                            @change="dataWasChanged = true"
-                            label="Re-inspection Fee Amount"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            filled
-                            prepend-inner-icon="attach_money"
-              ></v-text-field>
-              <v-text-field v-model="ahjInspection.paymentMethod"
-                            @change="dataWasChanged = true"
-                            label="Payment Method"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            filled
-              ></v-text-field>
-              <v-card flat class="pa-0">
-                <v-card-title class="pa-0">
-                  Re-inspection Notes
-                  <v-btn text color="primary" x-small fab @click="editReinspectionNote = !editReinspectionNote">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjInspection.reinspectionNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editReinspectionNote"
-                              :disabled="!userCanEdit || !editReinspectionNote"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjChecklist v-if="dataReady"
-                            title="Re-inspections Checklist"
-                            :checklistTypeId="11"
-                            :user-can-edit="userCanEdit"
-                            :itemId="ahjInspection.id"
-                            :itemType="itemType"
-                            :ahjId="ahjId"
-                            :checklistItems="ahjInspection.reinspectionsChecklist"
-                            :isNested="true"
-              ></AhjChecklist>
-            </v-card-text>
-          </v-card>
-
-          <!-- NOTE TEMPLATES -->
-          <AhjNoteTemplate v-if="dataReady"
-                           :inspectionId="ahjInspection.id"
-                           :ahjId="ahjId"
-                           :user-can-edit="userCanEdit"
-                           :noteTemplates="ahjInspection.noteTemplates"
-          ></AhjNoteTemplate>
-
-          <!-- IN-HOUSE MPUS -->
-          <v-card class="mb-3">
-            <v-card-title class="primary white--text font-weight-bold">
-              In-House MPUs
-            </v-card-title>
-            <v-card-text class="mt-4 pb-1">
-              <div v-for="item in getCustomFieldsForGroup(22)" :key="item.id">
-                <CustomValueInput
-                  :callback="(item) => updateDirtyValue(item)"
-                  :readonly="!userCanEdit"
-                  :required="item.required"
-                  :showFieldName="false"
-                  :field="item"
-                  :filled-style="true"
-                />
-              </div>
-              <v-card flat class="pa-0">
-                <v-card-title class="pa-0">
-                  MPU Inspection Notes
-                  <v-btn text color="primary" x-small fab @click="editMPUNote = !editMPUNote">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <v-textarea v-model="ahjInspection.mpuInspectionNote"
-                              @change="dataWasChanged = true"
-                              :readonly="!userCanEdit || !editMPUNote"
-                              :disabled="!userCanEdit || !editMPUNote"
-                              filled
-                              auto-grow
-                              class="override-readonly-font-color"
-                  ></v-textarea>
-                </v-card-text>
-              </v-card>
-              <AhjContact v-if="dataReady"
-                          title="Utility Service Department Contacts"
-                          :contactTypeId="9"
+      <v-row class="mb-4 group-row" no-gutters>
+        <TwoColumnMasonry :custom-field-groups=customFieldGroups
                           :user-can-edit="userCanEdit"
-                          :itemId="ahjInspection.id"
-                          :itemType="itemType"
-                          :ahjId="ahjId"
-                          :contacts="ahjInspection.utilityServiceDeptContacts"
-                          :isNested="true"
-              ></AhjContact>
-            </v-card-text>
-          </v-card>
-        </v-col>
+                          :expanded-all="expandedAll"
+                          :callback="(field) => updateDirtyValue(field)"
+                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED">
+        </TwoColumnMasonry>
       </v-row>
 
       <!-- LOWER SECTION -->
@@ -435,8 +36,7 @@
       <!-- FIRST ROW -->
       <v-row no-gutters>
         <v-col cols="12" md="4" class="px-1">
-          <AhjLink v-if="dataReady"
-                   title="Scheduling Links"
+          <AhjLink title="Scheduling Links"
                    :linkTypeId="1"
                    :user-can-edit="userCanEdit"
                    :itemId="ahjInspection.id"
@@ -447,8 +47,7 @@
         </v-col>
 
         <v-col cols="12" md="4" class="px-1">
-          <AhjLink v-if="dataReady"
-                   title="Links for FOT"
+          <AhjLink title="Links for FOT"
                    :linkTypeId="2"
                    :user-can-edit="userCanEdit"
                    :itemId="ahjInspection.id"
@@ -459,8 +58,7 @@
         </v-col>
 
         <v-col cols="12" md="4" class="px-1">
-          <AhjLink v-if="dataReady"
-                   title="Results Links"
+          <AhjLink title="Results Links"
                    :linkTypeId="3"
                    :user-can-edit="userCanEdit"
                    :itemId="ahjInspection.id"
@@ -473,9 +71,8 @@
 
       <!-- SECOND ROW -->
       <v-row no-gutters>
-        <v-col cols="12" md="3" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Scheduling Contacts"
+        <v-col cols="12" md="4" class="px-1">
+          <AhjContact title="Scheduling Contacts"
                       :contactTypeId="2"
                       :user-can-edit="userCanEdit"
                       :itemId="ahjInspection.id"
@@ -485,9 +82,8 @@
           ></AhjContact>
         </v-col>
 
-        <v-col cols="12" md="3" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Inspector Contacts"
+        <v-col cols="12" md="4" class="px-1">
+          <AhjContact title="Inspector Contacts"
                       :contactTypeId="4"
                       :user-can-edit="userCanEdit"
                       :itemId="ahjInspection.id"
@@ -497,9 +93,8 @@
           ></AhjContact>
         </v-col>
 
-        <v-col cols="12" md="3" class="px-1">
-          <AhjContact v-if="dataReady"
-                      title="Obtaining Results Contacts"
+        <v-col cols="12" md="4" class="px-1">
+          <AhjContact title="Obtaining Results Contacts"
                       :contactTypeId="3"
                       :itemId="ahjInspection.id"
                       :user-can-edit="userCanEdit"
@@ -508,41 +103,31 @@
                       :contacts="ahjInspection.obtainingResultsContacts"
           ></AhjContact>
         </v-col>
-
-        <v-col cols="12" md="3" class="px-1">
-          <AhjServicingFot v-if="dataReady"
-                           :servicingFots="ahjInspection.servicingFots"
-          ></AhjServicingFot>
-        </v-col>
       </v-row>
 
       <!-- THIRD ROW -->
-      <v-row no-gutters class="mb-3">
-        <v-col cols="12" md="12" class="px-1">
-          <AhjChecklist v-if="dataReady" id="lower-checklist"
-                        title="Noteworthy Reasons for Previous Inspection Failures"
-                        :checklistTypeId="8"
-                        :isNested="false"
-                        :itemId="ahjInspection.id"
-                        :user-can-edit="userCanEdit"
-                        :itemType="itemType"
-                        :ahjId="ahjId"
-                        :checklistItems="ahjInspection.failureChecklist"
-          ></AhjChecklist>
+      <v-row no-gutters class="mb-5">
+        <v-col cols="12" md="4" class="px-1">
+          <AhjContact title="Utility Service Department Contacts"
+                      :contactTypeId="9"
+                      :user-can-edit="userCanEdit"
+                      :itemId="ahjInspection.id"
+                      :itemType="itemType"
+                      :ahjId="ahjId"
+                      :contacts="ahjInspection.utilityServiceDeptContacts"
+                      :isNested="true"
+          ></AhjContact>
         </v-col>
-      </v-row>
-
-      <!-- FOURTH ROW -->
-      <v-row no-gutters class="mb-6">
-        <v-col cols="12" md="12" class="px-1">
-          <AhjRequirement v-if="dataReady"
-                          title="AHJ Specific Installation Requirements"
-                          :transparent="false"
-                          :requirementTypeId="5"
-                          :itemType="itemType"
-                          :itemId="ahjId"
-                          :requirements="ahjInspection.installationRequirements"
-          ></AhjRequirement>
+        <v-col cols="12" md="4" class="px-1">
+          <AhjServicingFot :servicingFots="ahjInspection.servicingFots"
+          ></AhjServicingFot>
+        </v-col>
+        <v-col cols="12" md="4" class="px-1">
+          <AhjCustomFieldGroup :group="installationRequirementGroup"
+                               :user-can-edit="userCanEdit"
+                               :expanded-all="expandedAll"
+                               @toggle-collapse-expand="$emit('toggle-collapse-expand')"
+          ></AhjCustomFieldGroup>
         </v-col>
       </v-row>
 
@@ -563,24 +148,27 @@
 
           <v-divider></v-divider>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="saveDialog = false"
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn v-if="ahjInspection.updateAllInState"
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="saveConfirmDialog = true"
-          >Save</v-btn>
-          <v-btn v-else
-                 class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjInspection"
-          >Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn v-if="ahjInspection.updateAllInState"
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="saveConfirmDialog = true"
+            >Save
+            </v-btn>
+            <v-btn v-else
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjInspection"
+            >Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
       <v-dialog v-model="saveConfirmDialog" max-width="500">
         <v-card>
@@ -592,46 +180,45 @@
             Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
           </v-card-text>
 
-        <v-card-actions class="px-6">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="saveConfirmDialog = false"
-             class="cancel-link mr-2"
-          >Cancel</v-btn>
-          <v-btn class="white--text mr-0 save-btn"
-                 color="primary"
-                 @click="updateAhjInspection"
-          >Yes</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveConfirmDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjInspection"
+            >Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-form>
-  </v-row>
+  </v-card>
 </template>
 
 <script>
-import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
-import AhjChecklist from './components/AhjChecklist'
 import AhjContact from './components/AhjContacts'
 import AhjLink from './components/AhjLinks'
-import AhjNoteTemplate from './components/AhjNoteTemplates'
-import AhjRequirement from './components/AhjRequirements'
 import AhjServicingFot from './components/AhjServicingFots'
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import orderBy from "lodash.orderby";
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import AhjCustomFieldGroup from "@/views/blueraven/ahj/components/AhjCustomFieldGroup";
+import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
   name: 'ahjInspection',
   components: {
-    AhjChecklist,
+    TwoColumnMasonry,
+    AhjCustomFieldGroup,
     AhjContact,
     AhjLink,
-    AhjNoteTemplate,
-    AhjRequirement,
     AhjServicingFot,
     CustomValueInput
   },
@@ -641,6 +228,7 @@ export default {
     },
   },
   data: () => ({
+    CollapseExpandEnum,
     ahjId: null,
     itemType: 'inspection',
     snackbar: {},
@@ -648,32 +236,17 @@ export default {
     saveConfirmDialog: false,
     dataWasChanged: false,
     dataReady: false,
-    customFieldGroupAssignments: [],
-    editSchedulingNote: false,
-    editDocumentationNote: false,
-    editInstructionsForBRSTech: false,
-    editCustomerNote: false,
-    editObtainingResultsNote: false,
-    editReinspectionNote: false,
-    editMPUNote: false,
+    customFieldGroups: [],
+    installationRequirementGroup: {},
+    expandedAll: CollapseExpandEnum.EXPANDED,
     ahjInspection: {
-      reinspectionFeeAmount: null,
-      schedulingWithAhjChecklist: [],
-      schedulingWithBrsTechnicianChecklist: [],
-      schedulingChecklist: [],
-      obtainingResultsChecklist: [],
-      reinspectionsChecklist: [],
-      noteTemplates: [],
-      utilityServiceDeptContacts: [],
       schedulingLinks: [],
       fotLinks: [],
       resultsLinks: [],
       schedulingContacts: [],
       feeContacts: [],
       obtainingResultsContacts: [],
-      servicingFots: [],
-      failureChecklist: [],
-      installationRequirements: []
+      servicingFots: []
     }
   }),
   methods: {
@@ -702,15 +275,6 @@ export default {
           data.servicingFots = []
         }
 
-        data.installationRequirements.forEach(requirement => {
-          if (requirement.dateCreated && requirement.createdBy) {
-            requirement.formattedDateCreated = moment(requirement.dateCreated).format('MM/DD/YY h:mm A')
-          }
-
-          if (requirement.dateModified && requirement.modifiedBy) {
-            requirement.formattedDateModified = moment(requirement.dateModified).format('MM/DD/YY h:mm A')
-          }
-        })
         this.ahjInspection = cloneDeep(data)
         this.ahjInspection.updateAllInState = false
         handleHidingGlobalLoader(this, status)
@@ -728,7 +292,8 @@ export default {
           data,
           status
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-        this.customFieldGroupAssignments = cloneDeep(data)
+        this.customFieldGroups = cloneDeep(data)
+        this.installationRequirementGroup = this.customFieldGroups.find(cfg => cfg.id === 45)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -746,7 +311,7 @@ export default {
       }
     },
     getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
       return match ? match.customFieldValues : []
     },
     showOtherField(int, list) {
@@ -754,7 +319,7 @@ export default {
       return match ? match.showOther : false
     },
     resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroupAssignments.forEach(group => {
+      this.customFieldGroups.forEach(group => {
         group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
       })
     },
@@ -790,7 +355,7 @@ export default {
           }
         }
 
-        this.ahjInspection.customFieldGroups = this.customFieldGroupAssignments
+        this.ahjInspection.customFieldGroups = this.customFieldGroups
         const {
           data,
           status
@@ -809,6 +374,14 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
 
+    },
+
+    toggleMinimizeAll() {
+      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
+        this.expandedAll = CollapseExpandEnum.COLLAPSED
+      } else {
+        this.expandedAll = CollapseExpandEnum.EXPANDED
+      }
     }
   },
   async created() {
@@ -895,6 +468,17 @@ export default {
 
 .row {
   width: 100%;
+}
+
+.group-row {
+  justify-content: space-between;
+}
+
+.col-gap {
+  width: 3em;
+}
+
+.group {
 }
 
 .lower-section {

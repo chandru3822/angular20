@@ -7,21 +7,30 @@ import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.ListOfValueService;
+import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Future;
+
+/**
+ * This class is to hold functions performed by actions which peform async http calls.
+ * Each function should take the action function being ran (ProcessStepActionChildFunction) and a map of system values (this hold contextual values given from the action).
+ * Each function should return void and throw a descriptive exception on failure (exceptions are handled within the action code for transactional purposes).
+ */
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +43,20 @@ public class BrsProcessStepActionFunctionService {
 
     private final AuroraProxy auroraService;
 
+    private final MarketoService marketoService;
+
     private final ListOfValueService listOfValueService;
+
+    private final ProjectService projectService;
+
+    private String formatErrorMessage(ProcessStepActionChildFunction func, String message) {
+        final String originalFuncName = func.getFunctionName();
+        final int dot = originalFuncName.indexOf('.');
+        final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
+        final String functionType = (func.getRunInBackend()) ? "MANUAL" : "AUTOTRIGGER";
+
+        throw new RuntimeException(String.format("PPS: Unable to perform %s action for java function: %s *** %s", functionType, functionName, message));
+    }
 
     public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
 
@@ -65,11 +87,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -101,11 +119,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -131,11 +145,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -169,11 +179,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -200,11 +206,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (Exception e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -241,11 +243,7 @@ public class BrsProcessStepActionFunctionService {
 
             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (Exception e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-
-            throw new RuntimeException(String.format("PPS: Unable to perform autotrigger java function: %s *** %s", functionName, e.getMessage()));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 
@@ -338,7 +336,9 @@ public class BrsProcessStepActionFunctionService {
 
                 //IDing by field name is about a generic as we can get as of now, but not ideal
                 if (paramName.contains("System Size")) {
-                    params.put("numericValue", new BigDecimal(design.get("system_size_stc").toString()));
+                    // Divide by 1000 to get kilowatt system size
+                    float systemSizeInKw = Float.parseFloat(design.get("system_size_stc").toString()) / 1000;
+                    params.put("numericValue", systemSizeInKw);
                     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                 } else if (paramName.contains("Panel Quantity")) {
                     params.put("intValue", panelQuantity);
@@ -361,7 +361,7 @@ public class BrsProcessStepActionFunctionService {
                         Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
                         List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
                         final Long inverterLovId = values.stream()
-                                                         .filter(i -> i.getCode().equals(javaSucksInverter))
+                                                         .filter(i -> Objects.equals(i.getCode(), javaSucksInverter))
                                                          .map(ListOfValue::getId)
                                                          .findFirst()
                                                          .orElse(null);
@@ -381,11 +381,97 @@ public class BrsProcessStepActionFunctionService {
                 }
             }
         } catch (Exception e) {
-            final String originalFuncName = func.getFunctionName();
-            final int dot = originalFuncName.indexOf('.');
-            final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+        }
+    }
 
-            throw new RuntimeException(String.format("PPS: Unable to perform MANUAL action for java function: %s *** %s", functionName, e.getMessage()));
+    public void pushDataToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+        final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+        Project project = projectService.getProject(projectId).orElse(null);
+
+        if (project == null) {
+            throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+        }
+
+        try {
+            Map<String, Object> lead = marketoService.projectToLead(project);
+            Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", project.getContactId()), new SingleColumnRowMapper<>(String.class));
+            leadSource.ifPresent(l -> lead.put("leadSource", l));
+            Optional<String> leadStatus = sqlCache.get("marketo.getLeadStatus", Map.of("contactId", project.getContactId()), new SingleColumnRowMapper<>(String.class));
+            leadStatus.ifPresent(l -> lead.put("leadStatus", l));
+
+            List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
+
+            //@TODO: If updating project status, set that field here
+            final String projectStatusParam = paramValues.get(0).getDynamicValue();
+            if (projectStatusParam != null && !projectStatusParam.isBlank()) {
+                lead.put("projectStatus", projectStatusParam);
+            }
+
+            Optional<Map<String, Object>> results;
+
+            //@TODO: Check if updating other fields and add to map here.
+            //closerAppointmentStartTime
+            final String closerAppointmentRawValue = paramValues.get(1).getDynamicValue();
+            if (closerAppointmentRawValue != null && !closerAppointmentRawValue.isBlank()) {
+                final Long closerAppointmentPseId = Long.parseLong(closerAppointmentRawValue);
+                results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
+            }
+
+            //finalDesignApprovedDate
+            final String finalDesignRawValue = paramValues.get(2).getDynamicValue();
+            if (finalDesignRawValue != null && !finalDesignRawValue.isBlank()) {
+                final Long finalDesignApprovedCfgaId = Long.parseLong(finalDesignRawValue);
+                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", finalDesignApprovedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("finalDesignApprovedDate", r.get("dateValue").toString()));
+            }
+            //installationStartTime
+            final String installationRawValue = paramValues.get(3).getDynamicValue();
+            if (installationRawValue != null && !installationRawValue.isBlank()) {
+                final Long installationStartTimePseId = Long.parseLong(installationRawValue);
+                results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("installationStartTime", marketoService.formatDateTime(r.get("startTime"))));
+            }
+
+            //substantialCompletionDate
+            final String substantialRawValue = paramValues.get(4).getDynamicValue();
+            if (substantialRawValue != null && !substantialRawValue.isBlank()) {
+                final Long substantialCompletionDateCfgaId = Long.parseLong(substantialRawValue);
+                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", substantialCompletionDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("substantialCompletionDate", r.get("dateValue").toString()));
+            }
+
+            //inspectionStartTime
+            final String inspectionRawValue = paramValues.get(5).getDynamicValue();
+            if (inspectionRawValue != null && !inspectionRawValue.isBlank()) {
+                final Long inspectionStartTimePseId = Long.parseLong(inspectionRawValue);
+                results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", inspectionStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("inspectionStartTime", marketoService.formatDateTime(r.get("startTime"))));
+            }
+
+            //inspectionPassedDate
+            final String inspectionPassedRawValue = paramValues.get(6).getDynamicValue();
+            if (inspectionPassedRawValue != null && !inspectionPassedRawValue.isBlank()) {
+                final Long inspectionPassedDateCfgaId = Long.parseLong(inspectionPassedRawValue);
+                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", inspectionPassedDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> lead.put("inspectionPassedDate", r.get("dateValue").toString()));
+            }
+
+            //energizedDate
+            final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
+            if (updateEnergizedDate) {
+                results = sqlCache.get("marketo.getEnergizedDate", Map.of("projectId", projectId), new ColumnMapRowMapper());
+                results.ifPresent(r -> {
+                    if (r.get("energizedDate") != null) {
+                        lead.put("energizedDate", r.get("energizedDate").toString());
+                    }
+                });
+            }
+
+            String result = marketoService.pushData(lead);
+        } catch (Exception e) {
+            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
     }
 }

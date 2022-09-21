@@ -32,80 +32,37 @@
             </div>
             <v-spacer></v-spacer>
             <div class="middle-header-bar">
-              <v-menu v-model="paymentDropdown"
-                      v-if="selectedExpenses.length > 0 && canPay"
-                      bottom offset-y min-width="350"
-                      :close-on-content-click="false">
-                <template #activator="{on}">
-                  <v-btn v-on="on" dark color="primary" class="ml-3">Mark as Paid</v-btn>
-                </template>
-                <v-card class="pa-5">
-                  <v-card-title>
-                    <span class="text-h5">Confirm</span>
-                  </v-card-title>
-
-                  <v-card-text>
-                    Are you sure you want to pay all selected expenses?
-                  </v-card-text>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="secondaryButton" text @click="paymentDropdown = false">Cancel</v-btn>
-                    <v-btn color="primary" class="white--text" raised
-                           :disabled="paymentConfirmLoading"
-                           @click="confirmPayment()">Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-menu>
-              <v-menu v-model="approveDropdown"
-                      v-if="selectedExpenses.length > 0 && canApprove"
-                      bottom offset-y min-width="350"
-                      :close-on-content-click="false">
-                <template #activator="{on}">
-                  <v-btn v-on="on" dark small color="primary" class="ml-3">Approve</v-btn>
-                </template>
-                <v-card class="pa-5">
-                  <v-card-title>
-                    <span class="text-h5">Confirm</span>
-                  </v-card-title>
-
-                  <v-card-text>
-                    Are you sure you want to approve all selected expenses?
-                  </v-card-text>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="secondaryButton" text @click="approveDropdown = false">Cancel</v-btn>
-                    <v-btn color="primary" class="white--text" raised
-                           :disabled="approveConfirmLoading"
-                           @click="confirmApproval()">Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-menu>
-              <v-menu v-model="rejectDropdown"
-                      v-if="selectedExpenses.length > 0 && canReject"
-                      bottom offset-y min-width="350"
-                      :close-on-content-click="false">
-                <template #activator="{on}">
-                  <v-btn v-on="on" small dark color="error" class="ml-3">Reject</v-btn>
-                </template>
-                <v-card class="pa-5">
-                  <label>Reason for Rejection: (required)</label>
-                  <v-textarea class="py-2" hide-details
-                              auto-grow filled
-                              rows="4"
-                              background-color="#F2F6F8"
-                              v-model="rejectionReason">
-                  </v-textarea>
-                  <v-btn class="mr-3" @click="rejectDropdown = false">Cancel</v-btn>
-                  <v-btn @click="confirmRejection()"
-                         :disabled="!rejectionReason || rejectConfirmLoading"
-                         class="white--text" color="error">Reject
-                  </v-btn>
-                </v-card>
-              </v-menu>
+              <v-btn v-if="selectedExpenses.length > 0 && canPay" @click="paymentDropdown = true" color="primary" class="ml-3">Mark as Paid</v-btn>
+              <ConfirmationDialog :open-dialog="paymentDropdown" @confirm="confirmPayment" @close-dialog="paymentDropdown=false">
+                <template v-slot:title>Confirm</template>
+                Are you sure you want to pay all selected expenses?
+                <template v-slot:yes>Pay</template>
+              </ConfirmationDialog>
+              <v-btn v-if="selectedExpenses.length > 0 && canApprove"
+                     @click="approveConfirm = true" small color="primary" class="ml-3">Approve</v-btn>
+              <ConfirmationDialog :open-dialog="approveConfirm"
+                                  @confirm="confirmApproval"
+                                  @close-dialog="approveConfirm = false"
+              >
+                <template v-slot:title>Confirm</template>
+                Are you sure you want to approve all selected expenses?
+                <template v-slot:yes>Approve</template>
+              </ConfirmationDialog>
+              <v-btn v-if="selectedExpenses.length > 0 && canReject"
+                     @click="rejectDropdown = true"
+                     small color="error" class="ml-3">Reject</v-btn>
+              <ConfirmationDialog :open-dialog="rejectDropdown" :disable-confirm="!rejectionReason" confirm-class="error" hide-title
+                                  @confirm="confirmRejection" @close-dialog="[rejectDropdown=false, rejectionReason = null]"
+              >
+                <label>Reason for Rejection: (required)</label>
+                <v-textarea class="py-2" hide-details
+                            auto-grow filled
+                            rows="4"
+                            background-color="#F2F6F8"
+                            v-model="rejectionReason">
+                </v-textarea>
+                <template v-slot:yes>Reject</template>
+              </ConfirmationDialog>
             </div>
             <v-spacer></v-spacer>
             <div class="right-header-bar elevation-1">
@@ -159,11 +116,11 @@
             class="elevation-1 fix-column-width-bug square-card submitted-expense-table"
           >
             <template #no-data>
-              No Matching Expenses Found
+              <span class="default-text-color">No Matching Expenses Found</span>
             </template>
 
             <template #no-results>
-              No Matching Expenses Found
+              <span class="default-text-color">No Matching Expenses Found</span>
             </template>
 
             <template #header.selectBox="{}">
@@ -321,7 +278,6 @@
         @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this Submitted Expense for <strong>{{ itemToDeleteCreatedBy }}:
       {{ itemToDeleteAmount | currency('$', 2) }}</strong>?
-
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -406,7 +362,8 @@ export default {
       canApprove: true,
       canPay: true,
       deleteConfirm: false,
-      itemToDelete: {}
+      itemToDelete: {},
+      approveConfirm: false,
     }
   },
   created() {

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -47,7 +46,9 @@ public class AppService {
     a.setUrl(String.format(s3Url, bucket, a.getS3Key()));
   }
 
-  /** Overload the setAttachmentPresignedUrl function for mobile */
+  /**
+   * Overload the setAttachmentPresignedUrl function for mobile
+   */
   private void setAttachmentPresignedUrl(String bucket, AppAttachment a) {
     setAttachmentPresignedUrl(bucket, a, false);
   }
@@ -93,7 +94,7 @@ public class AppService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     Optional<AppAttachment> result =
-        sqlCache.get("app.getLatestAppByAppTypeIdAndType", params, AppAttachment.class);
+      sqlCache.get("app.getLatestAppByAppTypeIdAndType", params, AppAttachment.class);
 
     if (result.isPresent()) {
       AppAttachment attachment = result.get();
@@ -127,29 +128,29 @@ public class AppService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     List<AppAttachment> attachments =
-        sqlCache.query("app.getAttachmentsByAttachmentType", params, AppAttachment.class);
+      sqlCache.query("app.getAttachmentsByAttachmentType", params, AppAttachment.class);
     attachments.forEach(
-        attachment -> {
-          setAttachmentUrl(storageBucket, attachment);
-          setAttachmentPresignedUrl(storageBucket, attachment);
-        });
+      attachment -> {
+        setAttachmentUrl(storageBucket, attachment);
+        setAttachmentPresignedUrl(storageBucket, attachment);
+      });
 
     return attachments;
   }
 
   public List<AppAttachment> getAttachmentsByAppAndAttachmentType(
-      Long appTypeId, Long attachmentTypeId) {
+    Long appTypeId, Long attachmentTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("appTypeId", appTypeId);
 
     List<AppAttachment> attachments =
-        sqlCache.query("app.getAttachmentsByAppAndAttachmentType", params, AppAttachment.class);
+      sqlCache.query("app.getAttachmentsByAppAndAttachmentType", params, AppAttachment.class);
     attachments.forEach(
-        attachment -> {
-          setAttachmentUrl(storageBucket, attachment);
-          setAttachmentPresignedUrl(storageBucket, attachment);
-        });
+      attachment -> {
+        setAttachmentUrl(storageBucket, attachment);
+        setAttachmentPresignedUrl(storageBucket, attachment);
+      });
 
     return attachments;
   }
@@ -166,7 +167,7 @@ public class AppService {
     params.put("appTypeId", appTypeId);
 
     return sqlCache.query(
-        "app.getBuildNumbersForType", params, new SingleColumnRowMapper<>(Long.class));
+      "app.getBuildNumbersForType", params, new SingleColumnRowMapper<>(Long.class));
   }
 
   public void saveMinVersionForType(Long appTypeId, Long minBuildNumber) {
@@ -190,7 +191,7 @@ public class AppService {
 
   // endpoint for automating mobile build uploads
   public AppAttachment insertAttachmentRecord(AppAttachment attachment, User currentUser)
-      throws IOException {
+    throws IOException {
 
     // todo: if used from within the app need to get companyId off of user in those cases
     if (null == attachment) {
@@ -205,14 +206,14 @@ public class AppService {
     params.put("size", attachment.getSize());
     params.put("appTypeId", attachment.getAppTypeId());
     params.put(
-        "companyId", null != currentUser ? currentUser.getCompanyId() : attachment.getCompanyId());
+      "companyId", null != currentUser ? currentUser.getCompanyId() : attachment.getCompanyId());
     params.put("attachmentTypeId", attachment.getAttachmentTypeId());
     params.put("displayName", attachment.getDisplayName());
     params.put("versionNumber", attachment.getVersionNumber());
     params.put("buildNumber", attachment.getBuildNumber());
     params.put(
-        "createdById",
-        null != currentUser ? currentUser.getId() : SystemSettings.SYSTEM_USER.getId());
+      "createdById",
+      null != currentUser ? currentUser.getId() : SystemSettings.SYSTEM_USER.getId());
     params.put("key", key);
 
     // call this so that if table is missing in stage/flux after a data dump then it will put the
@@ -226,12 +227,12 @@ public class AppService {
   }
 
   public void uploadApp(
-      String versionNumber,
-      Long buildNumber,
-      Long appTypeId,
-      MultipartFile attachment,
-      MultipartFile secondaryAttachment)
-      throws IOException {
+    String versionNumber,
+    Long buildNumber,
+    Long appTypeId,
+    MultipartFile attachment,
+    MultipartFile secondaryAttachment)
+    throws IOException {
     User currentUser = securityService.getCurrentUser();
     if (attachment.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
@@ -281,49 +282,49 @@ public class AppService {
 
     // insert records for ios
     insertAppAttachmentRecordsFromS3(
-        true,
-        "blueraven/apps/ios/com.myblueraven.albatross/",
-        "application/octet-stream",
-        ".plist",
-        appPrefix,
-        appLimit);
+      true,
+      "blueraven/apps/ios/com.myblueraven.albatross/",
+      "application/octet-stream",
+      ".plist",
+      appPrefix,
+      appLimit);
 
     // insert records for android
     insertAppAttachmentRecordsFromS3(
-        false,
-        "blueraven/app/android/com.myblueraven.albatross/",
-        "application/vnd.android.package-archive",
-        ".apk",
-        appPrefix,
-        appLimit);
+      false,
+      "blueraven/app/android/com.myblueraven.albatross/",
+      "application/vnd.android.package-archive",
+      ".apk",
+      appPrefix,
+      appLimit);
   }
 
   public void insertAppAttachmentRecordsFromS3(
-      boolean isIos,
-      String pathPrefix,
-      String contentType,
-      String fileSuffix,
-      String appPrefix,
-      int limit) {
+    boolean isIos,
+    String pathPrefix,
+    String contentType,
+    String fileSuffix,
+    String appPrefix,
+    int limit) {
     ListObjectsV2Request req =
-        new ListObjectsV2Request().withBucketName(storageBucket).withPrefix(pathPrefix);
+      new ListObjectsV2Request().withBucketName(storageBucket).withPrefix(pathPrefix);
 
     List<S3ObjectSummary> objectSummaries = s3.listObjectsV2(req).getObjectSummaries();
     objectSummaries =
-        objectSummaries.stream()
-            .filter(os -> os.getKey().contains(appPrefix) && os.getKey().contains(fileSuffix))
-            .sorted(Comparator.comparing(S3ObjectSummary::getLastModified).reversed())
-            .limit(limit)
-            .toList();
+      objectSummaries.stream()
+        .filter(os -> os.getKey().contains(appPrefix) && os.getKey().contains(fileSuffix))
+        .sorted(Comparator.comparing(S3ObjectSummary::getLastModified).reversed())
+        .limit(limit)
+        .toList();
 
     // this gets a list of all app attachments from s3 with the name "stage" (env) in them
     for (S3ObjectSummary objectSummary : objectSummaries) {
       String key = objectSummary.getKey();
       String filename = key.substring(key.lastIndexOf("/") + 1);
       String buildNumber =
-          filename.substring(filename.lastIndexOf("-") + 1, filename.lastIndexOf("."));
+        filename.substring(filename.lastIndexOf("-") + 1, filename.lastIndexOf("."));
       String versionNumber =
-          filename.substring(filename.indexOf("-") + 1, filename.lastIndexOf("-"));
+        filename.substring(filename.indexOf("-") + 1, filename.lastIndexOf("-"));
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("appTypeId", (isIos ? 1 : 3));
@@ -339,17 +340,16 @@ public class AppService {
   }
 
   public String uploadToS3(User currentUser, String keyPattern, MultipartFile attachment)
-      throws IOException {
+    throws IOException {
     String key = String.format(currentUser.getAwsBucket() + "/" + keyPattern, UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(attachment.getSize());
     metadata.setContentType(attachment.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
 
     PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(attachment.getBytes()), metadata);
+      new PutObjectRequest(
+        storageBucket, key, new ByteArrayInputStream(attachment.getBytes()), metadata);
     s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
     return key;
   }

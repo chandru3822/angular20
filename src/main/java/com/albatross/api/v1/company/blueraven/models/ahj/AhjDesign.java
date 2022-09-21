@@ -11,9 +11,7 @@ import java.util.List;
 @Data
 public class AhjDesign {
     private Long id, ahjId, stateId;
-    private String codes, note, referenceStandards, groundSnowLoad, windSpeed,
-      roofSnowLoad, stateName, ahjName;
-    private Long utilityId;
+    private String stateName, ahjName;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

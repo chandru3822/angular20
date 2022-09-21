@@ -1,36 +1,26 @@
-drop function if exists brs.get_equipment_amount_by_type(
-  p_adder_id integer,
-  p_system_size numeric,
-  p_object_code varchar);
-CREATE OR REPLACE FUNCTION brs.get_equipment_amount_by_type(
-  p_system_size numeric,
-  p_object_code varchar)
-  returns numeric
+DROP FUNCTION IF EXISTS brs.get_equipment_amount_by_type(p_adder_id bigint, p_system_size numeric, p_object_code varchar);
+CREATE OR REPLACE FUNCTION brs.get_equipment_amount_by_type(p_system_size numeric, p_object_code varchar) returns numeric
 AS
 $BODY$
 declare
-  v_unit_type_id integer;
+  v_unit_type_id bigint;
   v_amount       numeric;
   v_adder_amount numeric;
 BEGIN
-  with equipment_type as (
-    select *
-    from proposal_value
-    where field_id = 97
-      and object_code = p_object_code
-  )
+  with equipment_type as (select *
+                          from proposal_value
+                          where field_id = 97
+                            and object_code = p_object_code)
   select pv.int_value
   into v_unit_type_id
   from proposal_value pv
          inner join equipment_type et on et.proposal_group_uuid = pv.proposal_group_uuid
   where pv.field_id = 97;
 
-  with equipment_type as (
-    select *
-    from proposal_value
-    where field_id = 119
-      and object_code = p_object_code
-  )
+  with equipment_type as (select *
+                          from proposal_value
+                          where field_id = 119
+                            and object_code = p_object_code)
   select pv.value::numeric
   into v_adder_amount
   from proposal_value pv
@@ -50,5 +40,3 @@ END
 $BODY$
   LANGUAGE plpgsql VOLATILE
                    COST 100;
---ROWS 1000;
-

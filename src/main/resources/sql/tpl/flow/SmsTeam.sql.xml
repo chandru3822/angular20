@@ -3,7 +3,7 @@
     select st.*,
            (case when (select count(*) from flow.sms_team where archived = false and is_default is true
                                                             and case when :isParent
-                                                                then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                                                then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                                                                 else st.company_id = :companyId end
                ) > 0 then true else false end) as defaultExists,
            coalesce((
@@ -44,7 +44,7 @@
                                    AND sto.archived is not true) tb), '[]') AS "orgs"
     from flow.sms_team st
     where case when :isParent
-              then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+              then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
               else st.company_id = :companyId end
       and st.archived = false
     order by st.team_name asc
@@ -104,7 +104,7 @@ select st.*,
 from flow.sms_team st
 where case
           when :isParent
-              then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+              then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
           else st.company_id = :companyId end
   and st.archived is false;
   ]]></smsTeam.getAllTeamUsers>
@@ -263,7 +263,7 @@ where st.archived = false
 from flow.sms_team st
 where case
           when :isParent
-              then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+              then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
           else st.company_id = :companyId end
   and st.archived = false;
   ]]></smsTeam.getTeamsForUser>
@@ -273,7 +273,7 @@ where case
 <!--    select st.id-->
 <!--      from flow.sms_team st-->
 <!--      where case when :isParent-->
-<!--            then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))-->
+<!--            then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))-->
 <!--            else st.company_id = :companyId end-->
 <!--        and st.is_default is true;-->
 <!--  ]]></smsTeam.getDefaultTeamId>-->
