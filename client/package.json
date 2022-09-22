@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview",
+    "preview": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
   },
   "dependencies": {
+    "@7oaksgroup/v-mapbox": "^1.12.1",
     "@fullcalendar/core": "^4.4.2",
     "@fullcalendar/interaction": "^4.3.0",
     "@fullcalendar/moment": "^4.3.0",

@@ -1,4 +1,15 @@
-# blueraven-albatross
+# blueraven-albatros
+
+## Set up environment
+1. Create a PAT on GitHub
+2. Run the following or manually create an entry in `~/.npmrc` see [GitHub Docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry) for more information
+```
+$ npm login --scope=@7oaksgroup --registry=https://npm.pkg.github.com
+
+> Username: USERNAME
+> Password: TOKEN
+> Email: PUBLIC-EMAIL-ADDRESS
+```
 
 ## Project setup
 ```
@@ -7,7 +18,7 @@ npm install
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+npm run dev
 ```
 
 ### Compiles and minifies for production

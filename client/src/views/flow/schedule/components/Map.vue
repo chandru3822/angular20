@@ -42,9 +42,9 @@
 
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
-import 'v-mapbox/dist/v-mapbox.css'
+import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import Mapbox from 'mapbox-gl'
-import { MglMap, MglMarker, MglNavigationControl, MglPopup } from 'v-mapbox'
+import { MglMap, MglMarker, MglNavigationControl, MglPopup } from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
 
 export default {
