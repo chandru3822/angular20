@@ -3,8 +3,9 @@
     <v-row>
       <v-col cols="12">
         <v-container v-for="n in 2">
-        <span v-if="objectType && objectType.customColumns" class="albatross-header-4 mb-2">Column {{n===1 ? 'One' : 'Two'}}</span>
-        <v-data-table
+          <span v-if="objectType && objectType.customColumns"
+                class="albatross-header-4 mb-2">Column {{ n === 1 ? 'One' : 'Two' }}</span>
+          <v-data-table
             :id="n"
             :headers="headers"
             :items="groupsByColumn[n]"
@@ -15,7 +16,7 @@
             :expanded.sync="expanded[n]"
             hide-default-footer
             hide-default-header
-            class="elevation-1 fix-column-width-bug mb-5 draggable-table"
+            class="elevation-1 fix-column-width-bug mb-5 draggable-table table-striped"
             :hidden="n>1 && !objectType.customColumns"
           >
             <template #no-data>
@@ -27,7 +28,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2}">
+              <tr>
                 <td style="width: 50px">
                   <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
@@ -65,7 +66,9 @@
                       <v-icon v-if="expanded[n].includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </div>
                 </td>
               </tr>
@@ -201,7 +204,8 @@
                             </v-btn>
                           </div>
                         </v-list-item-content>
-                        <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
+                        <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text
+                               color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
                           <v-icon>delete</v-icon>
                         </v-btn>
                       </v-list-item>
@@ -215,18 +219,19 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-dialog="cfgToDelete && !cFieldToDelete"
-        @confirm="deleteGroup"
-        @close-dialog="cfgToDelete=null">
-      Are you sure you want to delete this Custom Field Group: <strong>{{cfgToDeleteName}}</strong>?
+      :open-dialog="cfgToDelete && !cFieldToDelete"
+      @confirm="deleteGroup"
+      @close-dialog="cfgToDelete=null">
+      Are you sure you want to delete this Custom Field Group: <strong>{{ cfgToDeleteName }}</strong>?
     </ConfirmationDialog>
     <ConfirmationDialog
-        :open-dialog="!!cFieldToDelete"
-        @confirm="deleteFieldFromGroup"
-        @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
+      :open-dialog="!!cFieldToDelete"
+      @confirm="deleteFieldFromGroup"
+      @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
       <span class="error--text">WARNING:</span>
-      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
-      Are you sure you want to delete this field from {{cfgToDeleteName}}: <strong>{{cFieldToDeleteName}}</strong>?
+      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another
+      group please cancel and move the field. <br /><br />
+      Are you sure you want to delete this field from {{ cfgToDeleteName }}: <strong>{{ cFieldToDeleteName }}</strong>?
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -248,7 +253,7 @@ import {
   putRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from '@/ConfirmationDialog'
 
 export default {
   name: 'CompanyCustomFieldGroup',
@@ -298,29 +303,29 @@ export default {
       ancillaryCustomFields: [],
       cfgToDelete: null,
       cFieldToDelete: null,
-      groupsByColumn:[],
+      groupsByColumn: [],
       columnChangeCount: 0,
       count: 0
     }
   },
-  props :{
+  props: {
     objectType: Object,
-    customFieldGroups: Array,
+    customFieldGroups: Array
   },
   watch: {
-    objectType(){
+    objectType() {
       this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
     }
   },
   computed: {
-    cfgToDeleteName(){
+    cfgToDeleteName() {
       return this.cfgToDelete ? this.cfgToDelete.groupName : ''
     },
-    cFieldToDeleteName(){
+    cFieldToDeleteName() {
       return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
     },
-    numberOfCols(){
-      if(this.objectType && this.objectType.customColumns) {
+    numberOfCols() {
+      if (this.objectType && this.objectType.customColumns) {
         return 2
       }
       return 1
@@ -329,29 +334,29 @@ export default {
   mounted() {
     let tables = document.querySelectorAll('tbody')
     const _self = this
-    for(const table of tables) {
+    for (const table of tables) {
       Sortable.create(table, {
-        group: {name: 'fieldGroups', pull: true, put: true},
+        group: { name: 'fieldGroups', pull: true, put: true },
+        sort: true,
         handle: '.handle',
-        connectWith: '.connectedSortable',
-        onEnd({to, from, newIndex, oldIndex, oldDraggableIndex, newDraggableIndex}) {
-          const fromColumnNumber = parseInt(from.parentElement.parentElement.parentElement.id)
-          const toColumnNumber = parseInt(to.parentElement.parentElement.parentElement.id)
+        onEnd({ to, from, newIndex, oldIndex }) {
+          const fromColumnNumber = parseInt(from?.closest('.v-data-table')?.id)
+          const toColumnNumber = parseInt(to?.closest('.v-data-table')?.id)
+
           //if the to and from tables don't match, move from old column to new column
           // if the tp and from tables DO match, it doesn't matter which one we use here
-          const rowSelected = _self.groupsByColumn[fromColumnNumber].splice(oldIndex, 1)[0]
+          const rowSelected = _self.groupsByColumn[fromColumnNumber][oldIndex]
+          _self.groupsByColumn[fromColumnNumber] = _self.groupsByColumn[fromColumnNumber].filter(t => t !== rowSelected)
           rowSelected.columnNumber = toColumnNumber //make sure the columnNumber value is correct
-          console.log(rowSelected)
           //put the selected group into the correct column at the new Index
           _self.groupsByColumn[rowSelected.columnNumber].splice(newIndex, 0, rowSelected)
           //make sure each group in every column has the correct groupOrder
           // and concat all columns into a single array for updating
           let groupsClone = cloneDeep(_self.groupsByColumn)
-
           let updatedGroups = []
-          for(let i =1; i<=_self.numberOfCols; i++) {
-           groupsClone[i].forEach((g, idx) => {
-             let save = g.newDisplayOrder === undefined ? g.groupOrder !== idx : g.newDisplayOrder !== idx
+          for (let i = 1; i <= _self.numberOfCols; i++) {
+            groupsClone[i].forEach((g, idx) => {
+              let save = g.newDisplayOrder === undefined ? g.groupOrder !== idx : g.newDisplayOrder !== idx
               //update display order
               g.groupOrder = idx
               //save only rows that changed
@@ -359,7 +364,6 @@ export default {
                 _self.groupsByColumn[i][idx].newDisplayOrder = idx
                 updatedGroups.push(g)
               }
-              g.groupOrder = idx
             })
           }
           _self.saveGroupChanges(updatedGroups)
@@ -438,16 +442,16 @@ export default {
     },
     async saveConditionalField(cf) {
       try {
-        if (cf.hasConditionalOnId && !cf.conditionalOnId){
+        if (cf.hasConditionalOnId && !cf.conditionalOnId) {
           return
         }
 
-        if (!cf.hasConditionalOnId){
+        if (!cf.hasConditionalOnId) {
           // if this has been cleared out make sure to unset it
           cf.conditionalOnId = undefined
         }
 
-        const { status } =  await putRequest(`/customFieldGroup/updateConditionalId`, cf, 'blueraven')
+        const { status } = await putRequest(`/customFieldGroup/updateConditionalId`, cf, 'blueraven')
         const snackbar = getSnackbar('SUCCESS', 'Updated Field')
         this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
         handleHidingGlobalLoader(this, status)
@@ -531,10 +535,10 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-      this.cfgToDelete=null
+      this.cfgToDelete = null
     },
     async deleteFieldFromGroup() {
-      const item=this.cFieldToDelete
+      const item = this.cFieldToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { status } = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
@@ -549,7 +553,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-      this.cFieldToDelete=null
+      this.cFieldToDelete = null
       this.cfgToDelete = null
     },
     async deleteField(item, customFieldGroupId) {
@@ -597,22 +601,21 @@ export default {
 
     },
     filterCustomFieldGroups() {
-      return this.customFieldGroups.filter(cfgt => {
-        return !cfgt.archived
-      })
+      return this.customFieldGroups.filter(cfgt => !cfgt.archived)
     },
     getGroupsByCol(colNumber) {
-      if(this.objectType && this.objectType.customColumns) {
-        return this.filterCustomFieldGroups().filter(cfg => cfg.columnNumber === colNumber)
-            .sort((cfg1, cfg2) => {
-              if (cfg1.groupOrder < cfg2.groupOrder) {
-                return -1
-              }
-              if (cfg1.groupOrder > cfg2.groupOrder) {
-                return 1
-              }
-              return 0
-            })
+      if (this.objectType && this.objectType.customColumns) {
+        return this.filterCustomFieldGroups()
+          .filter(cfg => cfg.columnNumber === colNumber)
+          .sort((cfg1, cfg2) => {
+            if (cfg1.groupOrder < cfg2.groupOrder) {
+              return -1
+            }
+            if (cfg1.groupOrder > cfg2.groupOrder) {
+              return 1
+            }
+            return 0
+          })
       }
       return this.filterCustomFieldGroups()
     },

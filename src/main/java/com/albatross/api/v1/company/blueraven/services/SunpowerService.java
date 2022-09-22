@@ -60,11 +60,18 @@ public class SunpowerService {
       }
     }
 
-    projectDetails.put("externalId", propLogDetail.getProjectId().toString());
     DecimalFormat df2 = new DecimalFormat("#.##");
+    Double aprValue = Double.valueOf(df2.format(Double.parseDouble(propLogDetail.getInterestRate()) * 100));
+    if (aprValue.equals(1.99) && !isUpdate) {
+      throw new Exception(
+        "Error: This financial product is no longer available. Please choose another proposal number to continue.");
+    }
+
+    projectDetails.put("externalId", propLogDetail.getProjectId().toString());
+
     projectDetails.put(
-        "apr",
-        Double.valueOf(df2.format(Double.parseDouble(propLogDetail.getInterestRate()) * 100)));
+        "apr", aprValue
+        );
     projectDetails.put("isACH", true);
 
     if (sendVia == null) {

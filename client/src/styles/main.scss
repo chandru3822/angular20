@@ -263,6 +263,12 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   background-color: var(--v-primary-lighten9) !important;
 }
 
+.table-striped{
+  tbody tr:nth-of-type(even) {
+    background-color: var(--v-primary-lighten9) !important;
+  }
+}
+
 .row-hover:hover {
   background-color: var(--v-primary-lighten8) !important;
 }

@@ -4,7 +4,7 @@
       class="albatross-header-3 text-capitalize pa-0"
       primary-title>
       Assign Project to {{planName}}
-      <v-spacer></v-spacer>
+      <v-spacer/>
 
     </v-card-title>
     <v-card-text class="">
@@ -28,40 +28,28 @@
 </template>
 
 <script>
-import {
-  getRequest,
-  getRequestWithParams,
-  getSnackbar,
-  handleHidingGlobalLoader, logError, postRequest, postRequestWithRequestParams,
-  putRequest
-} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
-import {Actions} from "@/store";
-import constants from "@/helpers/constants";
+import { getSnackbar, postRequestWithRequestParams } from '@/helpers/helpers'
+import { AppMutations } from '@/stores/AppStore'
 
 export default {
-  name: "ProjectAssignmentModal",
+  name: 'ProjectAssignmentModal',
   props: {
     override: Boolean,
     planId: Number,
     planName: String
   },
-  components: {},
   data() {
     return {
       projectId: null,
       dataSaving: false
     }
   },
-  created() {
-  },
-  computed: {},
   methods: {
-    async saveProjectToPlan () {
+    async saveProjectToPlan() {
       this.dataSaving = true
       try {
         let url = this.override ? `/commissionManagement/overrides/plan/${this.planId}/assignToPlan` : `/commissionManagement/${this.planId}/assignToPlan`
-        await postRequestWithRequestParams(url, null, {projectId: this.projectId}, 'blueraven')
+        await postRequestWithRequestParams(url, null, { projectId: this.projectId }, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Project Assigned')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.projectId = null
@@ -74,11 +62,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    },
+    }
   }
 }
 </script>
-
-<style scoped>
-
-</style>
