@@ -43,6 +43,9 @@
                    :itemType="itemType"
                    :ahjId="ahjId"
                    :links="ahjInspection.schedulingLinks"
+                   show-expanded
+                   :expanded-all="expandedAll"
+                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjLink>
         </v-col>
 
@@ -54,6 +57,9 @@
                    :itemType="itemType"
                    :ahjId="ahjId"
                    :links="ahjInspection.fotLinks"
+                   show-expanded
+                   :expanded-all="expandedAll"
+                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjLink>
         </v-col>
 
@@ -65,6 +71,9 @@
                    :itemType="itemType"
                    :ahjId="ahjId"
                    :links="ahjInspection.resultsLinks"
+                   show-expanded
+                   :expanded-all="expandedAll"
+                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjLink>
         </v-col>
       </v-row>
@@ -79,6 +88,9 @@
                       :itemType="itemType"
                       :ahjId="ahjId"
                       :contacts="ahjInspection.schedulingContacts"
+                      show-expanded
+                      :expanded-all="expandedAll"
+                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjContact>
         </v-col>
 
@@ -90,6 +102,9 @@
                       :itemType="itemType"
                       :ahjId="ahjId"
                       :contacts="ahjInspection.feeContacts"
+                      show-expanded
+                      :expanded-all="expandedAll"
+                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjContact>
         </v-col>
 
@@ -101,6 +116,9 @@
                       :itemType="itemType"
                       :ahjId="ahjId"
                       :contacts="ahjInspection.obtainingResultsContacts"
+                      show-expanded
+                      :expanded-all="expandedAll"
+                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjContact>
         </v-col>
       </v-row>
@@ -116,6 +134,9 @@
                       :ahjId="ahjId"
                       :contacts="ahjInspection.utilityServiceDeptContacts"
                       :isNested="true"
+                      show-expanded
+                      :expanded-all="expandedAll"
+                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjContact>
         </v-col>
         <v-col cols="12" md="4" class="px-1">
