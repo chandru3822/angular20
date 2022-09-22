@@ -11,7 +11,7 @@
         <v-icon v-show="addMode || editMode"
                 @click.stop="hideCtrls" class="white--text">remove</v-icon>
       </v-btn>
-      <v-icon v-if="showExpanded" class="white--text">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
+      <v-icon v-if="showExpanded" class="white--text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
     </v-toolbar>
     <v-card-text v-if="expanded">
     <v-form v-show="addMode || editMode"

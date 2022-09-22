@@ -56,6 +56,9 @@
                    :itemType="itemType"
                    :ahjId="ahjId"
                    :links="ahjPermit.submissionLinks"
+                   show-expanded
+                   :expanded-all="expandedAll"
+                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjLink>
 
           <AhjContact v-if="dataReady"
@@ -66,6 +69,9 @@
                       :itemType="itemType"
                       :ahjId="ahjId"
                       :contacts="ahjPermit.submissionContacts"
+                      show-expanded
+                      :expanded-all="expandedAll"
+                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjContact>
         </v-col>
 
@@ -79,6 +85,9 @@
                    :itemType="itemType"
                    :ahjId="ahjId"
                    :links="ahjPermit.followUpLinks"
+                   show-expanded
+                   :expanded-all="expandedAll"
+                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjLink>
           <AhjContact v-if="dataReady"
                       title="Follow-up and Delivery Contacts"
@@ -88,6 +97,9 @@
                       :itemType="itemType"
                       :ahjId="ahjId"
                       :contacts="ahjPermit.followUpContacts"
+                      show-expanded
+                      :expanded-all="expandedAll"
+                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
           ></AhjContact>
           <!--        <AhjContact v-if="dataReady"-->
           <!--                    title="Print Locations"-->
