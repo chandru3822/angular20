@@ -4,6 +4,7 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
@@ -812,17 +813,14 @@ public class AvailabilityService {
           // push data to Marketo
           project.ifPresent(p -> {
               try {
-                  Map<String, Object> marketoLead = marketoService.projectToLead(p);
+                  MarketoProject mp = marketoService.getProject(p.getId());
+                  Map<String, Object> marketoLead = marketoService.projectToLead(mp);
                   marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
-                  Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", p.getContactId()), new SingleColumnRowMapper<>(String.class));
-                  leadSource.ifPresent(l -> marketoLead.put("leadSource", l));
-                  Optional<String> leadStatus = sqlCache.get("marketo.getLeadStatus", Map.of("contactId", p.getContactId()), new SingleColumnRowMapper<>(String.class));
-                  leadStatus.ifPresent(l -> marketoLead.put("leadStatus", l));
-                  String result = marketoService.pushData(marketoLead);
+                  String result = marketoService.pushData(List.of(marketoLead));
                   // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
                   if (result.equals("created")) {
                       marketoLead.put("projectStatus", "Appointment Scheduled");
-                      marketoService.pushData(marketoLead);
+                      marketoService.pushData(List.of(marketoLead));
                   }
               } catch (Exception e) {
                   log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));

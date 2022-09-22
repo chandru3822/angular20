@@ -4,10 +4,10 @@ import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
+import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
-import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,15 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.Future;
 
 /**
  * This class is to hold functions performed by actions which peform async http calls.
@@ -387,7 +384,8 @@ public class BrsProcessStepActionFunctionService {
 
     public void pushDataToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
         final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
-        Project project = projectService.getProject(projectId).orElse(null);
+        MarketoProject project = sqlCache.get("marketo.getProject", Map.of("projectId", projectId), MarketoProject.class)
+                                           .orElse(null);
 
         if (project == null) {
             throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
@@ -395,14 +393,8 @@ public class BrsProcessStepActionFunctionService {
 
         try {
             Map<String, Object> lead = marketoService.projectToLead(project);
-            Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", project.getContactId()), new SingleColumnRowMapper<>(String.class));
-            leadSource.ifPresent(l -> lead.put("leadSource", l));
-            Optional<String> leadStatus = sqlCache.get("marketo.getLeadStatus", Map.of("contactId", project.getContactId()), new SingleColumnRowMapper<>(String.class));
-            leadStatus.ifPresent(l -> lead.put("leadStatus", l));
-
             List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
 
-            //@TODO: If updating project status, set that field here
             final String projectStatusParam = paramValues.get(0).getDynamicValue();
             if (projectStatusParam != null && !projectStatusParam.isBlank()) {
                 lead.put("projectStatus", projectStatusParam);
@@ -410,7 +402,9 @@ public class BrsProcessStepActionFunctionService {
 
             Optional<Map<String, Object>> results;
 
-            //@TODO: Check if updating other fields and add to map here.
+            //@TODO: final design sent. Need to only update status to that if it's the first time it's been updated.
+            // probably the CFV audit table and make sure it's the first entry with that cfgaId
+
             //closerAppointmentStartTime
             final String closerAppointmentRawValue = paramValues.get(1).getDynamicValue();
             if (closerAppointmentRawValue != null && !closerAppointmentRawValue.isBlank()) {
@@ -419,11 +413,10 @@ public class BrsProcessStepActionFunctionService {
                 results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
             }
 
-            //finalDesignApprovedDate
+            //finalDesignApprovedDate/
             final String finalDesignRawValue = paramValues.get(2).getDynamicValue();
             if (finalDesignRawValue != null && !finalDesignRawValue.isBlank()) {
-                final Long finalDesignApprovedCfgaId = Long.parseLong(finalDesignRawValue);
-                results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", finalDesignApprovedCfgaId, "projectId", projectId), new ColumnMapRowMapper());
+                results = sqlCache.get("marketo.getFinalDesignApprovedDate", Map.of("projectId", projectId), new ColumnMapRowMapper());
                 results.ifPresent(r -> lead.put("finalDesignApprovedDate", r.get("dateValue").toString()));
             }
             //installationStartTime
@@ -461,15 +454,10 @@ public class BrsProcessStepActionFunctionService {
             //energizedDate
             final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
             if (updateEnergizedDate) {
-                results = sqlCache.get("marketo.getEnergizedDate", Map.of("projectId", projectId), new ColumnMapRowMapper());
-                results.ifPresent(r -> {
-                    if (r.get("energizedDate") != null) {
-                        lead.put("energizedDate", r.get("energizedDate").toString());
-                    }
-                });
+                lead.put("energizedDate", project.getEnergizedDate());
             }
 
-            String result = marketoService.pushData(lead);
+            String result = marketoService.pushData(List.of(lead));
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }

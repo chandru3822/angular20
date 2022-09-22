@@ -1,12 +1,16 @@
 package com.albatross.api.v1.company.blueraven.services;
 
-import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.MarketoProject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;;
 import org.springframework.http.*;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -14,6 +18,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +40,10 @@ public class MarketoService {
 
     @Value("${marketo.secret:}")
     private String secret;
+
+    private final SqlCache sqlCache;
+
+    private final ObjectMapper om;
 
     @PostConstruct
     public void init() {
@@ -63,10 +72,10 @@ public class MarketoService {
         }
     }
 
-    public String pushData(Map<String, Object> lead) {
+    public String pushData(List<Map<String, Object>> leads) {
         try {
             Map<String, Object> body = new HashMap<>();
-            body.put("input", List.of(lead));
+            body.put("input", leads);
             body.put("lookupField", "projectId");
 
             authenticate();
@@ -112,7 +121,7 @@ public class MarketoService {
 //        return new AsyncResult<>(json.getLong("contactId"));
 //    }
 
-    public Map<String, Object> projectToLead(Project project) {
+    public Map<String, Object> projectToLead(MarketoProject project) {
         Map<String, Object> lead = new HashMap<>();
         lead.put("projectId", project.getId());
         lead.put("firstName", project.getFirstName());
@@ -123,6 +132,8 @@ public class MarketoService {
         lead.put("postalCode", project.getPostalCode());
         lead.put("phone", project.getPhone());
         lead.put("email", project.getEmail());
+        lead.put("leadSource", project.getLeadSource());
+        lead.put("leadStatus", project.getLeadStatus());
         return lead;
     }
 
@@ -133,5 +144,36 @@ public class MarketoService {
         } catch (Exception e) {
             throw new RuntimeException("Unable to parse given datetime for Marketo");
         }
+    }
+
+    public MarketoProject getProject(Long projectId) {
+        return sqlCache.get("marketo.getProject", Map.of("projectId", projectId), MarketoProject.class)
+                       .orElse(null);
+    }
+
+    public void pushDailyUpdatedProjects() {
+        List<Long> projectIds = sqlCache.query("marketo.projectIdsPreviousDayStatusChange", null, new SingleColumnRowMapper<>(Long.class));
+        List<MarketoProject> projects = sqlCache.query("marketo.getProjects", Map.of("projectIds", projectIds), MarketoProject.class);
+        List<Map<String, Object>> leads = new ArrayList<>();
+
+        projects.forEach(p -> {
+            Map<String, Object> lead = projectToLead(p);
+
+            lead.put("projectStatus", p.getProjectStatusType());
+
+            if (p.getCompanyProjectStatusTypeId() == 64) {
+                lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
+            } else if (p.getCompanyProjectStatusTypeId() == 66) {
+                lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
+            }
+
+            leads.add(lead);
+        });
+
+        List<List<Map<String, Object>>> sizedLeads = Lists.partition(leads, 300);
+        sizedLeads.forEach(l -> {
+            String results = pushData(l);
+        });
+        log.info("test");
     }
 }
