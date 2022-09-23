@@ -284,4 +284,14 @@ public class ContactLeadController {
   public void updateContactColossus(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/airo", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAiro(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/blueraven", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactBlueraven(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
