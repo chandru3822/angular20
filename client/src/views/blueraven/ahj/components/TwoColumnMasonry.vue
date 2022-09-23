@@ -8,7 +8,7 @@
                          :callback="(field) => callback(field)"
                          :hardcoded-docs="hardcodedDocs"
                          :source-id="sourceId"
-                         @toggle-collapse-expand="$emit('toggle-collapse-expand')"
+                         @toggle-collapse-expand="$emit('toggle-collapse-expand', $event)"
                          class="my-2"
         ></AhjCustomFieldGroup>
     </v-col>

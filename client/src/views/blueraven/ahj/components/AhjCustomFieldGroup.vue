@@ -27,7 +27,7 @@
                   hide-details
                   auto-grow
                   :rows="1"
-                  class="other-field override-readonly-font-color"
+                  class="other-field override-readonly-font-color mt-3"
       ></v-textarea>
     </div>
     <div v-if="!!hardcodedDocs && !!hardcodedDocs.get(group.id)">
