@@ -4,27 +4,28 @@
   <html lang="en">
   <head>
     <title>BRS Proposal</title>
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700" rel="stylesheet">
     <style>
-      html, body {
+      * {
         padding: 0;
         margin: 0;
-        font-family: 'Lato', sans-serif;
-        font-size: 12pt;
       }
 
-      h1, h2, h3, h4, h5, h6 {
-        padding: 0;
-        margin: 0;
+      html, body {
+        font-family: 'Lato', sans-serif;
+        font-size: 12pt;
+        line-height: 1.25;
       }
 
       table {
         border-collapse: collapse;
         table-layout: fixed;
         width: 100%;
-        margin: 0;
         overflow: hidden;
         font-size: inherit;
+        font-weight: inherit;
       }
 
       table td,
@@ -42,6 +43,25 @@
         word-break: break-word;
         margin-bottom: 0;
       }
+
+      ul, ol, dl {
+        list-style-position: outside;
+        margin-left: 1em;
+      }
+
+      li {
+        margin-bottom: 10px;
+        padding-left: 0.5em;
+      }
+
+      li > p{
+        display: inline;
+      }
+
+      sup {
+        vertical-align: text-top;
+      }
+
     </style>
 
     <style media="print">
@@ -84,8 +104,6 @@
       }
 
       p {
-        margin: 0;
-        padding: 0;
         overflow-wrap: break-word;
       }
 

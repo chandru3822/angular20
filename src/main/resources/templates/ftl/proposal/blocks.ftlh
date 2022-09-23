@@ -51,10 +51,12 @@
   </#if>
 </#macro>
 
-<#macro bold><@compress single_line=true><strong><#nested /></strong></@compress></#macro>
-<#macro italic><@compress single_line=true><em><#nested /></em></@compress></#macro>
-<#macro strike><@compress single_line=true><s><#nested /></s></@compress></#macro>
-<#macro superscript><@compress single_line=true><sup><#nested /></sup></@compress></#macro>
+<#macro bold attrs=[]><@compress single_line=true><strong><#nested /></strong></@compress></#macro>
+<#macro italic attrs=[]><@compress single_line=true><em><#nested /></em></@compress></#macro>
+<#macro strike attrs=[]><@compress single_line=true><s><#nested /></s></@compress></#macro>
+<#macro superscript attrs=[]><@compress single_line=true><sup><#nested /></sup></@compress></#macro>
+
+<#macro textStyle attrs><@compress single_line=true><span <@inlineStyle styles=attrs/>><#nested /></span></@compress></#macro>
 
 <#function addMarks aVal marks=[]>
     <#if marks?size lt 1 >
@@ -62,7 +64,7 @@
     </#if>
     <#local type=marks[0].type>
     <#local val>
-        <@.vars[type]>${aVal}</@>
+        <@.vars[type] attrs=marks[0].attrs>${aVal}</@>
     </#local>
     <#return addMarks(val, marks[1..])>
 </#function>
@@ -114,11 +116,13 @@
 
 <#macro paragraph node>
 <@compress single_line=true>
-  <#if node.content?has_content>
   <p <@inlineStyle styles=node.attrs/>>
-    <#list node.content as content><@.vars[content.type] content/></#list>
+    <#if node.content?has_content>
+      <#list node.content as content><@.vars[content.type] content/></#list>
+    <#else>
+      &nbsp;
+    </#if>
   </p>
-  </#if>
 </@compress>
 </#macro>
 

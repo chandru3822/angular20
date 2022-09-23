@@ -50,6 +50,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .proposal-page {
+  width: 1125px;
   min-height: 794px;
   overflow: hidden;
   background-color: white;

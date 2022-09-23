@@ -124,7 +124,7 @@
                 </v-btn>
               </div>
             </div>
-            <div>
+            <div class="proposal-zoom-lock">
               <proposal-template v-if="pages && pages.length > 0"
                                  :children="pages"
                                  :debug="false"
@@ -517,5 +517,12 @@ export default {
 
 .proposal-container-buttons {
   margin-left: 36px;
+}
+
+//TODO: need to fix this
+.proposal-zoom-lock{
+  --scale: 0.75;
+  transform: scale(var(--scale));
+  transform-origin: top center;
 }
 </style>
