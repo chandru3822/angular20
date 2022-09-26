@@ -64,8 +64,35 @@ export default {
 </script>
 
 <style lang="scss">
-.proposal-text > p {
-  padding: 0;
-  margin: 0;
+.proposal-text {
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+
+    td,
+    th {
+      min-width: 1em;
+      padding: 3px 5px;
+      vertical-align: top;
+      box-sizing: border-box;
+      position: relative;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
 }
 </style>
