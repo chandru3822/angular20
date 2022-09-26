@@ -1,15 +1,4 @@
 <sql>
-<marketo.getEnergizedDate><![CDATA[
-select pd.energized_date "energizedDate"
-from brs.project_details pd
-where pd.project_id = :projectId
-]]></marketo.getEnergizedDate>
-
-<marketo.getFinalDesignApprovedDate><![CDATA[
-select pd.final_design_signed_date "finalDesignApprovedDate"
-from brs.project_details pd
-where pd.project_id = :projectId
-]]></marketo.getFinalDesignApprovedDate>
 
 <marketo.getPpsFieldValueByCfgaId><![CDATA[
 select cfga.id,
@@ -75,7 +64,7 @@ inner join post_24_hours_status p24hs on p24hs.project_id = up3.project_id
 where up3.company_project_status_type_id != p24hs.company_project_status_type_id;
 ]]></marketo.projectIdsPreviousDayStatusChange>
 
-    <marketo.getProject><![CDATA[
+<marketo.getProject><![CDATA[
 select p.id,
        p.contact_id,
        p.project_name,
@@ -104,7 +93,8 @@ select p.id,
                ccfv.custom_field_group_assignment_id = 395
        ) "leadSource",
        pd.energized_date,
-       pd.final_design_signed_date "finalDesignApprovedDate"
+       pd.final_design_signed_date "finalDesignApprovedDate",
+       pd.final_design_sent_to_homeowner_date
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
@@ -156,7 +146,8 @@ select p.id,
          limit 1
        ) "installationStartTime",
        pd.energized_date,
-       pd.final_design_signed_date "finalDesignApprovedDate"
+       pd.final_design_signed_date "finalDesignApprovedDate",
+       pd.final_design_sent_to_homeowner_date
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id

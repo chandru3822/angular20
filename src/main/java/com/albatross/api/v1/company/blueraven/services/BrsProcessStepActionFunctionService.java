@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -397,7 +398,15 @@ public class BrsProcessStepActionFunctionService {
 
             final String projectStatusParam = paramValues.get(0).getDynamicValue();
             if (projectStatusParam != null && !projectStatusParam.isBlank()) {
-                lead.put("projectStatus", projectStatusParam);
+
+                if (projectStatusParam.trim().equalsIgnoreCase("Final Design Sent")) {
+                    LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+                    if (project.getFinalDesignSentToHomeownerDate().isAfter(yesterday)) {
+                        lead.put("projectStatus", projectStatusParam);
+                    }
+                } else {
+                    lead.put("projectStatus", projectStatusParam);
+                }
             }
 
             Optional<Map<String, Object>> results;
@@ -416,8 +425,9 @@ public class BrsProcessStepActionFunctionService {
             //finalDesignApprovedDate/
             final String finalDesignRawValue = paramValues.get(2).getDynamicValue();
             if (finalDesignRawValue != null && !finalDesignRawValue.isBlank()) {
-                results = sqlCache.get("marketo.getFinalDesignApprovedDate", Map.of("projectId", projectId), new ColumnMapRowMapper());
-                results.ifPresent(r -> lead.put("finalDesignApprovedDate", r.get("dateValue").toString()));
+                if (project.getFinalDesignApprovedDate() != null) {
+                    lead.put("finalDesignApprovedDate", project.getFinalDesignApprovedDate());
+                }
             }
             //installationStartTime
             final String installationRawValue = paramValues.get(3).getDynamicValue();
