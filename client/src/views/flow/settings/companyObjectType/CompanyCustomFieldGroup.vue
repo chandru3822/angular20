@@ -315,6 +315,9 @@ export default {
   watch: {
     objectType() {
       this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
+    },
+    customFieldGroups(){
+      this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
     }
   },
   computed: {
@@ -528,6 +531,7 @@ export default {
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$emit('group-deleted')
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
