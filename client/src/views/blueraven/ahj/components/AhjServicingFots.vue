@@ -1,11 +1,6 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-servicing-fots">
-  <v-card class="mb-3">
-    <v-toolbar class="primary">
-      <v-toolbar-title class="white--text font-weight-bold"
-                       title="Servicing FOT's"
-      >Servicing FOT's</v-toolbar-title>
-    </v-toolbar>
+  <v-container>
     <div class="padded-list"
          v-show="servicingFots.length > 0">
       <p v-for="(fot, index) in servicingFots"
@@ -22,41 +17,41 @@
     <div class="empty-list" v-show="servicingFots.length < 1"
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}"
     >No Servicing FOT's found</div>
-  </v-card>
+  </v-container>
 </template>
 
 <script>
-  export default {
-    name: "AhjServicingFot",
-    props: {
-      servicingFots: {
-        type: Array,
-        default: () => []
-      },
-      isNested: {
-        type: Boolean,
-        default: false
-      }
+export default {
+  name: "AhjServicingFot",
+  props: {
+    servicingFots: {
+      type: Array,
+      default: () => []
+    },
+    isNested: {
+      type: Boolean,
+      default: false
     }
   }
+}
 </script>
 
 <style scoped lang="scss">
-  .list-link {
-    font-size: 0.85em !important;
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
+.list-link {
+  font-size: 0.85em !important;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
   }
-  .v-toolbar__title {
-    font-size: 1em !important;
-  }
-  .padded-list {
-    padding: 18px;
-  }
-  .empty-list {
-    padding: 20px;
-    font-size: 0.85em;
-  }
+}
+.v-toolbar__title {
+  font-size: 1em !important;
+}
+.padded-list {
+  padding: 18px;
+}
+.empty-list {
+  padding: 20px;
+  font-size: 0.85em;
+}
 </style>

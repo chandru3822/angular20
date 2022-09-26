@@ -81,6 +81,11 @@ export default {
     outline: none;
   }
 
+  p  {
+    padding: 0;
+    margin: 0;
+  }
+
   table {
     border-collapse: collapse;
     table-layout: fixed;
