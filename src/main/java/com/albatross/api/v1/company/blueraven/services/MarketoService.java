@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -98,28 +100,57 @@ public class MarketoService {
         }
     }
 
-//    @Async
-//    public Future<Long> getContactIdByProjectId(Long projectId) {
-//        authenticate();
-//        ResponseEntity<String> res = client.get()
-//                                           .uri(uriBuilder -> uriBuilder
-//                                               .path("/rest/v1/leads.json")
-//                                               .queryParam("fields", "id,projectId,lastName,firstName,email,updatedAt,createdAt")
-//                                               .queryParam("filterType", "projectId")
-//                                               .queryParam("batchSize", 1)
-//                                               .queryParam("filterValues", projectId)
-//                                               .build()
-//                                           )
-//                                           .header("Authorization", "Bearer " + accessToken)
-//                                           .retrieve()
-//                                           .toEntity(String.class)
-//                                           .block();
-//
-//        JSONObject rawResponse = new JSONObject(res.getBody());
-//        JSONObject json = (JSONObject) rawResponse.getJSONArray("result").get(0);
-//
-//        return new AsyncResult<>(json.getLong("contactId"));
-//    }
+    public List<Long> getMarketoIdsByProjectId(List<Long> projectIds) {
+
+        final String projectIdsCsv = projectIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        authenticate();
+        ResponseEntity<String> res = client.get()
+                                           .uri(uriBuilder -> uriBuilder
+                                               .path("/rest/v1/leads.json")
+                                               .queryParam("fields", "id")
+                                               .queryParam("filterType", "projectId")
+                                               .queryParam("filterValues", projectIdsCsv)
+                                               .build()
+                                           )
+                                           .header("Authorization", "Bearer " + accessToken)
+                                           .retrieve()
+                                           .toEntity(String.class)
+                                           .block();
+
+        JSONObject rawResponse = new JSONObject(res.getBody());
+        JSONArray result = rawResponse.getJSONArray("result");
+        List<Long> marketoIds = new ArrayList<>();
+
+        for(int i = 0; i < result.length(); i++) {
+            JSONObject json = result.getJSONObject(i);
+            if (json.has("id")) {
+                marketoIds.add(json.getLong("id"));
+            }
+        }
+
+        return marketoIds;
+    }
+
+    public JSONArray removeFromMarekto(List<Long> marketoIds) {
+
+        final String marketoIdsCsv = marketoIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        authenticate();
+        ResponseEntity<String> res = client.post()
+                                           .uri(uriBuilder -> uriBuilder
+                                               .path("/rest/v1/leads/delete.json")
+                                               .queryParam("id", marketoIdsCsv)
+                                               .build()
+                                           )
+                                           .header("Authorization", "Bearer " + accessToken)
+                                           .contentType(MediaType.APPLICATION_JSON)
+                                           .body(BodyInserters.empty())
+                                           .retrieve()
+                                           .toEntity(String.class)
+                                           .block();
+
+        JSONObject rawResponse = new JSONObject(res.getBody());
+        return rawResponse.getJSONArray("result");
+    }
 
     public Map<String, Object> projectToLead(MarketoProject project) {
         Map<String, Object> lead = new HashMap<>();
@@ -173,7 +204,21 @@ public class MarketoService {
         List<List<Map<String, Object>>> sizedLeads = Lists.partition(leads, 300);
         sizedLeads.forEach(l -> {
             String results = pushData(l);
+            log.info(results);
         });
-        log.info("test");
+
+        List<Long> deleteProjectIds = sqlCache.query("marketo.projectsToRemove", null, new SingleColumnRowMapper<>(Long.class));
+
+        List<List<Long>> sizedDeleteProjectIds = Lists.partition(deleteProjectIds, 300);
+        List<Long> marketoIds = new ArrayList<>();
+        sizedDeleteProjectIds.forEach(l -> {
+            marketoIds.addAll(getMarketoIdsByProjectId(deleteProjectIds));
+        });
+
+        List<List<Long>> sizedRemoveIds = Lists.partition(marketoIds, 300);
+        sizedRemoveIds.forEach(l -> {
+            JSONArray results = removeFromMarekto(l);
+            log.info(results.toString());
+        });
     }
 }

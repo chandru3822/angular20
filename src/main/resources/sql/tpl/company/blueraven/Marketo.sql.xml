@@ -61,8 +61,17 @@ select up3.project_id
 from updated_projects up3
 inner join status_change_24_hours sc24h1 on sc24h1.project_id != up3.project_id
 inner join post_24_hours_status p24hs on p24hs.project_id = up3.project_id
-where up3.company_project_status_type_id != p24hs.company_project_status_type_id;
+where up3.company_project_status_type_id != p24hs.company_project_status_type_id
 ]]></marketo.projectIdsPreviousDayStatusChange>
+
+<marketo.projectsToRemove><![CDATA[
+select p.id
+from flow.project p
+left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id
+where pcfv.custom_field_group_assignment_id = 21067 and
+      pcfv.boolean_value = true and
+      pcfv.date_modified >= (now() - interval '24 hours')
+]]></marketo.projectsToRemove>
 
 <marketo.getProject><![CDATA[
 select p.id,
