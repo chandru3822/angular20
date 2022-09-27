@@ -1720,7 +1720,7 @@ BEGIN
   raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
 
   v_total_ee_reduction =
-    greatest(((v_estimated_annual_energy_consumption_kwh * v_energy_efficiency_reduction_thermostat) +
+    least(((v_estimated_annual_energy_consumption_kwh * v_energy_efficiency_reduction_thermostat) + ---Judson said this should be the least
               (v_energy_efficiency_reduction_light_bulbs * v_led_light_bulbs)),
              v_estimated_annual_energy_consumption_kwh * .2);
   raise notice 'v_total_ee_reduction = %',v_total_ee_reduction;
