@@ -92,6 +92,11 @@ public class MarketoService {
                                                    .block();
 
             JSONObject resultBody = new JSONObject(res.getBody());
+
+            if (!resultBody.getBoolean("success")) {
+                throw new RuntimeException("Unable to push data: Marketo says something failed");
+            }
+
             return resultBody.getJSONArray("result");
         } catch (Exception e) {
             throw new RuntimeException(String.format("MARKETO: Unable to push data: %s", e.getMessage()));
@@ -146,8 +151,13 @@ public class MarketoService {
                                            .toEntity(String.class)
                                            .block();
 
-        JSONObject rawResponse = new JSONObject(res.getBody());
-        return rawResponse.getJSONArray("result");
+        JSONObject resultBody = new JSONObject(res.getBody());
+
+        if (!resultBody.getBoolean("success")) {
+            throw new RuntimeException("MARKETO: Unable to push data: Marketo says something failed");
+        }
+
+        return resultBody.getJSONArray("result");
     }
 
     public Map<String, Object> projectToLead(MarketoProject project) {
@@ -201,8 +211,12 @@ public class MarketoService {
 
         List<List<Map<String, Object>>> sizedLeads = Lists.partition(leads, 300);
         sizedLeads.forEach(l -> {
-            JSONArray results = pushData(l);
-            log.info(results.toString());
+            try {
+                pushData(l);
+            } catch (Exception e) {
+                final List<String> errorIds = l.stream().map(lead -> lead.get("projectId").toString()).toList();
+                log.error(String.format("MARKETO: Error in cron while PUSHING data for projects: %s", errorIds));
+            }
         });
 
         List<Long> deleteProjectIds = sqlCache.query("marketo.projectsToRemove", null, new SingleColumnRowMapper<>(Long.class));
@@ -215,8 +229,11 @@ public class MarketoService {
 
         List<List<Long>> sizedRemoveIds = Lists.partition(marketoIds, 300);
         sizedRemoveIds.forEach(l -> {
-            JSONArray results = removeFromMarekto(l);
-            log.info(results.toString());
+            try {
+                removeFromMarekto(l);
+            } catch (Exception e) {
+                log.error(String.format("MARKETO: Error in cron while REMOVING data for projects: %s", l));
+            }
         });
     }
 }

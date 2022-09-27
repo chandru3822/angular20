@@ -468,7 +468,11 @@ public class BrsProcessStepActionFunctionService {
                 }
             }
 
-            JSONArray result = marketoService.pushData(List.of(lead));
+            try {
+                marketoService.pushData(List.of(lead));
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage());
+            }
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
