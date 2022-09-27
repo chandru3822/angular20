@@ -196,17 +196,19 @@ public class MarketoService {
         List<Map<String, Object>> leads = new ArrayList<>();
 
         projects.forEach(p -> {
-            Map<String, Object> lead = projectToLead(p);
+            if (!p.getDoNotSolicitReview()) {
+                Map<String, Object> lead = projectToLead(p);
 
-            lead.put("projectStatus", p.getProjectStatusType());
+                lead.put("projectStatus", p.getProjectStatusType());
 
-            if (p.getCompanyProjectStatusTypeId() == 64) {
-                lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
-            } else if (p.getCompanyProjectStatusTypeId() == 66) {
-                lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
+                if (p.getCompanyProjectStatusTypeId() == 64) {
+                    lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
+                } else if (p.getCompanyProjectStatusTypeId() == 66) {
+                    lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
+                }
+
+                leads.add(lead);
             }
-
-            leads.add(lead);
         });
 
         List<List<Map<String, Object>>> sizedLeads = Lists.partition(leads, 300);

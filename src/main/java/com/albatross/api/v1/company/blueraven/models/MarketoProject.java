@@ -13,4 +13,6 @@ public class MarketoProject extends Project {
     private String firstName, lastName, leadStatus, leadSource, finalDesignApprovedDate, energizedDate, installationStartTime;
 
     private LocalDateTime finalDesignSentToHomeownerDate;
+
+    private Boolean doNotSolicitReview;
 }
