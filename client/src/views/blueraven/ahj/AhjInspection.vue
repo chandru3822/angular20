@@ -28,8 +28,7 @@
                           :user-can-edit="userCanEdit"
                           :expanded-all="expandedAll"
                           :callback="(field) => updateDirtyValue(field)"
-                          @toggle-collapse-expand="toggleCollapseExpand($event)"
-        </TwoColumnMasonry>
+                          @toggle-collapse-expand="toggleCollapseExpand($event)"/>
       </v-row>
 
       <!-- LOWER SECTION -->
