@@ -482,8 +482,8 @@ export default {
 
         if (status === 200) {
           let param = {paymentIds: this.paymentIdsToApprove}
-          // await postRequest('/rebate/approve', param, 'blueraven')
-          // window.location.reload()
+          await postRequest('/rebate/approve', param, 'blueraven')
+          window.location.reload()
           this.snackbar = getSnackbar('SUCCESS', 'Payment approved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
