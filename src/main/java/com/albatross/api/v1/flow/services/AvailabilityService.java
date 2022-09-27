@@ -23,6 +23,8 @@ import org.dmfs.rfc5545.Duration;
 import org.dmfs.rfc5545.recur.InvalidRecurrenceRuleException;
 import org.dmfs.rfc5545.recur.RecurrenceRule;
 import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,7 +33,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -816,9 +817,10 @@ public class AvailabilityService {
                   MarketoProject mp = marketoService.getProject(p.getId());
                   Map<String, Object> marketoLead = marketoService.projectToLead(mp);
                   marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
-                  String result = marketoService.pushData(List.of(marketoLead));
+                  JSONArray result = marketoService.pushData(List.of(marketoLead));
+                  JSONObject firstResult = result.getJSONObject(0);
                   // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
-                  if (result.equals("created")) {
+                  if (firstResult.getString("status").equals("created")) {
                       marketoLead.put("projectStatus", "Appointment Scheduled");
                       marketoService.pushData(List.of(marketoLead));
                   }

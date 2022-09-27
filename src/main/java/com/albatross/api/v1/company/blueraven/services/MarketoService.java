@@ -74,7 +74,7 @@ public class MarketoService {
         }
     }
 
-    public String pushData(List<Map<String, Object>> leads) {
+    public JSONArray pushData(List<Map<String, Object>> leads) {
         try {
             Map<String, Object> body = new HashMap<>();
             body.put("input", leads);
@@ -92,9 +92,7 @@ public class MarketoService {
                                                    .block();
 
             JSONObject resultBody = new JSONObject(res.getBody());
-            JSONArray results = resultBody.getJSONArray("result");
-            JSONObject status = results.getJSONObject(0);
-            return status.getString("status");
+            return resultBody.getJSONArray("result");
         } catch (Exception e) {
             throw new RuntimeException(String.format("MARKETO: Unable to push data: %s", e.getMessage()));
         }
@@ -203,8 +201,8 @@ public class MarketoService {
 
         List<List<Map<String, Object>>> sizedLeads = Lists.partition(leads, 300);
         sizedLeads.forEach(l -> {
-            String results = pushData(l);
-            log.info(results);
+            JSONArray results = pushData(l);
+            log.info(results.toString());
         });
 
         List<Long> deleteProjectIds = sqlCache.query("marketo.projectsToRemove", null, new SingleColumnRowMapper<>(Long.class));

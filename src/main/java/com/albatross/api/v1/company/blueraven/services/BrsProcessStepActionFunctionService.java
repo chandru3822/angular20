@@ -422,15 +422,8 @@ public class BrsProcessStepActionFunctionService {
                 results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
             }
 
-            //finalDesignApprovedDate/
-            final String finalDesignRawValue = paramValues.get(2).getDynamicValue();
-            if (finalDesignRawValue != null && !finalDesignRawValue.isBlank()) {
-                if (project.getFinalDesignApprovedDate() != null) {
-                    lead.put("finalDesignApprovedDate", project.getFinalDesignApprovedDate());
-                }
-            }
             //installationStartTime
-            final String installationRawValue = paramValues.get(3).getDynamicValue();
+            final String installationRawValue = paramValues.get(2).getDynamicValue();
             if (installationRawValue != null && !installationRawValue.isBlank()) {
                 final Long installationStartTimePseId = Long.parseLong(installationRawValue);
                 results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
@@ -438,7 +431,7 @@ public class BrsProcessStepActionFunctionService {
             }
 
             //substantialCompletionDate
-            final String substantialRawValue = paramValues.get(4).getDynamicValue();
+            final String substantialRawValue = paramValues.get(3).getDynamicValue();
             if (substantialRawValue != null && !substantialRawValue.isBlank()) {
                 final Long substantialCompletionDateCfgaId = Long.parseLong(substantialRawValue);
                 results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", substantialCompletionDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
@@ -446,7 +439,7 @@ public class BrsProcessStepActionFunctionService {
             }
 
             //inspectionStartTime
-            final String inspectionRawValue = paramValues.get(5).getDynamicValue();
+            final String inspectionRawValue = paramValues.get(4).getDynamicValue();
             if (inspectionRawValue != null && !inspectionRawValue.isBlank()) {
                 final Long inspectionStartTimePseId = Long.parseLong(inspectionRawValue);
                 results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", inspectionStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
@@ -454,7 +447,7 @@ public class BrsProcessStepActionFunctionService {
             }
 
             //inspectionPassedDate
-            final String inspectionPassedRawValue = paramValues.get(6).getDynamicValue();
+            final String inspectionPassedRawValue = paramValues.get(5).getDynamicValue();
             if (inspectionPassedRawValue != null && !inspectionPassedRawValue.isBlank()) {
                 final Long inspectionPassedDateCfgaId = Long.parseLong(inspectionPassedRawValue);
                 results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", inspectionPassedDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
@@ -462,12 +455,20 @@ public class BrsProcessStepActionFunctionService {
             }
 
             //energizedDate
-            final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
+            final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(6).getDynamicValue());
             if (updateEnergizedDate) {
                 lead.put("energizedDate", project.getEnergizedDate());
             }
 
-            String result = marketoService.pushData(List.of(lead));
+            //finalDesignApprovedDate
+            final boolean updateFinalDesignApprovedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
+            if (updateFinalDesignApprovedDate) {
+                if (project.getFinalDesignApprovedDate() != null) {
+                    lead.put("finalDesignApprovedDate", project.getFinalDesignApprovedDate());
+                }
+            }
+
+            JSONArray result = marketoService.pushData(List.of(lead));
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
