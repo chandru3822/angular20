@@ -492,7 +492,7 @@
         metricsStartDate: moment().format('YYYY-MM-DD'),
         metricsEndDate: moment().format('YYYY-MM-DD'),
         weekNum: 1,
-        currentPeriod: Math.ceil(moment().isoWeek() / 4),
+        currentPeriod: Math.floor(moment().isoWeek() / 4),
         timezone: 'US/Mountain',
         dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
         workQueueOwners: [],
