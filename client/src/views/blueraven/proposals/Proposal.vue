@@ -110,6 +110,11 @@
               <div class="d-flex align-center">
                 <div class="proposal-title">Proposal <span>#{{ proposal.proposalNbr }}</span></div>
                 <v-spacer />
+                <v-btn v-if="proposal && !proposal.locked"
+                       class="proposal-container-buttons text-capitalize"
+                       @click="deleteProposal">
+                  Delete
+                </v-btn>
                 <v-btn v-if="pages && pages.length"
                        class="proposal-container-buttons text-capitalize"
                        :disabled="dirtyCfvs.length > 0"
@@ -135,6 +140,31 @@
       </v-row>
     </v-form>
     <confirm-dialog ref="confirmDialog" />
+    <confirm-dialog ref="deleteConfirmDialog" >
+      <p>Are you sure you want to delete this proposal?</p>
+    </confirm-dialog>
+  </v-container>
+  <v-container v-else>
+    <v-alert
+      prominent
+      type="error"
+    >
+      <v-row align="center">
+        <v-col class="grow">
+          Proposal #{{proposalId}} does not exist.
+        </v-col>
+        <v-col class="shrink">
+          <router-link
+            v-if="proposal && proposal.projectId"
+            :to="`/proposalDesigns/${proposal.projectId}`"
+            custom
+            v-slot="{ href, route, navigate, isActive, isExactActive }"
+          >
+            <v-btn @click="navigate">Back to project</v-btn>
+          </router-link>
+        </v-col>
+      </v-row>
+    </v-alert>
   </v-container>
 </template>
 
@@ -142,6 +172,7 @@
 
 import {
   apiRequest,
+  deleteRequest,
   getRequest,
   getRequestWithParams,
   handleHidingGlobalLoader,
@@ -316,6 +347,26 @@ export default {
         this.dirtyCfvs.push(field)
       }
       await this.buildFilters(field)
+    },
+
+    async deleteProposal() {
+      try {
+
+        const { ok } = await this.$refs.deleteConfirmDialog.open()
+        if (!ok){
+          return
+        }
+
+        const { status } = await deleteRequest(`/proposal/${this.proposalId}`, 'blueraven')
+        this.proposalExists = false
+        this.$snackbar('SUCCESS', `Deleted proposal #${this?.proposal?.proposalNbr}`)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        this.$snackbar('ERROR', e?.data?.message || 'Error deleting proposal')
+
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async duplicate() {
       if (this.dirtyCfvs.length > 0) {
@@ -520,7 +571,7 @@ export default {
 }
 
 //TODO: need to fix this
-.proposal-zoom-lock{
+.proposal-zoom-lock {
   --scale: 0.75;
   transform: scale(var(--scale));
   transform-origin: top center;

@@ -1,14 +1,17 @@
 <sql>
   <proposal.getProjects><![CDATA[
-      select distinct pps.project_id,
-                      p.project_name
-      from flow.project_process_step pps
-        inner join flow.project p on pps.project_id = p.id
-        inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-      where pps.process_step_id in (3507, 3546)
-      and cpsst.process_step_status_type_id in (1,2)
-      and case when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
-       lower(p.project_name) like '%' ||  lower(trim(:query::text))  || '%') else 1=1 end
+select distinct pps.project_id,
+                p.project_name
+from flow.project_process_step pps
+         inner join flow.project p on pps.project_id = p.id
+         inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+where p.archived is false
+  and pps.process_step_id in (3507, 3546)
+  and cpsst.process_step_status_type_id in (1, 2)
+  and case
+          when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
+                                                           lower(p.project_name) like '%' || lower(trim(:query::text)) || '%')
+          else 1 = 1 end
   ]]></proposal.getProjects>
 
   <proposal.getProjectsCount><![CDATA[
@@ -16,7 +19,8 @@
       from flow.project_process_step pps
         inner join flow.project p on pps.project_id = p.id
         inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-      where pps.process_step_id in (3507, 3546)
+      where p.archived is false
+      and pps.process_step_id in (3507, 3546)
       and cpsst.process_step_status_type_id in (1,2)
       and case when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
        lower(p.project_name) like '%' ||  lower(trim(:query::text))  || '%') else 1=1 end
@@ -76,6 +80,7 @@ from flow.project p
                        and ppscfv.custom_field_group_assignment_id = 22678
 where pps.process_step_id = 3507 --create proposal design
   and p.id = :projectId
+  and p.archived is false
   and cpsst.process_step_status_type_id = 2
 ]]></proposal.getDesigns>
 
@@ -331,7 +336,7 @@ update brs.proposal
 set locked_tsz     = now(),
     date_modified  = now(),
     modified_by_id = :modifiedById
-where id = :id and locked_tsz is null
+where id = :id and locked_tsz is null and archived is false
   ]]></proposal.setLocked>
 
   <proposal.setCreditChecked><![CDATA[
@@ -339,15 +344,23 @@ update brs.proposal
 set credit_check_submitted_tsz     = now(),
     date_modified  = now(),
     modified_by_id = :modifiedById
-where id = :id and credit_check_submitted_tsz is null
+where id = :id and credit_check_submitted_tsz is null and archived is false
   ]]></proposal.setCreditChecked>
+
+  <proposal.setArchived><![CDATA[
+update brs.proposal
+set archived       = true,
+    date_modified  = now(),
+    modified_by_id = :modifiedById
+where id = :id and locked_tsz is null and archived is false
+  ]]></proposal.setArchived>
 
   <proposal.setFinanceDocsSent><![CDATA[
 update brs.proposal
 set finance_docs_sent_tsz     = now(),
     date_modified  = now(),
     modified_by_id = :modifiedById
-where id = :id and finance_docs_sent_tsz is null
+where id = :id and finance_docs_sent_tsz is null and archived is false
   ]]></proposal.setFinanceDocsSent>
 
   <proposal.setInstallationAgreementDocsSent><![CDATA[
@@ -355,7 +368,7 @@ update brs.proposal
 set installation_agreement_sent_tsz     = now(),
     date_modified  = now(),
     modified_by_id = :modifiedById
-where id = :id and installation_agreement_sent_tsz is null
+where id = :id and installation_agreement_sent_tsz is null and archived is false
   ]]></proposal.setInstallationAgreementDocsSent>
 
   <proposal.setProcessed><![CDATA[
@@ -369,6 +382,7 @@ set name          = :name,
     modified_by_id = :modifiedById
 where id = :id
   and locked_tsz is null
+   and archived is false
   ]]></proposal.setProposalName>
 
   <proposal.duplicate><![CDATA[
