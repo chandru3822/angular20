@@ -41,6 +41,11 @@ public class BlueravenCustomFieldGroupController {
     return customFieldGroupService.addCustomFieldGroup(customFieldGroup, customFieldGroup.getObjectTypeId());
   }
 
+  @PutMapping(value = "/moveGroupToColumn")
+  public CustomFieldGroup moveCustomFieldGroupToColumn(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.moveCustomFieldGroupToColumn(customFieldGroup);
+  }
+
   // to update just one:
   @PutMapping(value = "/updateCustomFieldGroup")
   public CustomFieldGroup updateCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {

@@ -26,7 +26,7 @@
           Note: Some company specific screens ignore the display order and group name of Custom Fields Groups
           represented here.
         </v-card>
-        <CompanyCustomFieldGroup v-if="customFieldGroups.length" :object-type="objectType" :custom-field-groups="customFieldGroups" @group-deleted="getCustomFieldGroups"/>
+        <CompanyCustomFieldGroup v-if="customFieldGroups.length && objectType.id != null" :object-type="objectType" :custom-field-groups="customFieldGroups" @group-deleted="getCustomFieldGroups"/>
       </v-col>
 
     </v-row>
