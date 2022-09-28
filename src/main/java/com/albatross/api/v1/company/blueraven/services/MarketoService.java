@@ -228,7 +228,7 @@ public class MarketoService {
         List<List<Long>> sizedDeleteProjectIds = Lists.partition(deleteProjectIds, 300);
         List<Long> marketoIds = new ArrayList<>();
         sizedDeleteProjectIds.forEach(l -> {
-            marketoIds.addAll(getMarketoIdsByProjectId(deleteProjectIds));
+            marketoIds.addAll(getMarketoIdsByProjectId(l));
         });
 
         List<List<Long>> sizedRemoveIds = Lists.partition(marketoIds, 300);
