@@ -411,9 +411,6 @@ public class BrsProcessStepActionFunctionService {
 
             Optional<Map<String, Object>> results;
 
-            //@TODO: final design sent. Need to only update status to that if it's the first time it's been updated.
-            // probably the CFV audit table and make sure it's the first entry with that cfgaId
-
             //closerAppointmentStartTime
             final String closerAppointmentRawValue = paramValues.get(1).getDynamicValue();
             if (closerAppointmentRawValue != null && !closerAppointmentRawValue.isBlank()) {
