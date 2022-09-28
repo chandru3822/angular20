@@ -172,7 +172,7 @@
         startDate: moment().format('YYYY-MM-DD'),
         endDate: moment().format('YYYY-MM-DD'),
         weekNum: 1,
-        currentPeriod: Math.ceil(moment().isoWeek() / 4),
+        currentPeriod: Math.floor(moment().isoWeek() / 4),
         dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
         isLoading: true,
         drilldownIsLoading: true,
