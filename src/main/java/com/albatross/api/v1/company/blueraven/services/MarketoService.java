@@ -105,33 +105,37 @@ public class MarketoService {
 
     public List<Long> getMarketoIdsByProjectId(List<Long> projectIds) {
 
-        final String projectIdsCsv = projectIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-        authenticate();
-        ResponseEntity<String> res = client.get()
-                                           .uri(uriBuilder -> uriBuilder
-                                               .path("/rest/v1/leads.json")
-                                               .queryParam("fields", "id")
-                                               .queryParam("filterType", "projectId")
-                                               .queryParam("filterValues", projectIdsCsv)
-                                               .build()
-                                           )
-                                           .header("Authorization", "Bearer " + accessToken)
-                                           .retrieve()
-                                           .toEntity(String.class)
-                                           .block();
+        try {
+            final String projectIdsCsv = projectIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+            authenticate();
+            ResponseEntity<String> res = client.get()
+                                               .uri(uriBuilder -> uriBuilder
+                                                   .path("/rest/v1/leads.json")
+                                                   .queryParam("fields", "id")
+                                                   .queryParam("filterType", "projectId")
+                                                   .queryParam("filterValues", projectIdsCsv)
+                                                   .build()
+                                               )
+                                               .header("Authorization", "Bearer " + accessToken)
+                                               .retrieve()
+                                               .toEntity(String.class)
+                                               .block();
 
-        JSONObject rawResponse = new JSONObject(res.getBody());
-        JSONArray result = rawResponse.getJSONArray("result");
-        List<Long> marketoIds = new ArrayList<>();
+            JSONObject rawResponse = new JSONObject(res.getBody());
+            JSONArray result = rawResponse.getJSONArray("result");
+            List<Long> marketoIds = new ArrayList<>();
 
-        for(int i = 0; i < result.length(); i++) {
-            JSONObject json = result.getJSONObject(i);
-            if (json.has("id")) {
-                marketoIds.add(json.getLong("id"));
+            for(int i = 0; i < result.length(); i++) {
+                JSONObject json = result.getJSONObject(i);
+                if (json.has("id")) {
+                    marketoIds.add(json.getLong("id"));
+                }
             }
-        }
 
-        return marketoIds;
+            return marketoIds;
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("MARKETO: Unable to fetch IDs from Marketo: %s", e.getMessage()));
+        }
     }
 
     public JSONArray removeFromMarekto(List<Long> marketoIds) {
