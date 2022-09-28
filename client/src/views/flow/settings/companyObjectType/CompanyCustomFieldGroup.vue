@@ -527,11 +527,7 @@ export default {
         group.columnNumber = columnNumber
         const {data, status} = await putRequest(`/customFieldGroup/moveGroupToColumn`, group, 'blueraven')
         this.groupsByColumn[fromColumn] = this.groupsByColumn[fromColumn].filter(f => f.id !== group.id)
-        console.log('from', fromColumn)
-        console.log('randaLogger',this.groupsByColumn[fromColumn])
-        console.log('to', columnNumber)
         this.groupsByColumn[columnNumber].push(data)
-        console.log('randaLogger',this.groupsByColumn[columnNumber])
         this.snackbar = getSnackbar('SUCCESS', 'Group Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
