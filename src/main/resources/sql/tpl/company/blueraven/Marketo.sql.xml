@@ -70,6 +70,7 @@ where up3.company_project_status_type_id != p24hs.company_project_status_type_id
 ]]></marketo.projectIdsPreviousDayStatusChange>
 
 <marketo.projectsToRemove><![CDATA[
+-- projects marked 'do not solicit review' in the past 24 hours
 select p.id
 from flow.project p
 inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
@@ -77,6 +78,25 @@ left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id
 where pcfv.custom_field_group_assignment_id = 21067 and
       pcfv.boolean_value = true and
       pcfv.date_modified >= (now() - interval '24 hours') and
+      cpst.company_id = 3
+union
+-- projects cancelled in the past 24 hours (and still cancelled)
+select p.id
+from flow.project p
+inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+where p.cancelled_date >= (now() - interval '24 hours') and
+      cpst.project_status_type_id = 2 and
+      p.archived is not true and
+      cpst.company_id = 3
+union
+-- pre-booking projects ('Installation Agreement Signed' in the 'Booking' step is null) and closer appointment > 30 days ago
+select p.id
+from flow.project p
+inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+inner join brs.project_details pd on p.id = pd.project_id
+where pd.installation_agreement_signed_date is null and
+      pd.closer_appointment_start < (now() - interval '30 days') and
+      p.archived is not true and
       cpst.company_id = 3
 ]]></marketo.projectsToRemove>
 
