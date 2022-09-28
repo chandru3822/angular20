@@ -64,7 +64,7 @@
                               <v-icon>mdi-cursor-move</v-icon>
                             </v-btn>
                           </template>
-                          <span>Move to Other Group</span>
+                          <span>Change Column</span>
                         </v-tooltip>
                       </template>
                       <v-list>
