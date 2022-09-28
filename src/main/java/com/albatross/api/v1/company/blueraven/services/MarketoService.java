@@ -191,6 +191,8 @@ public class MarketoService {
     }
 
     public void pushDailyUpdatedProjects() {
+
+        // upsert projects
         List<Long> projectIds = sqlCache.query("marketo.projectIdsPreviousDayStatusChange", null, new SingleColumnRowMapper<>(Long.class));
         List<MarketoProject> projects = sqlCache.query("marketo.getProjects", Map.of("projectIds", projectIds), MarketoProject.class);
         List<Map<String, Object>> leads = new ArrayList<>();
@@ -221,8 +223,8 @@ public class MarketoService {
             }
         });
 
+        // remove projects
         List<Long> deleteProjectIds = sqlCache.query("marketo.projectsToRemove", null, new SingleColumnRowMapper<>(Long.class));
-
         List<List<Long>> sizedDeleteProjectIds = Lists.partition(deleteProjectIds, 300);
         List<Long> marketoIds = new ArrayList<>();
         sizedDeleteProjectIds.forEach(l -> {
@@ -235,6 +237,37 @@ public class MarketoService {
                 removeFromMarekto(l);
             } catch (Exception e) {
                 log.error(String.format("MARKETO: Error in cron while REMOVING data for projects: %s", l));
+            }
+        });
+
+        // push reactivated projects
+        List<Long> reactivatedProjectIds = sqlCache.query("marketo.projectsToReactivate", null, new SingleColumnRowMapper<>(Long.class));
+        List<MarketoProject> reactivatedProjects = sqlCache.query("marketo.getProjects", Map.of("projectIds", reactivatedProjectIds), MarketoProject.class);
+        List<Map<String, Object>> reactivatedLeads = new ArrayList<>();
+
+        reactivatedProjects.forEach(p -> {
+            if (!p.getDoNotSolicitReview()) {
+                Map<String, Object> lead = projectToLead(p);
+
+                lead.put("projectStatus", p.getProjectStatusType());
+
+                if (p.getCompanyProjectStatusTypeId() == 64) {
+                    lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
+                } else if (p.getCompanyProjectStatusTypeId() == 66) {
+                    lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
+                }
+
+                reactivatedLeads.add(lead);
+            }
+        });
+
+        List<List<Map<String, Object>>> sizedReactivatedLeads = Lists.partition(reactivatedLeads, 300);
+        sizedReactivatedLeads.forEach(l -> {
+            try {
+                pushData(l);
+            } catch (Exception e) {
+                final List<String> errorIds = l.stream().map(lead -> lead.get("projectId").toString()).toList();
+                log.error(String.format("MARKETO: Error in cron while REACTIVATING data for projects: %s", errorIds));
             }
         });
     }
