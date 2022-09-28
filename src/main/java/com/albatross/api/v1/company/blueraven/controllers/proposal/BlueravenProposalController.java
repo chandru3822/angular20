@@ -98,6 +98,11 @@ public class BlueravenProposalController {
     return proposalService.updateProposalCustomFieldValues(proposalId, cfvs);
   }
 
+  @DeleteMapping(value = "/{proposalId}")
+  public void archiveProposal(@PathVariable Long proposalId, @AuthenticationPrincipal UserAccountDetails details) {
+    proposalService.archiveProposal(proposalId, details);
+  }
+
   @PostMapping(value = "/{proposalId}/name")
   public Proposal updateProposalName(@PathVariable Long proposalId, @Valid @RequestBody ProposalNameUpdateRequest nameUpdateRequest, @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.setProposalName(proposalId, nameUpdateRequest.name(), details);
