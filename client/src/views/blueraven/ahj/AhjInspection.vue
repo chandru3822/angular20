@@ -24,7 +24,7 @@
     <v-form ref="ahjInspectionForm">
       <v-row class="mb-4 group-row" no-gutters>
         <TwoColumnMasonry v-if="dataReady"
-                          :custom-field-groups=customFieldGroups
+                          :custom-field-groups=filteredCfgs
                           :user-can-edit="userCanEdit"
                           :expanded-all="expandedAll"
                           :callback="(field) => updateDirtyValue(field)"
@@ -150,6 +150,7 @@
                                :user-can-edit="userCanEdit"
                                :expanded-all="expandedAll"
                                @toggle-collapse-expand="toggleCollapseExpand($event)"
+                               :callback="(field) => updateDirtyValue(field)"
           ></AhjCustomFieldGroup>
         </v-col>
       </v-row>
@@ -248,6 +249,9 @@ export default {
     CustomValueInput
   },
   computed: {
+    filteredCfgs() {
+      return this.customFieldGroups.filter(cfg => cfg.id !== 45)
+    },
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
     },
