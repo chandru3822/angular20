@@ -131,6 +131,25 @@ public class BlueravenCustomFieldGroupService {
     return group.orElse(null);
   }
 
+  public CustomFieldGroup moveCustomFieldGroupToColumn(CustomFieldGroup customFieldGroup) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.trueUserId());
+    params.put("columnNumber", customFieldGroup.getColumnNumber());
+    params.put("objectTypeId", customFieldGroup.getObjectTypeId());
+    params.put("id", customFieldGroup.getId());
+
+    sqlCache.update("blueravenCustomFieldGroup.moveGroupToColumn", params);
+
+    Optional<CustomFieldGroup> group =
+      sqlCache.get(
+        "blueravenCustomFieldGroup.assignment.getOne",
+        params,
+        new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    return group.orElse(null);
+  }
+
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

@@ -504,9 +504,7 @@
         assignmentToDelete: null
       }
     },
-    created () {
-      console.log('randaLogger',this.customFieldGroups)
-    },
+    created () {},
     computed: {
       localCustomFieldGroups: {
         get: function () {
