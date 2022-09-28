@@ -96,6 +96,7 @@ inner join flow.company_project_status_type cpst on p.company_project_status_typ
 inner join brs.project_details pd on p.id = pd.project_id
 where pd.installation_agreement_signed_date is null and
       pd.closer_appointment_start < (now() - interval '30 days') and
+      pd.closer_appointment_start > (now() - interval '32 days') and
       p.archived is not true and
       cpst.company_id = 3
 ]]></marketo.projectsToRemove>
