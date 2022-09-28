@@ -27,7 +27,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
   private Boolean updateGenesysContacts;
 
-  @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
+  @Value(value = "${app.cron.blueraven.pushProjectsToMarketo.enabled:false}")
   private Boolean pushProjectsToMarketo;
 
   private final GenesysService genesysService;
