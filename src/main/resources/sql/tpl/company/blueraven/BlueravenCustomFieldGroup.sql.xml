@@ -71,7 +71,7 @@ order by cfg.group_order, cfg.group_name
 
   <blueravenCustomFieldGroup.insertCustomFieldGroup><![CDATA[
     insert into brs.custom_field_group(group_name, object_type_id, group_order, created_by_id, date_created, modified_by_id, date_modified, column_number)
-    values (:groupName, :objectTypeId, (select coalesce(max(group_order) + 1, 0) from brs.custom_field_group where object_type_id = :objectTypeId), :createdById, now(), :createdById, now(), 1)
+    values (:groupName, :objectTypeId, (select coalesce(max(group_order) + 1, 0) from brs.custom_field_group where object_type_id = :objectTypeId and column_number = :columnNumber and archived is false), :createdById, now(), :createdById, now(), :columnNumber)
   ]]></blueravenCustomFieldGroup.insertCustomFieldGroup>
 
   <blueravenCustomFieldGroup.updateCustomFieldGroup><![CDATA[

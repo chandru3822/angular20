@@ -114,6 +114,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("objectTypeId", objectTypeId);
     params.put("createdById", user.trueUserId());
+    params.put("columnNumber", 1); //i assume we will parameterize this later
 
     Long id =
         sqlCache
