@@ -76,7 +76,9 @@ BEGIN
             elsif v_data_type_id = 5 or v_data_type_id = 13 then
                 insert into flow.project_custom_field_value(project_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified, rich_text_value)
                 values (p_project_id, p_cfga, null, null, null, p_value_to_save::text, null,null, null, p_user_id, now(), p_user_id, now(), case when v_data_type_id = 13 then p_value_to_save::text end);
-            elsif v_data_type_id = 6 or v_data_type_id = 9 then
+            elsif v_data_type_id = 6 or v_data_type_id = 9
+                    or v_data_type_id = 8 -- note: data type id 8 = system. for now these are always single select lists.  this will break if that changes
+              then
                 insert into flow.project_custom_field_value(project_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
                 values (p_project_id, p_cfga, null, null, null, null, null, p_value_to_save::bigint, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 7 then
@@ -117,7 +119,9 @@ BEGIN
                     date_modified = now(),
                     rich_text_value = case when v_data_type_id = 13 then p_value_to_save::text end
                 where id = v_existing_id;
-            elsif v_data_type_id = 6 or v_data_type_id = 9 then
+            elsif v_data_type_id = 6 or v_data_type_id = 9
+                  or v_data_type_id = 8 -- note: data type id 8 = system. for now these are always single select lists.  this will break if that changes
+              then
                 update flow.project_custom_field_value
                 set int_value = p_value_to_save::bigint,
                     modified_by_id = p_user_id,
