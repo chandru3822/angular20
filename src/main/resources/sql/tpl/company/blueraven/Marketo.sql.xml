@@ -236,4 +236,28 @@ left join flow.country co on co.id = cc.country_id
 where p.id = any(array[ :projectIds ]::bigint[]) and
       cpst.company_id = 3
 ]]></marketo.getProjects>
+
+<marketo.addRequest><![CDATA[
+insert into brs.marketo_requests (url, payload)
+values (:url, :payload)
+returning id
+]]></marketo.addRequest>
+
+<marketo.updateResponse><![CDATA[
+update brs.marketo_requests
+set response = :response
+where id = :id
+]]></marketo.updateResponse>
+
+<marketo.updateStacktrace><![CDATA[
+update brs.marketo_requests
+set stacktrace = :stacktrace
+where id = :id
+]]></marketo.updateStacktrace>
+
+<marketo.updateError><![CDATA[
+update brs.marketo_requests
+set error = :error
+where id = :id
+]]></marketo.updateError>
 </sql>
