@@ -17,6 +17,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -108,7 +110,10 @@ public class MarketoService {
             return resultBody.getJSONArray("result");
         } catch (Exception e) {
             // @TODO: Remove after testing
-            sqlCache.update("marketo.updateStacktrace", Map.of("id", requestId,"stacktrace", e.getStackTrace()));
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            sqlCache.update("marketo.updateStacktrace", Map.of("id", requestId,"stacktrace", sw.toString()));
             sqlCache.update("marketo.updateError", Map.of("id", requestId,"error", e.getMessage()));
 
             throw new RuntimeException(String.format("MARKETO: Unable to push data: %s", e.getMessage()));
@@ -154,7 +159,10 @@ public class MarketoService {
             return marketoIds;
         } catch (Exception e) {
             // @TODO: Remove after testing
-            sqlCache.update("marketo.updateStacktrace", Map.of("id", requestId,"stacktrace", e.getStackTrace()));
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            sqlCache.update("marketo.updateStacktrace", Map.of("id", requestId,"stacktrace", sw.toString()));
             sqlCache.update("marketo.updateError", Map.of("id", requestId,"error", e.getMessage()));
             throw new RuntimeException(String.format("MARKETO: Unable to fetch IDs from Marketo: %s", e.getMessage()));
         }
