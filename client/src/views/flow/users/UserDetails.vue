@@ -137,7 +137,7 @@
                       class="user-company-button albatross-body-1">
                 {{ uc.companyName }}
                 <v-btn fab small text color="primary"
-                       v-if="userIsAdmin"
+                       v-if="userIsAdmin && user.companies.length > 1"
                        @click="companyToDelete = uc"><v-icon>delete</v-icon></v-btn>
               </v-card>
             </div>

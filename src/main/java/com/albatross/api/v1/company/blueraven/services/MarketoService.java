@@ -246,6 +246,10 @@ public class MarketoService {
     }
 
     public String formatDateTime(Object rawDate) {
+        if (rawDate == null) {
+            return null;
+        }
+
         try {
             LocalDateTime date = LocalDateTime.parse(rawDate.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]"));
             return date + "+00:00";
