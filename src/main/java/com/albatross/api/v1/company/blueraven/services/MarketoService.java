@@ -104,6 +104,13 @@ public class MarketoService {
             sqlCache.update("marketo.updateResponse", Map.of("id", requestId, "response", res.getBody()));
 
             if (!resultBody.getBoolean("success")) {
+                JSONObject error = resultBody.getJSONArray("errors").getJSONObject(0);
+                if (error.getLong("code") == 602) {
+                    // @TODO: Infinite retries might become an issue
+                    // retry
+                    pushData(leads);
+                }
+
                 throw new RuntimeException("Unable to push data: Marketo says something failed");
             }
 
@@ -146,6 +153,18 @@ public class MarketoService {
             sqlCache.update("marketo.updateResponse", Map.of("id", requestId, "response", res.getBody()));
 
             JSONObject rawResponse = new JSONObject(res.getBody());
+
+            if (!rawResponse.getBoolean("success")) {
+                JSONObject error = rawResponse.getJSONArray("errors").getJSONObject(0);
+                if (error.getLong("code") == 602) {
+                    // @TODO: Infinite retries might become an issue
+                    // retry
+                    getMarketoIdsByProjectId(projectIds);
+                }
+
+                throw new RuntimeException("Unable to push data: Marketo says something failed");
+            }
+
             JSONArray result = rawResponse.getJSONArray("result");
             List<Long> marketoIds = new ArrayList<>();
 
@@ -195,6 +214,13 @@ public class MarketoService {
         sqlCache.update("marketo.updateResponse", Map.of("id", requestId, "response", res.getBody()));
 
         if (!resultBody.getBoolean("success")) {
+            JSONObject error = resultBody.getJSONArray("errors").getJSONObject(0);
+            if (error.getLong("code") == 602) {
+                // @TODO: Infinite retries might become an issue
+                // retry
+                removeFromMarekto(marketoIds);
+            }
+
             // @TODO: Remove after testing
             sqlCache.update("marketo.updateError", Map.of("id", requestId,"error", "Unable remove IDs: Marketo says something failed"));
             throw new RuntimeException("MARKETO: Unable remove IDs: Marketo says something failed");
