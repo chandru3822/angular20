@@ -16,6 +16,7 @@
           hide-details
           :filled-style="true"
           :lock-feature="true"
+          :copy-feature="true"
       />
       <v-textarea v-if="showOtherField(field.intValue, field.listOfValues)"
                   v-model="field.textValue"
