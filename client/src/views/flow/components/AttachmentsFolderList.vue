@@ -146,6 +146,7 @@ import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareMod
 import constants from "@/helpers/constants";
 import {ProjectMutations} from "@/stores/ProjectStore";
 import SpinnerInline from '@/components/SpinnerInline'
+import cloneDeep from 'lodash.clonedeep'
 
 export default {
   name: "AttachmentsFolderList",
@@ -239,8 +240,9 @@ export default {
     if (this.loadLinked) {
       //if in the linked section and a new record was linked, add it here
       this.$root.$on('newAttachmentLinked', data => {
-        data.linked = true
-        this.attachments.push(data)
+        let clone = cloneDeep(data)
+        clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
+        this.attachments.push(clone)
       })
       //if in the linked section and a linked attachment is archived, remove it
       this.$root.$on('attachmentDeleted', id => {
