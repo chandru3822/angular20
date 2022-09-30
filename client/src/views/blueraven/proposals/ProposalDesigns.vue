@@ -79,8 +79,7 @@
             @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
               <v-list-item-title class="proposal-title">
-                <span v-if="!proposal.name">Proposal {{ proposal.id }}</span>
-                <span v-else>{{ proposal.name }}</span>
+                <span>{{ proposal.displayName }}</span>
                 <v-icon v-if="proposal.locked" small>mdi-lock</v-icon>
               </v-list-item-title>
               <v-list-item-subtitle>
@@ -181,8 +180,8 @@
           <DatetimePickerInput
             v-model="newDesignRequest.dueDate"
             :timezone="timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
+            type="timestamp"
+            :format="'MMMM DD, YYYY, h:mm A'"
             :min-date="minDate"
             label="Pick a due date and time (Required)"
           />

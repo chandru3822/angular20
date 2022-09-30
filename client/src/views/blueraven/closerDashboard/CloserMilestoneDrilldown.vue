@@ -46,7 +46,7 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+        <v-btn class="white--text text-capitalize mr-4 mb-2" color="primary"
                @click="closeMilestoneDialog">
           Close
         </v-btn>

@@ -4,6 +4,8 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.MarketoProject;
+import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
@@ -21,7 +23,10 @@ import org.dmfs.rfc5545.Duration;
 import org.dmfs.rfc5545.recur.InvalidRecurrenceRuleException;
 import org.dmfs.rfc5545.recur.RecurrenceRule;
 import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +60,11 @@ public class AvailabilityService {
   private final CustomFieldValueService customFieldValueService;
   private final UserPositionService userPositionService;
   private final MapboxApiService mapboxApiService;
+
+  private final MarketoService marketoService;
+
+  @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
+  private Boolean marketoEnabled;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -757,6 +767,9 @@ public class AvailabilityService {
                 results.get(0).setEventActions(projectProcessStepEvent.getEventActions());
               });
 
+          Optional<Project> project = projectService.getProject(request.getProjectId());
+          Date appointmentStartTime = results.get(0).getAppointmentStartTime();
+
           // on success send email to the closer
           String closerEmail = results.get(0).getUserEmail();
           if (null != closerEmail) {
@@ -765,7 +778,6 @@ public class AvailabilityService {
                 ScheduledConfig.class.getResourceAsStream(
                     "/communication/templates/closer-appointment.ftl.html");
             String template = IOUtils.toString(inputStream);
-            Optional<Project> project = projectService.getProject(request.getProjectId());
             String projectAddress = "";
             String timeZoneAbbreviation = "";
             String startTime = "";
@@ -785,7 +797,7 @@ public class AvailabilityService {
               SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy h:mm a");
               TimeZone tz = TimeZone.getTimeZone(timeZoneAbbreviation);
               dateFormat.setTimeZone(tz);
-              startTime = dateFormat.format(results.get(0).getAppointmentStartTime());
+              startTime = dateFormat.format(appointmentStartTime);
             }
 
             Map<String, Object> context = new HashMap<>();
@@ -801,6 +813,29 @@ public class AvailabilityService {
                 "SalesOps@blueravensolar.com",
                 "Blue Raven Sales Operation",
                 user.trueUserId());
+          }
+
+          if (marketoEnabled) {
+              // push data to Marketo
+              project.ifPresent(p -> {
+                  try {
+                      MarketoProject mp = marketoService.getProject(p.getId());
+                      if (!mp.getDoNotSolicitReview()) {
+                          Map<String, Object> marketoLead = marketoService.projectToLead(mp);
+                          marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+                          marketoLead.put("projectStatus", mp.getProjectStatusType());
+                          JSONArray result = marketoService.pushData(List.of(marketoLead));
+                          JSONObject firstResult = result.getJSONObject(0);
+                          // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
+                          if (firstResult.getString("status").equals("created")) {
+                              marketoLead.put("projectStatus", "Appointment Scheduled");
+                              marketoService.pushData(List.of(marketoLead));
+                          }
+                      }
+                  } catch (Exception e) {
+                      log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
+                  }
+              });
           }
 
           return ResponseEntity.ok(results.get(0));

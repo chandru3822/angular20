@@ -315,6 +315,8 @@
                     inner join flow.user_status_type ust on cus.user_status_type_id = ust.id and ust.company_id = ct.company_id
                   WHERE up.id = p.user_position_id) o) AS owner,
         p.project_name,
+        ct.first_name,
+        ct.last_name,
         p.company_project_status_type_id,
         cpst.project_status_type,
         cpst.project_status_type_id,

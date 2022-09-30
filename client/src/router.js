@@ -468,8 +468,10 @@ const router = new Router({
               component: () => import (/* webpackChunkName: "tournaments" */ './views/blueraven/tournament/Winners.vue')
             }
           ]
-        },
+        } ,
         //END TOURNAMENT STUFF
+
+        ProposalDesignerRoutes,
 
         {
           path: '/settings',
@@ -478,7 +480,6 @@ const router = new Router({
           component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
           children: [
             ProposalVersionSettingsRoutes,
-            ProposalDesignerRoutes,
             {
               path: 'attachments',
               meta: {title: 'Albatross - Settings'},

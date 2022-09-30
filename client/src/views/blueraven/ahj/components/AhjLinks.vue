@@ -1,19 +1,21 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-links">
-  <v-card class="mb-3">
-    <v-toolbar class="primary">
-      <v-toolbar-title class="white--text font-weight-bold" :title="title">
-        {{ title }}
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
-        <v-icon v-show="!addMode && !editMode" @click="addLink" class="white--text">add</v-icon>
-        <v-icon v-show="addMode || editMode"
-                @click="hideCtrls" class="white--text">remove</v-icon>
-      </v-btn>
-    </v-toolbar>
-    <v-form v-show="addMode || editMode"
-            ref="linkForm" class="px-3 pt-4 pb-3">
+  <AhjCard
+      :title="title"
+      :expanded-all="expandedAll"
+      :edit-mode="editMode"
+      show-add show-expanded
+      :user-can-edit="userCanEdit"
+      :add-btn-disabled="!linkInfoEntered"
+      @hide-ctrls="hideCtrls"
+      @save-new="saveLink(true)"
+      @save-update="saveLink(false)"
+      @delete-item="deleteLink"
+      @toggle-collapse-expand="$emit('toggle-collapse-expand', $event)"
+  >
+    <template v-slot:addOrEdit>
+    <v-form
+            ref="linkForm">
       <v-text-field v-model="link.name" required label="Name" filled></v-text-field>
       <v-text-field v-model="link.link" required type="url"
                     :rules="[urlRule]" label="URL" filled></v-text-field>
@@ -23,19 +25,8 @@
                   style="margin: 15px 0 -15px 0"
                   v-model="link.notes">
       </v-textarea>
-      <div class="link-btns">
-        <v-btn color="primary" text @click="hideCtrls"
-           class="cancel-link">Cancel</v-btn>
-        <v-btn v-show="editMode" dark v-if="userCanEdit"
-               @click="deleteLink" class="error">
-          Delete
-        </v-btn>
-        <v-btn @click="saveLink" color="primary" class="white--text"
-               :disabled="!linkInfoEntered">
-          {{ addMode ? 'Add' : 'Update' }}
-        </v-btn>
-      </div>
     </v-form>
+    </template>
     <v-list v-show="links.length > 0" v-for="(link, index) of links"
             :key="link.id" class="px-2" :style="{'border-radius': index === links.length - 1 ? '5px !important' : '',
                                                  'border': index === links.length - 1 ? 'none !important' : ''}">
@@ -54,9 +45,7 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No links found
     </div>
-
-
-  </v-card>
+  </AhjCard>
 </template>
 
 <script>
@@ -64,29 +53,19 @@
 
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
+  import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
   export default {
     name: "AhjLinks",
-
+    components: {AhjCard},
     props: {
-      title: {
-        type: String
-      },
-      linkTypeId: {
-        type: Number
-      },
-      userCanEdit: {
-        type: Boolean
-      },
-      itemId: {
-        type: Number
-      },
-      itemType: {
-        type: String
-      },
-      ahjId: {
-        type: Number
-      },
+      title:  String,
+      linkTypeId: Number,
+      userCanEdit: Boolean,
+      itemId: Number,
+      itemType: String,
+      ahjId: Number,
       links: {
         type: Array,
         default: () => []
@@ -94,7 +73,12 @@
       isNested: {
         type: Boolean,
         default: false
-      }
+      },
+      showExpanded: {
+        type: Boolean,
+        default: false
+      },
+      expandedAll: CollapseExpandEnum
     },
     data () {
       return {
@@ -108,10 +92,9 @@
           password: null,
           notes: null
         },
-        addMode: false,
         editMode: false,
         validUrl: false,
-        linksCopy: this.links
+        linksCopy: this.links,
       }
     },
     computed: {
@@ -130,24 +113,18 @@
         }
       },
       hideCtrls() {
-        this.addMode = false
-        this.editMode = false
-      },
-      addLink() {
-        this.editMode = false
-        this.addMode = true
         this.$refs.linkForm.reset()
+        this.editMode = false
       },
       editLink(link) {
-        this.addMode = false
         this.editMode = true
         this.link = Object.assign({}, link)
       },
-      async saveLink() {
+      async saveLink(newLink) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.link.linkTypeId = this.linkTypeId
 
-        if (this.addMode) {
+        if (newLink) {
           try {
             let res = null
             if (this.itemType === 'utility') {
@@ -158,12 +135,12 @@
             this.linksCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Link added')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$refs.linkForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.addMode = false
         } else {
           try {
             let res = null
@@ -180,12 +157,12 @@
             this.linksCopy[updatedLinkIndex].notes = res.data.notes
             this.snackbar = getSnackbar('SUCCESS', 'Link updated')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$refs.linkForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
-          this.editMode = false
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -207,9 +184,8 @@
           this.snackbar = getSnackbar('ERROR', 'Error deleting link')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
-        this.editMode = false
         this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+      },
     }
   }
 </script>

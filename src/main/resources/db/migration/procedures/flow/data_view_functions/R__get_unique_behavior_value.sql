@@ -140,7 +140,7 @@ BEGIN
     from flow.contact c
     where c.id = p_value::bigint;
 
-  elsif p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER' or p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER_bigint' then
+  elsif p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER' or p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER_BIGINT' then
 
     if p_type = 'PROCESS_STEP' then
 

@@ -10,6 +10,7 @@ import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.InstallAgreementService;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Data;
@@ -45,6 +46,7 @@ public class BlueravenProposalController {
   private final BlueravenProposalService proposalService;
   private final ProposalVersionService proposalVersionService;
   private final InstallAgreementService installAgreementService;
+  private final ObjectMapper objectMapper;
 
   @GetMapping(value = "/projects")
   public Page<ProposalProject> getProposalProjects(@RequestParam String query, Pageable pageable) {
@@ -96,6 +98,11 @@ public class BlueravenProposalController {
     return proposalService.updateProposalCustomFieldValues(proposalId, cfvs);
   }
 
+  @DeleteMapping(value = "/{proposalId}")
+  public void archiveProposal(@PathVariable Long proposalId, @AuthenticationPrincipal UserAccountDetails details) {
+    proposalService.archiveProposal(proposalId, details);
+  }
+
   @PostMapping(value = "/{proposalId}/name")
   public Proposal updateProposalName(@PathVariable Long proposalId, @Valid @RequestBody ProposalNameUpdateRequest nameUpdateRequest, @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.setProposalName(proposalId, nameUpdateRequest.name(), details);
@@ -113,6 +120,12 @@ public class BlueravenProposalController {
         try {
           final String loanApplication = installAgreementService.generateLoanApplication(proposal.getProjectId(), proposal.getProposalNbr(), null);
           proposalService.setCreditCheckSubmitted(proposal.getId(), details);
+
+          if (loanApplication.contains("applicationUrl")) {
+            final LoanStatusUpdate loanStatusUpdate = objectMapper.convertValue(loanApplication, LoanStatusUpdate.class);
+            return loanStatusUpdate.applicationUrl;
+          }
+
           return loanApplication;
         } catch (Exception e) {
           throw new ApiException(e);
@@ -244,6 +257,9 @@ public class BlueravenProposalController {
   }
 
   public record ProposalPostalApprovalRequest(String comments) {
+  }
+
+  public record LoanStatusUpdate(String applicationUrl, String type) {
   }
 
   @Data

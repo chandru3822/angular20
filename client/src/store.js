@@ -5,8 +5,8 @@ import {ProjectStore} from '@/stores/ProjectStore'
 import {BrsStore} from '@/stores/BrsStore'
 import {AppStore} from '@/stores/AppStore'
 import constants from '@/helpers/constants'
-import ProposalStore from '@/views/blueraven/settings/proposalDesigner/store'
-import {deleteRequest, getRequestWithParams, postRequest} from './helpers/helpers'
+import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
+import { deleteRequest, getRequestWithParams, postRequest } from './helpers/helpers'
 
 Vue.use(Vuex)
 
@@ -31,7 +31,8 @@ const store = new Vuex.Store({
     store => {
       store.commit(Mutations.INIT)
       store.subscribe((mutation, state) => {
-        const {notifications, ...newState} = state //don't store notifications
+        if (mutation.type === ProposalMutations.REGISTER_EDITOR) return
+        const { notifications, ...newState } = state //don't store notifications
         localStorage.setItem('store', JSON.stringify(newState))
       })
     }

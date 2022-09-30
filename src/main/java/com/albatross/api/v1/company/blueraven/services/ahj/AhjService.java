@@ -82,53 +82,6 @@ public class AhjService {
     return sqlCache.get("ahj.findById", params, AhjSummary.class);
   }
 
-  // CHECKLISTS
-  private Optional<AhjChecklistItem> getChecklistItemById(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-
-    return sqlCache.get("ahj.checklist.findById", params, AhjChecklistItem.class);
-  }
-
-  @Transactional
-  public Optional<AhjChecklistItem> saveChecklistItem(Long ahjId, Long ahjItemTypeId, Long itemId, AhjChecklistItem item, AhjType ahjType) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("description", item.getDescription());
-    params.put("displayOrder", item.getDisplayOrder());
-    params.put("checklistTypeId", item.getChecklistTypeId());
-    params.put("currentUser", currentUser.trueUserId());
-    params.put("failedInspectionResourceId", item.getFailedInspectionResourceId());
-    params.put("failedInspectionDate", item.getFailedInspectionDate());
-    params.put("failedInspectionProject", item.getFailedInspectionProject());
-
-    if (itemId == null) {
-      itemId = sqlCache.updateReturningId("ahj.checklist.create", params, "id").longValue();
-
-      if (AhjType.PERMIT.equals(ahjType)) {
-        ahjPermitService.createPermitChecklistItem(ahjItemTypeId, itemId);
-      } else {
-        ahjInspectionService.createInspectionChecklistItem(ahjItemTypeId, itemId);
-      }
-    } else {
-      params.put("id", itemId);
-      sqlCache.update("ahj.checklist.update", params);
-    }
-
-    return getChecklistItemById(itemId);
-  }
-
-  public void deleteChecklistItem(Long ahjId, Long permitId, Long itemId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", itemId);
-    params.put("currentUser", currentUser.trueUserId());
-
-    sqlCache.update("ahj.checklist.delete", params);
-  }
-
   // CONTACTS
   public Optional<AhjContact> getAhjContactById(Long contactId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -159,8 +112,6 @@ public class AhjService {
         ahjPermitService.savePermitContact(id, contactId);
       } else if (AhjType.INSPECTION.equals(ahjType)) {
         ahjInspectionService.saveInspectionContact(id, contactId);
-      } else {
-        ahjDesignService.saveDesignContact(id, contactId);
       }
 
     } else {

@@ -13,12 +13,6 @@ import java.util.List;
 @Setter
 public class AhjInspectionDetail extends AhjInspection {
     private List<AhjLink> schedulingLinks, fotLinks, resultsLinks;
-    private List<AhjChecklistItem> failureChecklist, schedulingChecklist, obtainingResultsChecklist,
-                                   reinspectionsChecklist, schedulingWithAhjChecklist,
-                                   schedulingWithBrsTechnicianChecklist;
-    private List<AhjRequirement> installationRequirements;
-    private List<AhjNoteTemplate> noteTemplates;
-    private List<AhjContact> utilityServiceDeptContacts, schedulingContacts, obtainingResultsContacts,
-                             feeContacts;
+    private List<AhjContact> utilityServiceDeptContacts, schedulingContacts, obtainingResultsContacts, feeContacts;
     private List<User> servicingFots;
 }

@@ -8,7 +8,7 @@
           <div class="error-text" v-if="checkAddress">
             Please enter a valid project address.
           </div>
-          <div class="error-text" v-if="!stateIsActive()">
+          <div class="error-text" v-else-if="!stateIsActive()">
             Project address is in a non-active state. Please update project address to an active state.
           </div>
           <v-text-field
@@ -43,7 +43,7 @@
             @change="tempProject.reloadCoordinates = true"
             label="Postal Code"
           ></v-text-field>
-          <div v-if="!stateIsActive() && !editState">
+          <div v-if="tempProject.companyStateId && !stateIsActive() && !editState">
             <v-text-field
               type="text"
               v-model="tempProject.state"
@@ -312,7 +312,8 @@ export default {
   },
   methods: {
     stateIsActive() {
-      let companyStateIds = this.states.map(s => s.companyStateId)
+      //states is already a list of company states
+      let companyStateIds = this.states.map(s => s.id)
       return companyStateIds.includes(this.tempProject.companyStateId)
     },
     collapseSide(side) {
@@ -470,7 +471,15 @@ export default {
         this.updateOwner()
         //have to wait for this one to complete or it doesn't have the right values to display fresh ones
         await this.updateStatus()
-        //set project values if they hit save
+        //set project values if they hit save, have to update state stuff differently cuz there are multiple values needed
+        let selectedState = this.states.find(s => s.id === this.tempProject.companyStateId)
+        this.tempProject.state = selectedState?.state || null
+        this.tempProject.stateAbbreviation = selectedState?.abbreviation || null
+        //if they entered a valid address then stop asking for it
+        if(this.tempProject.companyStateId && this.stateIsActive()) {
+          this.$router.replace({'query': null})
+          this.checkAddress = false
+        }
         this.project = cloneDeep(this.tempProject)
         this.showEditProjectModal = false
       }

@@ -48,7 +48,7 @@
                     Cancel
                   </router-link>
                   <v-spacer></v-spacer>
-                  <v-btn color="primaryButton" :loading="savingPassword" type="submit" dark>Submit</v-btn>
+                  <v-btn color="primary" :loading="savingPassword" type="submit" dark>Submit</v-btn>
                 </v-card-actions>
               </v-form>
             </v-card-text>

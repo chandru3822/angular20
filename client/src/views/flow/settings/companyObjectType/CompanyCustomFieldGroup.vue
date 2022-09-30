@@ -1,43 +1,22 @@
 <template>
   <v-container class="custom-field-group-container">
     <v-row>
-      <v-col cols="12" class="shrink pt-0">
-        <router-link :to="`/settings/companyObjectTypes`">Back</router-link>
-        <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
-            {{ objectType.objectType }} - Custom Field Groups
-          </v-toolbar-title>
-          <v-spacer />
-          <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-container>
-          <v-card flat class="mb-4">
-            Note: Some company specific screens ignore the display order and group name of Custom Fields Groups
-            represented here.
-          </v-card>
-          <v-text-field v-if="addNew"
-                        v-model="newGroup.groupName"
-                        placeholder="Enter new group name"
-                        append-outer-icon="save"
-                        @click:append-outer="addCustomFieldGroup"
-                        label="Custom Field Group" />
-
+      <v-col cols="12">
+        <v-container v-for="n in numberOfCols">
+          <span v-if="objectType && objectType.customColumns"
+                class="albatross-header-4 mb-2">Column {{ numberValues[n] }}</span>
           <v-data-table
+            :id="`column${n}Table`"
             :headers="headers"
-            :items="filterCustomFieldGroups()"
+            :items="groupsByColumn[n]"
             :items-per-page="-1"
             single-expand
             :sort-by="['groupOrder']"
             :sort-desc="[false]"
-            :expanded.sync="expanded"
+            :expanded.sync="expanded[n]"
             hide-default-footer
             hide-default-header
-            class="elevation-1 fix-column-width-bug mb-5"
+            class="elevation-1 fix-column-width-bug mb-5 draggable-table table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available field groups</span>
@@ -48,7 +27,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
+              <tr>
                 <td style="width: 50px">
                   <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
@@ -75,18 +54,40 @@
                         <v-icon>save</v-icon>
                       </v-btn>
                     </div>
+                    <v-menu offset-y
+                            v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                      <template v-slot:activator="{ on: menu }">
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on: tooltip }">
+                            <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
+                                   v-if="objectType && objectType.customColumns">
+                              <v-icon>mdi-cursor-move</v-icon>
+                            </v-btn>
+                          </template>
+                          <span>Change Column</span>
+                        </v-tooltip>
+                      </template>
+                      <v-list>
+                        <v-list-item v-for="num in numberOfCols" v-if="n !== num"
+                                     @click="moveCustomFieldGroupToColumn(item, num)">
+                          <v-list-item-title>{{ `Column ${numberValues[num]}` }}</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
                     <v-btn small text color="primary"
                            v-if="userCanAdd"
-                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
-                      <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
+                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]">
+                      <v-icon v-if="addField && expanded[n].includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
                     <v-btn small text color="primary"
-                           @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                      <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
+                           @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]">
+                      <v-icon v-if="expanded[n].includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </div>
                 </td>
               </tr>
@@ -99,9 +100,9 @@
                   <v-radio-group v-if="objectType.allowAncillary"
                                  v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
                     <v-radio label="Native Custom Field"
-                             value="native" />
+                             value="native"/>
                     <v-radio label="Reference Field: viewed only from other process steps or objects"
-                             value="ancillary" />
+                             value="ancillary"/>
                   </v-radio-group>
                   <v-autocomplete v-if="newFieldType === 'native'"
                                   v-model="newField"
@@ -166,7 +167,7 @@
                           </div>
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{ cf.fieldName }}
-                            (Ancillary)<br />
+                            (Ancillary)<br/>
                             <div v-if="cf.processStepName">
                               <label>Use Parent Data: </label>
                               <input type="checkbox"
@@ -188,7 +189,7 @@
                           <div>
                             <label>
                               <input type="checkbox" v-model="cf.hasConditionalOnId"
-                                     :disabled="!userCanEdit" @change="saveConditionalField(cf)" />
+                                     :disabled="!userCanEdit" @change="saveConditionalField(cf)"/>
                               Conditional On
                             </label>
                             <v-select v-model="cf.conditionalOnId"
@@ -208,8 +209,8 @@
                                           label="Minimum Value"
                                           @change="changedMinMax(cf)"
                                           :disabled="!userCanEdit"
-                                          v-model.number="cf.minValue" />
-                            <v-spacer />
+                                          v-model.number="cf.minValue"/>
+                            <v-spacer/>
                             <v-text-field text
                                           type="number"
                                           label="Maximum Value"
@@ -222,7 +223,8 @@
                             </v-btn>
                           </div>
                         </v-list-item-content>
-                        <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
+                        <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text
+                               color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
                           <v-icon>delete</v-icon>
                         </v-btn>
                       </v-list-item>
@@ -236,24 +238,25 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-dialog="cfgToDelete && !cFieldToDelete"
-        @confirm="deleteGroup"
-        @close-dialog="cfgToDelete=null">
-      Are you sure you want to delete this Custom Field Group: <strong>{{cfgToDeleteName}}</strong>?
+      :open-dialog="cfgToDelete && !cFieldToDelete"
+      @confirm="deleteGroup"
+      @close-dialog="cfgToDelete=null">
+      Are you sure you want to delete this Custom Field Group: <strong>{{ cfgToDeleteName }}</strong>?
     </ConfirmationDialog>
     <ConfirmationDialog
-        :open-dialog="!!cFieldToDelete"
-        @confirm="deleteFieldFromGroup"
-        @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
+      :open-dialog="!!cFieldToDelete"
+      @confirm="deleteFieldFromGroup"
+      @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
       <span class="error--text">WARNING:</span>
-      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
-      Are you sure you want to delete this field from {{cfgToDeleteName}}: <strong>{{cFieldToDeleteName}}</strong>?
+      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another
+      group please cancel and move the field. <br/><br/>
+      Are you sure you want to delete this field from {{ cfgToDeleteName }}: <strong>{{ cFieldToDeleteName }}</strong>?
     </ConfirmationDialog>
   </v-container>
 </template>
 
 <script>
-import { AppMutations } from '@/stores/AppStore'
+import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
@@ -269,7 +272,7 @@ import {
   putRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from '@/ConfirmationDialog'
 
 export default {
   name: 'CompanyCustomFieldGroup',
@@ -283,7 +286,6 @@ export default {
       snackbar: {},
       constants,
       addNew: false,
-      objectType: {},
       newFieldType: 'native',
       deleteError: false,
       deleteHeader: null,
@@ -300,96 +302,104 @@ export default {
       },
       addField: false,
       newField: {},
-      customFieldGroups: [],
       availableCustomFields: [],
       companyId: this.$store.state.user.details.companyId,
       //if you set this to a value it doesn't update when the route param changes
       // objectTypeId: this.$route.params.id
       headers: [
-        { text: null, value: 'draggable', width: '50px', show: true },
-        { text: 'Name', value: 'groupName', show: true },
-        { text: null, value: 'icons', show: true }
+        {text: null, value: 'draggable', width: '50px', show: true},
+        {text: 'Name', value: 'groupName', show: true},
+        {text: null, value: 'icons', show: true}
       ],
-      expanded: [],
+      // expanded: [ undefined, [], [] ],
+      expanded: {
+        1: [],
+        2: []
+      },
       parent: {},
       parentObjects: [],
       selectedAncillaryField: {},
       ancillaryCustomFields: [],
       cfgToDelete: null,
-      cFieldToDelete: null
+      cFieldToDelete: null,
+      groupsByColumn: [],
+      columnChangeCount: 0,
+      count: 0,
+      numberValues: [
+       undefined, 'One', 'Two', 'Three', 'Four'
+      ]
+    }
+  },
+  props: {
+    objectType: Object,
+    customFieldGroups: Array
+  },
+  watch: {
+    objectType() {
+      this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
+    },
+    customFieldGroups() {
+      this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
     }
   },
   computed: {
-    cfgToDeleteName(){
+    cfgToDeleteName() {
       return this.cfgToDelete ? this.cfgToDelete.groupName : ''
     },
-    cFieldToDeleteName(){
+    cFieldToDeleteName() {
       return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
+    },
+    numberOfCols() {
+      if (this.objectType && this.objectType.customColumns) {
+        return 2
+      }
+      return 1
     }
   },
   mounted() {
-    let table = document.querySelector('tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({ newIndex, oldIndex }) {
-        const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
-        _self.customFieldGroups.splice(newIndex, 0, rowSelected)
-        let fieldGroupsClone = cloneDeep(_self.customFieldGroups)
-        fieldGroupsClone.forEach((g, idx) => {
-          g.groupOrder = idx
-        })
-        _self.saveGroupChanges(fieldGroupsClone)
-      }
-    })
+    for (let i = 1; i <= this.numberOfCols; i++) {
+      let selectorString = `#column${i}Table tbody`
+      let table = document.querySelector(selectorString)
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({newIndex, oldIndex}) {
+          if (_self.groupsByColumn[i]?.length > 0) {
+            const rowSelected = _self.groupsByColumn[i].splice(oldIndex, 1)[0]
+            _self.groupsByColumn[i].splice(newIndex, 0, rowSelected)
+            let rowsClone = cloneDeep(_self.groupsByColumn[i])
+
+            let rowsToSave = []
+            rowsClone.forEach((r, idx) => {
+              //check if the row needs to be saved before updating display order
+              //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+              let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
+              //update display order
+              r.groupOrder = idx
+              //save only rows that changed
+              if (save) {
+                _self.groupsByColumn[i][idx].newGroupOrder = idx
+                rowsToSave.push(r)
+              }
+            })
+            _self.saveGroupChanges(rowsToSave)
+          }
+        }
+      })
+    }
   },
   created() {
-    this.getObjectType()
-    this.getCustomFieldGroups()
+    this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
   },
   methods: {
     changedMinMax(cf) {
       this.$set(cf, 'minMaxValueChanged', true)
     },
-    async getObjectType() {
-      //we have to get the object type details to determine if it can use ancillary fields
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data, status } = await getRequest(`/objectType/getByType/${this.$route.params.id}`, 'blueraven')
-        this.objectType = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCustomFieldGroups() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data, status } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
-          params: {
-            companyObjectTypeId: this.$route.params.id
-          }
-        }, 'blueraven')
-        this.customFieldGroups = cloneDeep(data.map(d => {
-          d.customFields.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
-          return d
-        }))
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async fetchAvailableCustomFields(groupId) {
       try {
         if (this.addField && this.newFieldType === 'native') {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const { data, status } = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+          const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
             params: {
               objectTypeId: parseInt(this.$route.params.id),
               groupId
@@ -421,7 +431,7 @@ export default {
           customFieldGroupAssignmentId: cf.customFieldGroupAssignmentId,
           required: cf.required || false
         }
-        const { status } = await putRequest(`/customFieldGroup/updateRequired`, field, 'blueraven')
+        const {status} = await putRequest(`/customFieldGroup/updateRequired`, field, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -434,7 +444,7 @@ export default {
     },
     async saveMinMax(cf) {
       try {
-        const { status } = await putRequest(`/customFieldGroup/saveMinMax`, cf, 'blueraven')
+        const {status} = await putRequest(`/customFieldGroup/saveMinMax`, cf, 'blueraven')
         cf.minMaxValueChanged = false
         this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -448,16 +458,16 @@ export default {
     },
     async saveConditionalField(cf) {
       try {
-        if (cf.hasConditionalOnId && !cf.conditionalOnId){
+        if (cf.hasConditionalOnId && !cf.conditionalOnId) {
           return
         }
 
-        if (!cf.hasConditionalOnId){
+        if (!cf.hasConditionalOnId) {
           // if this has been cleared out make sure to unset it
           cf.conditionalOnId = undefined
         }
 
-        const { status } =  await putRequest(`/customFieldGroup/updateConditionalId`, cf, 'blueraven')
+        const {status} = await putRequest(`/customFieldGroup/updateConditionalId`, cf, 'blueraven')
         const snackbar = getSnackbar('SUCCESS', 'Updated Field')
         this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
         handleHidingGlobalLoader(this, status)
@@ -465,25 +475,6 @@ export default {
         console.error('*** ERROR ***', e)
         const snackbar = getSnackbar('ERROR', 'Error Saving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async addCustomFieldGroup() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newGroup.objectTypeId = parseInt(this.$route.params.id)
-        const { data, status } = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup, 'blueraven')
-        this.newGroup = {}
-        this.addNew = false
-        // add the new type to the list
-        this.customFieldGroups.push(data)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Custom Field Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -498,7 +489,7 @@ export default {
           ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
           fieldOrder: 0
         }
-        const { data, status } = await postRequest(`/customFieldGroup/addFieldToGroup`, params, 'blueraven')
+        const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params, 'blueraven')
         cfg.customFields.push(data)
         this.newField = {}
         this.selectedAncillaryField = {}
@@ -518,8 +509,26 @@ export default {
     async saveGroupChanges(groups) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { status } = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
+        const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Group Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async moveCustomFieldGroupToColumn(group, columnNumber) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let fromColumn = group.columnNumber
+        group.columnNumber = columnNumber
+        const {data, status} = await putRequest(`/customFieldGroup/moveGroupToColumn`, group, 'blueraven')
+        this.groupsByColumn[fromColumn] = this.groupsByColumn[fromColumn].filter(f => f.id !== group.id)
+        this.groupsByColumn[columnNumber].push(data)
+        this.snackbar = getSnackbar('SUCCESS', 'Group Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -532,7 +541,7 @@ export default {
     async saveGroup(group) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { data, status } = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group, 'blueraven')
+        const {data, status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group, 'blueraven')
         group.tabName = data.tabName
         group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
         this.snackbar = getSnackbar('SUCCESS', 'Custom Field Group Updated')
@@ -549,10 +558,11 @@ export default {
       const item = this.cfgToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { status } = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$emit('group-deleted')
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -560,13 +570,13 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-      this.cfgToDelete=null
+      this.cfgToDelete = null
     },
     async deleteFieldFromGroup() {
-      const item=this.cFieldToDelete
+      const item = this.cFieldToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { status } = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
         this.fieldsInUse = []
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
@@ -578,13 +588,13 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-      this.cFieldToDelete=null
+      this.cFieldToDelete = null
       this.cfgToDelete = null
     },
     async deleteField(item, customFieldGroupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { status } = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
+        const {status} = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
         this.fieldsInUse = []
         item.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
@@ -612,7 +622,7 @@ export default {
         // save them here
         if (fieldsToSave.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const { status } = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave, 'blueraven')
+          const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
@@ -626,19 +636,33 @@ export default {
 
     },
     filterCustomFieldGroups() {
-      return this.customFieldGroups.filter(cfgt => {
-        return !cfgt.archived
-      })
+      return this.customFieldGroups.filter(cfgt => !cfgt.archived)
+    },
+    getGroupsByCol(colNumber) {
+      if (this.objectType && this.objectType.customColumns) {
+        return this.filterCustomFieldGroups()
+          .filter(cfg => cfg.columnNumber === colNumber)
+          .sort((cfg1, cfg2) => {
+            if (cfg1.groupOrder < cfg2.groupOrder) {
+              return -1
+            }
+            if (cfg1.groupOrder > cfg2.groupOrder) {
+              return 1
+            }
+            return 0
+          })
+      }
+      return this.filterCustomFieldGroups()
     },
     async loadFieldsByParent() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         if (this.parent.isProcessStep) {
-          const { data, status } = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
           this.ancillaryCustomFields = data
           handleHidingGlobalLoader(this, status)
         } else {
-          const { data, status } = await getRequest(`/customField/getByParentType/${this.parent.id}`)
+          const {data, status} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
           this.ancillaryCustomFields = data
           handleHidingGlobalLoader(this, status)
         }
@@ -652,7 +676,7 @@ export default {
     async saveUseParentData(field) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const { status } = await putRequest(`/customFieldGroup/saveUseParentData`, field, 'blueraven')
+        const {status} = await putRequest(`/customFieldGroup/saveUseParentData`, field, 'blueraven')
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

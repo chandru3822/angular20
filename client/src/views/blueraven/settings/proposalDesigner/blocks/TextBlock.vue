@@ -1,8 +1,7 @@
 <template>
   <div class="proposal-text" :style="styles">
-    <!--    TODO: figure out a way to display this better (ie. it needs to display the fragment so it inherits parents properties correctly)-->
-    <fragment v-if="!editable" v-html="html" />
-    <text-editor v-else :value="blockValue" @blur="updateValue" />
+    <fragment v-if="!editable" v-html="html" v-bind="$attrs" />
+    <text-editor v-else :value="blockValue" @blur="updateValue" @init="register"  />
   </div>
 </template>
 <script>
@@ -40,9 +39,9 @@ export default {
     html() {
       try {
         return generateHTMLFromJSON(this.blockValue)
-      }catch(e){
-        console.error("ID:", this.id, e)
-        return ""
+      } catch (e) {
+        console.error('ID:', this.id, e)
+        return ''
       }
     },
     styles() {
@@ -56,14 +55,44 @@ export default {
   methods: {
     updateValue(payload) {
       this.$store.commit(ProposalMutations.SET_VALUE, { blockId: this.id, value: payload })
+    },
+    register(editor) {
+      this.$store.commit(ProposalMutations.REGISTER_EDITOR, { blockId: this.id, editor })
     }
   }
 }
 </script>
 
 <style lang="scss">
-.proposal-text > p {
-  padding: 0;
-  margin: 0;
+.proposal-text {
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+
+    td,
+    th {
+      min-width: 1em;
+      padding: 3px 5px;
+      vertical-align: top;
+      box-sizing: border-box;
+      position: relative;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
 }
 </style>

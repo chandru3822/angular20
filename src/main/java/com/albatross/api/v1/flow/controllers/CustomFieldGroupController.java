@@ -44,6 +44,11 @@ public class CustomFieldGroupController {
     customFieldGroupService.deleteFieldFromGroup(id);
   }
 
+  @DeleteMapping(value = "/{id}")
+  public void deleteGroup(@PathVariable Long id) {
+    customFieldGroupService.deleteGroup(id);
+  }
+
   @PutMapping(value = "/saveUseParentData")
   public void saveUseParentData(@RequestBody CustomField customField) {
     customFieldGroupService.saveUseParentData(customField);

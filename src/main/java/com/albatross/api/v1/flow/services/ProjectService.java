@@ -255,23 +255,13 @@ public class ProjectService {
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 
-    Optional<Project> result = sqlCache.get(
-        "project.get",
-        ImmutableMap.of(
-            "projectId",
-            projectId,
-            "companyId",
-            user.getCompanyId(),
-            "isParent",
-            user.isParentCompany(),
-            "parentCompanyId",
-            user.getHighestParentCompanyId()),
-        new ProjectMapper<>(Project.class, om));
-    if(result.isPresent()) {
-      return result;
-    } else {
-      throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
-    }
+    Map<String, Object> params = ImmutableMap.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
+      Optional<Project> result = sqlCache.get("project.get", params, new ProjectMapper<>(Project.class, om));
+      if (result.isPresent()) {
+          return result;
+      } else {
+          throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+      }
   }
 
   public void deleteProject(Long projectId) {

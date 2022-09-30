@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.models.ahj;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import lombok.Data;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -12,13 +11,7 @@ import java.util.List;
 @Data
 public class AhjPermit {
     private Long id, ahjId, stateId;
-    private Double averagePermitFee;
-    private String engineeringLetterRequired, printLocation, stampedPlan, businessLicense, contractorLicense,
-                   otherLicense, submissionNote, revisionNote, asBuiltNote, nonStandardNote, deliveryNote, approvalTimeline,
-                   documentsAvailable, depositAmount, asBuiltFeeAmount, followUpFeeAmount, deliveryFeeAmount,
-                   revisionFeeAmount, stateName, brsTechnicianPermitSubmissionInstructions, cancellationAndRefundInstructions,
-                   brsTechnicianPermitPickupAndDeliveryInstructions, approvalInstructions, ahjName;
-    private Date businessLicenseExpirationDate, contractorLicenseExpirationDate, otherLicenseExpirationDate;
+    private String stateName, ahjName;
 
     // this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

@@ -38,7 +38,11 @@
           <v-toolbar-title class="app-title">Event Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
+            <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
+              {{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
+            </v-btn>
+            <v-btn text color="primary"
+                   @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
                    v-if="userCanAdd">
               <v-icon v-if="!addNewEventAction">add</v-icon>
               {{ addNewEventAction ? 'Cancel' : 'Add Action' }}
@@ -202,7 +206,7 @@
                 </v-card>
 
                 <!--              <v-btn class="white&#45;&#45;text"-->
-                <!--                     color="primaryButton"-->
+                <!--                     color="primary"-->
                 <!--                     @click="saveEventAction(action)"-->
                 <!--              >Save Action</v-btn>-->
                 <div v-if="action.actionTypeId === 1">
@@ -573,7 +577,7 @@
                       </v-card-title>
 
                       <v-card-text class="pt-4">
-                        {{actionLogicString}}
+                        {{ actionLogicString }}
                       </v-card-text>
 
                       <v-divider></v-divider>
@@ -595,19 +599,39 @@
                 <v-toolbar-items
                   v-if="((action.processStepEventLogicList && action.processStepEventLogicList.length > 0) || action.alwaysEnabled) && userCanEdit">
                   <v-btn text color="primary"
-                         @click="[action.logicListChanged = true, action.processStepEventLogicList = [], action.alwaysEnabled = false]">
+                         @click="[action.logicListChanged = true, action.logicMargin = 0, action.processStepEventLogicList = [], action.alwaysEnabled = false]">
                     <v-icon>clear</v-icon>
                     Clear All
                   </v-btn>
                 </v-toolbar-items>
               </v-toolbar>
               <v-card flat class="text-left px-3 primary--text" color="transparent">
-                <v-btn small class="ml-1 mr-1 mt-1"
-                       :disabled="!userCanEdit"
-                       v-for="(l, index) in filterBy(action.processStepEventLogicList, false, 'archived')" :key="index"
-                       @click="[l.archived = true, action.logicListChanged = true]">
-                  {{ l.processStepEventRequirementId ? l.requirementNbr : l.operationType }}
-                </v-btn>
+                <div v-if="logicStringToggle">
+                  <div v-for="(l, index) in filterBy(action.processStepEventLogicList, false, 'archived')"
+                       :style="{'margin-left': getLogicMargin(l, action, index)}"
+                       :key="index">
+                    <v-btn small class="ml-1 mr-1 mt-1"
+                           :disabled="!userCanEdit"
+                           @click="[l.archived = true, action.logicListChanged = true]">
+                      {{ getLogicButtonText(l) }}
+                    </v-btn>
+                  </div>
+                </div>
+                <div v-else>
+                  <v-tooltip top max-width="300px"
+                             v-for="(l, idx) in filterBy(action.processStepEventLogicList, false, 'archived')"
+                             :key="idx">
+                    <template v-slot:activator="{ on:tooltip }">
+                      <v-btn small class="ml-1 mr-1 mt-1"
+                             v-on="{ ...tooltip }"
+                             :disabled="!userCanEdit"
+                             @click="[l.archived = true, action.logicListChanged = true]">
+                        {{ l.requirementNbr || l.operationType }}
+                      </v-btn>
+                    </template>
+                    <span>{{ getLogicButtonText(l) }}</span>
+                  </v-tooltip>
+                </div>
                 <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-if="action.alwaysEnabled"
                        :disabled="!userCanEdit"
                        @click="[action.logicListChanged = true, action.alwaysEnabled = !action.alwaysEnabled]">
@@ -633,11 +657,20 @@
                 <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left mb-4 px-3" color="transparent">
-                <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="r in selectedEventRequirements" :key="r.id"
-                       :disabled="!userCanEdit"
-                       @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({ requirementNbr: r.requirementNbr, processStepEventRequirementId: r.id, archived: false })]">
-                  {{ r.requirementNbr }}
-                </v-btn>
+                <v-tooltip top max-width="300px"
+                           :disabled="logicStringToggle"
+                           v-for="r in selectedEventRequirements" :key="r.id">
+                  <template v-slot:activator="{ on:tooltip }">
+                    <v-btn :class="{'d-block': logicStringToggle}"
+                           small class="ml-1 mr-1 mt-1 primary--text"
+                           :disabled="!userCanEdit"
+                           v-on="{ ...tooltip }"
+                           @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({ requirementNbr: r.requirementNbr, processStepEventRequirementId: r.id, archived: false, logicString: r.logicString })]">
+                      {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
+                    </v-btn>
+                  </template>
+                  <span>{{ getLogicButtonText(r) }}</span>
+                </v-tooltip>
               </v-card>
               <v-divider></v-divider>
               <div v-if="actionLogicError" class="error-text ml-3 mt-3">
@@ -721,7 +754,8 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!eventActionToDelete" @confirm="deleteActionFromEvent" @close-dialog="eventActionToDelete = null">
+    <ConfirmationDialog :open-dialog="!!eventActionToDelete" @confirm="deleteActionFromEvent"
+                        @close-dialog="eventActionToDelete = null">
       Are you sure you want to delete this event action?
     </ConfirmationDialog>
   </v-container>
@@ -812,6 +846,7 @@ export default {
       },
       expanded: [],
       eventLoading: true,
+      logicStringToggle: false,
       addNewEventAction: false,
       newEventAction: {},
       addRequiredField: false,
@@ -884,10 +919,82 @@ export default {
     populateRequirements(reqs) {
       this.selectedEventRequirements = reqs
     },
-    copyToClipBoard(){
+    copyToClipBoard() {
       navigator.clipboard.writeText(this.actionLogicString);
       this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
+    getLogicMargin(item, parentItem, index) {
+      parentItem.logicMargin = parentItem.logicMargin || 0
+      if(item.operationTypeId === 1) {
+        if(parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
+          parentItem.logicMargin += 25
+        }
+        parentItem.indexOfPreviousAdd = index
+        return parentItem.logicMargin + 'px'
+      } else if(item.operationTypeId === 2) {
+        parentItem.indexOfPreviousSubtract = index
+        let placeholder = parentItem.logicMargin - 25
+        parentItem.logicMargin -= 25
+        return placeholder + 'px'
+      } else {
+        if(parentItem.indexOfPreviousAdd === index - 1) {
+          parentItem.logicMargin += 25
+        }
+        return parentItem.logicMargin + 'px'
+      }
+    },
+    getLogicButtonText(item) {
+
+      if(item.logicString) {
+        //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
+        return item.logicString
+      } else {
+        if(null != item.requirementNbr) {
+          //if not a system requirement (like AND, NOT, OR, etc)
+          let value = ''
+          if(item.dataTypeRequirement?.dataTypeValue) {
+            value = item.dataTypeRequirement?.dataTypeValue
+          } else if (item.listOfValue?.name) {
+            value = item.listOfValue?.name
+          } else if (item.listOfValues?.length > 0){
+            item.listOfValues.forEach((lv, idx) => {
+              if(idx !== 0) {
+                value = value + ', '
+              }
+              value = value + lv.name
+            })
+          } else if(item.requirementValue) {
+            value = item.requirementValue
+          } else {
+            value = 'UNKNOWN CONTACT ADMIN'
+          }
+          if(null != item.secondaryRequirementValue) {
+            value = value + ` (${item.secondaryRequirementValue})`
+          }
+          if([1,3,4].includes(item.processStepRequirementTypeId)) {
+            //custom field
+            let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
+            let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
+            item.logicString = logicString
+            return logicString
+          } else if(item.processStepRequirementTypeId === 2) {
+            //function
+            let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' '  + item.operatorType + ' ' + value
+            item.logicString = logicString
+            return logicString
+          } else if([7,8,9,10,11].includes(item.processStepRequirementTypeId)){
+            //status (project or process step)
+            let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
+            let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
+            item.logicString = logicString
+            return logicString
+          }
+        } else {
+          //this returns if AND, OR, NOT, etc
+          return item.operationType
+        }
+      }
     },
     async getActionLogicString(actionId) {
       try {

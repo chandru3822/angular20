@@ -73,6 +73,7 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
+              v-if="localCustomFieldGroups && localCustomFieldGroups.length > 0"
               :key="componentKey"
               :headers="headers"
               :items="filterCustomFieldGroups()"
@@ -131,12 +132,12 @@
                       <v-btn v-if="userCanEdit" small text color="primary" @click="customFieldGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
                     </div>
                   </td>
+                  <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete" @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
+                    <span class="error--text">WARNING:</span>
+                    By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                    Are you sure you want to delete this Custom Field Group: <strong>{{ itemToDeleteGroupName }}</strong>?
+                  </ConfirmationDialog>
                 </tr>
-                <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete" @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
-                  <span class="error--text">WARNING:</span>
-                  By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
-                  Are you sure you want to delete this Custom Field Group: <strong>{{ itemToDeleteGroupName }}</strong>?
-                </ConfirmationDialog>
               </template>
 
               <template #expanded-item="{ headers, item }">
@@ -503,6 +504,7 @@
         assignmentToDelete: null
       }
     },
+    created () {},
     computed: {
       localCustomFieldGroups: {
         get: function () {

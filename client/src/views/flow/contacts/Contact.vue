@@ -9,7 +9,7 @@
       <template v-slot:yes>Continue and Don't Save</template>
     </ConfirmationDialog>
     <!--    modal for editing contact fields -->
-    <ConfirmationDialog :open-dialog="showEditModal" :disable-confirm="!contact.firstName || !contact.lastName"
+    <ConfirmationDialog :open-dialog="showEditModal" parent-close
                         @confirm="validateForm()" @close-dialog="showEditModal = false">
       <template v-slot:title>Contact Overview</template>
       <v-form ref="contactEditForm">
@@ -17,12 +17,14 @@
           <div>
             <v-text-field
               v-model="tempContact.firstName"
+              :rules="requiredRules"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Contact First Name"
             ></v-text-field>
             <v-text-field
               v-model="tempContact.lastName"
+              :rules="requiredRules"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Contact Last Name"
@@ -345,6 +347,7 @@ export default {
       contact: {},
       getStatusClass,
       formatPhoneNumber,
+      requiredRules: constants.BASIC_REQUIRED_RULE,
       postalCodeRules: constants.POSTAL_CODE_RULES,
       cityRules: constants.CITY_RULES,
       emailRules: constants.EMAIL_RULES,

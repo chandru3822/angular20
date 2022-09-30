@@ -46,15 +46,12 @@
               <v-list-item-title>Check Credit</v-list-item-title>
               <stateful-btn
                 class="text-capitalize mt-1"
-                :loading="loadingCreditStatus"
-                :successful="proposal.creditCheckSubmitted && isCreditApproved === true"
-                :error="proposal.creditCheckSubmitted && isCreditApproved === false"
-                :disabled="!proposal.locked"
+                :successful="proposal.creditCheckSubmitted"
+                :disabled="!(proposal.locked && isCreditCheckRequired)"
                 @click="submitCreditCheck"
               >
                 Check Credit
               </stateful-btn>
-              <div class="one-hunned text-center mt-1 desc" v-if="creditCheckErrorMsg">{{ creditCheckErrorMsg }}</div>
             </v-list-item-content>
           </v-list-item>
 
@@ -63,7 +60,7 @@
               <v-list-item-title>Send Documents</v-list-item-title>
 
               <v-form ref="docForm"
-                      :disabled="!(isCreditApproved && proposal.locked)"
+                      :disabled="!proposal.locked"
                       v-model="valid"
               >
                 <v-text-field label="Email" v-model="docs.email" :rules="rules" required readonly disabled />
@@ -82,7 +79,7 @@
               <stateful-btn
                 class="text-capitalize"
                 :successful="proposal.financeDocsSent"
-                :disabled="!(isCreditApproved && proposal.locked && valid)"
+                :disabled="!(proposal.locked && valid && isCreditCheckRequired)"
                 @click="sendDocs('FINANCE_DOCS')"
               >
                 Send Finance Documents
@@ -91,7 +88,7 @@
               <stateful-btn
                 class="text-capitalize mt-2"
                 :successful="proposal.installationAgreementSent"
-                :disabled="!(isCreditApproved && proposal.locked && valid)"
+                :disabled="!(proposal.locked && valid)"
                 @click="sendDocs('INSTALLATION_AGREEMENT')"
               >
                 Send Installation Agreement
@@ -103,7 +100,6 @@
       </v-card>
     </v-menu>
 
-    <!--    TODO: form validation before going forward-->
     <confirm-dialog ref="confirmEmail">
       <template #title>Confirm Email</template>
       <v-container>
@@ -147,7 +143,6 @@ import StatefulBtn from '@/views/blueraven/proposals/StatefulBtn'
 import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import { getRequest, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
-//TODO: only show credit check if the type requires it (ie. don't show for cash)
 const DOCS_MESSAGE = {
   'FINANCE_DOCS': { key: 'financeDocsSent', message: 'Finance docs request submitted' },
   'INSTALLATION_AGREEMENT': { key: 'installationAgreementSent', message: 'Installation agreement request submitted' }
@@ -167,9 +162,6 @@ export default {
   },
   data() {
     return {
-      loadingCreditStatus: false,
-      creditCheckIntervalId: undefined,
-      creditCheckErrorMsg: undefined,
       valid: false,
       confirmEmail: {
         emailAddress: '',
@@ -186,28 +178,14 @@ export default {
       ]
     }
   },
-  async mounted() {
-    // run check initially
-    await this.checkCreditStatus()
-
-    this.creditCheckIntervalId = setInterval(() => {
-      //only run check when the modal is open
-      if (!this.menu) {
-        return
-      }
-      this.checkCreditStatus()
-    }, 60 * 1000)
-  },
-  beforeDestroy() {
-    clearInterval(this.creditCheckIntervalId)
-    this.creditCheckIntervalId = undefined
-  },
   computed: {
-    isCreditApproved() {
-      if (this.creditStatus === undefined) {
-        return
-      }
-      return ['Approved', 'Pending', 'Funded'].includes(this.creditStatus)
+    isCreditCheckRequired() {
+      // find financial field custom group
+      const cfv = this.proposal.customFieldGroups.find(x => x.id === 27)?.customFieldValues?.find(x => x.customFieldId === 128)
+      // find custom field value for "Financial Product"
+      const financialProduct = cfv.listOfValues?.find(x => x.id === cfv.intValue)
+      // does the name have "cash" (probably need a better way of handling this at some point)
+      return financialProduct?.name?.toLowerCase().indexOf('cash') > -1
     },
     isEmailValid() {
       if (this.confirmEmail.isCorrectEmail) {
@@ -217,32 +195,8 @@ export default {
     }
   },
   methods: {
-    async checkCreditStatus() {
-      if (this.proposal.locked && this.proposal.creditCheckSubmitted && this.creditStatus === undefined) {
-        try {
-          this.creditCheckErrorMsg = undefined
-          this.loadingCreditStatus = true
-          const { data } = await getRequest(`/proposal/${this.proposal.id}/loanStatus`, 'blueraven')
-          this.creditStatus = data?.status
-          if (this.creditStatus) {
-            clearInterval(this.creditCheckIntervalId)
-            this.creditCheckIntervalId = undefined
-          }
-        } catch (e) {
-          this.creditCheckErrorMsg = e?.data?.message
-        } finally {
-          this.loadingCreditStatus = false
-        }
-      }
-    },
-
     async submitCreditCheck() {
-      if (this.proposal.creditCheckSubmitted && this.isCreditApproved === undefined) {
-        await this.checkCreditStatus()
-        return
-      }
-
-      if (this.isCreditApproved !== undefined) {
+      if (this.proposal.creditCheckSubmitted) {
         return
       }
 
@@ -263,7 +217,7 @@ export default {
 
       try {
         const { status, data } = await getRequest(`/proposal/${this.proposal.id}/loanApplication`, 'blueraven')
-        if (status !== 200){
+        if (status !== 200) {
           this.$snackbar('ERROR', data?.message || 'Error creating credit application')
           return
         }
@@ -295,7 +249,7 @@ export default {
       }
     },
     async sendDocs(docType) {
-      if (!(this.isCreditApproved && this.proposal.locked && this.valid)) {
+      if (!(this.proposal.locked && this.valid)) {
         return
       }
 
