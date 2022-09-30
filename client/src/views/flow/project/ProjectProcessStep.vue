@@ -223,32 +223,34 @@
       <v-col cols="12" style="height: 0; padding: 0 !important;">
         <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
       </v-col>
-      <div v-if="processStep.hasAttachmentTypesAssigned">
-        <v-toolbar flat color="secondary" class="cfg-detail-header px-3">
-          <v-toolbar-title class="albatross-header-3">
-            Process Step Documents
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
-              <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
-              <v-icon v-else>mdi-chevron-down</v-icon>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-col cols="12" class="text-left pt-0 px-0 pb-4" v-if="!collapsedAttachments">
-          <AttachmentsFolderList :object-type-id="1"
-                                 :allow-upload="true"
-                                 :small-title="true"
-                                 is-card
-                                 title="Uploaded Documents"/>
-          <AttachmentsFolderList :object-type-id="1"
-                                 :load-linked="true"
-                                 :small-title="true"
-                                 is-card
-                                 title="Linked Documents"/>
-        </v-col>
-      </div>
+      <v-col cols="12" class="pa-0" v-if="processStep.hasAttachmentTypesAssigned">
+        <div>
+          <v-toolbar flat color="secondary" class="cfg-detail-header px-3">
+            <v-toolbar-title class="albatross-header-3">
+              Process Step Documents
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
+                <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
+                <v-icon v-else>mdi-chevron-down</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-col cols="12" class="text-left pt-0 px-0 pb-4" v-if="!collapsedAttachments">
+            <AttachmentsFolderList :object-type-id="1"
+                                   :allow-upload="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Uploaded Documents"/>
+            <AttachmentsFolderList :object-type-id="1"
+                                   :load-linked="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Linked Documents"/>
+          </v-col>
+        </div>
+      </v-col>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
         <v-toolbar-title class="albatross-header-3">
           Process Step Details
