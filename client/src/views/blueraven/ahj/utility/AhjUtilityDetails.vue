@@ -6,28 +6,21 @@
 
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-            <v-card class="mx-4 pb-4 square-card">
-              <v-btn id="back-btn" text color="primary" class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
-                <v-icon>arrow_left</v-icon>
-                <span id="back-btn-text">Back to menu</span>
-              </v-btn>
-
-              <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
-                <div class="page-title">Utility</div>
-                <div class="page-info">
-                  <div>{{ ahjUtility.name }}</div>
-                  <div>{{ ahjUtility.metroArea }}</div>
-                </div>
-              </div>
-
-              <!--            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(&#45;&#45;v-secondary-base)">-->
-              <!--              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>-->
-              <!--            </v-tabs>-->
+            <v-card class="mx-4 square-card">
+              <v-toolbar flat>
+                <v-toolbar-title class="app-title">
+                  <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahj'})">
+                    <v-icon>mdi-arrow-left</v-icon>
+                  </v-btn>
+                  {{ ahjUtility.name }}, {{ ahjUtility.metroArea }}, {{ ahjUtility.state }}
+                </v-toolbar-title>
+              </v-toolbar>
+              <div class="page-title px-6 pb-2 pt-n2 mb-4">Utility</div>
             </v-card>
           </v-col>
         </v-row>
         <v-row dense>
-          <v-card class="mx-2 mt-6 px-2 py-3 one-hunned square-card">
+          <v-card class="mx-2 mt-4 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="ahj-form-btns" cols="12">
                 <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">

@@ -823,6 +823,7 @@ public class AvailabilityService {
                       if (!mp.getDoNotSolicitReview()) {
                           Map<String, Object> marketoLead = marketoService.projectToLead(mp);
                           marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+                          marketoLead.put("projectStatus", mp.getProjectStatusType());
                           JSONArray result = marketoService.pushData(List.of(marketoLead));
                           JSONObject firstResult = result.getJSONObject(0);
                           // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"

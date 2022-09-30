@@ -5,19 +5,14 @@
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
             <v-card class="mx-4 square-card">
-              <v-btn id="back-btn" text color="primary" class="pl-1 pr-2" :to="'/ahj'">
-                <v-icon>arrow_left</v-icon>
-                <span id="back-btn-text">Back to menu</span>
-              </v-btn>
-
-              <div class="flex-display justify-space-between align-center px-4 mb-4" style="width: 100%">
-                <div class="page-title">AHJ</div>
-                <div class="page-info">
-                  <div>{{ ahj.name }}</div>
-                  <div>{{ ahj.metroArea }}</div>
-                  <div>{{ ahj.state }}</div>
-                </div>
-              </div>
+              <v-toolbar flat>
+                <v-toolbar-title class="app-title">
+                  <v-btn fab text color="primary" small class="mr-2" @click="goToPath('/ahj')">
+                    <v-icon>mdi-arrow-left</v-icon>
+                  </v-btn>
+                  {{ ahj.name }}, {{ ahj.metroArea }}, {{ ahj.state }}
+                </v-toolbar-title>
+              </v-toolbar>
 
               <v-tabs id="fixed-tabs-bar" class="pl-0">
                 <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path"
@@ -62,6 +57,11 @@ export default {
     this.ahjId = parseInt(this.$route.params.ahjId)
     const {data} = await getRequest(`/ahj/${this.ahjId}`, 'blueraven')
     this.ahj = cloneDeep(data)
+  },
+  methods: {
+    goToPath(path) {
+      this.$router.push({ path })
+    },
   }
 }
 </script>
