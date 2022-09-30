@@ -3,18 +3,21 @@
     <v-card-text class="pa-0">
       <v-form ref="attachmentFieldsForm">
         <v-row class="coversheet-container ma-0">
-          <v-col cols="4" class="coversheet-left-pane pa-6">
-            <div class="d-flex align-center">
-<!--              <v-btn small text color="primary" class="min-w-25 px-0 mr-6">-->
-<!--                <v-icon>mdi-menu</v-icon>-->
-<!--              </v-btn>-->
-              <div class="albatross-header-1 default-text-color">Document Summary</div>
-            </div>
-              <v-divider class="mt-1 mb-6"></v-divider>
-            <div v-if="saveError" class="error-text">
+          <v-col cols="4" class="coversheet-left-pane  pt-3 px-4 pb-2">
+<!--            <div class="d-flex align-center">-->
+<!--&lt;!&ndash;              <v-btn small text color="primary" class="min-w-25 px-0 mr-6">&ndash;&gt;-->
+<!--&lt;!&ndash;                <v-icon>mdi-menu</v-icon>&ndash;&gt;-->
+<!--&lt;!&ndash;              </v-btn>&ndash;&gt;-->
+<!--              <div class="albatross-header-1 default-text-color">Document Summary</div>-->
+<!--            </div>-->
+<!--              <v-divider class="mt-1 mb-6"></v-divider>-->
+            <v-toolbar flat dense class="app-toolbar coversheet-title">
+              <v-toolbar-title class="app-title">Document Summary</v-toolbar-title>
+            </v-toolbar>
+            <div v-if="saveError" class="error-text mt-3">
               {{errorMsg}}
             </div>
-            <div class="subtitle-1 mb-4 default-text-color">Document Details</div>
+            <div class="subtitle-2 mb-4 mt-4 default-text-color">Document Details</div>
             <v-card class="square-card pa-3">
               <v-text-field
                 label="Document Name"
@@ -101,20 +104,34 @@
               </v-toolbar>
             </div>
           </v-col>
-          <v-col cols="8" class="coversheet-right-pane pt-6 px-4 pb-2">
-            <div class="d-flex align-center albatross-header-1 default-text-color" >{{ fileDetails.displayName }}
-            <div class="one-hunned text-right">
-              <v-btn small text color="primary"
-                     v-if="isExisting"
-                     :href="existingAttachment.presignedUrl">
-                <v-icon>mdi-tray-arrow-down</v-icon>
-              </v-btn>
-              <v-btn x-small text color="primary" @click="closeModal()">
-                <v-icon>close</v-icon>
-              </v-btn>
-            </div>
-            </div>
-            <v-divider class="mt-1"></v-divider>
+          <v-col cols="8" class="coversheet-right-pane pt-3 px-4 pb-2">
+            <v-toolbar flat dense class="app-toolbar coversheet-title">
+              <v-toolbar-title class="app-title">{{ fileDetails.displayName }}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn small text color="primary"
+                       v-if="isExisting"
+                       :href="existingAttachment.presignedUrl">
+                  <v-icon>mdi-tray-arrow-down</v-icon>
+                </v-btn>
+                <v-btn x-small text color="primary" @click="closeModal()">
+                  <v-icon>close</v-icon>
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+<!--            <div class="d-flex align-center albatross-header-1 default-text-color" >{{ fileDetails.displayName }}-->
+<!--            <div class="text-right">-->
+<!--              <v-btn small text color="primary"-->
+<!--                     v-if="isExisting"-->
+<!--                     :href="existingAttachment.presignedUrl">-->
+<!--                <v-icon>mdi-tray-arrow-down</v-icon>-->
+<!--              </v-btn>-->
+<!--              <v-btn x-small text color="primary" @click="closeModal()">-->
+<!--                <v-icon>close</v-icon>-->
+<!--              </v-btn>-->
+<!--            </div>-->
+<!--            </div>-->
+<!--            <v-divider class="mt-1"></v-divider>-->
             <div class="mt-3 preview-main-container">
               <div v-if="isImage" class="one-hunned height-one-hunned overflow-auto">
                 <v-img name="coversheetPreview"
@@ -416,6 +433,10 @@ export default {
   padding: 0 !important;
 }
 
+.coversheet-title .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
 </style>
 
 <style lang="scss" scoped>
