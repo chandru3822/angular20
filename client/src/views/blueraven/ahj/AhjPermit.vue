@@ -224,7 +224,7 @@ export default {
       docsMap.set(5, {
         title: "Documents Required for Inspection",
         documents: this.inspectionDocuments,
-        attachmentType1: 1 ,
+        attachmentTypeId: 1,
         attachmentType: "All Documents"
       })
       docsMap.set(24, {
