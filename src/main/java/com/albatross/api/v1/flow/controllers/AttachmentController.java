@@ -21,6 +21,7 @@ public class AttachmentController {
   private final AttachmentService attachmentService;
   private final CustomFieldValueService customFieldValueService;
 
+
   @GetMapping(value = "")
   public List<Attachment> getAttachments(
       @RequestParam(required = false) Long sourceId, @RequestParam Long attachmentTypeId) {
