@@ -43,6 +43,9 @@
             <td class="text-left pl-4">
                 {{ it.customer_name ? it.customer_name : '' }}
             </td>
+<!--            need to check permissions if we turn this on-->
+<!--            <td class="text-left pl-4"><a target="_blank" :href="`/project/${it.project_id}/details`">{{ it.project_id }}</a></td>-->
+            <td class="text-left pl-4">{{ it.project_id }}</td>
             <td class="text-left pl-4">{{ it.address ? it.address : '' }}</td>
           </tr>
         </template>
