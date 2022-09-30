@@ -18,7 +18,7 @@
     <v-container v-else dense :key="renderTicker" id="attachment-table" class="pa-0">
       <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment"
              :key="item.processStepId">
-        <v-col cols="10" class="text-left pt-0">
+        <v-col cols="10" class="text-left pt-0 height-one-hunned">
           <div class="file-column">
             <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
                         v-model="item.compare"
@@ -281,6 +281,8 @@ export default {
 .file-column {
   display: flex;
   max-width: 100%;
+  max-height: 100%;
+  align-items: center;
 }
 
 .file-name-container {

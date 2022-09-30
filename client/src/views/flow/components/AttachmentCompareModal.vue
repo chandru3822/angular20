@@ -228,6 +228,9 @@ export default {
     },
     removeAttachmentFromView(item) {
       this.attachmentsCopy = this.attachmentsCopy.filter(a => a.id !== item.id)
+      if(this.attachmentsCopy?.length === 0) {
+        this.closeModal()
+      }
     },
     async doPageLoad() {
       this.allFields = []

@@ -17,7 +17,7 @@
       >
       </AttachmentCoversheetModal>
     </v-dialog>
-    <v-dialog persistent width="auto" v-model="showCompareModal">
+    <v-dialog persistent width="90%" v-model="showCompareModal">
       <AttachmentCompareModal :show-modal="showCompareModal"
                               :attachments="selectedAttachmentsForCompare"
                               :close-callback="closeCompareModal">
@@ -27,7 +27,7 @@
       <SpinnerInline :size="40" color="primary"/>
     </div>
     <div v-else-if="attachmentTypes.length > 0" :class="{'px-3': isCard}">
-      <div v-if="activityTab" class="px-5">
+      <div v-if="activityTab" class="px-5 sticky-compare-bar">
         <v-text-field
           v-model="search"
           prepend-inner-icon="search"
@@ -450,6 +450,12 @@ export default {
 </style>
 
 <style lang="scss" scoped>
+.sticky-compare-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: white;
+}
 
 .v-expansion-panels.condensed .v-expansion-panel-header {
   padding-top: 6px;
