@@ -27,8 +27,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
   private Boolean updateGenesysContacts;
 
-  @Value(value = "${app.cron.blueraven.pushProjectsToMarketo.enabled:false}")
-  private Boolean pushProjectsToMarketo;
+  @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
+  private Boolean marketoEnabled;
 
   private final GenesysService genesysService;
 
@@ -68,9 +68,9 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   }
 
   // daily at 1:15 mountain time
-   @Scheduled(cron = "0 0 * * * *", zone = "America/Denver")
+   @Scheduled(cron = "0 15 1 * * *", zone = "America/Denver")
   public void pushProjectsToMarketo() {
-      if (pushProjectsToMarketo) {
+      if (marketoEnabled) {
           log.info("*** CRON: start pushing projects to Marketo ***");
           marketoService.pushDailyUpdatedProjects();
           log.info("*** CRON: end pushing projects to Marketo ***");

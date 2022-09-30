@@ -514,7 +514,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService, projectService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);
           } else {
