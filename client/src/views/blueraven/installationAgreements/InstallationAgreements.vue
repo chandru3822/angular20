@@ -5,7 +5,7 @@
         <v-app-bar dense tabs color="white" class="elevation-1">
           <v-toolbar-title>Installation Agreements</v-toolbar-title>
           <v-tabs :optional="false" color="primary"
-                  v-slot="extension"
+                  slot="extension"
                   background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{ tab.label }}
