@@ -45,8 +45,8 @@ public class BrsProcessStepActionFunctionService {
 
     private final ListOfValueService listOfValueService;
 
-    @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
-    private Boolean marketoEnabled;
+    // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
+    public Boolean marketoEnabled;
 
     private String formatErrorMessage(ProcessStepActionChildFunction func, String message) {
         final String originalFuncName = func.getFunctionName();

@@ -63,7 +63,7 @@ public class AvailabilityService {
 
   private final MarketoService marketoService;
 
-  @Value(value = "${app.feature.marketo.enabled:false}")
+  @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
