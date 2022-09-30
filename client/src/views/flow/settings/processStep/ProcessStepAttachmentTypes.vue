@@ -25,8 +25,7 @@
                             item-text="attachmentType"
                             return-object
             ></v-autocomplete>
-            <v-btn class="white--text"
-                   color="primaryButton"
+            <v-btn color="primary"
                    :disabled="!newType.id"
                    @click="addTypeToProcessStep">
               Save

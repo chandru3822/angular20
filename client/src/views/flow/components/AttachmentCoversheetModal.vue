@@ -5,9 +5,9 @@
         <v-row class="coversheet-container ma-0">
           <v-col cols="4" class="coversheet-left-pane pa-6">
             <div class="d-flex align-center">
-              <v-btn small text color="primary" class="min-w-25 px-0 mr-6">
-                <v-icon>mdi-menu</v-icon>
-              </v-btn>
+<!--              <v-btn small text color="primary" class="min-w-25 px-0 mr-6">-->
+<!--                <v-icon>mdi-menu</v-icon>-->
+<!--              </v-btn>-->
               <div class="albatross-header-1 default-text-color">Document Summary</div>
             </div>
               <v-divider class="mt-1 mb-6"></v-divider>
@@ -101,7 +101,7 @@
               </v-toolbar>
             </div>
           </v-col>
-          <v-col cols="8" class="coversheet-right-pane pa-6">
+          <v-col cols="8" class="coversheet-right-pane pt-6 px-4 pb-2">
             <div class="d-flex align-center albatross-header-1 default-text-color" >{{ fileDetails.displayName }}
             <div class="one-hunned text-right">
               <v-btn small text color="primary"
@@ -116,12 +116,12 @@
             </div>
             <v-divider class="mt-1"></v-divider>
             <div class="mt-3 preview-main-container">
-              <div v-if="isImage" class="one-hunned">
+              <div v-if="isImage" class="one-hunned height-one-hunned overflow-auto">
                 <v-img name="coversheetPreview"
                        class="preview-image"
                        :src="fileSrcUrl"></v-img>
               </div>
-              <div v-else-if="isPdf" class="one-hunned">
+              <div v-else-if="isPdf" class="one-hunned height-one-hunned overflow-auto">
                 <div v-if="pdfIsLoading" class="text-center">
                   <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
                 </div>
@@ -131,19 +131,6 @@
                   :page="pdfPage"
                   @rendered="handleDocumentRender"
                 />
-                <v-toolbar class="page-selection-bar">
-                  <v-spacer></v-spacer>
-                  <v-btn text :disabled="pdfPage <= 1" @click="pdfPage--" class="mr-3">
-                    <v-icon>mdi-chevron-left</v-icon>
-                  </v-btn>
-
-                  Page {{ pdfPage }} / {{ pdfPageCount }}
-
-                  <v-btn text :disabled="pdfPage >= pdfPageCount" @click="pdfPage++" class="ml-3">
-                    <v-icon>mdi-chevron-right</v-icon>
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                </v-toolbar>
               </div>
               <div v-else class="height-one-hunned one-hunned">
                 <v-card class="square-card no-preview-container" >
@@ -154,6 +141,21 @@
                   </div>
                 </v-card>
               </div>
+            </div>
+            <div v-if="isPdf && !pdfIsLoading">
+              <v-toolbar dense class="page-selection-bar" flat color="transparent">
+                <v-spacer></v-spacer>
+                <v-btn text :disabled="pdfPage <= 1" @click="pdfPage--" class="mr-3">
+                  <v-icon>mdi-chevron-left</v-icon>
+                </v-btn>
+
+                Page {{ pdfPage }} / {{ pdfPageCount }}
+
+                <v-btn text :disabled="pdfPage >= pdfPageCount" @click="pdfPage++" class="ml-3">
+                  <v-icon>mdi-chevron-right</v-icon>
+                </v-btn>
+                <v-spacer></v-spacer>
+              </v-toolbar>
             </div>
           </v-col>
         </v-row>
@@ -446,7 +448,7 @@ export default {
   padding-bottom: 15px;
 }
 .preview-main-container {
-  height: calc(100% - 80px);
+  height: calc(100% - 122px);
   width: 100%;
   display: flex;
   align-items: center;
@@ -458,11 +460,11 @@ export default {
   max-width: 100%;
 }
 
-.page-selection-bar {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-}
+//.page-selection-bar {
+//  position: absolute;
+//  bottom: 0;
+//  width: 100%;
+//}
 
 .no-preview-container {
   background-color: var(--v-grey-lighten2);

@@ -99,21 +99,21 @@ export default {
     allowEdit: {
       type: Boolean,
       default: true,
-      //loadLinked = the component for the linked sections. if true should only be able to unlink the attachments from here
-      loadLinked: Boolean,
-      allowUpload: Boolean,
-      compare: Boolean,
-      projectId: Number,
-      userId: Number,
-      contactId: Number,
-      orgId: Number,
-      objectTypeId: Number,
-      projectProcessStepId: Number,
-      projectProcessStepEventId: Number,
-      compareCallback: Function,
-      deleteCallback: Function,
-      countSelected: Number
-    }
+    },
+    //loadLinked = the component for the linked sections. if true should only be able to unlink the attachments from here
+    loadLinked: Boolean,
+    allowUpload: Boolean,
+    compare: Boolean,
+    projectId: Number,
+    userId: Number,
+    contactId: Number,
+    orgId: Number,
+    objectTypeId: Number,
+    projectProcessStepId: Number,
+    projectProcessStepEventId: Number,
+    compareCallback: Function,
+    deleteCallback: Function,
+    countSelected: Number
   },
   data() {
     return {
