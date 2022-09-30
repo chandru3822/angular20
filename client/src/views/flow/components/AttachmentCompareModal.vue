@@ -4,18 +4,40 @@
       <v-card-text class="pb-0 pl-0">
         <v-row class="">
           <v-col :cols="leftCols" class="left-column">
-            <v-btn @click="closeCallback">Back</v-btn>
-            <div class="left-column-header">
+            <v-btn id="back-btn" color="primary" text class="pl-1 pr-2" @click="closeCallback">
+              <v-icon class="pr-2">mdi-chevron-left</v-icon>
+              <span id="back-btn-text">Back</span>
+            </v-btn>
+          </v-col>
+          <v-col :cols="12 - leftCols">
+            <v-toolbar flat dense class="app-toolbar coversheet-title">
+              <v-toolbar-title class="app-title">Document Comparison</v-toolbar-title>
+            </v-toolbar>
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col :cols="leftCols" class="left-column">
+            <!--            <v-btn @click="closeCallback">Back</v-btn>-->
+            <div class="left-column-header thumbnail-container">
               Thumbnail
             </div>
           </v-col>
           <v-col :cols="attachmentCols" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
-            <div>
-              {{ a.displayName }}
-              <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">
-                <v-icon>close</v-icon>
-              </v-btn>
-            </div>
+            <v-toolbar flat dense class="coversheet-title">
+              <v-toolbar-title class="file-name">{{ a.displayName }}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">
+                  <v-icon>close</v-icon>
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <!--            <div>-->
+            <!--              {{ a.displayName }}-->
+            <!--              <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">-->
+            <!--                <v-icon>close</v-icon>-->
+            <!--              </v-btn>-->
+            <!--            </div>-->
             <div class="mt-3 preview-main-container">
               <div v-if="a.isImage" class="one-hunned">
                 <v-img name="coversheetPreview"
@@ -34,7 +56,7 @@
                 />
               </div>
               <div v-else class="height-one-hunned one-hunned">
-                <v-card class="square-card no-preview-container" >
+                <v-card class="square-card no-preview-container">
                   <div class="text-center">
                     <v-icon :size="200" color="white">mdi-image-frame</v-icon>
 
@@ -43,13 +65,15 @@
                 </v-card>
               </div>
             </div>
-            <v-btn @click="closeModal(a)">
-              View
-            </v-btn>
-            <v-btn color="primary"
-                   :href="a.presignedUrl">
-              Download
-            </v-btn>
+            <div class="compare-view-btns">
+              <v-btn small @click="closeModal(a)" class="mr-4">
+                View
+              </v-btn>
+              <v-btn small color="primary"
+                     :href="a.presignedUrl">
+                Download
+              </v-btn>
+            </div>
           </v-col>
         </v-row>
         <v-row class="">
@@ -71,11 +95,11 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col :cols="leftCols" class="left-column">
-            <span class="left-column-header">Additional File Details</span><br>
+          <v-col :cols="leftCols" class="left-column" v-if="allFields.length > 0">
+            <span class="left-column-header">Additional Details</span><br>
           </v-col>
         </v-row>
-        <v-row v-for="field in allFields"  class="">
+        <v-row v-for="field in allFields" class="">
           <v-col :cols="leftCols" class="left-column field-container">
             <div>
               <div class="left-column-subheader">
@@ -159,6 +183,8 @@ export default {
   },
   created() {
     this.doPageLoad()
+
+    // this.attachmentCols = (12 - this.leftCols) / (this.attachments.length)
   },
   methods: {
     getFieldValue(a, field) {
@@ -211,6 +237,23 @@ export default {
       this.isImage = false
       this.pdfPage = 1
 
+      switch(this.attachments.length) {
+        case 1:
+          this.attachmentCols = 10
+          break
+        case 2:
+          this.attachmentCols = 5
+          break
+        case 3:
+          this.attachmentCols = 3
+          break
+        case 4:
+          this.attachmentCols = 2
+          break
+        default:
+          this.attachmentCols = 2
+      }
+
       //required since we cant mutate props that come from parent
       this.attachmentsCopy = this.attachments
 
@@ -242,12 +285,12 @@ export default {
 
         //this removes duplicate fields (unless ancillary
         this.allFields = this.allFields.reduce((unique, o) => {
-          if(!unique.some(obj => (obj.customFieldId != null && obj.customFieldId === o.customFieldId) ||
+          if (!unique.some(obj => (obj.customFieldId != null && obj.customFieldId === o.customFieldId) ||
             (obj.ancillaryCustomFieldId != null && obj.ancillaryCustomFieldId === o.ancillaryCustomFieldId))) {
             unique.push(o);
           }
           return unique;
-        },[]);
+        }, []);
 
         this.allFields = orderBy(this.allFields, [a => a.fieldName.toLowerCase(), a => a.customFieldId])
         handleHidingGlobalLoader(this, status)
@@ -268,7 +311,21 @@ export default {
 }
 </style>
 
-<style scoped>
+<style scoped lang="scss">
+
+#back-btn {
+  text-transform: unset;
+  letter-spacing: unset;
+
+  &:before {
+    background-color: initial;
+  }
+
+  #back-btn-text:hover {
+    text-decoration: underline;
+  }
+}
+
 .coversheet-container {
   height: 90vh;
   max-height: 90vh;
@@ -287,8 +344,13 @@ export default {
 
 .left-column-header {
   font-weight: 700;
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 16px;
+  line-height: 30px;
+}
+
+.file-name {
+  font-weight: 700;
+  font-size: 16px;
 }
 
 .field-container {
@@ -296,10 +358,21 @@ export default {
   align-items: start;
 }
 
+.compare-view-btns {
+  display: flex;
+  justify-content: center;
+}
+
+.thumbnail-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
 .left-column-subheader {
   font-weight: 400;
-  font-size: 16px;
-  line-height: 25px;
+  font-size: 14px;
+  line-height: 30px;
 }
 
 .no-preview-container {

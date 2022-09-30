@@ -17,7 +17,7 @@
       >
       </AttachmentCoversheetModal>
     </v-dialog>
-    <v-dialog persistent :width="1000" v-model="showCompareModal">
+    <v-dialog persistent width="auto" v-model="showCompareModal">
       <AttachmentCompareModal :show-modal="showCompareModal"
                               :attachments="selectedAttachmentsForCompare"
                               :close-callback="closeCompareModal">
