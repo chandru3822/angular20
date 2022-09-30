@@ -26,6 +26,7 @@ import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -61,6 +62,9 @@ public class AvailabilityService {
   private final MapboxApiService mapboxApiService;
 
   private final MarketoService marketoService;
+
+  @Value(value = "${app.feature.marketo.enabled:false}")
+  private Boolean marketoEnabled;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -811,26 +815,28 @@ public class AvailabilityService {
                 user.trueUserId());
           }
 
-          // push data to Marketo
-          project.ifPresent(p -> {
-              try {
-                  MarketoProject mp = marketoService.getProject(p.getId());
-                  if (!mp.getDoNotSolicitReview()) {
-                      Map<String, Object> marketoLead = marketoService.projectToLead(mp);
-                      marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
-                      marketoLead.put("projectStatus", mp.getProjectStatusType());
-                      JSONArray result = marketoService.pushData(List.of(marketoLead));
-                      JSONObject firstResult = result.getJSONObject(0);
-                      // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
-                      if (firstResult.getString("status").equals("created")) {
-                          marketoLead.put("projectStatus", "Appointment Scheduled");
-                          marketoService.pushData(List.of(marketoLead));
+          if (marketoEnabled) {
+              // push data to Marketo
+              project.ifPresent(p -> {
+                  try {
+                      MarketoProject mp = marketoService.getProject(p.getId());
+                      if (!mp.getDoNotSolicitReview()) {
+                          Map<String, Object> marketoLead = marketoService.projectToLead(mp);
+                          marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+                          marketoLead.put("projectStatus", mp.getProjectStatusType());
+                          JSONArray result = marketoService.pushData(List.of(marketoLead));
+                          JSONObject firstResult = result.getJSONObject(0);
+                          // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
+                          if (firstResult.getString("status").equals("created")) {
+                              marketoLead.put("projectStatus", "Appointment Scheduled");
+                              marketoService.pushData(List.of(marketoLead));
+                          }
                       }
+                  } catch (Exception e) {
+                      log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
                   }
-              } catch (Exception e) {
-                  log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
-              }
-          });
+              });
+          }
 
           return ResponseEntity.ok(results.get(0));
         } else {

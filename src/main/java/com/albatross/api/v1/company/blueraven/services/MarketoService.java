@@ -82,9 +82,6 @@ public class MarketoService {
         body.put("input", leads);
         body.put("lookupField", "projectId");
 
-        // @TODO: Remove after testing
-        Long requestId = sqlCache.updateReturningId("marketo.addRequest", Map.of("url", "/rest/v1/leads.json", "payload", body.toString()), "id").longValue();
-
         try {
 
             authenticate();
@@ -100,9 +97,6 @@ public class MarketoService {
 
             JSONObject resultBody = new JSONObject(res.getBody());
 
-            // @TODO: Remove after testing
-            sqlCache.update("marketo.updateResponse", Map.of("id", requestId, "response", res.getBody()));
-
             if (!resultBody.getBoolean("success")) {
                 JSONObject error = resultBody.getJSONArray("errors").getJSONObject(0);
                 if (error.getLong("code") == 602) {
@@ -116,13 +110,6 @@ public class MarketoService {
 
             return resultBody.getJSONArray("result");
         } catch (Exception e) {
-            // @TODO: Remove after testing
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            sqlCache.update("marketo.updateStacktrace", Map.of("id", requestId,"stacktrace", sw.toString()));
-            sqlCache.update("marketo.updateError", Map.of("id", requestId,"error", e.getMessage()));
-
             throw new RuntimeException(String.format("MARKETO: Unable to push data: %s", e.getMessage()));
         }
     }
@@ -130,9 +117,6 @@ public class MarketoService {
     public List<Long> getMarketoIdsByProjectId(List<Long> projectIds) {
 
         final String projectIdsCsv = projectIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-
-        // @TODO: Remove after testing
-        Long requestId = sqlCache.updateReturningId("marketo.addRequest", Map.of("url", "/rest/v1/leads.json", "payload", projectIdsCsv), "id").longValue();
 
         try {
             authenticate();
@@ -148,9 +132,6 @@ public class MarketoService {
                                                .retrieve()
                                                .toEntity(String.class)
                                                .block();
-
-            // @TODO: Remove after testing
-            sqlCache.update("marketo.updateResponse", Map.of("id", requestId, "response", res.getBody()));
 
             JSONObject rawResponse = new JSONObject(res.getBody());
 
@@ -177,12 +158,6 @@ public class MarketoService {
 
             return marketoIds;
         } catch (Exception e) {
-            // @TODO: Remove after testing
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            sqlCache.update("marketo.updateStacktrace", Map.of("id", requestId,"stacktrace", sw.toString()));
-            sqlCache.update("marketo.updateError", Map.of("id", requestId,"error", e.getMessage()));
             throw new RuntimeException(String.format("MARKETO: Unable to fetch IDs from Marketo: %s", e.getMessage()));
         }
     }
@@ -190,9 +165,6 @@ public class MarketoService {
     public JSONArray removeFromMarekto(List<Long> marketoIds) {
 
         final String marketoIdsCsv = marketoIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-
-        // @TODO: Remove after testing
-        Long requestId = sqlCache.updateReturningId("marketo.addRequest", Map.of("url", "/rest/v1/leads.json", "payload", marketoIdsCsv), "id").longValue();
 
         authenticate();
         ResponseEntity<String> res = client.post()
@@ -210,9 +182,6 @@ public class MarketoService {
 
         JSONObject resultBody = new JSONObject(res.getBody());
 
-        // @TODO: Remove after testing
-        sqlCache.update("marketo.updateResponse", Map.of("id", requestId, "response", res.getBody()));
-
         if (!resultBody.getBoolean("success")) {
             JSONObject error = resultBody.getJSONArray("errors").getJSONObject(0);
             if (error.getLong("code") == 602) {
@@ -221,8 +190,6 @@ public class MarketoService {
                 removeFromMarekto(marketoIds);
             }
 
-            // @TODO: Remove after testing
-            sqlCache.update("marketo.updateError", Map.of("id", requestId,"error", "Unable remove IDs: Marketo says something failed"));
             throw new RuntimeException("MARKETO: Unable remove IDs: Marketo says something failed");
         }
 
