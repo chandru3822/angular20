@@ -15,44 +15,54 @@
       </AttachmentCoversheetModal>
     </v-dialog>
     <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
-    <v-container v-else dense :key="renderTicker" id="attachment-table">
+    <v-container v-else dense :key="renderTicker" id="attachment-table" class="pa-0">
       <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment"
              :key="item.processStepId">
-        <v-col cols="6" class="text-left pa-1">
-          <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
-                      v-model="item.compare"
-                      :disabled="!item.compare && countSelected >= maxSelectable">
-          </v-checkbox>
-          <v-btn icon text @click="selectFile(item)" class="type">
-            <v-icon size="25" color="grey">
-              {{ getIconForFile(item) }}
-            </v-icon>
-          </v-btn>
-          <a @click="selectFile(item)" class="text-left no-text-decoration">
-            {{ item.displayName }}
-          </a>
+        <v-col cols="10" class="text-left pt-0">
+          <div class="file-column">
+            <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
+                        v-model="item.compare"
+                        :disabled="!item.compare && countSelected >= maxSelectable">
+            </v-checkbox>
+  <!--          <v-btn icon text @click="selectFile(item)" class="type">-->
+              <v-icon size="25" color="grey" @click="selectFile(item)">
+                {{ getIconForFile(item) }}
+              </v-icon>
+  <!--          </v-btn>-->
+            <div class="file-name-container">
+              <div class="file-name-div">
+                <a @click="selectFile(item)" class="text-left no-text-decoration file-name">
+                  {{ item.displayName }}
+                </a>
+              </div>
+              <div class="text-left uploaded-by">
+                {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}
+                {{ item.dateCreated | formatDate('timestamp', 'M/D/YY') }}
+              </div>
+          </div>
+          </div>
         </v-col>
-        <v-col cols="4" class="text-center px-1 attachment-info">
-          {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{
-            item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')
-          }}
-        </v-col>
+<!--        <v-col cols="3" class="text-right px-1 attachment-info">-->
+<!--          {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{-->
+<!--            item.dateCreated | formatDate('timestamp', 'M/D/YY')-->
+<!--          }}-->
+<!--        </v-col>-->
         <v-col cols="2" class="text-right pa-0">
-          <v-btn small v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
+          <v-btn icon v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
                  :disabled="performingLink"
                  text color="primary" @click="linkAttachment(item, true)" class="px-0">
-            <v-icon>link</v-icon>
+            <v-icon size="25">link</v-icon>
           </v-btn>
-          <v-btn small v-if="!allowUpload && loadLinked"
+          <v-btn icon v-if="!allowUpload && loadLinked"
                  :disabled="performingLink"
                  text color="primary" @click="linkAttachment(item, false)" class="px-0">
-            <v-icon>mdi-link-off</v-icon>
+            <v-icon size="25">mdi-link-off</v-icon>
           </v-btn>
-          <v-btn small v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
-            <v-icon>delete</v-icon>
+          <v-btn icon v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
+            <v-icon size="25">delete</v-icon>
           </v-btn>
-          <v-btn small text color="primary" :href="item.presignedUrl">
-            <v-icon>mdi-tray-arrow-down</v-icon>
+          <v-btn icon text color="primary" :href="item.presignedUrl">
+            <v-icon size="25">mdi-tray-arrow-down</v-icon>
           </v-btn>
           <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
@@ -244,6 +254,7 @@ export default {
 .attachment {
   display: flex;
   justify-content: space-between;
+  height: 44px;
 }
 
 .text-left {
@@ -265,5 +276,36 @@ export default {
 
 .no-attach {
   color: var(--v-primaryText-base);
+}
+
+.file-column {
+  display: flex;
+  max-width: 100%;
+}
+
+.file-name-container {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-name-div {
+  font-size: 14px;
+  padding-left: 3px;
+}
+
+.file-name {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uploaded-by {
+  font-size: 11px;
+  padding-left: 3px;
+  color: var(--v-grey-base);
 }
 </style>

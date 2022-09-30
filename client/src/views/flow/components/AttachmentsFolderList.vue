@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="attachment-folder-list">
     <v-dialog persistent :width="1000" v-model="showCoversheetModal"
               content-class="coversheet-modal-content">
       <AttachmentCoversheetModal :existing-attachment="tempFile"
@@ -48,14 +48,14 @@
           Compare
         </v-btn>
       </div>
-      <v-toolbar v-if="title" color="transparent" class="elevation-0 process-step-toolbar cfg-name-toolbar">
+      <v-toolbar v-if="title" dense color="transparent" class="elevation-0 process-step-toolbar cfg-name-toolbar">
         <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
                                   'albatross-body-2': this.smallTitle}">
           {{ title }}
         </v-toolbar-title>
       </v-toolbar>
       <v-card class="text-left square-card" :class="{'elevation-0': !isCard}">
-        <v-expansion-panels accordion multiple flat class=".rounded-0" v-if="!attachmentTypesLoading">
+        <v-expansion-panels accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
           <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
             <v-expansion-panel-header class="albatross-body-1">
               <template v-slot:default="{ open }">
@@ -445,7 +445,28 @@ export default {
 }
 </script>
 
+<style lang="scss">
+
+</style>
+
 <style lang="scss" scoped>
+
+.v-expansion-panels.condensed .v-expansion-panel-header {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  min-height: auto;
+}
+.v-expansion-panels.condensed
+.v-expansion-panel--active
+.v-expansion-panel-header {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.v-expansion-panels.condensed .v-expansion-panel--active:not(:first-child),
+.v-expansion-panels.condensed .v-expansion-panel--active + .v-expansion-panel {
+  margin-top: 2px;
+}
+
 
 .bold {
   font-weight: bold;
