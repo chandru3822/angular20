@@ -390,6 +390,8 @@ export default {
         // this.totalItems = data.totalElements
         this.results = data?.data || []
 
+        console.log('first results',this.results[0])
+
         this.noResults = this.results?.length === 0
         this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
 
@@ -413,6 +415,8 @@ export default {
             }
           })
         }
+
+        console.log('randaLogger',this.results[0])
 
         this.masterResults = cloneDeep(this.results)
         this.filteredResults = cloneDeep(this.results)

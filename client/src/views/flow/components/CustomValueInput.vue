@@ -246,6 +246,7 @@
             {{ getFieldName() }}
             <v-icon v-if="locked && lockFeature" @click="locked=false" small color="primary" class="ml-3">mdi-lock</v-icon>
             <v-icon v-if="!locked && lockFeature" @click="locked=true" small color="primary" class="ml-3">mdi-lock-open</v-icon>
+            <v-icon v-if="copyFeature" @click="copyToClipBoard(field.textValue)" small color="primary" class="ml-3">mdi-content-copy</v-icon>
           </div>
           <quill-editor
             :options="toolbarOptions"
@@ -278,7 +279,8 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
 import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
-import { getRequestWithParams } from '@/helpers/helpers'
+import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {AppMutations} from "@/stores/AppStore";
 
 export default {
   name: 'CustomValueInput',
@@ -313,6 +315,10 @@ export default {
       default: false
     },
     lockFeature: {
+      type: Boolean,
+      default: false
+    },
+    copyFeature: {
       type: Boolean,
       default: false
     },
@@ -412,6 +418,11 @@ export default {
   },
 
   methods: {
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
     doRichTextFieldCallback(field, quill) {
       field.textValue = quill?.text || null
       this.callback(field)
