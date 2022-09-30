@@ -164,7 +164,8 @@ select p.id,
        coalesce((
          select pcfv.boolean_value
          from flow.project_custom_field_value pcfv
-         where pcfv.project_id = p.id
+         where pcfv.project_id = p.id and
+               pcfv.custom_field_group_assignment_id = 21067
        ), false) "doNotSolicitReview"
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
@@ -223,7 +224,8 @@ select p.id,
        coalesce((
          select pcfv.boolean_value
          from flow.project_custom_field_value pcfv
-         where pcfv.project_id = p.id
+         where pcfv.project_id = p.id and
+               pcfv.custom_field_group_assignment_id = 21067
        ), false) "doNotSolicitReview"
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
