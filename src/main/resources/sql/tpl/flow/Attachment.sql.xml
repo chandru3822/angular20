@@ -1,24 +1,30 @@
 <sql>
   <attachment.findById><![CDATA[
-    SELECT id,
-       attachment_type_id,
-       company_id,
-       filename,
-       content_type,
-       s3_key,
-       display_name,
-       size,
-       uuid,
-       archived,
-       substring(filename, '\.([^\.]+)$') as file_extension,
-       date_created,
-       date_modified,
-       created_by_id,
-       modified_by_id,
-       show
-    FROM flow.attachment
-    WHERE id = :id
-      and archived is not true
+    SELECT a.id,
+           a.attachment_type_id,
+           a.company_id,
+           a.filename,
+           a.content_type,
+           a.s3_key,
+           a.display_name,
+           a.size,
+           a.uuid,
+           a.archived,
+           substring(filename, '\.([^\.]+)$') as file_extension,
+           a.date_created,
+           a.date_modified,
+           a.created_by_id,
+           a.modified_by_id,
+           a.show,
+           concat(u.first_name, ' ', u.last_name) as uploaded_by,
+           att.attachment_type,
+           orgn.*
+    FROM flow.attachment a
+      inner join flow."user" u on u.id = a.created_by_id
+      inner join flow.attachment_type att on a.attachment_type_id = att.id
+      left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
+    WHERE a.id = :id
+      and a.archived is not true
   ]]></attachment.findById>
 
   <attachment.getAttachmentForUuidCheck><![CDATA[
