@@ -22,8 +22,8 @@
               Thumbnail
             </div>
           </v-col>
-          <v-col :cols="attachmentCols" v-for="(a, idx) in attachmentsCopy" :key="idx" class="">
-            <v-toolbar flat dense class="coversheet-title">
+          <v-col :cols="attachmentCols" v-for="(a, idx) in attachmentsCopy" :key="idx" class="thumbnail-file-container">
+            <v-toolbar flat dense class="compare-file-title coversheet-title">
               <v-toolbar-title class="file-name">{{ a.displayName }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
@@ -45,15 +45,22 @@
                        :src="a.presignedUrl"></v-img>
               </div>
               <div v-else-if="a.isPdf" class="one-hunned">
-                <div v-if="pdfIsLoading" class="text-center">
-                  <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-                </div>
-                <vue-pdf-embed
-                  ref="pdfRef"
-                  :source="a.presignedUrl"
-                  :page="pdfPage"
-                  @rendered="handleDocumentRender"
-                />
+                <v-card class="square-card no-preview-container">
+                  <div class="text-center">
+                    <v-icon :size="200" color="white">mdi-file-pdf-box</v-icon>
+
+<!--                    <div class="mt-5">PDF Preview Unavailable</div>-->
+                  </div>
+                </v-card>
+<!--                <div v-if="pdfIsLoading" class="text-center">-->
+<!--                  <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>-->
+<!--                </div>-->
+<!--                <vue-pdf-embed-->
+<!--                  ref="pdfRef"-->
+<!--                  :source="a.presignedUrl"-->
+<!--                  :page="pdfPage"-->
+<!--                  @rendered="handleDocumentRender"-->
+<!--                />-->
               </div>
               <div v-else class="height-one-hunned one-hunned">
                 <v-card class="square-card no-preview-container">
@@ -142,7 +149,7 @@ import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import orderBy from 'lodash.orderby'
-import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
+// import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
 import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
@@ -155,7 +162,7 @@ export default {
   components: {
     DatetimePickerInput,
     CustomValueInput,
-    VuePdfEmbed,
+    // VuePdfEmbed,
     SpinnerInline
   },
   watch: {
@@ -366,6 +373,12 @@ export default {
   justify-content: center;
 }
 
+.thumbnail-file-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .thumbnail-container {
   height: 100%;
   display: flex;
@@ -376,6 +389,10 @@ export default {
   font-weight: 400;
   font-size: 14px;
   line-height: 30px;
+}
+
+.compare-file-title {
+  max-height: 48px;
 }
 
 .no-preview-container {
