@@ -130,7 +130,9 @@
       </template>
       <template v-slot:header-btn>
         <div class="mt-3">
-          <v-btn text color="primary" v-if="userCanDelete" @click="deleteContactConfirm = true">
+          <v-btn text color="primary" v-if="userCanDelete"
+                 :disabled="!contact.projects || contact.projects.length === 0"
+                 @click="deleteContactConfirm = true">
             <v-icon>delete</v-icon>
           </v-btn>
         </div>
