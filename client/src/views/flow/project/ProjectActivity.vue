@@ -216,7 +216,7 @@ export default {
       myOwner: [],
       projectHistory: [],
       projectIsLoading: true,
-      toggleFocused: 1
+      toggleFocused: 0
     }
   },
   created() {

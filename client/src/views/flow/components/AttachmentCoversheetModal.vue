@@ -17,7 +17,7 @@
             <div v-if="saveError" class="error-text mt-3">
               {{errorMsg}}
             </div>
-            <div class="subtitle-2 mb-4 mt-4 default-text-color">Document Details</div>
+            <div class="subtitle-1 mb-4 mt-4 default-text-color">Upload Details</div>
             <v-card class="square-card pa-3">
               <v-text-field
                 label="Document Name"
@@ -56,7 +56,7 @@
                 ></v-text-field>
               </div>
             </v-card>
-            <div v-if="customFieldGroups.length > 0" class="subtitle-1 mt-6 mb-3 default-text-color">Additional Document Details</div>
+            <div v-if="customFieldGroups.length > 0" class="subtitle-1 mt-6 mb-3 default-text-color">Document Information</div>
             <v-col
               class="pa-0"
               v-for="(cfg, index) in customFieldGroups"

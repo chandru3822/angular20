@@ -85,7 +85,7 @@
         </v-row>
         <v-row class="">
           <v-col :cols="leftCols" class="left-column">
-            <span class="left-column-header">File Details</span><br>
+            <span class="left-column-header">Upload Details</span><br>
             <span class="left-column-subheader">Uploaded Date</span><br>
             <span class="left-column-subheader">Uploaded By</span><br>
             <span class="left-column-subheader">Document Type</span><br>
@@ -103,7 +103,7 @@
         </v-row>
         <v-row>
           <v-col :cols="leftCols" class="left-column" v-if="allFields.length > 0">
-            <span class="left-column-header">Additional Details</span><br>
+            <span class="left-column-header">Document Information</span><br>
           </v-col>
         </v-row>
         <v-row v-for="field in allFields" class="">
