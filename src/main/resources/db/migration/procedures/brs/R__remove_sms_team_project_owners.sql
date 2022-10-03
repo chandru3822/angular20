@@ -81,6 +81,13 @@ where sms_team_id = p_sms_team_id
   and archived is false
   and user_id = any (v_user_ids);
 
+update flow.sms_team_user_unassigned_notification
+set archived       = true,
+    date_modified  = now(),
+    modified_by_id = p_current_user_id
+where sms_team_id = p_sms_team_id
+  and archived is false;
+
 if p_user_id is null and p_org_id is null and p_position_id is null then
 update flow.project_message_owner_history
 set date_removed   = now(),

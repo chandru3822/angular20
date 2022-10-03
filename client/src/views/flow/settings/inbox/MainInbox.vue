@@ -12,18 +12,38 @@
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
                                @joinConversation="joinConversation" />
-      <v-toolbar prominent elevation="4" color="grey lighten-4" class="py-4 sticky-toolbar">
+      <v-toolbar prominent elevation="4" color="grey lighten-4" class="pb-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
+          <v-tabs class="inbox-tabs pa-0" background-color="var(--v-secondary-base)">
+            <v-tab text @click="showInbox = true; reloadProjects()">
+              New
+              <v-badge
+                class="inbox-badge"
+                color="#F35858"
+                :content="inboxNotificationCount"
+                v-if="inboxNotificationCount > 0"
+              ></v-badge>
+            </v-tab>
+            <v-tab text @click="showInbox = false; reloadProjects()">
+              Sent
+              <v-badge
+                class="inbox-badge"
+                color="#F35858"
+                :content="sentNotificationCount"
+                v-if="sentNotificationCount > 0"
+              ></v-badge>
+            </v-tab>
+          </v-tabs>
           <v-text-field
             prepend-inner-icon="search"
             text
             label="Search by project or owner"
             v-model="searchQuery"
             @input="searchProjects"
-            class="albatross-body-2 mb-n4"
+            class="albatross-body-2 mb-n4 mt-2"
             clearable
           />
-          <v-row class="px-2 toolbar-row-2">
+          <v-row class="px-2 pt-2 toolbar-row-2 mt-4">
             <v-checkbox
               v-model="showUnreadOnly"
               @change="reloadProjects"
@@ -194,7 +214,7 @@
 <script>
 import { AppMutations } from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers'
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
@@ -233,6 +253,7 @@ export default {
       teamFilterOptions: [],
       selectedTeamFilters: [],
       showUnreadOnly: false,
+      showInbox: true,
       showAssignToMeDialog: false,
       assignToMeProject: [],
       teamsAssociatedToUser: [],
@@ -244,10 +265,43 @@ export default {
       reloadInProgress: false,
       totalProjects: 0,
       page: 1,
-      initialLoad: true
+      initialLoad: true,
+      projectIdsForCurrentFilter: []
     }
   },
   computed: {
+    inboxNotificationCount() {
+      let count = 0;
+      let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
+      notifProjectIds.forEach(npi => {
+        if (this.projectIdsForCurrentFilter.includes(npi)) {
+          count++;
+        }
+      })
+
+      if (this.showInbox) {
+        return count;
+      }
+      else {
+        return notifProjectIds.length - count;
+      }
+    },
+    sentNotificationCount() {
+      let count = 0;
+      let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
+      notifProjectIds.forEach(npi => {
+        if (this.projectIdsForCurrentFilter.includes(npi)) {
+          count++;
+        }
+      })
+
+      if (!this.showInbox) {
+        return count;
+      }
+      else {
+        return notifProjectIds.length - count;
+      }
+    },
     smsOwnershipEvents() {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
     },
@@ -349,16 +403,20 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : [],
+          showInbox: this.showInbox
         }
-
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
           filterData
         )
 
         if (data) {
           this.projects = data.content
-          this.totalProjects = data?.totalElements || 0
+          if (this.projects.length > 0) {
+            this.projectIdsForCurrentFilter = this.projects[0].projectIdsForFilter
+          }
+
+          this.totalProjects = this.projectIdsForCurrentFilter?.length || 0
           this.projects?.forEach(p => {
             p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
             p.smsTeamOwners.forEach(team => {
@@ -388,7 +446,8 @@ export default {
         let filterData = {
           ownerUserIds: this.selectedOwnerFilters,
           smsTeamIds: this.selectedTeamFilters,
-          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : []
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : [],
+          showInbox: this.showInbox
         }
 
         const { data } = await postRequest(`/messaging/projects?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
@@ -397,7 +456,11 @@ export default {
 
         if (data) {
           this.projects = data.content
-          this.totalProjects = data?.totalElements || 0
+          if (this.projects.length > 0) {
+            this.projectIdsForCurrentFilter = this.projects[0].projectIdsForFilter
+          }
+
+          this.totalProjects = this.projectIdsForCurrentFilter?.length || 0
           this.projects?.forEach(p => {
             p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
             p.smsTeamOwners.forEach(team => {
@@ -656,6 +719,7 @@ export default {
 
 <style scoped lang="scss">
 .sticky-toolbar {
+  height: 160px !important;
   position: sticky;
   top: 0;
   z-index: 1; //just to get it in front of the rest of the section
@@ -703,6 +767,10 @@ a {
   margin-bottom: 5px;
 }
 
+.inbox-badge {
+  margin-bottom: 16px;
+}
+
 .notif-div {
   margin-left: 2px;
 }
@@ -741,6 +809,18 @@ a {
 
 .unassigned-join-button {
   background-color: #1F3C73 !important;
+}
+
+.inbox-tabs {
+  top: -1px;
+  height: 64px !important;
+  z-index: 2;
+  opacity: 0.95;
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
+  .v-tab:hover {
+    color: var(--v-primary-base);
+  }
 }
 
 ::v-deep {

@@ -41,7 +41,16 @@
                                  FROM flow.sms_team_org sto
                                     inner join flow."org" o on sto.org_id = o.id
                                  WHERE sto.sms_team_id = st.id
-                                   AND sto.archived is not true) tb), '[]') AS "orgs"
+                                   AND sto.archived is not true) tb), '[]') AS "orgs",
+           coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(tb)))
+                    FROM (
+                             select concat(upv.first_name, ' ', upv.last_name, ' (', p.position, ')') as "fullName"
+                                 from flow.user_positions_vw upv inner join flow.position p on upv.position_id = p.id
+                                 where  upv.primary_flag = true and upv.archived = false and
+                                    upv.user_id in (select stun.user_id from flow.sms_team_user_unassigned_notification stun
+                                                        where stun.sms_team_id = st.id and stun.archived is false)
+                                 group by upv.first_name, upv.last_name, p.position) tb), '[]') AS "unassignedNotificationUsers"
     from flow.sms_team st
     where case when :isParent
               then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
@@ -165,6 +174,22 @@ where st.archived = false
   and st.id in (:ids)
   ]]></smsTeam.getTeamUsers>
 
+  <smsTeam.getTeamNotificationUsers><![CDATA[
+    select st.*,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(tb)))
+                        FROM (
+                                 select concat(upv.first_name, ' ', upv.last_name, ' (', p.position, ')') as "fullName", upv.user_id as "id"
+                                     from flow.user_positions_vw upv inner join flow.position p on upv.position_id = p.id
+                                     where  upv.primary_flag = true and upv.archived = false and
+                                        upv.user_id in (select stun.user_id from flow.sms_team_user_unassigned_notification stun
+                                                            where stun.sms_team_id = st.id and stun.archived is false)
+                                     group by upv.first_name, upv.last_name, p.position, upv.user_id) tb), '[]') AS "unassignedNotificationUsers"
+    from flow.sms_team st
+    where st.archived = false
+      and st.id in (:ids)
+  ]]></smsTeam.getTeamNotificationUsers>
+
   <smsTeam.getDetails><![CDATA[
     select st.*,
            coalesce((
@@ -207,7 +232,7 @@ where st.archived = false
   ]]></smsTeam.getDetails>
 
   <smsTeam.getTeamsForUser><![CDATA[
- select st.*,
+ select st.*, case when stun.archived is false then true else false end as receiveUnassignedNotifications,
        coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
                  FROM (SELECT stu.id,
                               stu.user_id                            as "userId",
@@ -260,7 +285,7 @@ where st.archived = false
                                 and stp.archived is false)
                          and ust.user_status_type = 'Active'
                          and upv.user_id = :userId) tb), '[]') AS "users"
-from flow.sms_team st
+from flow.sms_team st left join flow.sms_team_user_unassigned_notification stun on st.id = stun.sms_team_id and stun.user_id = :userId
 where case
           when :isParent
               then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
@@ -386,4 +411,18 @@ where case
       where org_id = :orgId and sms_team_id = :smsTeamId
   ]]></smsTeam.deleteOrg>
 
+  <smsTeam.upsertSmsTeamUserUnassignedNotification><![CDATA[
+    insert into flow.sms_team_user_unassigned_notification(sms_team_id, user_id, created_by_id, modified_by_id, date_created, date_modified)
+    values (:smsTeamId, :userId, :userId, :userId, now(), now())
+    ON CONFLICT (sms_team_id, user_id)
+        DO UPDATE SET archived = false;
+  ]]></smsTeam.upsertSmsTeamUserUnassignedNotification>
+
+  <smsTeam.deleteSmsTeamUserUnassignedNotification><![CDATA[
+    update flow.sms_team_user_unassigned_notification
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      where user_id = :userId and sms_team_id = :smsTeamId
+  ]]></smsTeam.deleteSmsTeamUserUnassignedNotification>
 </sql>

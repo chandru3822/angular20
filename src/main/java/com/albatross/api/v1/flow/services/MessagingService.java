@@ -83,7 +83,7 @@ public class MessagingService {
     return projectMessageProps.orElseThrow(()->new NotFoundException("Messaging project not found"));
   }
 
-  public Page<ProjectMessageProperties> getProjects(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds, Pageable pageable) {
+  public Page<ProjectMessageProperties> getProjects(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds, Boolean showInbox, Pageable pageable) {
     boolean containsUnassigned = false;
     if (ownerUserIds.contains(-1L)) {
       containsUnassigned = true;
@@ -96,16 +96,26 @@ public class MessagingService {
     params.put("ownerIds", ownerUserIds);
     params.put("notifProjectIds", notifProjectIds);
     params.put("unassigned", containsUnassigned);
+    params.put("showInbox", showInbox);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-     List<ProjectMessageProperties> projects = sqlCache.query(
+    List<ProjectMessageProperties> projects = sqlCache.query(
         "messaging.getProjects",
         params,
         new MessagePropertiesMapper<>(ProjectMessageProperties.class, om));
 
-    Integer count =
-      sqlCache.queryForObject("messaging.getProjectsCount", params, Integer.class);
+    int count = 0;
+    if (!projects.isEmpty()) {
+      List<Long> projectIds =
+        sqlCache.query(
+          "messaging.getProjectsCount",
+          params,
+          new SingleColumnRowMapper<>(Long.class));
+      projects.get(0).setProjectIdsForFilter(projectIds);
+      count = projectIds.size();
+    }
+
     return new PageImpl<>(
       projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
@@ -327,11 +337,28 @@ public class MessagingService {
           sqlCache.query(
               "messaging.getOwnersForProject", Map.of("projectId", projectId), SmsTeamUser.class);
 
-      for (SmsTeamUser smsTeamUser : ownerUsers) {
-        addSmsReplyNotification(
+      // If there are no owners, add unassigned notifications if applicable
+      if (ownerUsers.isEmpty()) {
+        ProjectMessageProperties pmp = getProject(projectId, SystemSettings.BR_SYSTEM_USER.getId());
+        final List<Long> teamIds = pmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
+        final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(teamIds);
+        for (SmsTeam smsTeam: smsTeams) {
+          List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
+          for (User user : usersToNotify) {
+            addSmsReplyNotification(
+              projectId, smsTeam.getId(), new HashSet<>(List.of(user.getId())), SystemSettings.SYSTEM_USER.getId());
+
+            addSmsOwnershipNotification(projectId, SystemSettings.SYSTEM_USER.getId() );
+          }
+        }
+      }
+      else {
+        for (SmsTeamUser smsTeamUser : ownerUsers) {
+          addSmsReplyNotification(
             projectId, smsTeamUser.getSmsTeamId(), new HashSet<>(List.of(smsTeamUser.getUserId())), SystemSettings.SYSTEM_USER.getId());
 
-        addSmsOwnershipNotification(projectId, SystemSettings.SYSTEM_USER.getId() );
+          addSmsOwnershipNotification(projectId, SystemSettings.SYSTEM_USER.getId() );
+        }
       }
     }
   }
@@ -482,6 +509,18 @@ public class MessagingService {
 
     return sqlCache
         .query("smsTeam.getTeamUsers", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
+  }
+
+  private List<SmsTeam> getTeamsUnassignedNotificationUsers(List<Long> teamIds) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ids", teamIds);
+
+    if (teamIds == null || teamIds.isEmpty()){
+      return List.of();
+    }
+
+    return sqlCache
+      .query("smsTeam.getTeamNotificationUsers", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
   }
 
   private void markSmsNotificationsAsRead(Long userId, Long projectId, Long smsTeamId, @NonNull Long modifiedByUserId)

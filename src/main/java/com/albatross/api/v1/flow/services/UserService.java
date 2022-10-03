@@ -8,6 +8,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.UserController;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -577,6 +578,22 @@ public class UserService {
     sqlCache.update("user.addAttachment", params);
 
     return attachmentService.findById(attachmentId);
+  }
+
+  public void saveSmsTeamNotification(Long userId, List<SmsTeam> smsTeams) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+
+    for (SmsTeam smsTeam: smsTeams) {
+      params.put("smsTeamId", smsTeam.getId());
+      if (smsTeam.getReceiveUnassignedNotifications() != null && smsTeam.getReceiveUnassignedNotifications()) {
+        sqlCache.update("smsTeam.upsertSmsTeamUserUnassignedNotification", params);
+      }
+      else {
+        params.put("modifiedById", userId);
+        sqlCache.update("smsTeam.deleteSmsTeamUserUnassignedNotification", params);
+      }
+    }
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

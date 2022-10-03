@@ -99,6 +99,19 @@
         </v-col>
       </v-row>
     </v-form>
+    <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
+    <v-row v-if="smsTeams && smsTeams.length > 0">
+      <v-col cols="12" md="6">
+        <h3>Notification Preferences</h3>
+        <v-card flat color="transparent">
+          <div v-for="item in smsTeams">
+            <div>
+              {{ item.teamName }} SMS Team:<v-checkbox class=" pl-3 d-inline-block" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
+            </div>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
     <v-divider class="mt-3 mb-3" v-if="userProfileCustomFields && userProfileCustomFields.length > 0"></v-divider>
     <v-row v-if="userProfileCustomFields && userProfileCustomFields.length > 0">
       <v-col cols="12" md="6">
@@ -146,6 +159,19 @@
         </div>
       </v-col>
     </v-row>
+    <ConfirmationDialog
+      :open-dialog="notificationToRemove"
+      @confirm="[notificationToRemove.receiveUnassignedNotifications = true, notificationToRemove = null]"
+      @close-dialog="[notificationToRemove=null]">
+      <span class="error--text">WARNING:</span>
+      If you uncheck this box, you will no longer be notified about
+      unassigned customer messages. If you are the only person monitoring
+      these messages on your team, we recommend keeping this box checked.<br/><br/>
+      Are you sure you do not want to get notified about <strong>{{ teamNameToRemoveNotif }}'s unassigned team messages</strong>?
+      <template v-slot:title>Confirm</template>
+      <template v-slot:no>Do not notify</template>
+      <template v-slot:yes>I want to receive notifications</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -153,6 +179,7 @@
 <script>
 import { Actions } from '@/store'
 import SpinnerInline from '@/components/SpinnerInline'
+import ConfirmationDialog from '@/ConfirmationDialog'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
@@ -166,7 +193,8 @@ export default {
   name: 'UserProfile',
   components: {
     SpinnerInline,
-    CustomValueInput
+    CustomValueInput,
+    ConfirmationDialog
   },
   data () {
     return {
@@ -207,10 +235,16 @@ export default {
           id: 2,
           userNotificationType: 'SMS'
         }
-      ]
+      ],
+      smsTeams: [],
+      notificationToRemove: null
     }
   },
-  computed: {},
+  computed: {
+    teamNameToRemoveNotif() {
+      return this.notificationToRemove ? this.notificationToRemove.teamName : ''
+    }
+  },
   async created () {
     if(this.$store.state.user.details.highestCompanyId === 1) {
       //this was all super dumb because we can't load albatross users the same way as regular users
@@ -221,6 +255,7 @@ export default {
       this.getUserProfileCustomFields()
       this.getHomePages()
       this.getUser(false)
+      this.getSmsTeams()
     }
     this.loadProfileImage()
   },
@@ -309,6 +344,11 @@ export default {
         if(data && data.id && this.dirtyCfvs?.length > 0) {
           await postRequest(`/customFieldValues/user/${data.id}`, this.dirtyCfvs)
         }
+
+        if (this.smsTeams?.length > 0) {
+          const {data, status} = await putRequest(`/user/${this.userId}/saveSmsTeamNotifications`, this.smsTeams)
+        }
+
         this.user.newPassword = null
         this.user.newPasswordConfirm = null
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
@@ -398,6 +438,24 @@ export default {
         this.dirtyCfvs.push(field)
       }
 
+    },
+    async getSmsTeams() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const { data, status } = await getRequest(`/user/getTeamsForUser/${this.userId}`)
+        this.smsTeams = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    checkForDeselect(item) {
+      if (!item.receiveUnassignedNotifications) {
+        this.notificationToRemove = item;
+      }
     }
   }
 }

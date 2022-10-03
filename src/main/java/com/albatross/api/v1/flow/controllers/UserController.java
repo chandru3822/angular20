@@ -4,7 +4,9 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.services.CommunicationService;
+import com.albatross.api.v1.flow.services.SmsTeamService;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class UserController {
 
   private final SecurityService securityService;
   private final CommunicationService communicationService;
+  private final SmsTeamService smsTeamService;
   private final UserService userService;
 
   @Value("${app.home_url}")
@@ -285,6 +288,16 @@ public class UserController {
       throws IOException {
     return new ResponseEntity<>(
         userService.addAttachment(file, userId, attachmentTypeId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/getTeamsForUser/{userId}")
+  public List<SmsTeam> getTeamsForUser(@PathVariable Long userId) {
+    return smsTeamService.getTeamsForUser(userId);
+  }
+
+  @PutMapping(value = "/{userId}/saveSmsTeamNotifications")
+  public void saveSmsTeamNotification(@PathVariable Long userId, @RequestBody List<SmsTeam> smsTeams) {
+    userService.saveSmsTeamNotification(userId, smsTeams);
   }
 
   @Data

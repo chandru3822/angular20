@@ -234,9 +234,19 @@
 
                 </v-data-table>
               </div>
-              <v-row class="justify-start pl-7">
-              <v-btn color="primary" class="mr-2 mb-6" :disabled="!item.teamName" @click="saveTeam(item, false)">Save</v-btn>
-              </v-row>
+              <div class="mb-2">
+                <v-toolbar flat dense color="transparent" class="wqt-header-bar">
+                  <v-toolbar-title class="albatross-header-4"><b>Unassigned SMS Notification</b></v-toolbar-title>
+                  <v-spacer></v-spacer>
+                </v-toolbar>
+                <div class="pl-6">
+                  <span v-if="item.unassignedNotificationUsers.length === 0" class="error-red">No one in this team is configured to receive notifications regarding team’s unassigned messages</span>
+                  <span v-else v-for="(us, idx) in item.unassignedNotificationUsers">
+                    <span v-if="idx !== 0">, </span>
+                    <span >{{ us.fullName }}</span>
+                  </span>
+                </div>
+              </div>
             </td>
           </template>
 
