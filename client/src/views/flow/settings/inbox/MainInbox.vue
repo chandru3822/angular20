@@ -568,7 +568,7 @@ export default {
       } else {
         this.selectedTeamFilters = this.teamFilterOptions?.map(t => t.id)
       }
-      this.reloadProjects()
+      this.teamSelectionChanged()
     },
     toggleSelectAllOwners() {
       if (this.allOwnersSelected) {
@@ -609,12 +609,6 @@ export default {
             if (!this.teamAlreadyAddedToFilter(team)) {
               this.teamFilterOptions.push(team)
             }
-
-            team.users.forEach(owner => {
-              if (!this.ownerAlreadyAddedToFilter(owner)) {
-                this.ownerFilterOptions.push(owner)
-              }
-            })
           }
         })
 
@@ -672,6 +666,18 @@ export default {
       return alreadyAdded
     },
     teamSelectionChanged() {
+      this.ownerFilterOptions = []
+      this.selectableTeams.forEach(team => {
+        if (this.selectedTeamFilters.includes(team.id)) {
+          team.users.forEach(owner => {
+            if (!this.ownerAlreadyAddedToFilter(owner)) {
+              this.ownerFilterOptions.push(owner)
+            }
+          })
+        }
+      })
+      this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
+
       this.options.page = 1
       this.reloadProjects()
     },

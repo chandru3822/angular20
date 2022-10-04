@@ -23,4 +23,4 @@ CREATE TABLE if not exists flow.sms_team_user_unassigned_notification
                                  ON UPDATE NO ACTION ON DELETE NO ACTION
     );
 
-CREATE unique INDEX flow_stuun_index ON flow.sms_team_user_unassigned_notification(sms_team_id, user_id);
+CREATE unique INDEX IF NOT EXISTS flow_stuun_index ON flow.sms_team_user_unassigned_notification(sms_team_id, user_id);
