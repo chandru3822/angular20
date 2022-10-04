@@ -166,7 +166,8 @@ select p.id,
          from flow.project_custom_field_value pcfv
          where pcfv.project_id = p.id and
                pcfv.custom_field_group_assignment_id = 21067
-       ), false) "doNotSolicitReview"
+       ), false) "doNotSolicitReview",
+       pd.closer_appointment_start "closerAppoinmentStartTime"
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
@@ -226,7 +227,8 @@ select p.id,
          from flow.project_custom_field_value pcfv
          where pcfv.project_id = p.id and
                pcfv.custom_field_group_assignment_id = 21067
-       ), false) "doNotSolicitReview"
+       ), false) "doNotSolicitReview",
+       pd.closer_appointment_start "closerAppoinmentStartTime"
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id

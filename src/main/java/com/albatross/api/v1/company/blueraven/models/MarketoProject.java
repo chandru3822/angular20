@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 public class MarketoProject extends Project {
 
-    private String firstName, lastName, leadStatus, leadSource, finalDesignApprovedDate, energizedDate, installationStartTime;
+    private String firstName, lastName, leadStatus, leadSource, finalDesignApprovedDate, energizedDate, installationStartTime, closerAppointmentStartTime;
 
     private LocalDateTime finalDesignSentToHomeownerDate;
 
