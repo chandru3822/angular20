@@ -202,6 +202,126 @@
                             />
                           </div>
 
+                          <div>
+                            <div>
+                              <label>
+                                <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly"
+                                       :disabled="!userCanEdit" @change="saveReadOnlyAndWhiteList(cf)"/>
+                                Read Only
+                              </label>
+                              <div v-if="cf.customFieldGroupAssignmentReadOnly" class="d-flex align-center">
+                                <v-autocomplete
+                                  v-if="cf.customFieldGroupAssignmentReadOnly"
+                                  v-model="cf.whiteListedPositions"
+                                  :items="positions"
+                                  :loading="positionsLoading"
+                                  multiple
+                                  clearable
+                                  label="White Listed Positions"
+                                  item-text="position"
+                                  item-value="positionId"
+                                  return-object
+                                  height="35px"
+                                  class="d-inline-block mr-3"
+                                  @change="cf.positionsChanged = true">
+                                  <v-list-item
+                                    slot="prepend-item"
+                                    ripple
+                                    @click="toggleSelectAllPositions(cf, 'whiteListedPositions')"
+                                  >
+                                    <v-list-item-action>
+                                      <v-icon>{{ icon(cf) }}</v-icon>
+                                    </v-list-item-action>
+                                    <v-list-item-title>Select All</v-list-item-title>
+                                  </v-list-item>
+                                  <v-divider
+                                    slot="prepend-item"
+                                    class="mt-2"
+                                  ></v-divider>
+                                  <template
+                                    slot="selection"
+                                    slot-scope="{ item, index }"
+                                  >
+                                    <v-chip small
+                                            v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
+                                      <span>{{ item.position }}</span>
+                                    </v-chip>
+                                    <span
+                                      v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
+                                      class="primary--text text-caption"
+                                    >{{ cf.whiteListedPositions.length }} selected</span>
+                                  </template>
+                                </v-autocomplete>
+
+                                <v-btn color="primary" dark class="d-inline-block white--text"
+                                     @click="saveReadOnlyAndWhiteList(cf)">
+                                <v-icon class="mr-2">save</v-icon>
+                                Save Read Only
+                              </v-btn>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div>
+                              <label>
+                                <input type="checkbox" v-model="cf.customFieldGroupAssignmentHidden"
+                                       :disabled="!userCanEdit" @change="saveHiddenAndWhiteList(cf)"/>
+                                Hidden
+                              </label>
+                              <div v-if="cf.customFieldGroupAssignmentHidden" class="d-flex align-center">
+                                <v-autocomplete
+                                  v-model="cf.hiddenWhiteListedPositions"
+                                  :items="positions"
+                                  :loading="positionsLoading"
+                                  multiple
+                                  clearable
+                                  label="White Listed Positions"
+                                  item-text="position"
+                                  item-value="positionId"
+                                  return-object
+                                  height="35px"
+                                  class="d-inline-block mr-3"
+                                  @change="cf.hiddenPositionsChanged = true"
+                                >
+                                  <v-list-item
+                                    slot="prepend-item"
+                                    ripple
+                                    @click="toggleSelectAllPositions(cf, 'hiddenWhiteListedPositions')"
+                                  >
+                                    <v-list-item-action>
+                                      <v-icon>{{ icon(cf, 'hiddenWhiteListedPositions') }}</v-icon>
+                                    </v-list-item-action>
+                                    <v-list-item-title>Select All</v-list-item-title>
+                                  </v-list-item>
+                                  <v-divider
+                                    slot="prepend-item"
+                                    class="mt-2"
+                                  ></v-divider>
+                                  <template
+                                    slot="selection"
+                                    slot-scope="{ item, index }"
+                                  >
+                                    <v-chip small
+                                            v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">
+                                      <span>{{ item.position }}</span>
+                                    </v-chip>
+                                    <span
+                                      v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"
+                                      class="primary--text text-caption"
+                                    >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
+                                  </template>
+                                </v-autocomplete>
+
+                                <v-btn color="primary" dark class="white--text d-inline-block"
+                                     @click="saveHiddenAndWhiteList(cf)">
+                                <v-icon class="mr-2">save</v-icon>
+                                Save Hidden
+                              </v-btn>
+                              </div>
+                            </div>
+                          </div>
+
                           <div class="flex-display"
                                v-if="objectType.allowMinMax && [4,6].includes(cf.dataTypeId) && !cf.hasListValues">
                             <v-text-field text
@@ -327,7 +447,9 @@ export default {
       count: 0,
       numberValues: [
        undefined, 'One', 'Two', 'Three', 'Four'
-      ]
+      ],
+      positions: [],
+      positionsLoading: false,
     }
   },
   props: {
@@ -389,6 +511,7 @@ export default {
     }
   },
   created() {
+    this.getPositions()
     this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
   },
   methods: {
@@ -689,7 +812,82 @@ export default {
       return item.customFields?.filter(cf => {
         return !cf.archived && cf.id !== current.id
       })
-    }
+    },
+    async saveReadOnlyAndWhiteList (field) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList`, field, 'blueraven')
+        field.positionsChanged = false
+        if(!field.customFieldGroupAssignmentReadOnly) {
+          this.$set(field, 'whiteListedPositions', [])
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Field Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveHiddenAndWhiteList(field) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList`, field, 'blueraven')
+        field.hiddenPositionsChanged = false
+        if (!field.customFieldGroupAssignmentHidden) {
+          this.$set(field, 'hiddenWhiteListedPositions', [])
+        }
+        handleHidingGlobalLoader(this, status)
+        this.snackbar = getSnackbar('SUCCESS', 'Field Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    selectAll (f, attr) {
+      return f[attr]?.length === this.positions?.length
+    },
+    selectSome (f, attr) {
+      return f[attr]?.length > 0 && !this.selectAll(f, attr)
+    },
+    icon (f, attr = 'whiteListedPositions') {
+      if (this.selectAll(f, attr)) {
+        return 'check_box'
+      }
+      if (this.selectSome(f, attr)) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
+    async getPositions() {
+      if(this.positions?.length === 0) {
+        try {
+          this.positionsLoading = true
+          const {data, status} = await getRequest(`/position/withParent`)
+          this.positions = data
+          this.positionsLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          this.positionsLoading = false
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    toggleSelectAllPositions (field, attr = 'whiteListedPositions') {
+      if (this.selectAll(field, attr)){
+        this.$set(field, attr, [])
+      }else {
+        this.$set(field, attr, cloneDeep(this.positions))
+      }
+      this.$set(field, 'positionsChanged', true) //todo change to use the 'attr'
+
+    },
   }
 }
 </script>
