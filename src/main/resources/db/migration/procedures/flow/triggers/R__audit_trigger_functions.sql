@@ -555,6 +555,12 @@ drop function if exists flow.concrete_project_process_step_event_audit();
 CREATE OR REPLACE FUNCTION flow.concrete_project_process_step_event_audit()
   RETURNS TRIGGER AS
 $$
+declare
+  v_project_id bigint;
+  v_project_process_step_id bigint;
+  v_user_position_id bigint;
+  v_user_id bigint;
+
 BEGIN
   insert into flow.project_process_step_event_audit(project_process_step_event_id, project_process_step_id,
                                                     process_step_event_id, resource_id, company_event_status_type_id,
@@ -567,8 +573,30 @@ BEGIN
           new.created_by_id, new.modified_by_id, new.archived, new.scheduled_date, new.cancelled_date,
           new.completed_date);
 
+  if old.start_time is null and new.start_time is not null and
+     old.end_time is null and new.end_time is not null and
+     old.resource_id is null and new.resource_id is not null and
+     new.process_step_event_id = 14 then
 
-  RETURN NULL;
+    select project_id,id
+    into v_project_id,v_project_process_step_id
+    from flow.project_process_step pps
+    where pps.id = new.project_process_step_id;
+
+    select up.id,up.user_id
+    into v_user_position_id,v_user_id
+    from flow.user_position up
+    where up.id = new.resource_id;
+
+
+
+      insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id,appointment_start_date,
+                                                created_date,created_by_id, override, user_position_id, project_process_step_event_id)
+      values(v_project_id,v_user_id,new.project_process_step_id,new.start_time,now(),new.created_by_id,true,v_user_position_id,new.id);
+  end if;
+
+
+     RETURN NULL;
 END
 $$
   LANGUAGE plpgsql;
