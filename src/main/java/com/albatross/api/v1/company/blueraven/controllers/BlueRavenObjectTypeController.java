@@ -5,7 +5,6 @@ import com.albatross.api.v1.company.blueraven.services.BlueravenObjectTypeServic
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,23 +21,23 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@RequestMapping(value = "/api/v1/company/blueraven/objectType")
+@RequiredArgsConstructor
+@RequestMapping(value = "/api/v1/company/blueraven/objectType", produces = MediaType.APPLICATION_JSON_VALUE)
 public class BlueRavenObjectTypeController {
 
   private final BlueravenObjectTypeService objectTypeService;
 
-  @GetMapping(value = "/getCompanyObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getCompanyObjectTypes")
   public List<CompanyObjectType> getCompanyObjectTypes() {
     return objectTypeService.getCompanyObjectTypes();
   }
 
-  @GetMapping(value = "/getByType/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getByType/{typeId}")
   public Optional<CompanyObjectType> getCustomFieldObjectTypeDetail(@PathVariable Long typeId) {
     return objectTypeService.getCompanyObjectTypeDetail(typeId);
   }
 
-  @GetMapping(value = "/{typeId}/getParentObjectsWithTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{typeId}/getParentObjectsWithTypes")
   public List<CombinedStepAndType> getParentObjectsWithTypes(@PathVariable Long typeId) {
     return objectTypeService.getParentObjectsWithTypes(typeId);
   }

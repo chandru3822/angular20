@@ -106,4 +106,14 @@ public class BlueravenCustomFieldGroupController {
   public void updateConditionalOnId(@RequestBody CustomField customField){
     customFieldGroupService.updateConditionalOnId(customField);
   }
+
+  @PutMapping(value="/saveReadOnlyAndWhiteList")
+  public void updateReadOnlyAndWhiteList(@RequestBody CustomField customField){
+    customFieldGroupService.updateReadOnlyAndWhiteList(customField);
+  }
+
+  @PutMapping(value="/saveHiddenAndWhiteList")
+  public void updateHiddenAndWhiteList(@RequestBody CustomField customField){
+    customFieldGroupService.updateHiddenAndWhiteList(customField);
+  }
 }

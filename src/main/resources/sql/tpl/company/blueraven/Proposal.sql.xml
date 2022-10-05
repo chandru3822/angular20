@@ -145,7 +145,7 @@ where pps.process_step_id in (3507, 3546)
 ]]></proposal.getActiveDesign>
 
   <proposal.get><![CDATA[
-  select p.id,
+select p.id,
        p.proposal_nbr,
        p.proposal_version_id,
        p.name,
@@ -217,6 +217,8 @@ where pps.process_step_id in (3507, 3546)
                                                      cfga.custom_field_id                                               as "customFieldId",
                                                      cfga.field_order                                                   as "fieldOrder",
                                                      cfga.required                                                      as "required",
+                                                     cfga.read_only                                                     as "customFieldGroupAssignmentReadOnly",
+                                                     cfga.hidden                                                        as "customFieldGroupAssignmentHidden",
                                                      cfga.use_parent_data                                               as "useParentData",
                                                      cfga.conditional_on_cfga_id                                        as "conditionalOnId",
                                                      coalesce(cf.list_of_value_id, flowCf.list_of_value_id)             as "listOfValueId",
@@ -252,7 +254,33 @@ where pps.process_step_id in (3507, 3546)
                                                                     where lov.parent_id is not null
                                                                       and lov.parent_id = flowCf.list_of_value_id
                                                                       and lov.archived is not true) listOfValues),
-                                                             '[]')                                                      AS "listOfValues"
+                                                             '[]')                                                      AS "listOfValues",
+                                                     coalesce((
+                                                                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                  FROM (
+                                                                           SELECT wlp.id,
+                                                                                  wlp.position_id as "positionId",
+                                                                                  wlp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                                                  wlp.created_by_id as "createdById",
+                                                                                  wlp.modified_by_id as "modifiedById",
+                                                                                  wlp.archived
+                                                                           FROM brs.white_listed_position wlp
+                                                                           WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                             AND wlp.white_list_type_id = 1
+                                                                             AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
+                                                     coalesce((
+                                                                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                  FROM (
+                                                                           SELECT wlp.id,
+                                                                                  wlp.position_id as "positionId",
+                                                                                  wlp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                                                  wlp.created_by_id as "createdById",
+                                                                                  wlp.modified_by_id as "modifiedById",
+                                                                                  wlp.archived
+                                                                           FROM brs.white_listed_position wlp
+                                                                           WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                             AND wlp.white_list_type_id = 2
+                                                                             AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                               from brs.custom_field_group_assignment cfga
                                                        left join brs.custom_field_group cfg1 on cfg1.id = cfga.custom_field_group_id
                                                        left join flow.object_type ot1 on ot1.id = cfg1.object_type_id

@@ -1,5 +1,6 @@
 package com.albatross.api.utils;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -14,6 +15,7 @@ public class SqlCache extends BaseSqlCache {
 
   @Autowired
   @Qualifier("namedParameterJdbcTemplate")
+  @Getter
   private NamedParameterJdbcTemplate sqlJdbc;
 
   @PostConstruct
