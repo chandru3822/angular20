@@ -56,7 +56,7 @@ public class CustomFieldValueService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
         params.put("userId", userId);
-        if(null != cv.getSystemReadonly() && cv.getSystemReadonly()) {
+        if((null != cv.getSystemReadonly() && cv.getSystemReadonly()) ||  cv.getDataTypeId() == 12) {
           Optional<String> textValue = sqlCache.queryForObjectOptionalBySql(sql, params, String.class);
           textValue.ifPresent(cv::setTextValue);
         } else {

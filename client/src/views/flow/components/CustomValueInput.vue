@@ -82,8 +82,8 @@
           auto-grow
           rows="1"
           :required="required"
-          :readonly="readonly"
-          :disabled="readonly"
+          :readonly="readonly || field.dataTypeId === 12"
+          :disabled="readonly || field.dataTypeId === 12"
           :class="[customClass, {'error--text': readonly || required}]"
           placeholder=" "
           :rules="rules"

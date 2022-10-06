@@ -75,6 +75,7 @@ public class MessagingController {
         filterData.getOwnerUserIds(),
         filterData.getSmsTeamIds(),
         filterData.getNotifProjectIds(),
+        filterData.getShowInbox(),
         pageable);
   }
 
@@ -114,5 +115,6 @@ public class MessagingController {
     private List<Long> ownerUserIds;
     private List<Long> smsTeamIds;
     private List<Long> notifProjectIds;
+    private Boolean showInbox;
   }
 }

@@ -78,6 +78,7 @@
                   <v-badge
                     class="notif-badge"
                     color="error lighten-2"
+                    :content="smsNotification.length"
                     v-if="tab.label == 'Inbox' && smsNotification.length > 0"
                   >
                   </v-badge>
@@ -90,9 +91,9 @@
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{ tab.label }}
               <v-badge
-                dot
                 class="notif-badge"
                 color="#F35858"
+                :content="smsNotification.length"
                 v-if="tab.label == 'Inbox' && smsNotification.length > 0"
               >
               </v-badge>
