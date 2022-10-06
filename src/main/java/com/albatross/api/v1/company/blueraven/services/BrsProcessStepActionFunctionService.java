@@ -422,11 +422,9 @@ public class BrsProcessStepActionFunctionService {
                 }
 
                 //installationStartTime
-                final String installationRawValue = paramValues.get(2).getDynamicValue();
-                if (installationRawValue != null && !installationRawValue.isBlank()) {
-                    final Long installationStartTimePseId = Long.parseLong(installationRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("installationStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updateInstallationStartTime = Boolean.parseBoolean(paramValues.get(2).getDynamicValue());
+                if (updateInstallationStartTime) {
+                    lead.put("installationStartTime", marketoService.formatDateTime(project.getInstallationStartTime()));
                 }
 
                 //substantialCompletionDate
