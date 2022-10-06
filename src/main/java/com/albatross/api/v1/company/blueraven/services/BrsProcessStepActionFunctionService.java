@@ -438,11 +438,9 @@ public class BrsProcessStepActionFunctionService {
                 }
 
                 //inspectionStartTime
-                final String inspectionRawValue = paramValues.get(4).getDynamicValue();
-                if (inspectionRawValue != null && !inspectionRawValue.isBlank()) {
-                    final Long inspectionStartTimePseId = Long.parseLong(inspectionRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", inspectionStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("inspectionStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updateInspectionStartTime = Boolean.parseBoolean(paramValues.get(4).getDynamicValue());
+                if (updateInspectionStartTime) {
+                    lead.put("inspectionStartTime", marketoService.formatDateTime(project.getInspectionStartTime()));
                 }
 
                 //inspectionPassedDate
