@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -411,22 +409,16 @@ public class BrsProcessStepActionFunctionService {
                     }
                 }
 
-                Optional<Map<String, Object>> results;
-
                 //closerAppointmentStartTime
-                final String closerAppointmentRawValue = paramValues.get(1).getDynamicValue();
-                if (closerAppointmentRawValue != null && !closerAppointmentRawValue.isBlank()) {
-                    final Long closerAppointmentPseId = Long.parseLong(closerAppointmentRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updatecCloserAppointmentStartTime = Boolean.parseBoolean(paramValues.get(1).getDynamicValue());
+                if (updatecCloserAppointmentStartTime) {
+                    lead.put("closerAppointmentStartTime", marketoService.formatDateTime(project.getCloserAppointmentStartTime()));
                 }
 
                 //installationStartTime
-                final String installationRawValue = paramValues.get(2).getDynamicValue();
-                if (installationRawValue != null && !installationRawValue.isBlank()) {
-                    final Long installationStartTimePseId = Long.parseLong(installationRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("installationStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updateInstallationStartTime = Boolean.parseBoolean(paramValues.get(2).getDynamicValue());
+                if (updateInstallationStartTime) {
+                    lead.put("installationStartTime", marketoService.formatDateTime(project.getInstallationStartTime()));
                 }
 
                 //substantialCompletionDate
