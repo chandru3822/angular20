@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -411,14 +409,10 @@ public class BrsProcessStepActionFunctionService {
                     }
                 }
 
-                Optional<Map<String, Object>> results;
-
                 //closerAppointmentStartTime
-                final String closerAppointmentRawValue = paramValues.get(1).getDynamicValue();
-                if (closerAppointmentRawValue != null && !closerAppointmentRawValue.isBlank()) {
-                    final Long closerAppointmentPseId = Long.parseLong(closerAppointmentRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updatecCloserAppointmentStartTime = Boolean.parseBoolean(paramValues.get(1).getDynamicValue());
+                if (updatecCloserAppointmentStartTime) {
+                    lead.put("closerAppointmentStartTime", marketoService.formatDateTime(project.getCloserAppointmentStartTime()));
                 }
 
                 //installationStartTime
