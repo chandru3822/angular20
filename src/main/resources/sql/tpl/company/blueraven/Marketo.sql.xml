@@ -187,7 +187,10 @@ select p.id,
          where pcfv.project_id = p.id and
                pcfv.custom_field_group_assignment_id = 21067
        ), false) "doNotSolicitReview",
-       pd.closer_appointment_start "closerAppoinmentStartTime"
+       pd.closer_appointment_start "closerAppoinmentStartTime",
+       pd.ahj_inspection_start_time "inspectionStartTime",
+       pd.substantial_completion_date,
+       pd.ahj_final_inspection_verified "inspectionPassedDate"
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
@@ -250,7 +253,10 @@ select p.id,
          where pcfv.project_id = p.id and
                pcfv.custom_field_group_assignment_id = 21067
        ), false) "doNotSolicitReview",
-       pd.closer_appointment_start "closerAppoinmentStartTime"
+       pd.closer_appointment_start "closerAppoinmentStartTime",
+       pd.ahj_inspection_start_time "inspectionStartTime",
+       pd.substantial_completion_date,
+       pd.ahj_final_inspection_verified "inspectionPassedDate"
 from flow.project p
 inner join flow.contact c on c.id = p.contact_id
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
