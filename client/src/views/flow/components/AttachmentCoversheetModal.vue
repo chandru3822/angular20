@@ -31,6 +31,7 @@
                 :timezone="timezone"
                 :type="'date'"
                 readonly
+                hidePrependIcon
                 :format="'MM/DD/YYYY'"
                 label="Upload Date"
                 custom-class="albatross-body-2"
@@ -47,12 +48,14 @@
                 v-model="fileDetails.attachmentType"
                 class="albatross-body-2"
               ></v-text-field>
-              <div @click="goToPath(fileDetails.originPath)" class="clickable">
+              <div @click="goToPath(fileDetails.originPath)" class="clickable mb-3 relative">
+                <div class="randa-test"></div>
                 <v-text-field
                   disabled readonly
                   label="Document Location"
                   v-model="fileDetails.originLocation"
                   class="albatross-body-2"
+                  hide-details
                 ></v-text-field>
               </div>
             </v-card>
@@ -267,7 +270,11 @@ export default {
     },
     goToPath(path) {
       if(null != path) {
-        this.$router.push(path)
+        if(path === this.$router.currentRoute.path) {
+          this.closeModal()
+        } else {
+          this.$router.push(path)
+        }
       }
     },
     async doPageLoad() {
@@ -494,5 +501,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.randa-test {
+  height: 50px;
+  width: 100%;
+  position: absolute;
+  z-index: 10;
 }
 </style>
