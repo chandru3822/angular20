@@ -7,7 +7,7 @@ require (
 	github.com/chromedp/chromedp v0.8.2
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo-contrib v0.12.0
-	github.com/labstack/echo/v4 v4.7.2
+	github.com/labstack/echo/v4 v4.9.0
 	github.com/labstack/gommon v0.3.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
