@@ -76,6 +76,7 @@
                   </v-icon>
                   {{ `${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})` }}
                   <v-spacer></v-spacer>
+
                   <input
                     :id="`fileInput${type.attachmentTypeId}`"
                     type="file"
@@ -83,7 +84,7 @@
                     @change='doUpload($event.target.files, type)'
                     style="display: none"
                     @click.stop=""
-                    ref='fileInput'
+                    :ref="`fileInput${type.attachmentTypeId}`"
                   >
                   <div class="expansion-panel-header-open" v-if="open"
                        key="0">
@@ -251,8 +252,11 @@ export default {
     }
   },
   methods: {
-    closeCoversheet() {
+    closeCoversheet(attachmentTypeId) {
       this.showCoversheetModal = false
+      //if you cancel the coversheet the file-input files prop is not getting reset. do manually here
+      //could not get it to reset using the vue $ref stuff. but this way with getElementById does work
+      document.getElementById(`fileInput${attachmentTypeId}`).value = null
     },
     closeCompareModal(a) {
       if (a && null != a.id) {

@@ -330,7 +330,7 @@ export default {
       return getCustomFieldReadOnly(this.$store, field)
     },
     closeModal() {
-      this.closeCallback()
+      this.closeCallback(this.existingAttachment.attachmentTypeId)
     },
     async saveAndUpload() {
       if (this.$refs.attachmentFieldsForm.validate()) {
