@@ -442,11 +442,9 @@ public class BrsProcessStepActionFunctionService {
                 }
 
                 //inspectionPassedDate
-                final String inspectionPassedRawValue = paramValues.get(5).getDynamicValue();
-                if (inspectionPassedRawValue != null && !inspectionPassedRawValue.isBlank()) {
-                    final Long inspectionPassedDateCfgaId = Long.parseLong(inspectionPassedRawValue);
-                    results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", inspectionPassedDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("inspectionPassedDate", r.get("dateValue").toString()));
+                final boolean updateInspectionPassedDate = Boolean.parseBoolean(paramValues.get(5).getDynamicValue());
+                if (updateInspectionPassedDate) {
+                    lead.put("inspectionPassedDate", project.getInspectionPassedDate());
                 }
 
                 //energizedDate
