@@ -134,16 +134,16 @@ select p.id,
          where ccfv.contact_id = p.contact_id and
                ccfv.custom_field_group_assignment_id = 395
        ) "leadSource",
-       pd.installation_start_time,
-       pd.energized_date,
-       pd.final_design_signed_date "finalDesignApprovedDate",
-       pd.final_design_sent_to_homeowner_date,
        coalesce((
          select pcfv.boolean_value
          from flow.project_custom_field_value pcfv
          where pcfv.project_id = p.id and
                pcfv.custom_field_group_assignment_id = 21067
        ), false) "doNotSolicitReview",
+       pd.installation_start_time,
+       pd.energized_date,
+       pd.final_design_signed_date "finalDesignApprovedDate",
+       pd.final_design_sent_to_homeowner_date,
        pd.closer_appointment_start "closerAppointmentStartTime",
        pd.ahj_inspection_start_time "inspectionStartTime",
        pd.substantial_completion_date,
@@ -190,16 +190,16 @@ select p.id,
          where ccfv.contact_id = p.contact_id and
                ccfv.custom_field_group_assignment_id = 395
        ) "leadSource",
-       pd.installation_start_time,
-       pd.energized_date,
-       pd.final_design_signed_date "finalDesignApprovedDate",
-       pd.final_design_sent_to_homeowner_date,
        coalesce((
          select pcfv.boolean_value
          from flow.project_custom_field_value pcfv
          where pcfv.project_id = p.id and
                pcfv.custom_field_group_assignment_id = 21067
        ), false) "doNotSolicitReview",
+       pd.installation_start_time,
+       pd.energized_date,
+       pd.final_design_signed_date "finalDesignApprovedDate",
+       pd.final_design_sent_to_homeowner_date,
        pd.closer_appointment_start "closerAppointmentStartTime",
        pd.ahj_inspection_start_time "inspectionStartTime",
        pd.substantial_completion_date,
