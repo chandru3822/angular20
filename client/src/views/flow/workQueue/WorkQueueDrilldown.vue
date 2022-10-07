@@ -153,7 +153,7 @@
       </v-col>
     </v-row>
     <ConfirmationDialog :open-dialog="showNotesModal" hide-confirm @confirm="updateRowNotes" @close-dialog="showNotesModal = false" :width="1800" :primary-header="true">
-      <template v-slot:title >{{ itemToUpdate['Project Name']}} - {{ itemToUpdate['Process Step Name'] }}</template>
+      <template v-slot:title >{{ itemToUpdate ? itemToUpdate['Project Name'] : ''}} - {{ itemToUpdate ? itemToUpdate['Process Step Name'] : '' }}</template>
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>Notes</v-toolbar-title>
       </v-toolbar>
@@ -167,7 +167,7 @@
           :primary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.projectProcessStepEventId : itemToUpdate.projectProcessStepId) : null"
           :secondary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.processStepEventWorkQueueTypeId : itemToUpdate.processStepWorkQueueTypeId): null"
           type="ProjectProcessStep"
-          :callback="(item) => updateRowNotes(itemToUpdate)"
+          :callback="(item) => updateRowNotes(item)"
       />
       <template v-slot:no>Close</template>
     </ConfirmationDialog>
