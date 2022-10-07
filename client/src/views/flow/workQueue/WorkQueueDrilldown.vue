@@ -141,50 +141,10 @@
                   <v-spacer></v-spacer>
                   {{ item.id }}
                   </router-link>
-                  <v-btn small fab text color="primary" @click="[item.showNotesModal = true, notesPpsIndex = index, ytfDoWeNeedThis++]">
+                  <v-btn small fab text color="primary" @click="[showNotesModal = true, notesPpsIndex = index, itemToUpdate = item]">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
                 </div>
-                <v-dialog
-                  @click:outside="closeNotesModal()"
-                  :key="ytfDoWeNeedThis"
-                  v-model="item.showNotesModal"
-                >
-                  <v-card class="wqt-notes-container">
-                    <v-card-title class="primary-custom-bg white--text">{{ item['Project Name'] }} -
-                      {{ item['Process Step Name'] }}
-                    </v-card-title>
-                    <v-card-text class="py-3">
-                      <v-toolbar color="transparent" class="elevation-0">
-                        <v-toolbar-title>Notes</v-toolbar-title>
-                      </v-toolbar>
-                      <NotesAndActivityContent
-                        :showNotes="true"
-                        :showActivity="false"
-                        :bordered="true"
-                        :notes="item.notes"
-                        :is-ps-wqt-note="!workQueue.useEventData"
-                        :is-event-wqt-note="workQueue.useEventData"
-                        :primary-id="workQueue.useEventData ? item.projectProcessStepEventId : item.projectProcessStepId"
-                        :secondary-id="workQueue.useEventData ? item.processStepEventWorkQueueTypeId : item.processStepWorkQueueTypeId"
-                        type="ProjectProcessStep"
-                        :callback="(item) => updateRowNotes(item)"
-                      />
-                    </v-card-text>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-
-                      <v-btn
-                        color="primary"
-                        class="white--text mr-2 mb-3"
-                        @click="[ytfDoWeNeedThis++, closeNotesModal()]"
-                      >
-                        Close
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
               </td>
             </tr>
           </template>
@@ -192,6 +152,25 @@
 
       </v-col>
     </v-row>
+    <ConfirmationDialog :open-dialog="showNotesModal" hide-confirm @confirm="updateRowNotes" @close-dialog="showNotesModal = false" :width="1800" :primary-header="true">
+      <template v-slot:title >{{ itemToUpdate['Project Name']}} - {{ itemToUpdate['Process Step Name'] }}</template>
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>Notes</v-toolbar-title>
+      </v-toolbar>
+      <NotesAndActivityContent
+          :showNotes="true"
+          :showActivity="false"
+          :bordered="true"
+          :notes="itemToUpdate ? itemToUpdate.notes : []"
+          :is-ps-wqt-note="!workQueue.useEventData"
+          :is-event-wqt-note="!!workQueue.useEventData"
+          :primary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.projectProcessStepEventId : itemToUpdate.projectProcessStepId) : null"
+          :secondary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.processStepEventWorkQueueTypeId : itemToUpdate.processStepWorkQueueTypeId): null"
+          type="ProjectProcessStep"
+          :callback="(item) => updateRowNotes(itemToUpdate)"
+      />
+      <template v-slot:no>Close</template>
+    </ConfirmationDialog>
 
   </v-container>
 </template>
@@ -213,16 +192,19 @@ import {
   getSnackbar,
   logError, getRequest
 } from '@/helpers/helpers'
+import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'WorkQueueDrilldown',
   components: {
+    ConfirmationDialog,
     NotesAndActivityContent
   },
   data() {
     return {
       snackbar: {},
       showNotesModal: false,
+      itemToUpdate: null,
       hideFutureFollowUps: false,
       hideFutureEvents: false,
       selectedPps: {},
