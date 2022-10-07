@@ -89,8 +89,8 @@ export default {
             companyObjectTypeId: this.$route.params.id
           }
         }, 'blueraven')
-        this.customFieldGroups = cloneDeep(data.map(d => {
-          d.customFields.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
+        this.customFieldGroups = cloneDeep(data?.map(d => {
+          d?.customFields?.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
           return d
         }))
         handleHidingGlobalLoader(this, status)

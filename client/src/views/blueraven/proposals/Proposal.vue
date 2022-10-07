@@ -59,11 +59,11 @@
               >
                 <div class="configuration-group-title">{{ cfg.groupName }}</div>
                 <CustomValueInput
-                  v-for="(field, idx) in cfg.customFieldValues"
+                  v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
                   :key="idx"
                   :required="field.required"
                   :callback="populateDirtyCfvs"
-                  :readonly="proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || field.ancillaryCustomFieldGroupAssignmentId !== null"
+                  :readonly="proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
                   :field="field"
                   :show-field-name="false"
                   :list-of-value-filter="filters[field.customFieldId]"
@@ -140,7 +140,7 @@
       </v-row>
     </v-form>
     <confirm-dialog ref="confirmDialog" />
-    <confirm-dialog ref="deleteConfirmDialog" >
+    <confirm-dialog ref="deleteConfirmDialog">
       <p>Are you sure you want to delete this proposal?</p>
     </confirm-dialog>
   </v-container>
@@ -151,7 +151,7 @@
     >
       <v-row align="center">
         <v-col class="grow">
-          Proposal #{{proposalId}} does not exist.
+          Proposal #{{ proposalId }} does not exist.
         </v-col>
         <v-col class="shrink">
           <router-link
@@ -187,9 +187,11 @@ import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import { mapState } from 'vuex'
+import Vue2Filters from 'vue2-filters'
 
 export default {
   name: 'Proposal',
+  mixins: [Vue2Filters.mixin],
   components: {
     CustomValueInput,
     ProposalTemplate,
@@ -245,6 +247,19 @@ export default {
     })
   },
   methods: {
+    userHasWhiteListedPosition(cf, arg = 'readonly') {
+      const wlAttr = arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
+      const prAttr = arg === 'readonly' ? 'customFieldGroupAssignmentReadOnly' : 'customFieldGroupAssignmentHidden'
+
+      //field doesn't require a white listed position
+      if (!cf[prAttr]) {
+        return true
+      }
+
+      //positions required for user
+      const positions = cf[wlAttr]?.map(wlp => wlp.positionId) ?? []
+      return this.$store.getters.userHasAnyPosition(positions)
+    },
     onStickyHeader(entries) {
       const ratio = entries[0].intersectionRatio
       this.isIntersecting = ratio < 1
@@ -353,7 +368,7 @@ export default {
       try {
 
         const { ok } = await this.$refs.deleteConfirmDialog.open()
-        if (!ok){
+        if (!ok) {
           return
         }
 

@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -411,46 +409,34 @@ public class BrsProcessStepActionFunctionService {
                     }
                 }
 
-                Optional<Map<String, Object>> results;
-
                 //closerAppointmentStartTime
-                final String closerAppointmentRawValue = paramValues.get(1).getDynamicValue();
-                if (closerAppointmentRawValue != null && !closerAppointmentRawValue.isBlank()) {
-                    final Long closerAppointmentPseId = Long.parseLong(closerAppointmentRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updatecCloserAppointmentStartTime = Boolean.parseBoolean(paramValues.get(1).getDynamicValue());
+                if (updatecCloserAppointmentStartTime) {
+                    lead.put("closerAppointmentStartTime", marketoService.formatDateTime(project.getCloserAppointmentStartTime()));
                 }
 
                 //installationStartTime
-                final String installationRawValue = paramValues.get(2).getDynamicValue();
-                if (installationRawValue != null && !installationRawValue.isBlank()) {
-                    final Long installationStartTimePseId = Long.parseLong(installationRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("installationStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updateInstallationStartTime = Boolean.parseBoolean(paramValues.get(2).getDynamicValue());
+                if (updateInstallationStartTime) {
+                    lead.put("installationStartTime", marketoService.formatDateTime(project.getInstallationStartTime()));
                 }
 
                 //substantialCompletionDate
-                final String substantialRawValue = paramValues.get(3).getDynamicValue();
-                if (substantialRawValue != null && !substantialRawValue.isBlank()) {
-                    final Long substantialCompletionDateCfgaId = Long.parseLong(substantialRawValue);
-                    results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", substantialCompletionDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("substantialCompletionDate", r.get("dateValue").toString()));
+                final boolean updateSubstantialCompletionDate = Boolean.parseBoolean(paramValues.get(3).getDynamicValue());
+                if (updateSubstantialCompletionDate) {
+                    lead.put("substantialCompletionDate", project.getSubstantialCompletionDate());
                 }
 
                 //inspectionStartTime
-                final String inspectionRawValue = paramValues.get(4).getDynamicValue();
-                if (inspectionRawValue != null && !inspectionRawValue.isBlank()) {
-                    final Long inspectionStartTimePseId = Long.parseLong(inspectionRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", inspectionStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("inspectionStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updateInspectionStartTime = Boolean.parseBoolean(paramValues.get(4).getDynamicValue());
+                if (updateInspectionStartTime) {
+                    lead.put("inspectionStartTime", marketoService.formatDateTime(project.getInspectionStartTime()));
                 }
 
                 //inspectionPassedDate
-                final String inspectionPassedRawValue = paramValues.get(5).getDynamicValue();
-                if (inspectionPassedRawValue != null && !inspectionPassedRawValue.isBlank()) {
-                    final Long inspectionPassedDateCfgaId = Long.parseLong(inspectionPassedRawValue);
-                    results = sqlCache.get("marketo.getPpsFieldValueByCfgaId", Map.of("cfgaId", inspectionPassedDateCfgaId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("inspectionPassedDate", r.get("dateValue").toString()));
+                final boolean updateInspectionPassedDate = Boolean.parseBoolean(paramValues.get(5).getDynamicValue());
+                if (updateInspectionPassedDate) {
+                    lead.put("inspectionPassedDate", project.getInspectionPassedDate());
                 }
 
                 //energizedDate

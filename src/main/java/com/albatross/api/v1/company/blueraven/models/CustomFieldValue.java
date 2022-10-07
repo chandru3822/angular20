@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.models;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -35,9 +36,10 @@ public class CustomFieldValue {
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
-  private Boolean booleanValue, hasListValues, useParentData;
+  private Boolean booleanValue, hasListValues, useParentData, customFieldGroupAssignmentReadOnly, customFieldGroupAssignmentHidden;
   private Timestamp dateValue, timestampValue;
 
   private List<ListOfValue> listOfValues;
   private List<Long> systemListOptionIds;
+  private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
 }
