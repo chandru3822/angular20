@@ -287,13 +287,15 @@ public class MarketoService {
             if (!p.getDoNotSolicitReview()) {
                 Map<String, Object> lead = projectToLead(p);
 
+                //fill all marketo fields with current values
                 lead.put("projectStatus", p.getProjectStatusType());
-
-                if (p.getCompanyProjectStatusTypeId() == 64) {
-                    lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
-                } else if (p.getCompanyProjectStatusTypeId() == 66) {
-                    lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
-                }
+                lead.put("closerAppointmentStartTime", formatDateTime(p.getCloserAppointmentStartTime()));
+                lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
+                lead.put("substantialCompletionDate", p.getSubstantialCompletionDate());
+                lead.put("inspectionStartTime", formatDateTime(p.getInspectionStartTime()));
+                lead.put("inspectionPassedDate", p.getInspectionPassedDate());
+                lead.put("energizedDate", p.getEnergizedDate());
+                lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
 
                 reactivatedLeads.add(lead);
             }
