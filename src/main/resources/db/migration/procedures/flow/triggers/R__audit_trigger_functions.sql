@@ -458,6 +458,10 @@ CREATE OR REPLACE FUNCTION flow.project_process_step_event_custom_field_audit()
 $$
 BEGIN
   IF (TG_OP = 'INSERT') THEN
+    if (new.date_value is not null or new.timestamp_value is not null or
+        new.boolean_value is not null or new.text_value is not null or
+        new.numeric_value is not null or new.int_value is not null or
+        new.int_array_value is not null or new.rich_text_value is not null) then
     insert into flow.project_process_step_event_custom_field_value_audit(project_process_step_event_custom_field_value_id,
                                                                          old_value,
                                                                          new_value, date_modified, modified_by_id)
@@ -472,7 +476,16 @@ BEGIN
                             when new.boolean_value is not null then new.boolean_value::text end,
             now(),
             new.modified_by_id);
+    end if;
   elsif (TG_OP = 'UPDATE') THEN
+    if ((new.date_value is not null or new.timestamp_value is not null or
+         new.boolean_value is not null or new.text_value is not null or
+         new.numeric_value is not null or new.int_value is not null or
+         new.int_array_value is not null or new.rich_text_value is not null) or
+        (old.date_value is not null or old.timestamp_value is not null or
+         old.boolean_value is not null or old.text_value is not null or
+         old.numeric_value is not null or old.int_value is not null or
+         old.int_array_value is not null or old.rich_text_value is not null)) then
     insert into flow.project_process_step_event_custom_field_value_audit(project_process_step_event_custom_field_value_id,
                                                                          old_value, new_value, date_modified,
                                                                          modified_by_id)
@@ -496,7 +509,12 @@ BEGIN
               when new.boolean_value is not null then new.boolean_value::text end,
             now(),
             new.modified_by_id);
+    end if;
   ELSIF (TG_OP = 'DELETE') THEN
+    if (old.date_value is not null or old.timestamp_value is not null or
+        old.boolean_value is not null or old.text_value is not null or
+        old.numeric_value is not null or old.int_value is not null or
+        old.int_array_value is not null or old.rich_text_value is not null) then
     insert into flow.project_process_step_event_custom_field_value_audit(project_process_step_event_custom_field_value_id,
                                                                          old_value, new_value, date_modified,
                                                                          modified_by_id)
@@ -512,6 +530,7 @@ BEGIN
             null,
             now(),
             new.modified_by_id);
+    end if;
   end if;
 
   RETURN NULL;
