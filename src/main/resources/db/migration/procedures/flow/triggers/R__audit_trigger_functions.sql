@@ -256,7 +256,8 @@ BEGIN
 
   RETURN NULL;
 END
-$$;
+$$
+LANGUAGE plpgsql;
 
 drop trigger if exists contact_audit_trg on flow.contact_custom_field_value;
 
