@@ -695,7 +695,8 @@ where psea.id = :id
                                       left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = cp.id
                              where dfp.db_function_id = cf.db_function_id
                                and dfp.parameter_type_id = 2
-                               and apdv.archived is not true
+                               and apdv.archived is not true and
+                                   dfp.archived is not true
                                order by dfp.display_order
                          ) params), '[]') AS "actionParamDynamicValues"
     from flow.process_step_event_action_company_function cp
