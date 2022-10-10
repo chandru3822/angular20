@@ -273,7 +273,10 @@ public class CommunicationController {
             .withZoneSameInstant(ZoneId.of(projectTimeZone));
         String closerAppointmentTime =
           zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        String closerAppointmentDate =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
         projectDetails.setLocalCloserAppointmentStartTime(closerAppointmentTime);
+        projectDetails.setLocalCloserAppointmentStartDate(closerAppointmentDate);
       }
 
       if (projectDetails.getAhjInspectionWorkStartTime() != null) {
@@ -342,6 +345,7 @@ public class CommunicationController {
   public static class ProjectDetails {
     private String primaryFinancier,
         localCloserAppointmentStartTime,
+        localCloserAppointmentStartDate,
         ahjInspectionWorkDate,
         ahjInspectionWorkStartTime,
         installationDate,
