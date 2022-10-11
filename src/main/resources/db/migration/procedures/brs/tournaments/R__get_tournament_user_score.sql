@@ -41,7 +41,12 @@ BEGIN
                         and pd.closer_user_id = p_user_id
                         and pd.cancelled_date is null
                         AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                            '2022-10-01'::date) +
+                            (select field_value
+                             from brs.tournament_formula_field_value tffv
+                                    inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                             where tff.tournament_formula_id = p_tournament_formula_id
+                               and tffv.tournament_id = p_tournament_id
+                               and tff.field_code = 'APPOINTMENT_DATE')::date) +
                      ((select count(1)
                        from brs.project_details pd
                               inner join flow.project p on p.id = pd.project_id
@@ -54,7 +59,12 @@ BEGIN
                          and (ccfv.boolean_value is null or ccfv.boolean_value is false)
                          and pd.source != 523
                          AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                             '2022-10-01'::date) * 4) +
+                             (select field_value
+                              from brs.tournament_formula_field_value tffv
+                                     inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                              where tff.tournament_formula_id = p_tournament_formula_id
+                                and tffv.tournament_id = p_tournament_id
+                                and tff.field_code = 'APPOINTMENT_DATE')::date) * 4) +
                      ((select count(1)
                        from brs.project_details pd
                               inner join flow.project p on p.id = pd.project_id
@@ -68,7 +78,12 @@ BEGIN
                          and (ccfv.boolean_value is true
                          or pd.source in  (523,20016))
                          AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                             '2022-10-01'::date) * 5))) as cnt;
+                             (select field_value
+                              from brs.tournament_formula_field_value tffv
+                                     inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                              where tff.tournament_formula_id = p_tournament_formula_id
+                                and tffv.tournament_id = p_tournament_id
+                                and tff.field_code = 'APPOINTMENT_DATE')::date) * 5))) as cnt;
       when p_tournament_formula_id = 2 then
         select *
         into v_score
