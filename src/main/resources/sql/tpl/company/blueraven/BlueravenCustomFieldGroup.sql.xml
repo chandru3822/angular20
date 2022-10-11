@@ -12,6 +12,8 @@ select cfg.*,
                               cfga.id                                         as "customFieldGroupAssignmentId",
                               cfga.field_order                                as "fieldOrder",
                               cfga.required                                   as "required",
+                              cfga.read_only                                  as "customFieldGroupAssignmentReadOnly",
+                              cfga.hidden                                     as "customFieldGroupAssignmentHidden",
                               cfga.min_value                                  as "minValue",
                               cfga.max_value                                  as "maxValue",
                               cfga.conditional_on_cfga_id                     as "conditionalOnId",
@@ -21,7 +23,33 @@ select cfg.*,
                               cf.field_name                                   as "fieldName",
                               null                                            as "processStepName",
                               null                                            as "groupName",
-                              ot.object_type                                  as "objectType"
+                              ot.object_type                                  as "objectType",
+                              coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                               FROM (
+                                                      SELECT wlp.id,
+                                                             wlp.position_id as "positionId",
+                                                             wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                             wlp.created_by_id as "createdById",
+                                                             wlp.modified_by_id as "modifiedById",
+                                                             wlp.archived
+                                                      FROM brs.white_listed_position wlp
+                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                        AND wlp.white_list_type_id = 1
+                                                        AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                               FROM (
+                                                      SELECT wlp.id,
+                                                             wlp.position_id as "positionId",
+                                                             wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                             wlp.created_by_id as "createdById",
+                                                             wlp.modified_by_id as "modifiedById",
+                                                             wlp.archived
+                                                      FROM brs.white_listed_position wlp
+                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                        AND wlp.white_list_type_id = 2
+                                                        AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                        FROM brs.custom_field_group_assignment cfga
                                 inner join brs.custom_field cf on cf.id = cfga.custom_field_id
                                 inner join brs.custom_field_group cfg3 on cfg3.id = cfga.custom_field_group_id
@@ -39,6 +67,8 @@ select cfg.*,
                               cfga.id                                         as "customFieldGroupAssignmentId",
                               cfga.field_order                                as "fieldOrder",
                               cfga.required                                   as "required",
+                              cfga.read_only                                  as "customFieldGroupAssignmentReadOnly",
+                              cfga.hidden                                     as "customFieldGroupAssignmentHidden",
                               cfga.min_value                                  as "minValue",
                               cfga.max_value                                  as "maxValue",
                               cfga.conditional_on_cfga_id                     as "conditionalOnId",
@@ -48,7 +78,9 @@ select cfg.*,
                               cf2.field_name                                  as "fieldName",
                               ps.process_step_name                            as "processStepName",
                               cfg2.group_name                                 as "groupName",
-                              ot2.object_type                                 as "objectType"
+                              ot2.object_type                                 as "objectType",
+                              '[]'                                            as whiteListedPositions,
+                              '[]'                                            as hiddenWhiteListedPositions
                        FROM brs.custom_field_group_assignment cfga
                                 inner join flow.custom_field_group_assignment cfga2
                                            on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
@@ -71,8 +103,17 @@ order by cfg.group_order, cfg.group_name
 
   <blueravenCustomFieldGroup.insertCustomFieldGroup><![CDATA[
     insert into brs.custom_field_group(group_name, object_type_id, group_order, created_by_id, date_created, modified_by_id, date_modified, column_number)
-    values (:groupName, :objectTypeId, (select coalesce(max(group_order) + 1, 0) from brs.custom_field_group where object_type_id = :objectTypeId), :createdById, now(), :createdById, now(), 1)
+    values (:groupName, :objectTypeId, (select coalesce(max(group_order) + 1, 0) from brs.custom_field_group where object_type_id = :objectTypeId and column_number = :columnNumber and archived is false), :createdById, now(), :createdById, now(), :columnNumber)
   ]]></blueravenCustomFieldGroup.insertCustomFieldGroup>
+
+  <blueravenCustomFieldGroup.moveGroupToColumn><![CDATA[
+    update brs.custom_field_group
+    set column_number = :columnNumber,
+        modified_by_id = :userId,
+        date_modified = now(),
+        group_order = (select coalesce(max(group_order) + 1, 0) from brs.custom_field_group where object_type_id = :objectTypeId and column_number = :columnNumber and archived is false)
+    where id = :id
+  ]]></blueravenCustomFieldGroup.moveGroupToColumn>
 
   <blueravenCustomFieldGroup.updateCustomFieldGroup><![CDATA[
     update brs.custom_field_group
@@ -227,4 +268,40 @@ set conditional_on_cfga_id = :conditionalOnId,
     date_modified          = now()
 where id = :cfgaId
   ]]></blueravenCustomFieldGroup.assignment.updateConditionalOnId>
+
+  <blueravenCustomFieldGroup.assignment.updateReadOnly><![CDATA[
+update brs.custom_field_group_assignment
+set read_only              = :value,
+    modified_by_id         = :modifiedById,
+    date_modified          = now()
+where id = :cfgaId
+  ]]></blueravenCustomFieldGroup.assignment.updateReadOnly>
+
+  <blueravenCustomFieldGroup.assignment.updateHidden><![CDATA[
+update brs.custom_field_group_assignment
+set hidden                 = :value,
+    modified_by_id         = :modifiedById,
+    date_modified          = now()
+where id = :cfgaId
+  ]]></blueravenCustomFieldGroup.assignment.updateHidden>
+
+  <blueravenCustomFieldGroup.assignment.insertWhiteList><![CDATA[
+    insert into brs.white_listed_position ( custom_field_group_assignment_id, position_id, created_by_id, modified_by_id, white_list_type_id)
+        values (?, ?, ?, ?, ?)
+        on conflict (custom_field_group_assignment_id, position_id, white_list_type_id)
+            where white_listed_position.archived is false
+            do update
+                set modified_by_id = excluded.modified_by_id,
+                    date_modified = now()
+  ]]></blueravenCustomFieldGroup.assignment.insertWhiteList>
+
+  <blueravenCustomFieldGroup.archiveWhiteListPositionsNoLongerUsed><![CDATA[
+    update brs.white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where custom_field_group_assignment_id = :cfgaId
+      and position_id not in (:positionIds)
+      and white_list_type_id = :whiteListTypeId
+  ]]></blueravenCustomFieldGroup.archiveWhiteListPositionsNoLongerUsed>
 </sql>

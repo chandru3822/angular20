@@ -248,7 +248,7 @@
              array_to_json(psr.list_of_value_ids) as list_of_value_ids,
              ot.operator_type,
              psrt.process_step_requirement_type,
-             case when psr.data_type_requirement_id is null or psr.process_step_requirement_type_id = 7 or psr.process_step_requirement_type_id = 8 or psr.process_step_requirement_type_id = 9 or psr.process_step_requirement_type_id = 10 then true else false end as custom_value,
+             case when psr.data_type_requirement_id is null or psr.process_step_requirement_type_id = 7 or psr.process_step_requirement_type_id = 8 or psr.process_step_requirement_type_id = 9 or psr.process_step_requirement_type_id = 10 or psr.process_step_requirement_type_id = 11 then true else false end as custom_value,
              ps.id as parent_id,
              ps.process_step_name as parent_name,
              rps.id as reference_process_step_id,

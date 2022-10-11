@@ -62,9 +62,9 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left">{{ item.name ? item.name : '' }}</td>
-              <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
-              <td class="text-left">{{ item.state ? item.state : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.metroArea ? item.metroArea : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
               <td class="text-left">
                 <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
                 <span v-else>

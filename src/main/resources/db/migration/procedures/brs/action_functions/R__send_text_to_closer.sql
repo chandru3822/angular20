@@ -139,6 +139,18 @@ BEGIN
           values(v_closer_user_id,
                  concat('A change order for ', v_contact_name, ' has been created and will be sent out soon'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 16 then
+          -- do the message for id 16 = zip code approved
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('The zip code approval request for ', v_contact_name, '(', p_project_id, ') has been approved. Please request a new proposal design to move forward.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 17 then
+          -- do the message for id 17 = zip code denied
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('The zip code approval request for ', v_contact_name, '(', p_project_id, ') has been denied'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;
 

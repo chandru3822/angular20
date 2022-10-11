@@ -4,6 +4,7 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
@@ -22,7 +23,10 @@ import org.dmfs.rfc5545.Duration;
 import org.dmfs.rfc5545.recur.InvalidRecurrenceRuleException;
 import org.dmfs.rfc5545.recur.RecurrenceRule;
 import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +34,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -59,6 +62,9 @@ public class AvailabilityService {
   private final MapboxApiService mapboxApiService;
 
   private final MarketoService marketoService;
+
+  @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
+  private Boolean marketoEnabled;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -809,25 +815,28 @@ public class AvailabilityService {
                 user.trueUserId());
           }
 
-          // push data to Marketo
-          project.ifPresent(p -> {
-              try {
-                  Map<String, Object> marketoLead = marketoService.projectToLead(p);
-                  marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
-                  Optional<String> leadSource = sqlCache.get("marketo.getLeadSource", Map.of("contactId", p.getContactId()), new SingleColumnRowMapper<>(String.class));
-                  leadSource.ifPresent(l -> marketoLead.put("leadSource", l));
-                  Optional<String> leadStatus = sqlCache.get("marketo.getLeadStatus", Map.of("contactId", p.getContactId()), new SingleColumnRowMapper<>(String.class));
-                  leadStatus.ifPresent(l -> marketoLead.put("leadStatus", l));
-                  String result = marketoService.pushData(marketoLead);
-                  // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
-                  if (result.equals("created")) {
-                      marketoLead.put("projectStatus", "Appointment Scheduled");
-                      marketoService.pushData(marketoLead);
+          if (marketoEnabled) {
+              // push data to Marketo
+              project.ifPresent(p -> {
+                  try {
+                      MarketoProject mp = marketoService.getProject(p.getId());
+                      if (!mp.getDoNotSolicitReview()) {
+                          Map<String, Object> marketoLead = marketoService.projectToLead(mp);
+                          marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+                          marketoLead.put("projectStatus", mp.getProjectStatusType());
+                          JSONArray result = marketoService.pushData(List.of(marketoLead));
+                          JSONObject firstResult = result.getJSONObject(0);
+                          // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
+                          if (firstResult.getString("status").equals("created")) {
+                              marketoLead.put("projectStatus", "Appointment Scheduled");
+                              marketoService.pushData(List.of(marketoLead));
+                          }
+                      }
+                  } catch (Exception e) {
+                      log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
                   }
-              } catch (Exception e) {
-                  log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
-              }
-          });
+              });
+          }
 
           return ResponseEntity.ok(results.get(0));
         } else {

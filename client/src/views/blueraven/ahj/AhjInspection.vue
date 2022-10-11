@@ -23,12 +23,12 @@
     <!-- UPPER SECTION -->
     <v-form ref="ahjInspectionForm">
       <v-row class="mb-4 group-row" no-gutters>
-        <TwoColumnMasonry :custom-field-groups=customFieldGroups
+        <TwoColumnMasonry v-if="dataReady"
+                          :custom-field-groups=filteredCfgs
                           :user-can-edit="userCanEdit"
                           :expanded-all="expandedAll"
                           :callback="(field) => updateDirtyValue(field)"
-                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED">
-        </TwoColumnMasonry>
+                          @toggle-collapse-expand="toggleCollapseExpand($event)"/>
       </v-row>
 
       <!-- LOWER SECTION -->
@@ -45,7 +45,7 @@
                    :links="ahjInspection.schedulingLinks"
                    show-expanded
                    :expanded-all="expandedAll"
-                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                   @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjLink>
         </v-col>
 
@@ -59,7 +59,7 @@
                    :links="ahjInspection.fotLinks"
                    show-expanded
                    :expanded-all="expandedAll"
-                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                   @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjLink>
         </v-col>
 
@@ -73,7 +73,7 @@
                    :links="ahjInspection.resultsLinks"
                    show-expanded
                    :expanded-all="expandedAll"
-                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                   @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjLink>
         </v-col>
       </v-row>
@@ -90,7 +90,7 @@
                       :contacts="ahjInspection.schedulingContacts"
                       show-expanded
                       :expanded-all="expandedAll"
-                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                      @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjContact>
         </v-col>
 
@@ -104,7 +104,7 @@
                       :contacts="ahjInspection.feeContacts"
                       show-expanded
                       :expanded-all="expandedAll"
-                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                      @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjContact>
         </v-col>
 
@@ -118,7 +118,7 @@
                       :contacts="ahjInspection.obtainingResultsContacts"
                       show-expanded
                       :expanded-all="expandedAll"
-                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                      @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjContact>
         </v-col>
       </v-row>
@@ -136,18 +136,21 @@
                       :isNested="true"
                       show-expanded
                       :expanded-all="expandedAll"
-                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                      @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjContact>
         </v-col>
         <v-col cols="12" md="4" class="px-1">
-          <AhjServicingFot :servicingFots="ahjInspection.servicingFots"
-          ></AhjServicingFot>
+          <AhjCard title="Servicing FOT's" show-expanded :expanded-all="expandedAll" @toggle-collapse-expand="toggleCollapseExpand($event)">
+              <AhjServicingFot :servicingFots="ahjInspection.servicingFots"
+              ></AhjServicingFot>
+          </AhjCard>
         </v-col>
         <v-col cols="12" md="4" class="px-1">
           <AhjCustomFieldGroup :group="installationRequirementGroup"
                                :user-can-edit="userCanEdit"
                                :expanded-all="expandedAll"
-                               @toggle-collapse-expand="$emit('toggle-collapse-expand')"
+                               @toggle-collapse-expand="toggleCollapseExpand($event)"
+                               :callback="(field) => updateDirtyValue(field)"
           ></AhjCustomFieldGroup>
         </v-col>
       </v-row>
@@ -232,10 +235,12 @@ import orderBy from "lodash.orderby";
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import AhjCustomFieldGroup from "@/views/blueraven/ahj/components/AhjCustomFieldGroup";
 import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
+import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
 
 export default {
   name: 'ahjInspection',
   components: {
+    AhjCard,
     TwoColumnMasonry,
     AhjCustomFieldGroup,
     AhjContact,
@@ -244,9 +249,21 @@ export default {
     CustomValueInput
   },
   computed: {
+    filteredCfgs() {
+      return this.customFieldGroups.filter(cfg => cfg.id !== 45)
+    },
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
     },
+    expandedAll(){
+      if(this.expandedGroups === this.totalGroups){
+        return CollapseExpandEnum.EXPANDED
+      } else if (this.expandedGroups === 0) {
+        return CollapseExpandEnum.COLLAPSED
+      } else {
+        return CollapseExpandEnum.MIXED
+      }
+    }
   },
   data: () => ({
     CollapseExpandEnum,
@@ -259,7 +276,8 @@ export default {
     dataReady: false,
     customFieldGroups: [],
     installationRequirementGroup: {},
-    expandedAll: CollapseExpandEnum.EXPANDED,
+    totalGroups: 8,
+    expandedGroups:8,
     ahjInspection: {
       schedulingLinks: [],
       fotLinks: [],
@@ -274,6 +292,13 @@ export default {
     updateDirtyValue(item) {
       item.valueWasChanged = true
       this.dataWasChanged = true
+    },
+    toggleCollapseExpand(wasExpanded) {
+      if(wasExpanded === false) {
+        this.expandedGroups--
+      }else {
+        this.expandedGroups++
+      }
     },
     async getAhjInspection() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -315,6 +340,8 @@ export default {
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
         this.customFieldGroups = cloneDeep(data)
         this.installationRequirementGroup = this.customFieldGroups.find(cfg => cfg.id === 45)
+        this.totalGroups = this.totalGroups + this.customFieldGroups.length;
+        this.expandedGroups = this.totalGroups;
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -399,9 +426,9 @@ export default {
 
     toggleMinimizeAll() {
       if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
-        this.expandedAll = CollapseExpandEnum.COLLAPSED
+        this.expandedGroups = 0
       } else {
-        this.expandedAll = CollapseExpandEnum.EXPANDED
+        this.expandedGroups = this.totalGroups
       }
     }
   },

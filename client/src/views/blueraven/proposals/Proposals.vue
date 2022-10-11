@@ -44,8 +44,8 @@
 
           <template #item="{item}">
             <tr class="clickable"
-                @click="$router.push({name: 'proposalDesigns', params: {projectId: item.projectId}})">
-              <td class="text-left">{{item.projectId}}</td>
+                @click="$router.push({name: 'proposalDesigns', params: {projectId: item.id}})">
+              <td class="text-left">{{item.id}}</td>
               <td class="text-left">{{item.projectName}}</td>
             </tr>
           </template>
@@ -69,7 +69,7 @@
           itemsPerPage: 100
         },
         headers: [
-          {text: 'ID', value: 'projectId', show: true},
+          {text: 'ID', value: 'id', show: true},
           {text: 'Name', value: 'projectName', show: true},
         ],
         footerProps: {
@@ -94,13 +94,13 @@
         const {page, itemsPerPage} = this.options
         try {
           this.isProjectsLoading = true
-          const {data} = await getRequestWithParams(`/proposal/projects`, {
+          const {data} = await getRequestWithParams(`/project/search`, {
             params: {
               query: this.searchQuery,
               page: page - 1,
               size: itemsPerPage
             }
-          }, 'blueraven')
+          })
           this.projects = data.content
           this.totalProjects = data.totalElements
         } catch (e) {

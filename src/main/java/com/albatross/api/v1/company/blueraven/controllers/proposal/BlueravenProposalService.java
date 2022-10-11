@@ -262,6 +262,19 @@ public class BlueravenProposalService {
     return getProposal(proposalId);
   }
 
+  @Transactional
+  public void archiveProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
+    final Proposal proposal = getProposal(proposalId)
+      .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
+
+    if (proposal.isLocked()) {
+      throw new ApiException("Proposal has already been locked");
+    }
+
+    sqlCache.update("proposal.setArchived", Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+  }
+
+
   public void setCreditCheckSubmitted(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
     sqlCache.update("proposal.setCreditChecked", Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
   }

@@ -76,6 +76,10 @@ public class ProjectProcessStepService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
+  @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
+  private Boolean marketoEnabled;
+
+
   public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
@@ -1078,7 +1082,8 @@ public class ProjectProcessStepService {
               systemValues.put("companyId", user.getCompanyId());
 
               if (functionAbbreviation.equals("brs")) {
-                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService, projectService);
+                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+                functionClass.marketoEnabled = marketoEnabled;
                 Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
                 method.invoke(functionClass, childFunction, systemValues);
               } else {

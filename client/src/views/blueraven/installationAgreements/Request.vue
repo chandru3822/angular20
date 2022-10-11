@@ -104,6 +104,7 @@ export default {
       projects: [],
       headers: [
         {text: 'Customer Name', value: 'customer_name', show: true},
+        {text: 'Project ID', value: 'project_id', show: true},
         {text: 'Address', value: 'address', show: true}
       ],
       pagination: {},

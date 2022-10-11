@@ -23,4 +23,5 @@ public class ProjectMessageProperties {
   private boolean closed, showAssignedToMeButton = false;
   private List<SMSQueueItem> messageHistory;
   private List<SmsTeam> smsTeamOwners;
+  private List<Long> projectIdsForFilter;
 }

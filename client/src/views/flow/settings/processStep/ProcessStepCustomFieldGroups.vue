@@ -132,12 +132,12 @@
                       <v-btn v-if="userCanEdit" small text color="primary" @click="customFieldGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
                     </div>
                   </td>
+                  <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete" @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
+                    <span class="error--text">WARNING:</span>
+                    By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+                    Are you sure you want to delete this Custom Field Group: <strong>{{ itemToDeleteGroupName }}</strong>?
+                  </ConfirmationDialog>
                 </tr>
-                <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete" @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
-                  <span class="error--text">WARNING:</span>
-                  By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
-                  Are you sure you want to delete this Custom Field Group: <strong>{{ itemToDeleteGroupName }}</strong>?
-                </ConfirmationDialog>
               </template>
 
               <template #expanded-item="{ headers, item }">
@@ -448,11 +448,7 @@
             let rowsClone = cloneDeep(_self.localCustomFieldGroups)
 
             let rowsToSave = []
-            console.log('cfgs',_self.customFieldGroups)
-            console.log('local',_self.localCustomFieldGroups)
-            console.log('clone',rowsClone)
             rowsClone.forEach((r, idx) => {
-              console.log('rrrrrrrrrr',r)
               //check if the row needs to be saved before updating display order
               //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
               let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
@@ -508,9 +504,7 @@
         assignmentToDelete: null
       }
     },
-    created () {
-      console.log('randaLogger',this.customFieldGroups)
-    },
+    created () {},
     computed: {
       localCustomFieldGroups: {
         get: function () {

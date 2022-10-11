@@ -16,6 +16,7 @@
           hide-details
           :filled-style="true"
           :lock-feature="true"
+          :copy-feature="true"
       />
       <v-textarea v-if="showOtherField(field.intValue, field.listOfValues)"
                   v-model="field.textValue"
@@ -27,7 +28,7 @@
                   hide-details
                   auto-grow
                   :rows="1"
-                  class="other-field override-readonly-font-color"
+                  class="other-field override-readonly-font-color mt-3"
       ></v-textarea>
     </div>
     <div v-if="!!hardcodedDocs && !!hardcodedDocs.get(group.id)">

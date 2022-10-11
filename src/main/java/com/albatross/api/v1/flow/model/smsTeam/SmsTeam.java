@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model.smsTeam;
 
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,8 +15,9 @@ public class SmsTeam {
 
   private Long id;
   private String teamName;
-  private Boolean archived, isDefault, defaultExists;
+  private Boolean archived, isDefault, defaultExists, receiveUnassignedNotifications;
   private List<SmsTeamUser> users;
   private List<SmsTeamPosition> positions;
   private List<SmsTeamOrg> orgs;
+  private List<User> unassignedNotificationUsers;
 }

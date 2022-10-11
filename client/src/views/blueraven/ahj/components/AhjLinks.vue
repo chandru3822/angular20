@@ -11,7 +11,7 @@
       @save-new="saveLink(true)"
       @save-update="saveLink(false)"
       @delete-item="deleteLink"
-      @toggle-collapse-expand="$emit('toggle-collapse-expand')"
+      @toggle-collapse-expand="$emit('toggle-collapse-expand', $event)"
   >
     <template v-slot:addOrEdit>
     <v-form
@@ -186,9 +186,6 @@
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
-      toggleCollapseExpand(){
-        this.$emit('toggle-collapse-expand')
-      }
     }
   }
 </script>

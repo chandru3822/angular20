@@ -59,11 +59,11 @@
               >
                 <div class="configuration-group-title">{{ cfg.groupName }}</div>
                 <CustomValueInput
-                  v-for="(field, idx) in cfg.customFieldValues"
+                  v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
                   :key="idx"
                   :required="field.required"
                   :callback="populateDirtyCfvs"
-                  :readonly="proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || field.ancillaryCustomFieldGroupAssignmentId !== null"
+                  :readonly="proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
                   :field="field"
                   :show-field-name="false"
                   :list-of-value-filter="filters[field.customFieldId]"
@@ -110,6 +110,11 @@
               <div class="d-flex align-center">
                 <div class="proposal-title">Proposal <span>#{{ proposal.proposalNbr }}</span></div>
                 <v-spacer />
+                <v-btn v-if="proposal && !proposal.locked"
+                       class="proposal-container-buttons text-capitalize"
+                       @click="deleteProposal">
+                  Delete
+                </v-btn>
                 <v-btn v-if="pages && pages.length"
                        class="proposal-container-buttons text-capitalize"
                        :disabled="dirtyCfvs.length > 0"
@@ -124,7 +129,7 @@
                 </v-btn>
               </div>
             </div>
-            <div>
+            <div class="proposal-zoom-lock">
               <proposal-template v-if="pages && pages.length > 0"
                                  :children="pages"
                                  :debug="false"
@@ -135,6 +140,31 @@
       </v-row>
     </v-form>
     <confirm-dialog ref="confirmDialog" />
+    <confirm-dialog ref="deleteConfirmDialog">
+      <p>Are you sure you want to delete this proposal?</p>
+    </confirm-dialog>
+  </v-container>
+  <v-container v-else>
+    <v-alert
+      prominent
+      type="error"
+    >
+      <v-row align="center">
+        <v-col class="grow">
+          Proposal #{{ proposalId }} does not exist.
+        </v-col>
+        <v-col class="shrink">
+          <router-link
+            v-if="proposal && proposal.projectId"
+            :to="`/proposalDesigns/${proposal.projectId}`"
+            custom
+            v-slot="{ href, route, navigate, isActive, isExactActive }"
+          >
+            <v-btn @click="navigate">Back to project</v-btn>
+          </router-link>
+        </v-col>
+      </v-row>
+    </v-alert>
   </v-container>
 </template>
 
@@ -142,6 +172,7 @@
 
 import {
   apiRequest,
+  deleteRequest,
   getRequest,
   getRequestWithParams,
   handleHidingGlobalLoader,
@@ -156,9 +187,11 @@ import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import { mapState } from 'vuex'
+import Vue2Filters from 'vue2-filters'
 
 export default {
   name: 'Proposal',
+  mixins: [Vue2Filters.mixin],
   components: {
     CustomValueInput,
     ProposalTemplate,
@@ -214,6 +247,19 @@ export default {
     })
   },
   methods: {
+    userHasWhiteListedPosition(cf, arg = 'readonly') {
+      const wlAttr = arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
+      const prAttr = arg === 'readonly' ? 'customFieldGroupAssignmentReadOnly' : 'customFieldGroupAssignmentHidden'
+
+      //field doesn't require a white listed position
+      if (!cf[prAttr]) {
+        return true
+      }
+
+      //positions required for user
+      const positions = cf[wlAttr]?.map(wlp => wlp.positionId) ?? []
+      return this.$store.getters.userHasAnyPosition(positions)
+    },
     onStickyHeader(entries) {
       const ratio = entries[0].intersectionRatio
       this.isIntersecting = ratio < 1
@@ -316,6 +362,26 @@ export default {
         this.dirtyCfvs.push(field)
       }
       await this.buildFilters(field)
+    },
+
+    async deleteProposal() {
+      try {
+
+        const { ok } = await this.$refs.deleteConfirmDialog.open()
+        if (!ok) {
+          return
+        }
+
+        const { status } = await deleteRequest(`/proposal/${this.proposalId}`, 'blueraven')
+        this.proposalExists = false
+        this.$snackbar('SUCCESS', `Deleted proposal #${this?.proposal?.proposalNbr}`)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        this.$snackbar('ERROR', e?.data?.message || 'Error deleting proposal')
+
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async duplicate() {
       if (this.dirtyCfvs.length > 0) {
@@ -517,5 +583,12 @@ export default {
 
 .proposal-container-buttons {
   margin-left: 36px;
+}
+
+//TODO: need to fix this
+.proposal-zoom-lock {
+  --scale: 0.75;
+  transform: scale(var(--scale));
+  transform-origin: top center;
 }
 </style>

@@ -108,7 +108,9 @@ BEGIN
                                                                        date_modified, rich_text_value)
         values (p_ppse_id, p_cfga, null, null, null, p_value_to_save::text, null, null, null, p_user_id, now(),
                 p_user_id, now(), case when v_data_type_id = 13 then p_value_to_save::text end);
-      elsif v_data_type_id in (6,9) then
+      elsif v_data_type_id in (6,9)
+            or v_data_type_id = 8 -- note: data type id 8 = system. for now these are always single select lists.  this will break if that changes
+        then
         insert into flow.project_process_step_event_custom_field_value(project_process_step_event_id,
                                                                        custom_field_group_assignment_id, date_value,
                                                                        timestamp_value, boolean_value, text_value,
@@ -161,7 +163,9 @@ BEGIN
               date_modified  = now(),
               rich_text_value = case when v_data_type_id = 13 then p_value_to_save::text end
           where id = v_existing_id;
-        elsif v_data_type_id in (6,9) then
+        elsif v_data_type_id in (6,9)
+              or v_data_type_id = 8 -- note: data type id 8 = system. for now these are always single select lists.  this will break if that changes
+          then
           update flow.project_process_step_event_custom_field_value
           set int_value      = p_value_to_save::bigint,
               modified_by_id = p_user_id,

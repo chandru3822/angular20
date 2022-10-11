@@ -57,3 +57,5 @@ src/main/resources/zz_local/**
 # WIP and misc files
 alba_stage_dump.sh
 /processing
+# Local Netlify folder
+.netlify

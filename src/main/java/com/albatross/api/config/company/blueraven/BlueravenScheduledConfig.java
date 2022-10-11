@@ -1,6 +1,7 @@
 package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
+import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,12 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
   private Boolean updateGenesysContacts;
 
+  @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
+  private Boolean marketoEnabled;
+
   private final GenesysService genesysService;
+
+  private final MarketoService marketoService;
 
   /*
   //
@@ -59,6 +65,17 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       genesysService.processGenesysContacts();
       log.info("*** CRON: end processing Genesys contacts ***");
     }
+  }
+
+  // daily at 1:15 mountain time
+    // @TODO (humes): Running every hour for testing. Change back to normal timing before feature launch
+   @Scheduled(cron = "0 0 * * * *", zone = "America/Denver")
+  public void pushProjectsToMarketo() {
+      if (marketoEnabled) {
+          log.info("*** CRON: start pushing projects to Marketo ***");
+          marketoService.pushDailyUpdatedProjects();
+          log.info("*** CRON: end pushing projects to Marketo ***");
+      }
   }
 
   @Bean(destroyMethod = "shutdown")

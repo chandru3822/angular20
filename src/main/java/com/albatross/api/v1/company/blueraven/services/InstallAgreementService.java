@@ -260,6 +260,7 @@ public class InstallAgreementService {
     HashMap<String, Object> params = request.toHashMap();
     params.put("userId", userId);
     params.put("sendInstallationAgreement", request.getSendInstallationAgreement());
+    params.put("sendFinanceDocs", request.getSendLoanDocs());
     params.put("isSpanish", request.getIsSpanish() != null ? request.getIsSpanish() : false);
     params.put(
       "success",

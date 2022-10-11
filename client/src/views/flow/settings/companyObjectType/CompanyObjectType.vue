@@ -26,7 +26,7 @@
           Note: Some company specific screens ignore the display order and group name of Custom Fields Groups
           represented here.
         </v-card>
-        <CompanyCustomFieldGroup v-if="customFieldGroups.length" :object-type="objectType" :custom-field-groups="customFieldGroups"/>
+        <CompanyCustomFieldGroup v-if="customFieldGroups.length && objectType.id != null" :object-type="objectType" :custom-field-groups="customFieldGroups" @group-deleted="getCustomFieldGroups"/>
       </v-col>
 
     </v-row>
@@ -89,8 +89,8 @@ export default {
             companyObjectTypeId: this.$route.params.id
           }
         }, 'blueraven')
-        this.customFieldGroups = cloneDeep(data.map(d => {
-          d.customFields.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
+        this.customFieldGroups = cloneDeep(data?.map(d => {
+          d?.customFields?.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
           return d
         }))
         handleHidingGlobalLoader(this, status)

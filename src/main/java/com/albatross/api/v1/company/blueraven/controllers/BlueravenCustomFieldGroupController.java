@@ -41,6 +41,11 @@ public class BlueravenCustomFieldGroupController {
     return customFieldGroupService.addCustomFieldGroup(customFieldGroup, customFieldGroup.getObjectTypeId());
   }
 
+  @PutMapping(value = "/moveGroupToColumn")
+  public CustomFieldGroup moveCustomFieldGroupToColumn(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.moveCustomFieldGroupToColumn(customFieldGroup);
+  }
+
   // to update just one:
   @PutMapping(value = "/updateCustomFieldGroup")
   public CustomFieldGroup updateCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
@@ -100,5 +105,15 @@ public class BlueravenCustomFieldGroupController {
   @PutMapping(value="/updateConditionalId")
   public void updateConditionalOnId(@RequestBody CustomField customField){
     customFieldGroupService.updateConditionalOnId(customField);
+  }
+
+  @PutMapping(value="/saveReadOnlyAndWhiteList")
+  public void updateReadOnlyAndWhiteList(@RequestBody CustomField customField){
+    customFieldGroupService.updateReadOnlyAndWhiteList(customField);
+  }
+
+  @PutMapping(value="/saveHiddenAndWhiteList")
+  public void updateHiddenAndWhiteList(@RequestBody CustomField customField){
+    customFieldGroupService.updateHiddenAndWhiteList(customField);
   }
 }

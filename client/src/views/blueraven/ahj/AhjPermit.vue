@@ -24,13 +24,14 @@
 
     <v-form ref="ahjPermitForm">
       <v-row class="mb-4 group-row" no-gutters>
-        <TwoColumnMasonry :custom-field-groups="customFieldGroups"
+        <TwoColumnMasonry v-if="dataReady"
+                          :custom-field-groups="customFieldGroups"
                           :user-can-edit="userCanEdit"
                           :expanded-all="expandedAll"
                           :callback="(field) => updateDirtyValue(field)"
                           :hardcoded-docs="hardCodedDocsMap"
                           :source-id="ahjId"
-                          @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                          @toggle-collapse-expand="toggleCollapseExpand($event)"
         ></TwoColumnMasonry>
         <!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">-->
         <!--          <AhjCustomFields :group = group-->
@@ -58,7 +59,7 @@
                    :links="ahjPermit.submissionLinks"
                    show-expanded
                    :expanded-all="expandedAll"
-                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                   @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjLink>
 
           <AhjContact v-if="dataReady"
@@ -71,7 +72,7 @@
                       :contacts="ahjPermit.submissionContacts"
                       show-expanded
                       :expanded-all="expandedAll"
-                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                      @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjContact>
         </v-col>
 
@@ -87,7 +88,7 @@
                    :links="ahjPermit.followUpLinks"
                    show-expanded
                    :expanded-all="expandedAll"
-                   @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                   @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjLink>
           <AhjContact v-if="dataReady"
                       title="Follow-up and Delivery Contacts"
@@ -99,7 +100,7 @@
                       :contacts="ahjPermit.followUpContacts"
                       show-expanded
                       :expanded-all="expandedAll"
-                      @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                      @toggle-collapse-expand="toggleCollapseExpand($event)"
           ></AhjContact>
           <!--        <AhjContact v-if="dataReady"-->
           <!--                    title="Print Locations"-->
@@ -223,7 +224,7 @@ export default {
       docsMap.set(5, {
         title: "Documents Required for Inspection",
         documents: this.inspectionDocuments,
-        attachmentType1: 1 ,
+        attachmentTypeId: 1,
         attachmentType: "All Documents"
       })
       docsMap.set(24, {
@@ -233,6 +234,15 @@ export default {
         attachmentType: "All Documents"
       })
       return docsMap
+    },
+    expandedAll(){
+      if(this.expandedGroups === this.totalGroups){
+        return CollapseExpandEnum.EXPANDED
+      } else if (this.expandedGroups === 0) {
+        return CollapseExpandEnum.COLLAPSED
+      } else {
+        return CollapseExpandEnum.MIXED
+      }
     }
   },
   data: () => ({
@@ -259,7 +269,8 @@ export default {
     editBrsTechnicianPermitPickupAndDeliveryInstructions: false,
     editCancellationAndRefundInstructions: false,
     editBrsTechnicianPermitSubmissionInstructions: false,
-    expandedAll: CollapseExpandEnum.EXPANDED,
+    totalGroups: 4,
+    expandedGroups:4,
     // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
     ahjPermit: {
       submissionChecklist: [],
@@ -288,6 +299,13 @@ export default {
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    toggleCollapseExpand(wasExpanded) {
+      if(wasExpanded === false) {
+        this.expandedGroups--
+      }else {
+        this.expandedGroups++
       }
     },
     async getAhjPermit() {
@@ -334,6 +352,8 @@ export default {
           status
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
         this.customFieldGroups = cloneDeep(data)
+        this.totalGroups = this.totalGroups + this.customFieldGroups.length;
+        this.expandedGroups = this.totalGroups;
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -453,9 +473,9 @@ export default {
 
     toggleMinimizeAll() {
       if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
-        this.expandedAll = CollapseExpandEnum.COLLAPSED
+        this.expandedGroups = 0
       } else {
-        this.expandedAll = CollapseExpandEnum.EXPANDED
+        this.expandedGroups = this.totalGroups
       }
     }
   },

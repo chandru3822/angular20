@@ -6,28 +6,21 @@
 
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-            <v-card class="mx-4 pb-4 square-card">
-              <v-btn id="back-btn" text color="primary" class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
-                <v-icon>arrow_left</v-icon>
-                <span id="back-btn-text">Back to menu</span>
-              </v-btn>
-
-              <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
-                <div class="page-title">Utility</div>
-                <div class="page-info">
-                  <div>{{ ahjUtility.name }}</div>
-                  <div>{{ ahjUtility.metroArea }}</div>
-                </div>
-              </div>
-
-              <!--            <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(&#45;&#45;v-secondary-base)">-->
-              <!--              <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>-->
-              <!--            </v-tabs>-->
+            <v-card class="mx-4 square-card">
+              <v-toolbar flat>
+                <v-toolbar-title class="app-title">
+                  <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahj'})">
+                    <v-icon>mdi-arrow-left</v-icon>
+                  </v-btn>
+                  {{ ahjUtility.name }}, {{ ahjUtility.metroArea }}, {{ ahjUtility.state }}
+                </v-toolbar-title>
+              </v-toolbar>
+              <div class="page-title px-6 pb-2 pt-n2 mb-4">Utility</div>
             </v-card>
           </v-col>
         </v-row>
         <v-row dense>
-          <v-card class="mx-2 mt-6 px-2 py-3 one-hunned square-card">
+          <v-card class="mx-2 mt-4 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="ahj-form-btns" cols="12">
                 <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
@@ -53,11 +46,12 @@
             <v-form ref="ahjUtilityForm">
               <!-- UPPER SECTION -->
               <v-row class="mb-4 group-row" no-gutters>
-                <TwoColumnMasonry :custom-field-groups="customFieldGroups"
+                <TwoColumnMasonry v-if="dataReady"
+                                  :custom-field-groups="customFieldGroups"
                                   :user-can-edit="userCanEdit"
                                   :expanded-all="expandedAll"
                                   :callback="(field) => updateDirtyValue(field)"
-                                  @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                                  @toggle-collapse-expand="toggleCollapseExpand($event)"
                 ></TwoColumnMasonry>
                 <!--              <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroups">-->
                 <!--                <AhjCustomFields :group = group-->
@@ -82,9 +76,9 @@
                               :contacts="ahjUtility.contacts"
                               show-expanded
                               :expanded-all="expandedAll"
-                              @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
+                              @toggle-collapse-expand="toggleCollapseExpand($event)"
                   ></AhjContact>
-                  <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll">
+                  <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll" @toggle-collapse-expand="toggleCollapseExpand($event)">
                     <AhjAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit"
                                     :attachment-types="AhjUtilityDocumentTypes" :attachments="documents"
                                     :source-id="ahjUtility.id">
@@ -102,8 +96,7 @@
                             :isNested="false"
                             show-expanded
                             :expanded-all="expandedAll"
-                            @toggle-collapse-expand="expandedAll = CollapseExpandEnum.MIXED"
-                  ></ahj-link>
+                            @toggle-collapse-expand="toggleCollapseExpand($event)"                  ></ahj-link>
                 </v-col>
               </v-row>
             </v-form>
@@ -142,6 +135,15 @@ export default {
   computed: {
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel("AHJ_DATABASE", "EDIT")
+    },
+    expandedAll(){
+      if(this.expandedGroups === this.totalGroups){
+        return CollapseExpandEnum.EXPANDED
+      } else if (this.expandedGroups === 0) {
+        return CollapseExpandEnum.COLLAPSED
+      } else {
+        return CollapseExpandEnum.MIXED
+      }
     }
   },
   data: () => ({
@@ -171,13 +173,21 @@ export default {
     submissionDocs: [],
     approvalDocs: [],
     financiers: [],
-    expandedAll: CollapseExpandEnum.EXPANDED,
+    totalGroups: 2,
+    expandedGroups: 2,
     isDocumentsLoading: true
   }),
   methods: {
     updateDirtyValue(item) {
       item.valueWasChanged = true
       this.dataWasChanged = true
+    },
+    toggleCollapseExpand(wasExpanded) {
+      if(wasExpanded === false) {
+        this.expandedGroups--
+      }else {
+        this.expandedGroups++
+      }
     },
     async getAhjUtility() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -247,6 +257,8 @@ export default {
           status
         } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, "blueraven")
         this.customFieldGroups = cloneDeep(data)
+        this.totalGroups = this.totalGroups + this.customFieldGroups.length;
+        this.expandedGroups = this.totalGroups;
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error("*** ERROR ***", e)
@@ -299,9 +311,9 @@ export default {
     },
     toggleMinimizeAll() {
       if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
-        this.expandedAll = CollapseExpandEnum.COLLAPSED
+        this.expandedGroups = 0
       } else {
-        this.expandedAll = CollapseExpandEnum.EXPANDED
+        this.expandedGroups = this.totalGroups
       }
     }
   },

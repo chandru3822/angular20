@@ -94,7 +94,7 @@ order by s.state
   ]]></customFieldSql.flow.postalCodes.lazy>
 
   <customFieldSql.brs.ahjSpecificInstallationRequirements><![CDATA[
-      select text_value
+      select concat('AHJ Specific Requirements: ',  chr(13), chr(13), text_value) as text_value
       from brs.project_details pd
        inner join brs.ahj a on a.id = pd.ahj
          inner join brs.ahj_inspection ai on ai.ahj_id = a.id

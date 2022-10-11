@@ -68,6 +68,9 @@ public class ProjectProcessStepEventService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
+  @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
+  private Boolean marketoEnabled;
+
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
       Long projectProcessStepId, Long processStepEventId) throws Exception {
     User user = securityService.getCurrentUser();
@@ -514,7 +517,8 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService, projectService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+            functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);
           } else {

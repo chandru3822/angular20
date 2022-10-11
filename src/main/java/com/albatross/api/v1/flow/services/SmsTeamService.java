@@ -293,6 +293,9 @@ public class SmsTeamService {
       TypeReference<List<SmsTeamOrg>> orgsRef = new TypeReference<>() {};
       bw.registerCustomEditor(
           List.class, "orgs", new JsonCollectionDeserializer(orgsRef, objectMapper));
+      TypeReference<List<User>> unassignedNotificationUsersRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class, "unassignedNotificationUsers", new JsonCollectionDeserializer(unassignedNotificationUsersRef, objectMapper));
     }
   }
 }

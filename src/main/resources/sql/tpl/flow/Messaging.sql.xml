@@ -39,23 +39,29 @@ with projects as (select distinct on (p.id) p.id                                
                                   pmo2.id is null end)
                       )
                   limit :limit offset :offset),
-     last_message as (select p.project_id,
-                             q.message,
-                             q.recipient_type_id,
-                             q.created as last_message_sent
-                      from flow.sms_queue q
-                               inner join projects p on q.search_to_phone = p.mobile
-                      where error_message IS NULL
-                         OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
-                          -- so we don't retry very very old texts
-                          AND created >= '2017-11-08')
-                      union all
-                      select p.project_id,
-                             body          as message,
-                             1             as recipient_type_id,
-                             date_received as last_message_sent
-                      from flow.sms_reply sr
-                               inner join projects p on sr.search_from_phone = p.mobile)
+     last_message as (select distinct on (project_id) project_id, message, recipient_type_id, last_message_sent, outbound_message from
+                             (select p.project_id,
+                                     q.message,
+                                     q.recipient_type_id,
+                                     max(q.created) as last_message_sent,
+                                     true           as outbound_message
+                              from flow.sms_queue q
+                                       inner join projects p on q.search_to_phone = p.mobile
+                              where error_message IS NULL
+                                 OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
+                                  -- so we don't retry very very old texts
+                                  AND created >= '2017-11-08')
+                              group by p.project_id, message, recipient_type_id
+                              union all
+                            select p.project_id,
+                                     body               as message,
+                                     1                  as recipient_type_id,
+                                     max(date_received) as last_message_sent,
+                                     false              as outbound_message
+                              from flow.sms_reply sr
+                                       inner join projects p on sr.search_from_phone = p.mobile
+                              group by p.project_id, body, recipient_type_id) lastm order by project_id, last_message_sent desc
+                        )
 select p.project_id,
        p.project_name,
        p.state,
@@ -80,11 +86,19 @@ select p.project_id,
        (coalesce((select array_to_json(array_agg(row_to_json(mh)))
                   from (select distinct on (lm.project_id) lm.message,
                                                            lm.recipient_type_id as "recipientTypeId",
-                                                           lm.last_message_sent as "lastMessageSent"
+                                                           lm.last_message_sent as "lastMessageSent",
+                                                           lm.outbound_message as "outboundMessage"
                         from last_message lm
                         where lm.project_id = p.project_id
                         order by lm.project_id, lm.last_message_sent desc) mh), '[]')) as message_history
-from projects p
+from projects p where
+    (case when :showInbox then
+        (select lm.outbound_message from last_message lm where lm.project_id = p.project_id order by lm.last_message_sent desc limit 1) is false
+    else
+        ((select lm.outbound_message from last_message lm where lm.project_id = p.project_id order by lm.last_message_sent desc limit 1) is null
+            or
+        (select lm.outbound_message from last_message lm where lm.project_id = p.project_id order by lm.last_message_sent desc limit 1) is true)
+    end);
 ]]></messaging.getProjects>
 
   <messaging.getProjectsCount><![CDATA[
@@ -122,8 +136,33 @@ from projects p
                               when :unassigned is true then
                                   pmo2.id is null end)
                       )
-                  )
-   select count(*) from projects
+                  ),
+       last_message as (select distinct on (project_id) project_id, last_message_sent, outbound_message from (select p.project_id,
+                                     max(q.created) as last_message_sent,
+                                     true           as outbound_message
+                              from flow.sms_queue q
+                                       inner join projects p on q.search_to_phone = p.mobile
+                              where error_message IS NULL
+                                 OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
+                                  -- so we don't retry very very old texts
+                                  AND created >= '2017-11-08')
+                              group by p.project_id
+                              union all
+                            select p.project_id,
+                                     max(date_received) as last_message_sent,
+                                     false              as outbound_message
+                              from flow.sms_reply sr
+                                       inner join projects p on sr.search_from_phone = p.mobile
+                              group by p.project_id) lastm order by project_id, last_message_sent desc
+                        )
+   select p.project_id
+          from projects p
+            left join last_message lm on lm.project_id = p.project_id where
+    case
+          when :showInbox
+              then lm.outbound_message is false
+          else lm.outbound_message is null or lm.outbound_message is true
+          end;
 ]]></messaging.getProjectsCount>
 
   <messaging.getProject><![CDATA[
