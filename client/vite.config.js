@@ -5,6 +5,9 @@ import Components from 'unplugin-vue-components/vite'
 
 
 export default {
+  server: {
+    port: 3000
+  },
   plugins: [
     vue(),
     Components({
@@ -15,7 +18,7 @@ export default {
   resolve: {
     extensions: ['.js', '.vue', '.json', '.mjs'],
     alias: [
-      { find: '@', replacement: path.resolve(__dirname, './src') },
+      { find: '@', replacement: path.resolve(__dirname, './src') }
     ]
   },
   css: {
@@ -25,10 +28,10 @@ export default {
         additionalData: [
           // vuetify variable overrides
           '@import "@/styles/variables.scss"',
-          '',
-        ].join('\n'),
-      },
-    },
+          ''
+        ].join('\n')
+      }
+    }
   },
   build: {
     sourcemap: true
