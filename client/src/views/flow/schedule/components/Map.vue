@@ -3,7 +3,9 @@
           :mapStyle="map.style"
           @load="onMapLoad">
     <!-- these markers come from the lower data table  -->
-    <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates"
+    <MglMarker v-for="m in markers" v-if="m.coordinates"
+               :key="m.id"
+               :coordinates="m.coordinates"
                :color="m.color || '#ffffff'">
       <MglPopup :close-button="false">
         <VCard flat>
@@ -18,7 +20,9 @@
       </MglPopup>
     </MglMarker>
     <!-- these markers come from the calendar  -->
-    <MglMarker v-for="m in mapResources" v-if="m.coordinates" :coordinates="m.coordinates"
+    <MglMarker v-for="m in mapResources" v-if="m.coordinates"
+               :key="m.id"
+               :coordinates="m.coordinates"
                :color="m.color || '#ffffff'">
       <MglPopup  :close-button="false">
         <VCard flat>
