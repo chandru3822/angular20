@@ -34,34 +34,37 @@
               ></v-badge>
             </v-tab>
           </v-tabs>
-          <v-text-field
-            prepend-inner-icon="search"
-            text
-            label="Search by project or owner"
-            v-model="searchQuery"
-            @input="searchProjects"
-            class="albatross-body-2 mb-n4 mt-2"
-            clearable
-          />
           <v-row class="px-2 pt-2 toolbar-row-2 mt-4">
-            <v-checkbox
-              v-model="showUnreadOnly"
-              @change="reloadProjects"
-              label="Show unread only"
-              class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0 default-text-color"
-              :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
-            >
-            </v-checkbox>
+            <v-text-field
+              prepend-inner-icon="search"
+              text
+              label="Search by project or owner"
+              v-model="searchQuery"
+              @input="searchProjects"
+              :class="teamFilterOptions.length > 0 ? 'project-search' : 'project-search-no-teams'"
+              class="albatross-body-2 mb-n4 mt-2  pr-6"
+              clearable
+            />
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
             </v-chip>
+          </v-row>
+          <v-row class="toolbar-row-2 mt-6 mb-6">
+            <v-checkbox
+              v-model="showUnreadOnly"
+              @change="reloadProjects"
+              label="Show unread only"
+              class="read-filter albatross-body-2 align-self-end flex-shrink-0 default-text-color pr-6"
+              :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
+            >
+            </v-checkbox>
             <v-autocomplete v-model="selectedTeamFilters"
                             :items="teamFilterOptions"
                             item-text="teamName"
                             item-value="id"
                             prepend-icon="group"
-                            class="filter-control albatross-body-2 align-self-end flex-shrink-1"
+                            class="filter-control albatross-body-2 align-self-end flex-shrink-1  mr-6"
                             placeholder="Teams"
                             :menu-props="{offsetY:true}"
                             multiple
@@ -167,13 +170,13 @@
             <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
               <v-col cols="11" class="pa-0">
                 <div class="d-flex align-baseline"
-                     :class="{'notif-div': (hasNotification(item.projectId))}">
+                     :class="{'notif-div': (projectNotificationCount(item.projectId) > 0)}">
                   <div>
                     <v-badge
-                      dot
                       color="#F35858"
                       class="notif-badge"
-                      v-if="hasNotification(item.projectId)"
+                      :content="projectNotificationCount(item.projectId)"
+                      v-if="projectNotificationCount(item.projectId) > 0"
                     >
                     </v-badge>
                     <b>{{ item.projectName }}</b>
@@ -266,7 +269,9 @@ export default {
       totalProjects: 0,
       page: 1,
       initialLoad: true,
-      projectIdsForCurrentFilter: []
+      projectIdsForCurrentFilter: [],
+      projectIdsInbox: [],
+      projectIdsSent: []
     }
   },
   computed: {
@@ -274,33 +279,23 @@ export default {
       let count = 0;
       let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
       notifProjectIds.forEach(npi => {
-        if (this.projectIdsForCurrentFilter.includes(npi)) {
+        if (this.projectIdsInbox.includes(npi)) {
           count++;
         }
       })
 
-      if (this.showInbox) {
-        return count;
-      }
-      else {
-        return notifProjectIds.length - count;
-      }
+      return count;
     },
     sentNotificationCount() {
       let count = 0;
       let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
       notifProjectIds.forEach(npi => {
-        if (this.projectIdsForCurrentFilter.includes(npi)) {
+        if (this.projectIdsSent.includes(npi)) {
           count++;
         }
       })
 
-      if (!this.showInbox) {
-        return count;
-      }
-      else {
-        return notifProjectIds.length - count;
-      }
+      return count;
     },
     smsOwnershipEvents() {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
@@ -413,6 +408,8 @@ export default {
         if (data) {
           this.projects = data.content
           if (this.projects.length > 0) {
+            this.projectIdsInbox = this.projects[0].projectIdsInbox
+            this.projectIdsSent = this.projects[0].projectIdsSent
             this.projectIdsForCurrentFilter = this.projects[0].projectIdsForFilter
           }
 
@@ -458,6 +455,9 @@ export default {
           this.projects = data.content
           if (this.projects.length > 0) {
             this.projectIdsForCurrentFilter = this.projects[0].projectIdsForFilter
+          }
+          else {
+            this.projectIdsForCurrentFilter = []
           }
 
           this.totalProjects = this.projectIdsForCurrentFilter?.length || 0
@@ -552,8 +552,8 @@ export default {
         this.showLoading(false)
       }
     },
-    hasNotification(projectId) {
-      return this.smsNotification?.filter(n => n.metadata?.projectId === projectId)?.length > 0
+    projectNotificationCount(projectId) {
+      return this.smsNotification?.filter(n => n.metadata?.projectId === projectId)?.length
     },
     clearNotification(projectId) {
       const notificationIds = this.smsNotification
@@ -725,7 +725,7 @@ export default {
 
 <style scoped lang="scss">
 .sticky-toolbar {
-  height: 160px !important;
+  height: 180px !important;
   position: sticky;
   top: 0;
   z-index: 1; //just to get it in front of the rest of the section
@@ -769,7 +769,7 @@ a {
 }
 
 .notif-badge {
-  margin-right: 10px;
+  margin-right: 20px;
   margin-bottom: 5px;
 }
 
@@ -782,7 +782,6 @@ a {
 }
 
 .filter-control {
-  margin-right: 24px;
   bottom: -8px;
 
   @media (max-width: 1264px) {
@@ -817,13 +816,19 @@ a {
   background-color: #1F3C73 !important;
 }
 
+.project-search {
+  max-width: 536px !important;
+}
+
+project-search-no-teams {
+  max-width: 429px !important;
+}
+
 .inbox-tabs {
   top: -1px;
   height: 64px !important;
   z-index: 2;
   opacity: 0.95;
-  border-top: 1px solid #E6E6E6;
-  border-bottom: 1px solid #E6E6E6;
   .v-tab:hover {
     color: var(--v-primary-base);
   }

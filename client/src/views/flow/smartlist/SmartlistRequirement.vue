@@ -196,6 +196,7 @@
     :headers="headers"
     :items="requirements"
     hide-default-footer
+    disable-pagination
     :expanded.sync="expandedRequirementArray"
     single-expand
   >

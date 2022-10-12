@@ -104,10 +104,8 @@
       <v-col cols="12" md="6">
         <h3>Notification Preferences</h3>
         <v-card flat color="transparent">
-          <div v-for="item in smsTeams">
-            <div>
-              {{ item.teamName }} SMS Team:<v-checkbox class=" pl-3 d-inline-block" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
-            </div>
+          <div v-for="item in smsTeams" class="unassigned-notif-div">
+              {{ item.teamName }} SMS Team:<v-checkbox class="d-inline-block pl-3 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
           </div>
         </v-card>
       </v-col>
@@ -467,5 +465,10 @@ export default {
   max-width: 200px;
   height: auto;
   border-radius: 50%;
+}
+
+.unassigned-notif-div {
+  width: 700px;
+  height: 40px;
 }
 </style>
