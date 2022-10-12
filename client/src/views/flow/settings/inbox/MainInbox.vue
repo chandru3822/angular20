@@ -725,7 +725,7 @@ export default {
 
 <style scoped lang="scss">
 .sticky-toolbar {
-  height: 180px !important;
+  height: 170px !important;
   position: sticky;
   top: 0;
   z-index: 1; //just to get it in front of the rest of the section
@@ -769,8 +769,7 @@ a {
 }
 
 .notif-badge {
-  margin-right: 20px;
-  margin-bottom: 5px;
+  margin-right: 30px;
 }
 
 .inbox-badge {
@@ -836,7 +835,7 @@ project-search-no-teams {
 
 ::v-deep {
   .v-data-table__wrapper {
-    height: calc(100vh - 250px);
+    height: calc(100vh - 275px);
     min-height: 300px;
   }
 }
