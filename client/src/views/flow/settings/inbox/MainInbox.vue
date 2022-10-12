@@ -19,7 +19,7 @@
               New
               <v-badge
                 class="inbox-badge"
-                color="#F35858"
+                color="#D03331"
                 :content="inboxNotificationCount"
                 v-if="inboxNotificationCount > 0"
               ></v-badge>
@@ -28,7 +28,7 @@
               Sent
               <v-badge
                 class="inbox-badge"
-                color="#F35858"
+                color="#D03331"
                 :content="sentNotificationCount"
                 v-if="sentNotificationCount > 0"
               ></v-badge>
@@ -173,7 +173,7 @@
                      :class="{'notif-div': (projectNotificationCount(item.projectId) > 0)}">
                   <div>
                     <v-badge
-                      color="#F35858"
+                      color="#D03331"
                       class="notif-badge"
                       :content="projectNotificationCount(item.projectId)"
                       v-if="projectNotificationCount(item.projectId) > 0"

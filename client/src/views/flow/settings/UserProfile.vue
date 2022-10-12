@@ -1,5 +1,12 @@
 <template>
   <v-container>
+    <confirmation-dialog :open-dialog="unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false"
+                         @confirm="[navigationOverride = true, goToPath(toPath)]">
+      <template v-slot:title>Unsaved Changes</template>
+      You have unsaved changes. Are you sure you want to continue without saving?
+      <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Don't Save</template>
+    </confirmation-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -105,7 +112,7 @@
         <h3>Notification Preferences</h3>
         <v-card flat color="transparent">
           <div v-for="item in smsTeams" class="unassigned-notif-div">
-              {{ item.teamName }} SMS Team:<v-checkbox class="d-inline-block pl-3 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
+              {{ item.teamName }} SMS Team:<v-checkbox class="d-inline-block pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
           </div>
         </v-card>
       </v-col>
@@ -235,7 +242,10 @@ export default {
         }
       ],
       smsTeams: [],
-      notificationToRemove: null
+      notificationToRemove: null,
+      unsavedFieldsModal: false,
+      navigationOverride: false,
+      toPath: null,
     }
   },
   computed: {
@@ -256,6 +266,18 @@ export default {
       this.getSmsTeams()
     }
     this.loadProfileImage()
+  },
+  beforeRouteLeave(to, from, next) {
+    // called when the route that renders this component is about to
+    // be navigated away from.
+    // has access to `this` component instance.
+    if (this.navigationOverride) {
+      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+      next()
+    } else {
+      this.toPath = to.path
+      this.unsavedFieldsModal = true
+    }
   },
   methods: {
     validate () {
@@ -454,7 +476,15 @@ export default {
       if (!item.receiveUnassignedNotifications) {
         this.notificationToRemove = item;
       }
-    }
+    },
+    goToPath(path, targetBlank) {
+      if (targetBlank) {
+        let routerData = this.$router.resolve({path})
+        window.open(routerData.href, '_blank')
+      } else {
+        this.$router.push(path)
+      }
+    },
   }
 }
 </script>
