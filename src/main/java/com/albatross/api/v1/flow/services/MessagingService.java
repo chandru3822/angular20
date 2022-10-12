@@ -10,6 +10,7 @@ import com.albatross.api.notification.model.NotificationEventMessage;
 import com.albatross.api.notification.model.NotificationTopic;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.ProjectMessageOwner;
@@ -45,6 +46,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -57,6 +59,7 @@ public class MessagingService {
   private final NotificationService notificationService;
   private final PubSubService pubSubService;
   private final ObjectMapper om;
+  private final SecurityService securityService;
   private final NamedParameterJdbcTemplate jdbc;
   private final CacheManager cacheManager;
 
@@ -113,6 +116,30 @@ public class MessagingService {
           params,
           new SingleColumnRowMapper<>(Long.class));
       projects.get(0).setProjectIdsForFilter(projectIds);
+      params.put("query", null);
+      User user = securityService.getCurrentUser();
+      List<SmsTeam> userSmsTeams = getTeamsForUser(user);
+      List<Long> userSmsTeamIds =
+        userSmsTeams.stream().map(SmsTeam::getId).toList();
+      params.put("smsTeamIds", userSmsTeamIds);
+      params.put("ownerIds", Arrays.asList(user.getId()));
+      params.put("unassigned", true);
+      params.put("showInbox", true);
+      List<Long> projectIdsInbox =
+        sqlCache.query(
+          "messaging.getProjectsCount",
+          params,
+          new SingleColumnRowMapper<>(Long.class));
+      params.put("showInbox", false);
+      List<Long> projectIdsSent =
+        sqlCache.query(
+          "messaging.getProjectsCount",
+          params,
+          new SingleColumnRowMapper<>(Long.class));
+
+      // Used for displaying the New and Sent notification badges on the SMS Inbox
+      projects.get(0).setProjectIdsInbox(projectIdsInbox);
+      projects.get(0).setProjectIdsSent(projectIdsSent);
       count = projectIds.size();
     }
 
@@ -144,6 +171,7 @@ public class MessagingService {
     }
 
     List<Long> ownerUserIds = new ArrayList<>();
+    List<Long> unassignedUserIds = new ArrayList<>();
 
     if (ownersSelected != null && !ownersSelected.isEmpty()) {
 
@@ -182,8 +210,16 @@ public class MessagingService {
         }
       }
     }
+    else {
+      final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(Arrays.asList(teamId));
+      for (SmsTeam smsTeam: smsTeams) {
+        List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
+        unassignedUserIds.addAll(usersToNotify.stream().map(User::getId).collect(Collectors.toSet()));
+      }
+    }
 
     final HashSet<Long> userIdsToNotify = new HashSet<>(ownerUserIds);
+    userIdsToNotify.addAll(unassignedUserIds);
     //don't give a notification if the user added themselves to the group
     userIdsToNotify.remove(modifiedByUserId);
 
