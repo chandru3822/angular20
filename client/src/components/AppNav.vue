@@ -315,6 +315,7 @@ export default {
 }
 
 .notif-badge {
-  margin-bottom: 16px;
+  margin-top: 13px;
+  margin-left: 10px;
 }
 </style>
