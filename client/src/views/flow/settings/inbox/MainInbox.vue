@@ -15,7 +15,7 @@
       <v-toolbar prominent elevation="4" color="grey lighten-4" class="pb-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
           <v-tabs class="inbox-tabs pa-0" background-color="var(--v-secondary-base)">
-            <v-tab text @click="showInbox = true; reloadProjects()">
+            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; reloadProjects()">
               New
               <v-badge
                 class="inbox-badge"
@@ -773,8 +773,12 @@ a {
 }
 
 .inbox-badge {
-  margin-top: 16px;
+  margin-top: 13px;
   margin-left: 10px;
+}
+
+.inbox-tab-with-badge {
+  padding-right: 26px;
 }
 
 .notif-div {
