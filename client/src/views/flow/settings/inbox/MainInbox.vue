@@ -42,7 +42,7 @@
               v-model="searchQuery"
               @input="searchProjects"
               :class="teamFilterOptions.length > 0 ? 'project-search' : 'project-search-no-teams'"
-              class="albatross-body-2 mb-n4 mt-2  pr-6"
+              class="albatross-body-2 mb-n4 mt-2 pr-6"
               clearable
             />
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
@@ -55,7 +55,7 @@
               v-model="showUnreadOnly"
               @change="reloadProjects"
               label="Show unread only"
-              class="read-filter albatross-body-2 align-self-end flex-shrink-0 default-text-color pr-6"
+              class="read-filter albatross-body-2 align-self-end flex-shrink-0 default-text-color pr-6 pl-1"
               :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
             >
             </v-checkbox>
