@@ -382,6 +382,7 @@ export default {
         this.user.newPassword = null
         this.user.newPasswordConfirm = null
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
+        this.dirtyFields = false;
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
