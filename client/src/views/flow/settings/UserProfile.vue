@@ -35,6 +35,7 @@
                         required
                         v-if="showOnUserProfile('First Name')"
                         :rules="requiredRules"
+                        @change="setFieldsDirty"
                         label="First Name">
           </v-text-field>
           <v-text-field v-model="user.lastName"
@@ -42,6 +43,7 @@
                         required
                         v-if="showOnUserProfile('Last Name')"
                         :rules="requiredRules"
+                        @change="setFieldsDirty"
                         label="Last Name">
           </v-text-field>
           <v-text-field v-model="user.email"
@@ -49,6 +51,7 @@
                         required
                         v-if="showOnUserProfile('Email')"
                         :rules="emailRules"
+                        @change="setFieldsDirty"
                         label="E-mail">
           </v-text-field>
           <v-text-field v-model="user.username"
@@ -57,6 +60,7 @@
                         v-if="showOnUserProfile('Username')"
                         type="search"
                         :rules="usernameRules"
+                        @change="setFieldsDirty"
                         label="Username">
           </v-text-field>
           <v-text-field v-model="user.phoneNumber"
@@ -64,6 +68,7 @@
                         placeholder="Enter a value"
                         v-if="showOnUserProfile('Phone')"
                         required
+                        @change="setFieldsDirty"
                         label="Phone">
           </v-text-field>
           <v-select attach v-model="user.notificationTypeId"
@@ -72,6 +77,7 @@
                     v-if="showOnUserProfile('Notification')"
                     item-text="userNotificationType"
                     item-value="id"
+                    @change="setFieldsDirty"
                     autocomplete="off">
           </v-select>
           <v-text-field v-model="user.newPassword"
@@ -81,6 +87,7 @@
                         type="password"
                         autocomplete="new-password"
                         :rules="[passwordRule]"
+                        @change="setFieldsDirty"
                         label="Change Password">
           </v-text-field>
           <v-text-field v-model="user.newPasswordConfirm"
@@ -90,6 +97,7 @@
                         type="password"
                         autocomplete="new-password"
                         :rules="[passwordRule]"
+                        @change="setFieldsDirty"
                         label="Confirm Password">
           </v-text-field>
           <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
@@ -101,6 +109,7 @@
                           item-value="id"
                           autocomplete="off"
                           type="search"
+                          @change="setFieldsDirty"
                           attach
           ></v-autocomplete>
         </v-col>
@@ -246,6 +255,7 @@ export default {
       unsavedFieldsModal: false,
       navigationOverride: false,
       toPath: null,
+      dirtyFields: false
     }
   },
   computed: {
@@ -271,7 +281,7 @@ export default {
     // called when the route that renders this component is about to
     // be navigated away from.
     // has access to `this` component instance.
-    if (this.navigationOverride) {
+    if (this.navigationOverride || !this.dirtyFields) {
       //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
       next()
     } else {
@@ -452,12 +462,16 @@ export default {
       }
     },
     populateDirtyCfvs(field) {
+      this.dirtyFields = true;
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
 
       if (!match) {
         this.dirtyCfvs.push(field)
       }
 
+    },
+    setFieldsDirty() {
+      this.dirtyFields = true;
     },
     async getSmsTeams() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -473,6 +487,7 @@ export default {
       }
     },
     checkForDeselect(item) {
+      this.dirtyFields = true;
       if (!item.receiveUnassignedNotifications) {
         this.notificationToRemove = item;
       }
