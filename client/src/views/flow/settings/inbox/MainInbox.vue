@@ -773,7 +773,8 @@ a {
 }
 
 .inbox-badge {
-  margin-bottom: 16px;
+  margin-top: 16px;
+  margin-left: 10px;
 }
 
 .notif-div {
