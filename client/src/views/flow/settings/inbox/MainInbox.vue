@@ -829,6 +829,7 @@ project-search-no-teams {
 }
 
 .inbox-tabs {
+  margin-left: -4px !important;
   top: -1px;
   height: 64px !important;
   z-index: 2;
