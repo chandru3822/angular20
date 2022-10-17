@@ -9,9 +9,10 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
-              {{logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
+              {{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
             </v-btn>
-            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']" text color="primary" v-if="userCanAdd">
+            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']"
+                   text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
               {{ addNewAction ? 'Cancel' : 'Add Action' }}
             </v-btn>
@@ -401,7 +402,8 @@
                         <v-icon>save</v-icon>
                         Save
                       </v-btn>
-                      <v-btn class="ml-3" @click="[addChildProcess = false, newChildProcessStep = {}]" text color="primary">
+                      <v-btn class="ml-3" @click="[addChildProcess = false, newChildProcessStep = {}]" text
+                             color="primary">
                         <v-icon>remove</v-icon>
                         Cancel
                       </v-btn>
@@ -744,6 +746,16 @@
                     </v-list>
                   </v-col>
                 </v-row>
+                <!-- SMS MESSAGES CAN ONLY BE ADDED TO BUTTONS -->
+                <div v-if="item.actionTypeId === 2">
+                  <v-divider></v-divider>
+                  <ActionChildSms :selected-action-index="selectedActionIndex"
+                                  :action="item"
+                                  :process-step-id="processStepId"
+                                  :add-sms-callback="addSms"
+                                  :delete-sms-callback="deleteSms"
+                  ></ActionChildSms>
+                </div>
                 <v-divider class="mt-2"></v-divider>
                 <v-toolbar flat dense color="transparent">
                   <v-toolbar-title class="app-title">
@@ -765,7 +777,7 @@
                         </v-card-title>
 
                         <v-card-text class="pt-4">
-                          {{actionLogicString}}
+                          {{ actionLogicString }}
                         </v-card-text>
 
                         <v-divider></v-divider>
@@ -865,7 +877,8 @@
                 <div v-if="actionLogicError" class="error-text ml-3 mt-3">
                   <strong>* ERROR: </strong>{{ actionLogicErrorMsg }}
                 </div>
-                <v-btn v-if="userCanEdit" color="primary" @click="validateActionLogicString(item, true)" class="mt-4 ml-3">
+                <v-btn v-if="userCanEdit" color="primary" @click="validateActionLogicString(item, true)"
+                       class="mt-4 ml-3">
                   <v-icon class="mr-2">save</v-icon>
                   Save Changes
                 </v-btn>
@@ -898,7 +911,9 @@
                     <v-btn small text color="primary" @click="[actionExpanded = [], selectedActionIndex = index]"
                            v-if="actionExpanded.includes(item)">cancel
                     </v-btn>
-                    <v-btn small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <v-btn small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </div>
                 </td>
               </tr>
@@ -937,11 +952,13 @@ import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
 import ConfirmationDialog from "@/ConfirmationDialog";
+import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
 
 export default {
   name: 'ProcessStepActions',
   mixins: [Vue2Filters.mixin],
   components: {
+    ActionChildSms,
     ConfirmationDialog,
     ProcessStepRequirements
   },
@@ -1028,7 +1045,7 @@ export default {
       selectedRequirementIndex: null,
       selectedActionIndex: null,
       availableRequirementTypes: [],
-      processStepId: this.$route.params.id,
+      processStepId: parseInt(this.$route.params.id),
       companyId: this.$store.state.user.details.companyId,
       parentObjects: [],
       parent: {},
@@ -1129,26 +1146,26 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    copyToClipBoard(){
+    copyToClipBoard() {
       navigator.clipboard.writeText(this.actionLogicString);
       this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
     },
     getLogicMargin(item, parentItem, index) {
       parentItem.logicMargin = parentItem.logicMargin || 0
-      if(item.operationTypeId === 1) {
-        if(parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
+      if (item.operationTypeId === 1) {
+        if (parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
           parentItem.logicMargin += 25
         }
         parentItem.indexOfPreviousAdd = index
         return parentItem.logicMargin + 'px'
-      } else if(item.operationTypeId === 2) {
+      } else if (item.operationTypeId === 2) {
         parentItem.indexOfPreviousSubtract = index
         let placeholder = parentItem.logicMargin - 25
         parentItem.logicMargin -= 25
         return placeholder + 'px'
       } else {
-        if(parentItem.indexOfPreviousAdd === index - 1) {
+        if (parentItem.indexOfPreviousAdd === index - 1) {
           parentItem.logicMargin += 25
         }
         return parentItem.logicMargin + 'px'
@@ -1156,55 +1173,63 @@ export default {
     },
     getLogicButtonText(item) {
 
-        if(item.logicString) {
-          //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
-          return item.logicString
-        } else {
-          if(null != item.requirementNbr) {
-            //if not a system requirement (like AND, NOT, OR, etc)
-            let value = ''
-            if(item.dataTypeRequirement?.dataTypeValue) {
-              value = item.dataTypeRequirement?.dataTypeValue
-            } else if (item.listOfValue?.name) {
-              value = item.listOfValue?.name
-            } else if (item.listOfValues?.length > 0){
-              item.listOfValues.forEach((lv, idx) => {
-                if(idx !== 0) {
-                  value = value + ', '
-                }
-                value = value + lv.name
-              })
-            } else if(item.requirementValue) {
-              value = item.requirementValue
-            } else {
-              value = 'UNKNOWN CONTACT ADMIN'
-            }
-            if(null != item.secondaryRequirementValue) {
-              value = value + ` (${item.secondaryRequirementValue})`
-            }
-            if([1,3,4].includes(item.processStepRequirementTypeId)) {
-              //custom field
-              let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
-              let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
-              item.logicString = logicString
-              return logicString
-            } else if(item.processStepRequirementTypeId === 2) {
-              //function
-              let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' '  + item.operatorType + ' ' + value
-              item.logicString = logicString
-              return logicString
-            } else if([7,8,9,10].includes(item.processStepRequirementTypeId)){
-              //status (project or process step)
-              let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
-              let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
-              item.logicString = logicString
-              return logicString
-            }
+      if (item.logicString) {
+        //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
+        return item.logicString
+      } else {
+        if (null != item.requirementNbr) {
+          //if not a system requirement (like AND, NOT, OR, etc)
+          let value = ''
+          if (item.dataTypeRequirement?.dataTypeValue) {
+            value = item.dataTypeRequirement?.dataTypeValue
+          } else if (item.listOfValue?.name) {
+            value = item.listOfValue?.name
+          } else if (item.listOfValues?.length > 0) {
+            item.listOfValues.forEach((lv, idx) => {
+              if (idx !== 0) {
+                value = value + ', '
+              }
+              value = value + lv.name
+            })
+          } else if (item.requirementValue) {
+            value = item.requirementValue
           } else {
-            //this returns if AND, OR, NOT, etc
-            return item.operationType
+            value = 'UNKNOWN CONTACT ADMIN'
           }
+          if (null != item.secondaryRequirementValue) {
+            value = value + ` (${item.secondaryRequirementValue})`
+          }
+          if ([1, 3, 4].includes(item.processStepRequirementTypeId)) {
+            //custom field
+            let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
+            let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
+            item.logicString = logicString
+            return logicString
+          } else if (item.processStepRequirementTypeId === 2) {
+            //function
+            let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' ' + item.operatorType + ' ' + value
+            item.logicString = logicString
+            return logicString
+          } else if ([7, 8, 9, 10].includes(item.processStepRequirementTypeId)) {
+            //status (project or process step)
+            let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
+            let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
+            item.logicString = logicString
+            return logicString
+          }
+        } else {
+          //this returns if AND, OR, NOT, etc
+          return item.operationType
         }
+      }
+    },
+    addSms(actionId, smsItem) {
+      this.actions.find(a => a.id === actionId).processStepActionChildSmsTemplates.push(smsItem)
+    },
+    deleteSms(actionId, id) {
+      this.actions.find(a => a.id === actionId).processStepActionChildSmsTemplates = this.actions.find(a => a.id === actionId).processStepActionChildSmsTemplates.filter(st => {
+        return st.id !== id
+      })
     },
     async getActionLogicString(actionId) {
       try {
@@ -1680,7 +1705,7 @@ export default {
         }
       }
     },
-    closeDeleteDialog(){
+    closeDeleteDialog() {
       this.showDeleteDialog = false
       this.itemToDelete = null
     }

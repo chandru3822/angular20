@@ -30,6 +30,13 @@ public class MessageTemplateService {
     return results;
   }
 
+  public List<com.albatross.api.v1.flow.model.MessageTemplate> getTemplatesWithTeamInfo() {
+    HashMap<String, Object> params = new HashMap<>();
+    List<com.albatross.api.v1.flow.model.MessageTemplate> results = sqlCache.query("messageTemplate.getAllTemplatesWithTeamInfo", params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
+
+    return results;
+  }
+
   public com.albatross.api.v1.flow.model.MessageTemplate getTemplate(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -92,6 +99,10 @@ public class MessageTemplateService {
       TypeReference<List<Long>> teamIdsTypeRef = new TypeReference<List<Long>>() {};
       bw.registerCustomEditor(List.class, "teamIds",
         new JsonCollectionDeserializer(teamIdsTypeRef, objectMapper));
+
+      TypeReference<List<MessageTeam>> teamsTypeRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "teams",
+        new JsonCollectionDeserializer(teamsTypeRef, objectMapper));
     }
   }
 
