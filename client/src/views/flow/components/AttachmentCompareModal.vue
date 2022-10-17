@@ -371,6 +371,7 @@ export default {
 .compare-view-btns {
   display: flex;
   justify-content: center;
+  margin-top: 20px;
 }
 
 .thumbnail-file-container {
