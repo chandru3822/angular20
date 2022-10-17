@@ -239,7 +239,7 @@ public class BlueravenProposalController {
 
 
   public record CreateNewDesignRequest(@NotEmpty String description,
-                                       @NotEmpty String dueDate,
+                                       String dueDate,
                                        List<MultipartFile> attachments,
                                        List<MultipartFile> utilityBillAttachments) {
   }
