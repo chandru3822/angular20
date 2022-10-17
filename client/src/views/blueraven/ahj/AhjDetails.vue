@@ -49,6 +49,10 @@ export default {
         {
           label: 'Inspection',
           path: '/ahj/' + this.ahjId + '/inspection'
+        },
+        {
+          label: 'Design',
+          path: '/ahj/' + this.ahjId + '/design'
         }
       ]
     }
