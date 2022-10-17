@@ -37,6 +37,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -131,7 +132,9 @@ public class BlueravenProposalService {
     updateCustomFieldValue(projectId, currentUser.getTrueUserId(), 22679L, description);
 
     // cfgaId for due date field on proposal = 22678
-    updateCustomFieldValue(projectId, currentUser.getTrueUserId(), 22678L, dueDate);
+    if (!ObjectUtils.isEmpty(dueDate)) {
+      updateCustomFieldValue(projectId, currentUser.getTrueUserId(), 22678L, dueDate);
+    }
 
     return getProposalDesigns(projectId);
   }

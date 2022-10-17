@@ -279,7 +279,7 @@ export default {
       let count = 0;
       let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
       notifProjectIds.forEach(npi => {
-        if (this.projectIdsInbox.includes(npi)) {
+        if (this.projectIdsInbox && this.projectIdsInbox.includes(npi)) {
           count++;
         }
       })
@@ -290,7 +290,7 @@ export default {
       let count = 0;
       let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
       notifProjectIds.forEach(npi => {
-        if (this.projectIdsSent.includes(npi)) {
+        if (this.projectIdsSent && this.projectIdsSent.includes(npi)) {
           count++;
         }
       })
@@ -455,6 +455,11 @@ export default {
           this.projects = data.content
           if (this.projects.length > 0) {
             this.projectIdsForCurrentFilter = this.projects[0].projectIdsForFilter
+            // If New/Sent notification badges weren't loaded yet (No projects under New), get values now
+            if (!this.projectIdsInbox && !this.projectIdsSent) {
+              this.projectIdsInbox = this.projects[0].projectIdsInbox
+              this.projectIdsSent = this.projects[0].projectIdsSent
+            }
           }
           else {
             this.projectIdsForCurrentFilter = []
