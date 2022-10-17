@@ -119,4 +119,16 @@ public class ProcessStepActionController {
                                         @RequestBody ProcessStepActionChildFunction child) {
     processStepActionService.updateActionChildFunction(actionId, child);
   }
+
+  // child sms templates
+  @PostMapping(value = "/{actionId}/addSmsToAction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepActionChildSmsTemplate addSmsToAction(@PathVariable Long actionId,
+                                                          @RequestBody ProcessStepActionChildSmsTemplate child) {
+    return processStepActionService.addSmsToAction(actionId, child);
+  }
+
+  @DeleteMapping(value = "/{actionId}/deleteSms/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteSmsFromAction(@PathVariable Long id) {
+    processStepActionService.deleteSmsFromAction(id);
+  }
 }
