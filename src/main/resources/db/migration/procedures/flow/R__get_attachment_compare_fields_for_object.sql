@@ -37,6 +37,7 @@ declare
   v_object_reference_attachment_type_id int;
 BEGIN
 
+  --PROJECTS
   case when p_object_type_id = 1 then
     select a.attachment_type_id, pat.id
     into v_attachment_type_id, v_object_reference_attachment_type_id
@@ -85,18 +86,18 @@ BEGIN
                                         OR lov.id = any (pcfv.int_array_value)))
                              ) listOfValues), '[]')                         AS "listOfValues",
              coalesce(array_to_json(cf.system_list_option_ids), '[]')::json as system_list_option_ids
-      from flow.project_custom_field_value pcfv
-             inner join flow.custom_field_group_assignment cfga on pcfv.custom_field_group_assignment_id = cfga.id
-             inner join flow.custom_field_group_assignment cfga2
-                        on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
-             inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+      from flow.custom_field_group_assignment cfga2
              inner join flow.custom_field_group cfg on cfga2.custom_field_group_id = cfg.id and
                                                        cfg.project_attachment_type_id =
                                                        v_object_reference_attachment_type_id
+             inner join flow.custom_field_group_assignment cfga on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
+             inner join flow.custom_field cf on cfga.custom_field_id = cf.id
              inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-      where pcfv.project_id = p_source_id
-        and cfga.archived is false
+             left join flow.project_custom_field_value pcfv on pcfv.project_id = p_source_id and pcfv.custom_field_group_assignment_id = cfga.id
+      where cfga.archived is false
         and cfga2.archived is false;
+
+    --CONTACTS
     when p_object_type_id = 2 then
       select a.attachment_type_id, pat.id
       into v_attachment_type_id, v_object_reference_attachment_type_id
@@ -145,18 +146,18 @@ BEGIN
                                           OR lov.id = any (pcfv.int_array_value)))
                                ) listOfValues), '[]')                         AS "listOfValues",
                coalesce(array_to_json(cf.system_list_option_ids), '[]')::json as system_list_option_ids
-        from flow.contact_custom_field_value pcfv
-               inner join flow.custom_field_group_assignment cfga on pcfv.custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field_group_assignment cfga2
-                          on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+        from flow.custom_field_group_assignment cfga2
                inner join flow.custom_field_group cfg on cfga2.custom_field_group_id = cfg.id and
                                                          cfg.contact_attachment_type_id =
                                                          v_object_reference_attachment_type_id
+               inner join flow.custom_field_group_assignment cfga on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
+               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
                inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-        where pcfv.contact_id = p_source_id
-          and cfga.archived is false
+               left join flow.contact_custom_field_value pcfv on pcfv.contact_id = p_source_id and pcfv.custom_field_group_assignment_id = cfga.id
+        where cfga.archived is false
           and cfga2.archived is false;
+
+      --USERS
     when p_object_type_id = 3 then
       select a.attachment_type_id, pat.id
       into v_attachment_type_id, v_object_reference_attachment_type_id
@@ -205,18 +206,18 @@ BEGIN
                                           OR lov.id = any (pcfv.int_array_value)))
                                ) listOfValues), '[]')                         AS "listOfValues",
                coalesce(array_to_json(cf.system_list_option_ids), '[]')::json as system_list_option_ids
-        from flow.user_custom_field_value pcfv
-               inner join flow.custom_field_group_assignment cfga on pcfv.custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field_group_assignment cfga2
-                          on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+        from flow.custom_field_group_assignment cfga2
                inner join flow.custom_field_group cfg on cfga2.custom_field_group_id = cfg.id and
-                                                         cfg.user_attachment_type_id =
+                                                         cfg.contact_attachment_type_id =
                                                          v_object_reference_attachment_type_id
+               inner join flow.custom_field_group_assignment cfga on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
+               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
                inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-        where pcfv.user_id = p_source_id
-          and cfga.archived is false
+               left join flow.user_custom_field_value pcfv on pcfv.user_id = p_source_id and pcfv.custom_field_group_assignment_id = cfga.id
+        where cfga.archived is false
           and cfga2.archived is false;
+
+      --ORGS
     when p_object_type_id = 5 then
       select a.attachment_type_id, pat.id
       into v_attachment_type_id, v_object_reference_attachment_type_id
@@ -265,18 +266,18 @@ BEGIN
                                           OR lov.id = any (pcfv.int_array_value)))
                                ) listOfValues), '[]')                         AS "listOfValues",
                coalesce(array_to_json(cf.system_list_option_ids), '[]')::json as system_list_option_ids
-        from flow.organization_custom_field_value pcfv
-               inner join flow.custom_field_group_assignment cfga on pcfv.custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field_group_assignment cfga2
-                          on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+        from flow.custom_field_group_assignment cfga2
                inner join flow.custom_field_group cfg on cfga2.custom_field_group_id = cfg.id and
-                                                         cfg.org_attachment_type_id =
+                                                         cfg.contact_attachment_type_id =
                                                          v_object_reference_attachment_type_id
+               inner join flow.custom_field_group_assignment cfga on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
+               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
                inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-        where pcfv.org_id = p_source_id
-          and cfga.archived is false
+               left join flow.organization_custom_field_value pcfv on pcfv.org_id = p_source_id and pcfv.custom_field_group_assignment_id = cfga.id
+        where cfga.archived is false
           and cfga2.archived is false;
+
+      --PROCESS STEPS
     when p_object_type_id = 4 then
       select a.attachment_type_id, pat.id
       into v_attachment_type_id, v_object_reference_attachment_type_id
@@ -330,19 +331,19 @@ BEGIN
                                           OR lov.id = any (ppscfv.int_array_value)))
                                ) listOfValues), '[]')                         AS "listOfValues",
                coalesce(array_to_json(cf.system_list_option_ids), '[]')::json as system_list_option_ids
-        from flow.project_process_step_custom_field_value ppscfv
-               inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
-               inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field_group_assignment cfga2
-                          on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+        from flow.custom_field_group_assignment cfga2
                inner join flow.custom_field_group cfg on cfga2.custom_field_group_id = cfg.id and
-                                                         cfg.project_attachment_type_id =
+                                                         cfg.process_step_attachment_type_id =
                                                          v_object_reference_attachment_type_id
+               inner join flow.custom_field_group_assignment cfga on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
+               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
                inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-        where ppscfv.project_process_step_id = p_source_id
-          and cfga.archived is false
+               inner join flow.project_process_step pps on pps.id = p_source_id
+               left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfga.id
+        where cfga.archived is false
           and cfga2.archived is false;
+
+      --EVENTS
     when p_object_type_id = 6 then
       select a.attachment_type_id, pat.id
       into v_attachment_type_id, v_object_reference_attachment_type_id
@@ -396,21 +397,18 @@ BEGIN
                                           OR lov.id = any (ppsecfv.int_array_value)))
                                ) listOfValues), '[]')                         AS "listOfValues",
                coalesce(array_to_json(cf.system_list_option_ids), '[]')::json as system_list_option_ids
-        from flow.project_process_step_event_custom_field_value ppsecfv
-               inner join flow.project_process_step_event ppse on ppsecfv.project_process_step_event_id = ppse.id
-               inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
-               inner join flow.custom_field_group_assignment cfga
-                          on ppsecfv.custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field_group_assignment cfga2
-                          on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
-               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+        from flow.custom_field_group_assignment cfga2
                inner join flow.custom_field_group cfg on cfga2.custom_field_group_id = cfg.id and
-                                                         cfg.project_attachment_type_id =
+                                                         cfg.event_attachment_type_id =
                                                          v_object_reference_attachment_type_id
+               inner join flow.custom_field_group_assignment cfga on cfga2.ancillary_custom_field_group_assignment_id = cfga.id
+               inner join flow.custom_field cf on cfga.custom_field_id = cf.id
                inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+               inner join flow.project_process_step_event ppse on ppse.id = p_source_id
+               inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+               left join flow.project_process_step_event_custom_field_value ppsecfv on ppsecfv.project_process_step_event_id = ppse.id and ppsecfv.custom_field_group_assignment_id = cfga.id
         where cfga.archived is false
           and cfga2.archived is false
-          and ppsecfv.project_process_step_event_id = p_source_id
         union all
         select null::bigint            as custom_field_id,
                null::bigint            as ancillary_custom_field_id,
