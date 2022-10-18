@@ -591,34 +591,35 @@ export default {
       try {
         const { data, status } = await getRequest(`/smsTeam/users`)
         this.selectableTeams = data
-        this.selectableTeams.forEach(team => {
-          if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
-            if (!this.teamAlreadyAddedToFilter(team)) {
-              this.teamFilterOptions.push(team)
-            }
-
-            if (!this.selectedTeamFilters.includes(team.id)) {
-              this.selectedTeamFilters.push(team.id)
-            }
-
-            team.users.forEach(owner => {
-              if (!this.ownerAlreadyAddedToFilter(owner)) {
-                this.ownerFilterOptions.push(owner)
-
-                if (owner.userId === this.userId) {
-                  this.selectedOwnerFilters.push(owner.userId)
-                }
+        if (this.selectableTeams && this.selectableTeams.length > 0) {
+          this.selectableTeams.forEach(team => {
+            if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
+              if (!this.teamAlreadyAddedToFilter(team)) {
+                this.teamFilterOptions.push(team)
               }
-            })
-          } else if (this.userCanViewAll) {
-            if (!this.teamAlreadyAddedToFilter(team)) {
-              this.teamFilterOptions.push(team)
+
+              if (!this.selectedTeamFilters.includes(team.id)) {
+                this.selectedTeamFilters.push(team.id)
+              }
+
+              team.users.forEach(owner => {
+                if (!this.ownerAlreadyAddedToFilter(owner)) {
+                  this.ownerFilterOptions.push(owner)
+
+                  if (owner.userId === this.userId) {
+                    this.selectedOwnerFilters.push(owner.userId)
+                  }
+                }
+              })
+            } else if (this.userCanViewAll) {
+              if (!this.teamAlreadyAddedToFilter(team)) {
+                this.teamFilterOptions.push(team)
+              }
             }
-          }
-        })
+          })
+        }
 
         this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
-
         this.teamFilterOptions.sort((a,b)=>{
           if(a.teamName < b.teamName) {
             return -1
