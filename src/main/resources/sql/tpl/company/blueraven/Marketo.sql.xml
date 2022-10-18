@@ -88,7 +88,7 @@ with updated_projects as (
         cpst1.project_status_type_id = 1 and
         p.archived is not true and
         cp.company_id = 3 and
-        cp.process_id = 1
+        cp.process_id = 1 and
         pa1.cancelled_date is null
   order by pa1.project_id, pa1.date_modified desc, pa1.id desc
 ), post_24_hours_status as (
