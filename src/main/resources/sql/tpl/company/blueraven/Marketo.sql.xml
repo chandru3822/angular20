@@ -22,11 +22,10 @@ with updated_projects as (
         pa2.date_modified >= (now() - interval '24 hours') and
         pa2.company_project_status_type_id != up1.company_project_status_type_id
 ), post_24_hours_status as (
-  -- status of project's most recent edit older than 24 hours (projects which are in updated_projects and not status_change_24_hours)
+  -- status of project's most recent edit older than 24 hours
   select distinct on (pa3.project_id) pa3.project_id, pa3.date_modified, pa3.company_project_status_type_id, pa3.id
   from flow.project_audit pa3
   inner join updated_projects up2 on up2.project_id = pa3.project_id
-  inner join status_change_24_hours sc24h on sc24h.project_id != pa3.project_id
   where pa3.date_modified < (now() - interval '24 hours')
   order by pa3.project_id, pa3.date_modified desc
 )
