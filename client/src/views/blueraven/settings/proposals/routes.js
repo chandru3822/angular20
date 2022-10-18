@@ -1,7 +1,7 @@
 import store from '@/store'
 
 const settingsBeforeEnter = (to, from, next) => {
-  if (!store.getters.userHasFeature('SETTINGS')) {
+  if (!store.getters.userHasFeature('SETTINGS') && !store.getters.userHasFeature('PROPOSALS')) {
     next({name: 'AccessDenied'})
   } else {
     next()

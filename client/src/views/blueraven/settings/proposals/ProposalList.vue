@@ -51,6 +51,7 @@
 </template>
 <script>
 import { getRequestWithParams, postRequest } from '@/helpers/helpers'
+import store from '@/store'
 
 export default {
   name: 'ProposalSettings',
@@ -94,6 +95,9 @@ export default {
   },
   computed: {
     canCreateVersion() {
+      if (!store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
+        return false
+      }
       return !this.loading && !this.versions.some(v => v.status === 'DRAFT')
     }
   },
