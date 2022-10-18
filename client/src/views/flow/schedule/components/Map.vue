@@ -2,10 +2,43 @@
   <MglMap :accessToken="map.accessToken"
           :mapStyle="map.style"
           @load="onMapLoad">
+    <div id="find-drive-time">
+      <v-menu data-app bottom
+              offset-y
+              content-class="drive-time-menu"
+              v-model="menuOpen"
+              :close-on-click="false"
+              :close-on-content-click="false">
+        <template v-slot:activator="{ on }">
+          <v-btn :color="menuOpen ? 'grey lighten-4' : 'primary'" v-on="on">Find Drive Time</v-btn>
+        </template>
+        <v-card color="white" class="square-card pa-4">
+          <div class="address-container">
+            <v-text-field text label="Address 1"
+                          hide-details
+                          v-model="address1"></v-text-field>
+            <v-btn color="primary" @click="[address1 = '', selectAddress1 = !selectAddress1, selectAddress2 = false]"
+              :loading="selectAddress1">Select</v-btn>
+          </div>
+          <div class="address-container">
+            <v-text-field text label="Address 2"
+                          hide-details
+                          v-model="address2"></v-text-field>
+            <v-btn color="primary" @click="[address2 = '', selectAddress2 = !selectAddress2, selectAddress1 = false]"
+                   :loading="selectAddress2">Select</v-btn>
+          </div>
+          <div class="mt-2">
+            <v-btn text class="mr-3" @click="[address1 = '', address2 = '']">Clear</v-btn>
+            <v-btn color="primary" :disabled="!address1 || !address2">Go</v-btn>
+          </div>
+        </v-card>
+      </v-menu>
+    </div>
     <!-- these markers come from the lower data table  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
                :key="m.id"
                :coordinates="m.coordinates"
+               @click="doSomething(m)"
                :color="m.color || '#ffffff'">
       <MglPopup :close-button="false">
         <VCard flat>
@@ -24,7 +57,8 @@
                :key="m.id"
                :coordinates="m.coordinates"
                :color="m.color || '#ffffff'">
-      <MglPopup  :close-button="false">
+      <MglPopup  :close-button="false" :onclick="doSomething"
+                 :ondrag="doSomething" :ondragend="doSomething" :ondragstart="doSomething">
         <VCard flat>
           {{m.projectName}}<br/>
           {{m.processStepName}}
@@ -70,6 +104,11 @@
     data() {
       return {
         snackbar: {},
+        menuOpen: false,
+        address1: '',
+        selectAddress1: false,
+        address2: '',
+        selectAddress2: false,
         defaultZoom: 2.0,
         // they do these coordinates backwards to comply with geoJSON whatever that is.
         //center of the USA
@@ -84,6 +123,20 @@
       this.mapbox = Mapbox
     },
     methods: {
+      doSomething(marker) {
+        if(this.selectAddress1) {
+          console.log('we did something', marker)
+          this.address1 = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
+          this.selectAddress1 = false
+        } else if (this.selectAddress2) {
+          this.address2 = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
+          this.selectAddress2 = false
+          console.log('we did something', marker)
+        }
+      },
+      async getDriveTime() {
+
+      },
       async changeMapLocation() {
         // Here we catching 'load' map event
           await this.asyncActions.flyTo({
@@ -108,3 +161,21 @@
 
   }
 </script>
+
+<style lang="scss">
+.drive-time-menu {
+  border-radius: 0 !important;
+}
+</style>
+
+<style scoped lang="scss">
+#find-drive-time {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.address-container {
+  display: flex;
+}
+</style>
