@@ -941,7 +941,8 @@
   <attachmentType.getFocusedTypesForProject><![CDATA[
      select at.attachment_type,
             oat.attachment_type_id,
-            linkable
+            linkable,
+            allow_upload
       from flow.project_attachment_type oat
              inner join flow.attachment_type at on oat.attachment_type_id = at.id
       where oat.company_id = :companyId
