@@ -17,12 +17,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import java.net.http.HttpTimeoutException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,6 +67,8 @@ public class MarketoService {
                                            .uri(url)
                                            .retrieve()
                                            .toEntity(String.class)
+                                           .timeout(Duration.ofSeconds(30))
+                                           .onErrorMap(TimeoutException.class, e -> new HttpTimeoutException("Problems communicating with Marketo while AUTHENTICATING: " + e.getMessage()))
                                            .block();
 
         try {
@@ -91,6 +96,8 @@ public class MarketoService {
                                                    .body(Mono.just(body), Map.class)
                                                    .retrieve()
                                                    .toEntity(String.class)
+                                                   .timeout(Duration.ofSeconds(30))
+                                                   .onErrorMap(TimeoutException.class, e -> new HttpTimeoutException("Problems communicating with Marketo while PUSHING data: " + e.getMessage()))
                                                    .block();
 
             JSONObject resultBody = new JSONObject(res.getBody());
@@ -129,6 +136,8 @@ public class MarketoService {
                                                .header("Authorization", "Bearer " + accessToken)
                                                .retrieve()
                                                .toEntity(String.class)
+                                               .timeout(Duration.ofSeconds(30))
+                                               .onErrorMap(TimeoutException.class, e -> new HttpTimeoutException("Problems communicating with Marketo while FETCHING data: " + e.getMessage()))
                                                .block();
 
             JSONObject rawResponse = new JSONObject(res.getBody());
@@ -176,6 +185,8 @@ public class MarketoService {
                                            .body(BodyInserters.empty())
                                            .retrieve()
                                            .toEntity(String.class)
+                                           .timeout(Duration.ofSeconds(30))
+                                           .onErrorMap(TimeoutException.class, e -> new HttpTimeoutException("Problems communicating with Marketo while REMOVING data: " + e.getMessage()))
                                            .block();
 
         JSONObject resultBody = new JSONObject(res.getBody());

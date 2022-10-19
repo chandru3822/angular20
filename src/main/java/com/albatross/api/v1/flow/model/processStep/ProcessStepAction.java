@@ -18,6 +18,7 @@ public class ProcessStepAction {
   private List<ProcessStepLogic> processStepLogicList;
   private List<ProcessStepActionChildProcess> processStepActionChildProcesses;
   private List<ProcessStepActionChildFunction> processStepActionChildFunctions;
+  private List<ProcessStepActionChildSmsTemplate> processStepActionChildSmsTemplates;
   private List<ProcessStepActionLink> processStepActionLinks;
   private Boolean archived, alwaysEnabled, logicListChanged, triggerAutomatically, timeBasedTrigger, hideFromWeb, multipleUses, removeProcessStepOwner;
 

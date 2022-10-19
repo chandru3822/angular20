@@ -10,6 +10,7 @@ import com.albatross.api.notification.model.NotificationEventMessage;
 import com.albatross.api.notification.model.NotificationTopic;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.ProjectMessageOwner;
@@ -45,6 +46,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -57,6 +59,7 @@ public class MessagingService {
   private final NotificationService notificationService;
   private final PubSubService pubSubService;
   private final ObjectMapper om;
+  private final SecurityService securityService;
   private final NamedParameterJdbcTemplate jdbc;
   private final CacheManager cacheManager;
 
@@ -113,6 +116,30 @@ public class MessagingService {
           params,
           new SingleColumnRowMapper<>(Long.class));
       projects.get(0).setProjectIdsForFilter(projectIds);
+      params.put("query", null);
+      User user = securityService.getCurrentUser();
+      List<SmsTeam> userSmsTeams = getTeamsForUser(user);
+      List<Long> userSmsTeamIds =
+        userSmsTeams.stream().map(SmsTeam::getId).toList();
+      params.put("smsTeamIds", userSmsTeamIds);
+      params.put("ownerIds", Arrays.asList(user.getId()));
+      params.put("unassigned", true);
+      params.put("showInbox", true);
+      List<Long> projectIdsInbox =
+        sqlCache.query(
+          "messaging.getProjectsCount",
+          params,
+          new SingleColumnRowMapper<>(Long.class));
+      params.put("showInbox", false);
+      List<Long> projectIdsSent =
+        sqlCache.query(
+          "messaging.getProjectsCount",
+          params,
+          new SingleColumnRowMapper<>(Long.class));
+
+      // Used for displaying the New and Sent notification badges on the SMS Inbox
+      projects.get(0).setProjectIdsInbox(projectIdsInbox);
+      projects.get(0).setProjectIdsSent(projectIdsSent);
       count = projectIds.size();
     }
 
@@ -131,6 +158,8 @@ public class MessagingService {
   public void addTeam(
     Long projectId, Long teamId, List<SmsTeamUser> ownersSelected, boolean defaultTeamAdded, Long modifiedByUserId) {
 
+    boolean clearUnassignedNotifications = false;
+
     Optional<Long> existingTeamId =
         sqlCache.queryForObjectOptional(
             "messaging.getTeamId", Map.of("projectId", projectId, "teamId", teamId), Long.class);
@@ -142,10 +171,48 @@ public class MessagingService {
           "messaging.insertTeam",
           Map.of("projectId", projectId, "teamId", teamId, "createdById", modifiedByUserId));
     }
+    else {
+      // Team has already been added and we are adding Owner(s)
+      if (!ownersSelected.isEmpty()) {
+        List<SmsTeam> smsTeams = getTeamsForProject(projectId);
+        SmsTeam teamBeingAdded = smsTeams.stream()
+          .filter(st -> st.getId().equals(teamId))
+          .findFirst()
+          .orElse(null);
+
+        // Team exists and previously was unassigned
+        if (teamBeingAdded != null && teamBeingAdded.getUsers().isEmpty()) {
+          clearUnassignedNotifications = true;
+        }
+      }
+    }
+
 
     List<Long> ownerUserIds = new ArrayList<>();
+    List<Long> unassignedUserIds = new ArrayList<>();
 
     if (ownersSelected != null && !ownersSelected.isEmpty()) {
+      // If a User joined via a previously Unassigned team - clear notifications for any user(s)
+      // that receive unassigned notifications
+      if (clearUnassignedNotifications) {
+        final List<SmsTeam> unassignedSmsTeams = getTeamsUnassignedNotificationUsers(Arrays.asList(teamId));
+        for (SmsTeam smsTeam: unassignedSmsTeams) {
+          List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
+          for (User user: usersToNotify) {
+            List<Notification> notifications = notificationService.getUserNotifications(user.getId());
+            List<Long> notificationIds = notifications.stream()
+                                                       .filter(n -> (new Long ((Integer) n.getMetadata().get("projectId"))).equals(projectId))
+                                                      .map(Notification::getId).toList();
+            if (!notificationIds.isEmpty()) {
+              try {
+                notificationService.markUserNotificationsAsRead(user.getId(), notificationIds);
+              } catch (SQLException e) {
+                log.error("MESSAGE: sql exception when marking unassigned notifications as read: ", e);
+              }
+            }
+          }
+        }
+      }
 
       final String insertOwnerSql = """
            insert into flow.project_message_owner
@@ -182,8 +249,16 @@ public class MessagingService {
         }
       }
     }
+    else {
+      final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(Arrays.asList(teamId));
+      for (SmsTeam smsTeam: smsTeams) {
+        List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
+        unassignedUserIds.addAll(usersToNotify.stream().map(User::getId).collect(Collectors.toSet()));
+      }
+    }
 
     final HashSet<Long> userIdsToNotify = new HashSet<>(ownerUserIds);
+    userIdsToNotify.addAll(unassignedUserIds);
     //don't give a notification if the user added themselves to the group
     userIdsToNotify.remove(modifiedByUserId);
 
@@ -472,6 +547,13 @@ public class MessagingService {
         .stream()
         .filter(u -> !u.getUsers().isEmpty())
         .toList();
+  }
+
+  public List<SmsTeam> getTeamsForProject(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    return sqlCache.query("messaging.getSmsTeamsForProject", params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
   }
 
   @Transactional

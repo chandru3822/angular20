@@ -1,5 +1,12 @@
 <template>
   <v-container>
+    <confirmation-dialog :open-dialog="unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false"
+                         @confirm="[navigationOverride = true, goToPath(toPath)]">
+      <template v-slot:title>Unsaved Changes</template>
+      You have unsaved changes. Are you sure you want to continue without saving?
+      <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Don't Save</template>
+    </confirmation-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -28,6 +35,7 @@
                         required
                         v-if="showOnUserProfile('First Name')"
                         :rules="requiredRules"
+                        @change="setFieldsDirty"
                         label="First Name">
           </v-text-field>
           <v-text-field v-model="user.lastName"
@@ -35,6 +43,7 @@
                         required
                         v-if="showOnUserProfile('Last Name')"
                         :rules="requiredRules"
+                        @change="setFieldsDirty"
                         label="Last Name">
           </v-text-field>
           <v-text-field v-model="user.email"
@@ -42,6 +51,7 @@
                         required
                         v-if="showOnUserProfile('Email')"
                         :rules="emailRules"
+                        @change="setFieldsDirty"
                         label="E-mail">
           </v-text-field>
           <v-text-field v-model="user.username"
@@ -50,6 +60,7 @@
                         v-if="showOnUserProfile('Username')"
                         type="search"
                         :rules="usernameRules"
+                        @change="setFieldsDirty"
                         label="Username">
           </v-text-field>
           <v-text-field v-model="user.phoneNumber"
@@ -57,6 +68,7 @@
                         placeholder="Enter a value"
                         v-if="showOnUserProfile('Phone')"
                         required
+                        @change="setFieldsDirty"
                         label="Phone">
           </v-text-field>
           <v-select attach v-model="user.notificationTypeId"
@@ -65,6 +77,7 @@
                     v-if="showOnUserProfile('Notification')"
                     item-text="userNotificationType"
                     item-value="id"
+                    @change="setFieldsDirty"
                     autocomplete="off">
           </v-select>
           <v-text-field v-model="user.newPassword"
@@ -74,6 +87,7 @@
                         type="password"
                         autocomplete="new-password"
                         :rules="[passwordRule]"
+                        @change="setFieldsDirty"
                         label="Change Password">
           </v-text-field>
           <v-text-field v-model="user.newPasswordConfirm"
@@ -83,6 +97,7 @@
                         type="password"
                         autocomplete="new-password"
                         :rules="[passwordRule]"
+                        @change="setFieldsDirty"
                         label="Confirm Password">
           </v-text-field>
           <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
@@ -94,6 +109,7 @@
                           item-value="id"
                           autocomplete="off"
                           type="search"
+                          @change="setFieldsDirty"
                           attach
           ></v-autocomplete>
         </v-col>
@@ -104,10 +120,8 @@
       <v-col cols="12" md="6">
         <h3>Notification Preferences</h3>
         <v-card flat color="transparent">
-          <div v-for="item in smsTeams">
-            <div>
-              {{ item.teamName }} SMS Team:<v-checkbox class=" pl-3 d-inline-block" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
-            </div>
+          <div v-for="item in smsTeams" class="unassigned-notif-div">
+              {{ item.teamName }} SMS Team:<v-checkbox class="d-inline-block pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
           </div>
         </v-card>
       </v-col>
@@ -237,7 +251,11 @@ export default {
         }
       ],
       smsTeams: [],
-      notificationToRemove: null
+      notificationToRemove: null,
+      unsavedFieldsModal: false,
+      navigationOverride: false,
+      toPath: null,
+      dirtyFields: false
     }
   },
   computed: {
@@ -258,6 +276,18 @@ export default {
       this.getSmsTeams()
     }
     this.loadProfileImage()
+  },
+  beforeRouteLeave(to, from, next) {
+    // called when the route that renders this component is about to
+    // be navigated away from.
+    // has access to `this` component instance.
+    if (this.navigationOverride || !this.dirtyFields) {
+      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+      next()
+    } else {
+      this.toPath = to.path
+      this.unsavedFieldsModal = true
+    }
   },
   methods: {
     validate () {
@@ -352,6 +382,7 @@ export default {
         this.user.newPassword = null
         this.user.newPasswordConfirm = null
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
+        this.dirtyFields = false;
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -432,12 +463,16 @@ export default {
       }
     },
     populateDirtyCfvs(field) {
+      this.dirtyFields = true;
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
 
       if (!match) {
         this.dirtyCfvs.push(field)
       }
 
+    },
+    setFieldsDirty() {
+      this.dirtyFields = true;
     },
     async getSmsTeams() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -453,10 +488,19 @@ export default {
       }
     },
     checkForDeselect(item) {
+      this.dirtyFields = true;
       if (!item.receiveUnassignedNotifications) {
         this.notificationToRemove = item;
       }
-    }
+    },
+    goToPath(path, targetBlank) {
+      if (targetBlank) {
+        let routerData = this.$router.resolve({path})
+        window.open(routerData.href, '_blank')
+      } else {
+        this.$router.push(path)
+      }
+    },
   }
 }
 </script>
@@ -467,5 +511,10 @@ export default {
   max-width: 200px;
   height: auto;
   border-radius: 50%;
+}
+
+.unassigned-notif-div {
+  width: 700px;
+  height: 40px;
 }
 </style>

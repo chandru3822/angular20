@@ -1,36 +1,101 @@
 <template>
-  <v-row no-gutters>
-    <v-col class="ahj-form-btns py-1" cols="12">
-      <v-btn color="primary" text v-if="dataWasChanged"
-         @click="resetForm"
-         class="cancel-link"
-         style="margin-right: 10px"
-      >Cancel</v-btn>
-      <v-btn class="white--text mr-0 save-btn"
-             v-if="userCanEdit"
-             color="primary"
-             @click="validateForm()"
-      >Save
-      </v-btn>
-    </v-col>
+  <v-card class="mx-4 mt-6 square-card">
+    <v-row no-gutters class="px-2" id="ahj-permit">
+      <v-col class="ahj-form-btns py-1" cols="12">
+        <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
+          {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
+        </v-btn>
+        <v-btn v-if="dataWasChanged"
+               color="primary" text
+               @click="resetForm"
+               class="cancel-link"
+               style="margin-right: 10px"
+        >Cancel
+        </v-btn>
+        <v-btn class="white--text mr-0 save-btn"
+               v-if="userCanEdit"
+               color="primary"
+               @click="validateForm()"
+        >Save
+        </v-btn>
+      </v-col>
+    </v-row>
 
     <v-form ref="ahjDesignForm">
-      <v-row no-gutters class="mb-3">
-        <!-- FIRST COLUMN -->
-        <v-col cols="12" md="4" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
-
-        </v-col>
-
-        <!-- SECOND COLUMN -->
-        <v-col cols="12" md="8" class="pl-sm-0 pl-md-1 mb-sm-2 mb-md-3">
-
-        </v-col>
+      <v-row class="mb-4 group-row" no-gutters>
+        <TwoColumnMasonry v-if="dataReady"
+                          :custom-field-groups=customFieldGroups
+                          :user-can-edit="userCanEdit"
+                          :expanded-all="expandedAll"
+                          :callback="(field) => updateDirtyValue(field)"
+                          @toggle-collapse-expand="toggleCollapseExpand($event)"/>
       </v-row>
 
+      <v-dialog v-model="saveDialog" max-width="700">
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">Save Changes</span>
+          </v-card-title>
 
+          <v-divider></v-divider>
+
+          <v-card-text class="pb-0">
+            <v-radio-group v-model="ahjDesign.updateAllInState">
+              <v-radio label="Save changes to this AHJ only" :value="false"></v-radio>
+              <v-radio :label="`Save changes to all AHJs in ${ahjDesign.stateName}`" :value="true"></v-radio>
+            </v-radio-group>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn v-if="ahjDesign.updateAllInState"
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="saveConfirmDialog = true"
+            >Save
+            </v-btn>
+            <v-btn v-else
+                   class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjDesign"
+            >Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="saveConfirmDialog" max-width="500">
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">Confirm</span>
+          </v-card-title>
+
+          <v-card-text class="pb-0 py-2">
+            Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
+          </v-card-text>
+
+          <v-card-actions class="px-6">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="saveConfirmDialog = false"
+                   class="cancel-link mr-2"
+            >Cancel
+            </v-btn>
+            <v-btn class="white--text mr-0 save-btn"
+                   color="primary"
+                   @click="updateAhjDesign"
+            >Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-form>
-
-  </v-row>
+  </v-card>
 </template>
 
 <script>
@@ -38,18 +103,31 @@ import cloneDeep from 'lodash.clonedeep'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
+import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
   name: 'ahjDesign',
   components: {
-    CustomValueInput
+    CustomValueInput,
+    TwoColumnMasonry
   },
   computed: {
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
     },
+    expandedAll(){
+      if(this.expandedGroups === this.totalGroups){
+        return CollapseExpandEnum.EXPANDED
+      } else if (this.expandedGroups === 0) {
+        return CollapseExpandEnum.COLLAPSED
+      } else {
+        return CollapseExpandEnum.MIXED
+      }
+    }
   },
   data: () => ({
+    CollapseExpandEnum,
     ahjId: null,
     itemType: 'design',
     snackbar: {},
@@ -57,7 +135,7 @@ export default {
     saveConfirmDialog: false,
     dataWasChanged: false,
     dataReady: false,
-    customFieldGroupAssignments: [],
+    customFieldGroups: [],
     ahjDesign: {
       designRequirements: [],
       electricalRequirements: [],
@@ -69,6 +147,20 @@ export default {
     updateDirtyValue(item) {
       item.valueWasChanged = true
       this.dataWasChanged = true
+    },
+    toggleCollapseExpand(wasExpanded) {
+      if(wasExpanded === false) {
+        this.expandedGroups--
+      }else {
+        this.expandedGroups++
+      }
+    },
+    toggleMinimizeAll() {
+      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
+        this.expandedGroups = 0
+      } else {
+        this.expandedGroups = this.totalGroups
+      }
     },
     async getAhjDesign() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -93,7 +185,9 @@ export default {
             data,
             status
           } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroupAssignments = cloneDeep(data)
+          this.customFieldGroups = cloneDeep(data)
+          this.totalGroups = this.totalGroups + this.customFieldGroups.length
+          this.expandedGroups = this.totalGroups
           handleHidingGlobalLoader(this, status)
         } else {
           console.error('*** ERROR ***', 'Missing parameter "sourceId"')
@@ -106,11 +200,11 @@ export default {
       }
     },
     getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
       return match ? match.customFieldValues : []
     },
     resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroupAssignments.forEach(group => {
+      this.customFieldGroups.forEach(group => {
         group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
       })
     },
@@ -155,7 +249,7 @@ export default {
           }
         }
 
-        this.ahjDesign.customFieldGroups = this.customFieldGroupAssignments
+        this.ahjDesign.customFieldGroups = this.customFieldGroups
         const {
           data,
           status

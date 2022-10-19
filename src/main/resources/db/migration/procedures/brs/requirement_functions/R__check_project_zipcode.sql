@@ -35,6 +35,7 @@ with published_proposal as (select proposal_version_id
                                                    and ppscfv2.custom_field_group_assignment_id =
                                                        23496 -- postal code approval
                                 where pps.project_id = p_project_id
+                                  and pps.main is true
                                   and pps.process_step_id = 3546 -- Zip Code Approval
                                   and cpsst.process_step_status_type_id in (1, 2))
 select case when t.approved then t.approved else coalesce(rps.process_step_approval, false) end

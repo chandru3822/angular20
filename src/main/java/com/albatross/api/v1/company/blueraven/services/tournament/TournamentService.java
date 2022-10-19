@@ -53,8 +53,8 @@ public class TournamentService {
     params.put("userId", userId);
     params.put("startDate", startDate);
     params.put("endDate", endDate);
-    String results = sqlCache.queryForObject("tournament.getUserScores", params, String.class);
-    return results;
+    Optional<String> results = sqlCache.queryForObjectOptional("tournament.getUserScores", params, String.class);
+    return results.orElse(null);
   }
 
   public List<TournamentOwnerType> getTournamentOwnerTypes() {

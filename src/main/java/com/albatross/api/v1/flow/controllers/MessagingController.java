@@ -31,6 +31,11 @@ public class MessagingController {
     return messageTemplateService.getTemplates();
   }
 
+  @GetMapping(value = "/templatesWithTeams")
+  public List<MessageTemplate> getTemplatesWithTeamInfo() {
+    return messageTemplateService.getTemplatesWithTeamInfo();
+  }
+
   @GetMapping(value = "/templates/{teamIds}")
   public Set<MessageTemplate> getTemplates(@PathVariable List<Long> teamIds) {
     return messageTemplateService.getTemplates(teamIds);

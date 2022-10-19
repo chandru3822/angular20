@@ -1,15 +1,22 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.exception.ApiException;
+import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.google.common.collect.Maps;
+import com.google.i18n.phonenumbers.NumberParseException;
+import freemarker.core.InvalidReferenceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
@@ -19,10 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -33,6 +42,7 @@ public class CommunicationService {
   private final UserService userService;
   private final MailService mailService;
   private final SMSService smsService;
+  private final ProjectService projectService;
 
   @Async
   public Future<Void> sendEmails(
@@ -268,6 +278,147 @@ public class CommunicationService {
         CommunicationService.class.getResourceAsStream("/communication/templates/email.ftl.txt")) {
       return new Scanner(input, "UTF-8").useDelimiter("\\A").next();
     }
+  }
+
+  public Map<String, Object> sendTextsForProject(Long projectId, Contact contact, User user, String message, List<URI> mediaURLs) {
+    String groupId = UUID.randomUUID().toString();
+      String phoneNumber = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();
+      try {
+        String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+        Optional<Project> projectIn = projectService.getProject(projectId);
+        if (projectIn.isEmpty()) {
+          log.error("MESSAGING: Missing project id={}", projectId);
+          throw new ApiException("Unable to find project");
+        }
+        Project project = projectIn.get();
+
+        CommunicationController.ProjectDetails projectDetails = getProjectTemplateFields(projectId, project.getTimeZone());
+
+        Map<String, Object> contextMap =
+          Map.of(
+            "contact",
+            contact,
+            "project",
+            project,
+            "user",
+            user,
+            "projectDetails",
+            projectDetails);
+
+        String template =
+          renderTemplate(
+            message == null ? "" : message, contextMap);
+
+        queueTextMessagesForProject(
+          groupId,
+          contact,
+          projectId,
+          safePhone,
+          template,
+          mediaURLs,
+          user.getId());
+
+        return Map.of("messageGroup", groupId);
+      } catch (NumberParseException ex) {
+        log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+      } catch (InvalidReferenceException ire) {
+        Pattern invalidParameter = Pattern.compile("([$]\\S+)");
+        Matcher m = invalidParameter.matcher(ire.getMessage());
+        if (m.find()) {
+          String invalidParamName = m.group(1);
+          throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Invalid parameter " + invalidParamName + " ",
+            new Exception());
+        } else {
+          throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
+        }
+      } catch (Exception e) {
+        log.error("MESSAGING: Error queueing SMS message ", e);
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
+      }
+  }
+
+  private CommunicationController.ProjectDetails getProjectTemplateFields(Long projectId, String projectTimeZone) {
+    CommunicationController.ProjectDetails projectDetails = projectService.getProjectDetailTemplateFields(projectId);
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.n]");
+    if (projectTimeZone != null && !projectTimeZone.isEmpty()) {
+      LocalDateTime timestampFunctionResult;
+      ZonedDateTime zoneTimestampFunctionResult;
+
+      if (projectDetails.getLocalCloserAppointmentStartTime() != null) {
+        timestampFunctionResult = LocalDateTime.parse(projectDetails.getLocalCloserAppointmentStartTime(), dateTimeFormatter);
+        zoneTimestampFunctionResult =
+          timestampFunctionResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String closerAppointmentTime =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        String closerAppointmentDate =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        projectDetails.setLocalCloserAppointmentStartTime(closerAppointmentTime);
+        projectDetails.setLocalCloserAppointmentStartDate(closerAppointmentDate);
+      }
+
+      if (projectDetails.getAhjInspectionWorkStartTime() != null) {
+        timestampFunctionResult = LocalDateTime.parse(projectDetails.getAhjInspectionWorkStartTime(), dateTimeFormatter);
+        zoneTimestampFunctionResult =
+          timestampFunctionResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String ahjInspectionDate =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        String ahjInspectionTime =
+          zoneTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        projectDetails.setAhjInspectionWorkDate(ahjInspectionDate);
+        projectDetails.setAhjInspectionWorkStartTime(ahjInspectionTime);
+      }
+
+      if (projectDetails.getInstallationStartTime() != null) {
+        LocalDateTime timestampFunctionStartTimeResult = LocalDateTime.parse(projectDetails.getInstallationStartTime(), dateTimeFormatter);
+        ZonedDateTime zoneStartTimestampFunctionResult =
+          timestampFunctionStartTimeResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String installationStartDate =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        String installationStartTime =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        zoneStartTimestampFunctionResult = zoneStartTimestampFunctionResult.plusHours(1L);
+        String installationLatestStartTime =
+          zoneStartTimestampFunctionResult.format(DateTimeFormatter.ofPattern("h:mm a"));
+        projectDetails.setInstallationDate(installationStartDate);
+        projectDetails.setInstallationStartTime(installationStartTime);
+        projectDetails.setInstallationLatestStartTime(installationLatestStartTime);
+      }
+
+
+      if (projectDetails.getInstallationEndTime() != null) {
+        LocalDateTime timestampFunctionEndTimeResult =
+          LocalDateTime.parse(projectDetails.getInstallationEndTime(), dateTimeFormatter);
+        ZonedDateTime zoneEndTimestampFunctionResult =
+          timestampFunctionEndTimeResult
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(projectTimeZone));
+        String installationEndTime =
+          zoneEndTimestampFunctionResult.format(DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"));
+        projectDetails.setInstallationEndTime(installationEndTime);
+      }
+
+    }
+
+    Optional<String> scopeOfWork = projectService.getInstallationScopeOfWork(projectId);
+
+    if (scopeOfWork.isPresent()) {
+      projectDetails.setInstallationScopeOfWork(scopeOfWork.get());
+    }
+
+    return projectDetails;
   }
 
   //  public void sendPushNotificationToTopic(String title, String body)

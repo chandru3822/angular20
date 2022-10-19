@@ -5,6 +5,22 @@
       where mt.archived is not true
   ]]></messageTemplate.getAllTemplates>
 
+  <messageTemplate.getAllTemplatesWithTeamInfo><![CDATA[
+      select id, title, message, archived,
+             coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(team)))
+                        FROM (
+                          select st.id,
+                                 st.team_name as "teamName"
+                          from flow.sms_team st
+                          where st.id = any(mt.team_ids)
+                          and st.archived is false
+                               ) team), '[]') AS "teams"
+      from flow.message_template mt
+      where mt.archived is not true
+      order by title
+  ]]></messageTemplate.getAllTemplatesWithTeamInfo>
+
   <messageTemplate.getTemplates><![CDATA[
     select id, title, message, to_jsonb(team_ids) as teamIds, archived
       from flow.message_template mt
