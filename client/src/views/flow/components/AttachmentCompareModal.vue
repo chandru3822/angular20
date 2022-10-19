@@ -19,7 +19,7 @@
           <v-col :cols="leftCols" class="left-column">
             <!--            <v-btn @click="closeCallback">Back</v-btn>-->
             <div class="left-column-header thumbnail-container">
-              Thumbnail
+              File
             </div>
           </v-col>
           <v-col :cols="attachmentCols" v-for="(a, idx) in attachmentsCopy" :key="idx" class="thumbnail-file-container">
@@ -32,26 +32,21 @@
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <!--            <div>-->
-            <!--              {{ a.displayName }}-->
-            <!--              <v-btn x-small text color="primary" @click="removeAttachmentFromView(a)">-->
-            <!--                <v-icon>close</v-icon>-->
-            <!--              </v-btn>-->
-            <!--            </div>-->
-            <div class="mt-3 preview-main-container">
-              <div v-if="a.isImage" class="one-hunned">
-                <v-img name="coversheetPreview"
-                       class="preview-image"
-                       :src="a.presignedUrl"></v-img>
-              </div>
-              <div v-else-if="a.isPdf" class="one-hunned">
-                <v-card class="square-card no-preview-container">
-                  <div class="text-center">
-                    <v-icon :size="200" color="white">mdi-file-pdf-box</v-icon>
+<!--            we removed the preview for now -->
+<!--            <div class="mt-3 preview-main-container">-->
+<!--              <div v-if="a.isImage" class="one-hunned">-->
+<!--                <v-img name="coversheetPreview"-->
+<!--                       class="preview-image"-->
+<!--                       :src="a.presignedUrl"></v-img>-->
+<!--              </div>-->
+<!--              <div v-else-if="a.isPdf" class="one-hunned">-->
+<!--                <v-card class="square-card no-preview-container">-->
+<!--                  <div class="text-center">-->
+<!--                    <v-icon :size="200" color="white">mdi-file-pdf-box</v-icon>-->
 
 <!--                    <div class="mt-5">PDF Preview Unavailable</div>-->
-                  </div>
-                </v-card>
+<!--                  </div>-->
+<!--                </v-card>-->
 <!--                <div v-if="pdfIsLoading" class="text-center">-->
 <!--                  <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>-->
 <!--                </div>-->
@@ -61,17 +56,17 @@
 <!--                  :page="pdfPage"-->
 <!--                  @rendered="handleDocumentRender"-->
 <!--                />-->
-              </div>
-              <div v-else class="height-one-hunned one-hunned">
-                <v-card class="square-card no-preview-container">
-                  <div class="text-center">
-                    <v-icon :size="200" color="white">mdi-image-frame</v-icon>
+<!--              </div>-->
+<!--              <div v-else class="height-one-hunned one-hunned">-->
+<!--                <v-card class="square-card no-preview-container">-->
+<!--                  <div class="text-center">-->
+<!--                    <v-icon :size="200" color="white">mdi-image-frame</v-icon>-->
 
-                    <div class="mt-5">No Preview Available</div>
-                  </div>
-                </v-card>
-              </div>
-            </div>
+<!--                    <div class="mt-5">No Preview Available</div>-->
+<!--                  </div>-->
+<!--                </v-card>-->
+<!--              </div>-->
+<!--            </div>-->
             <div class="compare-view-btns">
               <v-btn small @click="closeModal(a)" class="mr-4">
                 View
@@ -370,8 +365,9 @@ export default {
 
 .compare-view-btns {
   display: flex;
-  justify-content: center;
-  margin-top: 20px;
+  justify-content: start;
+  //justify-content: center;
+  //margin-top: 20px;
 }
 
 .thumbnail-file-container {
