@@ -257,8 +257,8 @@ export default {
           uniqueIdentifier: 'tab_documents'
         })
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
-        // used to preselect the docs tab for testing purposes
-        this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
+        // use this line to preselect the docs tab for testing purposes
+        // this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
       } catch (e) {
         logError(e)
       } finally {
