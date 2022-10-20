@@ -37,7 +37,7 @@
           hide-details
         ></v-text-field>
 
-        <v-btn class="my-4 mr-3" small @click="compare = false" v-if="compare">
+        <v-btn class="my-4 mr-3" small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]" v-if="compare">
           Cancel Comparison
         </v-btn>
         <v-btn color="primary" small class="my-4" @click="showCompareModal = true" v-if="compare"
@@ -115,6 +115,7 @@
                 :contactId="contactId"
                 :compare="!allowUpload && !loadLinked && compare"
                 :orgId="orgId"
+                :cancel-reset-key="cancelResetKey"
                 :objectTypeId="objectTypeId"
                 :projectProcessStepEventId="projectProcessStepEventId"
                 :compare-callback="toggleAttachmentToCompare"
@@ -186,6 +187,7 @@ export default {
       projectProcessStepId: null,
       projectProcessStepEventId: null,
       selectedAttachmentsForCompare: [],
+      cancelResetKey: 0,
       attachmentTypes: [],
       attachments: [],
       dragTypeId: null,

@@ -123,7 +123,16 @@ export default {
     projectProcessStepEventId: Number,
     compareCallback: Function,
     deleteCallback: Function,
-    countSelected: Number
+    countSelected: Number,
+    cancelResetKey: Number
+  },
+  watch: {
+    cancelResetKey: function () {
+      //this is called when the parent element clicks "cancel comparison"
+      this.attachments.forEach(a => {
+        a.compare = false
+      })
+    },
   },
   data() {
     return {
