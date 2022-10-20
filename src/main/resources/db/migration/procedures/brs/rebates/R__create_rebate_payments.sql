@@ -59,7 +59,7 @@ BEGIN
 
   v_payment_nbr := 1;
 
---Loop through the number of payments(aka number of months) and create a payment record for each payment installment.
+--Loop through the number of payments (aka number of months) and create a payment record for each payment installment.
   FOR x in 1..p_number_of_promotion_payments LOOP
 
      INSERT INTO brs.project_rebate_payment (project_id, payment_amount, payment_nbr, created_by_user_id, created_date, project_rebate_payment_state_id) values (p_project_id, p_total_promotion_amount/p_number_of_promotion_payments, v_payment_nbr, p_created_by_user_id,(now() at time zone 'US/Mountain')::date, 1);
