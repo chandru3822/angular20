@@ -106,7 +106,7 @@
                         v-if="userCanEdit"
                         label="this Custom Field Group: "
                         :item-to-delete="item.groupName"
-                        @confirm-delete="deleteWithChecks(item, item.id, null)"
+                        @confirm="deleteWithChecks(item, item.id, null)"
                       ><span class="error--text">WARNING:</span>
                         By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
                       </confirm-delete-dialog>

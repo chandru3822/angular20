@@ -136,7 +136,7 @@
                   <confirm-delete-dialog
                       label="this position: "
                       :item-to-delete="item.position"
-                      @confirm-delete="deletePositionFromPool(item)"
+                      @confirm="deletePositionFromPool(item)"
                   ></confirm-delete-dialog>
                 </td>
               </tr>

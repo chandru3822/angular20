@@ -131,7 +131,7 @@
               <confirm-delete-dialog
                   v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
                   label="this bracket"
-                  @confirm-delete="[b.archived = true, deleteBracket(b.id)]"
+                  @confirm="[b.archived = true, deleteBracket(b.id)]"
               ></confirm-delete-dialog>
             </v-toolbar>
             <v-card flat v-if="b.addRound">
