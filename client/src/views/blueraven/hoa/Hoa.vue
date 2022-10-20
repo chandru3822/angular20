@@ -15,10 +15,10 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-<!--            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">-->
-<!--              <v-icon>add</v-icon>-->
-<!--              <span v-if="!constants.IS_MOBILE">Add New</span>-->
-<!--            </v-btn>-->
+            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+              <v-icon>add</v-icon>
+              <span v-if="!constants.IS_MOBILE">Add New</span>
+            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -93,6 +93,59 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <v-dialog v-model="ahjDialog" max-width="500px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">{{ ahjFormTitle }}</span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field label="Name"
+                        v-model="editedItem.name"
+                        required
+                        filled
+          ></v-text-field>
+          <v-autocomplete label="Metro Area"
+                          :items="metroAreas"
+                          v-model="editedItem.metroAreaId"
+                          item-text="metroArea"
+                          item-value="id"
+                          required
+                          filled
+                          attach
+          ></v-autocomplete>
+          <v-autocomplete label="State"
+                          :items="states"
+                          v-model="editedItem.companyStateId"
+                          item-text="state"
+                          item-value="id"
+                          autocomplete="off"
+                          required
+                          filled
+                          attach
+          ></v-autocomplete><v-autocomplete label="Management Company"
+                          :items="[]"
+                          v-model="editedItem.companyId"
+                          item-text="management"
+                          item-value="id"
+                          autocomplete="off"
+                          filled
+                          attach
+          ></v-autocomplete>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="close">Cancel</v-btn>
+          <v-btn color="primary" raised @click="saveAhj" class="white--text"
+                 :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId">
+            {{ ahjBtnTxt }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -101,10 +154,12 @@ import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
 import {AppMutations} from "@/stores/AppStore";
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 
 export default {
   name: "Hoa",
   data:  () => ({
+    constants,
     dataLoading: false,//true,
     hoaFilters:[],
     states:[],
@@ -122,12 +177,23 @@ export default {
       lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
       'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
       'items-per-page-options': [25, 50, 100, 1000]
-    }
-    }),
+    },
+    ahjDialog: false,
+    editedItem: {
+      name: '',
+      metroAreaId: '',
+    },
+  }),
   computed: {
     filteredHoas(){
       return []
-    }
+    },
+    ahjFormTitle () {
+      return this.addMode ? 'Create HOA' : 'Update HOA'
+    },
+    ahjBtnTxt () {
+      return this.addMode ? 'Add' : 'Update'
+    },
   },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -145,6 +211,64 @@ export default {
       this.hoaFilters = cloneDeep(FILTER_DEFAULTS)
       this.hoaFilters = {...this.hoaFilters, managementCompany: {value: null, type:'text', model:'managementCompany'}}
     },
+    async getActiveMetroAreas () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest('/metro/getActive', 'blueraven')
+        this.metroAreas = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+
+    addItem () {
+      this.getActiveMetroAreas()
+      this.addMode = true
+      this.ahjDialog = true
+    },
+    close () {
+      this.ahjDialog = false
+      this.ahjDeleteDialog = false
+      this.editedItem = {}
+    },
+    async saveAhj () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      if (!this.editedItem.id) {
+        try {
+          const {status} = await postRequest('/ahj', this.editedItem, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ created')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error creating AHJ')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      } else {
+        try {
+          const {status} = await putRequest(`/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error updating AHJ')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+
+      this.close()
+      this.initFilters()
+      await this.fetchAhjs().then(() => this.fetchStates())
+      this.editedItem = {}
+    },
+
   }
 }
 </script>
