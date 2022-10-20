@@ -34,7 +34,7 @@ BEGIN
       and p.id = p_project_id and pps.main = true);
 
     update flow.project_process_step_custom_field_value
-    set numeric_value = p_total_promotion_amount, modified_by_id = p_created_by_user_id, date_modified = now() where id =
+    set int_value = p_number_of_promotion_payments, modified_by_id = p_created_by_user_id, date_modified = now() where id =
     (select pscfv.id
     from flow.project p
              inner join flow.project_process_step pps
