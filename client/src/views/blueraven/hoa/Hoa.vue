@@ -1,0 +1,193 @@
+<template>
+  <v-container id="hoa-container">
+    <v-row>
+      <v-col cols="12">
+        <v-toolbar color="white" class="elevation-1">
+          <v-toolbar-title class="app-title">
+            <v-btn text to="/ahj" color="primary">
+              AHJ
+            </v-btn>
+            <v-btn text to="/ahjUtility" color="primary">
+              Utility
+            </v-btn><v-btn text to="/hoa" color="primary">
+            HOA
+          </v-btn>
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+<!--            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">-->
+<!--              <v-icon>add</v-icon>-->
+<!--              <span v-if="!constants.IS_MOBILE">Add New</span>-->
+<!--            </v-btn>-->
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-data-table
+            :headers="headers"
+            :items="filteredHoas"
+            :loading="dataLoading"
+            :items-per-page="100"
+            :mobile-breakpoint="0"
+            fixed-header
+            :footer-props="footerProps"
+            class="elevation-1 hoa-table"
+        >
+          <template #header="{ props: { headers } }">
+            <tr>
+              <th v-for="header in headers" :key="header.text"
+                  :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
+              >
+                <div v-if="hoaFilters[header.value]" class="pt-2 table-filter">
+                  <v-text-field v-if="hoaFilters[header.value].type === 'text'"
+                                v-model="hoaFilters[header.value].value"
+                                :placeholder="'Enter a ' + header.text.toLowerCase()"
+                                clearable
+                                filled
+                                dense
+                                hide-details
+                  ></v-text-field>
+                  <v-autocomplete v-else-if="hoaFilters[header.value].type === 'select'"
+                                  :items="states"
+                                  v-model="hoaFilters[header.value].value"
+                                  :placeholder="'Select a ' + header.text.toLowerCase()"
+                                  clearable
+                                  filled
+                                  item-text="state"
+                                  dense
+                                  hide-details
+                                  attach
+                  ></v-autocomplete>
+                </div>
+              </th>
+            </tr>
+          </template>
+
+          <template #item="{ item, index }">
+            <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.metroArea ? item.metroArea : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
+              <td class="text-left">
+                <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
+                <span v-else>
+                  <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link primary--text">Permit</router-link>
+                  <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link primary--text">Inspection</router-link>
+                  <!--                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link primary&#45;&#45;text">Design Requirements</router-link>-->
+                </span>
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                  edit
+                </v-icon>
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
+                  delete
+                </v-icon>
+              </td>
+            </tr>
+          </template>
+
+          <template #no-data>
+            <div class="mt-2 mb-4 default-text-color">No records found</div>
+          </template>
+
+          <template #no-results>
+            <div class="mt-2 mb-4 default-text-color">No records found</div>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
+
+<script>
+import constants from "@/helpers/constants";
+import cloneDeep from "lodash.clonedeep";
+import {FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
+import {AppMutations} from "@/stores/AppStore";
+
+export default {
+  name: "Hoa",
+  data:  () => ({
+    dataLoading: false,//true,
+    hoaFilters:[],
+    states:[],
+    metroAreas:[],
+      headers: [
+        { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
+        { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
+        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
+        {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 350, show: true },
+        { text: null, value: null, sortable: false, show: true, width: 5 }
+      ],
+    footerProps: {
+      showFirstLastPage: !constants.IS_MOBILE,
+      firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+      lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+      'items-per-page-options': [25, 50, 100, 1000]
+    }
+    }),
+  computed: {
+    filteredHoas(){
+      return []
+    }
+  },
+    created () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.currentUser = this.$store.state.user.details.id
+      this.initFilters()
+      // this.fetchAhjs().then(() => {
+      //   if (this.ahjs.length > 0) {
+      //     this.fetchStates()
+      //   }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      // })
+    },
+  methods: {
+    initFilters () {
+      this.hoaFilters = cloneDeep(FILTER_DEFAULTS)
+      this.hoaFilters = {...this.hoaFilters, managementCompany: {value: null, type:'text', model:'managementCompany'}}
+    },
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.ahj-link {
+  color: var(--v-brBlue-base);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    color: var(--v-primary-base);
+  }
+}
+
+.ahj-link-icon {
+  &:hover {
+    color: var(--v-primary-lighten1) !important;
+  }
+}
+
+.hoa-table {
+  margin-top: 2px;
+}
+
+.v-data-table ::v-deep .v-data-table__wrapper {
+  max-height: calc(100vh - 240px);
+
+  .table-filter {
+    font-weight: normal;
+    margin-bottom: 10px;
+
+    .v-text-field,
+    .v-select {
+      font-size: 0.875rem;
+      margin-left: 15px;
+    }
+  }
+}
+
+@media (min-width: 769px) {
+  .v-data-table ::v-deep .v-data-table__wrapper {
+    max-height: calc(100vh - 202px);
+  }
+}
+</style>

@@ -9,7 +9,9 @@
             </v-btn>
             <v-btn text to="/ahjUtility" color="primary">
               Utility
-            </v-btn>
+            </v-btn><v-btn text to="/hoa" color="primary">
+            HOA
+          </v-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -146,12 +148,7 @@
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import {getActiveStates} from '@/services/stateService'
-
-  const FILTER_DEFAULTS = {
-    name: {value: '', type: 'text', model: 'name'},
-    metroArea: {value: '', type: 'text', model: 'metroArea'},
-    state: {value: [], type: 'select', model: 'state'}
-  }
+  import {FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
 
   export default {
     name: 'ahjUtilities',
@@ -349,7 +346,7 @@
 
     &:hover {
       text-decoration: underline;
-      color: var(--v-primaryText-base);
+      color: var(--v-primary-base);
     }
   }
 

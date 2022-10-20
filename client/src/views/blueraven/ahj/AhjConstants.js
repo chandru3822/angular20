@@ -4,6 +4,12 @@ export const CollapseExpandEnum = Object.freeze({
     EXPANDED:2
 })
 
+export const FILTER_DEFAULTS = {
+    name: {value: '', type: 'text', model: 'name'},
+    metroArea: {value: '', type: 'text', model: 'metroArea'},
+    state: {value: [], type: 'select', model: 'state'}
+}
+
 export const AhjUtilityDocumentTypes = [
     {
         attachmentType: "Utility Rate Documents",

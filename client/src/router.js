@@ -433,7 +433,31 @@ const router = new Router({
               return accessDenied()
             }
           },
+        },{
+          path: '/hoa',
+          name: 'hoa',
+          meta: {title: 'Albatross - HOA'},
+          component: () => {
+            if (store.getters.userHasFeature('AHJ_DATABASE')) {
+              return import (/* webpackChunkName: "ahjUtilities" */ './views/blueraven/hoa/Hoa.vue')
+            } else {
+              return accessDenied()
+            }
+          },
         },
+        //   {
+        //   path: '/ahjUtility/:ahjUtilityId/details',
+        //   name: 'ahjUtilityDetails',
+        //   meta: {title: 'Albatross - AHJ'},
+        //   props: true,
+        //   component: () => {
+        //     if (store.getters.userHasFeature('AHJ_DATABASE')) {
+        //       return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/blueraven/ahj/utility/AhjUtilityDetails.vue')
+        //     } else {
+        //       return accessDenied()
+        //     }
+        //   },
+        // },
         //TOURNAMENT STUFF
         {
           path: '/tournament/:id',

@@ -9,6 +9,8 @@
             </v-btn>
             <v-btn text to="/ahjUtility" color="primary">
               Utility
+            </v-btn><v-btn text to="/hoa" color="primary">
+              HOA
             </v-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -151,19 +153,18 @@
   import {getActiveStates} from '@/services/stateService'
   import { AppMutations } from '@/stores/AppStore'
   import ConfirmationDialog from "@/ConfirmationDialog";
+  import {FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
 
-  const FILTER_DEFAULTS = {
-    name: {value: '', type: 'text', model: 'name'},
-    metroArea: {value: '', type: 'text', model: 'metroArea'},
-    state: {value: [], type: 'select', model: 'state'}
-  }
+
 
   export default {
     name: 'ahjs',
     components: {ConfirmationDialog},
     data: () => ({
       snackbar: {},
-      constants,
+      constants, initFilters () {
+        this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
+      },
       dataLoading: true,
       tabs: [
         {
@@ -174,6 +175,11 @@
         {
           label: 'Utility',
           path: '/ahjUtility',
+          display: true
+        },
+        {
+          label: 'HOA',
+          path: '/hoa',
           display: true
         }
       ],
@@ -271,9 +277,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      initFilters () {
-        this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
-      },
+
       addItem () {
         this.getActiveMetroAreas()
         this.addMode = true
@@ -379,12 +383,12 @@
   }
 
   .ahj-link {
-    color: var(--v-brBlue-base);
+    color: purple;
     text-decoration: none;
 
     &:hover {
       text-decoration: underline;
-      color: var(--v-primaryText-base);
+      color: var(--v-primary-base);
     }
   }
 
