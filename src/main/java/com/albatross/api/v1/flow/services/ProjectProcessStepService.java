@@ -690,7 +690,7 @@ public class ProjectProcessStepService {
             break;
           case 6:
           case 9:
-            requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
+            requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? calculateDropdownRequirement(r) : calculateIntRequirement(r);
             break;
           case 7:
             requirementMet = calculateMultiselectRequirement(r);
@@ -1294,7 +1294,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean caclulateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Long fieldValue = r.getIntValue();
 
@@ -1302,7 +1302,8 @@ public class ProjectProcessStepService {
 
     try {
       if (r.getDataTypeRequirementId() == null) {
-        Long reqValue = r.getListOfValueId();
+        //this was trying to use listOfValueId for system lists. i think this fixes that issue and keeps everything working for normal dropdowns too
+        Long reqValue = null != r.getSystemListOptionId() ? r.getSystemListOptionId() : r.getListOfValueId();
         passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
       } else {
         switch (r.getDataTypeRequirementId().intValue()) {
