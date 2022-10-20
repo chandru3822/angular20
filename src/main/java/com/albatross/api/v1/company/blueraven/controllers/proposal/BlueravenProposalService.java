@@ -111,7 +111,7 @@ public class BlueravenProposalService {
     }
 
     // create new "create proposal design" step (active, cancel others)
-    Long ppsId = insertProjectProcessStep(projectId, CREATE_PROPOSAL_DESIGN_ID, currentUser.getTrueUserId());
+    Long ppsId = insertProjectProcessStep(projectId, CREATE_PROPOSAL_DESIGN_ID);
     log.debug("the new ppsId is: {}", ppsId);
     // upload attachments to the new step
     if (null != attachments && attachments.size() > 0) {
@@ -144,18 +144,9 @@ public class BlueravenProposalService {
     sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
   }
 
-  private Long insertProjectProcessStep(@NonNull Long projectId, @NonNull Long processStepId, @NonNull Long userId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("processStepId", processStepId);
-    params.put("userPositionId", null);
-    params.put("userId", userId);
-    params.put("companyId", 3L);
-    params.put("parentProjectProcessStepId", null);
-    params.put("initialCompanyProcessStepStatusTypeId", 1L);
-    params.put("existingCompanyProcessStepStatusTypeId", 3L);
-
-    return sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
+  private Long insertProjectProcessStep(@NonNull Long projectId, @NonNull Long processStepId) {
+    return projectProcessStepService.insertProjectProcessStep(
+      projectId, processStepId, null, null, true, 1L, 3L);
   }
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
@@ -356,7 +347,7 @@ public class BlueravenProposalService {
 
   @Transactional
   public Optional<ProposalDesign> requestPostalCodeApproval(@NonNull Long projectId, String comments, @NonNull Long userId) {
-    final Long ppsId = insertProjectProcessStep(projectId, ZIP_CODE_APPROVAL_ID, userId);
+    final Long ppsId = insertProjectProcessStep(projectId, ZIP_CODE_APPROVAL_ID);
     log.debug("Requested Postal Code Approval - PPS #{}", ppsId);
 
     if (comments != null) {
