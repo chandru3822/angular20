@@ -94,8 +94,13 @@
           },
           {
             id: 4,
-            label: 'events',
+            label: 'Events',
             path: `/settings/processStep/${this.$route.params.id}/events`,
+          },
+          {
+            id: 5,
+            label: 'Attachment Types',
+            path: `/settings/processStep/${this.$route.params.id}/attachmentTypes`,
           }
         ]
       }

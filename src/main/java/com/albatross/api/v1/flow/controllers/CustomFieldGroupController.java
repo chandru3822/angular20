@@ -102,8 +102,9 @@ public class CustomFieldGroupController {
   public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long companyObjectTypeId,
                                                             @RequestParam Long groupId,
                                                             @RequestParam(required = false) Long processStepId,
-                                                            @RequestParam(required = false) Long eventId) {
-    return customFieldGroupService.getAvailableCustomFieldsInGroup(companyObjectTypeId, groupId, processStepId, eventId);
+                                                            @RequestParam(required = false) Long eventId,
+                                                            @RequestParam(required = false) Long attachmentTypeId) {
+    return customFieldGroupService.getAvailableCustomFieldsInGroup(companyObjectTypeId, groupId, processStepId, eventId, attachmentTypeId);
   }
 
   @PostMapping(value = "/addCustomFieldGroup")
@@ -119,6 +120,21 @@ public class CustomFieldGroupController {
   @PostMapping(value = "/addEventCustomFieldGroup")
   public CustomFieldGroup addEventCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
     return customFieldGroupService.addEventCustomFieldGroup(customFieldGroup);
+  }
+
+  @PostMapping(value = "/addAttachmentCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup addAttachmentCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.addAttachmentCustomFieldGroup(customFieldGroup);
+  }
+
+  @PostMapping(value = "/addProcessStepAttachmentCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup addProcessStepAttachmentCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.addProcessStepAttachmentCustomFieldGroup(customFieldGroup);
+  }
+
+  @Data
+  public static class DeleteWithRequirementParams {
+    private Long customFieldGroupId, customFieldGroupAssignmentId;
   }
 
   @PutMapping(value = "/deleteWithRequirementChecks")
@@ -156,10 +172,5 @@ public class CustomFieldGroupController {
   @PutMapping(value = "/updateFieldShowOrRequire")
   public void updateFieldShowOrRequire(@RequestBody CustomField customField) {
     customFieldGroupService.updateFieldShowOrRequire(customField);
-  }
-
-  @Data
-  public static class DeleteWithRequirementParams {
-    private Long customFieldGroupId, customFieldGroupAssignmentId;
   }
 }

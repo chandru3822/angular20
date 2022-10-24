@@ -1,129 +1,188 @@
 <template>
-  <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
-
-  <v-container v-else dense :key="renderTicker" id="attachment-table">
-    <v-row v-for="item in drillDownAttachments"  class="text-left attachment"  :class="{'primary-row': item.main}" :key="item.processStepId">
-      <v-col cols="6" class="text-left pa-1">
-        <v-btn
-            icon
-            text
-            :href="item.presignedUrl" class="type">
-          <v-icon size="25" color="grey">
-            {{ getIconForFile(item) }}
-          </v-icon>
-        </v-btn>
-        <a v-if="!item.edit" :href="item.presignedUrl"
-           class="type link text-left text-decoration-none">
-          {{ allowEdit ? item.editableNameCopy : item.filename }}
-        </a>
-        <v-text-field
-            v-else
-            hide-details
-            label="Filename"
-            class="my-2 text-field"
-            v-model="item.editableName"
-        ></v-text-field>
-      </v-col>
-      <v-col cols="4" class="text-center px-1 attachment-info">{{ item.uploadedBy ? `${item.uploadedBy}, ` : ''}}{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</v-col>
-      <v-col cols="2" class="text-right pa-0">
-        <v-btn v-if="!item.edit && allowEdit" dense small text color="primary" class="px-0" @click="[item.edit = true, renderTicker++]">
-          <v-icon>edit</v-icon>
-        </v-btn>
-        <v-btn v-if="item.edit" dense text color="primary" small class="px-0" @click="[item.edit = false, item.editableName = item.editableNameCopy, renderTicker++]">
-          cancel
-        </v-btn>
-        <v-btn  v-if="item.edit" dense small text color="primary" class="px-0" @click="saveFilename(item)">
-          <v-icon>save</v-icon>
-        </v-btn>
-        <v-btn small text color="primary" @click="startDelete(item)" class="px-0" v-if="!item.edit">
-          <v-icon>delete</v-icon>
-        </v-btn>
-        <ConfirmationDialog
+  <div>
+    <v-dialog persistent :width="1000" v-model="showCoversheetModal"
+              content-class="coversheet-modal-content">
+      <AttachmentCoversheetModal :existing-attachment="selectedFile"
+                                 :show-modal="showCoversheetModal"
+                                 :close-callback="closeCoversheet"
+                                 :projectId="projectId"
+                                 :projectProcessStepId="projectProcessStepId"
+                                 :userId="userId"
+                                 :contactId="contactId"
+                                 :orgId="orgId"
+                                 :objectTypeId="objectTypeId"
+                                 :projectProcessStepEventId="projectProcessStepEventId">
+      </AttachmentCoversheetModal>
+    </v-dialog>
+    <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
+    <v-container v-else dense :key="renderTicker" id="attachment-table" class="pa-0">
+      <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment"
+             :key="item.processStepId">
+        <v-col cols="10" class="text-left pt-0 height-one-hunned">
+          <div class="file-column">
+            <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
+                        v-model="item.compare"
+                        :disabled="!item.compare && countSelected >= maxSelectable">
+            </v-checkbox>
+  <!--          <v-btn icon text @click="selectFile(item)" class="type">-->
+              <v-icon size="25" color="grey" @click="selectFile(item)">
+                {{ getIconForFile(item) }}
+              </v-icon>
+  <!--          </v-btn>-->
+            <div class="file-name-container">
+              <div class="file-name-div">
+                <a @click="selectFile(item)" class="text-left no-text-decoration file-name">
+                  {{ item.displayName }}
+                </a>
+              </div>
+              <div class="text-left uploaded-by">
+                {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}
+                {{ item.dateCreated | formatDate('timestamp', 'M/D/YY') }}
+              </div>
+          </div>
+          </div>
+        </v-col>
+<!--        <v-col cols="3" class="text-right px-1 attachment-info">-->
+<!--          {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}{{-->
+<!--            item.dateCreated | formatDate('timestamp', 'M/D/YY')-->
+<!--          }}-->
+<!--        </v-col>-->
+        <v-col cols="2" class="text-right pa-0">
+          <v-btn icon v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
+                 :disabled="performingLink"
+                 text color="primary" @click="linkAttachment(item, true)" class="px-0">
+            <v-icon size="25">link</v-icon>
+          </v-btn>
+          <v-btn icon v-if="!allowUpload && loadLinked"
+                 :disabled="performingLink"
+                 text color="primary" @click="linkAttachment(item, false)" class="px-0">
+            <v-icon size="25">mdi-link-off</v-icon>
+          </v-btn>
+          <v-btn icon v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
+            <v-icon size="25">delete</v-icon>
+          </v-btn>
+          <v-btn icon text color="primary" :href="item.presignedUrl">
+            <v-icon size="25">mdi-tray-arrow-down</v-icon>
+          </v-btn>
+          <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
             @confirm="deleteAttachment"
             @close-dialog="closeDeleteDialog"
 
-        >Are you sure you want to delete {{attachmentToDeleteName}}?</ConfirmationDialog>
-      </v-col>
-    </v-row>
-  </v-container>
+          >Are you sure you want to delete {{ attachmentToDeleteName }}?
+          </ConfirmationDialog>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
 </template>
 
 <script>
-import {getFileIcon, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
+import {
+  getFileIcon,
+  getRequestWithParams,
+  postRequest,
+  getSnackbar,
+  handleHidingGlobalLoader,
+  putRequest,
+  postRequestWithRequestParams
+} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/ConfirmationDialog";
+import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
+import Vue2Filters from 'vue2-filters'
+import {ProjectMutations} from "@/stores/ProjectStore"
 
 export default {
   name: "AttachmentsTable",
-  components: {ConfirmationDialog},
+  mixins: [Vue2Filters.mixin],
+  components: {
+    ConfirmationDialog,
+    AttachmentCoversheetModal
+  },
   props: {
     attachments: Array,
+    search: String,
     displayType: Object,
     showNonPrimaryDocs: Boolean,
     allowEdit: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
+    //loadLinked = the component for the linked sections. if true should only be able to unlink the attachments from here
+    loadLinked: Boolean,
+    allowUpload: Boolean,
+    compare: Boolean,
+    projectId: Number,
+    userId: Number,
+    contactId: Number,
+    orgId: Number,
+    objectTypeId: Number,
+    projectProcessStepId: Number,
+    projectProcessStepEventId: Number,
+    compareCallback: Function,
+    deleteCallback: Function,
+    countSelected: Number,
+    cancelResetKey: Number
   },
-  data () {
+  watch: {
+    cancelResetKey: function () {
+      //this is called when the parent element clicks "cancel comparison"
+      this.attachments.forEach(a => {
+        a.compare = false
+      })
+    },
+  },
+  data() {
     return {
       renderTicker: 0,
+      showCoversheetModal: false,
+      selectedFile: {},
       attachmentDeleteConfirm: false,
-      attachmentToDelete: {}
+      attachmentToDelete: {},
+      linkAttachmentPath: null,
+      maxSelectable: 3,
+      performingLink: false,
     }
   },
   computed: {
-    drillDownAttachments () {
+    drillDownAttachments() {
       if (this.displayType === null) {
         return []
       } else {
-        if (this.showNonPrimaryDocs) {
-          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
-        }
-        else {
-          return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.main)
-        }
+        return this.attachments.filter(a => {
+          return !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.loadLinked
+            && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)
+        })
       }
     },
-    attachmentToDeleteName(){
+    attachmentToDeleteName() {
       return this.attachmentToDelete ? this.attachmentToDelete.filename : ""
     }
   },
   methods: {
-    getIconForFile (item) {
-      return getFileIcon(item)
+    selectFile: function (attachment) {
+      this.selectedFile = attachment
+      this.showCoversheetModal = true
     },
-    async saveFilename(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let newFileName = item.editableName
-        if(item.fileExtension) {
-          newFileName += '.' + item.fileExtension
-        }
-        item.filename = newFileName
-        const {data, status} = await putRequest(`/attachment/${item.id}`, item)
-        item.editableNameCopy = item.editableName
-        item.presignedUrl = data.presignedUrl
-        item.edit = false
-        this.renderTicker++;
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+    closeCoversheet() {
+      this.showCoversheetModal = false
+    },
+    getIconForFile(item) {
+      return getFileIcon(item)
     },
     deleteAttachment: async function () {
       const id = this.attachmentToDelete.id
       try {
         await deleteAttachment(id)
-        let deletedDocumentIndex = this.attachments.findIndex(i => i.id === id)
-        this.attachments.splice([deletedDocumentIndex], 1)
+        this.deleteCallback(id)
+        //this value tells the right pane to update when a file is deleted
+        this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+
+        //only emit a change event if something was linked, only the actively showing linked section will update
+        this.$root.$emit('attachmentDeleted', id)
+
         this.snackbar = getSnackbar('SUCCESS', 'Document Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
@@ -135,13 +194,60 @@ export default {
       this.closeDeleteDialog()
 
     },
-    startDelete(item){
+    async linkAttachment(attachment, doLink) {
+      try {
+        this.performingLink = true
+        if (this.projectProcessStepEventId) {
+          this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/linkAttachment/${attachment.id}`
+        } else if (this.projectProcessStepId) {
+          this.linkAttachmentPath = `/projectProcessStep/${this.projectProcessStepId}/linkAttachment/${attachment.id}`
+        } else if (this.projectId) {
+          this.linkAttachmentPath = `/project/${this.projectId}/linkAttachment/${attachment.id}`
+        } else if (this.objectTypeId === 2) {
+          //contact
+          this.linkAttachmentPath = `/contact/${this.contactId}/linkAttachment/${attachment.id}`
+        } else if (this.objectTypeId === 5) {
+          //org
+          this.linkAttachmentPath = `/org/${this.orgId}/linkAttachment/${attachment.id}`
+        } else if (this.objectTypeId === 3) {
+          //user
+          this.linkAttachmentPath = `/user/${this.userId}/linkAttachment/${attachment.id}`
+        }
+
+        const {data} = await postRequestWithRequestParams(`${this.linkAttachmentPath}`, null, {doLink})
+        if (!doLink) {
+          attachment.archived = true
+          attachment.linked = false
+          attachment.linkedToSelected = false
+          //this value tells the right pane to update after a file is unlinked from the center pane
+          //definitely better ways to handle this but fully refreshing is what we are doing for now
+          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+        } else {
+          attachment.linkedToSelected = true
+          //only emit a change event if something was linked, only the actively showing linked section will update
+          this.$root.$emit('newAttachmentLinked', attachment)
+        }
+
+        this.performingLink = false
+        this.snackbar = getSnackbar('SUCCESS', 'Document Linked')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Linking Document')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    startDelete(item) {
       this.attachmentToDelete = item
       this.attachmentDeleteConfirm = true
     },
     closeDeleteDialog() {
       this.attachmentDeleteConfirm = false
       this.attachmentToDelete = null
+    },
+    selectFileToCompare(e, item) {
+      this.compareCallback(item)
     }
   }
 }
@@ -157,9 +263,10 @@ export default {
 .attachment {
   display: flex;
   justify-content: space-between;
+  height: 44px;
 }
 
-.text-left{
+.text-left {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -178,5 +285,38 @@ export default {
 
 .no-attach {
   color: var(--v-primaryText-base);
+}
+
+.file-column {
+  display: flex;
+  max-width: 100%;
+  max-height: 100%;
+  align-items: center;
+}
+
+.file-name-container {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-name-div {
+  font-size: 14px;
+  padding-left: 3px;
+}
+
+.file-name {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uploaded-by {
+  font-size: 11px;
+  padding-left: 3px;
+  color: var(--v-grey-base);
 }
 </style>

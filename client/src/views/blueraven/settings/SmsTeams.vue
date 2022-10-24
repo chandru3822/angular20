@@ -115,7 +115,7 @@
                 <confirm-delete-dialog
                     v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')"
                     label="this template?"
-                    @confirm-delete="deleteTemplate(item)"
+                    @confirm="deleteTemplate(item)"
                 ></confirm-delete-dialog>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>

@@ -104,14 +104,23 @@ public class ContactController {
 
   @GetMapping(value = "/{contactId}/attachments")
   public ResponseEntity<List<Attachment>> getContactAttachments(@PathVariable Long contactId,
-                                                                @PathVariable(required = false) Boolean isMobile) {
-    return new ResponseEntity<>(contactService.getContactAttachments(contactId, isMobile), HttpStatus.OK);
+                                                                @RequestParam(required = false) Boolean isMobile,
+                                                                @RequestParam(required = false) Boolean linked) {
+    return new ResponseEntity<>(contactService.getContactAttachments(contactId, isMobile, linked), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{contactId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long contactId,
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    contactService.linkAttachment(contactId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{contactId}/attachment")
   public ResponseEntity<Attachment> uploadContactAttachment(@PathVariable Long contactId,
                                                             @RequestParam Long attachmentTypeId,
-                                                             @RequestParam("file") MultipartFile file) throws IOException {
-    return new ResponseEntity<>(contactService.addAttachment(file, contactId, attachmentTypeId), HttpStatus.OK);
+                                                            @RequestParam String displayName,
+                                                            @RequestParam("file") MultipartFile file) throws IOException {
+    return new ResponseEntity<>(contactService.addAttachment(file, contactId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 }

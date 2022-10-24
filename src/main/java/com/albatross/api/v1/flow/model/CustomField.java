@@ -21,6 +21,7 @@ public class CustomField {
       companyDataTypeId,
       listOfValueId,
       companyId,
+      defaultFieldId,
       fieldOrder,
       createdById,
       modifiedById,
@@ -30,7 +31,6 @@ public class CustomField {
       customFieldObjectTypeId,
       dataTypeId,
       companySystemListId,
-      scheduleFieldTypeId,
       flowCustomFieldId;
   private List<Long> systemListOptionIds;
   private String fieldName,

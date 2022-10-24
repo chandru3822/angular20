@@ -23,7 +23,7 @@
           :label="getFieldName()"
           :hide-details="hideDetails"
           :readonly="readonly"
-          :custom-class="readonly ? 'error--text' : ''"
+          :custom-class="customClass ? customClass.concat(readonly ? ' error--text' : '') : readonly ? ' error--text' : ''"
           @input="callback(field)"
         />
 
@@ -39,7 +39,7 @@
           :label="getFieldName()"
           :hide-details="hideDetails"
           :readonly="readonly"
-          :custom-class="readonly ? 'error--text' : ''"
+          :custom-class="customClass ? customClass.concat(readonly ? ' error--text' : '') : readonly ? ' error--text' : ''"
           @input="callback(field)"
         />
 
@@ -55,6 +55,7 @@
           :readonly="readonly"
           :ripple="false"
           @change="callback(field)"
+          :class="customClass"
         />
 
         <v-text-field
@@ -63,7 +64,7 @@
           :required="required"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly}"
+          :class="[customClass, {'error--text': readonly}]"
           placeholder=" "
           :rules="rules"
           :filled="filledStyle"
@@ -83,7 +84,7 @@
           :required="required"
           :readonly="readonly || field.dataTypeId === 12"
           :disabled="readonly || field.dataTypeId === 12"
-          :class="{'error--text': readonly || required}"
+          :class="[customClass, {'error--text': readonly || required}]"
           placeholder=" "
           :rules="rules"
           :filled="filledStyle"
@@ -100,7 +101,7 @@
           :required="required"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly}"
+          :class="[customClass, {'error--text': readonly}]"
           :label="getFieldName()"
           :hide-details="hideDetails"
           placeholder=" "
@@ -121,7 +122,7 @@
           :clearable="!readonly"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly || required}"
+          :class="[customClass, {'error--text': readonly || required}]"
           :loading="isLoading"
           placeholder=" "
           :filled="filledStyle"
@@ -158,7 +159,7 @@
           :clearable="!readonly"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly}"
+          :class="[customClass, {'error--text': readonly}]"
           :rules="rules"
           :label="getFieldName()"
           :hide-details="hideDetails"
@@ -187,7 +188,7 @@
           item-disabled="archived"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly}"
+          :class="[customClass, {'error--text': readonly}]"
           :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
@@ -221,7 +222,7 @@
           :hide-details="hideDetails"
           :readonly="readonly"
           :disabled="readonly"
-          :class="{'error--text': readonly}"
+          :class="[customClass, {'error--text': readonly}]"
           :rules="rules"
           placeholder=" "
           item-value="id"
@@ -251,7 +252,7 @@
             :options="toolbarOptions"
             class="rich-text-editor albatross-body-2"
             :class="{'rich-text-editor-required': required && !field.richTextValue,
-                     'rich-text-editor-readonly': readonly || (locked && lockFeature)}"
+                     'rich-text-editor-readonly': readonly || (locked && lockFeature)}, customClass"
             :readonly="readonly"
             :disabled="readonly || (locked && lockFeature)"
             @change="(q) => doRichTextFieldCallback(field, q)"
@@ -329,7 +330,8 @@ export default {
     maxDate: String,
     //had to add filledStyle to allow the AHJ screens to use the custom value input but keep its same style. that makes me super happy
     filledStyle: Boolean,
-    callback: Function
+    callback: Function,
+    customClass: String
   },
   components: {
     DatetimePickerInput,

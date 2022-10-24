@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { UserStore } from '@/stores/UserStore'
-import { ProjectStore } from '@/stores/ProjectStore'
-import { BrsStore } from '@/stores/BrsStore'
-import { AppStore } from '@/stores/AppStore'
+import {UserStore} from '@/stores/UserStore'
+import {ProjectStore} from '@/stores/ProjectStore'
+import {BrsStore} from '@/stores/BrsStore'
+import {AppStore} from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
 import { deleteRequest, getRequestWithParams, postRequest } from './helpers/helpers'
@@ -32,7 +32,7 @@ const store = new Vuex.Store({
       store.commit(Mutations.INIT)
       store.subscribe((mutation, state) => {
         if (mutation.type === ProposalMutations.REGISTER_EDITOR) return
-        const { notifications, proposal, cancelTokens, ...newState } = state //don't store notifications/proposal
+        const { notifications, ...newState } = state //don't store notifications
         localStorage.setItem('store', JSON.stringify(newState))
       })
     }
@@ -79,27 +79,35 @@ const store = new Vuex.Store({
       // Reset the cancelTokens store
       context.commit('CLEAR_CANCEL_TOKENS')
     },
-    [Actions.FILE_DELETE]: async (context, { id, callback }) => {
+    [Actions.FILE_DELETE]: async (context, {id, callback}) => {
       //todo: need to handle errors in these functions
-      const { status } = await deleteRequest(`/attachment/${id}`)
+      const {status} = await deleteRequest(`/attachment/${id}`)
       callback(status)
     },
     [Actions.FILE_UPLOAD_MULTI]: async (context, filesDto) => {
       const requests = filesDto
-        .filter(({ file, sizeLimit = constants.MAX_FILE_SIZE }) => {
+        .filter(({file, sizeLimit = constants.MAX_FILE_SIZE}) => {
           return file.size <= sizeLimit
         })
-        .map(({ file, attachmentTypeId, sourceId, deleteFirst = true }) => {
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('attachmentTypeId', attachmentTypeId)
-          formData.append('deleteFirst', deleteFirst)
+        .map(({file, attachmentTypeId, sourceId, displayName, deleteFirst = true}) => {
+          //@kaleb - sry if this breaks, i didn't test it, just matched it to the new checks to ensure no bad file types get uploaded
+            let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+            //only continue with upload if matches whitelisted file types
+            if(constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
+              const formData = new FormData()
+              formData.append('file', file)
+              formData.append('attachmentTypeId', attachmentTypeId)
+              formData.append('displayName', displayName)
+              formData.append('deleteFirst', deleteFirst)
 
-          if (sourceId != null) {
-            formData.append('sourceId', sourceId)
-          }
+              if (sourceId != null) {
+                formData.append('sourceId', sourceId)
+              }
 
-          return formData
+              return formData
+            } else {
+              return null
+            }
         })
         .map(data => postRequest('/attachment', data))
 
@@ -107,52 +115,73 @@ const store = new Vuex.Store({
       return responses.map(res => res.data)
 
     },
-    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst = true, sizeLimit, callback }) => {
+    [Actions.FILE_UPLOAD]: (context, {
+      file,
+      attachmentTypeId,
+      sourceId,
+      displayName,
+      deleteFirst = true,
+      sizeLimit,
+      callback
+    }) => {
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function() {
+      reader.addEventListener('loadend', async function () {
         let maxFileSize = sizeLimit ?? constants.MAX_FILE_SIZE
         if (file.size > maxFileSize) {
-          const error = { error: true, errorMsg: `File size cannot exceed ${maxFileSize / 1048576}MB` }
+          const error = {error: true, errorMsg: `File size cannot exceed ${maxFileSize / 1048576}MB`}
           callback(null, error)
         } else {
-          let formData = new FormData()
-          formData.append('file', file)
-          formData.append('attachmentTypeId', attachmentTypeId)
-          if (null != sourceId) {
-            formData.append('sourceId', sourceId)
-          }
-          formData.append('deleteFirst', deleteFirst)
+          let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+          //only continue with upload if matches whitelisted file types
+          if (constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
+            let formData = new FormData()
+            formData.append('file', file)
+            formData.append('attachmentTypeId', attachmentTypeId)
+            formData.append('displayName', displayName)
+            if (null != sourceId) {
+              formData.append('sourceId', sourceId)
+            }
+            formData.append('deleteFirst', deleteFirst)
 
-          const resp = await postRequest('/attachment', formData)
+            const resp = await postRequest('/attachment', formData)
 
-          const { status } = resp
-          if (status === 200) {
-            callback(resp.data)
+            const {status} = resp
+            if (status === 200) {
+              callback(resp.data)
+            }
+          } else {
+            callback(null, {message: `Unaccepted File Type`})
           }
         }
       })
       reader.readAsArrayBuffer(file)
     },
-    [Actions.PROJECT_FILE_UPLOAD]: (context, { file, attachmentTypeId, projectId, callback }) => {
+    [Actions.PROJECT_FILE_UPLOAD]: (context, {file, attachmentTypeId, projectId, displayName, callback}) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function() {
+      reader.addEventListener('loadend', async function () {
         if (file.size > constants.MAX_FILE_SIZE) {
-          callback(null, { message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` })
+          callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
-          let formData = new FormData()
-          formData.append('file', file)
-          formData.append('attachmentTypeId', attachmentTypeId)
+          let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+          //only continue with upload if matches whitelisted file types
+          if (constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
+            let formData = new FormData()
+            formData.append('file', file)
+            formData.append('attachmentTypeId', attachmentTypeId)
+            formData.append('displayName', displayName)
+            try {
+              const resp = await postRequest(`/project/${projectId}/attachment`, formData)
 
-          try {
-            const resp = await postRequest(`/project/${projectId}/attachment`, formData)
-
-            const { status } = resp
-            if (status === 200) {
-              callback(resp.data)
+              const {status} = resp
+              if (status === 200) {
+                callback(resp.data)
+              }
+            } catch (e) {
+              callback(null, e)
             }
-          } catch (e) {
-            callback(null, e)
+          } else {
+            callback(null, {message: `Unaccepted File Type`})
           }
         }
       })
@@ -162,27 +191,34 @@ const store = new Vuex.Store({
       file,
       attachmentTypeId,
       projectProcessStepId,
+      displayName,
       callback
     }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function() {
+      reader.addEventListener('loadend', async function () {
         if (file.size > constants.MAX_FILE_SIZE) {
-          callback(null, { message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` })
+          callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
-          let formData = new FormData()
-          formData.append('file', file)
-          formData.append('attachmentTypeId', attachmentTypeId)
+          let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+          //only continue with upload if matches whitelisted file types
+          if (constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
+            let formData = new FormData()
+            formData.append('file', file)
+            formData.append('attachmentTypeId', attachmentTypeId)
+            formData.append('displayName', displayName)
+            try {
+              const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/attachment`, formData)
 
-          try {
-            const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/attachment`, formData)
-
-            const { status } = resp
-            if (status === 200) {
-              callback(resp.data)
+              const {status} = resp
+              if (status === 200) {
+                callback(resp.data)
+              }
+            } catch (e) {
+              callback(null, e)
             }
-          } catch (e) {
-            callback(null, e)
+          } else {
+            callback(null, {message: `Unaccepted File Type`})
           }
         }
       })
@@ -193,28 +229,36 @@ const store = new Vuex.Store({
       attachmentTypeId,
       projectProcessStepId,
       projectProcessStepEventId,
+      displayName,
       callback
     }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function(e) {
+      reader.addEventListener('loadend', async function (e) {
         if (file.size > constants.MAX_FILE_SIZE) {
-          callback(null, { message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` })
+          callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
-          let formData = new FormData()
-          formData.append('file', file)
-          formData.append('attachmentTypeId', attachmentTypeId)
+          let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+          //only continue with upload if matches whitelisted file types
+          if (constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
+            let formData = new FormData()
+            formData.append('file', file)
+            formData.append('attachmentTypeId', attachmentTypeId)
+            formData.append('displayName', displayName)
+            try {
+              const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/event/${projectProcessStepEventId}/attachment`, formData)
 
-          try {
-            const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/event/${projectProcessStepEventId}/attachment`, formData)
-
-            const { status } = resp
-            if (status === 200) {
-              callback(resp.data)
+              const {status} = resp
+              if (status === 200) {
+                callback(resp.data)
+              }
+            } catch (e) {
+              callback(null, e)
             }
-          } catch (e) {
-            callback(null, e)
+          } else {
+            callback(null, {message: `Unaccepted File Type`})
           }
+
         }
       })
       reader.readAsArrayBuffer(file)
@@ -226,55 +270,62 @@ const store = new Vuex.Store({
       contactId,
       orgId,
       objectTypeId,
+      displayName,
       callback
     }) => {
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function() {
+      reader.addEventListener('loadend', async function () {
         if (file.size > constants.MAX_FILE_SIZE) {
-          callback(null, { message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` })
+          callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
-          let formData = new FormData()
-          formData.append('file', file)
-          formData.append('attachmentTypeId', attachmentTypeId)
+          let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+          //only continue with upload if matches whitelisted file types
+          if (constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
+            let formData = new FormData()
+            formData.append('file', file)
+            formData.append('attachmentTypeId', attachmentTypeId)
+            formData.append('displayName', displayName)
+            try {
+              let url = ''
+              switch (objectTypeId) {
+                case 3:
+                  url = `/user/${userId}/attachment`
+                  break
+                case 2:
+                  url = `/contact/${contactId}/attachment`
+                  break
+                case 5:
+                  url = `/org/${orgId}/attachment`
+                  break
+              }
 
-          try {
-            let url = ''
-            switch (objectTypeId) {
-              case 3:
-                url = `/user/${userId}/attachment`
-                break
-              case 2:
-                url = `/contact/${contactId}/attachment`
-                break
-              case 5:
-                url = `/org/${orgId}/attachment`
-                break
+              const resp = await postRequest(url, formData)
+
+              const {status} = resp
+              if (status === 200) {
+                callback(resp.data)
+              }
+            } catch (e) {
+              callback(null, e)
             }
-
-            const resp = await postRequest(url, formData)
-
-            const { status } = resp
-            if (status === 200) {
-              callback(resp.data)
-            }
-          } catch (e) {
-            callback(null, e)
+          } else {
+            callback(null, {message: `Unaccepted File Type`})
           }
         }
       })
       reader.readAsArrayBuffer(file)
     },
-    [Actions.FILE_GET_ONE]: async (context, { sourceId, attachmentTypeId, callback }) => {
-      const { data, status } = await getRequestWithParams(`/attachment/getOne`, {
+    [Actions.FILE_GET_ONE]: async (context, {sourceId, attachmentTypeId, callback}) => {
+      const {data, status} = await getRequestWithParams(`/attachment/getOne`, {
         params: {
           attachmentTypeId, sourceId
         }
       })
       callback(data, status)
     },
-    [Actions.FILE_GET_LIST]: async (context, { sourceId, attachmentTypeId, callback }) => {
-      const { data, status } = await getRequestWithParams(`/attachment`, {
+    [Actions.FILE_GET_LIST]: async (context, {sourceId, attachmentTypeId, callback}) => {
+      const {data, status} = await getRequestWithParams(`/attachment`, {
         params: {
           attachmentTypeId, sourceId
         }

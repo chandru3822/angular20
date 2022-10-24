@@ -553,9 +553,13 @@ public class ProjectProcessStepEventService {
     return functionResults;
   }
 
-  public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile) {
+  public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     // there is currently no where in the UI where event attachments are not viewed side by side
     // with ps attachments, so for now this actually returns both
     List<Attachment> attachments =
@@ -567,10 +571,25 @@ public class ProjectProcessStepEventService {
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
+  public void linkAttachment(Long projectProcessStepEventId, Long attachmentId, Boolean doLink) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepEventId", projectProcessStepEventId);
+    params.put("attachmentId", attachmentId);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+
+    String sqlKey = "projectProcessStepEvent.linkAttachment";
+    if(!doLink) {
+      sqlKey = "projectProcessStepEvent.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(
-      MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId)
+      MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId, String displayName)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -608,6 +627,7 @@ public class ProjectProcessStepEventService {
     params.put("size", file.getSize());
     params.put("createdById", user.getId());
     params.put("attachmentTypeId", attachmentTypeId);
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("companyId", companyId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();

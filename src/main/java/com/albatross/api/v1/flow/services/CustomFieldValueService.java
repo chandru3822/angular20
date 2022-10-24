@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -17,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -42,8 +40,10 @@ public class CustomFieldValueService {
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId, Long companyId) {
     for(CustomFieldGroup cfg : results) {
-      for(CustomFieldValue cv : cfg.getCustomFieldValues()){
-        handleCustomListValueForCfv(cv, projectId, userId, companyId);
+      if(null != cfg.getCustomFieldValues()) {
+        for(CustomFieldValue cv : cfg.getCustomFieldValues()){
+          handleCustomListValueForCfv(cv, projectId, userId, companyId);
+        }
       }
     }
   }
@@ -56,7 +56,7 @@ public class CustomFieldValueService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
         params.put("userId", userId);
-        if(cv.getSystemReadonly() || cv.getDataTypeId() == 12) { //12 = system read-only
+        if((null != cv.getSystemReadonly() && cv.getSystemReadonly()) ||  cv.getDataTypeId() == 12) {
           Optional<String> textValue = sqlCache.queryForObjectOptionalBySql(sql, params, String.class);
           textValue.ifPresent(cv::setTextValue);
         } else {
@@ -74,6 +74,9 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
+    return updateCustomFieldValues(values, sourceId, objectType, null, false);
+  }
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType, Long secondaryId, Boolean doCustomAttachmentLoad) {
     User currentUser = securityService.getCurrentUser();
     try {
       for (CustomFieldValue cfv : values) {
@@ -89,6 +92,10 @@ public class CustomFieldValueService {
         params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
+        //this is new and only required for attachments because we need to know the attachmentTypeId
+        // AND the attachmentId in order to load these values
+        // attachment upsert uses the secondary id to insert
+        params.put("secondarySourceId", secondaryId);
         params.put("userId", currentUser.trueUserId());
 
         //only used on upsert
@@ -97,14 +104,19 @@ public class CustomFieldValueService {
         String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
         sqlCache.update(sql, params);
       }
-      return getCustomFieldGroupsAndValues(objectType, sourceId);
+      return getCustomFieldGroupsAndValues(objectType, sourceId, secondaryId, doCustomAttachmentLoad);
     } catch (Exception e) {
       log.error("CFV: error saving value: {}, save by: {}, for sourceId: {}, for objectType: {}", e.getMessage(), currentUser.getId(), sourceId, objectType);
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
   }
 
+  //overloading cuz im too lazy to go fix it everywhere
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
+    return getCustomFieldGroupsAndValues(objectType, id, null, false);
+  }
+
+  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id, Long secondaryId, Boolean doCustomAttachmentLoad) {
     //todo: @randa - this has a security bug - if a user were to send in a contact id for a company they did not have access to it would still load the data
     try {
       User user;
@@ -124,6 +136,8 @@ public class CustomFieldValueService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("objectTypeId", ObjectType.get(objectType).id);
       params.put("sourceId", id);
+      //this is new and only required for attachments because we need to know the attachmentTypeId AND the attachmentId in order to load these values
+      params.put("secondarySourceId", secondaryId);
       params.put("userPositions", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
       params.put("systemAdmin", systemAdmin);
       String sqlPrefix = "customFieldValues." + objectType;
@@ -140,6 +154,15 @@ public class CustomFieldValueService {
       params.put("companyId", companyId);
 
       List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+      if(doCustomAttachmentLoad) {
+        //secondaryId = attachmentId
+        //id = attachmentTypeId
+        List<CustomFieldGroup> ancillaryGroups = getAttachmentAncillaryCfgs(secondaryId, id, user.getCompanyId());
+        if(null != ancillaryGroups) {
+          fieldGroups.addAll(ancillaryGroups);
+        }
+      }
 
       // this allows us to pass project_id and user_id to custom sql queries
       if(objectType.equals("project")) {
@@ -159,6 +182,56 @@ public class CustomFieldValueService {
     } catch (SQLException e) {
       //this error should never happen
       log.error("SQL", e);
+      return null;
+    }
+  }
+
+  @Data
+  public static class ComparisonResponse {
+    Long attachmentId;
+    List<CustomFieldValue> fieldValues;
+  }
+
+  public List<ComparisonResponse> getAttachmentTypeComparisonFields(List<Long> attachmentIds) {
+    User currentUser = securityService.getCurrentUser();
+
+    List<ComparisonResponse> response = new ArrayList<>();
+
+    HashMap<String, Object> params = new HashMap<>();
+    for(Long attachmentId : attachmentIds) {
+      ComparisonResponse attachmentBody = new ComparisonResponse();
+      attachmentBody.setAttachmentId(attachmentId);
+      params.put("attachmentId", attachmentId);
+      List<CustomFieldValue> values = sqlCache.query("attachment.getComparisonFields", params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
+      for(CustomFieldValue value : values) {
+        handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId());
+      }
+      attachmentBody.setFieldValues(values);
+      response.add(attachmentBody);
+    }
+    return response;
+  }
+
+  @Data
+  public static class AttachmentObject {
+    Long idToUse;
+    String objectTypeText;
+  }
+
+  public List<CustomFieldGroup> getAttachmentAncillaryCfgs(Long attachmentId, Long attachmentTypeId, Long companyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("attachmentId", attachmentId);
+    params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", companyId);
+    Optional<AttachmentObject> optionalObj = sqlCache.get("attachment.getAttachmentSource", params, AttachmentObject.class);
+
+    if(optionalObj.isPresent()) {
+      AttachmentObject obj = optionalObj.get();
+      params.put("idToUse", obj.idToUse);
+      String sqlPrefix = "customFieldValues." + obj.objectTypeText + ".getAncillaryCustomFieldGroupsAndValuesForAttachments";
+      List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+      return fieldGroups;
+    } else {
       return null;
     }
   }
@@ -242,6 +315,12 @@ public class CustomFieldValueService {
       TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValues",
         new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
+      TypeReference<List<Integer>> intArrayValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "intArrayValue", new JsonCollectionDeserializer(intArrayValueRef, objectMapper));
+
+      TypeReference<List<Integer>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
 
     }
   }

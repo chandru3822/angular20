@@ -126,19 +126,35 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/{projectId}/attachments")
-  public ResponseEntity<List<Attachment>> getProjectAttachments(
-      @PathVariable Long projectId, @PathVariable(required = false) Boolean isMobile) {
-    return new ResponseEntity<>(projectService.getAttachments(projectId, isMobile), HttpStatus.OK);
+  public ResponseEntity<List<Attachment>> getProjectAttachments(@PathVariable Long projectId,
+                                                                @RequestParam(required = false) Boolean isMobile,
+                                                                @RequestParam(required = false) Boolean linked) {
+    return new ResponseEntity<>(projectService.getAttachments(projectId, isMobile, linked), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/combinedAttachments")
+  public ResponseEntity<List<Attachment>> getProjectCombinedAttachments(@PathVariable Long projectId,
+                                                                        @RequestParam(required = false) Long ppsId,
+                                                                        @RequestParam(required = false) Long ppsEventId) {
+    return new ResponseEntity<>(projectService.getCombinedAttachments(projectId, ppsId, ppsEventId), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long projectId,
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+      projectService.linkAttachment(projectId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{projectId}/attachment")
   public ResponseEntity<Attachment> uploadProjectAttachment(
       @PathVariable Long projectId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
-        projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
+        projectService.addAttachment(file, projectId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
   // status stuff

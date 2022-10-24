@@ -62,11 +62,20 @@ public class ProjectProcessStepEventController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getProjectProcessStepEventAttachments(
       @PathVariable Long projectProcessStepEventId,
-      @PathVariable(required = false) Boolean isMobile) {
+      @RequestParam(required = false) Boolean isMobile,
+      @RequestParam(required = false) Boolean linked) {
     return new ResponseEntity<>(
         projectProcessStepEventService.getProjectProcessStepEventAttachments(
-            projectProcessStepEventId, isMobile),
+            projectProcessStepEventId, isMobile, linked),
         HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectProcessStepEventId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long projectProcessStepEventId,
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    //used to link or unlink
+    projectProcessStepEventService.linkAttachment(projectProcessStepEventId, attachmentId, doLink);
   }
 
   @PostMapping(
@@ -75,11 +84,12 @@ public class ProjectProcessStepEventController {
   public ResponseEntity<Attachment> uploadProjectProcessStepEventAttachment(
       @PathVariable Long projectProcessStepEventId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
         projectProcessStepEventService.addAttachment(
-            file, projectProcessStepEventId, attachmentTypeId),
+            file, projectProcessStepEventId, attachmentTypeId, displayName),
         HttpStatus.OK);
   }
 
