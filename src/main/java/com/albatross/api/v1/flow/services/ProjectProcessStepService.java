@@ -72,6 +72,8 @@ public class ProjectProcessStepService {
   private final AuroraProxy auroraService;
   private final MarketoService marketoService;
   private final ListOfValueService listOfValueService;
+  private final CommunicationService communicationService;
+  private final MessagingService messagingService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -117,7 +119,7 @@ public class ProjectProcessStepService {
 
     //get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+    String key = String.format(user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
@@ -166,11 +168,11 @@ public class ProjectProcessStepService {
     ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
 
     if (pps == null) {
-        throw new RuntimeException("The given process step does not exist");
+      throw new RuntimeException("The given process step does not exist");
     }
 
     if (pps.getCompanyProcessStepStatusTypeId().equals(companyProcessStepStatusTypeId)) {
-        return;
+      return;
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -223,13 +225,13 @@ public class ProjectProcessStepService {
 
 
     boolean canSave = false;
-    if(null != blockOverride && blockOverride) {
+    if (null != blockOverride && blockOverride) {
       //check for existing owner
       Long id = sqlCache.queryForObject("projectProcessStep.getOwner", params, Long.class);
       canSave = id == null;
     }
 
-    if(null == blockOverride || !blockOverride || canSave) {
+    if (null == blockOverride || !blockOverride || canSave) {
       sqlCache.update("projectProcessStep.updateOwner", params);
       return ResponseEntity.ok("Owner Saved");
     } else {
@@ -242,19 +244,20 @@ public class ProjectProcessStepService {
     User user = securityService.getCurrentUser();
 
     try {
-        String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId, "companyId", user.getCompanyId()), String.class);
-        if(null != json) {
-          return om.readValue(json, new TypeReference<>(){});
-        } else {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
-        }
+      String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId, "companyId", user.getCompanyId()), String.class);
+      if (null != json) {
+        return om.readValue(json, new TypeReference<>() {
+        });
+      } else {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
+      }
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", e);
     }
   }
 
   public ProjectProcessStepStatus getProjectProcessStepStatus(Long stepId) {
-    Optional <ProjectProcessStepStatus> status = sqlCache.get("projectProcessStep.getStatus", Map.of("stepId", stepId), ProjectProcessStepStatus.class);
+    Optional<ProjectProcessStepStatus> status = sqlCache.get("projectProcessStep.getStatus", Map.of("stepId", stepId), ProjectProcessStepStatus.class);
     return status.orElse(null);
   }
 
@@ -270,7 +273,7 @@ public class ProjectProcessStepService {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
-    if(null != projectId) {
+    if (null != projectId) {
       //had to change this so that a parent looking at a child project could still see right statuses
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
@@ -292,15 +295,15 @@ public class ProjectProcessStepService {
 
   @Transactional
   public void deleteProjectProcessStep(Long projectProcessStepId) {
-      ProjectProcessStep deletingStep = this.getProjectProcessStep(projectProcessStepId);
+    ProjectProcessStep deletingStep = this.getProjectProcessStep(projectProcessStepId);
 
-      if (deletingStep != null) {
-          if (deletingStep.getMain()) {
-            throw new RuntimeException("Can not delete a primary process step. Must designate another primary step first");
-          }
-
-          sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+    if (deletingStep != null) {
+      if (deletingStep.getMain()) {
+        throw new RuntimeException("Can not delete a primary process step. Must designate another primary step first");
       }
+
+      sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+    }
   }
 
   public List<ProjectProcessStepHistory> getPpsHistory(Long projectProcessStepId) {
@@ -308,7 +311,7 @@ public class ProjectProcessStepService {
     return results;
   }
 
-    public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
+  public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
 
 
@@ -319,16 +322,20 @@ public class ProjectProcessStepService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<Owner> ownerRef = new TypeReference<>() {};
+      TypeReference<Owner> ownerRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
 
-      TypeReference<List<ProcessStepAction> > actionsRef = new TypeReference<>() {};
+      TypeReference<List<ProcessStepAction>> actionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "actions", new JsonCollectionDeserializer(actionsRef, objectMapper));
 
-      TypeReference<List<ProjectProcessStepRequirement>> requirementsRef = new TypeReference<>() {};
+      TypeReference<List<ProjectProcessStepRequirement>> requirementsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "autoTriggeredActionRequirements", new JsonCollectionDeserializer(requirementsRef, objectMapper));
 
-      TypeReference<List<ProjectProcessStepEvent>> ppsEventsRef = new TypeReference<>() {};
+      TypeReference<List<ProjectProcessStepEvent>> ppsEventsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "projectProcessStepEvents", new JsonCollectionDeserializer(ppsEventsRef, objectMapper));
     }
   }
@@ -338,11 +345,11 @@ public class ProjectProcessStepService {
   }
 
   public List<Long> getIdsForAutoTriggerByCfgaIds(Long projectId, Long contactId, List<Long> cfgaIds) {
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      params.put("contactId", contactId);
-      params.put("cfgaIds", cfgaIds);
-      return sqlCache.query("projectProcessStep.getIdsByAutoTriggerActionsAndReqs", params, new SingleColumnRowMapper<>(Long.class));
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("contactId", contactId);
+    params.put("cfgaIds", cfgaIds);
+    return sqlCache.query("projectProcessStep.getIdsByAutoTriggerActionsAndReqs", params, new SingleColumnRowMapper<>(Long.class));
   }
 
   public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
@@ -354,9 +361,9 @@ public class ProjectProcessStepService {
   public ProjectProcessStepAction getActionResult(Long actionId, ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
 
     List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
-      .filter(step -> step.getProcessStepRequirementId() != null)
-      .map(ProcessStepLogic::getProcessStepRequirementId)
-      .collect(Collectors.toList());
+                                       .filter(step -> step.getProcessStepRequirementId() != null)
+                                       .map(ProcessStepLogic::getProcessStepRequirementId)
+                                       .collect(Collectors.toList());
     List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
     ProjectProcessStepAction actionResult = canPerformAction(action, pps, requirements);
 
@@ -371,6 +378,7 @@ public class ProjectProcessStepService {
 
     return actionResult;
   }
+
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
 //  public List<Long> performInitialAutoTriggers() {
@@ -395,7 +403,6 @@ public class ProjectProcessStepService {
 //
 //    return createdPpsIds;
 //  }
-
   public void performTimeBasedAutoTriggers() {
 
     User cronUser = new User();
@@ -407,7 +414,7 @@ public class ProjectProcessStepService {
 
     int counter = 0;
 
-    for(Map<String, Object> result: results) {
+    for (Map<String, Object> result : results) {
       cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
       try {
         log.info(String.format("TRIGGERS: Starting #%s for ppsId: %s", counter++, result.get("ppsId")));
@@ -431,70 +438,70 @@ public class ProjectProcessStepService {
 
   @Transactional
   public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, Long callingPpsId, List<Long> performedActions) {
-      // Set the security context so we have user details in the async downline
-      securityService.setCurrentUserDetails(userDetails);
+    // Set the security context so we have user details in the async downline
+    securityService.setCurrentUserDetails(userDetails);
 
-      ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
+    ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
 
-      ArrayList<Long> createdPpsIds = new ArrayList<>();
+    ArrayList<Long> createdPpsIds = new ArrayList<>();
 
-      boolean actionsWerePerformed = false;
+    boolean actionsWerePerformed = false;
 
-      if (pps.getProcessStepStatusTypeId() == 1) {
-          for(ProjectProcessStepAction action: pps.getActions()) {
-              final boolean isSameAction = callingProcessStepActionId != null && callingProcessStepActionId.equals(action.getId());
-              final boolean isSameProcessStep = callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId());
-              final boolean isSamePps = callingPpsId != null && callingPpsId.equals(ppsId);
-              if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && (!isSameProcessStep || !isSamePps) && !performedActions.contains(action.getId())) {
-                  try {
-                    // Added this to get fresh pps values when looking at each action. Possible performance hit. Might want to lighten the previous getProjectProcessStep call,
-                    // which might potentially enable this one to get lighter also
-                      ProjectProcessStep updatedPps = this.getProjectProcessStep(ppsId);
+    if (pps.getProcessStepStatusTypeId() == 1) {
+      for (ProjectProcessStepAction action : pps.getActions()) {
+        final boolean isSameAction = callingProcessStepActionId != null && callingProcessStepActionId.equals(action.getId());
+        final boolean isSameProcessStep = callingProcessStepId != null && callingProcessStepId.equals(action.getProcessStepId());
+        final boolean isSamePps = callingPpsId != null && callingPpsId.equals(ppsId);
+        if (action.getTriggerAutomatically() && !action.getAlreadyTriggered() && !isSameAction && (!isSameProcessStep || !isSamePps) && !performedActions.contains(action.getId())) {
+          try {
+            // Added this to get fresh pps values when looking at each action. Possible performance hit. Might want to lighten the previous getProjectProcessStep call,
+            // which might potentially enable this one to get lighter also
+            ProjectProcessStep updatedPps = this.getProjectProcessStep(ppsId);
 
-                      List<Long> reqIds = action.getProcessStepLogicList().stream()
-                          .filter(step -> step.getProcessStepRequirementId() != null)
-                          .map(ProcessStepLogic::getProcessStepRequirementId)
-                          .collect(Collectors.toList());
+            List<Long> reqIds = action.getProcessStepLogicList().stream()
+                                      .filter(step -> step.getProcessStepRequirementId() != null)
+                                      .map(ProcessStepLogic::getProcessStepRequirementId)
+                                      .collect(Collectors.toList());
 
-                      List<ProjectProcessStepRequirement> reqs = updatedPps.getAutoTriggeredActionRequirements().stream()
-                          .filter(r -> reqIds.contains(r.getId()))
-                          .collect(Collectors.toList());
-                    ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps, reqs);
-                      if (actionResult.getCanPerform()) {
-                          performedActions.add(action.getId());
-                          List<Long> newPpsIds = this.performAction(action, updatedPps, performedActions);
-                          if (!newPpsIds.isEmpty()) {
-                            createdPpsIds.addAll(newPpsIds);
-                          }
-                          actionsWerePerformed = true;
-                      }
-                  } catch (StackOverflowError e) {
-                    final String errMessage = String.format("PPS: INFINITE LOOP DETECTED - Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
-                    log.error(errMessage);
-                    throw new RuntimeException(errMessage);
-                  } catch (Exception e) {
-                    final String errMessage = String.format("PPS: Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s",  action.getId(), ppsId, e.getMessage());
-                    log.error(errMessage);
-                    throw new RuntimeException(errMessage);
-                  }
+            List<ProjectProcessStepRequirement> reqs = updatedPps.getAutoTriggeredActionRequirements().stream()
+                                                                 .filter(r -> reqIds.contains(r.getId()))
+                                                                 .collect(Collectors.toList());
+            ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps, reqs);
+            if (actionResult.getCanPerform()) {
+              performedActions.add(action.getId());
+              List<Long> newPpsIds = this.performAction(action, updatedPps, performedActions);
+              if (!newPpsIds.isEmpty()) {
+                createdPpsIds.addAll(newPpsIds);
               }
-          }
-
-          if (actionsWerePerformed) {
-            List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(ppsId);
-            if (!cfgaIds.isEmpty()) {
-              List<Long> ppsIds = getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
-              for (Long checkingPpsId : ppsIds) {
-                // Don't re-check the ppsId we are in currently
-                if (!checkingPpsId.equals(ppsId))  {
-                  performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), ppsId, performedActions);
-                }
-              }
+              actionsWerePerformed = true;
             }
+          } catch (StackOverflowError e) {
+            final String errMessage = String.format("PPS: INFINITE LOOP DETECTED - Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s", action.getId(), ppsId, e.getMessage());
+            log.error(errMessage);
+            throw new RuntimeException(errMessage);
+          } catch (Exception e) {
+            final String errMessage = String.format("PPS: Unable to AUTO trigger action ID: %s, PPS ID: %s *** %s", action.getId(), ppsId, e.getMessage());
+            log.error(errMessage);
+            throw new RuntimeException(errMessage);
           }
+        }
       }
 
-      return createdPpsIds;
+      if (actionsWerePerformed) {
+        List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(ppsId);
+        if (!cfgaIds.isEmpty()) {
+          List<Long> ppsIds = getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
+          for (Long checkingPpsId : ppsIds) {
+            // Don't re-check the ppsId we are in currently
+            if (!checkingPpsId.equals(ppsId)) {
+              performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), ppsId, performedActions);
+            }
+          }
+        }
+      }
+    }
+
+    return createdPpsIds;
   }
 
   //putting this here due to circular reference issue i dont want to solve. yes it is weird i know
@@ -535,9 +542,12 @@ public class ProjectProcessStepService {
 
     childFunctionsRan = performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
 
+    //sends sms to contact if any are present in the configs
+    performSmsTemplates(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getContactId());
+
     ArrayList<Map<String, Object>> createdPps = new ArrayList<>();
 
-    for (ProcessStepActionChildProcess childStep: action.getProcessStepActionChildProcesses()) {
+    for (ProcessStepActionChildProcess childStep : action.getProcessStepActionChildProcesses()) {
       Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), childStep.getInitialCompanyProcessStepStatusTypeId(), childStep.getExistingCompanyProcessStepStatusTypeId());
       createdPps.add(Map.of("ppsId", ppsId, "shouldAutoTrigger", childStep.getAutoTriggerActionCount() > 0));
     }
@@ -552,16 +562,16 @@ public class ProjectProcessStepService {
 
     //run autotriggers for all created child PPSs which have any auto trigger actions
     createdPps.stream()
-      .filter(childStep -> Boolean.parseBoolean(childStep.get("shouldAutoTrigger").toString()))
-      .forEach(childStep -> this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
+              .filter(childStep -> Boolean.parseBoolean(childStep.get("shouldAutoTrigger").toString()))
+              .forEach(childStep -> this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
 
     //run autotriggers for actions which use the new child PPSs status
     if (!createdPps.isEmpty()) {
       List<Long> ids = createdPps.stream().map(step -> Long.parseLong(step.get("ppsId").toString())).toList();
       List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", ids), ProjectProcessStep.class);
-      for(ProjectProcessStep step : steps) {
+      for (ProjectProcessStep step : steps) {
         //only run if the referring PPS is active, not the parent PPS, and not a new child PPS (since we already ran through those autotriggers)
-        if(step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId()) && !ids.contains(step.getProjectProcessStepId())) {
+        if (step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId()) && !ids.contains(step.getProjectProcessStepId())) {
           performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
         }
       }
@@ -571,9 +581,9 @@ public class ProjectProcessStepService {
     if (runStatusTriggers) {
       //run auto triggers for PPSs which use the new PPS status
       List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
-      for(ProjectProcessStep step : steps) {
+      for (ProjectProcessStep step : steps) {
         //only run if the referring PPS is active and not the parent PPS
-        if(step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
+        if (step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
           performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
         }
       }
@@ -585,8 +595,8 @@ public class ProjectProcessStepService {
   public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
     // Allow actions to be triggered only once per PPS
     if (action.getAlreadyTriggered() && !action.getMultipleUses()) {
-        action.setCanPerform(false);
-        return action;
+      action.setCanPerform(false);
+      return action;
     }
 
     // Only perform actions on active project process steps
@@ -612,7 +622,7 @@ public class ProjectProcessStepService {
     }
 
     // Check to if individual requirements are fulfilled
-    for (ProjectProcessStepRequirement r: requirements) {
+    for (ProjectProcessStepRequirement r : requirements) {
       try {
         r.setFulfilled(this.isRequirementMet(r, pps.getProjectProcessStepId()));
       } catch (Exception e) {
@@ -624,7 +634,7 @@ public class ProjectProcessStepService {
     StringBuilder logicString = new StringBuilder();
 
     // This should now just be creating logic by making a string of all the requirements in order and replacing requirementIds with their respective true/false value
-    for (ProcessStepLogic logicStep: action.getProcessStepLogicList()) {
+    for (ProcessStepLogic logicStep : action.getProcessStepLogicList()) {
       if (logicStep.getOperationCode() != null) {
         logicString.append(" ").append(logicStep.getOperationCode()).append(" ");
       } else if (logicStep.getProcessStepRequirementId() != null) {
@@ -662,11 +672,11 @@ public class ProjectProcessStepService {
       } catch (Exception e) {
         throw new RuntimeException(String.format("Unable to calculate function requirement, PPS requirement ID: %s, PPS ID: %s *** %s", r.getId(), ppsId, e.getMessage()));
       }
-    } else if(r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS.id) || r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS_CATEGORY.id)) {
+    } else if (r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS.id) || r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS_CATEGORY.id)) {
       // 7 = check process step status type from reference step
       // 8 = check process step status category type from reference step
       requirementMet = calculateStatusRequirement(r, ppsId, false, r.getProcessStepRequirementTypeId());
-    } else if(r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS.id) || r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS_CATEGORY.id)) {
+    } else if (r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS.id) || r.getProcessStepRequirementTypeId().equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS_CATEGORY.id)) {
       // 9 = check project status type
       // 8 = check project status category type
       requirementMet = calculateStatusRequirement(r, ppsId, true, r.getProcessStepRequirementTypeId());
@@ -676,96 +686,96 @@ public class ProjectProcessStepService {
     } else {
 //      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
 
-        try {
-          switch (r.getDataTypeId().intValue()) {
-            case 1:
-              requirementMet = calculateDateRequirement(r);
-              break;
-            case 2:
-              requirementMet = calculateTimestampRequirement(r);
-              break;
-            case 3:
-              requirementMet = calculateBooleanRequirement(r);
-              break;
-            case 4:
-              requirementMet = calculateNumericRequirement(r);
-              break;
-            case 5:
-            case 13:
-              requirementMet = calculateTextRequirement(r);
-              break;
-            case 6:
-            case 9:
-              requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
-              break;
-            case 7:
-              requirementMet = calculateMultiselectRequirement(r);
-              break;
-            case 8:
-              requirementMet = calculateCustomRequirement(r);
-              break;
-            default:
-              throw new RuntimeException("Unable to determine requirement data type");
-          }
-        } catch (Exception e) {
-          throw new RuntimeException(String.format("Unable to check requirement, req ID: %s, PPS ID: %s *** %s", r.getId(), ppsId, e.getMessage()));
+      try {
+        switch (r.getDataTypeId().intValue()) {
+          case 1:
+            requirementMet = calculateDateRequirement(r);
+            break;
+          case 2:
+            requirementMet = calculateTimestampRequirement(r);
+            break;
+          case 3:
+            requirementMet = calculateBooleanRequirement(r);
+            break;
+          case 4:
+            requirementMet = calculateNumericRequirement(r);
+            break;
+          case 5:
+          case 13:
+            requirementMet = calculateTextRequirement(r);
+            break;
+          case 6:
+          case 9:
+            requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? calculateDropdownRequirement(r) : calculateIntRequirement(r);
+            break;
+          case 7:
+            requirementMet = calculateMultiselectRequirement(r);
+            break;
+          case 8:
+            requirementMet = calculateCustomRequirement(r);
+            break;
+          default:
+            throw new RuntimeException("Unable to determine requirement data type");
         }
+      } catch (Exception e) {
+        throw new RuntimeException(String.format("Unable to check requirement, req ID: %s, PPS ID: %s *** %s", r.getId(), ppsId, e.getMessage()));
       }
+    }
     return requirementMet;
   }
 
   public boolean calculateCustomRequirement(ProjectProcessStepRequirement r) throws Exception {
-      boolean passed = false;
+    boolean passed = false;
 
-      if (r.getCustomFieldSqlKey() != null) {
-          // We can compare the IDs without actually having to get the values behind them. Sorta like C++ pointers
-          // This also assumes data type ID of 8 (custom behavior fields) are lists. If we start supporting other types with custom behavior, this needs to update with it
-          if (r.getDataTypeRequirementId() == null) {
-              switch (r.getOperatorTypeId().intValue()) {
-                  case 1:
-                      passed = Objects.equals(r.getCustomSqlOptionId(), r.getIntValue());
-                      break;
-                  case 2:
-                      passed = !Objects.equals(r.getCustomSqlOptionId(), r.getIntValue());
-                      break;
-                  case 3:
-                  case 4:
-                      break;
-                  default:
-                      throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
-              }
-          } else {
-              switch (r.getDataTypeRequirementId().intValue()) {
-                  case 24:
-                      switch (r.getOperatorTypeId().intValue()) {
-                          case 1:
-                              passed = r.getIntValue() == null;
-                              break;
-                          case 2:
-                              passed = r.getIntValue() != null;
+    if (r.getCustomFieldSqlKey() != null) {
+      // We can compare the IDs without actually having to get the values behind them. Sorta like C++ pointers
+      // This also assumes data type ID of 8 (custom behavior fields) are lists. If we start supporting other types with custom behavior, this needs to update with it
+      if (r.getDataTypeRequirementId() == null) {
+        switch (r.getOperatorTypeId().intValue()) {
+          case 1:
+            passed = Objects.equals(r.getCustomSqlOptionId(), r.getIntValue());
+            break;
+          case 2:
+            passed = !Objects.equals(r.getCustomSqlOptionId(), r.getIntValue());
+            break;
+          case 3:
+          case 4:
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+        }
+      } else {
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 24:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = r.getIntValue() == null;
+                break;
+              case 2:
+                passed = r.getIntValue() != null;
 
-                      }
-                      break;
-                  case 25:
-                      switch (r.getOperatorTypeId().intValue()) {
-                          case 1:
-                              passed = r.getIntValue() != null;
-                              break;
-                          case 2:
-                              passed = r.getIntValue() == null;
-                      }
-              }
-          }
+            }
+            break;
+          case 25:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = r.getIntValue() != null;
+                break;
+              case 2:
+                passed = r.getIntValue() == null;
+            }
+        }
       }
+    }
 
-      return passed;
+    return passed;
   }
 
   public boolean calculateEventStatusRequirement(ProjectProcessStepRequirement requirement, Long ppseId, Long requirementTypeId) {
     boolean passed = false;
 
     Optional<ProjectProcessStepEvent> ppseWithStatus = getPpseEventWithStatus(ppseId);
-    if(ppseWithStatus.isPresent()) {
+    if (ppseWithStatus.isPresent()) {
       // check if the status is in one of the statuses
       //use this one vv when they change to want event category too
       //int idToCheck = requirementTypeId.equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.EVENT_STATUS.id) ? ppseWithStatus.get().getCompanyEventStatusTypeId().intValue() : ppseWithStatus.get().getEventStatusTypeId().intValue();
@@ -779,10 +789,10 @@ public class ProjectProcessStepService {
   public boolean calculateStatusRequirement(ProjectProcessStepRequirement requirement, Long projectProcessStepId, Boolean isProject, Long requirementTypeId) {
     boolean passed = false;
 
-    if(isProject) {
+    if (isProject) {
       //if there is a pps then check the project status from that
       Optional<Project> projectWithStatus = projectService.getStatus(requirement.getProjectId());
-      if(projectWithStatus.isPresent()) {
+      if (projectWithStatus.isPresent()) {
         // check if the status is in one of the statuses
         int idToCheck = requirementTypeId.equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROJECT_STATUS.id) ? projectWithStatus.get().getCompanyProjectStatusTypeId().intValue() : projectWithStatus.get().getProjectStatusTypeId().intValue();
         passed = requirement.getListOfValueIds().contains(idToCheck);
@@ -801,7 +811,7 @@ public class ProjectProcessStepService {
       Optional<ProjectProcessStep> projectProcessStep = sqlCache.get("projectProcessStep.getPrimaryByReferenceProcessStepAndStatus", params, ProjectProcessStep.class);
 
       //if we found a primary pss of that type
-      if(projectProcessStep.isPresent()) {
+      if (projectProcessStep.isPresent()) {
         // check if the status is in one of the statuses
         int idToCheck = requirementTypeId.equals(com.albatross.api.v1.flow.enums.ProcessStepRequirementType.PROCESS_STEP_STATUS.id) ? projectProcessStep.get().getCompanyProcessStepStatusTypeId().intValue() : projectProcessStep.get().getProcessStepStatusTypeId().intValue();
         passed = requirement.getListOfValueIds().contains(idToCheck);
@@ -819,7 +829,7 @@ public class ProjectProcessStepService {
       case 1:
         // @TODO: Duped from the button logic, potentially combine
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime dateFunctionResult = (functionResult !=  null) ? LocalDate.parse(functionResult.toString(), dateFormatter).atStartOfDay() : null;
+        LocalDateTime dateFunctionResult = (functionResult != null) ? LocalDate.parse(functionResult.toString(), dateFormatter).atStartOfDay() : null;
         LocalDateTime nowForDate = LocalDateTime.now();
         String secondaryDateValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
 
@@ -853,8 +863,8 @@ public class ProjectProcessStepService {
       case 2:
         // @TODO: Duped from the button logic, potentially combine
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
-        LocalDateTime timestampFunctionResult = (functionResult !=  null) ? LocalDateTime.parse(functionResult.toString(), dateTimeFormatter).withMinute(0).withSecond(0).withNano(0) : null;
-        LocalDateTime nowForTimestamp =  LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime timestampFunctionResult = (functionResult != null) ? LocalDateTime.parse(functionResult.toString(), dateTimeFormatter).withMinute(0).withSecond(0).withNano(0) : null;
+        LocalDateTime nowForTimestamp = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
         String secondaryTimestampValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
 
         ZonedDateTime zoneTimestampFunctionResult = (timestampFunctionResult != null) ? timestampFunctionResult.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(r.getTimeZone())) : null;
@@ -1077,52 +1087,52 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-    public Boolean performChildFunctions(Long actionId, Long ppsId, Long processStepId, Long projectId) {
-        var shouldRunAutoTriggers = false;
-        List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
-        childFunctions.forEach(childFunction -> {
-          try {
-            if (childFunction.getRunInBackend()) {
-              User user = securityService.getCurrentUser();
+  public Boolean performChildFunctions(Long actionId, Long ppsId, Long processStepId, Long projectId) {
+    var shouldRunAutoTriggers = false;
+    List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
+    childFunctions.forEach(childFunction -> {
+      try {
+        if (childFunction.getRunInBackend()) {
+          User user = securityService.getCurrentUser();
 
-              final String originalFuncName = childFunction.getFunctionName();
-              final int dot = originalFuncName.indexOf('.');
-              final String functionAbbreviation = originalFuncName.substring(0, dot);
-              final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
+          final String originalFuncName = childFunction.getFunctionName();
+          final int dot = originalFuncName.indexOf('.');
+          final String functionAbbreviation = originalFuncName.substring(0, dot);
+          final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
 
-              Map<String, Object> systemValues = new HashMap<>();
-              systemValues.put("processStepId", processStepId);
-              systemValues.put("ppsId", ppsId);
-              systemValues.put("projectId", projectId);
-              systemValues.put("userId", user.getId());
-              systemValues.put("companyId", user.getCompanyId());
+          Map<String, Object> systemValues = new HashMap<>();
+          systemValues.put("processStepId", processStepId);
+          systemValues.put("ppsId", ppsId);
+          systemValues.put("projectId", projectId);
+          systemValues.put("userId", user.getId());
+          systemValues.put("companyId", user.getCompanyId());
 
-              if (functionAbbreviation.equals("brs")) {
-                var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
-                functionClass.marketoEnabled = marketoEnabled;
-                Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
-                method.invoke(functionClass, childFunction, systemValues);
-              } else {
-                // @TODO: Add company IDs here during onboarding
-              }
-            } else {
-              String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, null));
-              String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
-              sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
-            }
-          } catch (InvocationTargetException e) {
-            throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getCause().getMessage()));
-          } catch (Exception e) {
-            throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getMessage()));
+          if (functionAbbreviation.equals("brs")) {
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+            functionClass.marketoEnabled = marketoEnabled;
+            Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
+            method.invoke(functionClass, childFunction, systemValues);
+          } else {
+            // @TODO: Add company IDs here during onboarding
           }
-        });
-
-        if (!childFunctions.isEmpty()) {
-          shouldRunAutoTriggers = true;
+        } else {
+          String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, null));
+          String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
+          sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
         }
+      } catch (InvocationTargetException e) {
+        throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getCause().getMessage()));
+      } catch (Exception e) {
+        throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getMessage()));
+      }
+    });
 
-        return shouldRunAutoTriggers;
+    if (!childFunctions.isEmpty()) {
+      shouldRunAutoTriggers = true;
     }
+
+    return shouldRunAutoTriggers;
+  }
 
   public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId, Long ppsEventId) throws Exception {
     Map<Long, String> params = new TreeMap<>();
@@ -1176,31 +1186,31 @@ public class ProjectProcessStepService {
     String startingValue = param.getDynamicValue();
     Object typedValue = null;
 
-  try {
-    switch (param.getDataTypeId().intValue()) {
-      case 1:
-      case 2:
-        typedValue = Timestamp.valueOf(startingValue);
-        break;
-      case 3:
-        typedValue = Boolean.parseBoolean(startingValue);
-        break;
-      case 4:
-        typedValue = Double.parseDouble(startingValue);
-        break;
-      case 5:
-      case 13:
-        typedValue = "'" + startingValue + "'";
-        break;
-      case 6:
-        typedValue = Long.parseLong(startingValue);
-        break;
-      default:
-        throw new RuntimeException(String.format("Unable to determine typed param dynamic value, CF param ID: %s", param.getId()));
+    try {
+      switch (param.getDataTypeId().intValue()) {
+        case 1:
+        case 2:
+          typedValue = Timestamp.valueOf(startingValue);
+          break;
+        case 3:
+          typedValue = Boolean.parseBoolean(startingValue);
+          break;
+        case 4:
+          typedValue = Double.parseDouble(startingValue);
+          break;
+        case 5:
+        case 13:
+          typedValue = "'" + startingValue + "'";
+          break;
+        case 6:
+          typedValue = Long.parseLong(startingValue);
+          break;
+        default:
+          throw new RuntimeException(String.format("Unable to determine typed param dynamic value, CF param ID: %s", param.getId()));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Unable to get typed dynamic value, CF param ID: %s, CF ID: %s *** %s", param.getId(), param.getCompanyFunctionId(), e.getMessage()));
     }
-  } catch (Exception e) {
-    throw new RuntimeException(String.format("Unable to get typed dynamic value, CF param ID: %s, CF ID: %s *** %s", param.getId(), param.getCompanyFunctionId(), e.getMessage()));
-  }
 
     return typedValue;
   }
@@ -1300,7 +1310,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean caclulateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Long fieldValue = r.getIntValue();
 
@@ -1308,7 +1318,8 @@ public class ProjectProcessStepService {
 
     try {
       if (r.getDataTypeRequirementId() == null) {
-        Long reqValue = r.getListOfValueId();
+        //this was trying to use listOfValueId for system lists. i think this fixes that issue and keeps everything working for normal dropdowns too
+        Long reqValue = null != r.getSystemListOptionId() ? r.getSystemListOptionId() : r.getListOfValueId();
         passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
       } else {
         switch (r.getDataTypeRequirementId().intValue()) {
@@ -1385,7 +1396,7 @@ public class ProjectProcessStepService {
         Long reqValue = Long.parseLong(r.getRequirementValue());
         passed = compareInt(fieldValue, reqValue, r.getOperatorTypeId());
       } else {
-        switch(r.getDataTypeRequirementId().intValue()) {
+        switch (r.getDataTypeRequirementId().intValue()) {
           case 20:
             switch (r.getOperatorTypeId().intValue()) {
               case 1:
@@ -1546,7 +1557,7 @@ public class ProjectProcessStepService {
         Double reqValue = new BigDecimal(r.getRequirementValue()).setScale(2, RoundingMode.DOWN).doubleValue();
         passed = compareNumeric(fieldValue, reqValue, r.getOperatorTypeId());
       } else {
-        switch(r.getDataTypeRequirementId().intValue()) {
+        switch (r.getDataTypeRequirementId().intValue()) {
           case 16:
             switch (r.getOperatorTypeId().intValue()) {
               case 1:
@@ -1806,7 +1817,7 @@ public class ProjectProcessStepService {
       r.setTimeZone("America/Denver");
     }
 
-    LocalDateTime fieldValue = (r.getDateValue() !=  null) ? r.getDateValue().toLocalDateTime() : null;
+    LocalDateTime fieldValue = (r.getDateValue() != null) ? r.getDateValue().toLocalDateTime() : null;
     LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
     String secondaryValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
 
@@ -1937,15 +1948,46 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public Optional<String> getInstallationScopeOfWork(Long projectId) {
-    User user = securityService.getCurrentUser();
+  public void performSmsTemplates(Long actionId, Long ppsId, Long projectId, Long contactId) {
+    List<ProcessStepActionChildSmsTemplate> childSmsTemplates = processStepActionService.getChildSmsTemplates(actionId);
+    if (!childSmsTemplates.isEmpty()) {
+      User user = securityService.getCurrentUser();
+
+      childSmsTemplates.forEach(smsTemplate -> {
+        try {
+          Contact contact = getContact(contactId, user);
+          log.debug("TWILIO: attempting text for contact ID: {}", contactId);
+          if (null != contact) {
+            communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null);
+            smsTemplate.getTeamIds().forEach(teamId -> {
+              messagingService.addTeam(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
+            });
+          } else {
+            throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Could not find contact for contact id: " + contactId,
+              new Exception());
+          }
+        } catch (Exception e) {
+          throw new RuntimeException(String.format("PPS: Unable to send sms template. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", smsTemplate.getId(), actionId, ppsId, e.getMessage()));
+        }
+      });
+    }
+  }
+
+  public Contact getContact(Long contactId, User user) {
+    //this is dumb but i cant call the one in the contactService without having circular dependency issues
+    //needs to return the same stuff as the one called by communicationController.sendTextsForProject
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
-    return
-      sqlCache.get(
-        "projectProcessStep.getProjectInstallationScopeOfWork",
-        params,
-        new SingleColumnRowMapper<>(String.class));
+    params.put("contactId", contactId);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+    Optional<Contact> contact =
+      sqlCache.get("contact.getById", params, new ContactService.ContactMapper<>(Contact.class, om));
+
+    return contact.orElse(null);
   }
 }

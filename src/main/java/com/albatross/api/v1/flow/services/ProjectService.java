@@ -41,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -699,6 +700,18 @@ public class ProjectService {
       cannotDelete.setProcessStepRequirements(processStepRequirements);
       return ResponseEntity.badRequest().body(cannotDelete);
     }
+  }
+
+  public Optional<String> getInstallationScopeOfWork(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+    return
+      sqlCache.get(
+        "project.getProjectInstallationScopeOfWork",
+        params,
+        new SingleColumnRowMapper<>(String.class));
   }
 
   public List<ProjectStatusType> getProjectStatuses() {

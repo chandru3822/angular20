@@ -183,6 +183,35 @@
                                and psacf.archived is not true
                              order by psacf.display_order, cf.company_function_name
                          ) childFn), '[]') AS "processStepActionChildFunctions",
+                         coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(childSms)))
+                  FROM (
+                         select psamt.id,
+                                psamt.process_step_action_id,
+                                psamt.message_template_id,
+                                psamt.archived,
+                                psamt.date_created,
+                                psamt.date_modified,
+                                psamt.created_by_id,
+                                psamt.modified_by_id,
+                                to_jsonb(psamt.sms_team_ids) as teamIds,
+                                coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(team)))
+                                           FROM (
+                                                  select st.id,
+                                                         st.team_name as "teamName"
+                                                  from flow.sms_team st
+                                                  where st.id = any(mt.team_ids)
+                                                    and st.archived is false
+                                                    and st.id = any(psamt.sms_team_ids)
+                                                ) team), '[]') AS "teams",
+                                mt.title
+                         from flow.process_step_action_message_template psamt
+                                inner join flow.message_template mt on mt.id = psamt.message_template_id
+                         where psamt.archived is not true
+                          and psamt.process_step_action_id = psa.id
+                         order by mt.title
+                       ) childSms), '[]') AS "processStepActionChildSmsTemplates",
        coalesce((
                     SELECT array_to_json(array_agg(row_to_json(links)))
                     FROM (
@@ -412,6 +441,7 @@
                              where dfp.db_function_id = cf.db_function_id
                                and dfp.parameter_type_id = 2
                                and apdv.archived is not true
+                               and dfp.archived is not true
                                order by dfp.display_order
                          ) params), '[]') AS "actionParamDynamicValues"
     from flow.process_step_action_company_function cp
@@ -573,4 +603,69 @@ order by
     )
     select array_to_string(array(select value from logic), ' ')
   ]]></processStepAction.actionLogicString>
+
+  <processStepAction.addSmsToAction><![CDATA[
+    insert into flow.process_step_action_message_template (process_step_action_id, message_template_id, sms_team_ids, created_by_id, date_created, modified_by_id, date_modified)
+    values (:processStepActionId, :messageTemplateId, array[ :teamIds ]::bigint[], :createdById, now(), :createdById, now())
+  ]]></processStepAction.addSmsToAction>
+
+  <processStepAction.getActionChildSms><![CDATA[
+    select psamt.id,
+           psamt.process_step_action_id,
+           psamt.message_template_id,
+           psamt.archived,
+           psamt.date_created,
+           psamt.date_modified,
+           psamt.created_by_id,
+           psamt.modified_by_id,
+           to_jsonb(psamt.sms_team_ids) as teamIds,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(team)))
+                        FROM (
+                          select st.id,
+                                 st.team_name as "teamName"
+                          from flow.sms_team st
+                          where st.id = any(psamt.sms_team_ids)
+                          and st.archived is false
+                               ) team), '[]') AS "teams",
+           mt.title
+    from flow.process_step_action_message_template psamt
+           inner join flow.message_template mt on mt.id = psamt.message_template_id
+    where psamt.id = :id
+  ]]></processStepAction.getActionChildSms>
+
+  <processStepAction.deleteSmsFromAction><![CDATA[
+    update flow.process_step_action_message_template
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    where id = :id
+  ]]></processStepAction.deleteSmsFromAction>
+
+  <processStepAction.getChildSmsTemplatesByActionId><![CDATA[
+      select
+        psamt.id,
+        psamt.archived,
+        psamt.process_step_action_id as "processStepActionId",
+        psamt.message_template_id as "messageTemplateId",
+        psamt.created_by_id as "createdById",
+        psamt.modified_by_id as "modifiedById",
+        mt.title,
+        mt.message,
+        coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(team)))
+                   FROM (
+                          select st.id,
+                                 st.team_name as "teamName"
+                          from flow.sms_team st
+                          where st.id = any(psamt.sms_team_ids)
+                            and st.archived is false
+                        ) team), '[]') AS "teams",
+        to_jsonb(psamt.sms_team_ids) as teamIds
+      from flow.process_step_action_message_template psamt
+             inner join flow.message_template mt on mt.id = psamt.message_template_id
+      where
+        psamt.process_step_action_id = :processStepActionId and
+        psamt.archived is not true
+]]></processStepAction.getChildSmsTemplatesByActionId>
 </sql>

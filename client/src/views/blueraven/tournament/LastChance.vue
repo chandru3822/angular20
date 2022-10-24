@@ -37,6 +37,7 @@
         :search="search"
         :fixed-header="true"
         :items-per-page="100"
+        :footer-props="footerProps"
         disable-sort
         class="elevation-1 square-card"
       >
@@ -99,6 +100,9 @@
         showScoreUser: {},
         showModal: false,
         dataLoading: true,
+        footerProps: {
+          'items-per-page-options': [25, 50, 100],
+        },
         selectRerender: 1,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         tournamentId: this.$route.params.id,

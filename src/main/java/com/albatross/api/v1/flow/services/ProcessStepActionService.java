@@ -376,6 +376,54 @@ public class ProcessStepActionService {
     handleDynamicValueParams(child.getActionParamDynamicValues(), child.getId(), null);
   }
 
+  //child sms action stuff
+  public ProcessStepActionChildSmsTemplate addSmsToAction(Long actionId, ProcessStepActionChildSmsTemplate child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("messageTemplateId", child.getMessageTemplateId());
+    params.put("teamIds", child.getTeamIds());
+    params.put("processStepActionId", actionId);
+    params.put("createdById", currentUser.trueUserId());
+
+    Long id =
+      sqlCache
+        .updateReturningId("processStepAction.addSmsToAction", params, "id")
+        .longValue();
+
+
+    return getActionChildSms(id);
+  }
+
+  public ProcessStepActionChildSmsTemplate getActionChildSms(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    return sqlCache
+      .get(
+        "processStepAction.getActionChildSms",
+        params,
+        new ProcessStepActionChildSmsTemplateMapper<>(ProcessStepActionChildSmsTemplate.class, om))
+      .orElse(null);
+  }
+  public void deleteSmsFromAction(Long childSmsId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("id", childSmsId);
+    sqlCache.update("processStepAction.deleteSmsFromAction", params);
+  }
+
+  public List<ProcessStepActionChildSmsTemplate> getChildSmsTemplates(Long actionId) {
+    Map<String, Object> params =
+      Map.of("processStepActionId", actionId);
+    return sqlCache.query(
+      "processStepAction.getChildSmsTemplatesByActionId",
+      params,
+      new ProcessStepActionChildSmsTemplateMapper<>(ProcessStepActionChildSmsTemplate.class, om));
+  }
+
+
   public void handleDynamicValueParams(List<ActionParamDynamicValue> params, Long processStepActionCompanyFunctionId, Long processStepEventActionCompanyFunctionId) {
     if(!params.isEmpty()) {
       User currentUser = securityService.getCurrentUser();
@@ -440,6 +488,13 @@ public class ProcessStepActionService {
           "processStepActionChildFunctions",
           new JsonCollectionDeserializer(processStepActionChildFunctionsRef, objectMapper));
 
+      TypeReference<List<ProcessStepActionChildSmsTemplate>> processStepActionChildSmsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "processStepActionChildSmsTemplates",
+          new JsonCollectionDeserializer(processStepActionChildSmsRef, objectMapper));
+
       TypeReference<List<ProcessStepActionLink>> processStepActionLinksRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
@@ -471,6 +526,26 @@ public class ProcessStepActionService {
           List.class,
           "companyFunctionParams",
           new JsonCollectionDeserializer<>(companyFunctionParamsRef, objectMapper));
+    }
+  }
+
+  public static class ProcessStepActionChildSmsTemplateMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProcessStepActionChildSmsTemplateMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Long>> teamIdsTypeRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "teamIds",
+        new JsonCollectionDeserializer(teamIdsTypeRef, objectMapper));
+
+      TypeReference<List<MessageTeam>> teamsTypeRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "teams",
+        new JsonCollectionDeserializer(teamsTypeRef, objectMapper));
     }
   }
 }

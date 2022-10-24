@@ -10,5 +10,6 @@ public class MessageTemplate {
   private Long id;
   private String title, message;
   private List<Long> teamIds;
+  private List<MessageTeam> teams;
   private Boolean archived;
 }

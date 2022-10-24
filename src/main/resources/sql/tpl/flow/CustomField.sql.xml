@@ -390,6 +390,7 @@
             cf.company_id,
             cf.field_name,
             cf.company_data_type_id,
+            cf.company_system_list_id,
             cf.date_created,
             cf.date_modified,
             cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",

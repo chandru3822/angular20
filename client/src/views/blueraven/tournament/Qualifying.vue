@@ -45,7 +45,8 @@
         :fixed-header="true"
         :search="search"
         dense
-        :items-per-page="minRowsPerPage"
+        :items-per-page="100"
+        :footer-props="footerProps"
         disable-sort
         class="elevation-1 square-card"
       >
@@ -122,6 +123,9 @@
         tournamentUserCount: 0,
         matchesNotGenerated: false,
         minRowsPerPage: 0,
+        footerProps: {
+          'items-per-page-options': [25, 50, 100],
+        },
         dataLoading: true,
         pool: {},
         poolUsers: [],

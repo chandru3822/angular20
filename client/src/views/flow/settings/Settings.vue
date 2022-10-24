@@ -128,9 +128,9 @@ export default {
         pathMatch: '/settings/company',
         show: this.hasSettingsAccess,
       }, {
-        path: '/settings/proposals', //NOTE (Kaleb) is this the right spot
+        path: '/settings/proposals',
         title: 'Proposals',
-        show: true,
+        show: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
       }, {
         path: '/settings/states',
         title: 'States',

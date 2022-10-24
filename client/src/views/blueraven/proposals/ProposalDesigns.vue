@@ -177,14 +177,14 @@
             @change="uploadFiles"
           />
 
-          <DatetimePickerInput
-            v-model="newDesignRequest.dueDate"
-            :timezone="timezone"
-            type="timestamp"
-            :format="'MMMM DD, YYYY, h:mm A'"
-            :min-date="minDate"
-            label="Pick a due date and time (Required)"
-          />
+<!--          <DatetimePickerInput-->
+<!--            v-model="newDesignRequest.dueDate"-->
+<!--            :timezone="timezone"-->
+<!--            type="timestamp"-->
+<!--            :format="'MMMM DD, YYYY, h:mm A'"-->
+<!--            :min-date="minDate"-->
+<!--            label="Pick a due date and time (Required)"-->
+<!--          />-->
 
         </v-card-text>
 
@@ -198,7 +198,7 @@
           <v-btn
             color="primary"
             class="white--text text-capitalize font-weight-bold"
-            :disabled="!newDesignRequest.description || !newDesignRequest.dueDate"
+            :disabled="!newDesignRequest.description"
             @click="requestNewDesign()">
             Request
           </v-btn>
@@ -306,7 +306,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const formData = new FormData()
         formData.append('description', this.newDesignRequest.description)
-        formData.append('dueDate', this.newDesignRequest.dueDate)
+        // formData.append('dueDate', this.newDesignRequest.dueDate)
 
         this.newDesignRequest?.attachments?.forEach(a => {
           formData.append('attachments', a)

@@ -36,6 +36,7 @@
         :search="search"
         :fixed-header="true"
         :items-per-page="100"
+        :footer-props="footerProps"
         disable-sort
         class="elevation-1 square-card"
       >
@@ -111,6 +112,9 @@
         constants,
         snackbar: {},
         search: '',
+        footerProps: {
+          'items-per-page-options': [25, 50, 100],
+        },
         showScoreUser: {},
         showModal: false,
         poolTypeId: 3,

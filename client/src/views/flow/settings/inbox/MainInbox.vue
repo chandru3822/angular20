@@ -15,11 +15,11 @@
       <v-toolbar prominent elevation="4" color="grey lighten-4" class="pb-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
           <v-tabs class="inbox-tabs pa-0" background-color="var(--v-secondary-base)">
-            <v-tab text @click="showInbox = true; reloadProjects()">
+            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; reloadProjects()">
               New
               <v-badge
                 class="inbox-badge"
-                color="#F35858"
+                color="#D03331"
                 :content="inboxNotificationCount"
                 v-if="inboxNotificationCount > 0"
               ></v-badge>
@@ -28,40 +28,43 @@
               Sent
               <v-badge
                 class="inbox-badge"
-                color="#F35858"
+                color="#D03331"
                 :content="sentNotificationCount"
                 v-if="sentNotificationCount > 0"
               ></v-badge>
             </v-tab>
           </v-tabs>
-          <v-text-field
-            prepend-inner-icon="search"
-            text
-            label="Search by project or owner"
-            v-model="searchQuery"
-            @input="searchProjects"
-            class="albatross-body-2 mb-n4 mt-2"
-            clearable
-          />
           <v-row class="px-2 pt-2 toolbar-row-2 mt-4">
-            <v-checkbox
-              v-model="showUnreadOnly"
-              @change="reloadProjects"
-              label="Show unread only"
-              class="read-filter albatross-body-2 align-self-end pr-6 flex-shrink-0 default-text-color"
-              :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
-            >
-            </v-checkbox>
+            <v-text-field
+              prepend-inner-icon="search"
+              text
+              label="Search by project or owner"
+              v-model="searchQuery"
+              @input="searchProjects"
+              :class="teamFilterOptions.length > 0 ? 'project-search' : 'project-search-no-teams'"
+              class="albatross-body-2 mb-n4 mt-2 pr-6"
+              clearable
+            />
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
             </v-chip>
+          </v-row>
+          <v-row class="toolbar-row-2 mt-6 mb-6">
+            <v-checkbox
+              v-model="showUnreadOnly"
+              @change="reloadProjects"
+              label="Show unread only"
+              class="read-filter albatross-body-2 align-self-end flex-shrink-0 default-text-color pr-6 pl-1"
+              :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
+            >
+            </v-checkbox>
             <v-autocomplete v-model="selectedTeamFilters"
                             :items="teamFilterOptions"
                             item-text="teamName"
                             item-value="id"
                             prepend-icon="group"
-                            class="filter-control albatross-body-2 align-self-end flex-shrink-1"
+                            class="filter-control albatross-body-2 align-self-end flex-shrink-1  mr-6"
                             placeholder="Teams"
                             :menu-props="{offsetY:true}"
                             multiple
@@ -167,13 +170,13 @@
             <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
               <v-col cols="11" class="pa-0">
                 <div class="d-flex align-baseline"
-                     :class="{'notif-div': (hasNotification(item.projectId))}">
+                     :class="{'notif-div': (projectNotificationCount(item.projectId) > 0)}">
                   <div>
                     <v-badge
-                      dot
-                      color="#F35858"
+                      color="#D03331"
                       class="notif-badge"
-                      v-if="hasNotification(item.projectId)"
+                      :content="projectNotificationCount(item.projectId)"
+                      v-if="projectNotificationCount(item.projectId) > 0"
                     >
                     </v-badge>
                     <b>{{ item.projectName }}</b>
@@ -266,7 +269,9 @@ export default {
       totalProjects: 0,
       page: 1,
       initialLoad: true,
-      projectIdsForCurrentFilter: []
+      projectIdsForCurrentFilter: [],
+      projectIdsInbox: [],
+      projectIdsSent: []
     }
   },
   computed: {
@@ -274,33 +279,23 @@ export default {
       let count = 0;
       let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
       notifProjectIds.forEach(npi => {
-        if (this.projectIdsForCurrentFilter.includes(npi)) {
+        if (this.projectIdsInbox && this.projectIdsInbox.includes(npi)) {
           count++;
         }
       })
 
-      if (this.showInbox) {
-        return count;
-      }
-      else {
-        return notifProjectIds.length - count;
-      }
+      return count;
     },
     sentNotificationCount() {
       let count = 0;
       let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
       notifProjectIds.forEach(npi => {
-        if (this.projectIdsForCurrentFilter.includes(npi)) {
+        if (this.projectIdsSent && this.projectIdsSent.includes(npi)) {
           count++;
         }
       })
 
-      if (!this.showInbox) {
-        return count;
-      }
-      else {
-        return notifProjectIds.length - count;
-      }
+      return count;
     },
     smsOwnershipEvents() {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
@@ -413,6 +408,8 @@ export default {
         if (data) {
           this.projects = data.content
           if (this.projects.length > 0) {
+            this.projectIdsInbox = this.projects[0].projectIdsInbox
+            this.projectIdsSent = this.projects[0].projectIdsSent
             this.projectIdsForCurrentFilter = this.projects[0].projectIdsForFilter
           }
 
@@ -458,6 +455,14 @@ export default {
           this.projects = data.content
           if (this.projects.length > 0) {
             this.projectIdsForCurrentFilter = this.projects[0].projectIdsForFilter
+            // If New/Sent notification badges weren't loaded yet (No projects under New), get values now
+            if (!this.projectIdsInbox && !this.projectIdsSent) {
+              this.projectIdsInbox = this.projects[0].projectIdsInbox
+              this.projectIdsSent = this.projects[0].projectIdsSent
+            }
+          }
+          else {
+            this.projectIdsForCurrentFilter = []
           }
 
           this.totalProjects = this.projectIdsForCurrentFilter?.length || 0
@@ -472,13 +477,7 @@ export default {
             })
           })
         }
-        const projectIds = this.projects?.map(p => p.projectId)
 
-        let projectId = parseInt(this.$route.params.projectId) || null
-        // If the Project opened in the right panel no longer is available, close the right panel
-        if (this.$route.path.includes('inboxConversation') && projectId != null && projectId !== 0 && !projectIds.includes(projectId)) {
-          await this.$router.push({ path: `/inbox` })
-        }
         handleHidingGlobalLoader(this, status)
         this.showLoading(false)
         this.reloadInProgress = false
@@ -552,8 +551,8 @@ export default {
         this.showLoading(false)
       }
     },
-    hasNotification(projectId) {
-      return this.smsNotification?.filter(n => n.metadata?.projectId === projectId)?.length > 0
+    projectNotificationCount(projectId) {
+      return this.smsNotification?.filter(n => n.metadata?.projectId === projectId)?.length
     },
     clearNotification(projectId) {
       const notificationIds = this.smsNotification
@@ -586,34 +585,35 @@ export default {
       try {
         const { data, status } = await getRequest(`/smsTeam/users`)
         this.selectableTeams = data
-        this.selectableTeams.forEach(team => {
-          if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
-            if (!this.teamAlreadyAddedToFilter(team)) {
-              this.teamFilterOptions.push(team)
-            }
-
-            if (!this.selectedTeamFilters.includes(team.id)) {
-              this.selectedTeamFilters.push(team.id)
-            }
-
-            team.users.forEach(owner => {
-              if (!this.ownerAlreadyAddedToFilter(owner)) {
-                this.ownerFilterOptions.push(owner)
-
-                if (owner.userId === this.userId) {
-                  this.selectedOwnerFilters.push(owner.userId)
-                }
+        if (this.selectableTeams && this.selectableTeams.length > 0) {
+          this.selectableTeams.forEach(team => {
+            if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
+              if (!this.teamAlreadyAddedToFilter(team)) {
+                this.teamFilterOptions.push(team)
               }
-            })
-          } else if (this.userCanViewAll) {
-            if (!this.teamAlreadyAddedToFilter(team)) {
-              this.teamFilterOptions.push(team)
+
+              if (!this.selectedTeamFilters.includes(team.id)) {
+                this.selectedTeamFilters.push(team.id)
+              }
+
+              team.users.forEach(owner => {
+                if (!this.ownerAlreadyAddedToFilter(owner)) {
+                  this.ownerFilterOptions.push(owner)
+
+                  if (owner.userId === this.userId) {
+                    this.selectedOwnerFilters.push(owner.userId)
+                  }
+                }
+              })
+            } else if (this.userCanViewAll) {
+              if (!this.teamAlreadyAddedToFilter(team)) {
+                this.teamFilterOptions.push(team)
+              }
             }
-          }
-        })
+          })
+        }
 
         this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
-
         this.teamFilterOptions.sort((a,b)=>{
           if(a.teamName < b.teamName) {
             return -1
@@ -725,7 +725,7 @@ export default {
 
 <style scoped lang="scss">
 .sticky-toolbar {
-  height: 160px !important;
+  height: 170px !important;
   position: sticky;
   top: 0;
   z-index: 1; //just to get it in front of the rest of the section
@@ -769,12 +769,16 @@ a {
 }
 
 .notif-badge {
-  margin-right: 10px;
-  margin-bottom: 5px;
+  margin-right: 30px;
 }
 
 .inbox-badge {
-  margin-bottom: 16px;
+  margin-top: 13px;
+  margin-left: 10px;
+}
+
+.inbox-tab-with-badge {
+  padding-right: 26px;
 }
 
 .notif-div {
@@ -782,7 +786,6 @@ a {
 }
 
 .filter-control {
-  margin-right: 24px;
   bottom: -8px;
 
   @media (max-width: 1264px) {
@@ -817,13 +820,20 @@ a {
   background-color: #1F3C73 !important;
 }
 
+.project-search {
+  max-width: 536px !important;
+}
+
+project-search-no-teams {
+  max-width: 429px !important;
+}
+
 .inbox-tabs {
+  margin-left: -4px !important;
   top: -1px;
   height: 64px !important;
   z-index: 2;
   opacity: 0.95;
-  border-top: 1px solid #E6E6E6;
-  border-bottom: 1px solid #E6E6E6;
   .v-tab:hover {
     color: var(--v-primary-base);
   }
@@ -831,7 +841,7 @@ a {
 
 ::v-deep {
   .v-data-table__wrapper {
-    height: calc(100vh - 250px);
+    height: calc(100vh - 275px);
     min-height: 300px;
   }
 }

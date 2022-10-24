@@ -77,7 +77,7 @@
                 <v-list-item-title>{{ tab.label }}
                   <v-badge
                     class="notif-badge"
-                    color="error lighten-2"
+                    color="#D03331"
                     :content="smsNotification.length"
                     v-if="tab.label == 'Inbox' && smsNotification.length > 0"
                   >
@@ -92,7 +92,7 @@
               {{ tab.label }}
               <v-badge
                 class="notif-badge"
-                color="#F35858"
+                color="#D03331"
                 :content="smsNotification.length"
                 v-if="tab.label == 'Inbox' && smsNotification.length > 0"
               >
@@ -315,6 +315,8 @@ export default {
 }
 
 .notif-badge {
-  margin-bottom: 16px;
+  margin-top: 13px;
+  left: -25px;
+  padding-right: 41px;
 }
 </style>

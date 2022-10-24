@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -292,10 +290,13 @@ public class BrsProcessStepActionFunctionService {
             int panelWatts = 0;
             String manufacturer = null;
             String inverter = null;
+            String panelName = null;
 
             if (!arrays.isEmpty()) {
                 //this is returning with extra quotes around the string ¯\_(ツ)_/¯
                 manufacturer = arrays.get(0).get("module").get("manufacturer").toString().replace("\"", "");
+                panelName = arrays.get(0).get("module").get("name").toString().replace("\"", "");
+
                 panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
                 inverter = arrays.get(0).get("microinverter").get("name").toString();
 
@@ -349,8 +350,10 @@ public class BrsProcessStepActionFunctionService {
                     if (manufacturer != null) {
                         Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
                         params.put("intValue", lovId);
+                        sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                    } else {
+                        throw new RuntimeException("Unable to find list item for given panel brand");
                     }
-                    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                 } else if (paramName.contains("Inverter Brand")) {
                     if (inverter != null) {
                         final String javaSucksInverter = inverter.replace("\"", "");
@@ -367,8 +370,9 @@ public class BrsProcessStepActionFunctionService {
                         if (inverterLovId != null) {
                             params.put("intValue", inverterLovId);
                             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                        } else {
+                            throw new RuntimeException("Unable to find list item for given inverter brand");
                         }
-                        //@TODO: might be good to fail here if an inverter comes back from aurora but we can't identify it? Maybe add to the error log screen?
                     }
                 } else if (paramName.contains("Panel Watts")) {
                     params.put("intValue", panelWatts);
@@ -377,6 +381,9 @@ public class BrsProcessStepActionFunctionService {
                     //store the entire json object for future proposal log history calculations
                     params.put("jsonValue", design.toString());
                     sqlCache.update("customFieldValue.upsertAuroraDesign", params);
+                } else if (paramName.contains("Panel Name")) {
+                    params.put("textValue", panelName);
+                    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                 }
             }
         } catch (Exception e) {
@@ -411,22 +418,16 @@ public class BrsProcessStepActionFunctionService {
                     }
                 }
 
-                Optional<Map<String, Object>> results;
-
                 //closerAppointmentStartTime
-                final String closerAppointmentRawValue = paramValues.get(1).getDynamicValue();
-                if (closerAppointmentRawValue != null && !closerAppointmentRawValue.isBlank()) {
-                    final Long closerAppointmentPseId = Long.parseLong(closerAppointmentRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", closerAppointmentPseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("closerAppointmentStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updatecCloserAppointmentStartTime = Boolean.parseBoolean(paramValues.get(1).getDynamicValue());
+                if (updatecCloserAppointmentStartTime) {
+                    lead.put("closerAppointmentStartTime", marketoService.formatDateTime(project.getCloserAppointmentStartTime()));
                 }
 
                 //installationStartTime
-                final String installationRawValue = paramValues.get(2).getDynamicValue();
-                if (installationRawValue != null && !installationRawValue.isBlank()) {
-                    final Long installationStartTimePseId = Long.parseLong(installationRawValue);
-                    results = sqlCache.get("marketo.getStartTimeByProcessStepEventId", Map.of("pseId", installationStartTimePseId, "projectId", projectId), new ColumnMapRowMapper());
-                    results.ifPresent(r -> lead.put("installationStartTime", marketoService.formatDateTime(r.get("startTime"))));
+                final boolean updateInstallationStartTime = Boolean.parseBoolean(paramValues.get(2).getDynamicValue());
+                if (updateInstallationStartTime) {
+                    lead.put("installationStartTime", marketoService.formatDateTime(project.getInstallationStartTime()));
                 }
 
                 //substantialCompletionDate

@@ -7,6 +7,7 @@
     <v-card>
       <v-card-title
           class="albatross-header-2 lighten-2 pb-1"
+          :class="{'primary-custom-bg white--text' : primaryHeader}"
           primary-title>
         <slot v-if="!hideTitle" name="title">
           Delete
@@ -50,7 +51,8 @@ export default {
     hideConfirm: Boolean,
     confirmClass: String,
     width: Number,
-    parentClose: Boolean
+    parentClose: Boolean,
+    primaryHeader: Boolean,
   },
   data() {
     return {
