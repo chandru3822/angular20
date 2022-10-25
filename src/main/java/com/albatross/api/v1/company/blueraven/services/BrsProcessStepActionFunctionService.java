@@ -76,7 +76,7 @@ public class BrsProcessStepActionFunctionService {
             //default values
             params.put("textValue", null);
             params.put("timestampValue", null);
-            params.put("booleanValue", false);
+            params.put("booleanValue", null);
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
@@ -108,7 +108,7 @@ public class BrsProcessStepActionFunctionService {
             //default values
             params.put("textValue", null);
             params.put("timestampValue", null);
-            params.put("booleanValue", false);
+            params.put("booleanValue", null);
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
@@ -134,7 +134,7 @@ public class BrsProcessStepActionFunctionService {
             //default values
             params.put("dateValue", null);
             params.put("timestampValue", null);
-            params.put("booleanValue", false);
+            params.put("booleanValue", null);
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
@@ -168,7 +168,7 @@ public class BrsProcessStepActionFunctionService {
             //default values
             params.put("dateValue", null);
             params.put("timestampValue", null);
-            params.put("booleanValue", false);
+            params.put("booleanValue", null);
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
@@ -195,7 +195,7 @@ public class BrsProcessStepActionFunctionService {
             //default values
             params.put("textValue", null);
             params.put("timestampValue", null);
-            params.put("booleanValue", false);
+            params.put("booleanValue", null);
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
@@ -232,7 +232,7 @@ public class BrsProcessStepActionFunctionService {
             //default values
             params.put("dateValue", null);
             params.put("timestampValue", null);
-            params.put("booleanValue", false);
+            params.put("booleanValue", null);
             params.put("numericValue", null);
             params.put("intValue", null);
             params.put("intArrayValue", null);
@@ -327,7 +327,7 @@ public class BrsProcessStepActionFunctionService {
                 params.put("dateValue", null);
                 params.put("textValue", null);
                 params.put("timestampValue", null);
-                params.put("booleanValue", false);
+                params.put("booleanValue", null);
                 params.put("numericValue", null);
                 params.put("intValue", null);
                 params.put("intArrayValue", null);
