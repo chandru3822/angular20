@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -348,9 +349,13 @@ public class BrsProcessStepActionFunctionService {
                     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                 } else if (paramName.contains("Panel Brand")) {
                     if (manufacturer != null) {
-                        Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
-                        params.put("intValue", lovId);
-                        sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                        try {
+                            Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
+                            params.put("intValue", lovId);
+                            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                        } catch (EmptyResultDataAccessException e) {
+                            throw new RuntimeException("Unable to find list item for given panel brand");
+                        }
                     } else {
                         throw new RuntimeException("Unable to find list item for given panel brand");
                     }
