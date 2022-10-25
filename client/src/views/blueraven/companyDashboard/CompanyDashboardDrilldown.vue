@@ -19,12 +19,12 @@
         class="elevation-1"
       >
 
-        <template #header.additionalFieldValue="{}">
+        <template #header.additional_field_value="{}">
           <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].additional_field_label }}</span>
         </template>
 
 
-        <template #header.dateValue="{}">
+        <template #header.date_value="{}">
           <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].date_label }}</span>
         </template>
 
@@ -105,8 +105,8 @@
           {text: 'Customer Name', value: 'customer_name', show: true}, // 2
           {text: 'State', value: 'state', show: true}, // 3
           {text: 'Source', value: 'source_name', show: true}, // 4
-          {text: '', value: 'dateValue', show: true}, // 5
-          {text: '', value: 'additionalFieldValue', show: this.milestone.has_additional_column}, // 6
+          {text: '', value: 'date_value', show: true}, // 5
+          {text: '', value: 'additional_field_value', show: this.milestone.has_additional_column}, // 6
         ],
         // drilldownData: [],
         footerProps: {
