@@ -55,11 +55,11 @@
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
-                  <td style="width: 50px">
-                    <v-btn text v-if="userCanEdit" icon small class="handle">
-                      <v-icon>drag_handle</v-icon>
-                    </v-btn>
-                  </td>
+<!--                  <td style="width: 50px">-->
+<!--                    <v-btn text v-if="userCanEdit" icon small class="handle">-->
+<!--                      <v-icon>drag_handle</v-icon>-->
+<!--                    </v-btn>-->
+<!--                  </td>-->
                   <td class="text-left">{{item.attachmentType}}</td>
                   <td>
                     <v-checkbox type="checkbox" class="ml-3" v-model="item.allowUpload"
@@ -150,33 +150,33 @@ import {
 export default {
   name: 'ProcessStepAttachmentTypes',
   mixins: [Vue2Filters.mixin],
-  mounted() {
-    let table = document.querySelector('.attachment-type-table tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({newIndex, oldIndex}) {
-        const rowSelected = _self.attachmentTypes.splice(oldIndex, 1)[0]
-        _self.attachmentTypes.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(_self.attachmentTypes)
-
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-          //update display order
-          r.displayOrder = idx
-          //save only rows that changed
-          if (save) {
-            _self.attachmentTypes[idx].newDisplayOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        _self.saveRowChanges(rowsToSave)
-      }
-    })
-  },
+  // mounted() {
+  //   let table = document.querySelector('.attachment-type-table tbody')
+  //   const _self = this
+  //   Sortable.create(table, {
+  //     handle: '.handle',
+  //     onEnd({newIndex, oldIndex}) {
+  //       const rowSelected = _self.attachmentTypes.splice(oldIndex, 1)[0]
+  //       _self.attachmentTypes.splice(newIndex, 0, rowSelected)
+  //       let rowsClone = cloneDeep(_self.attachmentTypes)
+  //
+  //       let rowsToSave = []
+  //       rowsClone.forEach((r, idx) => {
+  //         //check if the row needs to be saved before updating display order
+  //         //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+  //         let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+  //         //update display order
+  //         r.displayOrder = idx
+  //         //save only rows that changed
+  //         if (save) {
+  //           _self.attachmentTypes[idx].newDisplayOrder = idx
+  //           rowsToSave.push(r)
+  //         }
+  //       })
+  //       _self.saveRowChanges(rowsToSave)
+  //     }
+  //   })
+  // },
   data() {
     return {
       snackbar: {},
@@ -185,7 +185,7 @@ export default {
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       headers: [
-        {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+        // {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Attachment Type', value: 'attachmentType', show: true},
         {text: 'Allow Upload', value: 'allowUpload', show: this.showUploadable, width: 100},
         {text: 'Linkable', value: 'linkable', show: this.showLinkable, width: 100},

@@ -154,12 +154,13 @@
            psat.modified_by_id,
            psat.archived,
            case when :allowUpload::boolean is true then (
-         select cfga.id
-         from flow.custom_field_group_assignment cfga
-                inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = psat.attachment_type_id
-         where cfga.archived is false
-           and cfg.archived is false
-         limit 1
+             select cfga.id
+              from flow.custom_field_group_assignment cfga
+                     left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = psat.attachment_type_id and cfg.archived is false
+                     left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = psat.id and cfg2.archived is false
+              where cfga.archived is false
+                and (cfg2.id is not null or cfg.id is not null)
+              limit 1
        ) is not null else false end as has_fields_assigned
     from flow.process_step_attachment_type psat
            inner join flow.project_process_step pps on pps.id = :ppsId and pps.process_step_id = psat.process_step_id
@@ -169,7 +170,7 @@
         and case when :allowUpload::boolean is true then psat.allow_upload is true else 1=1 end
         and case when :focused::boolean is true then psat.focused is true else 1=1 end
         and case when :linkable::boolean is true then psat.linkable is true else 1=1 end
-    order by psat.display_order
+    order by at.attachment_type
   ]]></attachmentType.getProcessStepTypesByPps>
 
   <attachmentType.getEventTypesByPpsEventId><![CDATA[
@@ -187,11 +188,12 @@
              eat.archived,
             case when :allowUpload::boolean is true then (
                select cfga.id
-               from flow.custom_field_group_assignment cfga
-                      inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = eat.attachment_type_id
-               where cfga.archived is false
-                 and cfg.archived is false
-               limit 1
+              from flow.custom_field_group_assignment cfga
+                     left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = eat.attachment_type_id and cfg.archived is false
+                     left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = eat.id and cfg2.archived is false
+              where cfga.archived is false
+                and (cfg2.id is not null or cfg.id is not null)
+              limit 1
              ) is not null else false end as has_fields_assigned
       from flow.event_attachment_type eat
              inner join flow.attachment_type at on at.id = eat.attachment_type_id
@@ -202,7 +204,7 @@
         and case when :allowUpload::boolean is true then eat.allow_upload is true else 1=1 end
         and case when :focused::boolean is true then eat.focused is true else 1=1 end
         and case when :linkable::boolean is true then eat.linkable is true else 1=1 end
-      order by eat.display_order
+      order by at.attachment_type
   ]]></attachmentType.getEventTypesByPpsEventId>
 
   <attachmentType.contact.getTypes><![CDATA[
@@ -219,7 +221,7 @@
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId
       and oat.archived is not true
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.contact.getTypes>
 
   <attachmentType.contact.getAvailableTypes><![CDATA[
@@ -361,7 +363,7 @@
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId
       and oat.archived is not true
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.org.getTypes>
 
   <attachmentType.org.getAvailableTypes><![CDATA[
@@ -503,7 +505,7 @@
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId
       and oat.archived is not true
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.user.getTypes>
 
   <attachmentType.user.getAvailableTypes><![CDATA[
@@ -645,7 +647,7 @@
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.company_id = :companyId
       and oat.archived is not true
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.project.getTypes>
 
   <attachmentType.project.getAvailableTypes><![CDATA[
@@ -798,7 +800,7 @@
            inner join flow.attachment_type at on oat.attachment_type_id = at.id
     where oat.event_id = :eventId
       and oat.archived is not true
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.event.getTypes>
 
   <attachmentType.event.getAvailableTypes><![CDATA[
@@ -1050,9 +1052,10 @@
            case when :allowUpload::boolean is true then (
              select cfga.id
              from flow.custom_field_group_assignment cfga
-             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
+                    left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                    left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
              where cfga.archived is false
-             and cfg.archived is false
+               and (cfg2.id is not null or cfg.id is not null)
              limit 1
            ) is not null else false end as has_fields_assigned
     from flow.project_attachment_type oat
@@ -1062,7 +1065,7 @@
       and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
       and case when :focused::boolean is true then oat.focused is true else 1=1 end
       and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.project.getAssignedTypes>
 
   <attachmentType.contact.getAssignedTypes><![CDATA[
@@ -1078,9 +1081,10 @@
            (
              select cfga.id
              from flow.custom_field_group_assignment cfga
-                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
+                    left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                    left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
              where cfga.archived is false
-               and cfg.archived is false
+               and (cfg2.id is not null or cfg.id is not null)
              limit 1
            ) is not null as has_fields_assigned
     from flow.contact_attachment_type oat
@@ -1090,7 +1094,7 @@
       and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
       and case when :focused::boolean is true then oat.focused is true else 1=1 end
       and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.contact.getAssignedTypes>
 
   <attachmentType.user.getAssignedTypes><![CDATA[
@@ -1106,9 +1110,10 @@
           (
              select cfga.id
              from flow.custom_field_group_assignment cfga
-                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
+                    left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                    left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
              where cfga.archived is false
-               and cfg.archived is false
+               and (cfg2.id is not null or cfg.id is not null)
              limit 1
            ) is not null as has_fields_assigned
     from flow.user_attachment_type oat
@@ -1118,7 +1123,7 @@
       and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
       and case when :focused::boolean is true then oat.focused is true else 1=1 end
       and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.user.getAssignedTypes>
 
   <attachmentType.org.getAssignedTypes><![CDATA[
@@ -1134,9 +1139,10 @@
            (
              select cfga.id
              from flow.custom_field_group_assignment cfga
-                    inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id
+                    left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                    left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
              where cfga.archived is false
-               and cfg.archived is false
+               and (cfg2.id is not null or cfg.id is not null)
              limit 1
            ) is not null as has_fields_assigned
     from flow.org_attachment_type oat
@@ -1146,7 +1152,7 @@
       and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
       and case when :focused::boolean is true then oat.focused is true else 1=1 end
       and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-    order by oat.display_order
+    order by at.attachment_type
   ]]></attachmentType.org.getAssignedTypes>
 
 </sql>
