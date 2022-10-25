@@ -80,6 +80,7 @@
                   <input
                     :id="`fileInput${type.attachmentTypeId}`"
                     type="file"
+                    :multiple="!type.hasFieldsAssigned"
                     :accept="acceptedFileTypes"
                     @change='doUpload($event.target.files, type)'
                     style="display: none"
