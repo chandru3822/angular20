@@ -48,16 +48,21 @@
                 v-model="fileDetails.attachmentType"
                 class="albatross-body-2"
               ></v-text-field>
-              <div @click="goToPath(fileDetails.originPath)" class="clickable mb-3 relative">
-                <div class="randa-test"></div>
-                <v-text-field
-                  disabled readonly
-                  label="Document Location"
-                  v-model="fileDetails.originLocation"
-                  class="albatross-body-2"
-                  hide-details
-                ></v-text-field>
+              <div class="location-container">
+                <label class="location-label">Document Location</label>
+                <a class="location-link" @click="goToPath(fileDetails.originPath)">{{fileDetails.originLocation}}</a>
               </div>
+<!--              <div @click="goToPath(fileDetails.originPath)" class=" mb-3 relative"-->
+<!--                  :class="{'clickable': fileDetails.originPath}">-->
+<!--                <div class="force_clickable-overlay"></div>-->
+<!--                <v-text-field-->
+<!--                  disabled readonly-->
+<!--                  label="Document Location"-->
+<!--                  v-model="fileDetails.originLocation"-->
+<!--                  class="albatross-body-2"-->
+<!--                  hide-details-->
+<!--                ></v-text-field>-->
+<!--              </div>-->
             </v-card>
             <div v-if="customFieldGroups.length > 0" class="subtitle-1 mt-6 mb-3 default-text-color">Document Information</div>
             <v-col
@@ -503,10 +508,46 @@ export default {
   justify-content: center;
 }
 
-.randa-test {
+.force_clickable-overlay {
   height: 50px;
   width: 100%;
   position: absolute;
   z-index: 10;
+}
+
+.location-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 60px;
+}
+
+.location-label {
+  font-family: Lato, sans-serif;
+  font-weight: normal;
+  height: 20px;
+  left: 0;
+  top: 0;
+  right: auto;
+  position: absolute;
+  transform: translateX(-15px) scale(0.75);
+  font-size: 0.875rem;
+  line-height: 20px;
+  letter-spacing: normal;
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.location-link {
+  font-family: Lato, sans-serif;
+  font-weight: normal;
+  font-size: 0.875rem;
+  height: 20px;
+  left: 0;
+  top: 20px;
+  right: auto;
+  position: absolute;
+  line-height: 20px;
+  letter-spacing: normal;
+  text-decoration: underline;
 }
 </style>
