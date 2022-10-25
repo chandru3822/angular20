@@ -56,6 +56,15 @@ public class BrsProcessStepActionFunctionService {
         throw new RuntimeException(String.format("PPS: Unable to perform %s action for java function: %s *** %s", functionType, functionName, message));
     }
 
+    // inverters should maybe be an enum if they start to get used anywhere else in the codebase
+    private String getMappedAuroraInverter(String inverter) {
+        var inverterMap = Map.of("IQ 7+ (240V)", "Enphase IQ7+ Microinverters",
+                                                  "IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters",
+                                                  "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
+                                                  "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters");
+        return inverterMap.getOrDefault(inverter, null);
+    }
+
     public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
 
         try {
@@ -299,7 +308,9 @@ public class BrsProcessStepActionFunctionService {
                 panelName = arrays.get(0).get("module").get("name").toString().replace("\"", "");
 
                 panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
-                inverter = arrays.get(0).get("microinverter").get("name").toString();
+                if (arrays.get(0).get("microinverter") != null) {
+                    inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString());
+                }
 
                 for (JsonNode array : arrays) {
                     if (array.has("module")) {
@@ -311,8 +322,13 @@ public class BrsProcessStepActionFunctionService {
             if (inverter == null) {
                 var inverters = design.get("string_inverters");
                 if (!inverters.isEmpty()) {
-                    inverter = inverters.get(0).get("name").toString();
+                    inverter = getMappedAuroraInverter(inverters.get(0).get("name").toString());
                 }
+            }
+
+            // if we haven't found an inverter yet, check for sunpower. In that case, inverters are integrated on panel
+            if (inverter == null && manufacturer.toLowerCase().contains("sunpower")) {
+                inverter = "Sunpower";
             }
 
             HashMap<String, Object> params = new HashMap<>();
