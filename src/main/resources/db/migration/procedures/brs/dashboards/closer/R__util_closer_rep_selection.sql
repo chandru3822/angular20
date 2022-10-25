@@ -136,7 +136,10 @@ BEGIN
                       and up.archived is not true and up.id = upv.user_position_id
                            inner join flow.org o on o.id = up.org_id
                     where upv.org_id is not null
-                      and upv.org_id = any (v_office_orgs)
+                      and
+                      case when v_org_level_id = 7 and (2 = any (v_current_position_ids)) then
+                       upv.org_id = any (v_office_orgs)
+                      else upv.org_id = any (v_org_ids)end
                       and upv.archived is not true
                       and upv.user_status_type_id != 13 --not expired
                    ) as users

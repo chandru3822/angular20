@@ -16,7 +16,7 @@ public class CustomFieldValue {
 
   private Long id, contactId, customFieldGroupAssignmentId, customFieldGroupId,
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId, uniqueBehaviorTypeId,
-      companySystemListId, projectProcessStepId, scheduleFieldTypeId, ancillaryCustomFieldGroupAssignmentId;
+      companySystemListId, projectProcessStepId, ancillaryCustomFieldGroupAssignmentId;
 
   private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, ancillaryCustomFieldHint;
   private Long intValue;
@@ -32,6 +32,9 @@ public class CustomFieldValue {
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
   private List<ListOfValue> listOfValues;
   private List<Long> systemListOptionIds;
+
+
+  private Long projectId, defaultFieldId, ancillaryCustomFieldId;   //these are required for attachment ancillary fields
 
   //This data type could change to JsonNode once albatross adds a legit json data type. As of 2022-03-01, it is used
   //only to store the returned Aurora design object

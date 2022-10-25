@@ -27,24 +27,6 @@
     order by ot.object_type
   ]]></objectType.getSmartlistCompanyObjectTypes>
 
-  <objectType.getCompanyObjectTypeSimple><![CDATA[
-    select cot.id,
-           cot.id company_object_type_id,
-           cot.object_type_id,
-           ot.object_type,
-           ot.flow_type_id,
-           cot.company_id,
-           cot.archived,
-           cot.status_read_only,
-           cot.owner_read_only
-    from flow.company_object_type cot
-      inner join flow.object_type ot on ot.id = cot.object_type_id
-    where cot.company_id = :companyId
-    and cot.object_type_id = :objectTypeId
-    and cot.archived is not true
-  ]]></objectType.getCompanyObjectTypeSimple>
-
-
   <objectType.getCompanyObjectTypeDetail><![CDATA[
     select cot.id,
            cot.id company_object_type_id,

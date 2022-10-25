@@ -81,16 +81,31 @@ public class ProjectProcessStepService {
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
-
-  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile) {
+  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile, Boolean linked) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
+    params.put("linked", null != linked ? linked : false);
     List<Attachment> attachments = sqlCache.query("projectProcessStep.getProjectProcessStepAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
+  public void linkAttachment(Long projectProcessStepId, Long attachmentId, Boolean doLink) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("attachmentId", attachmentId);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+
+    String sqlKey = "projectProcessStep.linkAttachment";
+    if(!doLink) {
+      sqlKey = "projectProcessStep.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long projectProcessStepId, Long attachmentTypeId) throws IOException {
+  public Attachment addAttachment(MultipartFile file, Long projectProcessStepId, Long attachmentTypeId, String displayName) throws IOException {
     User user = securityService.getCurrentUser();
 
     if (file.isEmpty()) {
@@ -124,6 +139,7 @@ public class ProjectProcessStepService {
     params.put("size", file.getSize());
     params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("companyId", companyId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
@@ -690,7 +706,7 @@ public class ProjectProcessStepService {
             break;
           case 6:
           case 9:
-            requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
+            requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? calculateDropdownRequirement(r) : calculateIntRequirement(r);
             break;
           case 7:
             requirementMet = calculateMultiselectRequirement(r);
@@ -1294,7 +1310,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public boolean caclulateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Long fieldValue = r.getIntValue();
 
@@ -1302,7 +1318,8 @@ public class ProjectProcessStepService {
 
     try {
       if (r.getDataTypeRequirementId() == null) {
-        Long reqValue = r.getListOfValueId();
+        //this was trying to use listOfValueId for system lists. i think this fixes that issue and keeps everything working for normal dropdowns too
+        Long reqValue = null != r.getSystemListOptionId() ? r.getSystemListOptionId() : r.getListOfValueId();
         passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
       } else {
         switch (r.getDataTypeRequirementId().intValue()) {

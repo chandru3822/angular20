@@ -275,19 +275,28 @@ public class UserController {
   }
 
   @GetMapping(value = "/{userId}/attachments")
-  public ResponseEntity<List<Attachment>> getUserAttachments(
-      @PathVariable Long userId, @PathVariable(required = false) Boolean isMobile) {
-    return new ResponseEntity<>(userService.getUserAttachments(userId, isMobile), HttpStatus.OK);
+  public ResponseEntity<List<Attachment>> getUserAttachments(@PathVariable Long userId,
+                                                             @RequestParam(required = false) Boolean isMobile,
+                                                             @RequestParam(required = false) Boolean linked) {
+    return new ResponseEntity<>(userService.getUserAttachments(userId, isMobile, linked), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{userId}/attachment")
   public ResponseEntity<Attachment> uploadUserAttachment(
       @PathVariable Long userId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
-        userService.addAttachment(file, userId, attachmentTypeId), HttpStatus.OK);
+        userService.addAttachment(file, userId, attachmentTypeId, displayName), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{userId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long userId,
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    userService.linkAttachment(userId, attachmentId, doLink);
   }
 
   @GetMapping(value = "/getTeamsForUser/{userId}")

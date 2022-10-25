@@ -195,6 +195,25 @@ public class CustomFieldService {
         .toList();
   }
 
+  public List<CustomField> getByEvent(Long id) {
+    User user = securityService.getCurrentUser();
+    //for now i am only returning start, end and resource from the default field list. will prob add the rest in later
+    return sqlCache
+      .query(
+        "customField.getByEvent",
+        Map.of("companyId", user.getCompanyId(), "id", id),
+        new CustomField.CustomFieldMapper<>(CustomField.class, om))
+      .stream()
+      .peek(
+        cf -> {
+          final List<ListOfValue> listOfValues = getListOfValues(cf, user);
+          cf.setHasListValues(
+            null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+          cf.setListOfValues(listOfValues);
+        })
+      .toList();
+  }
+
   public List<CustomField> getByParentProcessStep(Long id, Boolean excludedUnhandledDataTypes) {
     User user = securityService.getCurrentUser();
     return sqlCache

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -13,9 +14,10 @@ import java.util.Date;
 @Setter
 public class ObjectTypeAttachmentType {
 
-  private Long id, attachmentTypeId, createdById, modifiedById, companyObjectTypeId, displayOrder;
+  private Long id, attachmentTypeId, createdById, modifiedById, companyId, displayOrder, primaryId;
   private String attachmentType;
-  private Boolean archived;
+  private Boolean archived, readOnly, linkable, focused, allowUpload, hasFieldsAssigned;
   private Date dateCreated, dateModified;
+  private List<CustomFieldGroup> customFieldGroups;
 }
 

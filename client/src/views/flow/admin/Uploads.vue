@@ -100,6 +100,7 @@ export default {
                 file: f,
                 attachmentTypeId: this.selectedAttachmentTypeId,
                 sourceId: null,
+                displayName: f.name.substr(0, f.name.lastIndexOf('.')),
                 deleteFirst: false,
                 callback: async (document) => {
                   this.snackbar = getSnackbar('SUCCESS', 'Successfully uploaded document')

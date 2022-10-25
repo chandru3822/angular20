@@ -459,10 +459,12 @@ export default {
       try {
         this.savingReceiptImage = true
         this.$store.commit(AppMutations.SET_LOADING, true)
+        let file = files[0]
         await this.$store.dispatch(Actions.FILE_UPLOAD, {
-          file: files[0],
+          file: file,
           attachmentTypeId,
           sourceId: null,
+          displayName: file.name.substr(0, file.name.lastIndexOf('.')),
           callback: async (img, error) => {
             this.savingReceiptImage = false
             if (error?.error) {

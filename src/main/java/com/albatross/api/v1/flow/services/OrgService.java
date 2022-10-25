@@ -286,18 +286,36 @@ public class OrgService {
     return sqlCache.get("org.getOneOrgCalendarAccess", params, UserOrgAccess.class).orElse(null);
   }
 
-  public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile) {
+  public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("orgId", orgId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
         sqlCache.query("org.getOrgAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
+  public void linkAttachment(Long orgId, Long attachmentId, Boolean doLink) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("orgId", orgId);
+    params.put("attachmentId", attachmentId);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+
+    String sqlKey = "org.linkAttachment";
+    if(!doLink) {
+      sqlKey = "org.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId)
+  public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId, String displayName)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -326,6 +344,7 @@ public class OrgService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());

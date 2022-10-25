@@ -4,15 +4,18 @@
       No Matching Event Found
     </div>
   </v-main>
-  <v-main ref="ppseFieldsContainer" class="pa-0 relative height-one-hunned overflow-y-auto" v-else-if="!eventDetailsLoading">
-    <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath, query)]" @close-dialog="unsavedFieldsModal = false">
+  <v-main ref="ppseFieldsContainer" class="pa-0 relative height-one-hunned overflow-y-auto"
+          v-else-if="!eventDetailsLoading">
+    <ConfirmationDialog :open-dialog="unsavedFieldsModal"
+                        @confirm="[navigationOverride = true, goToPath(toPath, query)]"
+                        @close-dialog="unsavedFieldsModal = false">
       <template v-slot:title>Confirm</template>
       You have unsaved fields. Are you sure you want to continue without saving?
       <template v-slot:yes>Continue and Don't Save</template>
     </ConfirmationDialog>
-    <div v-if="selectedEvent.id" class="pt-6">
+    <div v-if="selectedEvent.id" class="pt-6 px-6">
       <v-toolbar color="transparent" height="auto"
-                 class="elevation-0 cfg-name-toolbar px-6" id="event-header">
+                 class="elevation-0 cfg-name-toolbar px-0" id="event-header">
         <v-toolbar-title class="albatross-header-2">
           <div>{{ selectedEvent.eventName }}</div>
           <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{ selectedEvent.eventStatusType }})</div>
@@ -24,21 +27,25 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
-                 small text color="primary" class="align-self-end" @click="showDeleteDialog = true"><v-icon>delete</v-icon></v-btn>
-          <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteEvent" @close-dialog="showDeleteDialog=false">
+          <v-btn
+            v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+            small text color="primary" class="align-self-end" @click="showDeleteDialog = true">
+            <v-icon>delete</v-icon>
+          </v-btn>
+          <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteEvent"
+                              @close-dialog="showDeleteDialog=false">
             Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
           </ConfirmationDialog>
         </v-toolbar-items>
       </v-toolbar>
-      <div class="pb-4 px-6">
+      <div class="pb-4 px-0">
         <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
           <v-card class="square-card" :class="{'mt-2': idx !== 0}"
                   v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
-            <v-card-text class="flex-display pa-0"  :style="{'color': b.color}">
+            <v-card-text class="flex-display pa-0" :style="{'color': b.color}">
               <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
               <div :style="{'background-color': b.bgColor + 20}" class="one-hunned">
-                <pre class="app-pre-wrapper px-3 py-2">{{b.content}}</pre>
+                <pre class="app-pre-wrapper px-3 py-2">{{ b.content }}</pre>
               </div>
             </v-card-text>
           </v-card>
@@ -86,8 +93,36 @@
           </v-btn>
         </div>
       </div>
+      <div v-if="selectedEvent.hasAttachmentTypesAssigned">
+        <v-toolbar flat color="secondary" class="cfg-detail-header">
+          <v-toolbar-title class="albatross-header-3">
+            Event Documents
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
+              <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
+              <v-icon v-else>mdi-chevron-down</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-row>
+          <v-col cols="12" class="text-left py-0 px-0 pb-4" v-if="!collapsedAttachments">
+            <AttachmentsFolderList :object-type-id="1"
+                                   :allow-upload="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Uploaded Documents"/>
+            <AttachmentsFolderList :object-type-id="1"
+                                   :load-linked="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Linked Documents"/>
+          </v-col>
+        </v-row>
+      </div>
       <div class="fixed-toolbar padding-left-1">
-        <v-toolbar flat color="secondary" class="cfg-name-toolbar px-6">
+        <v-toolbar flat color="secondary" class="cfg-name-toolbar px-0">
           <v-toolbar-title class="albatross-header-3">
             Event Details
           </v-toolbar-title>
@@ -97,17 +132,6 @@
               <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
               <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
-            <v-btn v-if="ppsEventId && attachmentTypes && attachmentTypes.length > 0" text small
-                   @click="showUploadModal = true" class="px-0">
-              <v-icon class="px-0">mdi-upload</v-icon>
-            </v-btn>
-            <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-              <UploadDocumentModal @cancel="showUploadModal = false"
-                                   :width="uploadModalWidth"
-                                   :show-success-snackbar="true"
-                                   :pps-event-id="ppsEventId"
-                                   :attachment-types="attachmentTypes"></UploadDocumentModal>
-            </v-dialog>
             <div>
               <v-btn class="white--text mt-3 ml-2"
                      @click="checkFieldsForUnique()"
@@ -119,7 +143,7 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
-      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
+      <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
@@ -128,11 +152,11 @@
         project screen and update.
       </v-card>
 
-      <v-form ref="eventFieldForm" class="px-6" v-else>
+      <v-form ref="eventFieldForm" class="px-0" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
           <a small text color="anchor" v-if="$store.getters.userHasFeature('SCHEDULE')"
-                 class="px-0 d-flex align-baseline" target="_blank"
-                 :href="`/schedule?projectProcessStepEventId=${ppsEventId}`">
+             class="px-0 d-flex align-baseline" target="_blank"
+             :href="`/schedule?projectProcessStepEventId=${ppsEventId}`">
             <span color="anchor" class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
             <v-icon color="anchor" class="scheduler-button-icon">mdi-open-in-new</v-icon>
           </a>
@@ -237,7 +261,8 @@
                     {{ data.item.scheduledStartTime | formatDate('timestamp') }}
                   </template>
                 </v-select>
-                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue && !dateValueChanged">No Times Available for the
+                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue && !dateValueChanged">No Times
+                  Available for the
                   Selected Date
                 </div>
                 <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
@@ -323,27 +348,25 @@ import {AppMutations} from '@/stores/AppStore'
 import {getAssignedToEvent} from '@/services/eventStatusTypeService'
 import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
-import Attachments from '@/views/flow/components/Attachments'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
 import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
-import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import {getStatusClass} from '@/services/eventStatusTypeService'
 import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from "@/ConfirmationDialog";
+import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 
 export default {
   name: 'ProjectProcessStepEvent',
   components: {
     ConfirmationDialog,
     CustomValueInput,
-    Attachments,
     DatetimePickerInput,
     SpinnerInline,
-    UploadDocumentModal
+    AttachmentsFolderList
   },
   mixins: [Vue2Filters.mixin],
   props: {
@@ -354,9 +377,7 @@ export default {
     return {
       snackbar: {},
       selectedEvent: {},
-      showUploadModal: false,
       projectMismatch: false,
-      uploadModalWidth: 600,
       defaultValuesChanged: false,
       //this is used to determine if we should save the status or not. should only save if it changes
       statusChanged: false,
@@ -364,7 +385,6 @@ export default {
       navigationOverride: false,
       toPath: null,
       query: {},
-      attachmentTypes: [],
       attemptedAction: {},
       companyEventStatuses: [],
       saveErrorMsg: '',
@@ -383,6 +403,7 @@ export default {
       projectProcessStepId: parseInt(this.$route.params.processStepId),
       processStepId: this.$route.query.processStepId,
       eventSaveOverrideRequired: false,
+      collapsedAttachments: false,
       actionRequiresStart: false,
       actionRequiresEnd: false,
       actionRequiresResource: false,
@@ -494,7 +515,7 @@ export default {
     async loadAllPageDetails() {
       this.eventDetailsLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getEventDetails(), this.getEventAttachmentTypes()]
+      const requests = [this.getEventDetails()]
       try {
         await Promise.all(requests).then((statusVals) => {
           let success = true
@@ -790,8 +811,7 @@ export default {
         this.$emit('refresh-upcoming-events')
         //go to the process step
         this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
-      }
-      catch (e) {
+      } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -984,19 +1004,6 @@ export default {
         return !ppse.archived
       }) : []
     },
-    getEventAttachmentTypes: async function () {
-      //this gets the attachment types assigned to the process step so we know whether to show the upload button
-      try {
-        const {data, status} = await getRequest(`/attachmentType/eventTypesByPpsEventId/${this.ppsEventId}`, null, [])
-        this.attachmentTypes = data
-        return status
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
   }
 }
 </script>
@@ -1032,11 +1039,8 @@ export default {
 <style lang="scss" scoped>
 
 .cfg-detail-header {
-  background-color: var(--v-secondary-base) !important;
-  margin-left: -10px;
-  margin-right: -10px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .scheduler-button-text {

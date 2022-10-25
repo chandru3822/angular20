@@ -52,6 +52,7 @@
     "vue-gtag": "^1.16.1",
     "vue-json-excel": "0.3.0",
     "vue-mention": "^1.0.0",
+    "vue-pdf-embed": "^1.1.4",
     "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.5.3",
     "vue2-filters": "^0.14.0",

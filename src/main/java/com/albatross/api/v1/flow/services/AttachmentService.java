@@ -351,8 +351,7 @@ public class AttachmentService {
     setAttachmentUrl(storageBucket, attachment);
     setAttachmentPresignedUrl(storageBucket, attachment);
     setAttachmentPublicUrl(attachment);
-    // all project attachments are considered "main"
-    attachment.setMain(true);
+    attachment.setLinked(false);
     return attachment;
   }
 
@@ -406,7 +405,7 @@ public class AttachmentService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    params.put("filename", attachment.getFilename());
+    params.put("displayName", attachment.getDisplayName().length() > 100 ? attachment.getDisplayName().substring(0, 100) : attachment.getDisplayName());
     params.put("userId", currentUser.trueUserId());
 
     sqlCache.update("attachment.update", params);
@@ -423,7 +422,7 @@ public class AttachmentService {
    * @todo Generate a pre-signed URL
    */
   public Attachment create(
-      MultipartFile file, Long sourceId, Long attachmentTypeId, Boolean deleteFirst)
+      MultipartFile file, Long sourceId, Long attachmentTypeId, String displayName, Boolean deleteFirst)
       throws IOException {
     User currentUser = securityService.getCurrentUser();
     if (file.isEmpty()) {
@@ -449,6 +448,7 @@ public class AttachmentService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("createdById", currentUser.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", currentUser.getCompanyId());

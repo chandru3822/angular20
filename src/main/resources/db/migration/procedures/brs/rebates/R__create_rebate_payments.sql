@@ -34,7 +34,7 @@ BEGIN
       and p.id = p_project_id and pps.main = true);
 
     update flow.project_process_step_custom_field_value
-    set numeric_value = p_total_promotion_amount, modified_by_id = p_created_by_user_id, date_modified = now() where id =
+    set int_value = p_number_of_promotion_payments, modified_by_id = p_created_by_user_id, date_modified = now() where id =
     (select pscfv.id
     from flow.project p
              inner join flow.project_process_step pps
@@ -59,7 +59,7 @@ BEGIN
 
   v_payment_nbr := 1;
 
---Loop through the number of payments(aka number of months) and create a payment record for each payment installment.
+--Loop through the number of payments (aka number of months) and create a payment record for each payment installment.
   FOR x in 1..p_number_of_promotion_payments LOOP
 
      INSERT INTO brs.project_rebate_payment (project_id, payment_amount, payment_nbr, created_by_user_id, created_date, project_rebate_payment_state_id) values (p_project_id, p_total_promotion_amount/p_number_of_promotion_payments, v_payment_nbr, p_created_by_user_id,(now() at time zone 'US/Mountain')::date, 1);

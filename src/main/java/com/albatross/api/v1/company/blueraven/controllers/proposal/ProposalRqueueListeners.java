@@ -41,7 +41,8 @@ public class ProposalRqueueListeners {
               baos.getContentLength(),
               baos.getContentType(),
               proposal.getDisplayName(),
-              baos.getInputStream());
+              baos.getInputStream(),
+              proposal.getDisplayName());
 
             log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
             proposalService.setProposalAsProcessed(proposal.getId());

@@ -304,4 +304,8 @@
       and company_id = :companyId
       and display_name = :tableName
   ]]></dataView.getDataView>
+
+  <dataView.runMaintenance><![CDATA[
+    select from flow.run_view_maintenance()
+  ]]></dataView.runMaintenance>
 </sql>

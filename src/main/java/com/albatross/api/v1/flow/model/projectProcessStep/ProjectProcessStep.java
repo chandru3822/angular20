@@ -23,7 +23,7 @@ public class ProjectProcessStep {
 
   private LocalDate lastUpdated, processStepCompleteDate;
 
-  private Boolean main, readonly; //readonly comes from process_step.readonly
+  private Boolean main, hasAttachmentTypesAssigned, readonly; //readonly comes from process_step.readonly
 
   private List<ProjectProcessStepAction> actions, banners;
 
