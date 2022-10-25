@@ -309,12 +309,12 @@ public class BrsProcessStepActionFunctionService {
 
                 panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
                 if (arrays.get(0).get("microinverter") != null) {
-                    inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString());
+                    inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString().replace("\"", ""));
                 }
 
                 for (JsonNode array : arrays) {
                     if (array.has("module")) {
-                        panelQuantity += Integer.parseInt(array.get("module").get("count").toString());
+                        panelQuantity += Integer.parseInt(array.get("module").get("count").toString().replace("\"", ""));
                     }
                 }
             }
@@ -322,7 +322,7 @@ public class BrsProcessStepActionFunctionService {
             if (inverter == null) {
                 var inverters = design.get("string_inverters");
                 if (!inverters.isEmpty()) {
-                    inverter = getMappedAuroraInverter(inverters.get(0).get("name").toString());
+                    inverter = getMappedAuroraInverter(inverters.get(0).get("name").toString().replace("\"", ""));
                 }
             }
 
@@ -384,7 +384,7 @@ public class BrsProcessStepActionFunctionService {
                         Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
                         List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
                         final Long inverterLovId = values.stream()
-                                                         .filter(i -> Objects.equals(i.getCode(), javaSucksInverter))
+                                                         .filter(i -> Objects.equals(i.getName(), javaSucksInverter))
                                                          .map(ListOfValue::getId)
                                                          .findFirst()
                                                          .orElse(null);
