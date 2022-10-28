@@ -138,7 +138,7 @@
               </tr>
             </template>
           </v-data-table>
-          <ConfirmationDialog :open-dialog="showPpsHistory" hide-confirm width="1000" @close-dialog="[showPpsHistory = false, selectedPpsHistory = []]">
+          <ConfirmationDialog :open-dialog="showPpsHistory" hide-confirm :width="1000" @close-dialog="[showPpsHistory = false, selectedPpsHistory = []]">
             <template v-slot:title>Project Process Step History</template>
             <PpsHistoryTable :selected-pps-history="selectedPpsHistory"></PpsHistoryTable>
             <template v-slot:no>Close</template>

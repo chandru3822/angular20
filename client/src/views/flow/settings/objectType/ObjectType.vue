@@ -6,12 +6,11 @@
           <h3>{{ objectType }}</h3>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
-            <v-tabs>
-              <v-tab :to="`/settings/objectType/${companyObjectTypeId}/customFieldGroups?objectType=${objectType}`">
-                Custom Field Groups
-              </v-tab>
-              <v-tab :to="`/settings/objectType/${companyObjectTypeId}/attachments?objectType=${objectType}`">
-                Attachment Types
+            <v-tabs class="tabs-bar" v-model="activeTab">
+              <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
+                     class="text-capitalize ma-0"
+                     :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+                {{ tab.label }}
               </v-tab>
             </v-tabs>
           </v-toolbar-items>
@@ -32,6 +31,31 @@ export default {
   mixins: [Vue2Filters.mixin],
   props: {
     isProject: Boolean
+  },
+  computed: {
+    //this should not be so hard
+    activeTab: {
+      get: function() {
+        return this.$route?.path?.includes('/objectType') ? `/settings/objectType/${this.companyObjectTypeId}/attachmentTypes?objectType=${this.objectType}` : null
+      },
+      set: function(val) {
+        return val
+      }
+    },
+    tabs() {
+     return [
+        {
+          id: 1,
+          label: 'Custom Field Groups',
+          path: `/settings/objectType/${this.companyObjectTypeId}/customFieldGroups?objectType=${this.objectType}`,
+        },
+        {
+          id: 2,
+          label: 'Attachment Types',
+          path: `/settings/objectType/${this.companyObjectTypeId}/attachmentTypes?objectType=${this.objectType}`,
+        }
+      ]
+    }
   },
   watch: {
     // whenever objectTypeId changes, this function will run

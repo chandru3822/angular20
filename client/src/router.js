@@ -515,6 +515,25 @@ const router = new Router({
                 }
               }
             }, {
+              path: 'attachment/:id',
+              name: 'AttachmentSettings',
+              meta: {title: 'Albatross - Settings'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/AttachmentType.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+              children: [
+                {
+                  path: 'customFieldGroups',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/attachments/AttachmentTypeCustomFieldGroups.vue'),
+                }
+              ]
+            }, {
               path: 'companyCustomFields',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -796,10 +815,14 @@ const router = new Router({
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "objectType" */ './views/flow/settings/objectType/CustomFieldGroup.vue'),
                 }, {
-                  path: 'attachments',
+                  path: 'attachmentTypes',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "objectType" */ './views/flow/settings/objectType/ObjectTypeAttachments.vue'),
-                }
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/objectType/ObjectTypeAttachment.vue'),
+                },
               ]
             }, {
               path: 'links',
@@ -872,18 +895,19 @@ const router = new Router({
                 }, {
                   path: 'events',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvents.vue'),
-                  children: [
-                    {
-                      path: ':eventId',
-                      meta: {title: 'Albatross - Settings'},
-                      component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvent.vue'),
-                    }
-                  ]
+                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvents.vue')
                 }, {
                   path: 'event/:eventId',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepEvent.vue'),
+                }, {
+                  path: 'attachmentTypes',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepAttachmentTypes.vue')
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/processStep/ProcessStepAttachmentType.vue'),
                 },
               ]
             },  {
@@ -950,9 +974,13 @@ const router = new Router({
                   component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectTabs.vue'),
                 },
                 {
-                  path: 'attachments',
+                  path: 'attachmentTypes',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachments.vue'),
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachmentTypes.vue'),
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachmentType.vue'),
                 },
                 {
                   path: 'system',
@@ -992,7 +1020,16 @@ const router = new Router({
                   path: 'components',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/settings/event/EventComponents.vue'),
-                }
+                },
+                {
+                  path: 'attachmentTypes',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/event/EventAttachmentTypes.vue'),
+                }, {
+                  path: 'attachmentType/:attachmentTypeId',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/event/EventAttachmentType.vue'),
+                },
               ]
             }, {
               path: 'smsTeams',

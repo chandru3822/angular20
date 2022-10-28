@@ -225,11 +225,13 @@
       async uploadUserImage (files, attachmentTypeId, sourceId, sizeLimit) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
+          let file = files[0]
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: files[0],
+            file: file,
             attachmentTypeId,
             sizeLimit,
             sourceId,
+            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
             callback: async (img, error) => {
               if(error?.error) {
                 this.snackbar = getSnackbar('ERROR', error.errorMsg)

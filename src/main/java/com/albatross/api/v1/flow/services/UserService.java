@@ -523,18 +523,37 @@ public class UserService {
     }
   }
 
-  public List<Attachment> getUserAttachments(Long userId, Boolean isMobile) {
+  public List<Attachment> getUserAttachments(Long userId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
         sqlCache.query("user.getUserAttachments", params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
+  public void linkAttachment(Long userId, Long attachmentId, Boolean doLink) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("attachmentId", attachmentId);
+    params.put("currentUserId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+
+    String sqlKey = "user.linkAttachment";
+    if(!doLink) {
+      sqlKey = "user.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
-  public Attachment addAttachment(MultipartFile file, Long userId, Long attachmentTypeId)
+  public Attachment addAttachment(MultipartFile file, Long userId, Long attachmentTypeId, String displayName)
       throws IOException {
     User user = securityService.getCurrentUser();
 
@@ -564,6 +583,7 @@ public class UserService {
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("createdById", user.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());

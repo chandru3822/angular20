@@ -37,8 +37,11 @@ public class ProcessStepEventService {
   }
 
   public List<ProcessStepEvent> getAvailableEventsForStep(Long processStepId) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
+    params.put("companyId", currentUser.getCompanyId());
     return sqlCache.query("processStepEvent.getAvailableEventsForStep", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 

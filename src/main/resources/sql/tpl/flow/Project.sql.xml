@@ -494,32 +494,163 @@
     where project_id = :projectId
   ]]></project.getProjectDetailTemplateFields>
 
+  <project.getCombinedAttachments><![CDATA[
+    select
+        a.id,
+        a.size,
+        a.uuid,
+        a.display_name,
+        a.date_created,
+        concat(u.first_name, ' ', u.last_name) as uploaded_by,
+        a.date_modified,
+        substring(a.filename, '\.([^\.]+)$') as file_extension,
+        a.filename,
+        a.attachment_type_id,
+        a.content_type,
+        a.s3_key,
+        a.archived,
+        pa.linked,
+        att.attachment_type,
+        (select * from flow.attachment_linked(a.id::bigint, :projectId::bigint, :ppsId::bigint, :ppsEventId::bigint)) as linked_to_selected,
+        orgn.*
+      from flow.project_attachment pa
+             inner join flow.attachment a on a.id = pa.attachment_id
+             inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow.project_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false
+             left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
+             inner join flow."user" u on u.id = a.created_by_id
+      where pa.project_id = :projectId
+        and a.company_id = :companyId
+        and pa.archived is not true
+        and att.archived is false
+        and pa.linked is not true
+        and a.archived is not true
+      union
+      select
+        a.id,
+        a.size,
+        a.uuid,
+        a.display_name,
+        a.date_created,
+        concat(u.first_name, ' ', u.last_name) as uploaded_by,
+        a.date_modified,
+        substring(a.filename, '\.([^\.]+)$') as file_extension,
+        a.filename,
+        a.attachment_type_id,
+        a.content_type,
+        a.s3_key,
+        a.archived,
+        ppsa.linked,
+        att.attachment_type,
+        (select * from flow.attachment_linked(a.id::bigint, :projectId::bigint, :ppsId::bigint, :ppsEventId::bigint)) as linked_to_selected,
+        orgn.*
+      from flow.project_process_step_attachment ppsa
+             inner join flow.attachment a on a.id = ppsa.attachment_id
+             inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
+             inner join flow.process_step ps on pps.process_step_id = ps.id
+             inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow.process_step_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false and uat.process_step_id = ps.id
+             inner join flow."user" u on u.id = a.created_by_id
+             left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
+      where pps.project_id = :projectId
+        and a.company_id = :companyId
+        and ppsa.archived is not true
+        and ppsa.linked is not true
+        and a.archived is not true
+      union
+      select
+        a.id,
+        a.size,
+        a.uuid,
+        a.display_name,
+        a.date_created,
+        concat(u.first_name, ' ', u.last_name) as uploaded_by,
+        a.date_modified,
+        substring(a.filename, '\.([^\.]+)$') as file_extension,
+        a.filename,
+        a.attachment_type_id,
+        a.content_type,
+        a.s3_key,
+        a.archived,
+        ppsa.linked,
+        att.attachment_type,
+        (select * from flow.attachment_linked(a.id::bigint, :projectId::bigint, :ppsId::bigint, :ppsEventId::bigint)) as linked_to_selected,
+        orgn.*
+      from flow.project_process_step_event_attachment ppsa
+             inner join flow.attachment a on a.id = ppsa.attachment_id
+             inner join flow.project_process_step_event ppse on ppse.id = ppsa.project_process_step_event_id
+             inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+             inner join flow.event e on pse.event_id = e.id
+             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+             inner join flow.attachment_type att on a.attachment_type_id = att.id
+             inner join flow.event_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false and uat.event_id = e.id
+             inner join flow."user" u on u.id = a.created_by_id
+             left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
+      where pps.project_id = :projectId
+        and a.company_id = :companyId
+        and a.archived is not true
+        and ppsa.linked is not true
+        and ppsa.archived is not true
+      order by date_created desc
+
+  ]]></project.getCombinedAttachments>
+
   <project.getAttachments><![CDATA[
     select
       a.id,
       a.size,
       a.uuid,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.filename,
       a.attachment_type_id,
       a.content_type,
+      a.display_name,
       a.s3_key,
       a.archived,
-      true as main
+      pa.linked,
+      att.attachment_type,
+      orgn.*
     from flow.project_attachment pa
-           inner join flow.attachment a on a.id = pa.attachment_id
+      inner join flow.attachment a on a.id = pa.attachment_id
+      inner join flow.attachment_type att on a.attachment_type_id = att.id
+      inner join flow."user" u on u.id = a.created_by_id
+      inner join flow.project_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false
+      left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where pa.project_id = :projectId
+      and a.company_id = :companyId
+      and pa.archived is false
+      and uat.archived is false
+      and case when :linked is true then pa.linked is true and uat.linkable is true else pa.linked is false end
       and a.archived is not true
+    order by pa.date_created desc;
   ]]></project.getAttachments>
+
+  <project.linkAttachment><![CDATA[
+    insert into flow.project_attachment(attachment_id, project_id, created_by_id, linked)
+    values(:attachmentId, :projectId, :userId, true)
+  ]]></project.linkAttachment>
+
+  <project.unlinkAttachment><![CDATA[
+    update flow.project_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and project_id = :projectId
+    and linked is true
+  ]]></project.unlinkAttachment>
 
   <project.getAttachmentById><![CDATA[
     select
       a.id,
       a.uuid,
       a.size,
+      a.display_name,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.filename,
@@ -530,13 +661,14 @@
       true as main
     from flow.project_attachment pa
            inner join flow.attachment a on a.id = pa.attachment_id
+           inner join flow."user" u on u.id = a.created_by_id
     where pa.id = :id
       and a.archived is not true
   ]]></project.getAttachmentById>
 
   <project.addAttachment><![CDATA[
-    insert into flow.project_attachment(attachment_id, project_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:attachmentId, :projectId, :createdById, now(), :createdById, now())
+    insert into flow.project_attachment(attachment_id, project_id, created_by_id, date_created, modified_by_id, date_modified, linked)
+    values (:attachmentId, :projectId, :createdById, now(), :createdById, now(), :linked)
   ]]></project.addAttachment>
 
   <project.updateOwner><![CDATA[

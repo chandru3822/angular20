@@ -477,13 +477,7 @@ export default {
             })
           })
         }
-        const projectIds = this.projects?.map(p => p.projectId)
 
-        let projectId = parseInt(this.$route.params.projectId) || null
-        // If the Project opened in the right panel no longer is available, close the right panel
-        if (this.$route.path.includes('inboxConversation') && projectId != null && projectId !== 0 && !projectIds.includes(projectId)) {
-          await this.$router.push({ path: `/inbox` })
-        }
         handleHidingGlobalLoader(this, status)
         this.showLoading(false)
         this.reloadInProgress = false
