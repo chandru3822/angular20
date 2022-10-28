@@ -191,7 +191,7 @@ BEGIN
                                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                                  and cf.company_id = v_company_id
                                                                                                  and cf.parent_custom_field_id = 10352 and cf.archived is false
-                                                                                             where upper(substring(plh.panel,1,position(' ' in plh.panel)-1)) = upper(lov2.name)),
+                                                                                             where upper(substring(plh.panel,1,length(plh.panel) - position(' ' in reverse(plh.panel)))) = upper(lov2.name)),
                              (select cfga.id
                               from flow.custom_field cf
                                        inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
