@@ -27,6 +27,23 @@ export function getMinMaxRule(min, max) {
   ]
 }
 
+export function getAttachmentSourceId(projectId, ppsId, ppseId, userId, contactId, orgId) {
+  //this is a very specific function that is only called by attachment functions to know which id to use as "source"
+  //note: the order of these checks is important
+  let sourceId, secondaryId;
+  if(null != ppseId) {
+    sourceId = ppseId
+    secondaryId = ppsId
+  } else {
+    sourceId = null != ppsId ? ppsId :
+      null != projectId ? projectId :
+        null != userId ? userId :
+          null != contactId ? contactId :
+            null != orgId ? orgId : null
+  }
+  return { sourceId, secondaryId }
+}
+
 export function getFileIcon(file) {
   switch (file.fileExtension) {
     case 'pdf':

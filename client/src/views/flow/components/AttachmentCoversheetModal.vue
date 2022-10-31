@@ -194,6 +194,7 @@ import {
   getRequest,
   getRequestWithParams,
   getSnackbar,
+  getAttachmentSourceId,
   handleHidingGlobalLoader, logError, postRequest,
   putRequest
 } from "@/helpers/helpers";
@@ -377,22 +378,20 @@ export default {
         //reset error message when trying to upload new file
         this.error = {}
         if (this.file && this.file.size > 0) {
-          await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
-            null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
-              (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
-                Actions.OBJECT_TYPE_FILE_UPLOAD, {
-            file: this.file,
-            attachmentTypeId: this.existingAttachment.attachmentTypeId,
-            displayName: this.fileDetails.displayName,
-            projectId: this.projectId,
-            projectProcessStepId: this.projectProcessStepId,
-            userId: this.userId,
-            contactId: this.contactId,
-            orgId: this.orgId,
-            objectTypeId: this.objectTypeId,
-            projectProcessStepEventId: this.projectProcessStepEventId,
-            callback: this.uploadCallback
-          })
+          const {sourceId, secondaryId} = getAttachmentSourceId(this.projectId, this.projectProcessStepId, this.projectProcessStepEventId,
+                                                    this.userId, this.contactId, this.orgId)
+
+          if(sourceId != null) {
+            await this.$store.dispatch(Actions.FILE_UPLOAD, {
+              file: this.file,
+              attachmentTypeId: this.existingAttachment.attachmentTypeId,
+              displayName: this.fileDetails.displayName,
+              objectTypeId: this.objectTypeId,
+              sourceId,
+              secondaryId,
+              callback: this.uploadCallback
+            })
+          }
         }
         // this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
