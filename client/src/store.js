@@ -41,6 +41,7 @@ const store = new Vuex.Store({
       return state.cancelTokens
     },
     uploadUrl: (state) => (objectTypeId, sourceId, secondaryId) => {
+      console.log('obje here',objectTypeId)
       switch(objectTypeId) {
         case 1:  //project
           return `/project/${sourceId}/attachment`
@@ -147,6 +148,7 @@ const store = new Vuex.Store({
       sizeLimit,
       callback
     }) => {
+      console.log('yyyyyyyyy', objectTypeId)
       let reader = new FileReader()
       reader.addEventListener('loadend', async function () {
         let maxFileSize = sizeLimit ?? constants.MAX_FILE_SIZE
