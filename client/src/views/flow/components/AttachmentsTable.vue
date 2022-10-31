@@ -66,7 +66,7 @@
           </v-btn>
           <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
-            :retain-focus="true"
+            :retain-focus="false"
             @confirm="deleteAttachment"
             @close-dialog="closeDeleteDialog"
 
