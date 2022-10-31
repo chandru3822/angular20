@@ -65,7 +65,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.fullName}}</td>
               <td>
-                <v-btn v-if="userCanDelete" text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
+                <v-btn v-if="userCanEdit" text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -91,6 +91,7 @@
         snackbar: {},
         scheduleByUsers: [],
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
+        //per carlin 10-31-22 - users with edit should be able to delete users from a RR
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
         zoneId: this.$route.params.id,
