@@ -238,12 +238,12 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-col cols="12" class="text-left pt-0 px-0 pb-4" v-if="!collapsedAttachments">
-            <AttachmentsFolderList :object-type-id="1"
+            <AttachmentsFolderList :object-type-id="4"
                                    :allow-upload="true"
                                    :small-title="true"
                                    is-card
                                    title="Uploaded Documents"/>
-            <AttachmentsFolderList :object-type-id="1"
+            <AttachmentsFolderList :object-type-id="4"
                                    :load-linked="true"
                                    :small-title="true"
                                    is-card

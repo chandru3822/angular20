@@ -108,12 +108,12 @@
         </v-toolbar>
         <v-row>
           <v-col cols="12" class="text-left py-0 px-0 pb-4" v-if="!collapsedAttachments">
-            <AttachmentsFolderList :object-type-id="1"
+            <AttachmentsFolderList :object-type-id="6"
                                    :allow-upload="true"
                                    :small-title="true"
                                    is-card
                                    title="Uploaded Documents"/>
-            <AttachmentsFolderList :object-type-id="1"
+            <AttachmentsFolderList :object-type-id="6"
                                    :load-linked="true"
                                    :small-title="true"
                                    is-card

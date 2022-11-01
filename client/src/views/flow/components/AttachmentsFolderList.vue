@@ -37,7 +37,8 @@
           hide-details
         ></v-text-field>
 
-        <v-btn class="my-4 mr-3" small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]" v-if="compare">
+        <v-btn class="my-4 mr-3" small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
+               v-if="compare">
           Cancel Comparison
         </v-btn>
         <v-btn color="primary" small class="my-4" @click="showCompareModal = true" v-if="compare"
@@ -135,6 +136,7 @@
 
 <script>
 import {
+  getAttachmentSourceId,
   getRequest,
   getRequestWithParams,
   getSnackbar,
@@ -285,7 +287,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
         this.attachments.push(attachment)
-        if(!this.forceShowUploadBtn) {
+        if (!this.forceShowUploadBtn) {
           //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
           //this value tells the right pane to update when a file is uploaded
           this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
@@ -396,11 +398,11 @@ export default {
     },
     async doUpload(files, type) {
       if (files?.length > 0) {
-        let file = files[0]
         if (type.hasFieldsAssigned) {
+          let file = files[0]
           this.setTempFile(file, type)
         } else {
-          await this.uploadDocument(file, type)
+          await this.uploadDocument(files, type)
         }
       }
     },
@@ -415,30 +417,48 @@ export default {
       this.tempFile.displayName = displayName
       this.showCoversheetModal = true
     },
-    uploadDocument: async function (file, type) {
+    uploadDocument: async function (files, type) {
       //this should only get called if the attachment type doesn't have any native fields
       try {
         //reset error message when trying to upload new file
         this.error = {}
-        if (file && file.size > 0) {
+        if (files?.length > 0) {
+          const { sourceId, secondaryId } = getAttachmentSourceId(this.projectId, this.projectProcessStepId, this.projectProcessStepEventId,
+            this.userId, this.contactId, this.orgId)
+
           this.$store.commit(AppMutations.SET_LOADING, true)
-          let displayName = file.name.substr(0, file.name.lastIndexOf('.'))
-          await this.$store.dispatch(null != this.projectProcessStepEventId ? Actions.PROJECT_PROCESS_STEP_EVENT_FILE_UPLOAD :
-            null != this.projectProcessStepId ? Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD :
-              (this.projectId) ? Actions.PROJECT_FILE_UPLOAD :
-                Actions.OBJECT_TYPE_FILE_UPLOAD, {
-            file,
-            attachmentTypeId: type.attachmentTypeId,
-            displayName,
-            projectId: this.projectId,
-            projectProcessStepId: this.projectProcessStepId,
-            userId: this.userId,
-            contactId: this.contactId,
-            orgId: this.orgId,
-            objectTypeId: this.objectTypeId,
-            projectProcessStepEventId: this.projectProcessStepEventId,
-            callback: this.fileUploaded
-          })
+
+          //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
+          if (sourceId != null) {
+            if(files.length > 1) {
+              const filesToUpload = [...files].map(file => {
+                return {
+                  file,
+                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+                  attachmentTypeId: type.attachmentTypeId,
+                  objectTypeId: this.objectTypeId,
+                  sourceId,
+                  secondaryId,
+                }
+              })
+              const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
+              this.attachments = [...this.attachments, ...uploaded]
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            } else {
+              let file = files[0]
+              if(file?.size > 0) {
+                await this.$store.dispatch(Actions.FILE_UPLOAD, {
+                  file: file,
+                  attachmentTypeId: type.attachmentTypeId,
+                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+                  objectTypeId: this.objectTypeId,
+                  sourceId,
+                  secondaryId,
+                  callback: this.fileUploaded
+                })
+              }
+            }
+          }
         }
       } catch (e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -469,12 +489,14 @@ export default {
   padding-bottom: 6px;
   min-height: auto;
 }
+
 .v-expansion-panels.condensed
 .v-expansion-panel--active
 .v-expansion-panel-header {
   padding-top: 12px;
   padding-bottom: 12px;
 }
+
 .v-expansion-panels.condensed .v-expansion-panel--active:not(:first-child),
 .v-expansion-panels.condensed .v-expansion-panel--active + .v-expansion-panel {
   margin-top: 2px;
