@@ -650,7 +650,7 @@ const router = new Router({
               path: 'postalCode/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (store.getters.userHasFeature('ROUND_ROBIN')) {
                   return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/PostalCode.vue')
                 } else {
                   return accessDenied()
