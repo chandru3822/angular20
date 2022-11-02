@@ -305,6 +305,25 @@ where ppse.id = :id
     where ppse.id = :sourceId
   ]]></projectProcessStepEvent.getCompanyId>
 
+  <projectProcessStepEvent.getEventAttachmentTypes><![CDATA[
+    select eat.id,
+           eat.event_id,
+           eat.attachment_type_id,
+           eat.archived,
+           eat.linkable,
+           eat.allow_upload,
+           eat.focused,
+           at.attachment_type,
+           eat.display_order
+    from flow.event_attachment_type eat
+      inner join flow.event e on e.id = eat.event_id
+      inner join flow.process_step_event pse on pse.event_id = e.id
+      inner join flow.project_process_step_event ppse on ppse.process_step_event_id = pse.id AND ppse.id = :ppsEventId
+      inner join flow.attachment_type at on eat.attachment_type_id = at.id
+    where eat.archived is not true
+    order by at.attachment_type
+  ]]></projectProcessStepEvent.getEventAttachmentTypes>
+
   <projectProcessStepEvent.getProjectProcessStepEventAttachments><![CDATA[
        select
         a.id,

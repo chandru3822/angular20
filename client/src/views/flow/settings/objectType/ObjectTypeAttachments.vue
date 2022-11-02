@@ -297,7 +297,7 @@ export default {
       this.attachmentTypeToDelete = null
     },
     filterTypes() {
-      return orderBy(this.attachmentTypes.filter(e => { return !e.archived}), [e => e.displayOrder])
+      return orderBy(this.attachmentTypes.filter(e => { return !e.archived}), [e => e.attachmentType])
     },
   }
 }
