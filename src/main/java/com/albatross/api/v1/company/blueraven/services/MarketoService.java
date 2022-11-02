@@ -37,13 +37,13 @@ public class MarketoService {
 
     private WebClient client;
 
-    @Value("${marketo.host:}")
+    @Value("${app.marketo.host:}")
     private String host;
 
-    @Value("${marketo.clientId:}")
+    @Value("${app.marketo.clientId:}")
     private String clientId;
 
-    @Value("${marketo.secret:}")
+    @Value("${app.marketo.secret:}")
     private String secret;
 
     private final SqlCache sqlCache;
