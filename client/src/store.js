@@ -28,7 +28,7 @@ const store = new Vuex.Store({
       store.commit(Mutations.INIT)
       store.subscribe((mutation, state) => {
         if (mutation.type === ProposalMutations.REGISTER_EDITOR) return
-        const { notifications, ...newState } = state //don't store notifications
+        const { notifications, proposal, cancelTokens, ...newState } = state //don't store notifications
         localStorage.setItem('store', JSON.stringify(newState))
       })
     }
