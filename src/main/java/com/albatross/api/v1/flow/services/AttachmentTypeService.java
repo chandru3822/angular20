@@ -232,6 +232,26 @@ public class AttachmentTypeService {
     sqlCache.update(sqlKey, params);
   }
 
+  //this endpoint is specifically for mobile. they want all attachment types back and they will parse them as needed
+  public List<ObjectTypeAttachmentType> getAssignedTypesToObject(Long ppsId, Long ppsEventId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("ppsId", ppsId);
+    params.put("ppsEventId", ppsEventId);
+
+    //dumb. the project query needs these 3 params hardcoded as false
+    params.put("allowUpload", false);
+    params.put("focused", false);
+    params.put("linkable", false);
+
+    //because we dont pass in any of the 3 variables, this "attachmentType.project.getAssignedTypes" should return them all
+    String sqlKey = null != ppsEventId ? "projectProcessStepEvent.getEventAttachmentTypes" : null != ppsId ? "projectProcessStep.getStepAttachmentTypes" : "attachmentType.project.getAssignedTypes";
+
+    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
+  }
+
   //these endpoints are for the non-admin side of things
   public List<ObjectTypeAttachmentType> getCombinedTypesForProject(Long ppsId, Long ppsEventId, Boolean focused) {
     User currentUser = securityService.getCurrentUser();
