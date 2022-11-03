@@ -1,5 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers.ahj;
 
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjHoa;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjHoaDetail;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtility;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtilityDetail;
 import com.albatross.api.v1.company.blueraven.services.ahj.AhjHoaService;
@@ -18,28 +20,28 @@ public class AhjHoaController {
     private AhjHoaService ahjHoaService;
 
     @GetMapping(value = "/list/all")
-    public List<AhjUtility> getAllAhjUtilities() {
-        return ahjHoaService.getAllAhjUtilities();
+    public List<AhjHoa> getAllAhjHoa() {
+        return ahjHoaService.getAllAhjHoa();
     }
 
     @GetMapping(value = "/{id}")
-    public Optional<AhjUtilityDetail> getUtilityById(@PathVariable Long id) {
-        return ahjHoaService.getUtilityById(id);
+    public Optional<AhjHoaDetail> getHoaById(@PathVariable Long id) {
+        return ahjHoaService.getHoaById(id);
     }
 
     @PostMapping(value = "")
-    public Optional<AhjUtilityDetail> createUtility(@RequestBody AhjUtility utility) {
-        return ahjHoaService.updateUtility(utility);
+    public Optional<AhjHoaDetail> createHoa(@RequestBody AhjHoa hoa) {
+        return ahjHoaService.updateHoa(hoa);
     }
 
     @PutMapping(value = "/simpleUpdate")
-    public Optional<AhjUtilityDetail> simpleUpdate(@RequestBody AhjUtility utility) {
-        return ahjHoaService.simpleUpdate(utility);
+    public Optional<AhjHoaDetail> simpleUpdate(@RequestBody AhjHoa hoa) {
+        return ahjHoaService.simpleUpdate(hoa);
     }
 
     @PutMapping(value = "")
-    public Optional<AhjUtilityDetail> editUtility(@RequestBody AhjUtility utility) {
-        return ahjHoaService.updateUtility(utility);
+    public Optional<AhjHoaDetail> editHoa(@RequestBody AhjHoa hoa) {
+        return ahjHoaService.updateHoa(hoa);
     }
 
 
