@@ -167,7 +167,7 @@
                       <v-icon>drag_handle</v-icon>
                     </v-list-item-action>
                     <v-list-item-content>
-                      {{ a.link }} | {{ a.url }}
+                      {{ a.link }}
                     </v-list-item-content>
                     <v-btn v-if="userCanEdit" small text color="primary" @click="deleteLink=a"><v-icon>delete</v-icon></v-btn>
                   </v-list-item>
