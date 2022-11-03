@@ -379,6 +379,7 @@ export default {
 }
 
 .project-activity-inner-container {
+  max-height: 100%;
   overflow: auto;
   flex-grow: 4;
 }
