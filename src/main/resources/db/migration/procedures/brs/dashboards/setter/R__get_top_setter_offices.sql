@@ -19,7 +19,7 @@ BEGIN
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS') and up.archived is not true)
         inner join flow.org o on (o.id = up.org_id and o.active_flag is true)
-        left join flow.organization_custom_field_value ocfv on ocfv.org_id = o.id
+        left join flow.organization_custom_field_value ocfv on ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
         left join flow.list_of_value lov on ocfv.int_value = lov.id
       where pd.source in (525, 526) --(Setter Gen, Retargeted)
             and case when up.end_date is not null
