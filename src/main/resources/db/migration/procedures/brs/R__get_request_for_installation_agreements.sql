@@ -45,7 +45,6 @@ BEGIN
               pd.closer_user_id = p_platform_user_id
             else 1 = 1 end
       and (pd.cancelled_date is null or p_show_cancelled is true)
-      AND pd.energized_date is null
       AND p.archived is false
       AND p.project_name ILIKE '%' || p_searchterm || '%'
       and c.company_id = p_company_id
