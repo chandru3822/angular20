@@ -183,6 +183,7 @@ export default {
       name: '',
       metroAreaId: '',
     },
+    ahjHoas: []
   }),
   computed: {
     filteredHoas(){
@@ -199,12 +200,12 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.currentUser = this.$store.state.user.details.id
       this.initFilters()
-      // this.fetchAhjs().then(() => {
-      //   if (this.ahjs.length > 0) {
-      //     this.fetchStates()
-      //   }
+      this.fetchAhjHoas().then(() => {
+        if (this.ahjs.length > 0) {
+          this.fetchStates()
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
-      // })
+      })
     },
   methods: {
     initFilters () {
@@ -221,6 +222,22 @@ export default {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async fetchAhjHoas () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest('/ahjHoa/list/all', 'blueraven')
+        this.ahjHoas = cloneDeep(data)
+        debugger
+        this.dataLoading = false
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.dataLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
