@@ -51,7 +51,8 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 2
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfc2.default_field_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+      dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
@@ -121,7 +122,8 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 1
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfc2.default_field_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+          dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
@@ -195,7 +197,8 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 4
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfc2.custom_field_group_assignment_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+          dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
       and processed is false
@@ -238,7 +241,8 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 1
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfc2.custom_field_group_assignment_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+          dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
       and processed is false
@@ -282,7 +286,8 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 2
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfc2.custom_field_group_assignment_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+          dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
       and processed is false
@@ -327,7 +332,8 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 6
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfc2.custom_field_group_assignment_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+          dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is not null
       and dvfc2.default_field_id is null
       and processed is false
@@ -367,7 +373,8 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 6
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfc2.default_field_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+          dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is not null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
@@ -406,7 +413,8 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 4
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfc2.default_field_id is not null
+    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+          dvfc2.default_field_id is not null
       and dvfc2.process_step_id is not null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id

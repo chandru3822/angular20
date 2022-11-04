@@ -7,9 +7,12 @@ CREATE OR REPLACE function flow.run_view_maintenance()
 AS
 $BODY$
 declare
-  x       record;
-  v_sql   text;
-  v_count bigint;
+  x                 record;
+  v_sql             text;
+  v_count           bigint;
+  v_view_name       text;
+  v_field_to_update text;
+  v_schema_name     text;
 BEGIN
 
   create temp table sql_statements
@@ -32,7 +35,9 @@ BEGIN
             left join flow.company c on dv.company_id = c.id
             left join flow.data_view dv1 on dvm.data_view_id = dv1.id
             left join flow.company c1 on dv1.company_id = c1.id
-     where dvm.processed is false);
+     where dvm.processed is false
+       and dvm.lov_new_name is null
+       and dvm.lov_old_name is null);
 
   for x in select data_view_id
            from flow.data_view_maintenance
@@ -91,9 +96,36 @@ BEGIN
         end if;
       end if;
     end loop;
+  v_sql = null;
+  for x in select *
+           from flow.data_view_maintenance dvm
+           where dvm.lov_old_name is not null
+             and dvm.lov_new_name is not null
+             and dvm.processed = false
+
+    loop
+      v_sql = null;
+      select distinct dv.view_name, dvcfc.field_to_update, c.schema_name
+      into v_view_name,v_field_to_update,v_schema_name
+      from flow.data_view_field_config dvfc
+             inner join flow.data_view dv on dv.id = dvfc.data_view_id
+             inner join flow.company c on c.id = dv.company_id
+             inner join flow.data_view_child_field_config dvcfc on dvcfc.data_view_field_config_id = dvfc.id
+      where dvfc.id = x.data_view_field_config_id;
+
+      v_sql = 'update ' || v_schema_name || '.' || v_view_name || ' set ' || v_field_to_update || ' = ''' ||
+              x.lov_new_name || ''' where ' || v_field_to_update || ' = ''' || x.lov_old_name || ''';';
+
+      if v_sql is not  null then
+        insert into sql_statements(sql_statements) values (v_sql);
+      end if;
+    end loop;
+
+
   select count(1)
   into v_count
   from sql_statements;
+
   if v_count > 0 then
     update flow.data_view_maintenance
     set processed = true
