@@ -184,6 +184,11 @@ export default {
           feature: 'SMARTLIST',
           show: true
         }, {
+          label: 'Smartlists v2',
+          path: '/smartlistv2',
+          feature: 'SMARTLIST_V2',
+          show: true
+        }, {
           label: 'Inbox',
           path: '/inbox',
           feature: 'SMS_INBOX',

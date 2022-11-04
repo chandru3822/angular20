@@ -1552,6 +1552,51 @@ const router = new Router({
           }
           ]
         }, {
+          path: '/smartlistv2',
+          meta: {title: 'Albatross - Smartlists v2'},
+          redirect: '/smartlistv2/mine',
+          component: () => {
+            if (store.getters.userHasFeature('SMARTLIST_V2')) {
+              return import (/* webpackChunkName: "smartlists" */ './views/flow/smartlistv2/Smartlists.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+          children: [{
+            path: 'mine',
+            meta: {title: 'Albatross - Smartlists v2'},
+            name: 'mySmartlists',
+            component: () => {
+              if (store.getters.userHasFeature('SMARTLIST_V2')) {
+                return import (/* webpackChunkName: "mySmartlists" */ './views/flow/smartlistv2/MySmartlists.vue')
+              } else {
+                return accessDenied()
+              }
+            },
+          }, {
+            path: 'shared',
+            meta: {title: 'Albatross - Smartlists v2'},
+            name: 'sharedSmartlists',
+            component: () => {
+              if (store.getters.userHasFeature('SMARTLIST_V2')) {
+                return import (/* webpackChunkName: "sharedSmartlists" */ './views/flow/smartlistv2/SharedSmartlists.vue')
+              } else {
+                return accessDenied()
+              }
+            },
+          }, {
+            path: 'public',
+            meta: {title: 'Albatross - Smartlists v2'},
+            name: 'publicSmartlists',
+            component: () => {
+              if (store.getters.userHasFeature('SMARTLIST_V2')) {
+                return import (/* webpackChunkName: "publicSmartlists" */ './views/flow/smartlistv2/PublicSmartlists.vue')
+              } else {
+                return accessDenied()
+              }
+            },
+          }]
+        }, {
           path: '/proposals',
           name: 'proposals',
           meta: {title: 'Albatross - Proposals'},
