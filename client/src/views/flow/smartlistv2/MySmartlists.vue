@@ -70,7 +70,7 @@ onMounted(async () => await getSmartlists())
 let getSmartlists = async () => {
   try {
     isLoading.value = true
-    const {data} = await getRequest(`/smartlist`)
+    const {data} = await getRequest(`/smartlistv2/mine`)
     smartlists.value = data
   } catch (e) {
     logError(e)
