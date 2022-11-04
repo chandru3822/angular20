@@ -167,7 +167,8 @@
            concat(u.first_name, ' ', u.last_name) as uploaded_by,
            substring(a.filename, '\.([^\.]+)$') as file_extension,
            src.source_id,
-           a.archived
+           a.archived,
+           false as linked
     FROM flow.attachment a
              LEFT JOIN flow.attachment_source src ON src.attachment_id = a.id
              inner join flow."user" u on u.id = a.created_by_id
