@@ -35,7 +35,7 @@
           <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-menu data-app left
+            <v-menu data-app right
                     offset-y
                     v-model="attachmentMenuOpen"
                     max-height="350"
