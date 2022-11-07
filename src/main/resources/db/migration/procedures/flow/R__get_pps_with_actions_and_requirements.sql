@@ -229,6 +229,7 @@ BEGIN
                                                                        where dfp.db_function_id = cf.db_function_id
                                                                          and dfp.parameter_type_id = 2
                                                                          and apdv.archived is not true
+                                                                         and dfp.archived is not true
                                                                        order by dfp.display_order
                                                                    ) params), '[]') AS "actionParamDynamicValues"
                                           FROM flow.process_step_action_company_function psacf
