@@ -154,7 +154,7 @@ const store = new Vuex.Store({
           const error = {error: true, errorMsg: `File size cannot exceed ${maxFileSize / 1048576}MB`}
           callback(null, error)
         } else {
-          let fileExtension = file.name.substring(file.name.lastIndexOf('.'))
+          let fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase()
           //only continue with upload if matches whitelisted file types
           if (constants.WHITELISTED_FILE_EXTENSIONS.includes(fileExtension)) {
             let formData = new FormData()
