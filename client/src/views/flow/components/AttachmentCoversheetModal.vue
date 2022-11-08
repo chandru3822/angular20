@@ -302,7 +302,7 @@ export default {
       //handle urls/extensions for new files prior to upload and also existing files with presigned urls
       let fileExtension = this.file && this.file.name ? this.file?.name?.substr(this.file?.name?.lastIndexOf('.') + 1) : this.existingAttachment.fileExtension
       this.isPdf = fileExtension === 'pdf'
-      this.isImage = this.imageFileExtensions.includes(fileExtension)
+      this.isImage = this.imageFileExtensions.includes(fileExtension.toLowerCase())
       this.fileSrcUrl = this.file && this.file.name ? URL.createObjectURL(this.file) : this.existingAttachment.presignedUrl
 
       //required so that both new and existing files work since the objects aren't identical
