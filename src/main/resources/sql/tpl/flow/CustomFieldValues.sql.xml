@@ -1194,6 +1194,7 @@
                  FROM (
                         select
                           pcv.id,
+                          :idToUse as "projectId",
                           p.contact_id as "contactId",
                           pcv.date_value as "dateValue",
                           pcv.timestamp_value as "timestampValue",
@@ -1275,6 +1276,7 @@
                  FROM (
                         select
                           pcv.id,
+                          (select project_id from flow.project_process_step pps where id = :idToUse::int) as "projectId",
                           pcv.date_value as "dateValue",
                           pcv.timestamp_value as "timestampValue",
                           pcv.boolean_value as "booleanValue",
@@ -1353,6 +1355,9 @@
                    FROM (
                           select
                             pcv.id,
+                            (select project_id from flow.project_process_step_event ppse
+                              inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+                              where ppse.id = :idToUse::int) as "projectId",
                             pcv.date_value as "dateValue",
                             case when df.id = 10 then ppse.start_time
                                  when df.id = 11 then ppse.end_time
