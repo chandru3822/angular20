@@ -266,7 +266,7 @@ export default {
 
       this.attachmentsCopy.forEach(a => {
         //need to determine if file is image or is pdf
-        a.isImage = this.imageFileExtensions.includes(a.fileExtension)
+        a.isImage = this.imageFileExtensions.includes(a.fileExtension.toLowerCase())
         a.isPdf = a.fileExtension === 'pdf'
       })
       await this.getCustomFields()
