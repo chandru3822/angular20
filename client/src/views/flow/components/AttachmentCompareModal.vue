@@ -196,7 +196,7 @@ export default {
           return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.ancillaryCustomFieldId ?
             fv.ancillaryCustomFieldId === field.ancillaryCustomFieldId : fv.customFieldId === field.customFieldId
         })
-        return matchingValue
+        return matchingValue ? matchingValue : null
       }
       return null
     },
@@ -204,9 +204,11 @@ export default {
       let match = this.attachmentWithFields?.find(f => f.attachmentId === a.id)
       if (match) {
         let matchingValue = match.fieldValues?.find(fv => {
-          return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.customFieldId === field.customFieldId
+          // return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.customFieldId === field.customFieldId
+          return fv.defaultFieldId ? fv.defaultFieldId === field.defaultFieldId : fv.ancillaryCustomFieldId ?
+            fv.ancillaryCustomFieldId === field.ancillaryCustomFieldId : fv.customFieldId === field.customFieldId
         })
-        return (
+        return matchingValue !== undefined && (
           matchingValue?.dateValue != null ||
           matchingValue?.timestampValue != null ||
           matchingValue?.textValue != null ||
@@ -264,7 +266,7 @@ export default {
 
       this.attachmentsCopy.forEach(a => {
         //need to determine if file is image or is pdf
-        a.isImage = this.imageFileExtensions.includes(a.fileExtension)
+        a.isImage = this.imageFileExtensions.includes(a.fileExtension.toLowerCase())
         a.isPdf = a.fileExtension === 'pdf'
       })
       await this.getCustomFields()
@@ -283,7 +285,6 @@ export default {
 
         //get cfIds and fieldNames across all attachments
         this.attachmentWithFields.forEach((f, idx) => {
-          console.log('randaLogger', f.fieldValues)
           //push all into one, will de-dupe after
           this.allFields = this.allFields.concat(f.fieldValues)
         })
