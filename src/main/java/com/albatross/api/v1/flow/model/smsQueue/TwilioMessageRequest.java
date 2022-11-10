@@ -1,13 +1,20 @@
 package com.albatross.api.v1.flow.model.smsQueue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-@Data
+@Builder
+@Getter
+@ToString
+@JsonDeserialize(using = TwilioMessageRequestDeserializer.class)
 public class TwilioMessageRequest {
   private Long id;
 
@@ -35,8 +42,7 @@ public class TwilioMessageRequest {
   @JsonProperty(value = "NumMedia")
   private Integer numMedia;
 
-  @JsonProperty(value = "MediaUrl0")
-  private String mediaUrl0;
+  private List<String> mediaUrls;
 
   private Date date_received;
 
@@ -51,7 +57,7 @@ public class TwilioMessageRequest {
     data.put("to", to);
     data.put("body", body);
     data.put("numMedia", numMedia);
-    data.put("mediaUrls", mediaUrl0 == null ? null : new String[] {mediaUrl0});
+    data.put("mediaUrls", mediaUrls == null ? null : mediaUrls.toArray());
 
     return data;
   }
