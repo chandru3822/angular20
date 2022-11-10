@@ -249,21 +249,30 @@ public class ProjectProcessStepController {
   }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments")
-  public ResponseEntity<List<Attachment>> getProjectProcessStepAttachments(
-      @PathVariable Long projectProcessStepId, @PathVariable(required = false) Boolean isMobile) {
+  public ResponseEntity<List<Attachment>> getProjectProcessStepAttachments(@PathVariable Long projectProcessStepId,
+                                                                           @RequestParam(required = false) Boolean isMobile,
+                                                                           @RequestParam(required = false) Boolean linked) {
     return new ResponseEntity<>(
-        projectProcessStepService.getProjectProcessStepAttachments(projectProcessStepId, isMobile),
+        projectProcessStepService.getProjectProcessStepAttachments(projectProcessStepId, isMobile, linked),
         HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectProcessStepId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long projectProcessStepId,
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    projectProcessStepService.linkAttachment(projectProcessStepId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{projectProcessStepId}/attachment")
   public ResponseEntity<Attachment> uploadProjectProcessStepAttachment(
       @PathVariable Long projectProcessStepId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam("file") MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
-        projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId),
+        projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId, displayName),
         HttpStatus.OK);
   }
 

@@ -35,9 +35,9 @@ public class CustomFieldGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("customFieldGroupId", customField.getCustomFieldGroupId());
+    params.put("defaultFieldId", customField.getDefaultFieldId());
     params.put("customFieldId", customField.getId());
     params.put("createdById", currentUser.trueUserId());
-    params.put("scheduleFieldTypeId", customField.getScheduleFieldTypeId());
     params.put(
         "ancillaryCustomFieldGroupAssignmentId",
         customField.getAncillaryCustomFieldGroupAssignmentId());
@@ -48,7 +48,7 @@ public class CustomFieldGroupService {
             .updateReturningId("customFieldGroupAssignment.addFieldToGroup", params, "id")
             .longValue();
 
-    return getCustomField(id);
+    return null != customField.getDefaultFieldId() ? getDefaultCustomField(id) : getCustomField(id);
   }
 
   public CustomField moveFieldToOtherGroup(CustomField customField, Long newGroupId) {
@@ -62,6 +62,13 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.moveFieldToOtherGroup", params);
 
     return getCustomField(customField.getCustomFieldGroupAssignmentId());
+  }
+
+  public CustomField getDefaultCustomField(Long cfgaId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("cfgaId", cfgaId);
+    Optional<CustomField> result = sqlCache.get("customFieldGroupAssignment.getDefaultField", params, CustomField.class);
+    return result.orElse(null);
   }
 
   public CustomField getCustomField(Long id) {
@@ -180,7 +187,7 @@ public class CustomFieldGroupService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", customField.getId());
+    params.put("id", customField.getCustomFieldGroupAssignmentId());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("fieldOrder", customField.getFieldOrder());
 
@@ -231,7 +238,7 @@ public class CustomFieldGroupService {
         CustomFieldGroup.class);
   }
 
-  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId) {
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId, Long eventId, Long attachmentTypeId) {
     User currentUser = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
@@ -256,6 +263,13 @@ public class CustomFieldGroupService {
               "customFieldGroupAssignment.getAvailableNativeFieldsForEvent",
               params,
               CustomField.class);
+    } else if (null != attachmentTypeId) {
+      params.put("attachmentTypeId", attachmentTypeId);
+      results =
+        sqlCache.query(
+          "customFieldGroupAssignment.getAvailableNativeFieldsForAttachmentType",
+          params,
+          CustomField.class);
     } else {
       results =
           sqlCache.query(
@@ -274,6 +288,13 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("eventId", customFieldGroup.getEventId());
+    params.put("attachmentTypeId", customFieldGroup.getAttachmentTypeId());
+    params.put("processStepAttachmentTypeId", customFieldGroup.getProcessStepAttachmentTypeId());
+    params.put("userAttachmentTypeId", customFieldGroup.getUserAttachmentTypeId());
+    params.put("projectAttachmentTypeId", customFieldGroup.getProjectAttachmentTypeId());
+    params.put("contactAttachmentTypeId", customFieldGroup.getContactAttachmentTypeId());
+    params.put("orgAttachmentTypeId", customFieldGroup.getOrgAttachmentTypeId());
+    params.put("eventAttachmentTypeId", customFieldGroup.getEventAttachmentTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.trueUserId());
 
@@ -318,6 +339,30 @@ public class CustomFieldGroupService {
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 
     return cfg;
+  }
+
+  public CustomFieldGroup addAttachmentCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", ObjectType.ATTACHMENT_TYPE.id);
+    params.put("companyId", currentUser.getCompanyId());
+    Long companyObjectTypeId = sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
+
+    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+  }
+
+  public CustomFieldGroup addProcessStepAttachmentCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", ObjectType.ATTACHMENT_TYPE.id);
+    params.put("companyId", currentUser.getCompanyId());
+    Long companyObjectTypeId =
+      sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
+
+    //even though this is for a process step attachment type, the company_object_type_id is still set to the attachment object type id
+    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
   }
 
   public List<FieldInUse> getFieldsInUse(

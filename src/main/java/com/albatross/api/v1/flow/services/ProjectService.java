@@ -441,33 +441,60 @@ public class ProjectService {
     return sj.toString();
   }
 
-  public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
+  public List<Attachment> getAttachments(Long projectId, Boolean isMobile, Boolean linked) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
+    params.put("linked", linked);
+    params.put("companyId", currentUser.getCompanyId());
     // Get project attachments
     List<Attachment> attachments =
         sqlCache.query("project.getAttachments", params, Attachment.class);
-    // Get project process step attachments
-    List<Attachment> ppsAttachments =
-        sqlCache.query(
-            "projectProcessStep.getProjectProcessStepAttachmentsForProjectId",
-            params,
-            Attachment.class);
-    attachments.addAll(ppsAttachments);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
-  public Attachment addAttachment(MultipartFile file, @NonNull Long projectId, Long attachmentTypeId)
+  public List<Attachment> getCombinedAttachments(Long projectId, Long ppsId, Long ppsEventId) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("ppsId", ppsId);
+    params.put("ppsEventId", ppsEventId);
+    params.put("companyId", currentUser.getCompanyId());
+    // Get project attachments
+    List<Attachment> attachments =
+      sqlCache.query("project.getCombinedAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(
+      attachments, storageBucket, false);
+  }
+
+  public void linkAttachment(Long projectId, Long attachmentId, Boolean doLink) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("attachmentId", attachmentId);
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+
+    String sqlKey = "project.linkAttachment";
+    if(!doLink) {
+      sqlKey = "project.unlinkAttachment";
+    }
+    sqlCache.update(sqlKey, params);
+  }
+
+  // @TODO: this needs to work better with the attachment service's create method. Too much duped
+  // code right now and I hate it
+  public Attachment addAttachment(MultipartFile file, @NonNull Long projectId, Long attachmentTypeId, String displayName)
       throws IOException {
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
-    return addAttachment(projectId, attachmentTypeId, file.getSize(), file.getContentType(), file.getOriginalFilename(), new ByteArrayInputStream(file.getBytes()));
+    return addAttachment(projectId, attachmentTypeId, file.getSize(), file.getContentType(), file.getOriginalFilename(), new ByteArrayInputStream(file.getBytes()), displayName);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
-  public Attachment addAttachment(@NonNull Long projectId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream){
+  public Attachment addAttachment(@NonNull Long projectId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream, String displayName){
     User currentUser = securityService.getCurrentUser();
 
     // had to change this so that a parent looking at a child project could still see project
@@ -494,6 +521,7 @@ public class ProjectService {
     params.put("size", contentLength);
     params.put("createdById", currentUser.trueUserId());
     params.put("companyId", companyId);
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("attachmentTypeId", attachmentTypeId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
@@ -501,6 +529,7 @@ public class ProjectService {
     params.clear();
     params.put("projectId", projectId);
     params.put("attachmentId", attachmentId);
+    params.put("linked", false);
     params.put("createdById", currentUser.trueUserId());
 
     sqlCache.update("project.addAttachment", params);

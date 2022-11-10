@@ -1,6 +1,5 @@
 package com.albatross.api.config;
 
-import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.services.*;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +33,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final ProjectProcessStepService projectProcessStepService;
   private final ContactService contactService;
   private final MessagingService messagingService;
+  private final DataViewService dataViewService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
   private Boolean sendSmsNotifications;
@@ -61,6 +61,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
   @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
   private boolean closeProjectConversations;
+
+  @Value(value = "${app.cron.runDataViewMaintenance.enabled:false}")
+  private boolean doViewMaintenance;
 
   @Override
   public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -91,6 +94,16 @@ public class ScheduledConfig implements SchedulingConfigurer {
       // method will rollback the db transaction which contains very important information
       // about outbound texts
       smsService.processTwilioWebhookPayloads();
+    }
+  }
+
+  //    every  day at midnight zone = "America/Denver")
+  @Scheduled(cron = "0 0 0 * * *", zone = "America/Denver")
+  public void runViewMaintenance() {
+    if (doViewMaintenance) {
+      log.info("*** CRON: start data view maintenance ***");
+      dataViewService.runViewMaintenance();
+      log.info("*** CRON: end data view maintenance ***");
     }
   }
 

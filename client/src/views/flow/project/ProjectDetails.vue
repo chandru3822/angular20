@@ -1,5 +1,18 @@
 <template>
   <div id="project-details-container" class="py-0">
+    <v-dialog persistent :width="1000" v-model="showCoversheetModal"
+              content-class="coversheet-modal-content">
+      <AttachmentCoversheetModal :existing-attachment="tempFile"
+                                 :file="fileToUpload"
+                                 :show-modal="showCoversheetModal"
+                                 :close-callback="closeCoversheet"
+                                 :file-uploaded-callback="fileUploaded"
+                                 :projectId="projectId"
+                                 :objectTypeId="1"
+
+      >
+      </AttachmentCoversheetModal>
+    </v-dialog>
     <div class="pa-0 height-one-hunned">
       <div class="project-header" v-if="!tabsLoading">
         <v-tabs v-if="tabs.length > 0"
@@ -22,6 +35,38 @@
           <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-menu data-app right
+                    offset-y
+                    v-model="attachmentMenuOpen"
+                    max-height="350"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <v-btn text color="primary" @click="loadProjectTypes()" v-on="on">
+                  <v-icon>mdi-tray-arrow-up</v-icon>
+                </v-btn>
+              </template>
+              <v-list dense class="pa-3">
+                <template v-for="(item, index) in attachmentTypes">
+                  <v-list-item
+                    :key="index"
+                    @click="[menuOpen = false, selectFile(item.attachmentTypeId)]">
+                    <v-list-item-content>
+                      <v-list-item-title>{{ item.attachmentType }}</v-list-item-title>
+                    </v-list-item-content>
+                    <input
+                      :id="`menuFileInput${item.attachmentTypeId}`"
+                      type="file"
+                      :multiple="!item.hasFieldsAssigned"
+                      :accept="acceptedFileTypes"
+                      @change='doUpload($event.target.files, item)'
+                      style="display: none"
+                      @click.stop=""
+                      :ref="`menuFileInput${item.attachmentTypeId}`"
+                    >
+                  </v-list-item>
+                </template>
+              </v-list>
+            </v-menu>
             <v-btn text
                    color="primary"
                    @click="setSplitColumnValue()">
@@ -40,6 +85,9 @@
             </div>
           </v-toolbar-items>
         </v-toolbar>
+        <v-toolbar v-else color="secondary" class="elevation-0 process-step-toolbar mx-6">
+          <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
+        </v-toolbar>
       </div>
       <div class="project-fields-container px-3" ref="projectFieldsContainer">
         <v-form ref="projectForm">
@@ -48,42 +96,60 @@
           </v-col>
 
           <div v-else>
-            <v-col
-              :class="{ 'mt-4': index !== 0 }"
-              class="py-0"
-              v-for="(group, index) in displayedGroups"
-              :key="index"
-            >
-              <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
-                <v-toolbar-title class="albatross-header-4">{{ group.groupName }}</v-toolbar-title>
-              </v-toolbar>
-              <v-card class="px-4 text-left square-card">
-                <v-row>
-                  <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                    <CustomValueInput
-                      v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
-                      :key="idx"
-                      :required="field.required"
-                      :callback="populateDirtyCfvs"
-                      :readonly="getReadOnly(field)"
-                      :showFieldName="false"
-                      :field="field"
-                    />
-                  </v-col>
-                  <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
-                    <CustomValueInput
-                      v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
-                      :key="idx"
-                      :required="field.required"
-                      :callback="populateDirtyCfvs"
-                      :readonly="getReadOnly(field)"
-                      :showFieldName="false"
-                      :field="field"
-                    />
-                  </v-col>
-                </v-row>
-              </v-card>
-            </v-col>
+            <div v-if="selectedTab.id !== -1">
+              <v-col
+                :class="{ 'mt-4': index !== 0 }"
+                class="py-0"
+                v-for="(group, index) in displayedGroups"
+                :key="index"
+              >
+                <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+                  <v-toolbar-title class="albatross-header-4-new">{{ group.groupName }}</v-toolbar-title>
+                </v-toolbar>
+                <v-card class="px-4 text-left square-card">
+                  <v-row>
+                    <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                      <CustomValueInput
+                        v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
+                        :key="idx"
+                        :required="field.required"
+                        :callback="populateDirtyCfvs"
+                        :readonly="getReadOnly(field)"
+                        :showFieldName="false"
+                        :field="field"
+                      />
+                    </v-col>
+                    <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                      <CustomValueInput
+                        v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
+                        :key="idx"
+                        :required="field.required"
+                        :callback="populateDirtyCfvs"
+                        :readonly="getReadOnly(field)"
+                        :showFieldName="false"
+                        :field="field"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-card>
+              </v-col>
+            </div>
+            <div v-else>
+              <v-col class="py-0">
+                <AttachmentsFolderList :object-type-id="1"
+                                       :project-id="projectId"
+                                       is-card
+                                       title="Uploaded Documents"
+                                       :allow-upload="true"/>
+              </v-col>
+              <v-col>
+                <AttachmentsFolderList :object-type-id="1"
+                                       :project-id="projectId"
+                                       is-card
+                                       title="Linked Documents"
+                                       :load-linked="true"/>
+              </v-col>
+            </div>
           </div>
         </v-form>
       </div>
@@ -100,19 +166,25 @@ import {
   postRequest,
   logError,
   getSnackbar,
-  getRequestWithParams
+  getRequestWithParams, getAttachmentSourceId
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from '@/stores/ProjectStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
+import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import {Actions} from "@/store";
+import constants from "@/helpers/constants";
 
 export default {
   name: 'ProjectDetails',
   components: {
     SpinnerInline,
     CustomValueInput,
+    AttachmentsFolderList,
+    AttachmentCoversheetModal
   },
   data() {
     return {
@@ -128,6 +200,12 @@ export default {
       isProcessStepsLoading: false,
       isFieldsLoading: true,
       dirtyCfvs: [],
+      attachmentTypes: [],
+      attachmentMenuOpen: false,
+      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
+      tempFile: {},
+      fileToUpload: null,
+      showCoversheetModal: false,
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
@@ -166,6 +244,16 @@ export default {
   },
 
   methods: {
+    async loadProjectTypes() {
+      const {data} = await getRequestWithParams(`/attachmentType/objectType/project`, {
+        params: {
+          linkable: false,
+          allowUpload: true,
+          focused: false
+        }
+      })
+      this.attachmentTypes = data
+    },
     setSplitColumnValue() {
       //flip the flag
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
@@ -191,7 +279,17 @@ export default {
         }
         const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
         this.tabs = data
+        this.tabs.push({
+          archived: false,
+          companyObjectTypeId: 1,
+          displayOrder: this.tabs.length,
+          id: -1,
+          tabName: 'Uploaded and Linked Documents',
+          uniqueIdentifier: 'tab_documents'
+        })
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+        // use this line to preselect the docs tab for testing purposes
+        // this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
       } catch (e) {
         logError(e)
       } finally {
@@ -257,7 +355,99 @@ export default {
     },
     getReadOnly: function (field) {
       return getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
-    }
+    },
+    selectFile: function (typeId) {
+      document.getElementById(`menuFileInput${typeId}`)?.click();
+    },
+    async doUpload(files, type) {
+      if (files?.length > 0) {
+        if (type.hasFieldsAssigned) {
+          let file = files[0]
+          this.setTempFile(file, type)
+        } else {
+          await this.uploadDocument(files, type)
+        }
+      }
+    },
+    setTempFile: function (file, type) {
+      this.tempFile = {}
+      this.fileToUpload = null
+      //we dont upload new files until after they fill in custom fields, need to pass file to next screen
+      this.fileToUpload = file
+      this.tempFile.attachmentTypeId = type.attachmentTypeId
+      this.tempFile.attachmentType = type.attachmentType
+      let displayName = this.fileToUpload.name.substr(0, this.fileToUpload.name.lastIndexOf('.'))
+      this.tempFile.displayName = displayName
+      this.showCoversheetModal = true
+    },
+    uploadDocument: async function (files, type) {
+      //this should only get called if the attachment type doesn't have any native fields
+      try {
+        //reset error message when trying to upload new file
+        this.error = {}
+        if (files?.length > 0) {
+          const { sourceId, secondaryId } = getAttachmentSourceId(this.projectId, this.projectProcessStepId, this.projectProcessStepEventId,
+            this.userId, this.contactId, this.orgId)
+
+          this.$store.commit(AppMutations.SET_LOADING, true)
+
+          //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
+          if (sourceId != null) {
+            if(files.length > 1) {
+              console.log('doing multi')
+              const filesToUpload = [...files].map(file => {
+                return {
+                  file,
+                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+                  attachmentTypeId: type.attachmentTypeId,
+                  objectTypeId: 1,
+                  sourceId,
+                  secondaryId,
+                }
+              })
+              const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
+              this.attachments = [...this.attachments, ...uploaded]
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            } else {
+              let file = files[0]
+              if(file?.size > 0) {
+                console.log('doing this')
+                await this.$store.dispatch(Actions.FILE_UPLOAD, {
+                  file: file,
+                  attachmentTypeId: type.attachmentTypeId,
+                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+                  objectTypeId: 1,
+                  sourceId,
+                  secondaryId,
+                  callback: this.fileUploaded
+                })
+              }
+            }
+          }
+        }
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    fileUploaded(attachment, error) {
+      if (error) {
+        this.snackbar = getSnackbar('ERROR', error.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else {
+          //this value tells the right pane to update when a file is uploaded
+          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+      }
+      this.$store.commit(AppMutations.SET_LOADING, false)
+    },
+    closeCoversheet(attachmentTypeId) {
+      this.showCoversheetModal = false
+      //if you cancel the coversheet the file-input files prop is not getting reset. do manually here
+      //could not get it to reset using the vue $ref stuff. but this way with getElementById does work
+      document.getElementById(`menuFileInput${attachmentTypeId}`).value = null
+    },
   }
 }
 </script>

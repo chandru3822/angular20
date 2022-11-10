@@ -51,52 +51,66 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       a.date_created,
       a.date_modified,
       a.filename,
+      a.display_name,
       a.attachment_type_id,
       a.content_type,
       a.s3_key,
       a.archived,
       substring(filename, '\.([^\.]+)$') as file_extension,
       ps.process_step_name,
+      ppsa.linked,
       ppsa.project_process_step_id,
-      pps.main,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+      concat(u.first_name, ' ', u.last_name) AS uploaded_by,
+      att.attachment_type,
+      orgn.*
     from flow.project_process_step_attachment ppsa
            inner join flow.attachment a on a.id = ppsa.attachment_id
+           inner join flow.attachment_type att on a.attachment_type_id = att.id
            inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
            inner join flow.process_step ps on ps.id = pps.process_step_id
+           inner join flow.process_step_attachment_type psat on psat.process_step_id = pps.process_step_id and psat.attachment_type_id = att.id
            inner join flow."user" u ON a.created_by_id = u.id
+           left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where ppsa.project_process_step_id = :projectProcessStepId
       and a.archived is not true
+      and att.archived is false
+      and psat.archived is false
       and ppsa.archived is not true
-    order by pps.main desc, pps.date_created desc
+      and case when :linked is true then ppsa.linked is true and psat.linkable is true else ppsa.linked is false end
+    order by pps.date_created desc
   ]]></projectProcessStep.getProjectProcessStepAttachments>
 
-  <projectProcessStep.getProjectProcessStepAttachmentsForProjectId><![CDATA[
-    select
-      a.id,
-      a.size,
-      a.uuid,
-      a.date_created,
-      a.date_modified,
-      a.filename,
-      a.attachment_type_id,
-      a.content_type,
-      a.s3_key,
-      a.archived,
-      substring(filename, '\.([^\.]+)$') as file_extension,
-      ps.process_step_name,
-      ppsa.project_process_step_id,
-      pps.main,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy
-    from flow.project_process_step_attachment ppsa
-           inner join flow.attachment a on a.id = ppsa.attachment_id
-           inner join flow.project_process_step pps on pps.id = ppsa.project_process_step_id
-           inner join flow.process_step ps on ps.id = pps.process_step_id
-           inner join flow."user" u ON a.created_by_id = u.id
-    where pps.project_id = :projectId
-      and a.archived is not true
-    order by pps.main desc, pps.date_created desc
-  ]]></projectProcessStep.getProjectProcessStepAttachmentsForProjectId>
+  <projectProcessStep.getStepAttachmentTypes><![CDATA[
+    select psat.id,
+           psat.process_step_id,
+           psat.attachment_type_id,
+           psat.archived,
+           psat.linkable,
+           psat.allow_upload,
+           psat.focused,
+           at.attachment_type,
+           psat.display_order
+    from flow.process_step_attachment_type psat
+      inner join flow.project_process_step pps on pps.process_step_id = psat.process_step_id AND pps.id = :ppsId
+           inner join flow.attachment_type at on psat.attachment_type_id = at.id
+    where psat.archived is not true
+    order by at.attachment_type
+  ]]></projectProcessStep.getStepAttachmentTypes>
+
+  <projectProcessStep.linkAttachment><![CDATA[
+    insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, created_by_id, linked)
+    values(:attachmentId, :projectProcessStepId, :userId, true)
+  ]]></projectProcessStep.linkAttachment>
+
+  <projectProcessStep.unlinkAttachment><![CDATA[
+    update flow.project_process_step_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and project_process_step_id = :projectProcessStepId
+    and linked is true
+  ]]></projectProcessStep.unlinkAttachment>
 
   <projectProcessStep.addAttachment><![CDATA[
     insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, created_by_id, date_created, modified_by_id, date_modified)

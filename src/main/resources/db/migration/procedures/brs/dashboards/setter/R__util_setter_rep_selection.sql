@@ -8,6 +8,8 @@ DECLARE
     v_org_level_id         bigint;
     v_current_position_ids bigint[];
     v_org_ids bigint[];
+    v_office_orgs          bigint[];
+    v_setter_orgs          bigint[];
 BEGIN
   select array_agg(position_id)
   into v_current_position_ids
@@ -90,6 +92,19 @@ BEGIN
     else
     -- org_level_id of 7 = Office
     case when (v_org_level_id < 7) OR (5 = any (v_current_position_ids)) then ---- Corporate and Regional
+    select array_agg(up.org_id)
+    into v_office_orgs
+    from flow.user_position up
+    where user_id = p_platform_user_id
+      and org_id = any (v_org_ids)
+      and position_id = 5;
+
+    select array_agg(up.org_id)
+    into v_setter_orgs
+    from flow.user_position up
+    where user_id = p_platform_user_id
+      and org_id = any (v_org_ids)
+      and position_id = 4;
         RETURN QUERY
             select array_to_json(array_agg(row_to_json(sub_rows)))
             from (
@@ -110,9 +125,35 @@ BEGIN
                                                                                                                          where code = 'SETTER_POSITION_IDS')
                                                                             and up.archived is not true and up.id = upv.user_position_id
                                      inner join flow.org o on o.id = up.org_id
-                              where upv.org_id is not null and upv.org_id = any(v_org_ids)
+                              where upv.org_id is not null and
+                                    case when v_org_level_id = 7 and (5 = any (v_current_position_ids)) then
+                                       upv.org_id = any (v_office_orgs)
+                                    else upv.org_id = any (v_org_ids)end
                                 and upv.archived is not true
                                 and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
+                          ) as users
+                     union
+                     select distinct user_id, name, active, user_position_id
+                     from (
+                            select upv.user_id                                      user_id,
+                                   user_position_id,
+                                   concat(upv.first_name, ' ', upv.last_name, ' - ', o.org_name) as name,
+                                   (case
+                                      when upv.start_date is not null and (upv.end_date is null or
+                                                                           upv.end_date >= (now() at time zone 'US/Mountain')::date)
+                                        then true
+                                      else false
+                                     end)                               as active
+                            from flow.user_positions_vw upv
+                                   inner join flow.user_position up on upv.user_id = up.user_id and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                                                                                                                       from flow.company_configuration_value
+                                                                                                                       where code = 'SETTER_POSITION_IDS')
+                              and up.archived is not true and up.id = upv.user_position_id
+                                   inner join flow.org o on o.id = up.org_id
+                            where upv.org_id is not null and upv.org_id = any(v_setter_orgs)
+                              and upv.archived is not true
+                              and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
+                              and upv.user_id = p_platform_user_id
                           ) as users
                      order by active desc, name
                  ) as sub_rows;

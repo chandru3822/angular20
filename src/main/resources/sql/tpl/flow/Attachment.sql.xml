@@ -1,29 +1,37 @@
 <sql>
   <attachment.findById><![CDATA[
-    SELECT id,
-       attachment_type_id,
-       company_id,
-       filename,
-       content_type,
-       s3_key,
-       size,
-       uuid,
-       archived,
-       substring(filename, '\.([^\.]+)$') as file_extension,
-       date_created,
-       date_modified,
-       created_by_id,
-       modified_by_id,
-       show
-    FROM flow.attachment
-    WHERE id = :id
-      and archived is not true
+    SELECT a.id,
+           a.attachment_type_id,
+           a.company_id,
+           a.filename,
+           a.content_type,
+           a.s3_key,
+           a.display_name,
+           a.size,
+           a.uuid,
+           a.archived,
+           substring(filename, '\.([^\.]+)$') as file_extension,
+           a.date_created,
+           a.date_modified,
+           a.created_by_id,
+           a.modified_by_id,
+           a.show,
+           concat(u.first_name, ' ', u.last_name) as uploaded_by,
+           att.attachment_type,
+           orgn.*
+    FROM flow.attachment a
+      inner join flow."user" u on u.id = a.created_by_id
+      inner join flow.attachment_type att on a.attachment_type_id = att.id
+      left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
+    WHERE a.id = :id
+      and a.archived is not true
   ]]></attachment.findById>
 
   <attachment.getAttachmentForUuidCheck><![CDATA[
     SELECT
       a.id,
       a.content_type,
+      a.display_name,
       a.filename,
       a.s3_key,
       a.uuid
@@ -40,12 +48,15 @@
       a.filename,
       a.uuid,
       a.s3_key,
+      a.display_name,
       a.size,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.archived,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified
     FROM flow.attachment a
+    inner join flow."user" u on u.id = a.created_by_id
     WHERE a.id = :id
       AND a.archived IS NOT TRUE
   ]]></attachment.getAttachmentById>
@@ -58,15 +69,18 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.display_name,
       a.uuid,
       a.show,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
       a.archived
     FROM flow.attachment a
       INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+      inner join flow."user" u on u.id = a.created_by_id
     WHERE a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
       order by a.date_created desc
@@ -79,14 +93,17 @@
       a.content_type,
       a.filename,
       a.s3_key,
+      a.display_name,
       a.size,
       a.uuid,
       a.show,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
       a.archived
     FROM flow.attachment a
+    inner join flow."user" u on u.id = a.created_by_id
     WHERE a.uuid = :uuid
   ]]></attachment.getAttachmentByUUID>
 
@@ -98,13 +115,16 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.display_name,
       a.uuid,
       a.show,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
       a.archived
     FROM flow.attachment a
+    inner join flow."user" u on u.id = a.created_by_id
     WHERE a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
       order by a.date_created desc
@@ -120,12 +140,15 @@
       a.s3_key,
       a.size,
       a.uuid,
+      a.display_name,
       a.archived,
       src.source_id,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified
     FROM flow.attachment a
       INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+      inner join flow."user" u on u.id = a.created_by_id
     WHERE src.source_id = :sourceId
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
@@ -139,12 +162,16 @@
            a.filename,
            a.uuid,
            a.s3_key,
+           a.display_name,
            a.size,
+           concat(u.first_name, ' ', u.last_name) as uploaded_by,
            substring(a.filename, '\.([^\.]+)$') as file_extension,
            src.source_id,
-           a.archived
+           a.archived,
+           false as linked
     FROM flow.attachment a
              LEFT JOIN flow.attachment_source src ON src.attachment_id = a.id
+             inner join flow."user" u on u.id = a.created_by_id
     WHERE case when :sourceId::bigint IS NOT NULL then src.source_id = :sourceId else 1 = 1 end
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
@@ -159,21 +186,24 @@
       a.s3_key,
       a.size,
       a.uuid,
+      a.display_name,
       a.archived,
       substring(a.filename, '\.([^\.]+)$') as file_extension,
       src.source_id,
       a.date_created,
+      concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified
     FROM flow.attachment a
       INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+      inner join flow."user" u on u.id = a.created_by_id
     WHERE src.source_id = any( array [ :sourceIds ]::bigint[] )
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived is not true
   ]]></attachment.getAttachmentBySourceAndTypeForUserList>
 
   <attachment.create><![CDATA[
-    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid)
-    VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4())
+    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid, display_name)
+    VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4(), :displayName)
   ]]></attachment.create>
 
   <attachment.addToJoinTable><![CDATA[
@@ -217,12 +247,61 @@
     where at.id = :id
   ]]></attachment.getAttachmentType>
 
+  <attachment.getAttachmentSource><![CDATA[
+    select project_id as id_to_use,
+           'project' as object_type_text
+    from flow.project_attachment
+    where attachment_id = :attachmentId
+    and linked is false
+    and archived is false
+    union
+    select project_process_step_id as id_to_use,
+           'process_step' as object_type_text
+    from flow.project_process_step_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select project_process_step_event_id as id_to_use,
+           'event' as object_type_text
+    from flow.project_process_step_event_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select contact_id as id_to_use,
+           'contact' as object_type_text
+    from flow.contact_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select user_id as id_to_use,
+           'user' as object_type_text
+    from flow.user_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+    union
+    select org_id as id_to_use,
+           'org' as object_type_text
+    from flow.org_attachment
+    where attachment_id = :attachmentId
+      and linked is false
+      and archived is false
+  ]]></attachment.getAttachmentSource>
+
   <attachment.update><![CDATA[
     update flow.attachment
-    set filename = :filename,
+    set display_name = :displayName,
         date_modified = now(),
         modified_by_id = :userId
     where id = :id
   ]]></attachment.update>
+
+  <attachment.getComparisonFields><![CDATA[
+    select *
+    from flow.get_attachment_compare_fields(:attachmentId::bigint);
+  ]]></attachment.getComparisonFields>
 
 </sql>

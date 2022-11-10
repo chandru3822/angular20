@@ -226,6 +226,10 @@ public class DataViewService {
     return results;
   }
 
+  public void runViewMaintenance() {
+    sqlCache.query("dataView.runMaintenance", Collections.emptyMap(), String.class);
+  }
+
   public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

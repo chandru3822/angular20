@@ -206,6 +206,23 @@
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep>
 
+  <customFieldGroupAssignment.getAvailableNativeFieldsForAttachmentType><![CDATA[
+    select cf.id, cf.field_name
+    from flow.custom_field cf
+    where cf.archived is not true
+      and cf.company_id = :companyId
+    except
+    select cf.id,cf.field_name
+    from flow.custom_field_group_assignment cfga
+           inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where cfg.attachment_type_id = :attachmentTypeId
+      and cfga.archived is not true
+      and cfg.archived is not true
+      and cf.archived is not true
+    order by field_name
+  ]]></customFieldGroupAssignment.getAvailableNativeFieldsForAttachmentType>
+
   <customFieldGroupAssignment.getAvailableNativeFieldsForEvent><![CDATA[
     select cf.id, cf.field_name
     from flow.custom_field cf
@@ -222,6 +239,24 @@
       and cf.archived is not true
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableNativeFieldsForEvent>
+
+  <customFieldGroupAssignment.getDefaultField><![CDATA[
+    SELECT cfga.id,
+           cfga.id as custom_field_group_assignment_id,
+           cfga.custom_field_group_id as "customFieldGroupId",
+           cfga.custom_field_id as "customFieldId",
+           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+           cfga.field_order as "fieldOrder",
+           cfga.archived,
+           df.field_name as "fieldName",
+           ot.object_type as "objectType"
+    FROM flow.custom_field_group_assignment cfga
+        inner join flow.default_field df on cfga.default_field_id = df.id
+         inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+         inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+         inner join flow.object_type ot on ot.id = cot.object_type_id
+    WHERE cfga.id = :cfgaId
+  ]]></customFieldGroupAssignment.getDefaultField>
 
   <customFieldGroupAssignment.getCustomField><![CDATA[
     SELECT cfga.id,
@@ -266,8 +301,8 @@
   ]]></customFieldGroupAssignment.getCustomField>
 
   <customFieldGroupAssignment.addFieldToGroup><![CDATA[
-    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, schedule_field_type_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :scheduleFieldTypeId, :createdById, now(), :createdById, now())
+    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified)
+    values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now())
   ]]></customFieldGroupAssignment.addFieldToGroup>
 
   <customFieldGroupAssignment.moveFieldToOtherGroup><![CDATA[

@@ -136,7 +136,7 @@
                   <confirm-delete-dialog
                       label="this position: "
                       :item-to-delete="item.position"
-                      @confirm-delete="deletePositionFromPool(item)"
+                      @confirm="deletePositionFromPool(item)"
                   ></confirm-delete-dialog>
                 </td>
               </tr>
@@ -415,11 +415,13 @@
       async uploadFile (files, attachmentTypeId, sourceId, sizeLimit) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
+          let file = files[0]
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: files[0],
+            file: file,
             sizeLimit,
             attachmentTypeId,
             sourceId,
+            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
             callback: async (img, error) => {
               if(error?.error) {
                 this.snackbar = getSnackbar('ERROR', error.errorMsg)

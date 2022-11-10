@@ -55,6 +55,14 @@ $default-text: rgba(0,0,0,0.87);
   z-index: 1;
 }
 
+.fixed-toolbar-bottom {
+  position: sticky;
+  position: -webkit-sticky; /* for Safari */
+  bottom: 0;
+  z-index: 1;
+}
+
+
 //assign this to the content-class of a tooltip to use it
 .full-opacity-tooltip {
   opacity: 1 !important;
@@ -217,6 +225,9 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 }
 .vertical-top {
   vertical-align: top;
+}
+.vertical-middle {
+  vertical-align: middle;
 }
 .flex-display {
   display: flex !important;
@@ -441,6 +452,7 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .albatross-header-1 {
   font-weight: bold;
   font-size: 1.25rem;
+  line-height: 1.4;
 }
 .albatross-header-2,
 .cfg-name-toolbar .v-toolbar__title.albatross-header-2,
@@ -451,6 +463,7 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 }
 .albatross-header-3,
 .cfg-name-toolbar .v-toolbar__title.albatross-header-3,
+.cfg-detail-header .v-toolbar_title.albatross-header-3,
 .v-toolbar__title.albatross-header-3
 .v-dialog > .v-card > .v-card__title.albatross-header-3
 {
@@ -473,22 +486,28 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 {
   font-weight: normal;
   font-size: 1rem;
+}
 
-}.albatross-header-5,
- .albatross-header-5 .v-label,
- div.v-dialog__content.v-dialog__content--active > div > div > div.albatross-header-5,
- {
+.albatross-header-5,
+.albatross-header-5 .v-label,
+div.v-dialog__content.v-dialog__content--active > div > div > div.albatross-header-5,
+{
   font-weight: bold;
   font-size: 0.875rem;
 }
 
- .albatross-subtitle-1,
- .albatross-subtitle-1 > .v-toolbar__content > .v-toolbar__title
- {
-   font-weight: bold;
-   font-size: 1rem;
-   line-height: 1.6;
- }
+.subtitle-1,
+.theme--light.v-card > .v-card__text, .theme--light.v-card > .v-card__subtitle.subtitle-1{
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
+.subtitle-2,
+div.coversheet-left-pane.theme--light.v-card > .v-card__text, .theme--light.v-card > .v-card__subtitle div.subtitle-2{
+  font-weight: bold !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+}
 
 //eventually this should be our default body font size/weight, rendering this class unnecessary
 .albatross-body-1,
@@ -516,5 +535,10 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   font-weight: normal;
   font-size: 0.75rem;
   line-height: 1.6;
+}
+
+//coversheet modal needs to scroll independently so need to turn of the default modal scroller
+.coversheet-modal-content {
+  overflow: hidden !important;
 }
 

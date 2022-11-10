@@ -134,7 +134,7 @@
                 <span v-else>--</span>
               </td>
               <td class="text-right">
-                <v-btn v-if="userCanDelete" small text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
+                <v-btn v-if="userCanEdit" small text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -195,6 +195,7 @@ export default {
       scheduleToUsers: [],
       is7oaksAdmin: this.$store.getters.isFullAdmin || this.$store.state.user.details.id === 2350555,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
+      //per carlin 10-31-22 - users with edit should be able to delete users from a RR
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
       zoneId: this.$route.params.id,

@@ -410,7 +410,7 @@
                   ></v-switch>
                   <!-- single text field for non list custom values -->
                   <v-text-field
-                    v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
+                    v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId && !item.companySystemListId "
                     v-model="item.requirementValue"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
@@ -419,13 +419,13 @@
                   </v-text-field>
                   <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
-                    v-else-if="item.customValue && item.customField && ![7,8,9,10,11].includes(item.processStepRequirementTypeId)
-                            && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null || item.customField.companySystemListId !== null) && !item.customField.allowMultiple)"
+                    v-else-if="!item.customField.companySystemListId && item.customValue && item.customField && ![7,8,9,10,11].includes(item.processStepRequirementTypeId)
+                            && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null) && !item.customField.allowMultiple)"
                     v-model="item.listOfValueId"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
                     :items="item.availableListOfValues"
-                    label="Available Values"
+                    label="Available Values Yo"
                     item-text="name"
                     item-value="id"
                   ></v-select>
@@ -443,7 +443,7 @@
                   >
                   </v-autocomplete>
                   <v-select
-                    v-else-if="item.customValue && item.systemListId"
+                    v-else-if="(item.customValue && item.systemListId) || item.companySystemListId"
                     v-model="item.systemListOptionId"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"

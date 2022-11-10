@@ -69,6 +69,7 @@ where pse.process_step_id = :processStepId
                        ) statuses), '[]') AS "companyEventStatusTypes"
       from flow.event e
       where e.archived is not true
+      and e.company_id = :companyId
       and not exists (
           select pse.event_id
           from flow.process_step_event pse
@@ -267,6 +268,7 @@ where pse.process_step_id = :processStepId
                                                                            where dfp.db_function_id = cf.db_function_id
                                                                              and dfp.parameter_type_id = 2
                                                                              and apdv.archived is not true
+                                                                             and dfp.archived is not true
                                                                            order by dfp.display_order
                                                                          ) params), '[]') AS "actionParamDynamicValues"
                                                   FROM flow.process_step_event_action_company_function psacf
@@ -753,7 +755,8 @@ where psea.id = :id
                         where
                             dfp.db_function_id = cf.db_function_id and
                             dfp.parameter_type_id = 2 and
-                          apdv.archived is not true
+                          apdv.archived is not true and
+                          dfp.archived is not true
                           order by dfp.display_order
                       ) params), '[]') AS "actionParamDynamicValues",
       coalesce((

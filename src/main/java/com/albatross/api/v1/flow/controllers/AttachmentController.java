@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.services.AttachmentService;
+import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,8 @@ import java.util.Map;
 public class AttachmentController {
 
   private final AttachmentService attachmentService;
+  private final CustomFieldValueService customFieldValueService;
+
 
   @GetMapping(value = "")
   public List<Attachment> getAttachments(
@@ -42,10 +45,11 @@ public class AttachmentController {
   public Attachment uploadAttachment(
       @RequestParam(required = false) Long sourceId,
       @RequestParam Long attachmentTypeId,
+      @RequestParam String displayName,
       @RequestParam(required = false, defaultValue = "true") Boolean deleteFirst,
       @RequestParam("file") MultipartFile file)
       throws IOException {
-    return attachmentService.create(file, sourceId, attachmentTypeId, deleteFirst);
+    return attachmentService.create(file, sourceId, attachmentTypeId, displayName, deleteFirst);
   }
 
   @PutMapping(value = "/{id}")

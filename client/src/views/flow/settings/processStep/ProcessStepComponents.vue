@@ -167,57 +167,9 @@
                       <v-icon>drag_handle</v-icon>
                     </v-list-item-action>
                     <v-list-item-content>
-                      {{ a.link }} | {{ a.url }}
+                      {{ a.link }}
                     </v-list-item-content>
                     <v-btn v-if="userCanEdit" small text color="primary" @click="deleteLink=a"><v-icon>delete</v-icon></v-btn>
-                  </v-list-item>
-                </v-list>
-              </draggable>
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row v-if="processStepId">
-          <v-col cols="12" class="pa-0 mt-4">
-            <v-toolbar flat class="attach-header-bar">
-              <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <v-btn text color="primary" @click="getAttachmentTypesForProcessStep" v-if="userCanAdd">
-                  <v-icon v-if="!addNewType">add</v-icon>
-                  {{ addNewType ? 'Cancel' : 'Add Type' }}
-                </v-btn>
-                <v-btn text color="primary" @click="expandAttachmentTypes = !expandAttachmentTypes">
-                  <v-icon v-if="!expandAttachmentTypes">mdi-chevron-down</v-icon>
-                  <v-icon v-else>mdi-chevron-up</v-icon>
-                </v-btn>
-              </v-toolbar-items>
-            </v-toolbar>
-            <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewType">
-              <v-autocomplete v-model="newType.attachmentTypeId"
-                              :items="availableAttachmentTypes"
-                              label="Select Attachment Type"
-                              item-text="attachmentType"
-                              item-value="id"
-                              @input="assignNewType"
-                              attach
-              ></v-autocomplete>
-            </v-card>
-            <v-card flat
-                    v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0 && expandAttachmentTypes">
-              <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
-                         :disabled="!userCanEdit"
-                         id="attachment-draggable"
-                         @change="saveAttachmentTypeOrder(processStep.attachmentTypes)"
-                         @start="drag=true" @end="drag=false">
-                <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')" :key="index">
-                  <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
-                    <v-list-item-action>
-                      <v-icon>drag_handle</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      {{ a.attachmentType }}
-                    </v-list-item-content>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="deleteAttachment=a"><v-icon>delete</v-icon></v-btn>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -337,7 +289,6 @@ export default {
       snackbar: {},
       expandPsst: true,
       expandLinks: true,
-      expandAttachmentTypes: true,
       expanded: [],
       deleteError: false,
       cannotDeleteReasons: {},
@@ -357,7 +308,6 @@ export default {
       positionsLoading: false,
       readOnlyPositionsChanged: false,
       companyStatusesLoading: false,
-      availableAttachmentTypes: [],
       availableCompanyProcessStepStatusTypes: [],
       addNewProcessStepStatusType: false,
       newProcessStepStatusTypeId: null,
@@ -567,57 +517,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-
-    async getAttachmentTypesForProcessStep() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = !this.addNewType
-        if (this.addNewType) {
-          const {data} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
-          this.availableAttachmentTypes = data
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async assignNewType() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newType.processStepId = this.$route.params.id
-        const {data, status} = await postRequest(`/attachmentType/processStepType`, this.newType)
-        this.processStep.attachmentTypes.push(data)
-        // reset fields
-        this.addNewType = false
-        this.newType = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteTypeFromStep(id) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = false
-        const {status} = await deleteRequest(`/attachmentType/processStepType/${id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async getLinksForProcessStep() {
       try {
         this.addNewLink = !this.addNewLink
@@ -673,33 +572,6 @@ export default {
         return !u.archived
       }), [f => f.processStepStatusType])
     },
-    async saveAttachmentTypeOrder(attachmentTypes) {
-      try {
-        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-        // pull those needing to be saved out of list
-        let typesToSave = []
-        attachmentTypes.forEach((f, idx) => {
-          let order = idx + 1
-          if (f.displayOrder !== order) {
-            f.displayOrder = order
-            typesToSave.push(f)
-          }
-        })
-        // save them here
-        if (typesToSave.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {status} = await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
-          handleHidingGlobalLoader(this, status)
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async saveLinkOrder(links) {
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
@@ -752,13 +624,7 @@ export default {
   border-radius: 5px;
 }
 
-#attachment-draggable .v-list, #link-draggable .v-list {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
 .link-header-bar,
-.attach-header-bar,
 .access-header-bar {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;

@@ -797,17 +797,43 @@
       a.attachment_type_id,
       a.content_type,
       a.s3_key,
+      a.display_name,
       a.archived,
       substring(filename, '\.([^\.]+)$') as file_extension,
       ua.user_id,
-      concat(u.first_name, ' ', u.last_name) AS uploadedBy
+      ua.linked,
+      concat(u.first_name, ' ', u.last_name) AS uploaded_by,
+      att.attachment_type,
+      orgn.*
     from flow.user_attachment ua
            inner join flow.attachment a on a.id = ua.attachment_id
            inner join flow."user" u ON a.created_by_id = u.id
+           inner join flow.attachment_type att on a.attachment_type_id = att.id
+           inner join flow.user_attachment_type uat on uat.attachment_type_id = att.id and uat.archived is false
+           left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     where ua.user_id = :userId
+      and a.company_id = :companyId
+      and uat.archived is false
+      and case when :linked is true then ua.linked is true and uat.linkable is true else ua.linked is false end
+      and ua.archived is not true
       and a.archived is not true
     order by ua.date_created desc
   ]]></user.getUserAttachments>
+
+  <user.linkAttachment><![CDATA[
+    insert into flow.user_attachment(attachment_id, user_id, created_by_id, linked)
+    values(:attachmentId, :userId, :currentUserId, true)
+  ]]></user.linkAttachment>
+
+  <user.unlinkAttachment><![CDATA[
+    update flow.user_attachment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where attachment_id = :attachmentId
+    and user_id = :userId
+    and linked is true
+  ]]></user.unlinkAttachment>
 
   <user.addAttachment><![CDATA[
   insert into flow.user_attachment(attachment_id, user_id, created_by_id, date_created, modified_by_id, date_modified)

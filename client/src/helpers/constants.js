@@ -18,9 +18,12 @@ constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
 // constants.MAX_FILE_SIZE = 209715200 //200 mb
 constants.MAX_FILE_SIZE = 1048576000 //1 gb
-constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
+constants.WHITELISTED_FILE_EXTENSIONS = ['.png','.jpg','.jpeg','.gif','.tiff','.psd','.raw','.doc','.docx','.pdf','.xls','.xlsx','.xlsm','.dxf','.csv','.txt','.dwg','.xlsb','.heif','.jfif']
+//IMAGE_FILE_EXTENSIONS is used/formatted specifically for the attachment coversheet checks. make another one if you need one with . first
+constants.IMAGE_FILE_EXTENSIONS = ['png','jpg','jpeg','gif','tiff','psd','raw','heif']
+constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt, .xlsm, .dxf, .dwg, .xlsb, .heif, .png, .jpg, .jpeg' //png and jpg arent working sometimes for some users so i am trying to figure out why
 constants.STANDARD_IMAGES_ONLY = 'image/*'
-constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
+constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt, .xlsm, .xlsb, .dxf, .dwg, .xlsb, .heif, .jfif'
 constants.APP_FILE_TYPES = '.apk, .plist, .ipa'
 constants.MAX_FILE_UPLOADS = 10
 //TODO: rules likely need to be adjusted

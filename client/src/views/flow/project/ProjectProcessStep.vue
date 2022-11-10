@@ -4,7 +4,8 @@
       No Matching Process Step Found
     </div>
   </v-main>
-  <v-main ref="ppsFieldsContainer" v-else-if="!processStepLoading" class="py-0 px-6 relative height-one-hunned overflow-y-auto">
+  <v-main ref="ppsFieldsContainer" v-else-if="!processStepLoading"
+          class="py-0 px-6 relative height-one-hunned overflow-y-auto">
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
@@ -47,9 +48,10 @@
           <v-toolbar-title class="process-step-name albatross-header-2">
             <div>{{ processStep.processStepName }}</div>
             <div v-if="processStep.processStepStatusTypeId"
-                  :class="getStatusClass(processStep.processStepStatusTypeId)">({{
+                 :class="getStatusClass(processStep.processStepStatusTypeId)">({{
                 processStep.processStepStatusType
-              }})</div>
+              }})
+            </div>
             <!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
             <!--                    size="20" color="green">mdi-circle-slice-8-->
             <!--            </v-icon>-->
@@ -101,12 +103,14 @@
             <div v-if="!displayChangeOwner">
               <div v-if="processStep.owner && processStep.owner.userId" class="d-flex flex-row align-center">
                 <div class="d-flex flex-column">
-                <div class="owner-info">
-                  {{ processStep.owner.fullName }}<br/>
-                  <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
+                  <div class="owner-info">
+                    {{ processStep.owner.fullName }}<br/>
+                    <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
+                  </div>
                 </div>
-                </div>
-                <v-btn v-if="userCanEdit" small icon color="primary" class="ml-2" @click="removeOwner"><v-icon>mdi-close</v-icon></v-btn>
+                <v-btn v-if="userCanEdit" small icon color="primary" class="ml-2" @click="removeOwner">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
               </div>
             </div>
             <div v-if="displayChangeOwner">
@@ -126,7 +130,8 @@
               </v-autocomplete>
             </div>
             <div>
-              <v-btn color="primary" text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId" class="change-owner-button"
+              <v-btn color="primary" text small v-if="userCanEdit && !processStep.owner || !processStep.owner.userId"
+                     class="change-owner-button"
                      :class="{'mt-2': displayChangeOwner}"
                      @click="displayChangeOwner = !displayChangeOwner">
                 <span v-if="displayChangeOwner">cancel</span>
@@ -136,14 +141,15 @@
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
-      <v-col cols="12" class="text-left py-0" v-if="processStep && processStep.banners && processStep.banners.length > 0">
+      <v-col cols="12" class="text-left py-0"
+             v-if="processStep && processStep.banners && processStep.banners.length > 0">
         <div>
           <v-card flat class="square-card" :class="{'mt-2': idx !== 0}"
                   v-for="(b, idx) in filterBy(processStep.banners, true, 'canPerform')">
             <v-card-text class="flex-display pa-0" :style="{'color': b.color}">
               <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
               <div :style="{'background-color': b.bgColor + 20}" class="one-hunned">
-                <pre class="app-pre-wrapper px-3 py-2">{{b.content}}</pre>
+                <pre class="app-pre-wrapper px-3 py-2">{{ b.content }}</pre>
               </div>
             </v-card-text>
           </v-card>
@@ -155,7 +161,7 @@
       )">
         <div class="pps-subheader albatross-header-3">
           All Events
-<!--          only allow events added to active process steps -->
+          <!--          only allow events added to active process steps -->
           <v-autocomplete
             v-model="eventToAdd"
             v-if="processStep.processStepStatusTypeId === 1 && userCanAddEvents && processStepEvents && processStepEvents.length > 0"
@@ -177,7 +183,8 @@
         </div>
       </v-col>
       <v-col cols="12" class="text-left pt-0">
-        <div class="pps-subheader albatross-header-3" v-if="processStep && processStep.actions && processStep.actions.length > 0">
+        <div class="pps-subheader albatross-header-3"
+             v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
           <v-btn
             class="back-btn show-unperformable-actions-btn"
@@ -214,7 +221,35 @@
         </v-row>
       </v-col>
       <v-col cols="12" style="height: 0; padding: 0 !important;">
-      <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
+        <!-- this is here because i couldn't figure out how to make the toolbar sticky when in a col, and how to make the toolbar on a new row at all screen widths if not in a col-->
+      </v-col>
+      <v-col cols="12" class="pa-0" v-if="processStep.hasAttachmentTypesAssigned">
+        <div>
+          <v-toolbar flat color="secondary" class="cfg-detail-header px-3">
+            <v-toolbar-title class="albatross-header-3">
+              Process Step Documents
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
+                <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
+                <v-icon v-else>mdi-chevron-down</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-col cols="12" class="text-left pt-0 px-0 pb-4" v-if="!collapsedAttachments">
+            <AttachmentsFolderList :object-type-id="4"
+                                   :allow-upload="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Uploaded Documents"/>
+            <AttachmentsFolderList :object-type-id="4"
+                                   :load-linked="true"
+                                   :small-title="true"
+                                   is-card
+                                   title="Linked Documents"/>
+          </v-col>
+        </div>
       </v-col>
       <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
         <v-toolbar-title class="albatross-header-3">
@@ -226,16 +261,6 @@
             <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
-          <v-btn v-if="!getReadOnly() && projectProcessStepId && attachmentTypes && attachmentTypes.length > 0" text color="primary" small @click="showUploadModal = true" class="px-0">
-            <v-icon class="px-0">mdi-upload</v-icon>
-          </v-btn>
-          <v-dialog :width="uploadModalWidth" v-model="showUploadModal">
-            <UploadDocumentModal @cancel="showUploadModal = false"
-                                 :width="uploadModalWidth"
-                                 :show-success-snackbar="true"
-                                 :pps-id="parseInt(projectProcessStepId)"
-                                 :attachment-types="attachmentTypes"></UploadDocumentModal>
-          </v-dialog>
           <div>
             <v-btn
               color="primary"
@@ -334,15 +359,14 @@ import EventButton from './EventButton'
 import {AppMutations} from '@/stores/AppStore'
 import {ProjectMutations} from '@/stores/ProjectStore'
 import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
-import Attachments from '@/views/flow/components/Attachments'
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly, getEventCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
-import UploadDocumentModal from '@/views/flow/components/UploadDocumentModal'
 import Vue2Filters from 'vue2-filters'
+import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -356,12 +380,11 @@ export default {
     ActionButton,
     EventButton,
     Links,
-    Attachments,
     CustomValueInput,
     DatetimePickerInput,
     ProjectProcessStepStatus,
     SpinnerInline,
-    UploadDocumentModal
+    AttachmentsFolderList
   },
   data() {
     return {
@@ -371,9 +394,6 @@ export default {
       projectMismatch: false,
       processStepReadOnly: false,
       getStatusClass,
-      showUploadModal: false,
-      uploadModalWidth: 600,
-      attachmentTypes: [],
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
@@ -386,7 +406,8 @@ export default {
       schedulerLoading: true,
       timezone: this.$store.state.user.details.timezone.value,
       projectId: parseInt(this.$route.params.projectId),
-      projectProcessStepId: this.$route.params.processStepId,
+      projectProcessStepId: parseInt(this.$route.params.processStepId),
+      collapsedAttachments: false,
       processStepId: null,
       processStep: {},
       customFieldGroups: [],
@@ -483,7 +504,7 @@ export default {
     async loadAllPageDetails() {
       this.processStepLoading = true
       //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getCustomFieldGroups(), this.getProcessStepAttachmentTypes(), this.getProcessStep(true)]
+      const requests = [this.getCustomFieldGroups(), this.getProcessStep(true)]
       await Promise.all(requests).then(async (statusVals) => {
         let success = true
         statusVals.forEach(status => {
@@ -512,7 +533,7 @@ export default {
     goToPath(path, query) {
       //reset these values so the next screen works if also a pps
       this.unsavedFieldsModal = false
-      this.$router.push({ path, query })
+      this.$router.push({path, query})
     },
     async getAvailableStatuses() {
       if (this.processStep?.processStepId) {
@@ -532,7 +553,7 @@ export default {
         this.projectMismatch = false
         this.processStepLoading = true
         const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
-        if(data && data.projectId && data.projectId !== this.projectId) {
+        if (data && data.projectId && data.projectId !== this.projectId) {
           this.projectMismatch = true
           this.processStepLoading = false
           this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
@@ -543,7 +564,7 @@ export default {
           this.processStepId = this.processStep.processStepId
           // this.contactId = this.processStep.contactId
           this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
-          if(reloadAll) {
+          if (reloadAll) {
             //dont reload if only doing simple refresh
             this.getAvailableStatuses()
             this.getAvailableOwners()
@@ -562,7 +583,10 @@ export default {
     },
     async getCustomFieldGroups() {
       try {
-        const {data, status} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
+        const {
+          data,
+          status
+        } = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, null, null, [])
         this.customFieldGroups = data
         return status
       } catch (e) {
@@ -686,7 +710,7 @@ export default {
     getReadOnly: function (field) {
       // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
       let fieldReadOnly = false
-      if(null != field) {
+      if (null != field) {
         fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
       }
       return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
@@ -711,7 +735,7 @@ export default {
       this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       //if root status is not active then go back to project screen
-      if(data?.processStepStatusTypeId !== 1) {
+      if (data?.processStepStatusTypeId !== 1) {
         //just in case something wasn't saved before running this action then still allow the nav
         this.navigationOverride = true
         this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
@@ -766,19 +790,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    getProcessStepAttachmentTypes: async function () {
-      //this gets the attachment types assigned to the process step so we know whether to show the upload button
-      try {
-        const {data, status} = await getRequest(`/attachmentType/project/${this.projectId}/processStepTypes/${this.projectProcessStepId}`, null, [])
-        this.attachmentTypes = data
-        return status
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
 
   }
 }
@@ -802,10 +813,6 @@ export default {
 .cfg-detail-header .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
-}
-
-.cfg-detail-header .v-toolbar__title {
-  font-size: 16px;
 }
 
 .owner-toolbar-items {

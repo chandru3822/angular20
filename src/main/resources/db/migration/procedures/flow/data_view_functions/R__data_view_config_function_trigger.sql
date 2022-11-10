@@ -84,7 +84,7 @@ CREATE TRIGGER contact_details_trg
   --  when (new.temp_geo_attempted is false)
 EXECUTE PROCEDURE flow.contact_details();
 
-drop function if exists flow.update_contact_custom_field_value_details();
+drop function if exists flow.update_contact_custom_field_value_details() cascade;
 CREATE OR REPLACE FUNCTION flow.update_contact_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
@@ -188,7 +188,7 @@ CREATE TRIGGER update_contact_custom_field_value_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_contact_custom_field_value_details();
 
-drop function if exists flow.project_details();
+drop function if exists flow.project_details() cascade;
 CREATE OR REPLACE FUNCTION flow.project_details()
   RETURNS TRIGGER AS
 $body$
@@ -310,7 +310,7 @@ CREATE TRIGGER project_project_details_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.project_details();
 
-drop function if exists flow.update_project_custom_field_value_details();
+drop function if exists flow.update_project_custom_field_value_details() cascade;
 CREATE OR REPLACE FUNCTION flow.update_project_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
@@ -412,7 +412,7 @@ CREATE TRIGGER update_project_custom_field_value_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_custom_field_value_details();
 
-drop function if exists flow.update_project_process_step_details();
+drop function if exists flow.update_project_process_step_details() cascade;
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_details()
   RETURNS TRIGGER AS
 $body$
@@ -522,7 +522,7 @@ CREATE TRIGGER update_project_process_step_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_process_step_details();
 
-drop function if exists flow.update_project_process_step_custom_field_value_details();
+drop function if exists flow.update_project_process_step_custom_field_value_details() cascade;
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
@@ -601,7 +601,16 @@ BEGIN
                                                       x.data_type_id);
 
             select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                         v_value, null::text, null::text,
+                                                         case
+                                                           when x.data_type_id = 1 then new.date_value::text
+                                                           when x.data_type_id = 2 then new.timestamp_value::text
+                                                           when x.data_type_id = 3 then new.boolean_value::text
+                                                           when x.data_type_id = 4 then new.numeric_value::text
+                                                           when x.data_type_id in (5, 13) then new.text_value::text
+                                                           when x.data_type_id = 6 then new.int_value::text
+                                                           when x.data_type_id = 7 then new.int_array_value::text
+                                                           when x.data_type_id in (8, 9) then new.int_value::text end,
+                                    null::text, null::text,
                                                          x.update_first_value_only,
                                                          x.update_first_value_only_id,
                                                          true, true, v_project_ids)
@@ -629,7 +638,7 @@ CREATE TRIGGER project_process_step_custom_field_value_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_process_step_custom_field_value_details();
 
-drop function if exists flow.update_project_process_step_event_details();
+drop function if exists flow.update_project_process_step_event_details() cascade;
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_event_details()
   RETURNS TRIGGER AS
 $body$
@@ -788,7 +797,7 @@ CREATE TRIGGER update_project_process_step_event_trg
 EXECUTE PROCEDURE flow.update_project_process_step_event_details();
 
 
-drop function if exists flow.update_project_process_step_event_custom_field_value_details();
+drop function if exists flow.update_project_process_step_event_custom_field_value_details() cascade;
 CREATE OR REPLACE FUNCTION flow.update_project_process_step_event_custom_field_value_details()
   RETURNS TRIGGER AS
 $body$
@@ -875,7 +884,16 @@ BEGIN
                                                     true,
                                                     x.data_type_id);
 
-          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+          select flow.prepare_update_data_view_details(new.id, case
+                                                                 when x.data_type_id = 1 then new.date_value::text
+                                                                 when x.data_type_id = 2 then new.timestamp_value::text
+                                                                 when x.data_type_id = 3 then new.boolean_value::text
+                                                                 when x.data_type_id = 4 then new.numeric_value::text
+                                                                 when x.data_type_id in (5,13) then new.text_value::text
+                                                                 when x.data_type_id = 6 then new.int_value::text
+                                                                 when x.data_type_id = 7 then new.int_array_value::text
+                                                                 when x.data_type_id in (8, 9) then new.int_value::text end,
+                                                  x.field_to_update,
                                                        v_value, null::text, null::text,
                                                        x.update_first_value_only,
                                                        x.update_first_value_only_id,
@@ -910,7 +928,7 @@ CREATE TRIGGER update_project_process_step_event_custom_field_value_trg
 EXECUTE PROCEDURE flow.update_project_process_step_event_custom_field_value_details();
 
 
-drop function if exists flow.reset_data_view_columns_from_process_step();
+drop function if exists flow.reset_data_view_columns_from_process_step() cascade;
 CREATE OR REPLACE FUNCTION flow.reset_data_view_columns_from_process_step()
   RETURNS TRIGGER AS
 $body$
@@ -1199,7 +1217,7 @@ CREATE TRIGGER reset_data_view_columns_from_process_step_trg
 EXECUTE PROCEDURE flow.reset_data_view_columns_from_process_step();
 
 
-drop function if exists flow.reset_data_view_columns_from_process_step_event();
+drop function if exists flow.reset_data_view_columns_from_process_step_event() cascade;
 CREATE OR REPLACE FUNCTION flow.reset_data_view_columns_from_process_step_event()
   RETURNS TRIGGER AS
 $body$
@@ -1331,7 +1349,7 @@ CREATE TRIGGER reset_data_view_columns_from_process_step_trg
 EXECUTE PROCEDURE flow.reset_data_view_columns_from_process_step_event();
 
 
-drop function if exists flow.insert_data_view_maintenance();
+drop function if exists flow.insert_data_view_maintenance() cascade;
 CREATE OR REPLACE FUNCTION flow.insert_data_view_maintenance()
   RETURNS TRIGGER AS
 $body$
@@ -1378,7 +1396,7 @@ CREATE TRIGGER data_view_company_process_ids_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.insert_data_view_maintenance();
 
-drop function if exists flow.contact_search();
+drop function if exists flow.contact_search() cascade;
 CREATE OR REPLACE FUNCTION flow.contact_search()
   RETURNS TRIGGER AS
 $$
@@ -1434,7 +1452,7 @@ CREATE TRIGGER contact_search_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.contact_search();
 
-drop function if exists flow.project_search();
+drop function if exists flow.project_search() cascade;
 CREATE OR REPLACE FUNCTION flow.project_search()
   RETURNS TRIGGER AS
 $$
@@ -1492,3 +1510,42 @@ CREATE TRIGGER project_search_trg
   ON flow.project
   FOR EACH ROW
 EXECUTE PROCEDURE flow.project_search();
+
+
+
+drop function if exists flow.list_of_value_name_change() cascade;
+CREATE OR REPLACE FUNCTION flow.list_of_value_name_change()
+  RETURNS TRIGGER AS
+$$
+declare
+  v_dvfc_id bigint;
+BEGIN
+
+  select distinct dvfc.id,dv.view_name,dvcfc.field_to_update,c.schema_name
+  into v_dvfc_id
+  from flow.custom_field cf
+         inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+         inner join flow.data_view_field_config dvfc on dvfc.custom_field_group_assignment_id = cfga.id
+         inner join flow.data_view dv on dv.id = dvfc.data_view_id
+         inner join flow.company c on c.id = cf.company_id
+         inner join flow.data_view_child_field_config dvcfc on dvcfc.data_view_field_config_id = dvfc.id
+  where cf.list_of_value_id = new.parent_id;
+
+  if v_dvfc_id is not null then
+    insert into flow.data_view_maintenance( data_view_field_config_id,lov_new_name, lov_old_name, processed, date_created)
+    values(v_dvfc_id,new.name,old.name,false,now());
+  end if;
+
+
+  RETURN new;
+END
+$$
+  LANGUAGE plpgsql;
+
+drop trigger if exists list_of_value_name_change_trg on flow.list_of_value;
+CREATE TRIGGER list_of_value_name_change_trg
+  after update
+  ON flow.list_of_value
+  FOR EACH ROW
+  when(old.name != new.name)
+EXECUTE PROCEDURE flow.list_of_value_name_change();

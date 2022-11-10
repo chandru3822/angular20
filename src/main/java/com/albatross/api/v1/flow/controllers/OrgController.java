@@ -101,15 +101,24 @@ public class OrgController {
 
   @GetMapping(value = "/{orgId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getOrgAttachments(@PathVariable Long orgId,
-                                                             @PathVariable(required = false) Boolean isMobile) {
-    return new ResponseEntity<>(orgService.getOrgAttachments(orgId, isMobile), HttpStatus.OK);
+                                                            @RequestParam(required = false) Boolean isMobile,
+                                                            @RequestParam(required = false) Boolean linked) {
+    return new ResponseEntity<>(orgService.getOrgAttachments(orgId, isMobile, linked), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{orgId}/linkAttachment/{attachmentId}")
+  public void linkAttachment(@PathVariable Long orgId,
+                             @PathVariable Long attachmentId,
+                             @RequestParam Boolean doLink) {
+    orgService.linkAttachment(orgId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{orgId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Attachment> uploadOrgAttachment(@PathVariable Long orgId,
-                                                         @RequestParam Long attachmentTypeId,
-                                                         @RequestParam("file") MultipartFile file) throws IOException {
-    return new ResponseEntity<>(orgService.addAttachment(file, orgId, attachmentTypeId), HttpStatus.OK);
+                                                        @RequestParam Long attachmentTypeId,
+                                                        @RequestParam String displayName,
+                                                        @RequestParam("file") MultipartFile file) throws IOException {
+    return new ResponseEntity<>(orgService.addAttachment(file, orgId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
 }

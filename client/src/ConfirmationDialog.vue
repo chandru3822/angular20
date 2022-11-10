@@ -1,6 +1,7 @@
 <template>
   <v-dialog
     v-model="show"
+    :retain-focus="retainFocus"
     :width="width || 500"
     @click:outside="no"
   >
@@ -46,6 +47,7 @@ export default {
   props: {
     openDialog: Boolean,
     hideTitle:Boolean,
+    retainFocus:Boolean,
     itemToDelete: Object,
     disableConfirm: Boolean,
     hideConfirm: Boolean,

@@ -15,9 +15,14 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-/** Created by randanunn on 12/17/19. !Describe Purpose! */
+/**
+ * Created by randanunn on 12/17/19. !Describe Purpose!
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,7 +33,7 @@ public class FeatureService {
   private final SecurityService securityService;
 
   public List<Feature> getAllFeatures() {
-    return sqlCache.query("feature.getAll", Collections.EMPTY_MAP, Feature.class);
+    return sqlCache.query("feature.getAll", Map.of(), Feature.class);
   }
 
   public List<Feature> getCompanySpecificTools() {
@@ -101,9 +106,9 @@ public class FeatureService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     return sqlCache.query(
-        "feature.getAllForCompanyWithAccess",
-        params,
-        new CompanyFeatureMapper<>(CompanyFeature.class, om));
+      "feature.getAllForCompanyWithAccess",
+      params,
+      new CompanyFeatureMapper<>(CompanyFeature.class, om));
   }
 
   public List<CompanyFeature> getFeaturesForUser(Long userId) {
@@ -112,7 +117,7 @@ public class FeatureService {
     params.put("companyId", user.getCompanyId());
     params.put("userId", userId);
     return sqlCache.query(
-        "feature.getForUser", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
+      "feature.getForUser", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
   }
 
   public List<CompanyFeature> saveUserCompanyFeatures(Long userId, List<CompanyFeature> features) {
@@ -177,11 +182,12 @@ public class FeatureService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<FeatureAccessControl>> accessControlRef = new TypeReference<>() {};
+      TypeReference<List<FeatureAccessControl>> accessControlRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "accessControl",
-          new JsonCollectionDeserializer(accessControlRef, objectMapper));
+        List.class,
+        "accessControl",
+        new JsonCollectionDeserializer(accessControlRef, objectMapper));
     }
   }
 }
