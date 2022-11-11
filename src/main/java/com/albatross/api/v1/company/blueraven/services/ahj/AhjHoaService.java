@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +85,10 @@ public class AhjHoaService {
 
         return getHoaById(id);
     }
+
+  public List<AhjHoaCompany> getAhjHoaCompanies() {
+    return sqlCache.query("ahj.hoa.getActiveManagementCompanies", Collections.emptyMap(), AhjHoaCompany.class);
+  }
 
     public static class AhjHoaDetailMapper<T> extends BeanPropertyRowMapper<T> {
         private final ObjectMapper objectMapper;

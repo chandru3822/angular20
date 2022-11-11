@@ -1,9 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.ahj;
 
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjHoa;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjHoaDetail;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtility;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtilityDetail;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.company.blueraven.services.ahj.AhjHoaService;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,5 +41,10 @@ public class AhjHoaController {
         return ahjHoaService.updateHoa(hoa);
     }
 
+
+  @GetMapping(value = "/list/companies")
+  public List<AhjHoaCompany> getAhjHoaCompanies() {
+    return ahjHoaService.getAhjHoaCompanies();
+  }
 
 }

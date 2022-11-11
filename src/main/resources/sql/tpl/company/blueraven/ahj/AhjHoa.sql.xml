@@ -1,30 +1,30 @@
 <sql>
   <ahj.hoa.list.all>
     <![CDATA[
-      SELECT u.id,
-             u.name,
-             u.metro_area_id,
-             lov.name as metro_area,
-             cs.id as company_state_id,
-             cs.state_id,
-             s.state,
-             s.abbreviation as state_abbreviation,
-             u.archived
-      FROM brs.ahj_utility u
-               LEFT JOIN flow.list_of_value lov ON lov.id = u.metro_area_id
-               left join flow.company_state cs on cs.id = u.company_state_id
-               left join flow.state s on s.id = cs.state_id
-      ORDER BY u.name
+      SELECT h.id,
+       h.name,
+       cs.id as company_state_id,
+       cs.state_id,
+       s.state,
+       s.abbreviation as state_abbreviation,
+       mc.id as management_company_id,
+       mc.name as management_commpany,
+       h.archived
+FROM brs.ahj_hoa h
+         left join flow.list_of_value mc on mc.id = h.management_company_id
+         left join flow.company_state cs on cs.id = h.company_state_id
+         left join flow.state s on s.id = cs.state_id
+ORDER BY h.name;
     ]]>
   </ahj.hoa.list.all>
 
   <ahj.hoa.simple.update>
     <![CDATA[
-      UPDATE brs.ahj_utility
-      SET name = :utilityName,
+      UPDATE brs.ahj_hoa
+      SET name = :hoaName,
         archived = :archived,
-        metro_area_id = :metroAreaId,
         company_state_id = :companyStateId,
+        management_company_id = :managementCompanyId,
         date_modified = now(),
         modified_by_id = :currentUser
       WHERE id = :id
@@ -33,12 +33,12 @@
 
   <ahj.hoa.update>
     <![CDATA[
-      UPDATE brs.ahj_utility
+      UPDATE brs.ahj_hoa
       SET
-        name = :utilityName,
+        name = :hoaName,
         archived = :archived,
-        metro_area_id = :metroAreaId,
         company_state_id = :companyStateId,
+        management_company_id = :managementCompanyId,
         date_modified = now(),
         modified_by_id = :currentUser
       WHERE id = :id
@@ -46,15 +46,15 @@
   </ahj.hoa.update>
 
   <ahj.hoa.insert><![CDATA[
-      INSERT INTO brs.ahj_utility(name, archived,  metro_area_id, company_state_id, date_created, created_by_id,date_modified, modified_by_id)
-      VALUES (:utilityName, false, :metroAreaId, :companyStateId,now(), :currentUser, now(), :currentUser)
+      INSERT INTO brs.ahj_hoa(name, archived, company_state_id, management_company_id, date_created, created_by_id,date_modified, modified_by_id)
+      VALUES (:hoaName, false, :companyStateId, :managementCompanyId, now(), :currentUser, now(), :currentUser)
   ]]></ahj.hoa.insert>
 
   <ahj.hoa.detailById>
     <![CDATA[
       SELECT
-          u.*,
-          lov.name as metro_area,
+          h.*,
+          mc.name as management_company,
           cs.state_id,
           s.state,
           s.abbreviation,
@@ -78,25 +78,37 @@
                        SELECT array_to_json(array_agg(row_to_json(links)))
                        FROM (
                                 SELECT
-                                    aul.id,
-                                    aul.name,
-                                    aul.link,
-                                    aul.username,
-                                    aul.link_type_id AS "linkTypeId",
-                                    aul.password,
-                                    aul.notes
-                                FROM brs.ahj_utility_link aul
-                                WHERE aul.archived IS FALSE
-                                  AND aul.link_type_id = 10
-                                  AND aul.ahj_utility_id = u.id) links
+                                    ahl.id,
+                                    ahl.name,
+                                    ahl.link,
+                                    ahl.username,
+                                    ahl.link_type_id AS "linkTypeId",
+                                    ahl.password,
+                                    ahl.notes
+                                FROM brs.ahj_hoa_link ahl
+                                WHERE ahl.archived IS FALSE
+                                  AND ahl.link_type_id = 10
+                                  AND ahl.ahj_utility_id = h.id) links
                    ), '[]') AS links
-      FROM brs.ahj_utility u
-               LEFT JOIN flow.list_of_value lov ON lov.id = u.metro_area_id
-               left join flow.company_state cs on cs.id = u.company_state_id
+      FROM brs.ahj_hoa h
+               left join flow.list_of_value mc on mc.id = h.management_company_id
+               left join flow.company_state cs on cs.id = h.company_state_id
                left join flow.state s on s.id = cs.state_id
       WHERE u.id = :id
     ]]>
   </ahj.hoa.detailById>
+
+
+  <ahj.hoa.getActiveManagementCompanies><![CDATA[
+       SELECT
+         lov.id,
+         lov.name as "managementCompany",
+         lov.archived
+       FROM flow.list_of_value lov
+       WHERE lov.parent_id = ??
+         AND lov.archived IS FALSE
+       ORDER BY lov.name
+    ]]></ahj.hoa.getActiveManagementCompanies>
 
   <!-- CONTACT -->
   <ahj.hoa.contact.findById>
@@ -112,8 +124,8 @@
         values (:name, :title, :email, :phoneNumber, :address, :notes, :hours, now(), :currentUser, now(), :currentUser, :contactTypeId)
         returning id
       )
-      INSERT INTO brs.ahj_utility_contact (ahj_utility_id, ahj_contact_id)
-      SELECT :ahjUtilityId, auc.id
+      INSERT INTO brs.ahj_hoa_contact (ahj_hoa_id, ahj_contact_id)
+      SELECT :ahjHoaId, auc.id
       FROM auc
       RETURNING ahj_contact_id;
     ]]>

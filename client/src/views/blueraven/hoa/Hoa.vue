@@ -64,7 +64,6 @@
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
               <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
               <td class="text-left">
                 <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
@@ -105,15 +104,6 @@
                         required
                         filled
           ></v-text-field>
-          <v-autocomplete label="Metro Area"
-                          :items="metroAreas"
-                          v-model="editedItem.metroAreaId"
-                          item-text="metroArea"
-                          item-value="id"
-                          required
-                          filled
-                          attach
-          ></v-autocomplete>
           <v-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
@@ -124,7 +114,7 @@
                           filled
                           attach
           ></v-autocomplete><v-autocomplete label="Management Company"
-                          :items="[]"
+                          :items="managementCompanies"
                           v-model="editedItem.companyId"
                           item-text="management"
                           item-value="id"
@@ -139,7 +129,7 @@
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="close">Cancel</v-btn>
           <v-btn color="primary" raised @click="saveAhj" class="white--text"
-                 :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId">
+                 :disabled="!editedItem.name || !editedItem.managementCompanyId || !editedItem.companyStateId">
             {{ ahjBtnTxt }}
           </v-btn>
         </v-card-actions>
@@ -163,10 +153,8 @@ export default {
     dataLoading: false,//true,
     hoaFilters:[],
     states:[],
-    metroAreas:[],
       headers: [
         { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
-        { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
         { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
         {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 350, show: true },
         { text: null, value: null, sortable: false, show: true, width: 5 }
@@ -181,9 +169,10 @@ export default {
     ahjDialog: false,
     editedItem: {
       name: '',
-      metroAreaId: '',
+      managementCompanyId: '',
     },
-    ahjHoas: []
+    ahjHoas: [],
+    managementCompanies:[]
   }),
   computed: {
     filteredHoas(){
@@ -201,7 +190,7 @@ export default {
       this.currentUser = this.$store.state.user.details.id
       this.initFilters()
       this.fetchAhjHoas().then(() => {
-        if (this.ahjs.length > 0) {
+        if (this.ahjHoas.length > 0) {
           this.fetchStates()
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -212,11 +201,11 @@ export default {
       this.hoaFilters = cloneDeep(FILTER_DEFAULTS)
       this.hoaFilters = {...this.hoaFilters, managementCompany: {value: null, type:'text', model:'managementCompany'}}
     },
-    async getActiveMetroAreas () {
+    async getActiveManagementCompanies () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest('/metro/getActive', 'blueraven')
-        this.metroAreas = data
+        const {data, status} = await getRequest('/ahjHoa/list/companies', 'blueraven')
+        this.managementCompanies = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -243,7 +232,8 @@ export default {
     },
 
     addItem () {
-      this.getActiveMetroAreas()
+      debugger
+      this.getActiveManagementCompanies()
       this.addMode = true
       this.ahjDialog = true
     },
@@ -253,6 +243,7 @@ export default {
       this.editedItem = {}
     },
     async saveAhj () {
+      debugger
       this.$store.commit(AppMutations.SET_LOADING, true)
       if (!this.editedItem.id) {
         try {
