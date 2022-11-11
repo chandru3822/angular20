@@ -15,48 +15,56 @@
         <v-card color="white" class="square-card pa-4">
           Location: {{ location }}
 
-          <v-text-field text label="Address 1" autocomplete="new-password"
-                        v-model="address1" @input="searchAddress(address1, true)"></v-text-field>
-<!--          <input type="text" class="form-control" v-model="address1" @input="searchAddress"/>-->
-          <v-list ref="dropdownMenu1" v-if="showAddress1List">
-            <v-list-item v-for="suggestion in suggestions">
-              <a class="dropdown-item" href="#" @click="selectAddress(suggestion, true)">
-                {{ formatLabel(suggestion.label, 'start') }}<span
-                class="text-primary">{{ formatLabel(suggestion.label, 'middle') }}</span>{{ formatLabel(suggestion.label, 'end') }}
-              </a>
-            </v-list-item>
-          </v-list>
+          <div class="address-container">
+            <div>
+              <v-text-field text label="Address 1" autocomplete="new-password"
+                            v-model="address1" @input="searchAddress(address1, true)"></v-text-field>
+              <v-list ref="dropdownMenu1" v-if="showAddress1List">
+                <v-list-item v-for="suggestion in suggestions">
+                  <a class="dropdown-item" href="#" @click="selectAddress(suggestion, true)">
+                    {{ formatLabel(suggestion.label, 'start') }}<span
+                    class="text-primary">{{
+                      formatLabel(suggestion.label, 'middle')
+                    }}</span>{{ formatLabel(suggestion.label, 'end') }}
+                  </a>
+                </v-list-item>
+              </v-list>
+            </div>
+            <v-btn color="primary" @click="[address1 = '', selectAddress1 = !selectAddress1, selectAddress2 = false]"
+                   :disabled="mapResources.length === 0 && markers.length === 0"
+                   :loading="selectAddress1">Select
+            </v-btn>
+          </div>
 
-          <v-text-field text  label="Address 2" autocomplete="new-password"
-                        v-model="address2" @input="searchAddress(address2, false)"></v-text-field>
-          <v-list ref="dropdownMenu2" v-if="showAddress2List">
-            <v-list-item v-for="suggestion in suggestions">
-              <a class="dropdown-item" href="#" @click="selectAddress(suggestion, false)">
-                {{ formatLabel(suggestion.label, 'start') }}<span
-                class="text-primary">{{ formatLabel(suggestion.label, 'middle') }}</span>{{ formatLabel(suggestion.label, 'end') }}
-              </a>
-            </v-list-item>
-          </v-list>
+          <div class="address-container">
+            <div>
+              <v-text-field text label="Address 2" autocomplete="new-password"
+                            v-model="address2" @input="searchAddress(address2, false)"></v-text-field>
+              <v-list ref="dropdownMenu2" v-if="showAddress2List">
+                <v-list-item v-for="suggestion in suggestions">
+                  <a class="dropdown-item" href="#" @click="selectAddress(suggestion, false)">
+                    {{ formatLabel(suggestion.label, 'start') }}<span
+                    class="text-primary">{{
+                      formatLabel(suggestion.label, 'middle')
+                    }}</span>{{ formatLabel(suggestion.label, 'end') }}
+                  </a>
+                </v-list-item>
+              </v-list>
+            </div>
+            <v-btn color="primary" @click="[address2 = '', selectAddress2 = !selectAddress2, selectAddress1 = false]"
+                   :disabled="mapResources.length === 0 && markers.length === 0"
+                   :loading="selectAddress2">Select
+            </v-btn>
+          </div>
 
-<!--          <div class="address-container">-->
-<!--            <v-text-field text label="Address 1"-->
-<!--                          hide-details-->
-<!--                          v-model="address1"></v-text-field>-->
-<!--            <v-btn color="primary" @click="[address1 = '', selectAddress1 = !selectAddress1, selectAddress2 = false]"-->
-<!--                   :loading="selectAddress1">Select-->
-<!--            </v-btn>-->
-<!--          </div>-->
-<!--          <div class="address-container">-->
-<!--            <v-text-field text label="Address 2"-->
-<!--                          hide-details-->
-<!--                          v-model="address2"></v-text-field>-->
-<!--            <v-btn color="primary" @click="[address2 = '', selectAddress2 = !selectAddress2, selectAddress1 = false]"-->
-<!--                   :loading="selectAddress2">Select-->
-<!--            </v-btn>-->
-<!--          </div>-->
           <div class="mt-2">
             <v-btn text class="mr-3" @click="[address1 = '', address2 = '']">Clear</v-btn>
-            <v-btn color="primary"  @click="loadDriveTime">Go</v-btn>
+            <v-btn color="primary" :disabled="!address1 || !address2" @click="loadDriveTime">Go</v-btn>
+          </div>
+
+          <div v-if="drivingDistance || drivingDuration">
+            Drive Time: {{ drivingDuration }} <br>
+            Drive Distance: {{ drivingDistance }} m
           </div>
         </v-card>
       </v-menu>
@@ -103,14 +111,13 @@
 </template>
 
 <script>
-import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import {AddressAutofill} from '@mapbox/search-js-core'
 import Mapbox from 'mapbox-gl'
 import {MglMap, MglPopup, MglMarker, MglNavigationControl} from 'vue-mapbox'
 import constants from '@/helpers/constants'
 import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
+import moment from 'moment'
 
 export default {
   name: 'ScheduleMap',
@@ -118,8 +125,7 @@ export default {
     MglMap,
     MglPopup,
     MglMarker,
-    MglNavigationControl,
-    AddressAutofill
+    MglNavigationControl
   },
   props: {
     latitude: {type: Number},
@@ -146,6 +152,8 @@ export default {
       address2: '',
       selectAddress2: false,
       showAddress2List: false,
+      distanceDivisionMetric: 1609.34,
+      durationDivisionMetric: 60,
       defaultZoom: 2.0,
       suggestions: [],
       // they do these coordinates backwards to comply with geoJSON whatever that is.
@@ -156,17 +164,17 @@ export default {
         accessToken: constants.MAPBOX_ACCESS_TOKEN,
         style: constants.MAPBOX_STYLE
       },
-      mapboxOptions: {}
+      mapboxOptions: {},
+      drivingDuration: 0,
+      drivingDistance: 0
     }
   },
   created() {
+    console.log('lat', this.latitude)
+    console.log('long', this.longitude)
     this.createMap()
   },
   methods: {
-    getDynamicId() {
-      //this is super dumb but it is the only legit way i've found to disable autocompleting fields
-      return 'dynamicID-' + Math.floor(Math.random() * Date.now())
-    },
     createMap() {
 
       this.mapboxOptions = {
@@ -184,7 +192,7 @@ export default {
       this.mapbox = Mapbox
     },
     selectAddress(suggestion, isFirst) {
-      if(isFirst) {
+      if (isFirst) {
         console.log('1) SELECTED THIS ADDRESS: ', suggestion)
         this.address1 = suggestion.label
         this.showAddress1List = false
@@ -221,14 +229,14 @@ export default {
       console.log('trying stuff', address)
       this.suggestions = []
       if (isFirst) {
-        if(this.address1.length >= 2) {
+        if (this.address1.length >= 2) {
           await this.geoCode(this.address1)
           this.showAddress1List = true
         } else {
           this.showAddress1List = false
         }
       } else {
-        if(this.address2.length >= 2) {
+        if (this.address2.length >= 2) {
           console.log('we true')
           await this.geoCode(this.address2)
           this.showAddress2List = true
@@ -289,15 +297,39 @@ export default {
       }
     },
     async loadDriveTime() {
-      const {data:first } = await this.getLatLong(this.address1)
+      const {data: first} = await this.getLatLong(this.address1)
       console.log('first lat long here', first)
-      const {data:second } = await this.getLatLong(this.address1)
+      const {data: second} = await this.getLatLong(this.address2)
       console.log('second lat long here', second)
 
       //then need to load the drive time/route stuff
+      await this.getDirections(first, second)
+    },
+    async getDirections(firstPair, secondPair) {
+      this.drivingDistance = 0
+      this.drivingDuration = 0
+      let combined = firstPair + ';' + secondPair
+
+      let uriCombined = encodeURIComponent(combined)
+      let url = `https://api.mapbox.com/directions/v5/mapbox/driving/${uriCombined}?access_token=${constants.MAPBOX_ACCESS_TOKEN}`
+      let request = new Request(url)
+      let response = await fetch(request)
+      let data = await response.json()
+      console.log('randaLogger', data)
+      if (data.routes && data.routes[0]) {
+        if (data.routes[0].distance) {
+          this.drivingDistance = (data.routes[0].distance / this.distanceDivisionMetric).toFixed(2)
+        }
+
+        // this.drivingDuration = data.routes[0].duration / this.durationDivisionMetric
+        if (data.routes[0].duration) {
+          this.drivingDuration = moment().startOf('day').seconds(data.routes[0].duration).format('H[h] mm [m] ss [s]')
+        }
+      }
     },
     async changeMapLocation() {
       // Here we catching 'load' map event
+      console.log('we flew')
       await this.asyncActions.flyTo({
         center: [this.longitude, this.latitude],
         zoom: this.zoom,

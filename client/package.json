@@ -18,7 +18,6 @@
     "@fullcalendar/moment-timezone": "^4.3.0",
     "@fullcalendar/resource-timeline": "^4.3.0",
     "@fullcalendar/vue": "^4.3.1",
-    "@mapbox/search-js-core": "^1.0.0-beta.13",
     "@tiptap/extension-mention": "^2.0.0-beta.195",
     "@tiptap/extension-superscript": "^2.0.0-beta.195",
     "@tiptap/extension-table": "^2.0.0-beta.195",
