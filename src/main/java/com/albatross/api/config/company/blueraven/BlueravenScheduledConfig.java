@@ -89,7 +89,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       }
   }
 
-  @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
+  @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
   public void syncBirdeyeResponses(){
     log.info("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();
