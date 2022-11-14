@@ -1958,7 +1958,7 @@ public class ProjectProcessStepService {
           Contact contact = getContact(contactId, user);
           log.debug("TWILIO: attempting text for contact ID: {}", contactId);
           if (null != contact) {
-            communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null);
+            communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, null);
             smsTemplate.getTeamIds().forEach(teamId -> {
               messagingService.addTeam(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
             });
