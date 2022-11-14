@@ -117,7 +117,8 @@ public class SMSService {
     String message,
     List<URI> mediaURLs,
     RecipientType recipientType,
-    Long sentByUserId) {
+    Long sentByUserId,
+    Long sentBySmsTeamId) {
     String queueInsert = sqlCache.getByKey("sms.queue.insert");
 
     MapSqlParameterSource source = new MapSqlParameterSource();
@@ -130,6 +131,7 @@ public class SMSService {
     source.addValue("mediaUrls", null);
     source.addValue("recipientTypeId", recipientType.ordinal());
     source.addValue("messageSentByUserId", sentByUserId);
+    source.addValue("sentBySmsTeamId", sentBySmsTeamId);
 
     if (mediaURLs != null && !mediaURLs.isEmpty()) {
 

@@ -251,9 +251,9 @@ public class BirdeyeService {
                 }
 
                 final CustomFieldValue cfv = new CustomFieldValue();
-                cfv.setCustomFieldGroupId(installationSurveyGroupId);
+                cfv.setCustomFieldGroupId(customField.getCustomFieldGroupId());
                 cfv.setCustomFieldGroupAssignmentId(customField.getId());
-                cfv.setCustomFieldId(customField.getId());
+                cfv.setCustomFieldId(customField.getCustomFieldId());
                 cfv.setTextValue(answer.getAnswer());
 
                 customFieldValueService.updateCustomFieldValues(List.of(cfv), invitation.getProjectId(), ObjectType.PROJECT.textValue());

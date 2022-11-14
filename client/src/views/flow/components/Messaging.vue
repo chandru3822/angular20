@@ -234,7 +234,8 @@ export default {
           params = {
             userIDs: [this.contactId],
             message: message.data.file.name,
-            mediaURLs: mediaUrls
+            mediaURLs: mediaUrls,
+            smsTeamId: this.$parent.$data.teamsAssociatedToUser[0].id
           }
           await postRequest(`/communication/sendTextsForProject/${this.projectId}`, params)
         }
@@ -242,7 +243,8 @@ export default {
         if (message.data.text) {
           params = {
             userIDs: [this.contactId],
-            message: message.data.text
+            message: message.data.text,
+            smsTeamId: this.$parent.$data.teamsAssociatedToUser[0].id
           }
           await postRequest(`/communication/sendTextsForProject/${this.projectId}`, params)
         }
