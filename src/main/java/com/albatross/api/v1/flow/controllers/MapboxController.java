@@ -18,11 +18,21 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/flow/mapbox", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MapboxController {
 
-    private final MapboxApiService mapboxApiService;
+  private final MapboxApiService mapboxApiService;
 
-    @GetMapping(value="/getLatLong")
-    public List<Double> getLatLongFromAddress(@RequestParam String address) throws Exception {
-        return mapboxApiService.getLatLong(address);
-    }
+  @GetMapping(value = "/getLatLong")
+  public List<Double> getLatLongFromAddress(@RequestParam String address) throws Exception {
+    return mapboxApiService.getLatLong(address);
+  }
+
+  @GetMapping(value = "/getSuggestions")
+  public String getAddressSuggestions(@RequestParam String address) throws Exception {
+    return mapboxApiService.getAddressSuggestions(address);
+  }
+
+  @GetMapping(value = "/getDriveTime")
+  public String getDriveTime(@RequestParam String latLongPairs) throws Exception {
+    return mapboxApiService.getDriveTime(latLongPairs);
+  }
 
 }
