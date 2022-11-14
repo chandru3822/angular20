@@ -60,7 +60,7 @@ public class CommunicationController {
     Contact contact = contactService.getContact(contactId);
     log.debug("TWILIO: attempting text for contact ID: {}", contactId);
     if (null != contact) {
-      return communicationService.sendTextsForProject(projectId, contact, user, sendTexts.getMessage(), sendTexts.getMediaURLs());
+      return communicationService.sendTextsForProject(projectId, contact, user, sendTexts.getMessage(), sendTexts.getMediaURLs(), sendTexts.getSmsTeamId());
     } else {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST,

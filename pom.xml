@@ -311,15 +311,6 @@
       <artifactId>feign-okhttp</artifactId>
       <version>11.10</version>
     </dependency>
-
-
-    <!--    NOTE: not currently being used -->
-    <!--    <dependency>-->
-    <!--      <groupId>com.google.firebase</groupId>-->
-    <!--      <artifactId>firebase-admin</artifactId>-->
-    <!--      <version>8.1.0</version>-->
-    <!--    </dependency>-->
-
   </dependencies>
 
   <dependencyManagement>
