@@ -424,14 +424,4 @@ public class CommunicationService {
 
     return projectDetails;
   }
-
-  //  public void sendPushNotificationToTopic(String title, String body)
-  //      throws FirebaseMessagingException {
-  //    Message message = Message.builder().putData("score", "854").setTopic("test").build();
-  //
-  //    //    FirebaseMessaging.getInstance(app).subscribeToTopic(List.of("123"), "test");
-  //    String response = firebaseMessaging.send(message);
-  //
-  //    log.debug("SENT MESSAGE: {}", response);
-  //  }
 }
