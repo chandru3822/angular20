@@ -224,9 +224,9 @@
 
 <script>
 import cloneDeep from 'lodash.clonedeep'
-import AhjContact from './components/AhjContacts'
-import AhjLink from './components/AhjLinks'
-import AhjServicingFot from './components/AhjServicingFots'
+import AhjContact from '../components/AhjContacts'
+import AhjLink from '../components/AhjLinks'
+import AhjServicingFot from '../components/AhjServicingFots'
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
 import {AppMutations} from '@/stores/AppStore'

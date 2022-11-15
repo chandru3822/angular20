@@ -35,7 +35,6 @@
     }),
     methods: {
       isActiveBtn(btn) {
-        console.log('randaLogger', this.$route.path)
         return btn.pathMatches.some(pm => {
           return this.$route.path.includes(pm)
         })

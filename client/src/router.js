@@ -446,7 +446,7 @@ const router = new Router({
               props: true,
               component: () => {
                 if (store.getters.userHasFeature('AHJ_DATABASE')) {
-                  return import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjDetails.vue')
+                  return import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjDetails.vue')
                 } else {
                   return accessDenied()
                 }
@@ -455,17 +455,17 @@ const router = new Router({
                 {
                   path: 'permit',
                   meta: {title: 'Albatross - AHJ'},
-                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjPermit.vue')
+                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjPermit.vue')
                 },
                 {
                   path: 'inspection',
                   meta: {title: 'Albatross - AHJ'},
-                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjInspection.vue')
+                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjInspection.vue')
                 },
                 {
                   path: 'design',
                   meta: {title: 'Albatross - AHJ'},
-                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjDesign.vue')
+                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjDesign.vue')
                 }
               ]
             }

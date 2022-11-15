@@ -62,7 +62,7 @@
               <td class="text-left clickable" @click="$router.push({ path: `${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
               <td class="text-left clickable" @click="$router.push({ path: `${item.id}/permit` })">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left clickable" @click="$router.push({ path: `${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
-              <td class="text-left">
+              <td class="text-right">
                 <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
                 <span v-else>
                   <router-link :to="`${item.id}/permit`" class="mr-3 ahj-link primary--text">Permit</router-link>
@@ -161,10 +161,10 @@
       dataLoading: true,
       tabs: AHJ_TABS,
       headers: [
-        { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
+        { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true },
         { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
         { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
-        { text: null, value: null, custom:true, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 400 }
+        { text: null, value: null, custom:true, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
       ],
       ahjs: [],
       editedItem: {

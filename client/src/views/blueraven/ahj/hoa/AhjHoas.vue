@@ -60,14 +60,14 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">
+              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
                 {{ item.name ? item.name : '' }}
               </td>
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">
+              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
                 {{ item.state ? item.state : '' }}
               </td>
               <td class="text-left">
-                <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">
+                <router-link v-if="constants.IS_MOBILE" :to="`hoa/${item.id}/details`" class="mr-3 ahj-link">
                   Details
                 </router-link>
                 <span v-else>

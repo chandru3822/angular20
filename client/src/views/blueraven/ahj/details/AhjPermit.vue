@@ -43,85 +43,82 @@
         <!--        </v-col>-->
       </v-row>
 
-      <h1 class="pb-2 mb-4"
-          style="border-bottom: 1px solid #ccc; width: 100%;"
-      >Links and Contacts</h1>
-      <v-row no-gutters>
-        <!-- FIRST COLUMN -->
-        <v-col cols="12" md="6" class="px-1 mb-3">
-          <AhjLink v-if="dataReady"
-                   title="Submission Links"
-                   :linkTypeId="4"
-                   :user-can-edit="userCanEdit"
-                   :itemId="ahjPermit.id"
-                   :itemType="itemType"
-                   :ahjId="ahjId"
-                   :links="ahjPermit.submissionLinks"
-                   show-expanded
-                   :expanded-all="expandedAll"
-                   @toggle-collapse-expand="toggleCollapseExpand($event)"
-          ></AhjLink>
+      <div v-if="dataReady">
+        <h1 class="pb-2 mb-4"
+            style="border-bottom: 1px solid #ccc; width: 100%;"
+        >Links and Contacts</h1>
+        <v-row no-gutters>
+          <!-- FIRST COLUMN -->
+          <v-col cols="12" md="6" class="px-1 mb-3">
+            <AhjLink title="Submission Links"
+                     :linkTypeId="4"
+                     :user-can-edit="userCanEdit"
+                     :itemId="ahjPermit.id"
+                     :itemType="itemType"
+                     :ahjId="ahjId"
+                     :links="ahjPermit.submissionLinks"
+                     show-expanded
+                     :expanded-all="expandedAll"
+                     @toggle-collapse-expand="toggleCollapseExpand($event)"
+            ></AhjLink>
 
-          <AhjContact v-if="dataReady"
-                      title="Submission Contacts"
-                      :contactTypeId="1"
-                      :user-can-edit="userCanEdit"
-                      :itemId="ahjPermit.id"
-                      :itemType="itemType"
-                      :ahjId="ahjId"
-                      :contacts="ahjPermit.submissionContacts"
-                      show-expanded
-                      :expanded-all="expandedAll"
-                      @toggle-collapse-expand="toggleCollapseExpand($event)"
-          ></AhjContact>
-        </v-col>
+            <AhjContact title="Submission Contacts"
+                        :contactTypeId="1"
+                        :user-can-edit="userCanEdit"
+                        :itemId="ahjPermit.id"
+                        :itemType="itemType"
+                        :ahjId="ahjId"
+                        :contacts="ahjPermit.submissionContacts"
+                        show-expanded
+                        :expanded-all="expandedAll"
+                        @toggle-collapse-expand="toggleCollapseExpand($event)"
+            ></AhjContact>
+          </v-col>
 
-        <!-- SECOND COLUMN -->
-        <v-col cols="12" md="6" class="px-1 mb-3">
-          <AhjLink v-if="dataReady"
-                   title="Follow-up and Delivery Links"
-                   :linkTypeId="5"
-                   :user-can-edit="userCanEdit"
-                   :itemId="ahjPermit.id"
-                   :itemType="itemType"
-                   :ahjId="ahjId"
-                   :links="ahjPermit.followUpLinks"
-                   show-expanded
-                   :expanded-all="expandedAll"
-                   @toggle-collapse-expand="toggleCollapseExpand($event)"
-          ></AhjLink>
-          <AhjContact v-if="dataReady"
-                      title="Follow-up and Delivery Contacts"
-                      :contactTypeId="6"
-                      :user-can-edit="userCanEdit"
-                      :itemId="ahjPermit.id"
-                      :itemType="itemType"
-                      :ahjId="ahjId"
-                      :contacts="ahjPermit.followUpContacts"
-                      show-expanded
-                      :expanded-all="expandedAll"
-                      @toggle-collapse-expand="toggleCollapseExpand($event)"
-          ></AhjContact>
-          <!--        <AhjContact v-if="dataReady"-->
-          <!--                    title="Print Locations"-->
-          <!--                    :contactTypeId="7"-->
-          <!--                    :user-can-edit="userCanEdit"-->
-          <!--                    :itemId="ahjPermit.id"-->
-          <!--                    :itemType="itemType"-->
-          <!--                    :ahjId="ahjId"-->
-          <!--                    :contacts="ahjPermit.printLocations"-->
-          <!--        ></AhjContact>-->
-        </v-col>
+          <!-- SECOND COLUMN -->
+          <v-col cols="12" md="6" class="px-1 mb-3">
+            <AhjLink title="Follow-up and Delivery Links"
+                     :linkTypeId="5"
+                     :user-can-edit="userCanEdit"
+                     :itemId="ahjPermit.id"
+                     :itemType="itemType"
+                     :ahjId="ahjId"
+                     :links="ahjPermit.followUpLinks"
+                     show-expanded
+                     :expanded-all="expandedAll"
+                     @toggle-collapse-expand="toggleCollapseExpand($event)"
+            ></AhjLink>
+            <AhjContact title="Follow-up and Delivery Contacts"
+                        :contactTypeId="6"
+                        :user-can-edit="userCanEdit"
+                        :itemId="ahjPermit.id"
+                        :itemType="itemType"
+                        :ahjId="ahjId"
+                        :contacts="ahjPermit.followUpContacts"
+                        show-expanded
+                        :expanded-all="expandedAll"
+                        @toggle-collapse-expand="toggleCollapseExpand($event)"
+            ></AhjContact>
+            <!--        <AhjContact v-if="dataReady"-->
+            <!--                    title="Print Locations"-->
+            <!--                    :contactTypeId="7"-->
+            <!--                    :user-can-edit="userCanEdit"-->
+            <!--                    :itemId="ahjPermit.id"-->
+            <!--                    :itemType="itemType"-->
+            <!--                    :ahjId="ahjId"-->
+            <!--                    :contacts="ahjPermit.printLocations"-->
+            <!--        ></AhjContact>-->
+          </v-col>
 
-        <!-- THIRD COLUMN -->
-        <!--      <v-col cols="12" md="4" class="px-1 mb-3">-->
-        <!--        <AhjServicingFot v-if="dataReady"-->
-        <!--                         :servicingFots="ahjPermit.servicingFots"-->
-        <!--        ></AhjServicingFot>-->
+          <!-- THIRD COLUMN -->
+          <!--      <v-col cols="12" md="4" class="px-1 mb-3">-->
+          <!--        <AhjServicingFot v-if="dataReady"-->
+          <!--                         :servicingFots="ahjPermit.servicingFots"-->
+          <!--        ></AhjServicingFot>-->
 
-        <!--      </v-col>-->
-      </v-row>
-
+          <!--      </v-col>-->
+        </v-row>
+      </div>
       <v-dialog v-model="saveDialog" max-width="700">
         <v-card>
           <v-card-title>
@@ -194,9 +191,9 @@
 <script>
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
-import AhjContact from './components/AhjContacts'
-import AhjLink from './components/AhjLinks'
-import AhjServicingFot from './components/AhjServicingFots'
+import AhjContact from '../components/AhjContacts'
+import AhjLink from '../components/AhjLinks'
+import AhjServicingFot from '../components/AhjServicingFots'
 
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
@@ -219,7 +216,7 @@ export default {
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
     },
-    hardCodedDocsMap(){
+    hardCodedDocsMap() {
       const docsMap = new Map()
       docsMap.set(5, {
         title: "Documents Required for Inspection",
@@ -230,13 +227,13 @@ export default {
       docsMap.set(24, {
         title: "Documents Required for Refund/Cancellation",
         documents: this.cancellationDocuments,
-        attachmentTypeId: 462 ,
+        attachmentTypeId: 462,
         attachmentType: "All Documents"
       })
       return docsMap
     },
-    expandedAll(){
-      if(this.expandedGroups === this.totalGroups){
+    expandedAll() {
+      if (this.expandedGroups === this.totalGroups) {
         return CollapseExpandEnum.EXPANDED
       } else if (this.expandedGroups === 0) {
         return CollapseExpandEnum.COLLAPSED
@@ -270,7 +267,7 @@ export default {
     editCancellationAndRefundInstructions: false,
     editBrsTechnicianPermitSubmissionInstructions: false,
     totalGroups: 4,
-    expandedGroups:4,
+    expandedGroups: 4,
     // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
     ahjPermit: {
       submissionChecklist: [],
@@ -302,9 +299,9 @@ export default {
       }
     },
     toggleCollapseExpand(wasExpanded) {
-      if(wasExpanded === false) {
+      if (wasExpanded === false) {
         this.expandedGroups--
-      }else {
+      } else {
         this.expandedGroups++
       }
     },
@@ -354,6 +351,7 @@ export default {
         this.customFieldGroups = cloneDeep(data)
         this.totalGroups = this.totalGroups + this.customFieldGroups.length;
         this.expandedGroups = this.totalGroups;
+        this.dataReady = true
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -380,7 +378,6 @@ export default {
       this.dataReady = false
       this.getAhjPermit().then(() => {
         this.getCustomFieldGroupAssignmentsForScreen()
-        this.dataReady = true
       })
     },
     async getCancellationDocuments() {
@@ -485,7 +482,6 @@ export default {
       this.getCustomFieldGroupAssignmentsForScreen()
       this.getInspectionDocuments()
       this.getCancellationDocuments()
-      this.dataReady = true
     })
   }
 }

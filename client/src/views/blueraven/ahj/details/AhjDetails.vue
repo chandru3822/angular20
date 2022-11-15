@@ -6,7 +6,7 @@
           <v-col class="text-left pa-0" cols="12">
             <v-card class="ahj-details-card square-card">
               <v-toolbar flat>
-                <v-toolbar-title class="app-title">
+                <v-toolbar-title class="app-title"  v-if="ahj && ahj.name">
                   <v-btn fab text color="primary" small class="mr-2" @click="goToPath('/ahj')">
                     <v-icon>mdi-arrow-left</v-icon>
                   </v-btn>
