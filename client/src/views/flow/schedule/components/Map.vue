@@ -7,19 +7,19 @@
               offset-y
               content-class="drive-time-menu"
               v-model="menuOpen"
-              :min-width="400"
+              :min-width="260"
+              :max-width="260"
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <v-btn :color="menuOpen ? 'grey lighten-4' : 'primary'" v-on="on">Find Drive Time</v-btn>
+          <v-btn small :color="menuOpen ? 'grey lighten-4' : 'primary'" v-on="on">Find Drive Time</v-btn>
         </template>
-        <v-card color="white" class="square-card pa-4">
-          Location: {{ location }}
-
+        <v-card color="white" class="square-card px-4 pb-4 pt-2">
           <div class="address-container">
-            <div class="address-fields">
+            <div class="one-hunned">
               <v-text-field text label="Address 1" autocomplete="new-password"
                             @click="selectAddress1 = false"
+                            hide-details
                             v-model="address1" @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
@@ -34,16 +34,17 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="ml-2" color="primary" @click="[address1 = '', selectAddress1 = !selectAddress1, selectAddress2 = false]"
+            <v-btn class="mt-2" small color="primary" @click="[address1 = '', selectAddress1 = !selectAddress1, selectAddress2 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
-                   :loading="selectAddress1">Select
+                   :loading="selectAddress1">Select Pin
             </v-btn>
           </div>
 
           <div class="address-container">
-            <div class="address-fields">
+            <div class="one-hunned">
               <v-text-field text label="Address 2" autocomplete="new-password"
                             @click="selectAddress2 = false"
+                            hide-details
                             v-model="address2" @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
@@ -59,22 +60,25 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="ml-2" color="primary" @click="[address2 = '', selectAddress2 = !selectAddress2, selectAddress1 = false]"
+            <v-btn class="mt-2" small color="primary" @click="[address2 = '', selectAddress2 = !selectAddress2, selectAddress1 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
-                   :loading="selectAddress2">Select
+                   :loading="selectAddress2">Select Pin
             </v-btn>
           </div>
 
-          <div class="mt-2">
-            <v-btn text class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>
-            <v-btn color="primary" :disabled="!address1 || !address2"
+          <v-divider class="mt-2"></v-divider>
+
+          <div class="mt-2 drive-time-buttons">
+            <v-btn text small class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>
+            <v-btn color="primary" small :disabled="!address1 || !address2"
                    :loading="loadingDriveTime"
                    @click="loadDriveTime">Go</v-btn>
           </div>
 
-          <div class="mt-4" v-if="drivingDistance || drivingDuration">
-            Drive Time: {{ drivingDuration }} <br>
-            Drive Distance: {{ drivingDistance }} m
+          <div class="mt-2" v-if="drivingDistance || drivingDuration">
+            <v-divider class="mb-2"></v-divider>
+            <strong>Drive Time:</strong> {{ drivingDuration }} <br>
+            <strong>Drive Distance:</strong> {{ drivingDistance }} m
           </div>
         </v-card>
       </v-menu>
@@ -444,10 +448,8 @@ export default {
   left: 10px;
 }
 
-.address-container {
+.drive-time-buttons {
   display: flex;
-}
-.address-fields {
-  width: 260px;
+  justify-content: space-between;
 }
 </style>
