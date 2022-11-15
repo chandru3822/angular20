@@ -143,7 +143,7 @@ public class BlueravenCustomFieldValueService {
             + "("
             + primaryKeyColumn
             + ", date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)"
-            + " values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue, :userId, now(), :userId, now())"
+            + " values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now())"
             + " ON CONFLICT ("
             + primaryKeyColumn
             + ", custom_field_group_assignment_id)\n"
