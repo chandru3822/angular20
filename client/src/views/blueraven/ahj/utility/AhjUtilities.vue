@@ -1,26 +1,21 @@
 <template>
   <v-container id="ahj-utility-container">
     <v-row>
-      <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">
-            <v-btn text to="/ahj" color="primary">
-              AHJ
-            </v-btn>
-            <v-btn text to="/ahjUtility" color="primary">
-              Utility
-            </v-btn><v-btn text to="/hoa" color="primary">
-            HOA
-          </v-btn>
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add New</span>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
+      <v-col cols="12"  class="pt-0 px-0">
+<!--        <v-toolbar color="white" class="elevation-1">-->
+<!--          <v-toolbar-title class="app-title">-->
+<!--            <v-btn v-for="tab in tabs" text :to="tab.path" color="primary">-->
+<!--              {{tab.label}}-->
+<!--            </v-btn>-->
+<!--          </v-toolbar-title>-->
+<!--          <v-spacer></v-spacer>-->
+<!--          <v-toolbar-items>-->
+<!--            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">-->
+<!--              <v-icon>add</v-icon>-->
+<!--              <span v-if="!constants.IS_MOBILE">Add New</span>-->
+<!--            </v-btn>-->
+<!--          </v-toolbar-items>-->
+<!--        </v-toolbar>-->
 
         <v-data-table
           :headers="headers"
@@ -70,7 +65,7 @@
               <td class="text-left" :class="{'strike': item.archived}">{{ item.name ? item.name : '' }}</td>
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left">{{ item.state ? item.state : '' }}</td>
-              <td class="text-left">
+              <td class="text-right">
                 <v-icon color="primary" class="mr-3 ahj-link-icon" @click.stop="editAhjUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')">
                   edit
                 </v-icon>
@@ -148,7 +143,7 @@
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import {getActiveStates} from '@/services/stateService'
-  import {FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
+  import {FILTER_DEFAULTS, AHJ_TABS} from "@/views/blueraven/ahj/AhjConstants";
 
   export default {
     name: 'ahjUtilities',
@@ -157,23 +152,12 @@
       snackbar: {},
       constants,
       dataLoading: true,
-      tabs: [
-        {
-          label: 'AHJ',
-          path: '/ahj',
-          display: true
-        },
-        {
-          label: 'Utility',
-          path: '/ahjUtility',
-          display: true
-        }
-      ],
+      tabs: AHJ_TABS,
       headers: [
         { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
         { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 350, show: true },
-        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 300, show: true },
-        { text: null, value: null, sortable: false, show: true, width: 120 }
+        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 250, show: true },
+        { text: null, value: null, sortable: false, show: true, width: 100 }
       ],
       ahjUtilities: [],
       states: [],
@@ -323,7 +307,7 @@
         this.editedItem = {}
       },
       goToRoute(id) {
-        this.$router.push('ahjUtility/' + id + '/details')
+        this.$router.push('utility/' + id + '/details')
       },
     },
     created () {
@@ -338,6 +322,7 @@
 <style lang="scss" scoped>
   #ahj-utility-container {
     overflow: auto;
+    padding-top: 0;
   }
 
   .ahj-link {

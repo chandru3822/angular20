@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-4 mt-6 square-card">
+  <v-card class="design-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="ahj-form-btns py-1" cols="12">
         <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
@@ -282,6 +282,11 @@ export default {
 <style scoped lang="scss">
 .padded-sides {
   padding: 0 5px;
+}
+
+.design-card {
+  margin-left: 12px;
+  margin-right: 12px;
 }
 
 .ahj-form-btns {

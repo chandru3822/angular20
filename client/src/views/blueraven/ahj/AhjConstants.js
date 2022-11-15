@@ -4,6 +4,27 @@ export const CollapseExpandEnum = Object.freeze({
     EXPANDED:2
 })
 
+export const AHJ_TABS = [
+  {
+    label: 'AHJ',
+    path: '/ahj/list',
+    pathMatches: ['/list', '/permit', '/inspection', '/design'],
+    display: true
+  },
+  {
+    label: 'Utility',
+    path: '/ahj/utility',
+    pathMatches: ['/utility'],
+    display: true
+  },
+  {
+    label: 'HOA',
+    path: '/ahj/hoa',
+    pathMatches: ['/hoa'],
+    display: true
+  }
+]
+
 export const FILTER_DEFAULTS = {
     name: {value: '', type: 'text', model: 'name'},
     metroArea: {value: '', type: 'text', model: 'metroArea'},

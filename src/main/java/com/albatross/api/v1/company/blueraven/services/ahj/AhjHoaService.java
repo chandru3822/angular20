@@ -1,19 +1,18 @@
 package com.albatross.api.v1.company.blueraven.services.ahj;
 
-import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
-import com.albatross.api.v1.company.blueraven.models.ahj.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjHoa;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjHoaCompany;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjHoaDetail;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.User;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -29,7 +28,6 @@ public class AhjHoaService {
     private final SqlCache sqlCache;
     private final ObjectMapper om;
     private final SecurityService securityService;
-    private final NamedParameterJdbcTemplate jdbc;
     private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
     public List<AhjHoa> getAllAhjHoa() {
@@ -99,16 +97,6 @@ public class AhjHoaService {
         }
 
         protected void initBeanWrapper(BeanWrapper bw) {
-            TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
-            TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
-
-            bw.registerCustomEditor(
-                    List.class,
-                    "links",
-                    new JsonCollectionDeserializer(linkTypeRef, objectMapper));
-
-            bw.registerCustomEditor(
-                    List.class, "contacts", new JsonCollectionDeserializer(contactTypeRef, objectMapper));
         }
     }
 

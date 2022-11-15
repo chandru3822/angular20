@@ -1,35 +1,31 @@
 <template>
-  <v-container id="hoa-container">
+  <v-container id="ahj-hoa-container">
     <v-row>
-      <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">
-            <v-btn text to="/ahj" color="primary">
-              AHJ
-            </v-btn>
-            <v-btn text to="/ahjUtility" color="primary">
-              Utility
-            </v-btn><v-btn text to="/hoa" color="primary">
-            HOA
-          </v-btn>
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add New</span>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
+      <v-col cols="12"  class="pt-0 px-0">
+<!--        <v-toolbar color="white" class="elevation-1">-->
+<!--          <v-toolbar-title class="app-title">-->
+<!--            <v-btn v-for="tab in tabs" text :to="tab.path" color="primary">-->
+<!--              {{tab.label}}-->
+<!--            </v-btn>-->
+<!--          </v-toolbar-title>-->
+<!--          <v-spacer></v-spacer>-->
+<!--          <v-toolbar-items>-->
+<!--            <v-btn text @click="addItem" color="primary"-->
+<!--                   v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">-->
+<!--              <v-icon>add</v-icon>-->
+<!--              <span v-if="!constants.IS_MOBILE">Add New</span>-->
+<!--            </v-btn>-->
+<!--          </v-toolbar-items>-->
+<!--        </v-toolbar>-->
         <v-data-table
-            :headers="headers"
-            :items="filteredHoas"
-            :loading="dataLoading"
-            :items-per-page="100"
-            :mobile-breakpoint="0"
-            fixed-header
-            :footer-props="footerProps"
-            class="elevation-1 hoa-table"
+          :headers="headers"
+          :items="filteredHoas"
+          :loading="dataLoading"
+          :items-per-page="100"
+          :mobile-breakpoint="0"
+          fixed-header
+          :footer-props="footerProps"
+          class="elevation-1 hoa-table"
         >
           <template #header="{ props: { headers } }">
             <tr>
@@ -53,8 +49,9 @@
                                   filled
                                   item-text="state"
                                   dense
+                                  type="search"
+                                  autocomplete="off"
                                   hide-details
-                                  attach
                   ></v-autocomplete>
                 </div>
               </th>
@@ -63,19 +60,29 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">
+                {{ item.name ? item.name : '' }}
+              </td>
+              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">
+                {{ item.state ? item.state : '' }}
+              </td>
               <td class="text-left">
-                <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
+                <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">
+                  Details
+                </router-link>
                 <span v-else>
-                  <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link primary--text">Permit</router-link>
-                  <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link primary--text">Inspection</router-link>
+                  <router-link :to="'ahj/' + item.id + '/permit'"
+                               class="mr-3 ahj-link primary--text">Permit</router-link>
+                  <router-link :to="'ahj/' + item.id + '/inspection'"
+                               class="mr-3 ahj-link primary--text">Inspection</router-link>
                   <!--                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link primary&#45;&#45;text">Design Requirements</router-link>-->
                 </span>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary"
+                        class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
                 </v-icon>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small color="primary"
+                        class="ahj-link-icon" @click="deleteItem(item)">
                   delete
                 </v-icon>
               </td>
@@ -110,10 +117,11 @@
                           item-text="state"
                           item-value="id"
                           autocomplete="off"
+                          type="search"
                           required
                           filled
-                          attach
-          ></v-autocomplete><v-autocomplete label="Management Company"
+          ></v-autocomplete>
+          <v-autocomplete label="Management Company"
                           :items="managementCompanies"
                           v-model="editedItem.companyId"
                           item-text="management"
@@ -142,24 +150,26 @@
 <script>
 import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
-import {FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
+import {FILTER_DEFAULTS, AHJ_TABS} from "@/views/blueraven/ahj/AhjConstants";
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
-import {getActiveStates} from "../../../services/stateService";
+import {getActiveStates} from "@/services/stateService";
 
 export default {
-  name: "Hoa",
-  data:  () => ({
+  name: "ahjHoas",
+  data: () => ({
     constants,
     dataLoading: false,//true,
-    hoaFilters:[],
-    states:[],
-      headers: [
-        { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
-        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
-        {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 350, show: true },
-        { text: null, value: null, sortable: false, show: true, width: 5 }
-      ],
+    hoaFilters: [],
+    states: [],
+    tabs: AHJ_TABS,
+    headers: [
+      {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
+      { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
+      {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
+      {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 250, show: true},
+      {text: null, value: null, sortable: false, show: true, width: 50}
+    ],
     footerProps: {
       showFirstLastPage: !constants.IS_MOBILE,
       firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
@@ -173,36 +183,32 @@ export default {
       managementCompanyId: '',
     },
     ahjHoas: [],
-    managementCompanies:[]
+    managementCompanies: []
   }),
   computed: {
-    filteredHoas(){
+    filteredHoas() {
       return []
     },
-    ahjFormTitle () {
+    ahjFormTitle() {
       return this.addMode ? 'Create HOA' : 'Update HOA'
     },
-    ahjBtnTxt () {
+    ahjBtnTxt() {
       return this.addMode ? 'Add' : 'Update'
     },
   },
-    created () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.currentUser = this.$store.state.user.details.id
-      this.initFilters()
-      this.fetchAhjHoas().then(() => {
-        if (this.ahjHoas.length > 0) {
-          this.fetchStates()
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      })
-    },
+  created() {
+    this.$store.commit(AppMutations.SET_LOADING, true)
+    this.currentUser = this.$store.state.user.details.id
+    this.initFilters()
+    this.fetchStates()
+    this.fetchAhjHoas()
+  },
   methods: {
-    initFilters () {
+    initFilters() {
       this.hoaFilters = cloneDeep(FILTER_DEFAULTS)
-      this.hoaFilters = {...this.hoaFilters, managementCompany: {value: null, type:'text', model:'managementCompany'}}
+      this.hoaFilters = {...this.hoaFilters, managementCompany: {value: null, type: 'text', model: 'managementCompany'}}
     },
-    async getActiveManagementCompanies () {
+    async getActiveManagementCompanies() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest('/ahjHoa/list/companies', 'blueraven')
@@ -215,12 +221,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async fetchAhjHoas () {
+    async fetchAhjHoas() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest('/ahjHoa/list/all', 'blueraven')
         this.ahjHoas = cloneDeep(data)
-        debugger
         this.dataLoading = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -232,11 +237,10 @@ export default {
       }
     },
 
-    async fetchStates () {
+    async fetchStates() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getActiveStates()
-        debugger
         this.states = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -247,18 +251,17 @@ export default {
       }
     },
 
-    addItem () {
+    addItem() {
       this.getActiveManagementCompanies()
       this.addMode = true
       this.ahjDialog = true
     },
-    close () {
+    close() {
       this.ahjDialog = false
       this.ahjDeleteDialog = false
       this.editedItem = {}
     },
-    async saveAhj () {
-      debugger
+    async saveAhj() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       if (!this.editedItem.id) {
         try {
@@ -297,6 +300,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#ahj-hoa-container {
+  overflow: auto;
+  padding-top: 0;
+}
+
 .ahj-link {
   color: var(--v-brBlue-base);
   text-decoration: none;
