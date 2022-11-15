@@ -78,7 +78,7 @@
           <div class="mt-2" v-if="drivingDistance || drivingDuration">
             <v-divider class="mb-2"></v-divider>
             <strong>Drive Time:</strong> {{ drivingDuration }} <br>
-            <strong>Drive Distance:</strong> {{ drivingDistance }} m
+            <strong>Drive Distance:</strong> {{ drivingDistance }} miles
           </div>
         </v-card>
       </v-menu>
@@ -162,7 +162,7 @@ export default {
       loadingDriveTime: false,
       constants,
       markerCount: 0, //this is used to reset the key when the color of a marker changes so it gets redrawn
-      drivingMarkerColor: '#b73dcc',
+      drivingMarkerColor: '#ab4711',
       defaultEmptyColor: '#ffffff',
       location: '',
       address1: '',
