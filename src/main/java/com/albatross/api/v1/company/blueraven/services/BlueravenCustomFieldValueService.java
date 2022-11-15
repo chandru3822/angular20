@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -81,27 +82,32 @@ public class BlueravenCustomFieldValueService {
       for (CustomFieldGroup group : groups) {
         for (CustomFieldValue cfv : group.getCustomFieldValues()) {
           if (fieldHasValue(cfv) && cfv.getValueWasChanged()) {
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("dateValue", cfv.getDateValue());
-            params.put("timestampValue", cfv.getTimestampValue());
-            params.put("richTextValue", cfv.getRichTextValue());
-            params.put("booleanValue", cfv.getBooleanValue());
-            params.put("textValue", cfv.getTextValue());
-            params.put("numericValue", cfv.getNumericValue());
-            params.put("intValue", cfv.getIntValue());
-            params.put("intArrayValue", cfv.getIntArrayValue());
-            params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+            try{
+              HashMap<String, Object> params = new HashMap<>();
+              params.put("dateValue", cfv.getDateValue());
+              params.put("timestampValue", cfv.getTimestampValue());
+              params.put("richTextValue", cfv.getRichTextValue());
+              params.put("booleanValue", cfv.getBooleanValue());
+              params.put("textValue", cfv.getTextValue());
+              params.put("numericValue", cfv.getNumericValue());
+              params.put("intValue", cfv.getIntValue());
+              params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
+              params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
 
-            if (null != cfv.getId()) {
-              params.put("id", cfv.getId());
-              params.put("modifiedById", currentUser.trueUserId());
+              if (null != cfv.getId()) {
+                params.put("id", cfv.getId());
+                params.put("modifiedById", currentUser.trueUserId());
 
-              sqlCache.updateBySql(getUpdateSqlStatement(objectType, false), params);
-            } else {
-              params.put("sourceId", sourceId);
-              params.put("userId", currentUser.trueUserId());
+                sqlCache.updateBySql(getUpdateSqlStatement(objectType, false), params);
+              } else {
+                params.put("sourceId", sourceId);
+                params.put("userId", currentUser.trueUserId());
 
-              sqlCache.updateBySql(getInsertSqlStatement(objectType), params);
+                sqlCache.updateBySql(getInsertSqlStatement(objectType), params);
+              }
+            } catch (SQLException e) {
+              log.error("CFV: error saving value: {}, save by: {}, for sourceId: {}, for objectType: {}", e.getMessage(), currentUser.getId(), sourceId, objectType);
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
             }
           }
         }
@@ -121,7 +127,7 @@ public class BlueravenCustomFieldValueService {
             + "        rich_text_value = :richTextValue,\n"
             + "        numeric_value = :numericValue,\n"
             + "        int_value = :intValue,\n"
-            + "        int_array_value = :intArrayValue,\n"
+            + "        int_array_value = :intArrayValue::bigint[],\n"
             + "        modified_by_id = :modifiedById,\n"
             + "        date_modified = now()\n";
     if (isMultiple) {
@@ -181,56 +187,61 @@ public class BlueravenCustomFieldValueService {
       for (CustomFieldGroup group : groups) {
         for (CustomFieldValue cfv : group.getCustomFieldValues()) {
           if (fieldHasValue(cfv) && cfv.getValueWasChanged()) {
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("dateValue", cfv.getDateValue());
-            params.put("timestampValue", cfv.getTimestampValue());
-            params.put("booleanValue", cfv.getBooleanValue());
-            params.put("textValue", cfv.getTextValue());
-            params.put("richTextValue", cfv.getRichTextValue());
-            params.put("numericValue", cfv.getNumericValue());
-            params.put("intValue", cfv.getIntValue());
-            params.put("intArrayValue", cfv.getIntArrayValue());
-            params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-            params.put("modifiedById", currentUser.trueUserId());
-            params.put("userId", currentUser.trueUserId());
+            try {
+              HashMap<String, Object> params = new HashMap<>();
+              params.put("dateValue", cfv.getDateValue());
+              params.put("timestampValue", cfv.getTimestampValue());
+              params.put("booleanValue", cfv.getBooleanValue());
+              params.put("textValue", cfv.getTextValue());
+              params.put("richTextValue", cfv.getRichTextValue());
+              params.put("numericValue", cfv.getNumericValue());
+              params.put("intValue", cfv.getIntValue());
+              params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
+              params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+              params.put("modifiedById", currentUser.trueUserId());
+              params.put("userId", currentUser.trueUserId());
 
-            ArrayList<Long> cfvIds = new ArrayList<>();
+              ArrayList<Long> cfvIds = new ArrayList<>();
 
-            sourceIds.forEach(
-                sourceId -> {
-                  // the additional source ids are passed into the function
-                  // this determines if there is already a record in the custom_field_value table
-                  // that needs to be updated
-                  // if no, do insert, if yes, add to ids to get updated at the end
-                  params.put("sourceId", sourceId);
+              sourceIds.forEach(
+                  sourceId -> {
+                    // the additional source ids are passed into the function
+                    // this determines if there is already a record in the custom_field_value table
+                    // that needs to be updated
+                    // if no, do insert, if yes, add to ids to get updated at the end
+                    params.put("sourceId", sourceId);
 
-                  String primaryKeyColumn = ObjectType.get(objectType).primaryKeyColumn;
-                  String sql =
-                      "select id from brs."
-                          + objectType
-                          + "_custom_field_value"
-                          + " where "
-                          + primaryKeyColumn
-                          + " = :sourceId "
-                          + " and custom_field_group_assignment_id = :customFieldGroupAssignmentId";
+                    String primaryKeyColumn = ObjectType.get(objectType).primaryKeyColumn;
+                    String sql =
+                        "select id from brs."
+                            + objectType
+                            + "_custom_field_value"
+                            + " where "
+                            + primaryKeyColumn
+                            + " = :sourceId "
+                            + " and custom_field_group_assignment_id = :customFieldGroupAssignmentId";
 
-                  Optional<Long> id =
-                      sqlCache.getBySql(
-                          sql,
-                          params,
-                          new SingleColumnRowMapper<>(
-                              Long.class)); // only returns ids of rows that need to be updated
+                    Optional<Long> id =
+                        sqlCache.getBySql(
+                            sql,
+                            params,
+                            new SingleColumnRowMapper<>(
+                                Long.class)); // only returns ids of rows that need to be updated
 
-                  if (id.isEmpty()) {
-                    sqlCache.updateBySql(getInsertSqlStatement(objectType), params);
-                  } else {
-                    cfvIds.add(id.get());
-                  }
-                });
+                    if (id.isEmpty()) {
+                      sqlCache.updateBySql(getInsertSqlStatement(objectType), params);
+                    } else {
+                      cfvIds.add(id.get());
+                    }
+                  });
 
-            if (cfvIds.size() > 0) {
-              params.put("cfvIds", cfvIds);
-              sqlCache.updateBySql(getUpdateSqlStatement(objectType, true), params);
+              if (cfvIds.size() > 0) {
+                params.put("cfvIds", cfvIds);
+                sqlCache.updateBySql(getUpdateSqlStatement(objectType, true), params);
+              }
+            } catch (SQLException e) {
+              log.error("CFV: error saving value: {}, save by: {}, for sourceIds: {}, for objectType: {}", e.getMessage(), currentUser.getId(), sourceIds, objectType);
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
             }
           }
         }
