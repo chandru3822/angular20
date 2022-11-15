@@ -145,6 +145,7 @@ import cloneDeep from "lodash.clonedeep";
 import {FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+import {getActiveStates} from "../../../services/stateService";
 
 export default {
   name: "Hoa",
@@ -231,8 +232,22 @@ export default {
       }
     },
 
+    async fetchStates () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getActiveStates()
+        debugger
+        this.states = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+
     addItem () {
-      debugger
       this.getActiveManagementCompanies()
       this.addMode = true
       this.ahjDialog = true
