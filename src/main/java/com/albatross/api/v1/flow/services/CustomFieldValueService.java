@@ -173,7 +173,8 @@ public class CustomFieldValueService {
       } else if (objectType.equals("event")) {
         Long projectId = projectService.getProjectIdByProjectProcessStepEventId(id);
         handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
-      } else {
+      } else if(!objectType.equals("attachment_type")) {
+        //dont do this for attachment types. it has already been handled and this code all sucks ass.
         handleCustomListOfValue(fieldGroups, companyId);
       }
 
@@ -219,6 +220,7 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> getAttachmentAncillaryCfgs(Long attachmentId, Long attachmentTypeId, Long companyId) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("attachmentId", attachmentId);
     params.put("attachmentTypeId", attachmentTypeId);
@@ -230,6 +232,11 @@ public class CustomFieldValueService {
       params.put("idToUse", obj.idToUse);
       String sqlPrefix = "customFieldValues." + obj.objectTypeText + ".getAncillaryCustomFieldGroupsAndValuesForAttachments";
       List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+      for(CustomFieldGroup group : fieldGroups) {
+        for (CustomFieldValue value : group.getCustomFieldValues()) {
+          handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId());
+        }
+      }
       return fieldGroups;
     } else {
       return null;

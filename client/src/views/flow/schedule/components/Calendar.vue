@@ -828,6 +828,7 @@
                 projectName: re.projectName,
                 processStepName: re.processStepName,
                 city: re.city,
+                projectProcessStepEventId: re.projectProcessStepEventId,
                 stateAbbreviation: re.stateAbbreviation,
                 postalCode: re.postalCode,
                 street1: re.street1,

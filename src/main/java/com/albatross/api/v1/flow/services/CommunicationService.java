@@ -233,7 +233,8 @@ public class CommunicationService {
             template,
             mediaURLs,
             RecipientType.USER,
-            loggedInUserId);
+            loggedInUserId,
+            null);
       } catch (Exception ex) {
         log.error("MESSAGING: Error queueing SMS ", ex);
       }
@@ -248,7 +249,8 @@ public class CommunicationService {
       String toPhone,
       String template,
       List<URI> mediaURLs,
-      Long sentByUserId) {
+      Long sentByUserId,
+      Long sentBySmsTeamId) {
     try {
       smsService.queueMessage(
         messageGroupId,
@@ -259,7 +261,8 @@ public class CommunicationService {
         template,
         mediaURLs,
         RecipientType.PROJECT,
-        sentByUserId);
+        sentByUserId,
+        sentBySmsTeamId);
     } catch (Exception ex) {
       log.error("MESSAGING: Error queueing SMS ", ex);
     }
@@ -280,7 +283,7 @@ public class CommunicationService {
     }
   }
 
-  public Map<String, Object> sendTextsForProject(Long projectId, Contact contact, User user, String message, List<URI> mediaURLs) {
+  public Map<String, Object> sendTextsForProject(Long projectId, Contact contact, User user, String message, List<URI> mediaURLs, Long smsTeamId) {
     String groupId = UUID.randomUUID().toString();
       String phoneNumber = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();
       try {
@@ -316,7 +319,8 @@ public class CommunicationService {
           safePhone,
           template,
           mediaURLs,
-          user.getId());
+          user.getId(),
+          smsTeamId);
 
         return Map.of("messageGroup", groupId);
       } catch (NumberParseException ex) {
@@ -420,14 +424,4 @@ public class CommunicationService {
 
     return projectDetails;
   }
-
-  //  public void sendPushNotificationToTopic(String title, String body)
-  //      throws FirebaseMessagingException {
-  //    Message message = Message.builder().putData("score", "854").setTopic("test").build();
-  //
-  //    //    FirebaseMessaging.getInstance(app).subscribeToTopic(List.of("123"), "test");
-  //    String response = firebaseMessaging.send(message);
-  //
-  //    log.debug("SENT MESSAGE: {}", response);
-  //  }
 }

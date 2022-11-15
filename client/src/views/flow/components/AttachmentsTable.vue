@@ -66,6 +66,7 @@
           </v-btn>
           <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
+            :retain-focus="false"
             @confirm="deleteAttachment"
             @close-dialog="closeDeleteDialog"
 
@@ -190,8 +191,9 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Document')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      } finally {
+        this.closeDeleteDialog()
       }
-      this.closeDeleteDialog()
 
     },
     async linkAttachment(attachment, doLink) {

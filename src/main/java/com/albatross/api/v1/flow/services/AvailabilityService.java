@@ -610,9 +610,7 @@ public class AvailabilityService {
           currentEventStart = currentEventStart.plusDays(1);
         }
 
-        // this determines the offset of the new event and compares it to the offset used when it
-        // was saved, then adjusts accordingly
-        ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of(timezone));
+        ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("US/Mountain"));
         if (zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
           long offsetDifference =
               zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();

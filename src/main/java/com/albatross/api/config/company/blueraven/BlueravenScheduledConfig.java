@@ -1,7 +1,13 @@
 package com.albatross.api.config.company.blueraven;
 
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.flow.enums.SystemSettings;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +19,10 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -33,6 +41,10 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   private final GenesysService genesysService;
 
   private final MarketoService marketoService;
+
+  private final BirdeyeService birdeyeService;
+
+  private final SecurityService securityService;
 
   /*
   //
@@ -77,9 +89,33 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       }
   }
 
+  @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
+  public void syncBirdeyeResponses(){
+    log.info("*** CRON: start sync surveys from BirdEye ***");
+    setBlueravenSystemUser();
+
+    birdeyeService.syncSurveyResponses();
+    log.info("*** CRON: end sync surveys from BirdEye ***");
+  }
+
   @Bean(destroyMethod = "shutdown")
   public Executor blueravenTaskExecutor() {
     return Executors.newScheduledThreadPool(10);
+  }
+
+  private void setBlueravenSystemUser() {
+    log.debug("Setting BR System User");
+    final SystemSettings brSystemUser = SystemSettings.BR_SYSTEM_USER;
+
+    final User user = new User();
+    user.setId(brSystemUser.getId());
+    user.setCompanyId(brSystemUser.getCompanyId());
+    user.setHighestCompanyId(brSystemUser.getCompanyId());
+    user.setHighestParentCompanyId(brSystemUser.getCompanyId());
+
+    final UserAccountDetails uad = new UserAccountDetails(user, List.of());
+
+    securityService.setCurrentUserDetails(uad);
   }
 
 }

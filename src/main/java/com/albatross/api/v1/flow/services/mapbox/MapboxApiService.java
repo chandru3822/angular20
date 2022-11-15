@@ -63,6 +63,78 @@ public class MapboxApiService {
     }
   }
 
+  public String getAddressSuggestions(String address) throws Exception {
+    try {
+      int limit = 5;
+      String types = "address";
+      String proximity = "ip";
+      String language = "en";
+      boolean autocomplete = true;
+      boolean fuzzyMatch = true;
+
+      String urlEncodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
+      String url =
+        "https://api.mapbox.com/geocoding/v5/mapbox.places/"
+          + urlEncodedAddress
+          + ".json?access_token="
+          + MAPBOX_ACCESS_TOKEN
+          + "&limit="
+          + limit
+          + "&types="
+          + types
+          + "&proximity="
+          + proximity
+          + "&autocomplete="
+          + autocomplete
+          + "&fuzzyMatch="
+          + fuzzyMatch
+          + "&language="
+          + language
+        ;
+      log.debug("MAPBOX: Geocoding Suggestions API Request: {}", url);
+      HttpResponse resp = HttpUtils.call("GET", url);
+      if (resp.getResponseCode() != 200) {
+        log.error("MAPBOX: Error Suggestion response code {}", resp.getResponseCode());
+        throw new Exception(resp.getBody());
+      }
+      JSONObject data = resp.getJSON();
+//i couldnt get this mapper to work for some reason
+//      GeocodingResponse formattedData = GeocodingResponse.fromJson(data.toString());
+
+      return data.toString();
+
+    } catch (Exception ex) {
+      log.error("MAPBOX: Error retrieving suggestions.", ex);
+      throw ex;
+    }
+  }
+
+  public String getDriveTime(String latLongPairs) throws Exception {
+    try {
+      String urlEncodedPairs = URLEncoder.encode(latLongPairs, StandardCharsets.UTF_8);
+      String url =
+        "https://api.mapbox.com/directions/v5/mapbox/driving/"
+          + urlEncodedPairs
+          + "?access_token="
+          + MAPBOX_ACCESS_TOKEN;
+      log.debug("MAPBOX: Geocoding Drive Time Request: {}", url);
+      HttpResponse resp = HttpUtils.call("GET", url);
+      if (resp.getResponseCode() != 200) {
+        log.error("MAPBOX: Drive Time Error response code {}", resp.getResponseCode());
+        throw new Exception(resp.getBody());
+      }
+      JSONObject data = resp.getJSON();
+
+//      DirectionsResponse formattedData = DirectionsResponse.fromJson(data.toString());
+
+      return data.toString();
+
+    } catch (Exception ex) {
+      log.error("MAPBOX: Error retrieving drive time.", ex);
+      throw ex;
+    }
+  }
+
   public String getTimezone(Double latitude, Double longitude) throws Exception {
     try {
       String url =

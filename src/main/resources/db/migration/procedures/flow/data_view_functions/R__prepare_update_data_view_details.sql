@@ -35,7 +35,7 @@ BEGIN
       return p_sql;
     end if;
     if p_update_first_value_only is true then
-      p_sql = p_sql || p_update_first_value_only_id || $$ = $$ || p_id || $$ ,$$;
+      p_sql = p_sql || p_update_first_value_only_id || $$ = case when $$|| p_value ||$$ is not null then $$ || p_id || $$ else null end ,$$;
     end if;
     p_sql = p_sql || p_field_to_update || $$ = $$ || p_value || $$ ,$$;
     if p_last_row is true then
@@ -43,6 +43,11 @@ BEGIN
     end if;
     return p_sql;
   else
+    if p_update_first_value_only is true and p_value is null then
+      perform flow.update_first_value(p_field_to_update,
+                                      p_update_first_value_only_id,p_secondary_field_to_update,p_secondary_value,
+                                      p_where_clause_condition_ids);
+    end if;
     if p_update_first_value_only is true then
       p_sql = p_sql || $$ where project_id = any( $$ || p_where_clause_condition_ids::text || $$)
      and ( $$ || p_update_first_value_only_id || $$ is null or ( $$ || p_update_first_value_only_id || $$ is not null and  $$ ||

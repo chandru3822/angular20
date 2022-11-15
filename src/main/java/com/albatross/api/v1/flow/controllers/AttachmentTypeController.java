@@ -263,6 +263,13 @@ public class AttachmentTypeController {
     attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.EVENT);
   }
 
+  //this endpoint is specifically for mobile. they want all attachment types back and they will parse them as needed
+  @GetMapping(value = "/assigned", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectTypeAttachmentType> getAssignedTypesToObject(@RequestParam(required = false) Long ppsId,
+                                                                 @RequestParam(required = false) Long ppsEventId) {
+    return attachmentTypeService.getAssignedTypesToObject(ppsId, ppsEventId);
+  }
+
   //these endpoints are for the non-admin side of things
   @GetMapping(value = "/combined/project", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ObjectTypeAttachmentType> getCombinedTypesForProject(@RequestParam Boolean focused,

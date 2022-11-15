@@ -418,6 +418,9 @@ BEGIN
                p_attachment_id         as attachment_id,
                p_object_type_id        as object_type_id,
                pps.project_id          as project_id,
+               null::bigint                                                   as contact_id,
+               null::bigint                                                   as user_id,
+               null::bigint                                                   as org_id,
                cfga.id                 as custom_field_group_assignment_id,
                null::text              as text_value,
                case
@@ -434,7 +437,7 @@ BEGIN
                  when df.id = 11 then (select end_time
                                        from flow.project_process_step_event ppse
                                        where ppse.id = p_source_id)
-                 else null::timestamp end,
+                 else null::timestamp end as timestamp_value,
                null::boolean           as boolean_value,
                null::numeric           as numeric_value,
                null::text              as rich_text_value,

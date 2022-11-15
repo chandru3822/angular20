@@ -1,5 +1,18 @@
 <template>
   <div id="project-details-container" class="py-0">
+    <v-dialog persistent :width="1000" v-model="showCoversheetModal"
+              content-class="coversheet-modal-content">
+      <AttachmentCoversheetModal :existing-attachment="tempFile"
+                                 :file="fileToUpload"
+                                 :show-modal="showCoversheetModal"
+                                 :close-callback="closeCoversheet"
+                                 :file-uploaded-callback="fileUploaded"
+                                 :projectId="projectId"
+                                 :objectTypeId="1"
+
+      >
+      </AttachmentCoversheetModal>
+    </v-dialog>
     <div class="pa-0 height-one-hunned">
       <div class="project-header" v-if="!tabsLoading">
         <v-tabs v-if="tabs.length > 0"
@@ -22,7 +35,7 @@
           <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-menu data-app left
+            <v-menu data-app right
                     offset-y
                     v-model="attachmentMenuOpen"
                     max-height="350"
@@ -36,10 +49,20 @@
                 <template v-for="(item, index) in attachmentTypes">
                   <v-list-item
                     :key="index"
-                    @click="menuOpen = false">
+                    @click="[menuOpen = false, selectFile(item.attachmentTypeId)]">
                     <v-list-item-content>
                       <v-list-item-title>{{ item.attachmentType }}</v-list-item-title>
                     </v-list-item-content>
+                    <input
+                      :id="`menuFileInput${item.attachmentTypeId}`"
+                      type="file"
+                      :multiple="!item.hasFieldsAssigned"
+                      :accept="acceptedFileTypes"
+                      @change='doUpload($event.target.files, item)'
+                      style="display: none"
+                      @click.stop=""
+                      :ref="`menuFileInput${item.attachmentTypeId}`"
+                    >
                   </v-list-item>
                 </template>
               </v-list>
@@ -143,21 +166,25 @@ import {
   postRequest,
   logError,
   getSnackbar,
-  getRequestWithParams
+  getRequestWithParams, getAttachmentSourceId
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from '@/stores/ProjectStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
+import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import {Actions} from "@/store";
+import constants from "@/helpers/constants";
 
 export default {
   name: 'ProjectDetails',
   components: {
     SpinnerInline,
     CustomValueInput,
-    AttachmentsFolderList
+    AttachmentsFolderList,
+    AttachmentCoversheetModal
   },
   data() {
     return {
@@ -175,6 +202,10 @@ export default {
       dirtyCfvs: [],
       attachmentTypes: [],
       attachmentMenuOpen: false,
+      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
+      tempFile: {},
+      fileToUpload: null,
+      showCoversheetModal: false,
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
@@ -324,7 +355,99 @@ export default {
     },
     getReadOnly: function (field) {
       return getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
-    }
+    },
+    selectFile: function (typeId) {
+      document.getElementById(`menuFileInput${typeId}`)?.click();
+    },
+    async doUpload(files, type) {
+      if (files?.length > 0) {
+        if (type.hasFieldsAssigned) {
+          let file = files[0]
+          this.setTempFile(file, type)
+        } else {
+          await this.uploadDocument(files, type)
+        }
+      }
+    },
+    setTempFile: function (file, type) {
+      this.tempFile = {}
+      this.fileToUpload = null
+      //we dont upload new files until after they fill in custom fields, need to pass file to next screen
+      this.fileToUpload = file
+      this.tempFile.attachmentTypeId = type.attachmentTypeId
+      this.tempFile.attachmentType = type.attachmentType
+      let displayName = this.fileToUpload.name.substr(0, this.fileToUpload.name.lastIndexOf('.'))
+      this.tempFile.displayName = displayName
+      this.showCoversheetModal = true
+    },
+    uploadDocument: async function (files, type) {
+      //this should only get called if the attachment type doesn't have any native fields
+      try {
+        //reset error message when trying to upload new file
+        this.error = {}
+        if (files?.length > 0) {
+          const { sourceId, secondaryId } = getAttachmentSourceId(this.projectId, this.projectProcessStepId, this.projectProcessStepEventId,
+            this.userId, this.contactId, this.orgId)
+
+          this.$store.commit(AppMutations.SET_LOADING, true)
+
+          //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
+          if (sourceId != null) {
+            if(files.length > 1) {
+              console.log('doing multi')
+              const filesToUpload = [...files].map(file => {
+                return {
+                  file,
+                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+                  attachmentTypeId: type.attachmentTypeId,
+                  objectTypeId: 1,
+                  sourceId,
+                  secondaryId,
+                }
+              })
+              const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
+              this.attachments = [...this.attachments, ...uploaded]
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            } else {
+              let file = files[0]
+              if(file?.size > 0) {
+                console.log('doing this')
+                await this.$store.dispatch(Actions.FILE_UPLOAD, {
+                  file: file,
+                  attachmentTypeId: type.attachmentTypeId,
+                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+                  objectTypeId: 1,
+                  sourceId,
+                  secondaryId,
+                  callback: this.fileUploaded
+                })
+              }
+            }
+          }
+        }
+      } catch (e) {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    fileUploaded(attachment, error) {
+      if (error) {
+        this.snackbar = getSnackbar('ERROR', error.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } else {
+          //this value tells the right pane to update when a file is uploaded
+          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+      }
+      this.$store.commit(AppMutations.SET_LOADING, false)
+    },
+    closeCoversheet(attachmentTypeId) {
+      this.showCoversheetModal = false
+      //if you cancel the coversheet the file-input files prop is not getting reset. do manually here
+      //could not get it to reset using the vue $ref stuff. but this way with getElementById does work
+      document.getElementById(`menuFileInput${attachmentTypeId}`).value = null
+    },
   }
 }
 </script>
