@@ -1,25 +1,24 @@
 <sql>
-  <ahj.hoa.list.all>
-    <![CDATA[
+  <ahj.hoa.list.all><![CDATA[
       SELECT h.id,
-       h.name,
-       cs.id as company_state_id,
-       cs.state_id,
-       s.state,
-       s.abbreviation as state_abbreviation,
-       mc.id as management_company_id,
-       mc.name as management_company,
-       h.archived
-FROM brs.ahj_hoa h
-         left join flow.list_of_value mc on mc.id = h.management_company_id
-         left join flow.company_state cs on cs.id = h.company_state_id
-         left join flow.state s on s.id = cs.state_id
-ORDER BY h.name;
-    ]]>
-  </ahj.hoa.list.all>
+             h.name,
+             cs.id as company_state_id,
+             cs.state_id,
+             s.state,
+             27 as metro_area_id,
+             'randa test' as metro_area,
+             s.abbreviation as state_abbreviation,
+             mc.id as management_company_id,
+             mc.name as management_company,
+             h.archived
+      FROM brs.ahj_hoa h
+               left join flow.list_of_value mc on mc.id = h.management_company_id
+               left join flow.company_state cs on cs.id = h.company_state_id
+               left join flow.state s on s.id = cs.state_id
+      ORDER BY h.name;
+  ]]></ahj.hoa.list.all>
 
-  <ahj.hoa.simple.update>
-    <![CDATA[
+  <ahj.hoa.simple.update><![CDATA[
       UPDATE brs.ahj_hoa
       SET name = :hoaName,
         archived = :archived,
@@ -28,11 +27,9 @@ ORDER BY h.name;
         date_modified = now(),
         modified_by_id = :currentUser
       WHERE id = :id
-    ]]>
-  </ahj.hoa.simple.update>
+  ]]></ahj.hoa.simple.update>
 
-  <ahj.hoa.update>
-    <![CDATA[
+  <ahj.hoa.update><![CDATA[
       UPDATE brs.ahj_hoa
       SET
         name = :hoaName,
@@ -42,18 +39,18 @@ ORDER BY h.name;
         date_modified = now(),
         modified_by_id = :currentUser
       WHERE id = :id
-    ]]>
-  </ahj.hoa.update>
+  ]]></ahj.hoa.update>
 
   <ahj.hoa.insert><![CDATA[
       INSERT INTO brs.ahj_hoa(name, archived, company_state_id, management_company_id, date_created, created_by_id,date_modified, modified_by_id)
       VALUES (:hoaName, false, :companyStateId, :managementCompanyId, now(), :currentUser, now(), :currentUser)
   ]]></ahj.hoa.insert>
 
-  <ahj.hoa.detailById>
-    <![CDATA[
+  <ahj.hoa.detailById><![CDATA[
       SELECT
           h.*,
+          27 as metro_area_id,
+         'randa test' as metro_area,
           mc.name as management_company,
           cs.state_id,
           s.state,
@@ -62,9 +59,8 @@ ORDER BY h.name;
                left join flow.list_of_value mc on mc.id = h.management_company_id
                left join flow.company_state cs on cs.id = h.company_state_id
                left join flow.state s on s.id = cs.state_id
-      WHERE u.id = :id
-    ]]>
-  </ahj.hoa.detailById>
+      WHERE h.id = :id
+  ]]></ahj.hoa.detailById>
 
 
   <ahj.hoa.getActiveManagementCompanies><![CDATA[
@@ -72,8 +68,8 @@ ORDER BY h.name;
          lov.id,
          lov.name as "managementCompany",
          lov.archived
-       FROM flow.list_of_value lov
-       WHERE lov.parent_id = ??
+       FROM brs.list_of_value lov
+       WHERE lov.parent_id = 759
          AND lov.archived IS FALSE
        ORDER BY lov.name
     ]]></ahj.hoa.getActiveManagementCompanies>

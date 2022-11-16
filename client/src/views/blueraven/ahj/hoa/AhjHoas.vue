@@ -2,21 +2,6 @@
   <v-container id="ahj-hoa-container">
     <v-row>
       <v-col cols="12"  class="pt-0 px-0">
-<!--        <v-toolbar color="white" class="elevation-1">-->
-<!--          <v-toolbar-title class="app-title">-->
-<!--            <v-btn v-for="tab in tabs" text :to="tab.path" color="primary">-->
-<!--              {{tab.label}}-->
-<!--            </v-btn>-->
-<!--          </v-toolbar-title>-->
-<!--          <v-spacer></v-spacer>-->
-<!--          <v-toolbar-items>-->
-<!--            <v-btn text @click="addItem" color="primary"-->
-<!--                   v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">-->
-<!--              <v-icon>add</v-icon>-->
-<!--              <span v-if="!constants.IS_MOBILE">Add New</span>-->
-<!--            </v-btn>-->
-<!--          </v-toolbar-items>-->
-<!--        </v-toolbar>-->
         <v-data-table
           :headers="headers"
           :items="filteredHoas"
@@ -27,6 +12,16 @@
           :footer-props="footerProps"
           class="elevation-1 hoa-table"
         >
+          <template #header.icons="{}">
+            <div class="text-right mr-2">
+              <v-btn text @click="addItem" color="primary"
+                     v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+                <v-icon>add</v-icon>
+                <span v-if="!constants.IS_MOBILE">Add New</span>
+              </v-btn>
+            </div>
+          </template>
+
           <template #header="{ props: { headers } }">
             <tr>
               <th v-for="header in headers" :key="header.text"
@@ -61,29 +56,21 @@
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
               <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.name ? item.name : '' }}
+                {{ item.name || '' }}
               </td>
               <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.state ? item.state : '' }}
+                {{ item.metroArea || '' }}
               </td>
-              <td class="text-left">
-                <router-link v-if="constants.IS_MOBILE" :to="`hoa/${item.id}/details`" class="mr-3 ahj-link">
-                  Details
-                </router-link>
-                <span v-else>
-                  <router-link :to="'ahj/' + item.id + '/permit'"
-                               class="mr-3 ahj-link primary--text">Permit</router-link>
-                  <router-link :to="'ahj/' + item.id + '/inspection'"
-                               class="mr-3 ahj-link primary--text">Inspection</router-link>
-                  <!--                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link primary&#45;&#45;text">Design Requirements</router-link>-->
-                </span>
+              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
+                {{ item.state || '' }}
+              </td>
+              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
+                {{ item.managementCompany || '' }}
+              </td>
+              <td class="text-right">
                 <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary"
-                        class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                        class="mr-3 ahj-link-icon" @click="editAhjHoa(item)">
                   edit
-                </v-icon>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small color="primary"
-                        class="ahj-link-icon" @click="deleteItem(item)">
-                  delete
                 </v-icon>
               </td>
             </tr>
@@ -99,7 +86,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <v-dialog v-model="ahjDialog" max-width="500px">
+    <v-dialog v-model="ahjHoaDialog" max-width="500px">
       <v-card>
         <v-card-title>
           <span class="text-h5">{{ ahjFormTitle }}</span>
@@ -121,14 +108,23 @@
                           required
                           filled
           ></v-autocomplete>
+          <v-autocomplete
+            label="Metro Area"
+            :items="metroAreas"
+            v-model="editedItem.metroAreaId"
+            required
+            filled
+            type="search"
+            autocomplete="off"
+          ></v-autocomplete>
           <v-autocomplete label="Management Company"
                           :items="managementCompanies"
-                          v-model="editedItem.companyId"
-                          item-text="management"
+                          v-model="editedItem.managementCompanyId"
+                          item-text="managementCompany"
                           item-value="id"
+                          type="search"
                           autocomplete="off"
                           filled
-                          attach
           ></v-autocomplete>
 
         </v-card-text>
@@ -136,8 +132,8 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="close">Cancel</v-btn>
-          <v-btn color="primary" raised @click="saveAhj" class="white--text"
-                 :disabled="!editedItem.name || !editedItem.managementCompanyId || !editedItem.companyStateId">
+          <v-btn color="primary" raised @click="saveAhjHoa" class="white--text"
+                 :disabled="!editedItem.name || !editedItem.managementCompanyId || !editedItem.companyStateId || !editedItem.metroAreaId">
             {{ ahjBtnTxt }}
           </v-btn>
         </v-card-actions>
@@ -168,7 +164,7 @@ export default {
       { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
       {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
       {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 250, show: true},
-      {text: null, value: null, sortable: false, show: true, width: 50}
+      {text: null, value: 'icons', sortable: false, show: true, width: 50}
     ],
     footerProps: {
       showFirstLastPage: !constants.IS_MOBILE,
@@ -177,36 +173,78 @@ export default {
       'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
       'items-per-page-options': [25, 50, 100, 1000]
     },
-    ahjDialog: false,
+    ahjHoaDialog: false,
     editedItem: {
       name: '',
       managementCompanyId: '',
     },
     ahjHoas: [],
-    managementCompanies: []
+    addMode: false,
+    managementCompanies: [],
+    metroAreas: []
   }),
   computed: {
     filteredHoas() {
-      return []
+      return this.ahjHoas && this.ahjHoas.filter(hoa => {
+        return Object.keys(this.hoaFilters).every(filterName => {
+          const filter = this.hoaFilters[filterName]
+
+          if (filter.value && filter.value.length < 1) {
+            return true
+          }
+
+          if (!hoa[filterName]) {
+            return false
+          }
+
+          if (filter.value !== null && filter.value !== undefined) {
+            return hoa[filterName].toLowerCase().includes(filter.value.toLowerCase())
+          } else if (filter.value === undefined) {
+            filter.value = []
+          } else {
+            filter.value = ''
+          }
+        })
+      })
     },
     ahjFormTitle() {
+      console.log('add here',this.addMode)
       return this.addMode ? 'Create HOA' : 'Update HOA'
     },
     ahjBtnTxt() {
       return this.addMode ? 'Add' : 'Update'
     },
   },
-  created() {
+  async created() {
     this.$store.commit(AppMutations.SET_LOADING, true)
     this.currentUser = this.$store.state.user.details.id
     this.initFilters()
     this.fetchStates()
-    this.fetchAhjHoas()
+    await this.fetchAhjHoas()
   },
   methods: {
     initFilters() {
       this.hoaFilters = cloneDeep(FILTER_DEFAULTS)
-      this.hoaFilters = {...this.hoaFilters, managementCompany: {value: null, type: 'text', model: 'managementCompany'}}
+      this.hoaFilters = {...this.hoaFilters, managementCompany: {value: '', type: 'text', model: 'managementCompany'}}
+    },
+    async getActiveMetroAreas () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest('/metro/getActive', 'blueraven')
+        data.forEach(item => {
+          let option = {
+            text: item.metroArea,
+            value: item.id
+          }
+          this.metroAreas.push(option)
+        })
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async getActiveManagementCompanies() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -250,40 +288,47 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-
     addItem() {
       this.getActiveManagementCompanies()
+      this.getActiveMetroAreas()
       this.addMode = true
-      this.ahjDialog = true
+      this.ahjHoaDialog = true
+    },
+    editAhjHoa (item) {
+      this.editedItem = Object.assign({}, item)
+      this.getActiveManagementCompanies()
+      this.getActiveMetroAreas()
+      this.addMode = false
+      this.ahjHoaDialog = true
     },
     close() {
-      this.ahjDialog = false
+      this.ahjHoaDialog = false
       this.ahjDeleteDialog = false
       this.editedItem = {}
     },
-    async saveAhj() {
+    async saveAhjHoa() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      if (!this.editedItem.id) {
+      if (this.addMode) {
         try {
-          const {status} = await postRequest('/ahj', this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ created')
+          const {status} = await postRequest('/ahjHoa', this.editedItem, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ HOA created')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error creating AHJ')
+          this.snackbar = getSnackbar('ERROR', 'Error creating AHJ HOA')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       } else {
         try {
-          const {status} = await putRequest(`/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ updated')
+          const {status} = await putRequest(`/ahjHoa/simpleUpdate`, this.editedItem, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ HOA updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error updating AHJ')
+          this.snackbar = getSnackbar('ERROR', 'Error updating AHJ HOA')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -291,7 +336,7 @@ export default {
 
       this.close()
       this.initFilters()
-      await this.fetchAhjs().then(() => this.fetchStates())
+      await this.fetchAhjHoas()
       this.editedItem = {}
     },
 

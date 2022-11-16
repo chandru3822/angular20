@@ -2,20 +2,6 @@
   <v-container id="ahj-list-container">
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
-<!--        <v-toolbar color="white" class="elevation-1">-->
-<!--          <v-toolbar-title class="app-title">-->
-<!--            <v-btn v-for="tab in tabs" text :to="tab.path" color="primary">-->
-<!--              {{tab.label}}-->
-<!--            </v-btn>-->
-<!--          </v-toolbar-title>-->
-<!--          <v-spacer></v-spacer>-->
-<!--          <v-toolbar-items>-->
-<!--            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">-->
-<!--              <v-icon>add</v-icon>-->
-<!--              <span v-if="!constants.IS_MOBILE">Add New</span>-->
-<!--            </v-btn>-->
-<!--          </v-toolbar-items>-->
-<!--        </v-toolbar>-->
 
         <v-data-table
           :headers="headers"
@@ -27,6 +13,15 @@
           :footer-props="footerProps"
           class="elevation-1 ahj-table"
         >
+          <template #header.icons="{}">
+            <div class="text-right mr-2">
+              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+                <v-icon>add</v-icon>
+                <span v-if="!constants.IS_MOBILE">Add New</span>
+              </v-btn>
+            </div>
+          </template>
+
           <template #header="{ props: { headers } }">
             <tr>
               <th v-for="header in headers" :key="header.text"
@@ -164,7 +159,7 @@
         { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true },
         { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
         { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
-        { text: null, value: null, custom:true, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
+        { text: null, value: 'icons', sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
       ],
       ahjs: [],
       editedItem: {

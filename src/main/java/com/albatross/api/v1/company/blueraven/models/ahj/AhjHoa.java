@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class AhjHoa {
     private Long id;
-    private Long ahjHoaId, ahjId, stateId, metroAreaId, companyStateId, managementCompanyId;
+    private Long stateId, metroAreaId, companyStateId, managementCompanyId;
     private String name, metroArea, state, managementCompany;
     private Boolean archived;
 

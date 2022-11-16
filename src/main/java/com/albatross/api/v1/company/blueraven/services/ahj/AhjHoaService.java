@@ -51,6 +51,7 @@ public class AhjHoaService {
         params.put("hoaName", hoa.getName());
         params.put("metroAreaId", hoa.getMetroAreaId());
         params.put("companyStateId", hoa.getCompanyStateId());
+        params.put("managementCompanyId", hoa.getManagementCompanyId());
         params.put("archived", hoa.getArchived());
         params.put("id", hoa.getId());
 
@@ -66,6 +67,7 @@ public class AhjHoaService {
         params.put("hoaName", hoa.getName());
         params.put("metroAreaId", hoa.getMetroAreaId());
         params.put("companyStateId", hoa.getCompanyStateId());
+        params.put("managementCompanyId", hoa.getManagementCompanyId());
         params.put("archived", hoa.getArchived());
 
         Long id;
@@ -79,7 +81,7 @@ public class AhjHoaService {
         }
 
         blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
-                ObjectType.AHJ_UTILITY.textValue(), hoa.getCustomFieldGroups(), id);
+                ObjectType.AHJ_HOA.textValue(), hoa.getCustomFieldGroups(), id);
 
         return getHoaById(id);
     }

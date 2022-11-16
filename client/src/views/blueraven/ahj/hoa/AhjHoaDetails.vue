@@ -2,25 +2,24 @@
 <template>
   <v-container id="ahj-hoa-details-container">
     <v-row>
-      <v-col cols="12" class="pt-0">
+      <v-col cols="12" class="pa-0">
 
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
             <v-card class="mx-4 square-card">
               <v-toolbar flat>
                 <v-toolbar-title class="app-title">
-                  <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahjHoa'})">
+                  <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahj/hoa'})">
                     <v-icon>mdi-arrow-left</v-icon>
                   </v-btn>
                   {{ ahjHoa.name }}, {{ ahjHoa.metroArea }}, {{ ahjHoa.state }}
                 </v-toolbar-title>
               </v-toolbar>
-              <div class="page-title px-6 pb-2 pt-n2 mb-4">HOA</div>
             </v-card>
           </v-col>
         </v-row>
         <v-row dense>
-          <v-card class="mx-2 mt-4 px-2 py-3 one-hunned square-card">
+          <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="ahj-form-btns" cols="12">
                 <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
@@ -150,24 +149,10 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getFinancierList() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest("/financier/active", "blueraven")
-        this.financiers = cloneDeep(data)
-        this.selectedFinancier = this.ahjHoa.financierId ? this.financiers.filter(financier => financier.id === this.ahjHoa.financierId)[0] : {submissionMethod: null}
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving list of financiers")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async getCustomFieldGroupAssignmentsForScreen() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjHoa.id, objectTypeId: 2}
+        const params = {sourceId: this.ahjHoa.id, objectTypeId: 24}
         const {
           data,
           status
@@ -198,11 +183,9 @@ export default {
     },
     async resetForm() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.ahjHoa.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
       this.dataWasChanged = false
       this.dataReady = false
       this.getAhjHoa().then(() => {
-        this.getFinancierList()
         this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
       })
     },
@@ -244,6 +227,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#ahj-hoa-details-container {
+  padding-right: 9px;
+  padding-left: 9px;
+  padding-top: 10px;
+}
+
 #back-btn {
   text-transform: unset;
   letter-spacing: unset;
