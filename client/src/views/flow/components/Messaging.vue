@@ -267,7 +267,6 @@ export default {
         // when there's an error sending a message
         textInput.innerHTML = message.data.text
       }
-      debugger
     },
     openChat() {
       // called when the user clicks on the fab button to open the chat
