@@ -198,7 +198,6 @@ export default {
       })
     },
     ahjFormTitle() {
-      console.log('add here',this.addMode)
       return this.addMode ? 'Create HOA' : 'Update HOA'
     },
     ahjBtnTxt() {

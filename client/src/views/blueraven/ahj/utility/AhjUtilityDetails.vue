@@ -8,7 +8,7 @@
           <v-col class="text-left pa-0" cols="12">
             <v-card class="mx-4 square-card">
               <v-toolbar flat>
-                <v-toolbar-title class="app-title">
+                <v-toolbar-title class="app-title"   v-if="ahjUtility && ahjUtility.name">
                   <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahj/utility'})">
                     <v-icon>mdi-arrow-left</v-icon>
                   </v-btn>
@@ -62,42 +62,44 @@
                 <!--              </v-col>-->
               </v-row>
               <!-- LOWER SECTION -->
-              <h1 id="links" class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
-              <v-row no-gutters>
-                <v-col cols="12" md="6" class="group px-2 py-2">
-                  <!-- CONTACTS -->
-                  <AhjContact v-if="dataReady"
-                              title="Contacts"
+              <div v-if="dataReady">
+                <h1 id="links" class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
+                <v-row no-gutters>
+                  <v-col cols="12" md="6" class="group px-2 py-2">
+                    <!-- CONTACTS -->
+                    <AhjContact title="Contacts"
+                                :user-can-edit="userCanEdit"
+                                :contactTypeId="8"
+                                :itemId="ahjUtility.id"
+                                :itemType="itemType"
+                                :contacts="ahjUtility.contacts"
+                                show-expanded
+                                :expanded-all="expandedAll"
+                                @toggle-collapse-expand="toggleCollapseExpand($event)"
+                    ></AhjContact>
+                    <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll"
+                             @toggle-collapse-expand="toggleCollapseExpand($event)">
+                      <AhjAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit"
+                                      :attachment-types="AhjUtilityDocumentTypes" :attachments="documents"
+                                      :source-id="ahjUtility.id">
+                        >
+                      </AhjAttachments>
+                    </AhjCard>
+                  </v-col>
+                  <v-col class="group px-2 py-2">
+                    <ahj-link title="All Links"
                               :user-can-edit="userCanEdit"
-                              :contactTypeId="8"
+                              :linkTypeId="10"
                               :itemId="ahjUtility.id"
                               :itemType="itemType"
-                              :contacts="ahjUtility.contacts"
+                              :links="ahjUtility.links"
+                              :isNested="false"
                               show-expanded
                               :expanded-all="expandedAll"
-                              @toggle-collapse-expand="toggleCollapseExpand($event)"
-                  ></AhjContact>
-                  <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll" @toggle-collapse-expand="toggleCollapseExpand($event)">
-                    <AhjAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit"
-                                    :attachment-types="AhjUtilityDocumentTypes" :attachments="documents"
-                                    :source-id="ahjUtility.id">
-                      >
-                    </AhjAttachments>
-                  </AhjCard>
-                </v-col>
-                <v-col v-if="dataReady" class="group px-2 py-2">
-                  <ahj-link title="All Links"
-                            :user-can-edit="userCanEdit"
-                            :linkTypeId="10"
-                            :itemId="ahjUtility.id"
-                            :itemType="itemType"
-                            :links="ahjUtility.links"
-                            :isNested="false"
-                            show-expanded
-                            :expanded-all="expandedAll"
-                            @toggle-collapse-expand="toggleCollapseExpand($event)"                  ></ahj-link>
-                </v-col>
-              </v-row>
+                              @toggle-collapse-expand="toggleCollapseExpand($event)"></ahj-link>
+                  </v-col>
+                </v-row>
+              </div>
             </v-form>
           </v-card>
         </v-row>
@@ -135,8 +137,8 @@ export default {
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel("AHJ_DATABASE", "EDIT")
     },
-    expandedAll(){
-      if(this.expandedGroups === this.totalGroups){
+    expandedAll() {
+      if (this.expandedGroups === this.totalGroups) {
         return CollapseExpandEnum.EXPANDED
       } else if (this.expandedGroups === 0) {
         return CollapseExpandEnum.COLLAPSED
@@ -182,9 +184,9 @@ export default {
       this.dataWasChanged = true
     },
     toggleCollapseExpand(wasExpanded) {
-      if(wasExpanded === false) {
+      if (wasExpanded === false) {
         this.expandedGroups--
-      }else {
+      } else {
         this.expandedGroups++
       }
     },
