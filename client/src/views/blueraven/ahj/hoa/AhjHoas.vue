@@ -143,7 +143,7 @@ export default {
   name: "ahjHoas",
   data: () => ({
     constants,
-    dataLoading: false,//true,
+    dataLoading: true,
     hoaFilters: {
       name: {value: '', type: 'text', model: 'name'},
       state: {value: [], type: 'select', model: 'state'},
