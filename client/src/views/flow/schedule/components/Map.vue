@@ -317,6 +317,8 @@ export default {
           m.selectedSecond = false
         }
       })
+      this.drivingDistance = 0
+      this.drivingDuration = 0
       this.markerCount++
       this.suggestions = []
       this.showAddress1List = false
