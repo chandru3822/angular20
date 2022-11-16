@@ -245,7 +245,7 @@ export default {
     return {
       fileDetails: {},
       timezone: this.$store.state.user.details.timezone.value,
-      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
+      acceptedFileTypes: constants.STANDARD_IMAGES_DOCS_AUDIO,
       imageFileExtensions: constants.IMAGE_FILE_EXTENSIONS,
       customFieldGroups: [],
       dirtyCfvs: [],
