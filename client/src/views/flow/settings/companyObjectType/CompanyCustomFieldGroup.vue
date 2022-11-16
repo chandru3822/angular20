@@ -186,7 +186,7 @@
                             </label>
                           </div>
 
-                          <div>
+                          <div  v-if="objectType.allowConditional">
                             <label>
                               <input type="checkbox" v-model="cf.hasConditionalOnId"
                                      :disabled="!userCanEdit" @change="saveConditionalField(cf)"/>
@@ -203,7 +203,7 @@
                           </div>
 
                           <div>
-                            <div>
+                            <div  v-if="objectType.allowReadonly">
                               <label>
                                 <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly"
                                        :disabled="!userCanEdit" @change="saveReadOnlyAndWhiteList(cf)"/>
@@ -263,7 +263,7 @@
                           </div>
 
                           <div>
-                            <div>
+                            <div  v-if="objectType.allowHidden">
                               <label>
                                 <input type="checkbox" v-model="cf.customFieldGroupAssignmentHidden"
                                        :disabled="!userCanEdit" @change="saveHiddenAndWhiteList(cf)"/>
