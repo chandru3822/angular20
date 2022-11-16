@@ -8,10 +8,7 @@
           <v-col class="text-left pa-0" cols="12">
             <v-card class="mx-4 square-card">
               <v-toolbar flat>
-                <v-toolbar-title class="app-title"   v-if="ahjUtility && ahjUtility.name">
-                  <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahj/utility'})">
-                    <v-icon>mdi-arrow-left</v-icon>
-                  </v-btn>
+                <v-toolbar-title class="app-title" v-if="ahjUtility && ahjUtility.name">
                   {{ ahjUtility.name }}, {{ ahjUtility.metroArea }}, {{ ahjUtility.state }}
                 </v-toolbar-title>
               </v-toolbar>
@@ -208,10 +205,14 @@ export default {
     },
     async getAllDocuments() {
       this.isDocumentsLoading = true
+      let docRequests = []
       for (const docType of this.AhjUtilityDocumentTypes) {
-        await this.getDocuments(docType.attachmentTypeId)
+        docRequests.push(this.getDocuments(docType.attachmentTypeId))
+        // await this.getDocuments(docType.attachmentTypeId)
       }
-      this.isDocumentsLoading = false
+      await Promise.all(docRequests).then(() => {
+        this.isDocumentsLoading = false
+      })
     },
     async getDocuments(docTypeId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -252,7 +253,7 @@ export default {
     async getCustomFieldGroupAssignmentsForScreen() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjUtility.id, objectTypeId: 2}
+        const params = {sourceId: this.ahjUtilityId, objectTypeId: 2}
         const {
           data,
           status
@@ -286,9 +287,23 @@ export default {
       this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
       this.dataWasChanged = false
       this.dataReady = false
-      this.getAhjUtility().then(() => {
-        this.getFinancierList()
-        this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
+      await this.pageLoad(false)
+      // this.getAhjUtility().then(() => {
+      //   this.getFinancierList()
+      //   this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
+      // })
+    },
+    async pageLoad(loadAttachments) {
+      let requests = [
+        this.getAhjUtility(),
+        this.getFinancierList(),
+        this.getCustomFieldGroupAssignmentsForScreen()
+      ]
+      if(loadAttachments) {
+        requests.push(this.getAllDocuments())
+      }
+      await Promise.all(requests).then(() => {
+        this.dataReady = true
       })
     },
     async saveAhjUtility() {
@@ -322,15 +337,16 @@ export default {
     this.$store.commit(AppMutations.SET_LOADING, true)
     this.ahjUtilityId = parseInt(this.$route.params.ahjUtilityId)
 
-    this.getAhjUtility().then(() => {
-      this.getFinancierList().then(() => {
-        this.getCustomFieldGroupAssignmentsForScreen().then(() => {
-          this.getAllDocuments().then(() => {
-            this.dataReady = true
-          })
-        })
-      })
-    })
+    await this.pageLoad(true)
+    // this.getAhjUtility().then(() => {
+    //   this.getFinancierList().then(() => {
+    //     this.getCustomFieldGroupAssignmentsForScreen().then(() => {
+    //       this.getAllDocuments().then(() => {
+    //         this.dataReady = true
+    //       })
+    //     })
+    //   })
+    // })
   }
 }
 </script>

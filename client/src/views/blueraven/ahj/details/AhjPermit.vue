@@ -99,24 +99,8 @@
                         :expanded-all="expandedAll"
                         @toggle-collapse-expand="toggleCollapseExpand($event)"
             ></AhjContact>
-            <!--        <AhjContact v-if="dataReady"-->
-            <!--                    title="Print Locations"-->
-            <!--                    :contactTypeId="7"-->
-            <!--                    :user-can-edit="userCanEdit"-->
-            <!--                    :itemId="ahjPermit.id"-->
-            <!--                    :itemType="itemType"-->
-            <!--                    :ahjId="ahjId"-->
-            <!--                    :contacts="ahjPermit.printLocations"-->
-            <!--        ></AhjContact>-->
           </v-col>
 
-          <!-- THIRD COLUMN -->
-          <!--      <v-col cols="12" md="4" class="px-1 mb-3">-->
-          <!--        <AhjServicingFot v-if="dataReady"-->
-          <!--                         :servicingFots="ahjPermit.servicingFots"-->
-          <!--        ></AhjServicingFot>-->
-
-          <!--      </v-col>-->
         </v-row>
       </div>
       <v-dialog v-model="saveDialog" max-width="700">
@@ -193,7 +177,6 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import AhjContact from '../components/AhjContacts'
 import AhjLink from '../components/AhjLinks'
-import AhjServicingFot from '../components/AhjServicingFots'
 
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
@@ -209,7 +192,6 @@ export default {
     AhjCustomFields,
     AhjContact,
     AhjLink,
-    AhjServicingFot,
     CustomValueInput
   },
   computed: {
@@ -278,8 +260,7 @@ export default {
       followUpLinks: [],
       submissionContacts: [],
       printLocations: [],
-      followUpContacts: [],
-      servicingFots: []
+      followUpContacts: []
     },
     inspectionDocuments: [],
     cancellationDocuments: [],
@@ -310,28 +291,8 @@ export default {
       try {
         const {data, status} = await getRequest(`/ahj/${this.ahjId}/permit`, 'blueraven')
 
-        if (data.servicingFots && data.servicingFots.length > 0) {
-          data.servicingFots.forEach(servicingFot => {
-            if (servicingFot.hierarchy && servicingFot.hierarchy.length > 0) {
-              servicingFot.hierarchy = servicingFot.hierarchy[0]
-            }
-          })
-
-          data.servicingFots = orderBy(data.servicingFots, fot => {
-            if (fot.hierarchy && fot.hierarchy.orgName) {
-              return fot.hierarchy.orgName?.toLowerCase()
-            }
-          })
-        } else {
-          data.servicingFots = []
-        }
-
         this.ahjPermit = cloneDeep(data)
         window.document.title = `AHJ - ${this.ahjPermit.ahjName}`
-        this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name?.toLowerCase())
-        this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name?.toLowerCase())
-        this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name?.toLowerCase())
-        this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name?.toLowerCase())
         this.ahjPermit.updateAllInState = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -435,22 +396,6 @@ export default {
           data,
           status
         } = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
-
-        if (data.servicingFots && data.servicingFots.length > 0) {
-          data.servicingFots.forEach(servicingFot => {
-            if (servicingFot.hierarchy && servicingFot.hierarchy.length > 0) {
-              servicingFot.hierarchy = servicingFot.hierarchy[0]
-            }
-          })
-
-          data.servicingFots = orderBy(data.servicingFots, fot => {
-            if (fot.hierarchy && fot.hierarchy.orgName) {
-              return fot.hierarchy.orgName.toLowerCase()
-            }
-          })
-        } else {
-          data.servicingFots = []
-        }
 
         this.ahjPermit = cloneDeep(data)
         this.ahjPermit.updateAllInState = false

@@ -9,9 +9,6 @@
             <v-card class="mx-4 square-card">
               <v-toolbar flat>
                 <v-toolbar-title class="app-title"  v-if="ahjHoa && ahjHoa.name">
-                  <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahj/hoa'})">
-                    <v-icon>mdi-arrow-left</v-icon>
-                  </v-btn>
                   {{ ahjHoa.name }}, {{ ahjHoa.state }}, {{ ahjHoa.managementCompany }}
                 </v-toolbar-title>
               </v-toolbar>
