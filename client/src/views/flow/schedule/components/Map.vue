@@ -34,7 +34,7 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary" @click="[address1 = '', selectAddress1 = !selectAddress1, selectAddress2 = false]"
+            <v-btn class="mt-2" small color="primary" @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = !selectAddress1, selectAddress2 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
                    :loading="selectAddress1">Select Pin
             </v-btn>
@@ -60,7 +60,7 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary" @click="[address2 = '', selectAddress2 = !selectAddress2, selectAddress1 = false]"
+            <v-btn class="mt-2" small color="primary" @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = !selectAddress2, selectAddress1 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
                    :loading="selectAddress2">Select Pin
             </v-btn>
