@@ -95,29 +95,30 @@ BEGIN
       end
     order by project_id, ppscfv.date_created asc
     limit 1;
+    if v_pps_value is not null then
+      select flow.get_prepared_value(v_pps_dt_id, v_pps_value)
+      into v_prepared_value;
 
-    select flow.get_prepared_value(v_pps_dt_id, v_pps_value)
-    into v_prepared_value;
-
-    if p_secondary_field_to_update is null and p_secondary_value is null then
-      v_sql = $$update brs.project_details pd
-            set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-              p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
-               where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-    else
-      v_sql = $$update brs.project_details pd
-            set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-              p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
-              p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
-               where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      if p_secondary_field_to_update is null and p_secondary_value is null then
+        v_sql = $$update brs.project_details pd
+              set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
+                 where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      else
+        v_sql = $$update brs.project_details pd
+              set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
+                p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
+                 where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      end if;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_custom_value_id, error)
+          values (v_pps_id, SQLERRM);
+      end;
     end if;
-    begin
-      execute v_sql;
-    exception
-      when others then
-        insert into flow.trigger_error(project_process_step_custom_value_id, error)
-        values (v_pps_id, SQLERRM);
-    end;
   elsif v_project_process_step_event_custom_field_value is true then
     select distinct on (project_id) project_id,
                                     ppsecfv.id,
@@ -160,29 +161,32 @@ BEGIN
       end
     order by project_id, ppsecfv.date_created asc
     limit 1;
-    select flow.get_prepared_value(v_ppse_dt_id, v_ppse_value)
-    into v_prepared_value;
+
+    if v_ppse_value is not null then
+      select flow.get_prepared_value(v_ppse_dt_id, v_ppse_value)
+      into v_prepared_value;
 
 
-    if p_secondary_field_to_update is null and p_secondary_value is null then
-      v_sql = $$update brs.project_details pd
+      if p_secondary_field_to_update is null and p_secondary_value is null then
+        v_sql = $$update brs.project_details pd
             set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-              p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
                where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-    else
-      v_sql = $$update brs.project_details pd
+      else
+        v_sql = $$update brs.project_details pd
             set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-              p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
-              p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
+                p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
                where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      end if;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
+          values (v_pps_id, SQLERRM);
+      end;
     end if;
-    begin
-      execute v_sql;
-    exception
-      when others then
-        insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
-        values (v_pps_id, SQLERRM);
-    end;
   end if;
 END
 $BODY$
