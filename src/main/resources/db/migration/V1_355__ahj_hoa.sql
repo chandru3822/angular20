@@ -22,4 +22,29 @@ where object_code in (
                       'AHJ_UTILITY'
   );
 
---todo add kalebs stuff here for allow_* 
+update brs.object_type ot
+set allow_conditional = true,
+    allow_hidden = true,
+    allow_readonly = true
+where object_code in ('PROPOSAL');
+
+update brs.object_type ot
+set allow_min_max = true
+where object_code in ('PROPOSAL_STORAGE_DETAILS');
+
+update brs.object_type ot
+set allow_required = false
+where object_code in (
+'PROPOSAL_DISCOUNTS',
+'PROPOSAL_EQUIPMENT_ADDERS',
+'PROPOSAL_FINANCE_PRODUCTS',
+'PROPOSAL_FINANCIERS',
+'PROPOSAL_INVERTER_DETAILS',
+'PROPOSAL_MISC_ADDERS',
+'PROPOSAL_PANEL_DETAIL',
+'PROPOSAL_PRICING',
+'PROPOSAL_REBATE',
+'PROPOSAL_SMALL_SYSTEM_ADDERS',
+'PROPOSAL_SOURCE_STATE_ADDERS',
+'PROPOSAL_STORAGE_DETAILS',
+'PROPOSAL_ZONE_ADDERS');
