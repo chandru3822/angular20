@@ -140,7 +140,7 @@ public class SMSService {
         Array varchar = connection.createArrayOf("varchar", mediaUrls);
         source.addValue("mediaUrls", varchar);
       } catch (SQLException e) {
-        log.error("TWILIO_WEBHOOK_ERROR: media url problems", e);
+        log.error("TWILIO_WEBHOOK_ERROR: media url problems, error={}", e.getMessage());
       }
     }
 
@@ -170,7 +170,7 @@ public class SMSService {
               try {
                 return new URI(s);
               } catch (URISyntaxException e) {
-                log.error("TWILIO_WEBHOOK_ERROR: media urls failed", e);
+                log.error("TWILIO_WEBHOOK_ERROR: media urls failed, error={}", e.getMessage());
               }
               return null;
             })
@@ -225,7 +225,7 @@ public class SMSService {
         if (!errorMsg.contains("violates a blacklist rule")
           && !errorMsg.contains("is not a valid phone number")) {
           // cron logs are noisy. only log error if not one we are expecting
-          log.error("TWILIO: ERROR: {}", e.toString());
+          log.error("TWILIO: error={}", e.toString());
         }
       }
     }
@@ -325,7 +325,7 @@ public class SMSService {
         try {
           stringRedisTemplate.opsForList().leftPush(webhookPayloadErrorsKey, msg.toJSON());
         } catch (JsonProcessingException ex) {
-          log.error("TWILIO_WEBHOOK_ERROR: failed to serialize", ex);
+          log.error("TWILIO_WEBHOOK_ERROR: failed to serialize, error={}", ex.getMessage());
         }
 
         return;
