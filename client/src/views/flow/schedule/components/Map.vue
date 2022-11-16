@@ -72,7 +72,7 @@
             <v-btn text small class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>
             <v-btn color="primary" small :disabled="!address1 || !address2"
                    :loading="loadingDriveTime"
-                   @click="loadDriveTime">Go</v-btn>
+                   @click="loadDriveTime">Calculate</v-btn>
           </div>
 
           <div class="mt-2" v-if="drivingDistance || drivingDuration">
