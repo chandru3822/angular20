@@ -8,8 +8,8 @@ import java.util.List;
 @Data
 public class AhjHoa {
     private Long id;
-    private Long stateId, metroAreaId, companyStateId, managementCompanyId;
-    private String name, metroArea, state, managementCompany;
+    private Long stateId, companyStateId, managementCompanyId;
+    private String name, state, managementCompany;
     private Boolean archived;
 
     //this is only used for saving custom field groups

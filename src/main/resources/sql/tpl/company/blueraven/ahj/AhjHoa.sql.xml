@@ -5,8 +5,6 @@
              cs.id as company_state_id,
              cs.state_id,
              s.state,
-             27 as metro_area_id,
-             'randa test' as metro_area,
              s.abbreviation as state_abbreviation,
              mc.id as management_company_id,
              mc.name as management_company,
@@ -49,8 +47,6 @@
   <ahj.hoa.detailById><![CDATA[
       SELECT
           h.*,
-          27 as metro_area_id,
-         'randa test' as metro_area,
           mc.name as management_company,
           cs.state_id,
           s.state,

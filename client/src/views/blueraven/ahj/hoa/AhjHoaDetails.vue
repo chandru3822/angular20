@@ -12,7 +12,7 @@
                   <v-btn fab text color="primary" small class="mr-2" @click="$router.push({path: '/ahj/hoa'})">
                     <v-icon>mdi-arrow-left</v-icon>
                   </v-btn>
-                  {{ ahjHoa.name }}, {{ ahjHoa.metroArea }}, {{ ahjHoa.state }}
+                  {{ ahjHoa.name }}, {{ ahjHoa.state }}, {{ ahjHoa.managementCompany }}
                 </v-toolbar-title>
               </v-toolbar>
             </v-card>

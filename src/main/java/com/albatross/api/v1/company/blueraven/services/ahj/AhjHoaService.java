@@ -49,7 +49,6 @@ public class AhjHoaService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("currentUser", currentUser.trueUserId());
         params.put("hoaName", hoa.getName());
-        params.put("metroAreaId", hoa.getMetroAreaId());
         params.put("companyStateId", hoa.getCompanyStateId());
         params.put("managementCompanyId", hoa.getManagementCompanyId());
         params.put("archived", hoa.getArchived());
@@ -65,7 +64,6 @@ public class AhjHoaService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("currentUser", currentUser.trueUserId());
         params.put("hoaName", hoa.getName());
-        params.put("metroAreaId", hoa.getMetroAreaId());
         params.put("companyStateId", hoa.getCompanyStateId());
         params.put("managementCompanyId", hoa.getManagementCompanyId());
         params.put("archived", hoa.getArchived());

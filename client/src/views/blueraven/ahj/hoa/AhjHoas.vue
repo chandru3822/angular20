@@ -59,9 +59,6 @@
                 {{ item.name || '' }}
               </td>
               <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.metroArea || '' }}
-              </td>
-              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
                 {{ item.state || '' }}
               </td>
               <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
@@ -108,15 +105,6 @@
                           required
                           filled
           ></v-autocomplete>
-          <v-autocomplete
-            label="Metro Area"
-            :items="metroAreas"
-            v-model="editedItem.metroAreaId"
-            required
-            filled
-            type="search"
-            autocomplete="off"
-          ></v-autocomplete>
           <v-autocomplete label="Management Company"
                           :items="managementCompanies"
                           v-model="editedItem.managementCompanyId"
@@ -133,7 +121,7 @@
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="close">Cancel</v-btn>
           <v-btn color="primary" raised @click="saveAhjHoa" class="white--text"
-                 :disabled="!editedItem.name || !editedItem.managementCompanyId || !editedItem.companyStateId || !editedItem.metroAreaId">
+                 :disabled="!editedItem.name || !editedItem.managementCompanyId || !editedItem.companyStateId">
             {{ ahjBtnTxt }}
           </v-btn>
         </v-card-actions>
@@ -156,12 +144,15 @@ export default {
   data: () => ({
     constants,
     dataLoading: false,//true,
-    hoaFilters: [],
+    hoaFilters: {
+      name: {value: '', type: 'text', model: 'name'},
+      state: {value: [], type: 'select', model: 'state'},
+      managementCompany: {value: '', type: 'text', model: 'managementCompany'}
+    },
     states: [],
     tabs: AHJ_TABS,
     headers: [
       {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
-      { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
       {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
       {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 250, show: true},
       {text: null, value: 'icons', sortable: false, show: true, width: 50}
@@ -180,8 +171,7 @@ export default {
     },
     ahjHoas: [],
     addMode: false,
-    managementCompanies: [],
-    metroAreas: []
+    managementCompanies: []
   }),
   computed: {
     filteredHoas() {
@@ -218,34 +208,10 @@ export default {
   async created() {
     this.$store.commit(AppMutations.SET_LOADING, true)
     this.currentUser = this.$store.state.user.details.id
-    this.initFilters()
     this.fetchStates()
     await this.fetchAhjHoas()
   },
   methods: {
-    initFilters() {
-      this.hoaFilters = cloneDeep(FILTER_DEFAULTS)
-      this.hoaFilters = {...this.hoaFilters, managementCompany: {value: '', type: 'text', model: 'managementCompany'}}
-    },
-    async getActiveMetroAreas () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest('/metro/getActive', 'blueraven')
-        data.forEach(item => {
-          let option = {
-            text: item.metroArea,
-            value: item.id
-          }
-          this.metroAreas.push(option)
-        })
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async getActiveManagementCompanies() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -290,14 +256,12 @@ export default {
     },
     addItem() {
       this.getActiveManagementCompanies()
-      this.getActiveMetroAreas()
       this.addMode = true
       this.ahjHoaDialog = true
     },
     editAhjHoa (item) {
       this.editedItem = Object.assign({}, item)
       this.getActiveManagementCompanies()
-      this.getActiveMetroAreas()
       this.addMode = false
       this.ahjHoaDialog = true
     },
@@ -335,7 +299,6 @@ export default {
       }
 
       this.close()
-      this.initFilters()
       await this.fetchAhjHoas()
       this.editedItem = {}
     },
