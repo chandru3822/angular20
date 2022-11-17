@@ -578,19 +578,21 @@ BEGIN
         loop
           if ((x.reset_values_on_main is true and v_main is true) or
               (x.reset_values_on_main is false)) then
+            select case
+                     when x.data_type_id = 1 then new.date_value::text
+                     when x.data_type_id = 2 then new.timestamp_value::text
+                     when x.data_type_id = 3 then new.boolean_value::text
+                     when x.data_type_id = 4 then new.numeric_value::text
+                     when x.data_type_id in (5, 13) then new.text_value::text
+                     when x.data_type_id = 6 then new.int_value::text
+                     when x.data_type_id = 7 then new.int_array_value::text
+                     when x.data_type_id in (8, 9) then new.int_value::text end
+            into v_value;
             v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
             select *
             into v_sql
             from flow.execute_data_view_field_configs(x.contains_children,
-                                                      case
-                                                        when x.data_type_id = 1 then new.date_value::text
-                                                        when x.data_type_id = 2 then new.timestamp_value::text
-                                                        when x.data_type_id = 3 then new.boolean_value::text
-                                                        when x.data_type_id = 4 then new.numeric_value::text
-                                                        when x.data_type_id in (5, 13) then new.text_value::text
-                                                        when x.data_type_id = 6 then new.int_value::text
-                                                        when x.data_type_id = 7 then new.int_array_value::text
-                                                        when x.data_type_id in (8, 9) then new.int_value::text end,
+                                                      v_value,
                                                       x.dvfc_id,
                                                       new.id,
                                                       v_sql,
@@ -601,15 +603,7 @@ BEGIN
                                                       x.data_type_id);
 
             select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                         case
-                                                           when x.data_type_id = 1 then new.date_value::text
-                                                           when x.data_type_id = 2 then new.timestamp_value::text
-                                                           when x.data_type_id = 3 then new.boolean_value::text
-                                                           when x.data_type_id = 4 then new.numeric_value::text
-                                                           when x.data_type_id in (5, 13) then new.text_value::text
-                                                           when x.data_type_id = 6 then new.int_value::text
-                                                           when x.data_type_id = 7 then new.int_array_value::text
-                                                           when x.data_type_id in (8, 9) then new.int_value::text end,
+                                                         v_value,
                                     null::text, null::text,
                                                          x.update_first_value_only,
                                                          x.update_first_value_only_id,
@@ -862,19 +856,21 @@ BEGIN
                               and dvfc.process_step_event_id = ppse.process_step_event_id
 
         loop
+        select case
+                 when x.data_type_id = 1 then new.date_value::text
+                 when x.data_type_id = 2 then new.timestamp_value::text
+                 when x.data_type_id = 3 then new.boolean_value::text
+                 when x.data_type_id = 4 then new.numeric_value::text
+                 when x.data_type_id in (5,13) then new.text_value::text
+                 when x.data_type_id = 6 then new.int_value::text
+                 when x.data_type_id = 7 then new.int_array_value::text
+                 when x.data_type_id in (8, 9) then new.int_value::text end
+          into v_value;
           v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           select *
           into v_sql
           from flow.execute_data_view_field_configs(x.contains_children,
-                                                    case
-                                                      when x.data_type_id = 1 then new.date_value::text
-                                                      when x.data_type_id = 2 then new.timestamp_value::text
-                                                      when x.data_type_id = 3 then new.boolean_value::text
-                                                      when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id in (5,13) then new.text_value::text
-                                                      when x.data_type_id = 6 then new.int_value::text
-                                                      when x.data_type_id = 7 then new.int_array_value::text
-                                                      when x.data_type_id in (8, 9) then new.int_value::text end,
+                                                    v_value,
                                                     x.dvfc_id,
                                                     new.id,
                                                     v_sql,
@@ -884,21 +880,16 @@ BEGIN
                                                     true,
                                                     x.data_type_id);
 
-          select flow.prepare_update_data_view_details(new.id, case
-                                                                 when x.data_type_id = 1 then new.date_value::text
-                                                                 when x.data_type_id = 2 then new.timestamp_value::text
-                                                                 when x.data_type_id = 3 then new.boolean_value::text
-                                                                 when x.data_type_id = 4 then new.numeric_value::text
-                                                                 when x.data_type_id in (5,13) then new.text_value::text
-                                                                 when x.data_type_id = 6 then new.int_value::text
-                                                                 when x.data_type_id = 7 then new.int_array_value::text
-                                                                 when x.data_type_id in (8, 9) then new.int_value::text end,
+
+
+          select flow.prepare_update_data_view_details(new.id,v_sql,
                                                   x.field_to_update,
                                                        v_value, null::text, null::text,
                                                        x.update_first_value_only,
                                                        x.update_first_value_only_id,
                                                        true, true, v_project_ids)
           into v_sql;
+
           begin
             execute v_sql;
           exception

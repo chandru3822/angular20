@@ -200,7 +200,7 @@ export default {
       error: {},
       maxFiles: constants.MAX_FILE_UPLOADS,
       renderTicker: 0,
-      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
+      acceptedFileTypes: constants.STANDARD_IMAGES_DOCS_AUDIO,
       companyId: this.$store.state.user.details.companyId,
       headers: [
         {text: null, value: 'fileIcon', show: true},

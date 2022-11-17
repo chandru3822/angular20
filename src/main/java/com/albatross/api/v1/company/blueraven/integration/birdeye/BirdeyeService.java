@@ -58,7 +58,7 @@ public class BirdeyeService {
         .filter(l -> l.getStatus().equalsIgnoreCase("active"))
         .toList();
     } catch (Exception e) {
-      log.error("BIRDEYE: Birdeye unavailable", e);
+      log.error("BIRDEYE: Birdeye unavailable, error={}", e.getMessage());
       throw new RuntimeException("Birdeye unavailable at this time.");
     }
   }
@@ -80,7 +80,7 @@ public class BirdeyeService {
         .filter(review -> StringUtils.hasText(review.getCustomerId()))
         .toList();
     } catch (Exception e) {
-      log.error("[BIRDEYE] Birdeye unavailable", e);
+      log.error("[BIRDEYE] Birdeye unavailable, error={}", e.getMessage());
       throw new RuntimeException("BirdEye unavailable at this time.");
     }
   }
@@ -127,7 +127,7 @@ public class BirdeyeService {
       return invitation;
 
     } catch (Exception e) {
-      log.error("[BIRDEYE] Problem sending Birdeye review invitation", e);
+      log.error("[BIRDEYE] Problem sending Birdeye review invitation, error={}", e.getMessage());
       throw new RuntimeException("Problem sending Birdeye review invitation: " + e.getMessage());
     }
   }
@@ -282,7 +282,7 @@ public class BirdeyeService {
         hasMoreSurveys = wrapper.getHasNext();
 
       } catch (Exception e) {
-        log.error("[BIRDEYE] Error while syncing survey responses msg={}", e.getMessage());
+        log.error("[BIRDEYE] Error while syncing survey responses, error={}", e.getMessage());
       }
     }
   }

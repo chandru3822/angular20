@@ -66,8 +66,7 @@ BEGIN
 
     RETURN QUERY
         with fdc as (
-        select flow.get_user_based_on_event_type(p.id,
-                                                 1) as user_id,
+        select flow.get_user_based_on_event_type(p.id) as user_id,
                count(1) fdc
         from flow.project p
                  inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 4 and pps.process_step_complete_date is not null
