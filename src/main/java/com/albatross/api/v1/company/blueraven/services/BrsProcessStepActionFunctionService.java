@@ -100,6 +100,7 @@ public class BrsProcessStepActionFunctionService {
             } else {
               //we think that sometimes this code fails to find a cfgaId. adding this log/code to help isolate and find out when/why
               log.error("ACTION FUNCTION: Could not find cfgaId for project {}", projectId);
+              throw new RuntimeException(formatErrorMessage(func, "cfga not found"));
             }
         } catch (GoodleapService.NotFoundException e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
