@@ -746,6 +746,9 @@ public class GenesysService {
 
     contacts = sqlCache.query("genesys.getContactIdsWeek1Level10Textel", null, Contact.class);
     addContactsToGenesys(contacts, "Level10SMS");
+
+    contacts = sqlCache.query("genesys.getContactIdsSalDevRetargets", null, Contact.class);
+    addContactsToGenesys(contacts, "Sales Dev Retargeted Leads");
   }
 
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
