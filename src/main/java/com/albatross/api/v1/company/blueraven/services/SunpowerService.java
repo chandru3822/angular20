@@ -229,7 +229,7 @@ public class SunpowerService {
       return "Loan agreement created successfully";
     } else {
       String message = status.getString("message");
-      log.error("SUNPWR: Error creating Loan agreement for Sunpower: {}", message);
+      //log.error("SUNPWR: Error creating Loan agreement for Sunpower: {}", message);
       throw new Exception(message);
     }
   }
