@@ -844,7 +844,7 @@
 
   <project.getPsaWithStatusInUse><![CDATA[
       select psa.action_name, ps.process_step_name
-      from flow.process_step_logic psl
+      from flow.process_step_action_logic psl
         inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
         inner join flow.process_step ps on ps.id = psa.process_step_id
       where psa.company_project_status_type_id = :companyProjectStatusTypeId
@@ -855,7 +855,7 @@
 
   <project.getEventReqWithStatusInUse><![CDATA[
       select psa.action_name, ps.process_step_name
-      from flow.process_step_logic psl
+      from flow.process_step_action_logic psl
         inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
         inner join flow.process_step ps on ps.id = psa.process_step_id
       where psa.company_project_status_type_id = :companyProjectStatusTypeId
@@ -866,7 +866,7 @@
 
   <project.getActionReqWithStatusInUse><![CDATA[
       select psa.action_name, ps.process_step_name
-      from flow.process_step_logic psl
+      from flow.process_step_action_logic psl
         inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
         inner join flow.process_step ps on ps.id = psa.process_step_id
       where psa.company_project_status_type_id = :companyProjectStatusTypeId

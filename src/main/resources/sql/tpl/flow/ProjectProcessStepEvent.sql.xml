@@ -144,7 +144,7 @@ select ppse.*,
                                                          psr.requirement_nbr as "requirementNbr",
                                                          psr.immutable as "processStepRequirementImmutable",
                                                          psl.sql_order as "sqlOrder"
-                                                  FROM flow.process_step_event_logic psl
+                                                  FROM flow.process_step_event_action_logic psl
                                                          left join flow.operation_type ot on ot.id = psl.operation_type_id
                                                          left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
                                                   WHERE psl.process_step_event_action_id = psea.id
@@ -206,7 +206,7 @@ select ppse.*,
                                                          psr.requirement_nbr as "requirementNbr",
                                                          psr.immutable as "processStepRequirementImmutable",
                                                          psl.sql_order as "sqlOrder"
-                                                  FROM flow.process_step_event_logic psl
+                                                  FROM flow.process_step_event_action_logic psl
                                                          left join flow.operation_type ot on ot.id = psl.operation_type_id
                                                          left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
                                                   WHERE psl.process_step_event_action_id = psea.id
@@ -473,7 +473,7 @@ where ppse.id = :id
                                     psr.requirement_nbr as "requirementNbr",
                                     psr.immutable as "processStepRequirementImmutable",
                                     psl.sql_order as "sqlOrder"
-                             FROM flow.process_step_event_logic psl
+                             FROM flow.process_step_event_action_logic psl
                                     left join flow.operation_type ot on ot.id = psl.operation_type_id
                                     left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
                              WHERE psl.process_step_event_action_id = psea.id

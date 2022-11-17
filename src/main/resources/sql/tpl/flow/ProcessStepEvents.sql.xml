@@ -220,7 +220,7 @@ where pse.process_step_id = :processStepId
                                                                                     from flow.list_of_value lv
                                                                                     where lv.id = any (pser.list_of_value_ids)
                                                                                   ) lov), '[]') end AS "listOfValues"
-                                                    FROM flow.process_step_event_logic psl
+                                                    FROM flow.process_step_event_action_logic psl
                                                            left join flow.operation_type ot on ot.id = psl.operation_type_id
                                                            left join flow.process_step_event_requirement pser on pser.id = psl.process_step_event_requirement_id
                                                            left join flow.process_step_requirement_type psrt on pser.process_step_requirement_type_id = psrt.id
@@ -579,7 +579,7 @@ where pse.process_step_id = :processStepId
                                                              from flow.list_of_value lv
                                                              where lv.id = any(psr.list_of_value_ids)
                                                            ) lov), '[]') end AS "listOfValues"
-                          FROM flow.process_step_event_logic psl
+                          FROM flow.process_step_event_action_logic psl
                                  left join flow.operation_type ot on ot.id = psl.operation_type_id
                                  left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
                                  left join flow.process_step_requirement_type psrt on psr.process_step_requirement_type_id = psrt.id
@@ -795,7 +795,7 @@ where psea.id = :id
 ]]></processStepEvent.getChildFunctionsByPpsEventId>
 
   <processStepEvent.archiveOldLogic><![CDATA[
-    update flow.process_step_event_logic
+    update flow.process_step_event_action_logic
     set archived = true,
         date_modified = now(),
         modified_by_id = :userId
@@ -803,7 +803,7 @@ where psea.id = :id
   ]]></processStepEvent.archiveOldLogic>
 
   <processStepEvent.insertLogic><![CDATA[
-    insert into flow.process_step_event_logic (process_step_event_requirement_id, operation_type_id, sql_order, process_step_event_action_id, date_created, created_by_id)
+    insert into flow.process_step_event_action_logic (process_step_event_requirement_id, operation_type_id, sql_order, process_step_event_action_id, date_created, created_by_id)
     values (:processStepEventRequirementId, :operationTypeId, :sqlOrder, :id, now(), :createdById)
   ]]></processStepEvent.insertLogic>
 
@@ -882,7 +882,7 @@ where psea.id = :id
                                                                           where cpst.id = any (list_of_value_ids)), ','),
                         ')')
                end as value
-      from flow.process_step_event_logic psl
+      from flow.process_step_event_action_logic psl
              left join flow.operation_type ot on psl.operation_type_id = ot.id
              left join flow.process_step_event_requirement psr on psl.process_step_event_requirement_id = psr.id
              left join flow.operator_type opt on psr.operator_type_id = opt.id
