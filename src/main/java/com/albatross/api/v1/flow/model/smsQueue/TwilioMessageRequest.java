@@ -57,7 +57,7 @@ public class TwilioMessageRequest {
     data.put("to", to);
     data.put("body", body);
     data.put("numMedia", numMedia);
-    data.put("mediaUrls", mediaUrls == null ? null : mediaUrls.toArray());
+    data.put("mediaUrls", mediaUrls == null || mediaUrls.isEmpty() ? null : mediaUrls.toArray(new String[0]));
 
     return data;
   }

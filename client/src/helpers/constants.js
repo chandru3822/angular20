@@ -18,14 +18,35 @@ constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
 // constants.MAX_FILE_SIZE = 209715200 //200 mb
 constants.MAX_FILE_SIZE = 1048576000 //1 gb
-constants.WHITELISTED_FILE_EXTENSIONS = ['.png','.jpg','.jpeg','.gif','.tiff','.psd','.raw','.doc','.docx','.pdf','.xls','.xlsx','.xlsm','.dxf','.csv','.txt','.dwg','.xlsb','.heif','.jfif']
+
+
+//dont put spaces in these strings of file extentions
+//all regular image files, plus some one-offs
+//currently used for user images, reimbursement receipts, tournament backgrounds, company logos, event and project status logos
+constants.STANDARD_IMAGES_ONLY = '.png,.jpg,.jpeg,.gif,.tiff,.psd,.raw,.heif,.heic,.jfif'
+//all doc files, must be added one at a time, there is no "doc/*" sort of option
+constants.STANDARD_DOCS_ONLY = '.doc,.docx,.pdf,.xls,.xlsx,.csv,.txt,.xlsm,.xlsb,.dxf,.dwg'
+//all audio files, must be added one at a time
+constants.STANDARD_AUDIO_ONLY = '.mp3,.mp4'
+//combination of docs and images from above
+    //currently used for ahj attachments and proposal attachments
+constants.STANDARD_IMAGES_AND_DOCS = constants.STANDARD_IMAGES_ONLY + ',' + constants.STANDARD_DOCS_ONLY
+//combination of docs and images and audio from above
+    //currently used for document center attachments including project, ps, psEvent, user, org, contact
+constants.STANDARD_IMAGES_DOCS_AUDIO = constants.STANDARD_IMAGES_ONLY  + ',' + constants.STANDARD_DOCS_ONLY  + ',' + constants.STANDARD_AUDIO_ONLY
+
+
 //IMAGE_FILE_EXTENSIONS is used/formatted specifically for the attachment coversheet checks. make another one if you need one with . first
-constants.IMAGE_FILE_EXTENSIONS = ['png','jpg','jpeg','gif','tiff','psd','raw','heif']
-constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt, .xlsm, .dxf, .dwg, .xlsb, .heif, .png, .jpg, .jpeg' //png and jpg arent working sometimes for some users so i am trying to figure out why
-constants.STANDARD_IMAGES_ONLY = 'image/*'
-constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt, .xlsm, .xlsb, .dxf, .dwg, .xlsb, .heif, .jfif'
+    //used to determine if we should show an image preview on the upload coversheet and the compare coversheet
+constants.IMAGE_FILE_EXTENSIONS = constants.STANDARD_IMAGES_ONLY.replaceAll('.', '').split(",")
+
+//used when doing the upload, checks for valid extension in case user used drag-n-drop to upload or in some other way bypassed the checks in the upload dialog
+constants.WHITELISTED_FILE_EXTENSIONS = constants.STANDARD_IMAGES_DOCS_AUDIO.split(",")
+
+//only allowed in the /apps section
 constants.APP_FILE_TYPES = '.apk, .plist, .ipa'
 constants.MAX_FILE_UPLOADS = 10
+
 //TODO: rules likely need to be adjusted
 constants.EMAIL_RULES = [
   v => !!v || "E-mail is required",

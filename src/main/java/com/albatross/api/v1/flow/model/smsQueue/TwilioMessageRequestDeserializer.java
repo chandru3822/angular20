@@ -24,7 +24,8 @@ public class TwilioMessageRequestDeserializer extends StdDeserializer<TwilioMess
   public TwilioMessageRequest deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
     final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
-    final int totalNumMedia = node.get("NumMedia").intValue();
+    final String numMedia = node.get("NumMedia").textValue();
+    final int totalNumMedia = numMedia == null ? 0 : Integer.parseInt(numMedia);
 
     // why twilio, why?
     List<String> mediaUrls = new ArrayList<>();
@@ -36,7 +37,7 @@ public class TwilioMessageRequestDeserializer extends StdDeserializer<TwilioMess
       .messageSid(node.get("MessageSid").textValue())
       .smsSid(node.get("SmsSid").textValue())
       .accountSid(node.get("AccountSid").textValue())
-      .messagingServiceSid(node.get("MessageServiceSid").textValue())
+      .messagingServiceSid(node.get("MessagingServiceSid").textValue())
       .from(node.get("From").textValue())
       .to(node.get("To").textValue())
       .body(node.get("Body").textValue())

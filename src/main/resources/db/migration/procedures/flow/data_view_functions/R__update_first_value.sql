@@ -23,13 +23,13 @@ declare
   v_project_id                                    bigint;
   v_sql                                           text;
   v_where_clause_condition_ids                    text;
-  v_pps_cfga_ids  bigint[];
-  v_ppse_cfga_ids  bigint[];
+  v_pps_cfga_ids                                  bigint[];
+  v_ppse_cfga_ids                                 bigint[];
 BEGIN
   select replace(p_where_clause_condition_ids, $$'$$, '')
   into v_where_clause_condition_ids;
 
-  select true, dt.id,array_agg(cfga.id)
+  select true, dt.id, array_agg(cfga.id)
   into v_project_process_step_custom_field_value,v_pps_dt_id,v_pps_cfga_ids
   from flow.data_view_field_config dvfc
          inner join flow.custom_field_group_assignment cfga on cfga.id = dvfc.custom_field_group_assignment_id
@@ -39,9 +39,9 @@ BEGIN
   where dvfc.field_to_update = p_field_to_update
     and dvfc.custom_field_group_assignment_id is not null
     and dvfc.process_step_id is not null
-  group by 1,2;
+  group by 1, 2;
 
-  select true, dt.id,array_agg(cfga.id)
+  select true, dt.id, array_agg(cfga.id)
   into v_project_process_step_event_custom_field_value,v_ppse_dt_id,v_ppse_cfga_ids
   from flow.data_view_field_config dvfc
          inner join flow.custom_field_group_assignment cfga on cfga.id = dvfc.custom_field_group_assignment_id
@@ -51,7 +51,7 @@ BEGIN
   where dvfc.field_to_update = p_field_to_update
     and dvfc.custom_field_group_assignment_id is not null
     and dvfc.process_step_event_id is not null
-  group by 1,2;
+  group by 1, 2;
 
 
   if v_project_process_step_custom_field_value is true then
@@ -75,7 +75,8 @@ BEGIN
     into v_project_id,v_pps_id,v_pps_value
     from flow.project_process_step_custom_field_value ppscfv
            inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
-    where pps.project_id = any (v_where_clause_condition_ids::bigint[]) and ppscfv.custom_field_group_assignment_id = any(v_pps_cfga_ids)
+    where pps.project_id = any (v_where_clause_condition_ids::bigint[])
+      and ppscfv.custom_field_group_assignment_id = any (v_pps_cfga_ids)
       and case
             when v_pps_dt_id = 1 then
               ppscfv.date_value is not null
@@ -94,29 +95,30 @@ BEGIN
       end
     order by project_id, ppscfv.date_created asc
     limit 1;
+    if v_pps_value is not null then
+      select flow.get_prepared_value(v_pps_dt_id, v_pps_value)
+      into v_prepared_value;
 
-    select flow.get_prepared_value(v_pps_dt_id, v_pps_value)
-    into v_prepared_value;
-
-    if p_secondary_field_to_update is null and p_secondary_value is null then
-      v_sql = $$update brs.project_details pd
-            set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-              p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
-               where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-    else
-      v_sql = $$update brs.project_details pd
-            set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-              p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
-              p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
-               where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      if p_secondary_field_to_update is null and p_secondary_value is null then
+        v_sql = $$update brs.project_details pd
+              set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
+                 where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      else
+        v_sql = $$update brs.project_details pd
+              set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
+                p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
+                 where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      end if;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_custom_value_id, error)
+          values (v_pps_id, SQLERRM);
+      end;
     end if;
-    begin
-      execute v_sql;
-    exception
-      when others then
-        insert into flow.trigger_error(project_process_step_custom_value_id, error)
-        values (v_pps_id, SQLERRM);
-    end;
   elsif v_project_process_step_event_custom_field_value is true then
     select distinct on (project_id) project_id,
                                     ppsecfv.id,
@@ -139,7 +141,8 @@ BEGIN
     from flow.project_process_step_event_custom_field_value ppsecfv
            inner join flow.project_process_step_event ppse on ppse.id = ppsecfv.project_process_step_event_id
            inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-    where pps.project_id = any (v_where_clause_condition_ids::bigint[]) and ppsecfv.custom_field_group_assignment_id = any(v_ppse_cfga_ids)
+    where pps.project_id = any (v_where_clause_condition_ids::bigint[])
+      and ppsecfv.custom_field_group_assignment_id = any (v_ppse_cfga_ids)
       and case
             when v_ppse_dt_id = 1 then
               ppsecfv.date_value is not null
@@ -158,29 +161,33 @@ BEGIN
       end
     order by project_id, ppsecfv.date_created asc
     limit 1;
-    select flow.get_prepared_value(v_ppse_dt_id, v_ppse_value)
-    into v_prepared_value;
-  end if;
 
-  if p_secondary_field_to_update is null and p_secondary_value is null then
-    v_sql = $$update brs.project_details pd
+    if v_ppse_value is not null then
+      select flow.get_prepared_value(v_ppse_dt_id, v_ppse_value)
+      into v_prepared_value;
+
+
+      if p_secondary_field_to_update is null and p_secondary_value is null then
+        v_sql = $$update brs.project_details pd
             set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-            p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
                where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-  else
-    v_sql = $$update brs.project_details pd
+      else
+        v_sql = $$update brs.project_details pd
             set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-            p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
-            p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
+                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
+                p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
                where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+      end if;
+      begin
+        execute v_sql;
+      exception
+        when others then
+          insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
+          values (v_pps_id, SQLERRM);
+      end;
+    end if;
   end if;
-  begin
-    execute v_sql;
-  exception
-    when others then
-      insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
-      values (v_pps_id, SQLERRM);
-  end;
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE

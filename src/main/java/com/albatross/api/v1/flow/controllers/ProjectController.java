@@ -44,16 +44,16 @@ public class ProjectController {
 
   @GetMapping(value = "/search")
   public ResponseEntity<Page<Project>> searchProjects(
-      @RequestParam String query,
-      @RequestParam(required = false) Long companyProjectStatusTypeId,
-      @RequestParam(required = false) String overrideType,
-      @RequestParam(required = false) String sortColumn,
-      @RequestParam(required = false) String sortDirection,
-      Pageable pageable) {
+    @RequestParam String query,
+    @RequestParam(required = false) Long companyProjectStatusTypeId,
+    @RequestParam(required = false) String overrideType,
+    @RequestParam(required = false) String sortColumn,
+    @RequestParam(required = false) String sortDirection,
+    Pageable pageable) {
     return new ResponseEntity<>(
-        projectService.searchProjects(
-            query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, pageable),
-        HttpStatus.OK);
+      projectService.searchProjects(
+        query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, pageable),
+      HttpStatus.OK);
   }
 
   @PostMapping(value = "/search/density")
@@ -63,7 +63,7 @@ public class ProjectController {
 
   @GetMapping(value = "/countsByStatus")
   public ResponseEntity<List<ProjectStatusCount>> projectCountsByStatus(
-      @RequestParam(required = false) String overrideType) {
+    @RequestParam(required = false) String overrideType) {
     return new ResponseEntity<>(projectService.projectCountsByStatus(overrideType), HttpStatus.OK);
   }
 
@@ -74,7 +74,7 @@ public class ProjectController {
 
   @DeleteMapping(value = "/{projectId}")
   public void deleteProject(
-      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
+    @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
     projectService.deleteProject(projectId);
     messagingService.deleteConversation(projectId, details.getTrueUserId());
   }
@@ -93,35 +93,35 @@ public class ProjectController {
 
   @PutMapping(value = "/{projectId}/owner")
   public ResponseEntity<Void> updateProjectOwner(
-      @PathVariable Long projectId, @RequestBody Owner owner) {
+    @PathVariable Long projectId, @RequestBody Owner owner) {
     projectService.updateProjectOwner(projectId, owner);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping(value = "/{projectId}/processSteps")
   public ResponseEntity<List<ProjectProcessStep>> getProjectProcessSteps(
-      @PathVariable Long projectId) {
+    @PathVariable Long projectId) {
     return new ResponseEntity<>(
-        projectService.getProcessStepsByProjectId(projectId, null), HttpStatus.OK);
+      projectService.getProcessStepsByProjectId(projectId, null), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/upcomingProcessSteps")
   public ResponseEntity<List<ProjectProcessStep>> getUpcomingProjectProcessSteps(
-      @PathVariable Long projectId) {
+    @PathVariable Long projectId) {
     return new ResponseEntity<>(
-        projectService.getProcessStepsByProjectId(projectId, 1L), HttpStatus.OK);
+      projectService.getProcessStepsByProjectId(projectId, 1L), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/events")
   public ResponseEntity<List<ProjectProcessStepEvent>> getProjectEvents(
-      @PathVariable Long projectId) {
+    @PathVariable Long projectId) {
     return new ResponseEntity<>(
-        projectService.getEventsByProjectId(projectId, null), HttpStatus.OK);
+      projectService.getEventsByProjectId(projectId, null), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/activeEvents")
   public ResponseEntity<List<ProjectProcessStepEvent>> getUpcomingProjectEvents(
-      @PathVariable Long projectId) {
+    @PathVariable Long projectId) {
     return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, 1L), HttpStatus.OK);
   }
 
@@ -143,24 +143,27 @@ public class ProjectController {
   public void linkAttachment(@PathVariable Long projectId,
                              @PathVariable Long attachmentId,
                              @RequestParam Boolean doLink) {
-      projectService.linkAttachment(projectId, attachmentId, doLink);
+    projectService.linkAttachment(projectId, attachmentId, doLink);
   }
 
   @PostMapping(value = "/{projectId}/attachment")
   public ResponseEntity<Attachment> uploadProjectAttachment(
-      @PathVariable Long projectId,
-      @RequestParam Long attachmentTypeId,
-      @RequestParam String displayName,
-      @RequestParam("file") MultipartFile file)
-      throws IOException {
+    @PathVariable Long projectId,
+    @RequestParam Long attachmentTypeId,
+    @RequestParam(required = false) String displayName,
+    @RequestParam("file") MultipartFile file)
+    throws IOException {
+    if (displayName == null) {
+      displayName = file.getOriginalFilename();
+    }
     return new ResponseEntity<>(
-        projectService.addAttachment(file, projectId, attachmentTypeId, displayName), HttpStatus.OK);
+      projectService.addAttachment(file, projectId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
   // status stuff
   @GetMapping(value = "/companyStatus")
   public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatuses(
-      @RequestParam(required = false) Long projectId) {
+    @RequestParam(required = false) Long projectId) {
     return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
   }
 
@@ -176,7 +179,7 @@ public class ProjectController {
 
   @PutMapping(value = "/companyStatus")
   public ResponseEntity<Optional<ProjectStatusType>> saveCompanyProjectStatus(
-      @RequestBody ProjectStatusType status) {
+    @RequestBody ProjectStatusType status) {
     return new ResponseEntity<>(projectService.saveCompanyProjectStatus(status), HttpStatus.OK);
   }
 
@@ -187,7 +190,7 @@ public class ProjectController {
 
   @DeleteMapping(value = "/companyStatus/{id}")
   public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(
-      @PathVariable Long id) {
+    @PathVariable Long id) {
     return projectService.deleteCompanyProjectStatus(id);
   }
 
@@ -198,7 +201,7 @@ public class ProjectController {
 
   @PostMapping(value = "/{projectId}/status")
   public Optional<Project> updateProjectStatus(
-      @PathVariable Long projectId, @RequestBody Project project) {
+    @PathVariable Long projectId, @RequestBody Project project) {
     // changing this to return the status object cuz i neeeeeeeed it
     return projectService.updateStatus(projectId, project.getCompanyProjectStatusTypeId());
   }
@@ -212,7 +215,7 @@ public class ProjectController {
   public ResponseEntity<String> generateProjectSmartlist(@RequestParam String query) {
     String report = projectService.generateReport(query);
     return new ResponseEntity<>(
-        report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
+      report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
   }
 
   @Data

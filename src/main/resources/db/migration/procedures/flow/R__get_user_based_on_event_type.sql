@@ -1,7 +1,5 @@
-drop function if exists flow.get_user_based_on_event_type(p_project_id bigint,
-                                                          p_event_type_id bigint);
-  CREATE OR REPLACE FUNCTION flow.get_user_based_on_event_type(p_project_id bigint,
-                                                             p_event_type_id bigint)
+drop function if exists flow.get_user_based_on_event_type(p_project_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_user_based_on_event_type(p_project_id bigint)
     RETURNS bigint AS
 $BODY$
 declare
