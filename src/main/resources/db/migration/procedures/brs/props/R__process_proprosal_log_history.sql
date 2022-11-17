@@ -1,4 +1,6 @@
+drop trigger if exists process_proposal_log_history on brs.proposal_log;
 drop function if exists brs.process_proposal_log_history();
+
   CREATE OR REPLACE FUNCTION brs.process_proposal_log_history()
   RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -450,7 +452,6 @@ BEGIN
 END;
 $$;
 
-drop trigger if exists process_proposal_log_history on brs.proposal_log;
 create trigger process_proposal_log_history
     after insert
     on brs.proposal_log
