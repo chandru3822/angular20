@@ -13,7 +13,7 @@ BEGIN
              with reqs as (
 --         This query is where we'll join in the already run actions and  exclude those
              select array_agg(psl.process_step_requirement_id) as ids
-             from flow.process_step_logic psl
+             from flow.process_step_action_logic psl
                       inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
                       inner join flow.process_step ps on ps.id = psa.process_step_id
                       inner join flow.project_process_step pps on pps.process_step_id = ps.id
@@ -168,7 +168,7 @@ BEGIN
                                                  psr.requirement_nbr as "requirementNbr",
                                                  psr.immutable as "processStepRequirementImmutable",
                                                  psl.sql_order as "sqlOrder"
-                                          FROM flow.process_step_logic psl
+                                          FROM flow.process_step_action_logic psl
                                                    left join flow.operation_type ot on ot.id = psl.operation_type_id
                                                    left join flow.process_step_requirement psr on psr.id = psl.process_step_requirement_id
                                           WHERE psl.process_step_action_id = psa.id
@@ -286,7 +286,7 @@ BEGIN
                                                psr.requirement_nbr as "requirementNbr",
                                                psr.immutable as "processStepRequirementImmutable",
                                                psl.sql_order as "sqlOrder"
-                                        FROM flow.process_step_logic psl
+                                        FROM flow.process_step_action_logic psl
                                                left join flow.operation_type ot on ot.id = psl.operation_type_id
                                                left join flow.process_step_requirement psr on psr.id = psl.process_step_requirement_id
                                         WHERE psl.process_step_action_id = psa.id
