@@ -68,31 +68,39 @@ public class BrsProcessStepActionFunctionService {
     public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
 
         try {
-            JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()), true);
+            long projectId = Long.parseLong(systemValues.get("projectId").toString());
+            JSONObject application = goodleapService.getApplicationByProjectId(projectId, true);
 
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-            params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
-            params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
+            Long cfgaId = Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue());
+            if(cfgaId != null && cfgaId > 0) {
+              //ensure that cfgaId is a valid id
+              HashMap<String, Object> params = new HashMap<>();
+              params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+              params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+              params.put("customFieldGroupAssignmentId", cfgaId);
 
-            LocalDate sentAt = null;
+              LocalDate sentAt = null;
 
-            if (!application.isNull("docsSentAt")) {
-                sentAt = LocalDate.parse(application.getString("docsSentAt"), DateTimeFormatter.ISO_DATE_TIME);
+              if (!application.isNull("docsSentAt")) {
+                  sentAt = LocalDate.parse(application.getString("docsSentAt"), DateTimeFormatter.ISO_DATE_TIME);
+              }
+
+              params.put("dateValue", sentAt);
+
+              //default values
+              params.put("textValue", null);
+              params.put("timestampValue", null);
+              params.put("booleanValue", null);
+              params.put("numericValue", null);
+              params.put("intValue", null);
+              params.put("intArrayValue", null);
+              params.put("richTextValue", null);
+
+              sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+            } else {
+              //we think that sometimes this code fails to find a cfgaId. adding this log/code to help isolate and find out when/why
+              log.error("ACTION FUNCTION: Could not find cfgaId for project {}", projectId);
             }
-
-            params.put("dateValue", sentAt);
-
-            //default values
-            params.put("textValue", null);
-            params.put("timestampValue", null);
-            params.put("booleanValue", null);
-            params.put("numericValue", null);
-            params.put("intValue", null);
-            params.put("intArrayValue", null);
-            params.put("richTextValue", null);
-
-            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
         } catch (GoodleapService.NotFoundException e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
