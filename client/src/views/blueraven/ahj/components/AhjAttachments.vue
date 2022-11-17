@@ -6,19 +6,19 @@
         <v-expansion-panel-header class="expansion-panel-header">
           <template v-slot:default="{ open }">
             <v-row no-gutters class="align-center" :class="{'bold' : open}">
-              {{`${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`}}
+              {{ `${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})` }}
               <v-spacer></v-spacer>
               <div class="expansion-panel-header-open" v-if="open"
                    key="0">
                 <input
-                    :id="`fileInput${type.attachmentTypeId}`"
-                    type="file"
-                    multiple
-                    :accept="acceptedFileTypes"
-                    @change='uploadDocument($event.target.files, type.attachmentTypeId)'
-                    style="display: none"
-                    @click.stop=""
-                    ref='fileInput'
+                  :id="`fileInput${type.attachmentTypeId}`"
+                  type="file"
+                  multiple
+                  :accept="acceptedFileTypes"
+                  @change='uploadDocument($event.target.files, type.attachmentTypeId)'
+                  style="display: none"
+                  @click.stop=""
+                  ref='fileInput'
                 >
                 <v-btn @click.native.stop="selectFile(type.attachmentTypeId)"
                        @dragenter="dragTypeId=type.attachmentTypeId"
@@ -32,18 +32,18 @@
                 </v-btn>
               </div>
               <span
-                  v-else
-                  key="1"
+                v-else
+                key="1"
               ></span>
             </v-row>
           </template>
         </v-expansion-panel-header>
         <v-expansion-panel-content>
           <AttachmentsTable
-              :display-type="type"
-              :attachments="attachments"
-              :show-non-primary-docs="true"
-              :allow-edit="false"
+            :display-type="type"
+            :attachments="attachments"
+            :show-non-primary-docs="true"
+            :allow-edit="false"
           ></AttachmentsTable>
         </v-expansion-panel-content>
       </v-expansion-panel>
@@ -69,7 +69,7 @@ export default {
   components: {
     AttachmentsTable
   },
-  data () {
+  data() {
     return {
       dragTypeId: null,
       error: {},
@@ -78,9 +78,9 @@ export default {
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
       companyId: this.$store.state.user.details.companyId,
       headers: [
-        { text: null, value: 'fileIcon', show: true },
-        { text: null, value: 'filename', show: true },
-        { text: null, value: 'icons', show: true },
+        {text: null, value: 'fileIcon', show: true},
+        {text: null, value: 'filename', show: true},
+        {text: null, value: 'icons', show: true},
       ],
       showNonPrimaryDocs: false,
     }
@@ -96,24 +96,21 @@ export default {
     orgId: Number,
   },
   watch: {
-    attachments(){
+    attachments() {
       console.log(this.attachments)
-}
+    }
   },
-  created () {
-  },
-  computed: {
-
-  },
+  created() {},
+  computed: {},
   methods: {
-    getTypeCount: function(typeId) {
+    getTypeCount: function (typeId) {
       try {
         return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
       } catch {
         return 0
       }
     },
-    getNonPrimaryCount: function(typeId) {
+    getNonPrimaryCount: function (typeId) {
       try {
         return this.attachments?.filter(a => a.attachmentTypeId === typeId && !a.archived && !a.main).length || 0
       } catch {
@@ -124,7 +121,7 @@ export default {
       let files = e.dataTransfer.files
       await this.uploadDocument(files, attachmentTypeId)
     },
-    selectFile: function(typeId){
+    selectFile: function (typeId) {
       document.getElementById(`fileInput${typeId}`)?.click();
     },
     uploadDocument: async function (files, attachmentTypeId) {
@@ -146,7 +143,7 @@ export default {
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             }
           })
-        } catch(e) {
+        } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error uploading document')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -175,7 +172,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.expansion-panel-header{
+.expansion-panel-header {
   font-size: 14px;
   color: var(--v-primaryText-base);
 }
@@ -184,7 +181,7 @@ export default {
   font-weight: bold;
 }
 
-.expansion-panel-header-open{
+.expansion-panel-header-open {
   display: flex;
   align-items: center;
 }

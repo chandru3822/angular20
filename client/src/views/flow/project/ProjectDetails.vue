@@ -202,7 +202,7 @@ export default {
       dirtyCfvs: [],
       attachmentTypes: [],
       attachmentMenuOpen: false,
-      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
+      acceptedFileTypes: constants.STANDARD_IMAGES_DOCS_AUDIO,
       tempFile: {},
       fileToUpload: null,
       showCoversheetModal: false,
