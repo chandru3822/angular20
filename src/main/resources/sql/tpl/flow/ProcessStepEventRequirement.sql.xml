@@ -470,7 +470,7 @@
   <processStepEventRequirement.actionsUsingRequirement><![CDATA[
       select psa.id,
        psa.action_name
-      from flow.process_step_event_logic psl
+      from flow.process_step_event_action_logic psl
              inner join flow.process_step_event_action psa on psa.id = psl.process_step_event_action_id
       where psl.process_step_event_requirement_id = :requirementId
         and psl.archived is not true
