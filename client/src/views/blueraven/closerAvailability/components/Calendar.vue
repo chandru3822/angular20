@@ -138,7 +138,7 @@
   import momentPlugin from '@fullcalendar/moment'
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
-  import momentTimezonePlugin from '@fullcalendar/moment-timezone'
+  import momentTimezonePlugin from '@/plugins/fc-moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
