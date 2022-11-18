@@ -126,10 +126,11 @@
 
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
+import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import Mapbox from 'mapbox-gl'
 import {MglMap, MglPopup, MglMarker, MglNavigationControl} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
-import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers";
+import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import moment from 'moment'
 import debounce from "lodash.debounce";
@@ -205,7 +206,7 @@ export default {
       //   fuzzyMatch: true,
       //   language: 'en'
       // }
-
+console.log({Mapbox})
       this.mapbox = Mapbox
     },
     selectAddress(suggestion, isFirst) {

@@ -375,6 +375,16 @@ export default {
       }
       //teams filter not showing
       return 6
+    },
+    hasUnassignedNotifications() {
+      let hasNotifications = false
+      this.teamsAssociatedToUser?.forEach(t => {
+        if (t.receiveUnassignedNotifications) {
+          hasNotifications = true;
+        }
+      })
+
+      return hasNotifications;
     }
   },
   methods: {
@@ -634,7 +644,7 @@ export default {
           return 0
         })
 
-        if (!this.selectedOwnerFilters.includes(-1)) {
+        if (!this.selectedOwnerFilters.includes(-1) && this.hasUnassignedNotifications) {
           this.selectedOwnerFilters.push(-1)
         }
         handleHidingGlobalLoader(this, status)
