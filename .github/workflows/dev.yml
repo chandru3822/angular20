@@ -154,7 +154,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
           always-auth: true
-          registry-url: https://registry.npmjs.org
+          registry-url: https://npm.pkg.github.com
           scope: '@7oaksgroup'
 
       - name: set env
