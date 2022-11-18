@@ -231,23 +231,32 @@ public class BlueravenProposalService {
     getProposal(proposalId)
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
-    final Map<String, Object> context =
-      sqlCache.queryForMap(
+    Map<String, Object> context = new HashMap<>();
+
+    try {
+      context = sqlCache.queryForMap(
         "proposal.getCalculatedProposalValues",
         Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
+    } catch (Exception e) {
+      log.error("[Proposals] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
+    }
 
-    final Map<String, Object> proposalAttachments =
-      sqlCache
-        .query("proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class)
-        .stream()
-        .collect(
-          Collectors.toMap(
-            this::mapAttachmentTypeToProposalType,
-            attachment -> buildUri(attachment.getUuid().toString(), proposalGeneratedType),
-            (img1, img2) -> img1)); // if we have multiple just return one
+    try {
+      Map<String, Object> proposalAttachments =
+        sqlCache
+          .query("proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class)
+          .stream()
+          .collect(
+            Collectors.toMap(
+              this::mapAttachmentTypeToProposalType,
+              attachment -> buildUri(attachment.getUuid().toString(), proposalGeneratedType),
+              (img1, img2) -> img1)); // if we have multiple just return one
 
-    context.putAll(proposalAttachments);
+      context.putAll(proposalAttachments);
 
+    } catch (Exception e) {
+      log.error("[Proposals] Error fetching attachments for proposalId={}, msg={}", proposalId, e.getMessage());
+    }
     return context;
   }
 
