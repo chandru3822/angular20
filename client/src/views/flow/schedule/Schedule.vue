@@ -2,8 +2,11 @@
   <v-container id="schedule-container" class="py-0">
     <v-row class="map-row">
       <v-col cols="12" md="5">
-        <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
-             :zoom="state.mapZoom" :map-resources="mapResources"></Map>
+        <Map :latitude="state.mapLatitude"
+             :markers="selectedRows"
+             :longitude="state.mapLongitude"
+             :zoom="state.mapZoom"
+             :map-resources="mapResources"/>
       </v-col>
       <v-col cols="12" md="7" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->

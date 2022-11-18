@@ -34,7 +34,7 @@ public class TemplatingEngineService {
 
       return output.toString();
     } catch (Exception ex) {
-      log.error("TEMPLATE_ERROR: unable to create output stream", ex);
+      log.error("TEMPLATE_ERROR: unable to create output stream, error={}", ex.getMessage());
     }
 
     return "fail fail fail";

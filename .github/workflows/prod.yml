@@ -215,6 +215,9 @@ jobs:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
+          always-auth: true
+          registry-url: https://npm.pkg.github.com
+          scope: '@7oaksgroup'
 
       # Deploy the site with netlify-cli
       - name: Deploy Site
@@ -222,4 +225,5 @@ jobs:
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
           NETLIFY_SITE_ID: ${{ secrets.PROD_NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"

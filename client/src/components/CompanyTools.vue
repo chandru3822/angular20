@@ -67,7 +67,7 @@
   import Vue2Filters from "vue2-filters"
   import SpinnerInline from '@/components/SpinnerInline'
   import { getRequest, getSnackbar } from '@/helpers/helpers'
-  const { VUE_APP_ENV } = process.env
+  const { VITE_ENV } =  import.meta.env
 
   export default {
     name: 'CompanyTools',
@@ -86,10 +86,10 @@
         tourneysLoading: false,
         loadComplete: false,
         userId: this.$store.state.user.details.id,
-        headerColor: VUE_APP_ENV === 'local' ? constants.LOCAL_COLOR :
-                     VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ?  constants.STAGE_COLOR :
-                     VUE_APP_ENV === 'flux' ? constants.FLUX_COLOR :
-                     VUE_APP_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
+        headerColor: VITE_ENV === 'local' ? constants.LOCAL_COLOR :
+                     VITE_ENV === 'dev' || VITE_ENV === 'stage' ?  constants.STAGE_COLOR :
+                     VITE_ENV === 'flux' ? constants.FLUX_COLOR :
+                     VITE_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
         menuOpen: false,
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
       }

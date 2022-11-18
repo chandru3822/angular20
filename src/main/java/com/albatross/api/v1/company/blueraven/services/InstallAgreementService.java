@@ -119,7 +119,7 @@ public class InstallAgreementService {
           sunlightService.sendLoanDocs(projectId);
         }
       } catch (JSONException ex) {
-        log.error("IARQ: Error sending finance docs via Sunlight", ex);
+        log.error("IARQ: Error sending finance docs via Sunlight, error={}", ex.getMessage());
         resultMsg = "Error sending finance docs through Sunlight";
       }
     } else if (sendLoanDocs && isSunpowerProject(financier)) {
@@ -127,7 +127,7 @@ public class InstallAgreementService {
       try {
         sunpowerService.sendLoanDocs(projectId);
       } catch (Exception ex) {
-        log.error("IARQ: Error sending finance docs via Sunpower", ex);
+        log.error("IARQ: Error sending finance docs via Sunpower, error={}", ex.getMessage());
         resultMsg = "Error sending finance docs through Sunpower: " + ex.getMessage();
       }
     } else if (sendLoanDocs && isLoanPalProject(financier)) {
@@ -162,7 +162,7 @@ public class InstallAgreementService {
             }
           }
         } catch (JSONException ex) {
-          log.error("IARQ: JSON object not found", ex);
+          log.error("IARQ: JSON object not found, error={}", ex.getMessage());
         }
       }
     }
@@ -354,7 +354,7 @@ public class InstallAgreementService {
           b.addParameter("refnum", s(pd.getProjectId()));
           return b.build().toString().replaceAll("\\+", "%20");
         } catch (URISyntaxException e) {
-          log.error("IARQ: uri error", e);
+          log.error("IARQ: uri error={}", e.getMessage());
         }
       }
     }
@@ -526,7 +526,7 @@ public class InstallAgreementService {
       return Map.of("message", "No proposal found");
 
     } catch (Exception e) {
-      log.debug("IARQ: Installation agreement: Failed to update sunpower application: {}", e.getMessage());
+      log.debug("IARQ: Installation agreement: Failed to update sunpower application, msg={}", e.getMessage());
       throw new ApiException(e.getMessage());
     }
   }

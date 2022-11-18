@@ -98,7 +98,7 @@ public class AuroraProxy {
       return new DesignSummary(content);
     } catch (Exception e) {
       String msg = "AURORA: Failed to get design summary for design " + designId;
-      log.error(msg, e);
+      log.debug(msg, e);
       throw new IOException(msg, e);
     }
   }

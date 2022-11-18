@@ -35,6 +35,8 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -3825,6 +3827,10 @@ public class SmartlistService {
         SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
         sfa5.setName("Note Created By");
         headers.add(sfa5);
+
+        SmartlistFieldAssignment sfa6  = new SmartlistFieldAssignment();
+        sfa6.setName("Note Created At");
+        headers.add(sfa6);
       }
     }
 
@@ -3859,14 +3865,18 @@ public class SmartlistService {
         TypeReference<List<Note>> notesRef = new TypeReference<>() {};
         List<Note> notes = om.readValue(notesArray.getValue(), notesRef);
         if(notes.size() > 0) {
+          String pattern = "yyyy-MM-dd hh:mma";
+          DateFormat df = new SimpleDateFormat(pattern);
           Note firstNote = notes.get(0);
           r.put("Next Follow-up Date", firstNote.getFollowUpDate());
           r.put("Note Content", firstNote.getNote());
           r.put("Note Created By", firstNote.getCreatedBy());
+          r.put("Note Created At", df.format(firstNote.getDateCreated()));
         } else {
           r.put("Next Follow-up Date", null);
           r.put("Note Content", null);
           r.put("Note Created By", null);
+          r.put("Note Created At", null);
         }
         r.remove("Notes");
       }
@@ -4991,6 +5001,9 @@ public class SmartlistService {
       var noteCreatedBy = new SmartlistFieldAssignment();
       noteCreatedBy.setName("Note Created By");
       defaultFields.add(noteCreatedBy);
+      var noteCreatedAt = new SmartlistFieldAssignment();
+      noteCreatedAt.setName("Note Created At");
+      defaultFields.add(noteCreatedAt);
     }
     return defaultFields;
   }

@@ -2,7 +2,7 @@
   <div v-if="loadComplete">
     <v-row class="toolbar-z-index-override">
       <v-col
-        v-if="VUE_APP_ENV === 'uat'"
+        v-if="VITE_ENV === 'uat'"
         cols="12"
         style="font-size: 18px; text-align: center; background-color: orange; color: white;"
       >
@@ -128,7 +128,7 @@ import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 
-const { VUE_APP_ENV } = process.env
+const { VITE_ENV } =  import.meta.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
 
 export default {
@@ -152,10 +152,10 @@ export default {
       companies: [],
       companyTools: [],
       model: '',
-      headerColor: VUE_APP_ENV === 'local' ? constants.LOCAL_COLOR :
-        VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? constants.STAGE_COLOR :
-          VUE_APP_ENV === 'flux' ? constants.FLUX_COLOR :
-            VUE_APP_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
+      headerColor: VITE_ENV === 'local' ? constants.LOCAL_COLOR :
+        VITE_ENV === 'dev' || VITE_ENV === 'stage' ? constants.STAGE_COLOR :
+          VITE_ENV === 'flux' ? constants.FLUX_COLOR :
+            VITE_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
       tabs: [{
         label: 'Contacts',
         path: '/contacts',
@@ -189,7 +189,7 @@ export default {
           feature: 'SMS_INBOX',
           show: true
         }],
-      VUE_APP_ENV
+      VITE_ENV
     }
   },
   created() {

@@ -34,7 +34,7 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary" @click="[address1 = '', selectAddress1 = !selectAddress1, selectAddress2 = false]"
+            <v-btn class="mt-2" small color="primary" @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = !selectAddress1, selectAddress2 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
                    :loading="selectAddress1">Select Pin
             </v-btn>
@@ -60,7 +60,7 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary" @click="[address2 = '', selectAddress2 = !selectAddress2, selectAddress1 = false]"
+            <v-btn class="mt-2" small color="primary" @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = !selectAddress2, selectAddress1 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
                    :loading="selectAddress2">Select Pin
             </v-btn>
@@ -72,7 +72,7 @@
             <v-btn text small class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>
             <v-btn color="primary" small :disabled="!address1 || !address2"
                    :loading="loadingDriveTime"
-                   @click="loadDriveTime">Go</v-btn>
+                   @click="loadDriveTime">Calculate</v-btn>
           </div>
 
           <div class="mt-2" v-if="drivingDistance || drivingDuration">
@@ -126,10 +126,11 @@
 
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
+import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import Mapbox from 'mapbox-gl'
-import {MglMap, MglPopup, MglMarker, MglNavigationControl} from 'vue-mapbox'
+import {MglMap, MglPopup, MglMarker, MglNavigationControl} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
-import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers";
+import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import moment from 'moment'
 import debounce from "lodash.debounce";
@@ -205,7 +206,7 @@ export default {
       //   fuzzyMatch: true,
       //   language: 'en'
       // }
-
+console.log({Mapbox})
       this.mapbox = Mapbox
     },
     selectAddress(suggestion, isFirst) {
@@ -317,6 +318,8 @@ export default {
           m.selectedSecond = false
         }
       })
+      this.drivingDistance = 0
+      this.drivingDuration = 0
       this.markerCount++
       this.suggestions = []
       this.showAddress1List = false

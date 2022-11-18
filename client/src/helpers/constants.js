@@ -1,4 +1,4 @@
-const { VUE_APP_BASE_API, VUE_APP_ENV, VUE_APP_MAPBOX_ACCESS_TOKEN, VUE_APP_MAPBOX_STYLE} = process.env
+const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN, VITE_MAPBOX_STYLE} = import.meta.env
 
 let constants = {}
 
@@ -8,25 +8,45 @@ constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'
 constants.UAT_COLOR = 'blue' //this is a light blue color
 constants.PROD_COLOR = 'primary' //this is the dark blue prod color
-constants.VUE_APP_ENV = VUE_APP_ENV
-constants.VUE_APP_BASE_API = VUE_APP_BASE_API
+constants.VUE_APP_ENV = VITE_ENV
+constants.VUE_APP_BASE_API = VITE_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'
-constants.MAPBOX_ACCESS_TOKEN = VUE_APP_MAPBOX_ACCESS_TOKEN //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
-constants.MAPBOX_STYLE = VUE_APP_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
+constants.MAPBOX_ACCESS_TOKEN = VITE_MAPBOX_ACCESS_TOKEN //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
+constants.MAPBOX_STYLE = VITE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 constants.IS_MOBILE = window.innerWidth <= 768
 constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
 // constants.MAX_FILE_SIZE = 209715200 //200 mb
 constants.MAX_FILE_SIZE = 1048576000 //1 gb
-constants.WHITELISTED_FILE_EXTENSIONS = ['.png','.jpg','.jpeg','.gif','.tiff','.psd','.raw','.doc','.docx','.pdf','.xls','.xlsx','.xlsm','.dxf','.csv','.txt','.dwg','.xlsb','.heif','.jfif']
-// constants.BLACKLISTED_FILE_EXTENSIONS = ['.ade','.gz','.bz2','.zip','.tgz', '.adp', '.apk', '.appx', '.appxbundle', '.bat', '.cab', '.chm', '.cmd', '.com', '.cpl', '.diagcab', '.diagcfg', '.diagpack', '.dll', '.dmg', '.ex', '.ex_', '.exe', '.hta', '.img', '.ins', '.iso', '.isp', '.jar', '.jnlp', '.js', '.jse', '.lib', '.lnk', '.mde', '.msc', '.msi', '.msix', '.msixbundle', '.msp', '.mst', '.nsh', '.pif', '.ps1', '.scr', '.sct', '.shb', '.sys', '.vb', '.vbe', '.vbs', '.vhd', '.vxd', '.wsc', '.wsf', '.wsh', '.xll'],
+
+
+//dont put spaces in these strings of file extentions
+//all regular image files, plus some one-offs
+//currently used for user images, reimbursement receipts, tournament backgrounds, company logos, event and project status logos
+constants.STANDARD_IMAGES_ONLY = '.png,.jpg,.jpeg,.gif,.tiff,.psd,.raw,.heif,.heic,.jfif'
+//all doc files, must be added one at a time, there is no "doc/*" sort of option
+constants.STANDARD_DOCS_ONLY = '.doc,.docx,.pdf,.xls,.xlsx,.csv,.txt,.xlsm,.xlsb,.dxf,.dwg'
+//all audio files, must be added one at a time
+constants.STANDARD_AUDIO_ONLY = '.mp3,.mp4'
+//combination of docs and images from above
+    //currently used for ahj attachments and proposal attachments
+constants.STANDARD_IMAGES_AND_DOCS = constants.STANDARD_IMAGES_ONLY + ',' + constants.STANDARD_DOCS_ONLY
+//combination of docs and images and audio from above
+    //currently used for document center attachments including project, ps, psEvent, user, org, contact
+constants.STANDARD_IMAGES_DOCS_AUDIO = constants.STANDARD_IMAGES_ONLY  + ',' + constants.STANDARD_DOCS_ONLY  + ',' + constants.STANDARD_AUDIO_ONLY
+
+
 //IMAGE_FILE_EXTENSIONS is used/formatted specifically for the attachment coversheet checks. make another one if you need one with . first
-constants.IMAGE_FILE_EXTENSIONS = ['png','jpg','jpeg','gif','tiff','psd','raw','heif']
-constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt, .xlsm, .dxf, .dwg, .xlsb, .heif, .png, .jpg, .jpeg' //png and jpg arent working sometimes for some users so i am trying to figure out why
-constants.STANDARD_IMAGES_ONLY = 'image/*'
-constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt, .xlsm, .xlsb, .dxf, .dwg, .xlsb, .heif, .jfif'
+    //used to determine if we should show an image preview on the upload coversheet and the compare coversheet
+constants.IMAGE_FILE_EXTENSIONS = constants.STANDARD_IMAGES_ONLY.replaceAll('.', '').split(",")
+
+//used when doing the upload, checks for valid extension in case user used drag-n-drop to upload or in some other way bypassed the checks in the upload dialog
+constants.WHITELISTED_FILE_EXTENSIONS = constants.STANDARD_IMAGES_DOCS_AUDIO.split(",")
+
+//only allowed in the /apps section
 constants.APP_FILE_TYPES = '.apk, .plist, .ipa'
 constants.MAX_FILE_UPLOADS = 10
+
 //TODO: rules likely need to be adjusted
 constants.EMAIL_RULES = [
   v => !!v || "E-mail is required",

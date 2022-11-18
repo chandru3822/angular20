@@ -2856,7 +2856,7 @@ export default {
       .checked-in-column-top,
       .checked-in-column-center,
       .checked-in-column-bottom {
-        background-color: map-get($grey, 'lighten-1');
+        background-color: var(--v-grey-lighten1);
         border: 1px solid #fff;
         font-weight: normal;
         text-align: center;

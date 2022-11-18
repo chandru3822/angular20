@@ -153,6 +153,9 @@ jobs:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
+          always-auth: true
+          registry-url: https://npm.pkg.github.com
+          scope: '@7oaksgroup'
 
       - name: set env
         id: vars
@@ -165,6 +168,7 @@ jobs:
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
           NETLIFY_SITE_ID: ${{ secrets.DEV_NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
