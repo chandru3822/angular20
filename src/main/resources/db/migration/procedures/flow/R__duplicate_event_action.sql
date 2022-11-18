@@ -29,10 +29,10 @@ BEGIN
   returning id into v_new_event_action_id;
 
   --duplicate the non-archived logic
-  insert into flow.process_step_event_logic(process_step_event_requirement_id, operation_type_id, sql_order, process_step_event_action_id, date_created, date_modified, created_by_id, modified_by_id, archived)
+  insert into flow.process_step_event_action_logic(process_step_event_requirement_id, operation_type_id, sql_order, process_step_event_action_id, date_created, date_modified, created_by_id, modified_by_id, archived)
   (select process_step_event_requirement_id, operation_type_id, sql_order, v_new_event_action_id,
           now(), now(), p_current_user_id, p_current_user_id, psel.archived
-    from flow.process_step_event_logic psel
+    from flow.process_step_event_action_logic psel
       inner join flow.process_step_event_action psea on psel.process_step_event_action_id = psea.id
       inner join flow.process_step_event pse on psea.process_step_event_id = pse.id
       inner join flow.process_step ps on pse.process_step_id = ps.id
