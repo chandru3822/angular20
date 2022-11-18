@@ -218,7 +218,7 @@
   import constants from "@/helpers/constants"
   import MultiOptionDialog from "@/components/MultiOptionDialog";
 
-  const { VUE_APP_ENV } = process.env
+  const { VITE_ENV } =  import.meta.env
 
   export default {
     name: 'Appointments',
@@ -255,7 +255,7 @@
     data() {
       return {
         snackbar: {},
-        VUE_APP_ENV,
+        VITE_ENV,
         addNew: false,
         expanded: [],
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),

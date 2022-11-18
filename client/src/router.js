@@ -13,7 +13,7 @@ Vue.use(Router)
 
 const router = new Router({
   mode: 'history',
-  base: process.env.BASE_URL,
+  base:  import.meta.env.BASE_URL,
   routes: [
     {
       path: '/login',
@@ -1621,7 +1621,7 @@ async function getUser() {
 }
 
 function accessDenied() {
-  let maintenanceMode = process.env.VUE_APP_MAINTENANCE_MODE?.toLowerCase() === 'true' || process.env.VUE_APP_MAINTENANCE_MODE === true
+  let maintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE?.toLowerCase() === 'true' || process.env.VUE_APP_MAINTENANCE_MODE === true
   if(maintenanceMode) {
     return import(/* webpackChunkName: "accessDenied" */ './views/SiteUnderMaintenance.vue')
   } else {

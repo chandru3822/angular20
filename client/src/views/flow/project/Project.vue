@@ -199,9 +199,9 @@ import {AppMutations} from '@/stores/AppStore'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import ActiveEvents from '@/views/flow/project/ActiveEvents'
-import {getCompanyProjectStatusTypes, getStatusColor} from "@/services/projectStatusTypeService"
+import {getCompanyProjectStatusTypes, getStatusColorClass} from "@/services/projectStatusTypeService"
 import constants from "@/helpers/constants";
-import {getActiveStates, getCompanyStates} from "@/services/stateService";
+import {getActiveStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
 import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "../../../ConfirmationDialog";
@@ -234,7 +234,7 @@ export default {
       showEditProjectModal: false,
       checkAddress: this.$route.query?.checkAddress === 'true',
       statuses: [],
-      getStatusColor,
+      getStatusColorClass,
       availableOwners: [],
       postalCodeRules: constants.POSTAL_CODE_RULES,
       formatPhoneNumber,

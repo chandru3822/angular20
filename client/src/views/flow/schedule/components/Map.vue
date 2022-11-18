@@ -127,7 +127,7 @@
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
 import Mapbox from 'mapbox-gl'
-import {MglMap, MglPopup, MglMarker, MglNavigationControl} from 'vue-mapbox'
+import {MglMap, MglPopup, MglMarker, MglNavigationControl} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
 import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";

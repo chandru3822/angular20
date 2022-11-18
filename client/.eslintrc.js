@@ -7,9 +7,7 @@ module.exports = {
     'plugin:vue/essential',
     'eslint:recommended'
   ],
-  plugins: [
-    'vuetify'
-  ],
+  plugins: [],
   rules: {
     'no-console': 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
@@ -34,7 +32,6 @@ module.exports = {
     'no-unsafe-optional-chaining' : 'warn'
   },
   parserOptions: {
-    "parser": "@babel/eslint-parser",
     "requireConfigFile": false
   }
 }
