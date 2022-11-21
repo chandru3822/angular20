@@ -136,6 +136,8 @@ export default {
     dataWasChanged: false,
     dataReady: false,
     customFieldGroups: [],
+    totalGroups: 8,
+    expandedGroups: 8,
     ahjDesign: {
       designRequirements: [],
       electricalRequirements: [],
