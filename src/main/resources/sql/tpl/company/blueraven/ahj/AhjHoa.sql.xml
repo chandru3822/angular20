@@ -6,11 +6,11 @@
              cs.state_id,
              s.state,
              s.abbreviation as state_abbreviation,
-             mc.id as management_company_id,
-             mc.name as management_company,
+             lov.id as management_company_id,
+             lov.name as management_company,
              h.archived
       FROM brs.ahj_hoa h
-               left join flow.list_of_value mc on mc.id = h.management_company_id
+               left join brs.list_of_value lov on lov.id = h.management_company_id and lov.parent_id = 759
                left join flow.company_state cs on cs.id = h.company_state_id
                left join flow.state s on s.id = cs.state_id
       ORDER BY h.name;
