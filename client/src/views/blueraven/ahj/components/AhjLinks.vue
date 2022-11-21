@@ -129,6 +129,8 @@
             let res = null
             if (this.itemType === 'utility') {
               res = await postRequest(`/ahjUtility/${this.itemId}/links`, this.link, 'blueraven')
+            } else if (this.itemType === 'hoa') {
+              res = await postRequest(`/ahjHoa/${this.itemId}/links`, this.link, 'blueraven')
             } else {
               res = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
             }
@@ -146,6 +148,8 @@
             let res = null
             if (this.itemType === 'utility') {
               res = await putRequest(`/ahjUtility/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
+            } else if (this.itemType === 'hoa') {
+              res = await putRequest(`/ahjHoa/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
             } else {
               res = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
             }
