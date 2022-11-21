@@ -22,6 +22,7 @@
             FROM brs.ahj_contact c
               INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
             WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 1
+            order by c.name
           ) contacts), '[]'
         ) AS submissionContacts,
         coalesce((
@@ -39,6 +40,7 @@
             FROM brs.ahj_contact c
               INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
             WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 6
+            order by c.name
           ) contacts), '[]'
         ) AS followUpContacts,
         coalesce((
@@ -55,7 +57,9 @@
             FROM brs.ahj_permit_link apl
             WHERE apl.archived IS FALSE
               AND apl.link_type_id = 4
-              AND apl.ahj_permit_id = p.id) links
+              AND apl.ahj_permit_id = p.id
+            order by apl.name
+              ) links
             ), '[]'
           ) AS submissionLinks,
         coalesce((
@@ -72,7 +76,9 @@
             FROM brs.ahj_permit_link apl
             WHERE apl.archived IS FALSE
               AND apl.link_type_id = 5
-              AND apl.ahj_permit_id = p.id) links
+              AND apl.ahj_permit_id = p.id
+            order by apl.name
+              ) links
           ), '[]'
         ) AS followUpLinks
       FROM brs.ahj_permit p

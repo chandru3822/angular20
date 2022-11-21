@@ -398,7 +398,6 @@ export default {
           })
         }
 
-        console.log('randaLogger',this.results[0])
 
         this.masterResults = cloneDeep(this.results)
         this.filteredResults = cloneDeep(this.results)

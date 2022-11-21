@@ -1,24 +1,7 @@
 <template>
-  <v-container id="ahj-container">
+  <v-container id="ahj-list-container">
     <v-row>
-      <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">
-            <v-btn text to="/ahj" color="primary">
-              AHJ
-            </v-btn>
-            <v-btn text to="/ahjUtility" color="primary">
-              Utility
-            </v-btn>
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add New</span>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
+      <v-col cols="12" class="pt-0 px-0">
 
         <v-data-table
           :headers="headers"
@@ -30,6 +13,15 @@
           :footer-props="footerProps"
           class="elevation-1 ahj-table"
         >
+          <template #header.icons="{}">
+            <div class="text-right mr-2">
+              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+                <v-icon>add</v-icon>
+                <span v-if="!constants.IS_MOBILE">Add New</span>
+              </v-btn>
+            </div>
+          </template>
+
           <template #header="{ props: { headers } }">
             <tr>
               <th v-for="header in headers" :key="header.text"
@@ -62,15 +54,15 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.metroArea ? item.metroArea : '' }}</td>
-              <td class="text-left clickable" @click="$router.push({ path: `ahj/${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
-              <td class="text-left">
+              <td class="text-left clickable" @click="$router.push({ path: `${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `${item.id}/permit` })">{{ item.metroArea ? item.metroArea : '' }}</td>
+              <td class="text-left clickable" @click="$router.push({ path: `${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
+              <td class="text-right">
                 <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
                 <span v-else>
-                  <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link primary--text">Permit</router-link>
-                  <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link primary--text">Inspection</router-link>
-                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link primary--text">Design</router-link>
+                  <router-link :to="`${item.id}/permit`" class="mr-3 ahj-link primary--text">Permit</router-link>
+                  <router-link :to="`${item.id}/inspection`" class="mr-3 ahj-link primary--text">Inspection</router-link>
+                  <router-link :to="`${item.id}/design`" class="mr-3 ahj-link primary--text">Design</router-link>
                 </span>
                 <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
@@ -151,37 +143,23 @@
   import {getActiveStates} from '@/services/stateService'
   import { AppMutations } from '@/stores/AppStore'
   import ConfirmationDialog from "@/ConfirmationDialog";
-
-  const FILTER_DEFAULTS = {
-    name: {value: '', type: 'text', model: 'name'},
-    metroArea: {value: '', type: 'text', model: 'metroArea'},
-    state: {value: [], type: 'select', model: 'state'}
-  }
+  import {AHJ_TABS, FILTER_DEFAULTS} from "@/views/blueraven/ahj/AhjConstants";
 
   export default {
-    name: 'ahjs',
+    name: 'ahjList',
     components: {ConfirmationDialog},
     data: () => ({
       snackbar: {},
-      constants,
+      constants, initFilters () {
+        this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
+      },
       dataLoading: true,
-      tabs: [
-        {
-          label: 'AHJ',
-          path: '/ahj',
-          display: true
-        },
-        {
-          label: 'Utility',
-          path: '/ahjUtility',
-          display: true
-        }
-      ],
+      tabs: AHJ_TABS,
       headers: [
-        { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
+        { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true },
         { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
         { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
-        { text: null, value: null, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 400 }
+        { text: null, value: 'icons', sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
       ],
       ahjs: [],
       editedItem: {
@@ -271,9 +249,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      initFilters () {
-        this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
-      },
+
       addItem () {
         this.getActiveMetroAreas()
         this.addMode = true
@@ -374,17 +350,18 @@
 </script>
 
 <style lang="scss" scoped>
-  #ahj-container {
+  #ahj-list-container {
     overflow: auto;
+    padding-top: 0;
   }
 
   .ahj-link {
-    color: var(--v-brBlue-base);
+    color: purple;
     text-decoration: none;
 
     &:hover {
       text-decoration: underline;
-      color: var(--v-primaryText-base);
+      color: var(--v-primary-base);
     }
   }
 

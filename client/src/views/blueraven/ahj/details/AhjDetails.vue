@@ -1,15 +1,12 @@
 <template>
   <v-container id="ahj-details-container">
     <v-row>
-      <v-col cols="12" class="pt-0">
+      <v-col cols="12" class="pt-0 py-0">
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
-            <v-card class="mx-4 square-card">
+            <v-card class="ahj-details-card square-card">
               <v-toolbar flat>
-                <v-toolbar-title class="app-title">
-                  <v-btn fab text color="primary" small class="mr-2" @click="goToPath('/ahj')">
-                    <v-icon>mdi-arrow-left</v-icon>
-                  </v-btn>
+                <v-toolbar-title class="app-title"  v-if="ahj && ahj.name">
                   {{ ahj.name }}, {{ ahj.metroArea }}, {{ ahj.state }}
                 </v-toolbar-title>
               </v-toolbar>
@@ -71,6 +68,17 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#ahj-details-container {
+  padding-right: 0;
+  padding-left: 0;
+  padding-top: 10px;
+}
+
+.ahj-details-card {
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
 #back-btn {
   text-transform: unset;
   letter-spacing: unset;

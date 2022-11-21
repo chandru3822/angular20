@@ -1,7 +1,7 @@
 <template>
   <v-container class="pa-0">
     <v-row>
-    <v-col class="group" cols="12" md="6" v-for="n in numberOfCols">
+    <v-col class="group pt-0" cols="12" md="6" v-for="n in numberOfCols">
         <AhjCustomFieldGroup v-for="group in getGroupsByCol(n)" :group = group
                          :user-can-edit="userCanEdit"
                          :expanded-all="expandedAll"

@@ -5,6 +5,7 @@ public enum ObjectType {
   AHJ_UTILITY(2L, "ahj_utility_id"),
   AHJ_INSPECTION(3L, "ahj_inspection_id"),
   AHJ_PERMIT(4L, "ahj_permit_id"),
+  AHJ_HOA(24L, "ahj_hoa_id"),
   COMMISSION_OVERRIDE(9L, "override_plan_id"),
   PROPOSAL(10L, "proposal_id");
 
