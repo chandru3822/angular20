@@ -236,3 +236,19 @@ alter table brs.ahj_contact_type alter column object_type_id set not null;
 alter table brs.ahj_contact alter column contact_type_id set not null;
 
 
+alter table brs.ahj_link_type add column  if not exists object_type_id bigint;
+
+update brs.ahj_link_type set object_type_id = 3 where name = 'Inspection - Scheduling';
+update brs.ahj_link_type set object_type_id = 3 where name = 'Inspection - FOT';
+update brs.ahj_link_type set object_type_id = 3 where name = 'Inspection - Results';
+update brs.ahj_link_type set object_type_id = 4 where name = 'Permit - Submission';
+update brs.ahj_link_type set object_type_id = 4 where name = 'Permit - Follow-up';
+update brs.ahj_link_type set object_type_id = 2 where name = 'Utility - Customer Signature';
+update brs.ahj_link_type set object_type_id = 2 where name = 'Utility - PTO';
+update brs.ahj_link_type set object_type_id = 2 where name = 'Utility - PTO Followup';
+update brs.ahj_link_type set object_type_id = 2 where name = 'Utility - Submission';
+update brs.ahj_link_type set object_type_id = 2 where name = 'Utility - All';
+update brs.ahj_link_type set object_type_id = 24 where name = 'AHJ HOA';
+
+alter table brs.ahj_link_type alter column object_type_id set not null;
+
