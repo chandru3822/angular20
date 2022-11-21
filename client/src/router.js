@@ -372,67 +372,104 @@ const router = new Router({
           }
         }, {
           path: '/ahj',
-          name: 'ahj',
+          name: 'ahjContainer',
           meta: {title: 'Albatross - AHJ'},
           component: () => {
             if (store.getters.userHasFeature('AHJ_DATABASE')) {
-              return import (/* webpackChunkName: "ahj" */ './views/blueraven/ahj/Ahj.vue')
-            } else {
-              return accessDenied()
-            }
-          },
-        }, {
-          path: '/ahj/:ahjId',
-          name: 'ahjDetails',
-          meta: {title: 'Albatross - AHJ'},
-          props: true,
-          component: () => {
-            if (store.getters.userHasFeature('AHJ_DATABASE')) {
-              return import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjDetails.vue')
+              return import (/* webpackChunkName: "ahj" */ './views/blueraven/ahj/AhjContainer.vue')
             } else {
               return accessDenied()
             }
           },
           children: [
             {
-              path: 'permit',
+              path: 'list',
+              name: 'ahjList',
               meta: {title: 'Albatross - AHJ'},
-              component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjPermit.vue')
-            },
-            {
-              path: 'inspection',
+              component: () => {
+                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                  return import (/* webpackChunkName: "ahj" */ './views/blueraven/ahj/AhjList.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'utility',
+              name: 'ahjUtilities',
               meta: {title: 'Albatross - AHJ'},
-              component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjInspection.vue')
-            },
-            {
-              path: 'design',
+              component: () => {
+                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                  return import (/* webpackChunkName: "ahjUtilities" */ './views/blueraven/ahj/utility/AhjUtilities.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'utility/:ahjUtilityId/details',
+              name: 'ahjUtilityDetails',
               meta: {title: 'Albatross - AHJ'},
-              component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjDesign.vue')
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                  return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/blueraven/ahj/utility/AhjUtilityDetails.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },{
+              path: 'hoa',
+              name: 'hoa',
+              meta: {title: 'Albatross - HOA'},
+              component: () => {
+                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                  return import (/* webpackChunkName: "ahjUtilities" */ './views/blueraven/ahj/hoa/AhjHoas.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'hoa/:ahjHoaId/details',
+              name: 'ahjHoaDetails',
+              meta: {title: 'Albatross - AHJ'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                  return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/blueraven/ahj/hoa/AhjHoaDetails.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: ':ahjId',
+              name: 'ahjDetails',
+              meta: {title: 'Albatross - AHJ'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                  return import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjDetails.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+              children: [
+                {
+                  path: 'permit',
+                  meta: {title: 'Albatross - AHJ'},
+                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjPermit.vue')
+                },
+                {
+                  path: 'inspection',
+                  meta: {title: 'Albatross - AHJ'},
+                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjInspection.vue')
+                },
+                {
+                  path: 'design',
+                  meta: {title: 'Albatross - AHJ'},
+                  component: () => import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/details/AhjDesign.vue')
+                }
+              ]
             }
           ]
-        }, {
-          path: '/ahjUtility',
-          name: 'ahjUtilities',
-          meta: {title: 'Albatross - AHJ'},
-          component: () => {
-            if (store.getters.userHasFeature('AHJ_DATABASE')) {
-              return import (/* webpackChunkName: "ahjUtilities" */ './views/blueraven/ahj/utility/AhjUtility.vue')
-            } else {
-              return accessDenied()
-            }
-          },
-        }, {
-          path: '/ahjUtility/:ahjUtilityId/details',
-          name: 'ahjUtilityDetails',
-          meta: {title: 'Albatross - AHJ'},
-          props: true,
-          component: () => {
-            if (store.getters.userHasFeature('AHJ_DATABASE')) {
-              return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/blueraven/ahj/utility/AhjUtilityDetails.vue')
-            } else {
-              return accessDenied()
-            }
-          },
         },
         //TOURNAMENT STUFF
         {

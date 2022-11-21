@@ -1,25 +1,7 @@
 <template>
   <v-container id="ahj-utility-container">
     <v-row>
-      <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">
-            <v-btn text to="/ahj" color="primary">
-              AHJ
-            </v-btn>
-            <v-btn text to="/ahjUtility" color="primary">
-              Utility
-            </v-btn>
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add New</span>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-
+      <v-col cols="12"  class="pt-0 px-0">
         <v-data-table
           :headers="headers"
           :items="filteredAhjUtilities"
@@ -30,13 +12,22 @@
           hide-default-footer
           class="elevation-1 ahj-utility-table"
         >
+          <template #header.icons="{}">
+            <div class="text-right mr-2">
+              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+                <v-icon>add</v-icon>
+                <span v-if="!constants.IS_MOBILE">Add New</span>
+              </v-btn>
+            </div>
+          </template>
+
           <template #header="{ props: { headers } }">
             <tr>
               <th v-for="header in headers" :key="header.text"
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
-                <div v-if="ahjUtilityFilters[header.value]" class="pt-2 ml-0 table-filter">
-                  <v-text-field v-if="ahjUtilityFilters[header.value].type === 'text'" class="pt-2 table-filter"
+                <div v-if="ahjUtilityFilters[header.value]" class="pt-2 table-filter">
+                  <v-text-field v-if="ahjUtilityFilters[header.value].type === 'text'"
                                 v-model="ahjUtilityFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
@@ -51,7 +42,6 @@
                             :placeholder="'Select a ' + header.text.toLowerCase()"
                             clearable
                             filled
-                            class="mt-2"
                             type="search"
                             item-text="state"
                             dense
@@ -68,8 +58,8 @@
               <td class="text-left" :class="{'strike': item.archived}">{{ item.name ? item.name : '' }}</td>
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left">{{ item.state ? item.state : '' }}</td>
-              <td class="text-left">
-                <v-icon color="primary" class="mr-3 ahj-link-icon" @click.stop="editAhjUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')">
+              <td class="text-right">
+                <v-icon color="primary" small class="mr-3 ahj-link-icon" @click.stop="editAhjUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')">
                   edit
                 </v-icon>
               </td>
@@ -146,12 +136,7 @@
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import {getActiveStates} from '@/services/stateService'
-
-  const FILTER_DEFAULTS = {
-    name: {value: '', type: 'text', model: 'name'},
-    metroArea: {value: '', type: 'text', model: 'metroArea'},
-    state: {value: [], type: 'select', model: 'state'}
-  }
+  import {FILTER_DEFAULTS, AHJ_TABS} from "@/views/blueraven/ahj/AhjConstants";
 
   export default {
     name: 'ahjUtilities',
@@ -160,23 +145,12 @@
       snackbar: {},
       constants,
       dataLoading: true,
-      tabs: [
-        {
-          label: 'AHJ',
-          path: '/ahj',
-          display: true
-        },
-        {
-          label: 'Utility',
-          path: '/ahjUtility',
-          display: true
-        }
-      ],
+      tabs: AHJ_TABS,
       headers: [
         { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
         { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 350, show: true },
-        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 300, show: true },
-        { text: null, value: null, sortable: false, show: true, width: 120 }
+        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 250, show: true },
+        { text: null, value: 'icons', sortable: false, show: true, width: 100 }
       ],
       ahjUtilities: [],
       states: [],
@@ -326,7 +300,7 @@
         this.editedItem = {}
       },
       goToRoute(id) {
-        this.$router.push('ahjUtility/' + id + '/details')
+        this.$router.push('utility/' + id + '/details')
       },
     },
     created () {
@@ -341,6 +315,7 @@
 <style lang="scss" scoped>
   #ahj-utility-container {
     overflow: auto;
+    padding-top: 0;
   }
 
   .ahj-link {
@@ -349,7 +324,7 @@
 
     &:hover {
       text-decoration: underline;
-      color: var(--v-primaryText-base);
+      color: var(--v-primary-base);
     }
   }
 
@@ -370,12 +345,10 @@
   }
 
   .v-data-table ::v-deep .v-data-table__wrapper {
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 240px);
 
     .table-filter {
       font-weight: normal;
-      font-size: 0.875rem;
-      margin-left: 15px;
       margin-bottom: 10px;
 
       .v-text-field,

@@ -1,6 +1,6 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-container id="ahj-utility-details-container">
+  <v-container id="ahj-hoa-details-container">
     <v-row>
       <v-col cols="12" class="pa-0">
 
@@ -8,8 +8,8 @@
           <v-col class="text-left pa-0" cols="12">
             <v-card class="mx-4 square-card">
               <v-toolbar flat>
-                <v-toolbar-title class="app-title" v-if="ahjUtility && ahjUtility.name">
-                  {{ ahjUtility.name }}, {{ ahjUtility.metroArea }}, {{ ahjUtility.state }}
+                <v-toolbar-title class="app-title"  v-if="ahjHoa && ahjHoa.name">
+                  {{ ahjHoa.name }}, {{ ahjHoa.state }}, {{ ahjHoa.managementCompany }}
                 </v-toolbar-title>
               </v-toolbar>
             </v-card>
@@ -39,7 +39,7 @@
                 </v-btn>
               </v-col>
             </v-row>
-            <v-form ref="ahjUtilityForm">
+            <v-form ref="ahjHoaForm">
               <!-- UPPER SECTION -->
               <v-row class="mb-4 group-row" no-gutters>
                 <TwoColumnMasonry v-if="dataReady"
@@ -66,30 +66,22 @@
                     <!-- CONTACTS -->
                     <AhjContact title="Contacts"
                                 :user-can-edit="userCanEdit"
-                                :contactTypeId="8"
-                                :itemId="ahjUtility.id"
+                                :contactTypeId="10"
+                                :itemId="ahjHoa.id"
                                 :itemType="itemType"
-                                :contacts="ahjUtility.contacts"
+                                :contacts="ahjHoa.contacts"
                                 show-expanded
                                 :expanded-all="expandedAll"
                                 @toggle-collapse-expand="toggleCollapseExpand($event)"
                     ></AhjContact>
-                    <AhjCard title="All Documents" show-expanded :expanded-all="expandedAll"
-                             @toggle-collapse-expand="toggleCollapseExpand($event)">
-                      <AhjAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit"
-                                      :attachment-types="AhjUtilityDocumentTypes" :attachments="documents"
-                                      :source-id="ahjUtility.id">
-                        >
-                      </AhjAttachments>
-                    </AhjCard>
                   </v-col>
-                  <v-col class="group px-2 py-2">
+                  <v-col cols="12" md="6" class="group px-2 py-2">
                     <ahj-link title="All Links"
                               :user-can-edit="userCanEdit"
-                              :linkTypeId="10"
-                              :itemId="ahjUtility.id"
+                              :linkTypeId="11"
+                              :itemId="ahjHoa.id"
                               :itemType="itemType"
-                              :links="ahjUtility.links"
+                              :links="ahjHoa.links"
                               :isNested="false"
                               show-expanded
                               :expanded-all="expandedAll"
@@ -114,28 +106,26 @@ import {AppMutations} from "@/stores/AppStore"
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 import AhjCustomFields from "@/views/blueraven/ahj/components/AhjCustomFieldGroup";
-import {CollapseExpandEnum, AhjUtilityDocumentTypes} from "@/views/blueraven/ahj/AhjConstants";
+import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 import AhjCard from "@/views/blueraven/ahj/components/AhjCard";
-import AhjAttachments from "@/views/blueraven/ahj/components/AhjAttachments";
 import TwoColumnMasonry from "@/views/blueraven/ahj/components/TwoColumnMasonry";
 
 export default {
-  name: "ahjUtilityDetails",
+  name: "ahjHoaDetails",
   components: {
     TwoColumnMasonry,
-    AhjAttachments,
     AhjCustomFields,
+    CustomValueInput,
+    AhjCard,
     AhjContact,
     AhjLink,
-    CustomValueInput,
-    AhjCard
   },
   computed: {
     userCanEdit() {
       return this.$store.getters.userHasFeatureAccessLevel("AHJ_DATABASE", "EDIT")
     },
-    expandedAll() {
-      if (this.expandedGroups === this.totalGroups) {
+    expandedAll(){
+      if(this.expandedGroups === this.totalGroups){
         return CollapseExpandEnum.EXPANDED
       } else if (this.expandedGroups === 0) {
         return CollapseExpandEnum.COLLAPSED
@@ -146,34 +136,15 @@ export default {
   },
   data: () => ({
     CollapseExpandEnum,
-    AhjUtilityDocumentTypes,
-    ahjUtilityId: null,
-    itemType: "utility",
+    ahjHoaId: null,
+    itemType: "hoa",
     snackbar: {},
     dataWasChanged: false,
     dataReady: false,
     customFieldGroups: [],
-    selectedFinancier: {submissionMethod: null},
-    ahjUtility: {
-      customerSignatureLinks: [],
-      ptoLinks: [],
-      ptoFollowupLinks: [],
-      submissionLinks: [],
-      submissionChecklist: [],
-      approvalChecklist: [],
-      ptoChecklist: [],
-      utilityInspectionChecklist: [],
-      contacts: [],
-      utilityRequirements: []
-    },
-    documents: [],
-    utilityRateDocs: [],
-    submissionDocs: [],
-    approvalDocs: [],
-    financiers: [],
+    ahjHoa: {},
     totalGroups: 2,
     expandedGroups: 2,
-    isDocumentsLoading: true
   }),
   methods: {
     updateDirtyValue(item) {
@@ -181,79 +152,39 @@ export default {
       this.dataWasChanged = true
     },
     toggleCollapseExpand(wasExpanded) {
-      if (wasExpanded === false) {
+      if(wasExpanded === false) {
         this.expandedGroups--
-      } else {
+      }else {
         this.expandedGroups++
       }
     },
-    async getAhjUtility() {
+    async getAhjHoa() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, "blueraven")
-        this.ahjUtility = cloneDeep(data)
-        window.document.title = `AHJ Utility - ${this.ahjUtility.name}`
-        this.ahjUtility.links = orderBy(this.ahjUtility.links, link => link.name?.toLowerCase())
-        this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name?.toLowerCase())
+        const {data, status} = await getRequest(`/ahjHoa/${this.ahjHoaId}`, "blueraven")
+        this.ahjHoa = cloneDeep(data)
+        window.document.title = `AHJ HOA - ${this.ahjHoa.name}`
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving AHJ Utility")
+        this.snackbar = getSnackbar("ERROR", "Error retrieving AHJ HOA")
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAllDocuments() {
-      this.isDocumentsLoading = true
-      let docRequests = []
-      for (const docType of this.AhjUtilityDocumentTypes) {
-        docRequests.push(this.getDocuments(docType.attachmentTypeId))
-        // await this.getDocuments(docType.attachmentTypeId)
-      }
-      await Promise.all(docRequests).then(() => {
-        this.isDocumentsLoading = false
-      })
-    },
-    async getDocuments(docTypeId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {sourceId: this.ahjUtility.id, attachmentTypeId: docTypeId}
-        const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.documents = cloneDeep(data).concat(this.documents)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     validateForm() {
       //checks for required fields prior to opening the save dialog
-      if (this.$refs.ahjUtilityForm.validate()) {
-        this.saveAhjUtility()
+      if (this.$refs.ahjHoaForm.validate()) {
+        this.saveAhjHoa()
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getFinancierList() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest("/financier/active", "blueraven")
-        this.financiers = cloneDeep(data)
-        this.selectedFinancier = this.ahjUtility.financierId ? this.financiers.filter(financier => financier.id === this.ahjUtility.financierId)[0] : {submissionMethod: null}
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving list of financiers")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async getCustomFieldGroupAssignmentsForScreen() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjUtilityId, objectTypeId: 2}
+        const params = {sourceId: this.ahjHoa.id, objectTypeId: 24}
         const {
           data,
           status
@@ -284,43 +215,26 @@ export default {
     },
     async resetForm() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
       this.dataWasChanged = false
       this.dataReady = false
-      await this.pageLoad(false)
-      // this.getAhjUtility().then(() => {
-      //   this.getFinancierList()
-      //   this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
-      // })
-    },
-    async pageLoad(loadAttachments) {
-      let requests = [
-        this.getAhjUtility(),
-        this.getFinancierList(),
-        this.getCustomFieldGroupAssignmentsForScreen()
-      ]
-      if(loadAttachments) {
-        requests.push(this.getAllDocuments())
-      }
-      await Promise.all(requests).then(() => {
-        this.dataReady = true
+      this.getAhjHoa().then(() => {
+        this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
       })
     },
-    async saveAhjUtility() {
+    async saveAhjHoa() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
 
       try {
-        this.ahjUtility.customFieldGroups = this.customFieldGroups
-        const {data, status} = await putRequest("/ahjUtility", this.ahjUtility, "blueraven")
-        this.ahjUtility = cloneDeep(data)
+        this.ahjHoa.customFieldGroups = this.customFieldGroups
+        const {data, status} = await putRequest("/ahjHoa", this.ahjHoa, "blueraven")
+        this.ahjHoa = cloneDeep(data)
         this.dataWasChanged = false
-        this.snackbar = getSnackbar("SUCCESS", "AHJ Utility saved")
+        this.snackbar = getSnackbar("SUCCESS", "AHJ HOA saved")
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error saving AHJ Utility")
+        this.snackbar = getSnackbar("ERROR", "Error saving AHJ HOA")
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -335,24 +249,17 @@ export default {
   },
   async created() {
     this.$store.commit(AppMutations.SET_LOADING, true)
-    this.ahjUtilityId = parseInt(this.$route.params.ahjUtilityId)
+    this.ahjHoaId = parseInt(this.$route.params.ahjHoaId)
 
-    await this.pageLoad(true)
-    // this.getAhjUtility().then(() => {
-    //   this.getFinancierList().then(() => {
-    //     this.getCustomFieldGroupAssignmentsForScreen().then(() => {
-    //       this.getAllDocuments().then(() => {
-    //         this.dataReady = true
-    //       })
-    //     })
-    //   })
-    // })
+    await this.getAhjHoa()
+    await this.getCustomFieldGroupAssignmentsForScreen()
+    this.dataReady = true
   }
 }
 </script>
 
 <style scoped lang="scss">
-#ahj-utility-details-container {
+#ahj-hoa-details-container {
   padding-right: 9px;
   padding-left: 9px;
   padding-top: 10px;
@@ -382,7 +289,7 @@ export default {
   text-align: right;
 }
 
-#utility-tab-bar {
+#hoa-tab-bar {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
 
