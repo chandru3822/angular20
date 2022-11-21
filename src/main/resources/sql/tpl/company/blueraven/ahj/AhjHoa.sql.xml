@@ -13,7 +13,7 @@
                left join brs.list_of_value lov on lov.id = h.management_company_id and lov.parent_id = 759
                left join flow.company_state cs on cs.id = h.company_state_id
                left join flow.state s on s.id = cs.state_id
-      ORDER BY h.name;
+      ORDER BY s.state, h.name;
   ]]></ahj.hoa.list.all>
 
   <ahj.hoa.simple.update><![CDATA[
