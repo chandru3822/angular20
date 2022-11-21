@@ -179,6 +179,8 @@
             let res = null
             if (this.itemType === 'utility') {
               res = await postRequest(`/ahjUtility/${this.itemId}/contacts`, this.contact, 'blueraven')
+            } else if (this.itemType === 'hoa') {
+              res = await postRequest(`/ahjHoa/${this.itemId}/contacts`, this.contact, 'blueraven')
             } else {
               res = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
             }

@@ -58,6 +58,37 @@
                 <!--                ></AhjCustomFields>-->
                 <!--              </v-col>-->
               </v-row>
+              <!-- LOWER SECTION -->
+              <div v-if="dataReady">
+                <h1 id="links" class="pb-2 mb-4 mx-3 lower-section albatross-header-2">Links and Contacts</h1>
+                <v-row no-gutters>
+                  <v-col cols="12" md="6" class="group px-2 py-2">
+                    <!-- CONTACTS -->
+                    <AhjContact title="Contacts"
+                                :user-can-edit="userCanEdit"
+                                :contactTypeId="10"
+                                :itemId="ahjHoa.id"
+                                :itemType="itemType"
+                                :contacts="ahjHoa.contacts"
+                                show-expanded
+                                :expanded-all="expandedAll"
+                                @toggle-collapse-expand="toggleCollapseExpand($event)"
+                    ></AhjContact>
+                  </v-col>
+                  <v-col cols="12" md="6" class="group px-2 py-2">
+                    <ahj-link title="All Links"
+                              :user-can-edit="userCanEdit"
+                              :linkTypeId="11"
+                              :itemId="ahjHoa.id"
+                              :itemType="itemType"
+                              :links="ahjHoa.links"
+                              :isNested="false"
+                              show-expanded
+                              :expanded-all="expandedAll"
+                              @toggle-collapse-expand="toggleCollapseExpand($event)"></ahj-link>
+                  </v-col>
+                </v-row>
+              </div>
             </v-form>
           </v-card>
         </v-row>
@@ -69,6 +100,8 @@
 <script>
 import cloneDeep from "lodash.clonedeep"
 import orderBy from "lodash.orderby"
+import AhjContact from "../components/AhjContacts"
+import AhjLink from "../components/AhjLinks"
 import {AppMutations} from "@/stores/AppStore"
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
@@ -83,7 +116,9 @@ export default {
     TwoColumnMasonry,
     AhjCustomFields,
     CustomValueInput,
-    AhjCard
+    AhjCard,
+    AhjContact,
+    AhjLink,
   },
   computed: {
     userCanEdit() {
@@ -326,7 +361,7 @@ export default {
 
 .lower-section {
   border-bottom: 1px solid #ccc;
-  width: 100%;
+  width: calc(100% - 20px);
 }
 
 .v-input--is-disabled ::v-deep .v-input__slot,

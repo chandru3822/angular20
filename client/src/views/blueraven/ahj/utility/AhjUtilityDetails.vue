@@ -454,7 +454,7 @@ export default {
 
 .lower-section {
   border-bottom: 1px solid #ccc;
-  width: 100%;
+  width: calc(100% - 20px);
 }
 
 .v-input--is-disabled ::v-deep .v-input__slot,

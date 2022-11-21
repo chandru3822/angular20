@@ -50,7 +50,39 @@
           mc.name as management_company,
           cs.state_id,
           s.state,
-          s.abbreviation
+          s.abbreviation,
+          coalesce((
+                       SELECT array_to_json(array_agg(row_to_json(contacts)))
+                       FROM (
+                                SELECT
+                                    c.id,
+                                    c.name,
+                                    c.title,
+                                    c.email,
+                                    c.phone_number AS "phoneNumber",
+                                    c.address,
+                                    c.notes,
+                                    c.hours
+                                FROM brs.ahj_contact c
+                                         INNER JOIN brs.ahj_hoa_contact auc ON c.id = auc.ahj_contact_id
+                                WHERE auc.ahj_hoa_id = h.id AND c.archived IS FALSE AND c.contact_type_id = 10
+                            ) contacts), '[]') AS contacts,
+          coalesce((
+                       SELECT array_to_json(array_agg(row_to_json(links)))
+                       FROM (
+                                SELECT
+                                    aul.id,
+                                    aul.name,
+                                    aul.link,
+                                    aul.username,
+                                    aul.link_type_id AS "linkTypeId",
+                                    aul.password,
+                                    aul.notes
+                                FROM brs.ahj_hoa_link aul
+                                WHERE aul.archived IS FALSE
+                                  AND aul.link_type_id = 11
+                                  AND aul.ahj_hoa_id = h.id) links
+                   ), '[]') AS links
       FROM brs.ahj_hoa h
                left join flow.list_of_value mc on mc.id = h.management_company_id
                left join flow.company_state cs on cs.id = h.company_state_id
@@ -69,4 +101,92 @@
          AND lov.archived IS FALSE
        ORDER BY lov.name
     ]]></ahj.hoa.getActiveManagementCompanies>
+
+
+  <!-- CONTACT -->
+  <ahj.hoa.contact.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_contact WHERE id = :id
+    ]]>
+  </ahj.hoa.contact.findById>
+
+  <ahj.hoa.contact.add>
+    <![CDATA[
+      WITH auc AS (
+        insert into brs.ahj_contact (name, title, email, phone_number, address, notes, hours, date_created, created_by_id, date_modified, modified_by_id, contact_type_id)
+        values (:name, :title, :email, :phoneNumber, :address, :notes, :hours, now(), :currentUser, now(), :currentUser, :contactTypeId)
+        returning id
+      )
+      INSERT INTO brs.ahj_hoa_contact (ahj_hoa_id, ahj_contact_id)
+      SELECT :ahjHoaId, auc.id
+      FROM auc
+      RETURNING ahj_contact_id;
+    ]]>
+  </ahj.hoa.contact.add>
+
+  <ahj.hoa.contact.update>
+    <![CDATA[
+      UPDATE brs.ahj_contact
+      SET name = :name,
+          title = :title,
+          email = :email,
+          phone_number = :phoneNumber,
+          address = :address,
+          notes = :notes,
+          hours = :hours,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :contactId
+    ]]>
+  </ahj.hoa.contact.update>
+
+  <ahj.hoa.contact.delete>
+    <![CDATA[
+      UPDATE brs.ahj_contact
+      SET archived = TRUE,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :contactId
+    ]]>
+  </ahj.hoa.contact.delete>
+
+  <!-- LINK -->
+  <ahj.hoa.link.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_hoa_link WHERE id = :id
+    ]]>
+  </ahj.hoa.link.findById>
+
+  <ahj.hoa.link.add>
+    <![CDATA[
+      INSERT INTO brs.ahj_hoa_link (ahj_hoa_id, name, link, username, password, notes, date_created, created_by_id, date_modified, modified_by_id, link_type_id)
+      VALUES (:ahjHoaId, :name, :link, :username, :password, :notes, now(), :currentUser, now(), :currentUser, :linkTypeId)
+      RETURNING id;
+    ]]>
+  </ahj.hoa.link.add>
+
+  <ahj.hoa.link.update>
+    <![CDATA[
+      UPDATE brs.ahj_hoa_link
+      SET ahj_hoa_id = :ahjHoaId,
+          name = :name,
+          link = :link,
+          username = :username,
+          password = :password,
+          notes = :notes,
+          date_modified = now(),
+          modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.hoa.link.update>
+
+  <ahj.hoa.link.delete>
+    <![CDATA[
+      UPDATE brs.ahj_hoa_link
+      SET archived = true,
+          date_modified = now(),
+          modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.hoa.link.delete>
 </sql>
