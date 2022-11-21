@@ -381,6 +381,7 @@ CREATE TRIGGER proposal_version_custom_field_value_audit_trg
   FOR EACH ROW EXECUTE PROCEDURE brs.proposal_version_audit();
 
 
+drop trigger if exists ahj_hoa_custom_field_value_audit_trg ON brs.ahj_hoa_custom_field_value;
 
 drop function if exists brs.ahj_hoa_audit();
 CREATE OR REPLACE FUNCTION brs.ahj_hoa_audit()
@@ -434,8 +435,6 @@ END
 $$
   LANGUAGE plpgsql;
 
-
-drop trigger if exists ahj_hoa_custom_field_value_audit_trg ON brs.ahj_hoa_custom_field_value;
 CREATE TRIGGER ahj_hoa_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.ahj_hoa_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.ahj_hoa_audit();
