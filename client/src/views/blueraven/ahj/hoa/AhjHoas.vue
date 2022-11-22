@@ -180,9 +180,6 @@ export default {
           const filter = this.hoaFilters[filterName]
 
           if (filter.value?.length < 1) {
-            if(hoa.name === 'Crestview Glen') {
-              console.log('model',filter.model)
-            }
             return true
           }
 
