@@ -170,7 +170,7 @@
           return Object.keys(this.ahjUtilityFilters).every(filterName => {
             const filter = this.ahjUtilityFilters[filterName]
 
-            if (filter.value && filter.value.length < 1) {
+            if (filter.value?.length < 1) {
               return true
             }
 

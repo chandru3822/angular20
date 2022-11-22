@@ -179,7 +179,10 @@ export default {
         return Object.keys(this.hoaFilters).every(filterName => {
           const filter = this.hoaFilters[filterName]
 
-          if (filter.value && filter.value.length < 1) {
+          if (filter.value?.length < 1) {
+            if(hoa.name === 'Crestview Glen') {
+              console.log('model',filter.model)
+            }
             return true
           }
 
