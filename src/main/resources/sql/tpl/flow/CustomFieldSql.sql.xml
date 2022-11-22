@@ -103,4 +103,23 @@ order by s.state
       and pd.project_id = :projectId
   ]]></customFieldSql.brs.ahjSpecificInstallationRequirements>
 
+  <customFieldSql.brs.designLogBomValue><![CDATA[
+      select bom as text_value
+      from brs.design_log_history dlh
+      where project_id = :projectId
+      and id = (
+        select int_value
+        from flow.project_process_step_custom_field_value ppscfv
+        where ppscfv.project_process_step_id = :ppsId
+          and ppscfv.custom_field_group_assignment_id in (
+          select cfga.id
+          from flow.custom_field_group_assignment cfga
+                 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+          where cfga.custom_field_id = 9109
+            and cfg.process_step_id is not null
+            and cfga.archived is false
+            and cfg.archived is false
+        ))
+  ]]></customFieldSql.brs.designLogBomValue>
+
 </sql>

@@ -121,7 +121,7 @@
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="close">Cancel</v-btn>
           <v-btn color="primary" raised @click="saveAhjHoa" class="white--text"
-                 :disabled="!editedItem.name || !editedItem.managementCompanyId || !editedItem.companyStateId">
+                 :disabled="!editedItem.name || !editedItem.companyStateId">
             {{ ahjBtnTxt }}
           </v-btn>
         </v-card-actions>
