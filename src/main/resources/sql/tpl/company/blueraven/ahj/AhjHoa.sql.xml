@@ -84,7 +84,7 @@
                                   AND aul.ahj_hoa_id = h.id) links
                    ), '[]') AS links
       FROM brs.ahj_hoa h
-               left join flow.list_of_value mc on mc.id = h.management_company_id
+               left join brs.list_of_value mc on mc.id = h.management_company_id
                left join flow.company_state cs on cs.id = h.company_state_id
                left join flow.state s on s.id = cs.state_id
       WHERE h.id = :id
