@@ -301,7 +301,9 @@
             <template #item="{ item, index }">
               <tr class="clickable" :class="{'shaded-row': index % 2}">
                 <td class="text-left">{{ item.workQueueCategory }}</td>
-                <td class="text-left">{{ item.workQueueType }}</td>
+                <td class="text-left">
+                  <a :href="`/settings/workQueue/type/${item.workQueueTypeId}`">{{ item.workQueueType }}</a>
+                </td>
                 <td class="text-left">
                         <span v-for="(ps, idx) in filterBy(item.projectStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>

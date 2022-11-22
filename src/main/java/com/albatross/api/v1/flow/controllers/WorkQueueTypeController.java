@@ -43,6 +43,11 @@ public class WorkQueueTypeController {
     return workQueueTypeService.getType(id);
   }
 
+  @GetMapping(value = "/{id}/inUseBy", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getItemsUsingWorkQueue (@PathVariable Long id) {
+    return workQueueTypeService.getItemsUsingWorkQueueType(id);
+  }
+
   @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean savePositions,
                                      @RequestBody WorkQueueType workQueueType) {
