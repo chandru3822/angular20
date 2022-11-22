@@ -73,9 +73,9 @@ select bi.id,
        bi.project_id,
        bi.birdeye_business_id,
        bi.raw_invitation -> 'sendSms'       as send_sms,
-       bi.raw_invitation -> 'customerName'  as customer_name,
-       bi.raw_invitation -> 'customerEmail' as customer_email,
-       bi.raw_invitation -> 'customerPhone' as customer_phone,
+       bi.raw_invitation ->> 'customerName'  as customer_name,
+       bi.raw_invitation ->> 'customerEmail' as customer_email,
+       bi.raw_invitation ->> 'customerPhone' as customer_phone,
        bi.birdeye_customer_id
 from brs.birdeye_invitations bi
 where bi.birdeye_customer_id = :customerId

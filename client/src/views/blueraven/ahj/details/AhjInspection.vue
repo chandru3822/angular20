@@ -1,6 +1,6 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-card class="mx-4 mt-6 square-card pb-2" v-if="dataReady">
+  <v-card class="inspection-card square-card pb-2" v-if="dataReady">
     <v-row class="px-2" no-gutters>
       <v-col class="ahj-form-btns py-1" cols="12">
         <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
@@ -224,9 +224,9 @@
 
 <script>
 import cloneDeep from 'lodash.clonedeep'
-import AhjContact from './components/AhjContacts'
-import AhjLink from './components/AhjLinks'
-import AhjServicingFot from './components/AhjServicingFots'
+import AhjContact from '../components/AhjContacts'
+import AhjLink from '../components/AhjLinks'
+import AhjServicingFot from '../components/AhjServicingFots'
 import {CollapseExpandEnum} from "@/views/blueraven/ahj/AhjConstants";
 
 import {AppMutations} from '@/stores/AppStore'
@@ -444,6 +444,11 @@ export default {
 <style scoped lang="scss">
 .padded-sides {
   padding: 0 5px;
+}
+
+.inspection-card {
+  margin-left: 12px;
+  margin-right: 12px;
 }
 
 .ahj-form-btns {

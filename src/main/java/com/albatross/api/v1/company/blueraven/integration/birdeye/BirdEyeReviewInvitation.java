@@ -15,10 +15,10 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BirdEyeReviewInvitation {
-    private String id, birdeyeBusinessId;
-    private String customerName, customerEmail, customerPhone, customerId, birdeyeCustomerId;
-    private Long projectId;
-    private Boolean sendSms, saveCfv;
-    private List<String> requestersEmails;
-    private Map<String, String> additionalParams;
+  private Long id;
+  private String customerName, customerEmail, customerPhone, customerId, birdeyeBusinessId, birdeyeCustomerId;
+  private Long projectId;
+  private Boolean sendSms, saveCfv;
+  private List<String> requestersEmails;
+  private Map<String, String> additionalParams;
 }
