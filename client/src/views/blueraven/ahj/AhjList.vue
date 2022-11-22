@@ -187,7 +187,7 @@
           return Object.keys(this.ahjFilters).every(filterName => {
             const filter = this.ahjFilters[filterName]
 
-            if (filter.value && filter.value.length < 1) {
+            if (filter.value?.length < 1) {
               return true
             }
 
