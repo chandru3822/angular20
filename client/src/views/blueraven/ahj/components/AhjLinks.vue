@@ -176,6 +176,8 @@
         try {
           if (this.itemType === 'utility') {
             await putRequest(`/ahjUtility/links/${this.link.id}/archive`, null, 'blueraven')
+          }  else if (this.itemType === 'hoa') {
+            await putRequest(`/ahjHoa/links/${this.link.id}/archive`, null, 'blueraven')
           } else {
             await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}/archive`, null, 'blueraven')
           }
