@@ -1,13 +1,18 @@
 <template>
+
   <v-row id="project-activity-container" class="flex-column flex-nowrap" no-gutters>
+
     <div class="project-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
+
       <div class="albatross-header-3 pt-0 d-flex align-center project-activity-header"
            :class="{'title-collapse': isSidebarCollapsed,
                     'title-no-collapse': !isSidebarCollapsed,
                     'ml-2': isSidebarCollapsed && $route.path.indexOf('project') < 0,
                     'mt-0': $route.path.indexOf('project') < 0}">
+
         <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
           <template v-slot:activator="{on, attrs}">
+
             <a v-if="!isSidebarCollapsed"
                v-bind="attrs" v-on="on"
                class="d-inline-block clickable project-name-link"
@@ -22,6 +27,7 @@
         </div>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
+
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
               <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
@@ -38,16 +44,22 @@
           </v-dialog>
 
         </div>
+
         <div v-else-if="selectedOption === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
+
           <v-btn-toggle
               v-model="toggleFocused"
               mandatory
               borderless
               color="primary"
-              class="d-inline-block pa-0 one-hunned">
+              class="d-inline-block one-hunned"
+              style="opacity: 1 !important;"
+          >
+
+
             <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
                    :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
-                   class="text-capitalize"
+                   class="text-capitalize my-4"
                    style="width: 50% !important;"
             >
               Focused

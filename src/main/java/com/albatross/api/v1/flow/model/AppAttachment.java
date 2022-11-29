@@ -9,5 +9,5 @@ public class AppAttachment {
     private Long id, size, appTypeId, attachmentTypeId, companyId, buildNumber, minimumRequiredBuildNumber;
     private String filename, contentType, s3Key, url, presignedUrl, appType, keyPattern, displayName, versionNumber;
     private Date dateCreated, dateModified;
-    private Boolean archived, show;
+    private Boolean archived, show, beta;
 }

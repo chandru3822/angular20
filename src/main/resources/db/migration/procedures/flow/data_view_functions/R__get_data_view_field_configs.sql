@@ -15,7 +15,8 @@ CREATE OR REPLACE FUNCTION flow.get_data_view_field_configs(p_data_view_id bigin
             data_type_id               bigint,
             process_step_event_id      bigint,
             process_step_id            bigint,
-            reset_values_on_main       boolean
+            reset_values_on_main       boolean,
+            ignore_if_null             boolean
           )
 AS
 $BODY$
@@ -33,7 +34,8 @@ BEGIN
              dt.id::bigint                                            as data_type_id,
              dvfc.process_step_event_id::bigint,
              dvfc.process_step_id::bigint,
-             dvfc.reset_values_on_main
+             dvfc.reset_values_on_main,
+             dvfc.ignore_if_null
       from flow.data_view_field_config dvfc
              inner join flow.custom_field_group_assignment cfga
                         on dvfc.custom_field_group_assignment_id = cfga.id
@@ -55,7 +57,8 @@ BEGIN
              dt.id::bigint                                            as data_type_id,
              dvfc.process_step_event_id::bigint,
              dvfc.process_step_id::bigint,
-             dvfc.reset_values_on_main
+             dvfc.reset_values_on_main,
+             dvfc.ignore_if_null
       from flow.data_view_field_config dvfc
              inner join flow.default_field df
                         on dvfc.default_field_id = df.id and df.watched_by_trigger is true

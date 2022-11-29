@@ -12,13 +12,15 @@
       a.app_type_id,
       a.date_created,
       a.date_modified,
-      a.show
+      a.show,
+      a.beta
     FROM flow.app_attachment a
       INNER JOIN flow.app_type ap ON ap.id = a.app_type_id
     WHERE a.app_type_id = :appTypeId
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
         and a.show is true
+      AND a.beta is false
     order by a.date_created desc
     LIMIT 1
   ]]></app.getLatestAppByAppTypeIdAndType>
@@ -67,7 +69,8 @@
       ap.minimum_required_build_number,
       a.date_created,
       a.date_modified,
-      a.archived
+      a.archived,
+      a.beta
     FROM flow.app_attachment a
       INNER JOIN flow.app_type ap ON ap.id = a.app_type_id
       INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
@@ -91,7 +94,8 @@
       ap.minimum_required_build_number,
       a.date_created,
       a.date_modified,
-      a.archived
+      a.archived,
+      a.beta
     FROM flow.app_attachment a
       INNER JOIN flow.app_type ap ON ap.id = a.app_type_id
       INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
@@ -109,6 +113,14 @@
                 modified_by_id = :userId
         WHERE id = :id
     ]]></app.showOrHideAttachment>
+
+  <app.toggleBetaForAttachment><![CDATA[
+        UPDATE flow.app_attachment
+            SET beta = :beta,
+                date_modified = now(),
+                modified_by_id = :userId
+        WHERE id = :id
+    ]]></app.toggleBetaForAttachment>
 
   <app.insertAttachmentRecord><![CDATA[
         INSERT INTO flow.app_attachment (filename, content_type, s3_key, size, date_created, company_id, attachment_type_id, app_type_id, created_by_id, display_name, version_number, build_number)
@@ -167,7 +179,8 @@
         archived           boolean   default false not null,
         version_number     varchar(20),
         build_number       integer,
-        display_name       varchar(100)
+        display_name       varchar(100),
+        beta               boolean default false not null
     )
   ]]></app.createMissingTable>
 
