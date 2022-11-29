@@ -1,5 +1,7 @@
 <template>
   <v-main>
+    <v-alert color="green lighten-1" v-model="betaUpdatedAlertSuccess" dismissible transition="scale-transition">Beta Updated Successfully!</v-alert>
+    <v-alert color="red lighten-1" v-model="betaUpdatedAlertFailed" dismissible transition="scale-transition">Beta Update Failed</v-alert>
     <v-toolbar flat class="app-toolbar">
       <v-toolbar-title class="app-title">
         {{isIos ? 'iOS' : 'Android'}}
@@ -120,13 +122,16 @@
               {{ item.show ? 'hide' : 'show'}}
             </v-btn>
           </td>
+          <td class="text-left">
+            <v-checkbox v-if="userCanEdit" v-model="item.beta" @click="appToToggleBeta = item; toggleBetaForApp()"></v-checkbox>
+          </td>
         </tr>
       </template>
     </v-data-table>
     <ConfirmationDialog :open-dialog="!!appToDelete" @confirm="deleteApp" @close-dialog="appToDelete = null">
       Are you sure you want to delete this app <strong>{{appToDeleteName}}</strong>?
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!appToShowHide" @confirm="showHideApp" @close-dialog="appToShowHide = null">
+    <ConfirmationDialog hide-title :open-dialog="!!appToShowHide" @confirm="showHideApp" @close-dialog="appToShowHide = null">
       {{hideOrShowApp ? `Are you sure you want to hide this app from everyone?` : `Are you sure you want to make this app available to everyone?`}}
       <template v-slot:yes>{{hideOrShowApp ? 'hide' : 'show'}}</template>
     </ConfirmationDialog>
@@ -166,6 +171,7 @@ export default {
       newApp: {},
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADD'),
       userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_ALL'),
+      userHasBeta: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'DELETE'),
       minVersion: null,
@@ -180,9 +186,13 @@ export default {
         {text: 'Version', value: 'version', show: true},
         {text: 'Created', value: 'dateCreated', show: true},
         {text: '', value: 'icons', show: true, width: 175},
+        {text: 'Beta', value: 'beta', show: true}
       ],
       appToDelete: null,
-      appToShowHide: null
+      appToShowHide: null,
+      appToToggleBeta: null,
+      betaUpdatedAlertSuccess: false,
+      betaUpdatedAlertFailed: false
     }
   },
   computed:{
@@ -314,10 +324,32 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async toggleBetaForApp() {
+      const app = this.appToToggleBeta
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        app.show = !app.show
+        const {status} = await putRequest(`/app/beta`, app)
+        app.showConfirm = false
+        this.appToToggleBeta = null
+        handleHidingGlobalLoader(this, status)
+        this.betaUpdatedAlertSuccess = true
+        this.betaUpdatedAlertFailed = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating App')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.betaUpdatedAlertSuccess = false
+        this.betaUpdatedAlertFailed = true
+      }
+    },
     getFilteredApps() {
       //filter archived
       return this.apps.filter(a => {
-        return this.userCanEdit || this.userCanViewAll ? !a.archived : a.show && !a.archived
+        return this.userCanEdit || this.userCanViewAll ? !a.archived :
+          this.userHasBeta ? !a.archived && a.show && a.beta :
+          a.show && !a.archived && !a.beta
       })
     },
     getVersion (filename) {

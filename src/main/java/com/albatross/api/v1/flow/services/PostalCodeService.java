@@ -55,24 +55,24 @@ public class PostalCodeService {
         "CLOSER_AVAILABILITY",
         List.of("VIEW_ALL"));
 
-    Boolean viewDownline = false;
+    Boolean viewCustom = false;
     //only check view downline if they dont have view all
     if(!viewAll) {
-      viewDownline =
+      viewCustom =
         securityService.userHasFeatureAccessLevel(
           user.getId(),
           user.getCompanyId(),
           user.getHighestCompanyId(),
           "CLOSER_AVAILABILITY",
-          List.of("VIEW_DOWNLINE"));
+          List.of("VIEW_CUSTOM"));
     }
 
-    //if !viewAll && !viewDownline then we assume they have view or else they couldn't be making this call
+    //if !viewAll && !viewCustom then we assume they have view or else they couldn't be making this call
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userId", user.getId());
     params.put("viewAll", viewAll);
-    params.put("viewDownline", viewDownline);
+    params.put("viewCustom", viewCustom);
 
     return sqlCache.query("postalCode.getZonesForUser", params, PostalCodeZone.class);
   }
@@ -375,23 +375,23 @@ public class PostalCodeService {
         "CLOSER_AVAILABILITY",
         List.of("VIEW_ALL"));
 
-    Boolean viewDownline = false;
+    Boolean viewCustom = false;
     //only check view downline if they dont have view all
     if(!viewAll) {
-      viewDownline =
+      viewCustom =
         securityService.userHasFeatureAccessLevel(
           user.getId(),
           user.getCompanyId(),
           user.getHighestCompanyId(),
           "CLOSER_AVAILABILITY",
-          List.of("VIEW_DOWNLINE"));
+          List.of("VIEW_CUSTOM"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userId", user.getId());
     params.put("viewAll", viewAll);
-    params.put("viewDownline", viewDownline);
+    params.put("viewCustom", viewCustom);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("zoneIds", sqlArrayService.createSqlArrayOfType("int", zoneIds));
 

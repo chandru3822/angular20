@@ -106,13 +106,13 @@ public class CloserDashboardService {
 
   public List<Org> getCloserOffices(Long userOrgId) {
     User user = securityService.getCurrentUser();
-    Boolean viewDownline =
+    Boolean viewCustom =
         securityService.userHasFeatureAccessLevel(
             user.getId(),
             user.getCompanyId(),
             user.getHighestCompanyId(),
             "CLOSER_DASHBOARD",
-            List.of("VIEW_DOWNLINE"));
+            List.of("VIEW_CUSTOM"));
     Boolean viewAll =
         securityService.userHasFeatureAccessLevel(
             user.getId(),
@@ -129,7 +129,7 @@ public class CloserDashboardService {
     } else {
       params.put("userOrgId", userOrgId);
       String sqlKey =
-          viewDownline ? "closerDashboard.getCloserDownline" : "closerDashboard.getCloserOffice";
+          viewCustom ? "closerDashboard.getCloserDownline" : "closerDashboard.getCloserOffice";
 
       return sqlCache.query(sqlKey, params, Org.class);
     }

@@ -53,7 +53,7 @@
         and pcz.archived is not true
         and case when :viewAll::boolean is true
         then true
-          when :viewDownline::boolean is true
+          when :viewCustom::boolean is true
           then
           exists (
               with positions as (
@@ -435,7 +435,7 @@
       and pczu.postal_code_zone_user_type_id = 1
       and ((cast(:zoneIds as int[]) is null) OR pczu.postal_code_zone_id = any (:zoneIds))
       and case when :viewAll::boolean is true then true
-      when :viewDownline::boolean is true
+      when :viewCustom::boolean is true
       then
         exists (
             with positions as (

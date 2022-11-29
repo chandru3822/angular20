@@ -145,17 +145,17 @@ public class ProjectService {
             user.getHighestCompanyId(),
             "PROJECTS",
             List.of("VIEW_ALL"));
-    Boolean viewDownline = false;
+    Boolean viewCustom = false;
 
     if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
         || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
-      viewDownline =
+      viewCustom =
           securityService.userHasFeatureAccessLevel(
               user.getId(),
               user.getCompanyId(),
               user.getHighestCompanyId(),
               "PROJECTS",
-              List.of("VIEW_DOWNLINE"));
+              List.of("VIEW_CUSTOM"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -171,12 +171,12 @@ public class ProjectService {
     params.put("offset", pageable.getOffset());
 
     String searchSqlKey = "project.searchByOwner";
-    if (viewDownline) {
+    if (viewCustom) {
       searchSqlKey = "project.searchDownline";
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
       searchSqlKey = "project.search";
     }
-    //    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ?
+    //    String countSqlKey = viewAll ? "project.searchCount" : viewCustom ?
     // "project.searchDownlineCount" : "project.searchByOwnerCount";
 
     List<Project> projects =
@@ -196,23 +196,23 @@ public class ProjectService {
             user.getHighestCompanyId(),
             "PROJECTS",
             List.of("VIEW_ALL"));
-    Boolean viewDownline = false;
+    Boolean viewCustom = false;
 
     if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
         || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
-      viewDownline =
+      viewCustom =
           securityService.userHasFeatureAccessLevel(
               user.getId(),
               user.getCompanyId(),
               user.getHighestCompanyId(),
               "PROJECTS",
-              List.of("VIEW_DOWNLINE"));
+              List.of("VIEW_CUSTOM"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userId", user.getId());
-    params.put("viewDownline", viewDownline);
+    params.put("viewCustom", viewCustom);
 
     String searchSqlKey = "project.countsByStatusByUser";
     if (viewAll
