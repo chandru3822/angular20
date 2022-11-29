@@ -16,8 +16,9 @@
     </v-dialog>
     <small v-if="!drillDownAttachments.length" small class="pl-3 no-attach">No attachments available</small>
     <v-container v-else dense :key="renderTicker" id="attachment-table" class="pa-0">
-      <v-row v-for="item in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment"
-             :key="item.processStepId">
+      <v-row v-for="(item, index) in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment hover-effect"
+             :key="item.processStepId" @click="selectFile(item)" >
+
         <v-col cols="10" class="text-left pt-0 height-one-hunned">
           <div class="file-column">
             <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
@@ -47,21 +48,21 @@
 <!--            item.dateCreated | formatDate('timestamp', 'M/D/YY')-->
 <!--          }}-->
 <!--        </v-col>-->
-        <v-col cols="2" class="text-right pa-0">
+        <v-col cols="2" class="text-right pa-0 height-one-hunned">
           <v-btn icon v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
                  :disabled="performingLink"
-                 text color="primary" @click="linkAttachment(item, true)" class="px-0">
+                 text color="primary" @click="linkAttachment(item, true)"  @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0">
             <v-icon size="25">link</v-icon>
           </v-btn>
           <v-btn icon v-if="!allowUpload && loadLinked"
                  :disabled="performingLink"
-                 text color="primary" @click="linkAttachment(item, false)" class="px-0">
+                 text color="primary" @click="linkAttachment(item, false)" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0">
             <v-icon size="25">mdi-link-off</v-icon>
           </v-btn>
-          <v-btn icon v-if="allowUpload" text color="primary" @click="startDelete(item)" class="px-0">
+          <v-btn icon v-if="allowUpload" text color="primary" @click="startDelete(item)" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0">
             <v-icon size="25">delete</v-icon>
           </v-btn>
-          <v-btn icon text color="primary" :href="item.presignedUrl">
+          <v-btn icon text color="primary" :href="item.presignedUrl" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false">
             <v-icon size="25">mdi-tray-arrow-down</v-icon>
           </v-btn>
           <ConfirmationDialog
@@ -145,6 +146,7 @@ export default {
       linkAttachmentPath: null,
       maxSelectable: 3,
       performingLink: false,
+      buttonHovered: false
     }
   },
   computed: {
@@ -164,8 +166,10 @@ export default {
   },
   methods: {
     selectFile: function (attachment) {
-      this.selectedFile = attachment
-      this.showCoversheetModal = true
+      if(!this.buttonHovered) {
+        this.selectedFile = attachment
+        this.showCoversheetModal = true
+      }
     },
     closeCoversheet() {
       this.showCoversheetModal = false
@@ -320,5 +324,10 @@ export default {
   font-size: 11px;
   padding-left: 3px;
   color: var(--v-grey-base);
+}
+
+.hover-effect:hover{
+  background-color: #F5F5F5;
+
 }
 </style>

@@ -619,7 +619,6 @@ export default {
       }
     },
     resetToggleProjectDetails(){
-      debugger
       this.smartlist.projectDetails = !this.smartlist.projectDetails
       this.showToggleDialog = false
     },

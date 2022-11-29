@@ -71,17 +71,17 @@ public class ContactService {
             user.getHighestCompanyId(),
             "CONTACTS",
             List.of("VIEW_ALL"));
-    Boolean viewDownline = false;
+    Boolean viewCustom = false;
 
     if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
         || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
-      viewDownline =
+      viewCustom =
           securityService.userHasFeatureAccessLevel(
               user.getId(),
               user.getCompanyId(),
               user.getHighestCompanyId(),
               "CONTACTS",
-              List.of("VIEW_DOWNLINE"));
+              List.of("VIEW_CUSTOM"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -94,10 +94,10 @@ public class ContactService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    //    String searchSqlKey = viewAll ? "contact.search" : viewDownline ? "contact.searchDownline"
+    //    String searchSqlKey = viewAll ? "contact.search" : viewCustom ? "contact.searchDownline"
     // : "contact.searchByOwner";
     String searchSqlKey = "contact.searchByOwner";
-    if (viewDownline) {
+    if (viewCustom) {
       searchSqlKey = "contact.searchDownline";
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
       searchSqlKey = "contact.search";
