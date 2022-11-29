@@ -1444,23 +1444,14 @@ BEGIN
 
 
   v_equipment_storage_adder = 0;
-  if v_financier_id = 119 then
-    select value
-    into v_cash_price_storage
-    from proposal_value
-    where object_code = 'PROPOSAL_STORAGE_DETAILS'
-      and field_id = 157;
-    v_cash_price_storage = coalesce(v_cash_price_storage, 0);
-    v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
-  else
-    select value
-    into v_loan_price_storage
-    from proposal_value
-    where object_code = 'PROPOSAL_STORAGE_DETAILS'
-      and field_id = 159;
-    v_loan_price_storage = coalesce(v_loan_price_storage, 0);
-    v_equipment_storage_adder = coalesce(v_loan_price_storage, 0);
-  end if;
+  select value
+  into v_cash_price_storage
+  from proposal_value
+  where object_code = 'PROPOSAL_STORAGE_DETAILS'
+    and field_id = 157;
+  v_cash_price_storage = coalesce(v_cash_price_storage, 0) * (1 + v_dealer_fee);
+  v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
+  v_loan_price_storage = v_cash_price_storage;
 
   raise notice 'v_cash_price_storage = %',v_cash_price_storage;
   raise notice 'v_loan_price_storage = %',v_loan_price_storage;

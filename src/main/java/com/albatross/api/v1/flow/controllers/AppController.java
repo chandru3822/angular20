@@ -78,8 +78,13 @@ public class AppController {
   }
 
   @PutMapping(value = "/show")
-  public void getApps(@RequestBody AppAttachment attachment) {
+  public void showOrHideApps(@RequestBody AppAttachment attachment) {
     appService.showOrHideAttachment(attachment);
+  }
+
+  @PutMapping(value = "/beta")
+  public void toggleBetaForApps(@RequestBody AppAttachment attachment) {
+    appService.toggleBetaForAttachment(attachment);
   }
 
   @PostMapping(value = "/addAttachmentRecord")
