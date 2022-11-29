@@ -35,20 +35,20 @@ public class CustomFieldValueService {
   private final SqlArrayService sqlArrayService;
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
-    handleCustomListOfValue(results, null, null, companyId);
+    handleCustomListOfValue(results, null, null, companyId, null);
   }
 
-  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId, Long companyId) {
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId, Long companyId, Long ppsId) {
     for(CustomFieldGroup cfg : results) {
       if(null != cfg.getCustomFieldValues()) {
         for(CustomFieldValue cv : cfg.getCustomFieldValues()){
-          handleCustomListValueForCfv(cv, projectId, userId, companyId);
+          handleCustomListValueForCfv(cv, projectId, userId, companyId, ppsId);
         }
       }
     }
   }
 
-  private void handleCustomListValueForCfv(CustomFieldValue cv, Long projectId, Long userId, Long companyId) {
+  private void handleCustomListValueForCfv(CustomFieldValue cv, Long projectId, Long userId, Long companyId, Long ppsId) {
     if(null != cv.getCustomFieldSqlKey()) {
       cv.setHasListValues(true);
       String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
@@ -56,6 +56,7 @@ public class CustomFieldValueService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
         params.put("userId", userId);
+        params.put("ppsId", ppsId);
         if((null != cv.getSystemReadonly() && cv.getSystemReadonly()) ||  cv.getDataTypeId() == 12) {
           Optional<String> textValue = sqlCache.queryForObjectOptionalBySql(sql, params, String.class);
           textValue.ifPresent(cv::setTextValue);
@@ -166,13 +167,13 @@ public class CustomFieldValueService {
 
       // this allows us to pass project_id and user_id to custom sql queries
       if(objectType.equals("project")) {
-        handleCustomListOfValue(fieldGroups, id, user.getId(), companyId);
+        handleCustomListOfValue(fieldGroups, id, user.getId(), companyId, null);
       } else if (objectType.equals("process_step")) {
         Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
-        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
+        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId, id);
       } else if (objectType.equals("event")) {
         Long projectId = projectService.getProjectIdByProjectProcessStepEventId(id);
-        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
+        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId, null);
       } else if(!objectType.equals("attachment_type")) {
         //dont do this for attachment types. it has already been handled and this code all sucks ass.
         handleCustomListOfValue(fieldGroups, companyId);
@@ -205,7 +206,7 @@ public class CustomFieldValueService {
       params.put("attachmentId", attachmentId);
       List<CustomFieldValue> values = sqlCache.query("attachment.getComparisonFields", params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
       for(CustomFieldValue value : values) {
-        handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId());
+        handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId(), null);
       }
       attachmentBody.setFieldValues(values);
       response.add(attachmentBody);
@@ -234,7 +235,7 @@ public class CustomFieldValueService {
       List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
       for(CustomFieldGroup group : fieldGroups) {
         for (CustomFieldValue value : group.getCustomFieldValues()) {
-          handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId());
+          handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId(), null);
         }
       }
       return fieldGroups;
@@ -267,7 +268,7 @@ public class CustomFieldValueService {
     List<CustomFieldValue> results = sqlCache.query("customFieldValues.user.getUserProfileFields", params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
 
     for(CustomFieldValue cv : results) {
-      handleCustomListValueForCfv(cv, null, user.trueUserId(), realCompanyId);
+      handleCustomListValueForCfv(cv, null, user.trueUserId(), realCompanyId, null);
     }
 
     return results;

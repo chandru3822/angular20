@@ -364,7 +364,7 @@ const router = new Router({
           meta: {title: 'Albatross - Closer Availability'},
           props: true,
           component: () => {
-            if (store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_DOWNLINE') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_ALL')) {
+            if (store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_CUSTOM') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_ALL')) {
               return import(/* webpackChunkName: "closerAvailability" */ './views/blueraven/closerAvailability/CloserAvailability.vue')
             } else {
               return accessDenied()

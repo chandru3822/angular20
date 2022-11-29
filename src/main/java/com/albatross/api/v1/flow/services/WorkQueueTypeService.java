@@ -53,6 +53,13 @@ public class WorkQueueTypeService {
     return sqlCache.queryBySql(sql, params, WorkQueueType.class);
   }
 
+  public String getItemsUsingWorkQueueType(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("wqtId", id);
+    String results = sqlCache.queryForObject("workQueueType.getItemsUsingType", params, String.class);
+    return results;
+  }
+
   public List<DurationType> getDurationTypes() {
     return sqlCache.query(
         "workQueueType.getDurationTypes", Collections.emptyMap(), DurationType.class);

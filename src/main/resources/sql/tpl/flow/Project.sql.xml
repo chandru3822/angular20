@@ -250,7 +250,7 @@
     select *
     from flow.project_count_by_company_status_by_user(:companyId::bigint,
                                                             :userId::bigint,
-                                                            :viewDownline::boolean)
+                                                            :viewCustom::boolean)
   ]]></project.countsByStatusByUser>
 
   <project.generateReport><![CDATA[

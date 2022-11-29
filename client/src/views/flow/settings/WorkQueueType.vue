@@ -135,6 +135,20 @@
     <v-row>
       <v-col cols="12" class="pa-0 mt-4">
         <v-toolbar flat class="wqt-header-bar">
+          <v-toolbar-title class="app-title">Work Queue In Use By</v-toolbar-title>
+        </v-toolbar>
+        <v-card flat color="rowShadeCustom" class="square-card my-2 px-4">
+          <v-list class="pa-0">
+            <v-list-item v-for="(l, index) in itemsUsingType" :key="l.id" :class="{'shaded-row': index % 2}">
+              <a :href="l.isEvent ? `/settings/processStep/${l.primaryId}/event/${l.secondaryId}` : `/settings/processStep/${l.primaryId}/components`">{{l.name}}</a>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" class="pa-0 mt-4">
+        <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="app-title">Work Queue Access Control</v-toolbar-title>
         </v-toolbar>
         <v-card flat color="rowShadeCustom" class="square-card my-2">
@@ -313,6 +327,7 @@ export default {
       workQueueTypeId: this.$route.params.id,
       workQueueType: {},
       positions: [],
+      itemsUsingType: [],
       positionsLoading: false,
       hiddenPositionsChanged: false,
       sql: '',
@@ -367,11 +382,20 @@ export default {
     }
   },
   async created() {
-    this.getWorkQueueCategories()
-    this.getCompanyObjectTypes()
-    this.getDurationTypes()
-    this.getPositions()
-    await this.getWorkQueueType()
+    this.$store.commit(AppMutations.SET_LOADING, true)
+    let requests = [
+      this.getWorkQueueCategories(),
+      this.getCompanyObjectTypes(),
+      this.getDurationTypes(),
+      this.getPositions(),
+      this.getPsAndEventsUsingWqt(),
+      this.getWorkQueueType()
+    ]
+    await Promise.all(requests).then(async () => {
+      this.$store.commit(AppMutations.SET_LOADING, false);
+    })
+
+
   },
   methods: {
     selectAllHidden () {
@@ -407,7 +431,6 @@ export default {
           const {data, status} = await getRequest(`/position/withParent`)
           this.positions = data
           this.positionsLoading = false
-          handleHidingGlobalLoader(this, status)
         } catch (e) {
           this.positionsLoading = false
           console.error('*** ERROR ***', e)
@@ -468,15 +491,24 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
+    async getPsAndEventsUsingWqt() {
+      try {
+        const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}/inUseBy`)
+        this.itemsUsingType = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getWorkQueueType() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueueType = data
         if (this.workQueueType.schedule.length < 1) {
           this.workQueueType.schedule = this.noScheduleDefault;
         }
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
@@ -485,11 +517,9 @@ export default {
       }
     },
     async getWorkQueueCategories() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getWorkQueueCategories()
         this.workQueueCategories = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')

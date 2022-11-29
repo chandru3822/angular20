@@ -189,6 +189,17 @@ public class AppService {
     sqlCache.update("app.showOrHideAttachment", params);
   }
 
+  public void toggleBetaForAttachment(AppAttachment attachment) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", attachment.getId());
+    params.put("beta", attachment.getBeta());
+    params.put("userId", currentUser.trueUserId());
+
+    sqlCache.update("app.toggleBetaForAttachment", params);
+  }
+
   // endpoint for automating mobile build uploads
   public AppAttachment insertAttachmentRecord(AppAttachment attachment, User currentUser)
     throws IOException {

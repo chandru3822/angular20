@@ -200,7 +200,7 @@
             if (this.itemType === 'utility') {
               res = await putRequest(`/ahjUtility/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             } else if (this.itemType === 'hoa') {
-              res = await postRequest(`/ahjHoa/${this.itemId}/contacts`, this.contact, 'blueraven')
+              res = await putRequest(`/ahjHoa/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             } else {
               res = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             }
@@ -230,6 +230,8 @@
         try {
           if (this.itemType === 'utility') {
             await putRequest(`/ahjUtility/contacts/${this.contact.id}/archive`, null, 'blueraven')
+          } else if (this.itemType === 'hoa') {
+            await putRequest(`/ahjHoa/contacts/${this.contact.id}/archive`, null, 'blueraven')
           } else {
             await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}/archive`, null, 'blueraven')
           }

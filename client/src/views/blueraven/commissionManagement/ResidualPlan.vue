@@ -825,7 +825,6 @@
         }
       },
       async deleteUserFromPlan() {
-        debugger
         const residualPlanUser = this.userToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
