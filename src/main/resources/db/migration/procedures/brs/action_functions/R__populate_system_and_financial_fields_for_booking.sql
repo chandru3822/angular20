@@ -47,7 +47,8 @@ BEGIN
                                             where cf.id = 11786
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
-                                              and cfg.process_step_id = p_process_step_id), plh.nineteen_plus_payments_all_incentives::numeric,
+                                              and cfg.process_step_id = p_process_step_id),
+                                                (case when plh.nineteen_plus_payments_all_incentives = '' then null else plh.nineteen_plus_payments_all_incentives end)::numeric,
                                             (select cfga.id
                                             from flow.custom_field cf
                                                    inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
