@@ -296,6 +296,7 @@ public class ProposalTemplateService {
         return Flux.empty();
       })
       .doOnError((e) -> {
+        log.error("[PDF] Error processing PDF, error={}", e.getMessage());
         throw new ApiException("Error processing PDF");
       });
 
