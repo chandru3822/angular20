@@ -1,5 +1,5 @@
-FROM golang:1.18.1 as builder
-ENV upx_version 3.96
+FROM golang:1.19.3 as builder
+ENV upx_version 4.0.1
 WORKDIR /go/html2pdf
 
 RUN apt-get update && \

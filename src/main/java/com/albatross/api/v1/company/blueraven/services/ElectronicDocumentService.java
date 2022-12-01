@@ -86,7 +86,7 @@ public class ElectronicDocumentService {
       try {
         pandaDocs = pandaDocService.findTemplatesByName(queryStr.get());
       } catch (Exception e) {
-        log.error("ELECTRONIC: find templates error", e);
+        log.error("ELECTRONIC: find templates error={}", e.getMessage());
       }
     }
 
