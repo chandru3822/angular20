@@ -3885,6 +3885,9 @@ public class SmartlistService {
     }
 
     for (SmartlistFieldAssignment f : headers) {
+      if (f.getName().length() > 63) {
+        f.setName(f.getName().substring(0, 63));
+      }
       builder.addColumn(f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
     }
 

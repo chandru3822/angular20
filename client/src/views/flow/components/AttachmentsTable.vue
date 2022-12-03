@@ -21,10 +21,12 @@
 
         <v-col cols="10" class="text-left pt-0 height-one-hunned">
           <div class="file-column">
+            <div @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false">
             <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
                         v-model="item.compare"
                         :disabled="!item.compare && countSelected >= maxSelectable">
             </v-checkbox>
+            </div>
   <!--          <v-btn icon text @click="selectFile(item)" class="type">-->
               <v-icon size="25" color="grey" @click="selectFile(item)">
                 {{ getIconForFile(item) }}
