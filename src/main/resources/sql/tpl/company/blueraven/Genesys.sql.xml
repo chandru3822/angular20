@@ -296,6 +296,29 @@
            ('Pitched - Proposal Shown', 'Pitched - Proposal Not Shown', 'No-Go', 'Low TSRF') or
            pd.closer_appointment_outcome_name IS NULL)
       AND cfv.lead_status in ('New', 'Scheduled', 'Attempted Contact')
-    order by c.id desc;
+    order by c.id desc limit 5;
   ]]></genesys.getContactIdsSalDevRetargets>
+
+  <genesys.getContactAppointmentDate><![CDATA[
+    with latest_closer_event AS (SELECT pps.project_id,
+                                   ((MAX(ppse.start_time) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE AS appointment_start_time
+                            FROM flow.project_process_step_event ppse
+                                     INNER JOIN flow.project_process_step pps ON ppse.project_process_step_id = pps.id
+                                     left join flow.project p on p.contact_id = :contactId and p.id = pps.project_id
+                                AND ppse.process_step_event_id = 14
+                            GROUP BY pps.project_id)
+    select lse.appointment_start_time as "Appointment Date"
+    from flow.project p
+             left join latest_closer_event lse on lse.project_id = p.id AND lse.appointment_start_time >= current_date - 45
+    where p.contact_id = :contactId
+  ]]></genesys.getContactAppointmentDate>
+
+  <genesys.getContactCloserAppointmentOutcome><![CDATA[
+    select case when pd.closer_appointment_outcome_name IS NULL
+            then 'Not Dispositioned'
+            else pd.closer_appointment_outcome_name
+           end
+    from flow.project p inner join brs.project_details pd on pd.project_id = p.id
+    where p.contact_id = :contactId
+  ]]></genesys.getContactCloserAppointmentOutcome>
 </sql>
