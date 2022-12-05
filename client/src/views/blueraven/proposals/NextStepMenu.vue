@@ -185,7 +185,7 @@ export default {
       // find custom field value for "Financial Product"
       const financialProduct = cfv.listOfValues?.find(x => x.id === cfv.intValue)
       // does the name have "cash" (probably need a better way of handling this at some point)
-      return financialProduct?.name?.toLowerCase().indexOf('cash') > -1
+      return financialProduct?.name?.toLowerCase().indexOf('cash') < 0
     },
     isEmailValid() {
       if (this.confirmEmail.isCorrectEmail) {
