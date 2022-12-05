@@ -99,7 +99,7 @@
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       tabindex="1"
-                      v-model="item.newFieldName"
+                      v-model="item.fieldName"
                     />
                     <div v-if="!apiPath && userIsSystemAdmin" class="text-left read-only-label">
                       <label>System Level Read-only:</label>
@@ -511,7 +511,7 @@ export default {
         object.companyDataTypeId = object.companyDataType.id;
         object.modifiedById = this.$store.state.user.details.id;
 
-        object.fieldName = object.newFieldName ?? object.fieldName;
+        object.fieldName =  object.fieldName;
         const {data, status} = await postRequest(`/customField`, object, this.apiPath);
         data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId);
         this.$set(object, "listOfValues", data.listOfValues);

@@ -30,7 +30,7 @@
                           :expanded-all="expandedAll"
                           :callback="(field) => updateDirtyValue(field)"
                           :hardcoded-docs="hardCodedDocsMap"
-                          :source-id="ahjId"
+                          :source-id="ahjPermit.id"
                           @toggle-collapse-expand="toggleCollapseExpand($event)"
         ></TwoColumnMasonry>
         <!--        <v-col cols="12" md="6" class="group px-2 py-2" v-for="group in customFieldGroupAssignments">-->

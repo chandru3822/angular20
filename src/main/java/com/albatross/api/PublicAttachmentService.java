@@ -35,8 +35,8 @@ public class PublicAttachmentService {
 
   public Optional<Attachment> loadPublicAttachment(Long attachmentId, UUID uuid) {
     return attachmentService
-        .getAttachmentForUuid(attachmentId)
-        .filter(attachment -> attachment.getUuid().equals(uuid));
+      .getAttachmentForUuid(attachmentId)
+      .filter(attachment -> attachment.getUuid().equals(uuid));
   }
 
   public List<Attachment> loadMaintenanceAttachments() {
@@ -44,45 +44,47 @@ public class PublicAttachmentService {
   }
 
   public Optional<URI> findAttachmentURIByUUID(
-      @NonNull UUID uuid, ImageOptions imageOptions) {
+    @NonNull UUID uuid, ImageOptions imageOptions) {
     return attachmentService
-        .findAttachmentByUUID(uuid)
-        .map(attachment -> getRedirectURI(attachment, imageOptions));
+      .findAttachmentByUUID(uuid)
+      .map(attachment -> getRedirectURI(attachment, imageOptions));
   }
 
   private URI getRedirectURI(
-      @NonNull Attachment attachment, ImageOptions imageOptions) {
+    @NonNull Attachment attachment, ImageOptions imageOptions) {
     final boolean isProxyable =
-        attachment.getFileExtension().toLowerCase().matches("(jpe?g|png|gif|webp)");
+      attachment.getFileExtension().toLowerCase().matches("(jpe?g|png|gif|webp)");
 
     final AppProperties.ImageProxyProperties imageProxy = appProperties.getImageProxy();
 
     if (imageProxy.isImageProxyEnabled() && isProxyable) {
       final String s3Url =
-          String.format("s3://%s/%s", awsProperties.getStorageBucket(), attachment.getS3Key());
+        String.format("s3://%s/%s", awsProperties.getStorageBucket(), attachment.getS3Key());
       String encodedUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(s3Url.getBytes());
-      String path = String.format("%s/%s", imageOptions.getParams(), encodedUrl);
+      String path = String.format("/%s/%s", imageOptions.getParams(), encodedUrl);
       String signature = generateUrlSignatureForImgProxy(path);
 
       return UriComponentsBuilder.fromUri(imageProxy.getUrl())
-          .pathSegment(signature, path)
-          .build()
-          .toUri();
+        .path(signature)
+        .path(path)
+        .build()
+        .toUri();
     }
     return attachmentService.getPresignedUrl(attachment, false).orElse(null);
   }
 
-  private String generateUrlSignatureForImgProxy(String path){
+  private String generateUrlSignatureForImgProxy(String path) {
 
     try {
 
       final AppProperties.ImageProxyProperties imageProxy = appProperties.getImageProxy();
 
-      if (imageProxy.isURLSignatureCheckingEnabled()){
+      if (imageProxy.isURLSignatureCheckingEnabled()) {
         final String hmacSHA256Algorithm = "HmacSHA256";
-        final Mac hmac = Mac.getInstance(hmacSHA256Algorithm);
-        final byte[] key = hexStringToByteArray( imageProxy.getKey());
+        final byte[] key = hexStringToByteArray(imageProxy.getKey());
         final byte[] salt = hexStringToByteArray(imageProxy.getSalt());
+
+        final Mac hmac = Mac.getInstance(hmacSHA256Algorithm);
         final SecretKeySpec secretKey = new SecretKeySpec(key, hmacSHA256Algorithm);
 
         hmac.init(secretKey);
@@ -98,12 +100,12 @@ public class PublicAttachmentService {
     }
   }
 
-  private byte[] hexStringToByteArray(String hex){
+  private byte[] hexStringToByteArray(String hex) {
     if (hex.length() % 2 != 0)
       throw new IllegalArgumentException("Even-length string required");
     byte[] res = new byte[hex.length() / 2];
     for (int i = 0; i < res.length; i++) {
-      res[i]=(byte)((Character.digit(hex.charAt(i * 2), 16) << 4) | (Character.digit(hex.charAt(i * 2 + 1), 16)));
+      res[i] = (byte) ((Character.digit(hex.charAt(i * 2), 16) << 4) | (Character.digit(hex.charAt(i * 2 + 1), 16)));
     }
     return res;
   }
