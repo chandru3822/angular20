@@ -117,14 +117,14 @@ public class BlueravenProposalService {
     if (null != attachments && attachments.size() > 0) {
       for (MultipartFile a : attachments) {
         // Proposal Request Supporting Files
-        String displayName = a.getName().substring(0, 100);
+        String displayName = a.getName().substring(0, Integer.min(a.getName().length(), 100));
         projectProcessStepService.addAttachment(a, ppsId, 946L, displayName);
       }
     }
     // upload utility bill attachments to the new step
     if (null != utilityBillAttachments && utilityBillAttachments.size() > 0) {
       for (MultipartFile a : utilityBillAttachments) {
-        String displayName = a.getName().substring(0, 100);
+        String displayName = a.getName().substring(0, Integer.min(a.getName().length(), 100));
         projectService.addAttachment(a, projectId, 47L, displayName); // Utility Bill
       }
     }
