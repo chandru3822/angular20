@@ -243,6 +243,11 @@ public class GenesysService {
 
     getCfvValues(contactMap, values);
     String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
+    // Genesys contact list names that require additional parameters
+    Set<String> genesysAppointmentContactLists = new HashSet<>(Arrays.asList("Sales Dev Retargeted Leads"));
+    if (!genesysContactListName.isEmpty() && genesysAppointmentContactLists.contains(genesysContactListName)) {
+      getAppointmentValues(contactId, contactMap);
+    }
 
     String leadLevel = (String) contactMap.remove("lead_level");
     if (leadLevel.equals("20")) {
@@ -318,6 +323,36 @@ public class GenesysService {
         sqlCache.queryForObjectOptional(
             "contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
     return customFieldDropdownValueId.orElse("null");
+  }
+
+  private void getAppointmentValues(Long contactId, HashMap<String, Object> contactMap) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    Optional<String> appointmentDate =
+      sqlCache.get(
+        "genesys.getContactAppointmentDate",
+        params,
+        new SingleColumnRowMapper<>(String.class));
+
+    if (appointmentDate.isPresent()) {
+      contactMap.put("Appointment Date", appointmentDate.get());
+    }
+    else {
+      contactMap.put("Appointment Date", "");
+    }
+
+    Optional<String> appointmentOutcome =
+      sqlCache.get(
+        "genesys.getContactCloserAppointmentOutcome",
+        params,
+        new SingleColumnRowMapper<>(String.class));
+
+    if (appointmentOutcome.isPresent()) {
+      contactMap.put("Appointment Outcome", appointmentOutcome.get());
+    }
+    else {
+      contactMap.put("Appointment Outcome", "");
+    }
   }
 
   public void updateContact(Long contactId) throws IOException, ApiException {
