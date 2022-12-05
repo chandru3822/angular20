@@ -366,7 +366,7 @@ public class UserService {
     if (newUserStatusType.isPresent()) {
       // If no longer Active, remove User from SMS Teams and SMS Owners
       if (!newUserStatusType.get().getUserStatusType().equals("Active")) {
-        UserPosition primaryPosition = userPositionService.getUserPrimaryPosition(userId);
+        UserPosition primaryPosition = userPositionService.getUserPrimaryPosition(userId, user.getCompanyId());
         if (primaryPosition != null) {
           // If the user has a primary position, remove the user from any SMS teams associated to their position or org
           smsTeamService.deleteUserByUserId(userId, primaryPosition.getOrgId(), primaryPosition.getPositionId());
