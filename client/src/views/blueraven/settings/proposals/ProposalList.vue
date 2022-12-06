@@ -29,6 +29,7 @@
           <template #item.status="{ item }">
             <v-chip class="ma-2"
                     label
+                    color="grey lighten-2"
                     v-if="item.status">
               {{ item.status | capitalize }}
             </v-chip>
