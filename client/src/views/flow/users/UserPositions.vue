@@ -158,7 +158,7 @@
             <tr :class="{ 'shaded-row': index % 2 }">
               <td class="text-left">{{ item.startDate | formatDate('date')}}</td>
               <td class="text-left">{{ item.endDate | formatDate('date')}}</td>
-              <td class="text-left">{{ item.position }}</td>
+              <td class="text-left"><a :href="`/settings/position/${item.positionId}`">{{ item.position }}</a></td>
               <td class="text-left">
                 <input type="checkbox" v-model="item.primaryFlag" disabled>
               </td>
