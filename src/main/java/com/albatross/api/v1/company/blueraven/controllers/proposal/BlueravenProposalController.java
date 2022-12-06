@@ -215,15 +215,21 @@ public class BlueravenProposalController {
     response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
     response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
 
-    final StreamingResponseBody responseBody = outputStream -> proposalService.generateProposalPDF(proposalId, templateId, false)
-      .ifPresent(result -> {
-        try {
-          response.addHeader(HttpHeaders.CONTENT_LENGTH, result.getContentLength().toString());
-          IOUtils.copy(result.getInputStream(), outputStream);
-        } catch (IOException e) {
-          throw new ApiException(e);
-        }
-      });
+    final StreamingResponseBody responseBody = outputStream -> {
+      try {
+        proposalService.generateProposalPDF(proposalId, templateId, false)
+          .ifPresent(result -> {
+            try {
+              response.addHeader(HttpHeaders.CONTENT_LENGTH, result.getContentLength().toString());
+              IOUtils.copy(result.getInputStream(), outputStream);
+            } catch (IOException e) {
+              throw new ApiException(e);
+            }
+          });
+      } catch (Exception e) {
+        throw new ApiException(e);
+      }
+    };
 
     return ResponseEntity.ok(responseBody);
   }
