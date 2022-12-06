@@ -38,7 +38,6 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('CONTACTS')")
 @RequiredArgsConstructor
 public class ContactService {
 
