@@ -408,7 +408,7 @@ public class AvailabilityService {
         params.put("originTimezoneOffset", null);
         id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
       } else {
-        if (null != ra.getOriginTimezoneOffset() && null != ra.getOriginTimezone()) {
+        if ((null != ra.getOriginTimezoneOffset() && null != ra.getOriginTimezone()) || ra.getAllDay()) {
           createRecurringEvents(ra);
         } else {
           throw new ResponseStatusException(
@@ -579,30 +579,22 @@ public class AvailabilityService {
       RecurrenceRule rule = new RecurrenceRule((ra.getRecurrence()));
 
       // doDayOffset = repeating by day of week AND frontend said local date and utc are different
-      boolean doDayOffset =
-          null != rule.getByDayPart()
-              && !rule.getByDayPart().isEmpty()
-              && (ra.getStartTimeOffsetDay() != null && ra.getStartTimeOffsetDay());
+      boolean doDayOffset = null != rule.getByDayPart()
+                            && !rule.getByDayPart().isEmpty()
+                            && (ra.getStartTimeOffsetDay() != null && ra.getStartTimeOffsetDay());
 
-      // if doDayOffSet subtract 1 from the recurring start date in the rule so it will check the
-      // right day to start on (sign: subtract/add the duration)
+      // if doDayOffSet subtract 1 from the recurring start date in the rule so it will check the right day to start on (sign: subtract/add the duration)
       RecurrenceRuleIterator it =
-          rule.iterator(
-              doDayOffset
-                  ? recurringStartDate.addDuration(new Duration(-1, 1, 0))
-                  : recurringStartDate);
+          rule.iterator(doDayOffset ? recurringStartDate.addDuration(new Duration(-1, 1, 0)) : recurringStartDate);
 
       // Arbitrary limit for recurring events that never end.
       boolean limitReached = false;
 
       String timezone = ra.getOriginTimezone();
-      final long duration =
-          ChronoUnit.MINUTES.between(ra.getStartTime().toInstant(), ra.getEndTime().toInstant());
+      final long duration = ChronoUnit.MINUTES.between(ra.getStartTime().toInstant(), ra.getEndTime().toInstant());
       // todo: get list of events for the event id
       while (it.hasNext() && !limitReached) {
-        LocalDateTime currentEventStart =
-            LocalDateTime.ofInstant(
-                Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+        LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
 
         if (doDayOffset) {
           // if doDayOffset, add one to the start date of the event because the event knows to
@@ -611,16 +603,14 @@ public class AvailabilityService {
         }
 
         ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("US/Mountain"));
-        if (zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
-          long offsetDifference =
-              zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();
+        if (!ra.getAllDay() && zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
+          long offsetDifference = zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();
           // depending on DST status offset could be negative or positive
           currentEventStart = currentEventStart.minusSeconds(offsetDifference);
         }
 
         LocalDateTime currentEventEnd = currentEventStart.plusMinutes(duration);
-        // if the recurring event start time is greater than 1 year from now, stop adding
-        // appointments
+        // if the recurring event start time is greater than 1 year from now, stop adding appointments
         if (currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
           limitReached = true;
         } else {
