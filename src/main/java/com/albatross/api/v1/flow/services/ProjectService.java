@@ -765,6 +765,13 @@ public class ProjectService {
       bw.registerCustomEditor(
           Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
 
+      TypeReference<List<ProjectTag>> projectTagsRef =
+        new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "tags",
+        new JsonCollectionDeserializer(projectTagsRef, objectMapper));
+
       TypeReference<List<WhiteListedPosition>> statusReadOnlyWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
