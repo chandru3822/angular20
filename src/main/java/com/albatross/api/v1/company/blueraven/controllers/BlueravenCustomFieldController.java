@@ -6,11 +6,13 @@ import com.albatross.api.v1.flow.model.ListOfValue;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Hidden
@@ -32,6 +34,11 @@ public class BlueravenCustomFieldController {
   public CustomField saveField(@RequestBody CustomField customField) throws SQLException {
     // add the field and list of values
     return customFieldService.saveField(customField);
+  }
+
+  @PostMapping(value = "/managementCompany")
+  public Long saveManagementCompany(@RequestBody Map<String, Object> companyName) throws SQLException {
+    return customFieldService.saveManagementCompany(companyName.get("companyName").toString());
   }
 
   @GetMapping(value = "/{id}/values")

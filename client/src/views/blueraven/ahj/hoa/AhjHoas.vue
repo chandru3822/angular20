@@ -106,6 +106,7 @@
                           filled
           ></v-autocomplete>
           <v-autocomplete label="Management Company"
+                          v-if="!addingManagementCompany"
                           :items="managementCompanies"
                           v-model="editedItem.managementCompanyId"
                           item-text="managementCompany"
@@ -114,7 +115,12 @@
                           autocomplete="off"
                           filled
           ></v-autocomplete>
-
+          <v-text-field label="New Management Company"
+                        v-if="addingManagementCompany"
+                        v-model="newManagementCompany"
+                        filled
+          ></v-text-field>
+          <a @click="addNewManagementCompany"> {{ addNewManagementCompanyButton }} </a>
         </v-card-text>
 
         <v-card-actions>
@@ -171,7 +177,9 @@ export default {
     },
     ahjHoas: [],
     addMode: false,
-    managementCompanies: []
+    managementCompanies: [],
+    addingManagementCompany: false,
+    newManagementCompany: ""
   }),
   computed: {
     filteredHoas() {
@@ -202,6 +210,9 @@ export default {
     },
     ahjBtnTxt() {
       return this.addMode ? 'Add' : 'Update'
+    },
+    addNewManagementCompanyButton() {
+      return this.addingManagementCompany ? 'Select An Existing Management Company': 'Add New Management Company'
     },
   },
   async created() {
@@ -273,6 +284,15 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.addMode) {
         try {
+          if(this.addingManagementCompany){
+            const managementCompanyId = await postRequest(`/customField/managementCompany`, {companyName: this.newManagementCompany}, 'blueraven');
+            if(managementCompanyId == null || managementCompanyId.data == null){
+              throw 'Error adding new management company';
+            }
+            else{
+              this.editedItem.managementCompanyId = managementCompanyId.data;
+            }
+          }
           const {status} = await postRequest('/ahjHoa', this.editedItem, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'AHJ HOA created')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -301,7 +321,9 @@ export default {
       await this.fetchAhjHoas()
       this.editedItem = {}
     },
-
+    async addNewManagementCompany(){
+      this.addingManagementCompany = !this.addingManagementCompany
+    },
   }
 }
 </script>
