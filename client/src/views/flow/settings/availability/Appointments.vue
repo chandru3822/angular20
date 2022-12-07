@@ -371,9 +371,13 @@
           }
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            if( appt.allDay) {
+
+            if(appt.allDay) {
               appt.startTime = DateTime.fromISO(appt.startTime, {zone: 'utc'}).set({hour: 0, minute: 0, second: 0}).toISO()
-              appt.endTime = DateTime.fromISO(appt.endTime, {zone: 'utc'}).set({hour: 0, minute: 0, second: 0}).toISO()
+              appt.endTime = DateTime.fromISO(appt.endTime, {zone: 'utc'})
+                                     .set({hour: 0, minute: 0, second: 0})
+                                     .plus({days: 1})
+                                     .toISO()
             }
 
             //if the local date and the utc date are different, set the startTimeOffsetDay to true so the server knows what to do
@@ -390,7 +394,7 @@
             this.expanded = []
             //if repeating appointment - reload appointments to get full list
             this.newAppt = {}
-            if(appt.repeat) {
+            if(appt.repeat || appt.allDay) {
               await this.getAppointments()
             } else if(!appt.id) {
               //else if new appointment - push into appointments
@@ -407,7 +411,15 @@
         }
       },
       filterAppointments () {
-        return this.appointments.filter(a => { return !a.archived})
+        return this.appointments.filter(a => { return !a.archived}).map(a => {
+          if (a.allDay) {
+            const endTime = DateTime.fromISO(a.endTime, {zone: 'utc'})
+                                .minus({days: 1})
+                                .toISO()
+            return {...a, endTime}
+          }
+          return a
+        })
       },
       async deleteAppointment(deleteAllRecurring) {
         const item = this.itemToDelete

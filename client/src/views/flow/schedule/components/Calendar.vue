@@ -632,10 +632,6 @@
             if (d.allDay) {
               d.start = moment.utc(d.start).format('YYYY-MM-DD')
               d.end = moment.utc(d.end).format('YYYY-MM-DD')
-              if (d.start !== d.end) {
-                //bump end date since fullcalendar all-day end dates are exclusive
-                d.end = moment.utc(d.end).add(1, 'd').format('YYYY-MM-DD')
-              }
             }
 
             d.groupId = `${d.systemListTypeId}${d.resourceId}`
