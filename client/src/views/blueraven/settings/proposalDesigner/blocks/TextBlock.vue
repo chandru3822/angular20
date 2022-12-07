@@ -11,6 +11,8 @@ import { mapState } from 'vuex'
 import { Fragment } from 'vue-frag'
 import { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
 
+const xmlSerializer = new XMLSerializer()
+
 export default {
   name: 'TextBlock',
   components: { TextEditor, Fragment },
@@ -35,15 +37,12 @@ export default {
       }
     }
   },
+  data(){
+    return {
+      html: ''
+    }
+  },
   computed: {
-    html() {
-      try {
-        return generateHTMLFromJSON(this.blockValue)
-      } catch (e) {
-        console.error('ID:', this.id, e)
-        return ''
-      }
-    },
     styles() {
       const themeStyles = this.theme[this.themeKey] ?? {}
       return { ...themeStyles, ...this.blockStyle }
@@ -52,12 +51,33 @@ export default {
       theme: (state) => state.proposal.theme
     })
   },
+  watch:  {
+    blockValue: {
+      immediate: true,
+      handler: function(newVal) {
+        this.html = this.generateHtml(newVal)
+      }
+    }
+  },
   methods: {
     updateValue(payload) {
       this.$store.commit(ProposalMutations.SET_VALUE, { blockId: this.id, value: payload })
     },
     register(editor) {
       this.$store.commit(ProposalMutations.REGISTER_EDITOR, { blockId: this.id, editor })
+    },
+    generateHtml(val){
+      try {
+        //trick the fragment into always updating
+        const commentEl = document.createComment(`fragment#id=${this.id} last_updated=${new Date().valueOf()}`)
+        const serializeToString = xmlSerializer.serializeToString(commentEl)
+        const htmlFromJSON = generateHTMLFromJSON(val)
+
+        return serializeToString + htmlFromJSON
+      } catch (e) {
+        console.error('ID:', this.id, e)
+      }
+      return ''
     }
   }
 }
@@ -93,6 +113,9 @@ export default {
     p {
       margin: 0;
     }
+  }
+  p {
+    margin: 0;
   }
 }
 </style>

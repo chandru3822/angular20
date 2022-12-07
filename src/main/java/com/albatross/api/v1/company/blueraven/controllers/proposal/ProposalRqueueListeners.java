@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
@@ -10,6 +11,7 @@ import com.github.sonus21.rqueue.annotation.RqueueListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +25,7 @@ public class ProposalRqueueListeners {
   private final ProjectService projectService;
   private final SecurityService securityService;
 
+  @Transactional
   @RqueueListener(value = "proposal_job", numRetries = "2")
   public void doGenerateFinalPDF(ProposalJobMessage job) {
     // system needs to be aware of a user to access methods
@@ -31,22 +34,28 @@ public class ProposalRqueueListeners {
     proposalService.getProposal(job.proposalId())
       .ifPresent(proposal -> {
         log.info("[Proposal] Generating final PDF for proposalId={}", job.proposalId());
-        proposalService.generateProposalPDF(proposal.getId(), 1L, true)
-          .ifPresent(baos -> {
-            log.info("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
 
-            projectService.addAttachment(
-              proposal.getProjectId(),
-              PROPOSAL_ATTACHMENT_TYPE,
-              baos.getContentLength(),
-              baos.getContentType(),
-              proposal.getDisplayName(),
-              baos.getInputStream(),
-              proposal.getDisplayName());
+        try {
+          proposalService.generateProposalPDF(proposal.getId(), 1L, true)
+            .ifPresent(baos -> {
+              log.info("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
 
-            log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
-            proposalService.setProposalAsProcessed(proposal.getId());
-          });
+              projectService.addAttachment(
+                proposal.getProjectId(),
+                PROPOSAL_ATTACHMENT_TYPE,
+                baos.getContentLength(),
+                baos.getContentType(),
+                String.format("%s.pdf", proposal.getDisplayName()),
+                baos.getInputStream(),
+                proposal.getDisplayName());
+
+              log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
+              proposalService.setProposalAsProcessed(proposal.getId());
+            });
+        } catch (Exception e) {
+          log.error("[RQUEUE] Error processing final PDF");
+          throw new ApiException(e);
+        }
       });
   }
 
