@@ -838,6 +838,16 @@ const router = new Router({
                 },
               ]
             }, {
+              path: 'tags',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "links" */ './views/flow/settings/Tags.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'links',
               meta: {title: 'Albatross - Settings'},
               component: () => {

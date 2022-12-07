@@ -21,18 +21,18 @@ public class NotificationSubscriber extends Subscriber {
   @Override
   public boolean acceptsEventMessage(IEventMessage eventMessage) {
 
-    if (eventMessage instanceof NotificationEventMessage notificationEventMessage){
+//    if (eventMessage instanceof NotificationEventMessage notificationEventMessage){
 
       boolean isTypeMatch =
         (subscribedTypes == null || subscribedTypes.isEmpty())
-          || subscribedTypes.contains(notificationEventMessage.getNotificationTopic());
+          || subscribedTypes.contains(NotificationTopic.from(eventMessage.getTopic()));
 
       final boolean isUserMatch =
-        eventMessage.getUserId() == null || Objects.equals(this.userId, notificationEventMessage.getUserId());
+        eventMessage.getUserId() == null || Objects.equals(this.userId, eventMessage.getUserId());
 
       return isTypeMatch && isUserMatch;
     }
 
-    return false;
-  }
+//    return false;
+//  }
 }

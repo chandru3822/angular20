@@ -77,6 +77,15 @@
                              :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Project Name'] }}
                 </router-link>
+                <v-chip v-for="(tag, idx) in item.tags"
+                        small
+                        :color="tag.bgColor"
+                        :text-color="tag.fontColor"
+                        :close="tag.removable"
+                        :class="{'ml-2': idx !== 0}">
+                  {{tag.tagName}}
+                </v-chip>
+
               </td>
               <td class="text-left" v-if="useProcessStepHeaders">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
@@ -117,6 +126,14 @@
                          :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`">
                     {{ item['Project Name'] }}
                   </v-btn>
+                  <v-chip v-for="(tag, idx) in item.tags"
+                          small
+                          :color="tag.bgColor"
+                          :text-color="tag.fontColor"
+                          :close="tag.removable"
+                          :class="{'ml-2': idx !== 0}">
+                    {{tag.tagName}}
+                  </v-chip>
                 </a>
                   <router-link v-else class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                     {{ getColumnValue(item, c) }}
@@ -394,6 +411,11 @@ export default {
             if('Owning Positions' in this.results[0]) {
               this.queueHasOwningPositions = true
               r.owningPositions = JSON.parse(r['Owning Positions'])
+            }
+            console.log('did a')
+            if('tags' in this.results[0]) {
+              console.log('did b')
+              r.tags = JSON.parse(r['tags'])
             }
           })
         }
