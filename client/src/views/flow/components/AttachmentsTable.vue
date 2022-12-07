@@ -335,6 +335,6 @@ export default {
 
 .button-position{
   position:relative;
-  top:5px;
+  top:4px;
 }
 </style>
