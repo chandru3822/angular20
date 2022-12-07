@@ -28,7 +28,7 @@ export default {
         }
 
         const url = `${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`
-        const topics = ['sms_ownership', 'sms_reply']
+        const topics = ['sms_ownership', 'sms_reply', 'project_tag']
         this.evtSource = new EventSource(url, { withCredentials: true })
         topics.forEach(topic => {
           this.evtSource.addEventListener(topic, function(e) {

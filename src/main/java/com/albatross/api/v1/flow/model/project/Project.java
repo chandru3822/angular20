@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.model.project;
 
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.ProjectTag;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -49,6 +50,7 @@ public class Project {
   private Owner owner;
   private Contact contact;
   private Boolean statusReadOnly, ownerReadOnly;
+  private List<ProjectTag> tags;
   private List<WhiteListedPosition> statusReadOnlyWhiteListedPositions,
       ownerReadOnlyWhiteListedPositions;
 

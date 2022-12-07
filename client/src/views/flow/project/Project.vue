@@ -128,6 +128,16 @@
           </v-btn>
         </div>
       </v-toolbar-items>
+    </v-toolbar >
+    <v-toolbar flat color="grey lighten-2" id="tag-toolbar" v-if="project.tags && project.tags.length > 0">
+      <v-chip v-for="(tag, idx) in project.tags"
+              small
+              :color="tag.bgColor"
+              :text-color="tag.fontColor"
+              :close="tag.removable"
+           :class="{'ml-2': idx !== 0}">
+        {{tag.tagName}}
+      </v-chip>
     </v-toolbar>
     <v-row class="project-split-container">
       <div class="white-bg project-section px-0 left-panel"
@@ -206,6 +216,7 @@ import {getCountries} from "@/services/countryService";
 import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "../../../ConfirmationDialog";
 import PageOverview from "../PageOverview";
+import debounce from 'lodash.debounce'
 
 export default {
   name: 'Project',
@@ -261,8 +272,16 @@ export default {
     '$route.params.ppsEventId': function () {
       this.$store.commit(ProjectMutations.RESET_PPS_EVENT_STATE)
     },
+    projectTagEvents: async function () {
+      if(this.projectTagEvents?.length > 0) {
+        await this.getProjectTags()
+      }
+    }
   },
   computed: {
+    projectTagEvents() {
+      return this.$store.getters.getEventsByTopic('project_tag')?.filter(e => e.projectId === this.projectId)
+    },
     projectStage() {
       return this.statuses?.find(s => s.id === this.project.companyProjectStatusTypeId)?.rootProjectStatusType
     },
@@ -348,6 +367,14 @@ export default {
       } catch (e) {
         this.projectLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
+        logError(e)
+      }
+    },
+    getProjectTags: async function () {
+      try {
+        const {data, status} = await getRequest(`/tag/project/${this.projectId}`)
+        this.project.tags = data
+      } catch (e) {
         logError(e)
       }
     },
@@ -517,6 +544,14 @@ export default {
 </script>
 
 <style lang="scss">
+#tag-toolbar {
+  height: 35px !important;
+
+  .v-toolbar__content {
+    align-items: start;
+    height: 35px !important;
+  }
+}
 .project-section-header .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -623,5 +658,7 @@ export default {
   margin-bottom: 3px;
   font-size: 11px;
 }
+
+
 </style>
 

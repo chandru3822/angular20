@@ -185,6 +185,10 @@ export default {
         title: 'Links',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/tags',
+        title: 'Tags',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/functions',
         pathMatch: '/settings/function',
         title: 'Functions',
