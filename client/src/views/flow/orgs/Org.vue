@@ -36,20 +36,22 @@
                         item-text="orgName"
                         item-value="id"
         ></v-autocomplete>
-        <v-select attach v-model="tempOrg.companyStateId"
+        <v-autocomplete attach v-model="tempOrg.companyStateId"
                   :items="states"
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   label="State"
+                  clearable
                   item-text="state"
                   item-value="id"
-        ></v-select>
+        ></v-autocomplete>
         <v-autocomplete v-model="tempOrg.companyTimezoneId"
                         :items="companyTimezones"
                         label="Time Zone"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         hide-details
+                        clearable
                         item-text="timezone"
                         item-value="id"
                         attach
