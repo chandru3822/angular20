@@ -75,7 +75,7 @@
               <v-checkbox color="primary" :readonly="!userCanEdit"
                           :disabled="!userCanEdit" v-model="it.selected"></v-checkbox>
             </td>
-            <td class="text-left" v-if="status === 'invalid' || status === 'approval'"><a v href=""
+            <td class="text-left" v-if="status === 'invalid' || status === 'approval'"><a class="underline"
                                                                                           @click="goToDetails(it)">
               {{ it.projectName ? it.projectName : '' }}</a></td>
             <td class="text-left" v-else>{{ it.projectName ? it.projectName : '' }}</td>
@@ -549,5 +549,9 @@ export default {
 .pay-header {
   display: flex;
   align-items: center;
+}
+
+.underline{
+  text-decoration: underline;
 }
 </style>
