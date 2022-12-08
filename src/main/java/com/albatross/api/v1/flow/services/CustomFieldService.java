@@ -28,10 +28,10 @@ public class CustomFieldService {
 
   public CustomField findCustomFieldById(Long id) {
     Optional<CustomField> result =
-        sqlCache.get(
-            "customField.getOne",
-            Map.of("id", id),
-            new CustomField.CustomFieldMapper<>(CustomField.class, om));
+      sqlCache.get(
+        "customField.getOne",
+        Map.of("id", id),
+        new CustomField.CustomFieldMapper<>(CustomField.class, om));
     return result.orElse(null);
   }
 
@@ -43,7 +43,7 @@ public class CustomFieldService {
     params.put("query", criteria.query());
 
     return sqlCache.query(
-        "customField.getAll", params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
+      "customField.getAll", params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
 
   /*
@@ -53,7 +53,7 @@ public class CustomFieldService {
    *        new list of value options
    *        updating existing value options
    *        archiving existing value options
-   *        new sqk key
+   *        new sql key
    *        updating sql key value
    *   New custom fields
    *     With or without value options (which would always be new/inserts)
@@ -64,19 +64,19 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
     params.put(
-        "sortListValuesAlphabetically",
-        null != customField.getSortListValuesAlphabetically()
-            && customField.getSortListValuesAlphabetically());
+      "sortListValuesAlphabetically",
+      null != customField.getSortListValuesAlphabetically()
+        && customField.getSortListValuesAlphabetically());
     params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
     params.put("systemReadonly", customField.getSystemReadonly() != null && customField.getSystemReadonly());
     params.put("allowNow", customField.getAllowNow() != null && customField.getAllowNow());
     params.put("systemListId", customField.getCompanySystemListId());
     params.put(
-        "systemListOptionIds",
-        null == customField.getSystemListOptionIds()
-                || customField.getSystemListOptionIds().isEmpty()
-            ? null
-            : sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
+      "systemListOptionIds",
+      null == customField.getSystemListOptionIds()
+        || customField.getSystemListOptionIds().isEmpty()
+        ? null
+        : sqlArrayService.createSqlArrayOfType("int", customField.getSystemListOptionIds()));
     Long id = null;
     boolean doInsertAfterHandlingOtherScenarios = false;
     boolean insertParentRecordIfNeeded = false;
@@ -95,13 +95,9 @@ public class CustomFieldService {
     }
 
     Long parentId = null;
-    Long lovCreatedById;
 
     if (customField.getListOfValues() != null && !customField.getListOfValues().isEmpty()) {
       if (insertParentRecordIfNeeded) {
-        // use created by unless field already existed then use modified id as the created for the
-        // list value row (WUT? WHY? this should always be the logged in user)
-        lovCreatedById = user.trueUserId();
 
         // insert the parent row if this is a new field
         HashMap<String, Object> lovParent = new HashMap<>();
@@ -109,12 +105,11 @@ public class CustomFieldService {
         lovParent.put("parentId", null);
         lovParent.put("createdById", user.trueUserId());
         parentId =
-            sqlCache
-                .updateReturningId("customField.insertListOfValue", lovParent, "id")
-                .longValue();
+          sqlCache
+            .updateReturningId("customField.insertListOfValue", lovParent, "id")
+            .longValue();
       } else {
         parentId = customField.getListOfValueId();
-        lovCreatedById = user.trueUserId();
       }
 
       // insert the rest of the list values
@@ -122,19 +117,19 @@ public class CustomFieldService {
         HashMap<String, Object> lovParams = new HashMap<>();
         lovParams.put("name", lov.getName());
         lovParams.put("parentId", parentId);
-        lovParams.put("createdById", lovCreatedById);
+        lovParams.put("createdById", user.trueUserId());
         lovParams.put("modifiedById", user.trueUserId());
         lovParams.put("displayOrder", lov.getDisplayOrder());
 
-        if (null != lov.getId() && !lov.getArchived()) {
+        if (null != lov.getId() && lov.getIsDirty() && !lov.getArchived()) {
           // do update of row
           lovParams.put("id", lov.getId());
           sqlCache.update("customField.updateListOfValue", lovParams);
-        } else if (lov.getArchived()) {
+        } else if (null != lov.getId() && lov.getArchived()) {
           // do archive of row
           lovParams.put("id", lov.getId());
           sqlCache.update("customField.archiveListOfValue", lovParams);
-        } else {
+        } else if(null == lov.getId() && !lov.getArchived()) {
           // do row insert
           sqlCache.update("customField.insertListOfValue", lovParams);
         }
@@ -145,7 +140,7 @@ public class CustomFieldService {
       params.put("listOfValueId", parentId);
       params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
       params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
-      params.put("companyId", customField.getCompanyId());
+      params.put("companyId", user.getCompanyId());
       params.put("systemListId", customField.getCompanySystemListId());
       params.put("createdById", user.trueUserId());
       params.put("companyDataTypeId", customField.getCompanyDataTypeId());
@@ -165,7 +160,7 @@ public class CustomFieldService {
 
     // check if field is in use by a custom field group
     List<CustomField> fields =
-        sqlCache.query("customField.getGroupsUsingField", params, CustomField.class);
+      sqlCache.query("customField.getGroupsUsingField", params, CustomField.class);
 
     // if the field is assigned somewhere, return those values to frontend
     if (!fields.isEmpty()) {
@@ -180,76 +175,76 @@ public class CustomFieldService {
   public List<CustomField> getByProcessStepEvent(Long id) {
     User user = securityService.getCurrentUser();
     return sqlCache
-        .query(
-            "customField.getByProcessStepEvent",
-            Map.of("companyId", user.getCompanyId(), "id", id),
-            new CustomField.CustomFieldMapper<>(CustomField.class, om))
-        .stream()
-        .peek(
-            cf -> {
-              final List<ListOfValue> listOfValues = getListOfValues(cf, user);
-              cf.setHasListValues(
-                  null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
-              cf.setListOfValues(listOfValues);
-            })
-        .toList();
+             .query(
+               "customField.getByProcessStepEvent",
+               Map.of("companyId", user.getCompanyId(), "id", id),
+               new CustomField.CustomFieldMapper<>(CustomField.class, om))
+             .stream()
+             .peek(
+               cf -> {
+                 final List<ListOfValue> listOfValues = getListOfValues(cf, user);
+                 cf.setHasListValues(
+                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                 cf.setListOfValues(listOfValues);
+               })
+             .toList();
   }
 
   public List<CustomField> getByEvent(Long id) {
     User user = securityService.getCurrentUser();
     //for now i am only returning start, end and resource from the default field list. will prob add the rest in later
     return sqlCache
-      .query(
-        "customField.getByEvent",
-        Map.of("companyId", user.getCompanyId(), "id", id),
-        new CustomField.CustomFieldMapper<>(CustomField.class, om))
-      .stream()
-      .peek(
-        cf -> {
-          final List<ListOfValue> listOfValues = getListOfValues(cf, user);
-          cf.setHasListValues(
-            null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
-          cf.setListOfValues(listOfValues);
-        })
-      .toList();
+             .query(
+               "customField.getByEvent",
+               Map.of("companyId", user.getCompanyId(), "id", id),
+               new CustomField.CustomFieldMapper<>(CustomField.class, om))
+             .stream()
+             .peek(
+               cf -> {
+                 final List<ListOfValue> listOfValues = getListOfValues(cf, user);
+                 cf.setHasListValues(
+                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                 cf.setListOfValues(listOfValues);
+               })
+             .toList();
   }
 
   public List<CustomField> getByParentProcessStep(Long id, Boolean excludedUnhandledDataTypes) {
     User user = securityService.getCurrentUser();
     return sqlCache
-        .query(
-            "customField.getByParentProcessStep",
-            Map.of("companyId", user.getCompanyId(), "id", id,
-              "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
-            new CustomField.CustomFieldMapper<>(CustomField.class, om))
-        .stream()
-        .peek(
-            cf -> {
-              final List<ListOfValue> listOfValues = getListOfValues(cf, user);
-              cf.setHasListValues(
-                  null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
-              cf.setListOfValues(listOfValues);
-            })
-        .toList();
+             .query(
+               "customField.getByParentProcessStep",
+               Map.of("companyId", user.getCompanyId(), "id", id,
+                 "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
+               new CustomField.CustomFieldMapper<>(CustomField.class, om))
+             .stream()
+             .peek(
+               cf -> {
+                 final List<ListOfValue> listOfValues = getListOfValues(cf, user);
+                 cf.setHasListValues(
+                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                 cf.setListOfValues(listOfValues);
+               })
+             .toList();
   }
 
   public List<CustomField> getByParentType(Long id, Boolean excludedUnhandledDataTypes) {
     User user = securityService.getCurrentUser();
     return sqlCache
-        .query(
-            "customField.getByParentType",
-            Map.of("companyId", user.getCompanyId(), "id", id,
-              "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
-            new CustomField.CustomFieldMapper<>(CustomField.class, om))
-        .stream()
-        .peek(
-            cf -> {
-              final List<ListOfValue> listOfValues = getListOfValues(cf, user);
-              cf.setHasListValues(
-                  null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
-              cf.setListOfValues(listOfValues);
-            })
-        .toList();
+             .query(
+               "customField.getByParentType",
+               Map.of("companyId", user.getCompanyId(), "id", id,
+                 "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
+               new CustomField.CustomFieldMapper<>(CustomField.class, om))
+             .stream()
+             .peek(
+               cf -> {
+                 final List<ListOfValue> listOfValues = getListOfValues(cf, user);
+                 cf.setHasListValues(
+                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                 cf.setListOfValues(listOfValues);
+               })
+             .toList();
   }
 
   public List<ListOfValue> getCustomFieldListOfValues(Long id) {
@@ -275,7 +270,7 @@ public class CustomFieldService {
       }
     } else if (null != cf.getCompanySystemListId()) {
       return systemListService.getSystemListOptionsForCompany(
-          cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
+        cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
     }
 
     return null;

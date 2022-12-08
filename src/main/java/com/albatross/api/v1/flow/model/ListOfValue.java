@@ -14,7 +14,8 @@ public class ListOfValue {
 
   private Long id, parentId, createdById, modifiedById, displayOrder;
   private String name, code, description;
-  private Boolean archived = false;
+  private Boolean archived = false,
+    isDirty = false;
   private Date dateCreated, dateModified;
 
   //this field is only used when in the BRS custom field side of things. but i refactored to only use one model for list of value and now i cant remember why i did that so i am just putting this field here
