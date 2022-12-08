@@ -100,21 +100,36 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
-    <v-toolbar flat color="grey lighten-2" class="project-header" v-if="!projectLoading && project && project.id">
-      <v-toolbar-title class="app-title albatross-header-1 d-flex align-center">
-        <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
-        <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
-          <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
-            {{$store.state.project.pps.processStepName}}
-          </router-link>
-        </span>
-        <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
-          <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-          <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-            {{$store.state.project.ppsEvent.eventName}} Event
-          </router-link>
-        </span>
+    <v-toolbar flat color="grey lighten-2" :class="{'project-header': project && !project.tags || project.tags.length === 0,
+                                                    'project-header-with-tags': project && project.tags && project.tags.length > 0,
+                                                    'pt-2': project && project.tags && project.tags.length > 0}"
+               v-if="!projectLoading && project && project.id">
+      <v-toolbar-title class="app-title albatross-header-1 align-center">
+        <div>
+          <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
+          <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+            <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
+              {{$store.state.project.pps.processStepName}}
+            </router-link>
+          </span>
+          <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+            <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
+              {{$store.state.project.ppsEvent.eventName}} Event
+            </router-link>
+          </span>
+        </div>
+        <div>
+          <v-chip v-for="(tag, idx) in project.tags"
+                  small
+                  :color="tag.bgColor"
+                  :text-color="tag.fontColor"
+                  :close="tag.removable"
+                  :class="{'ml-2': idx !== 0}">
+            {{tag.tagName}}
+          </v-chip>
+        </div>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
@@ -129,17 +144,10 @@
         </div>
       </v-toolbar-items>
     </v-toolbar >
-    <v-toolbar flat color="grey lighten-2" id="tag-toolbar" v-if="project.tags && project.tags.length > 0">
-      <v-chip v-for="(tag, idx) in project.tags"
-              small
-              :color="tag.bgColor"
-              :text-color="tag.fontColor"
-              :close="tag.removable"
-           :class="{'ml-2': idx !== 0}">
-        {{tag.tagName}}
-      </v-chip>
-    </v-toolbar>
-    <v-row class="project-split-container">
+<!--    <v-toolbar flat color="grey lighten-2" id="tag-toolbar" v-if="project.tags && project.tags.length > 0">-->
+<!--    </v-toolbar>-->
+    <v-row class="project-split-container" :class="{'split-container-no-tags': project && !project.tags || project.tags.length === 0,
+                                                    'split-container-with-tags': project && project.tags && project.tags.length > 0}">
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
         <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
@@ -588,12 +596,23 @@ export default {
   height: 64px;
 }
 
+.project-header-with-tags {
+  height: 74px !important;
+}
+
 .project-split-container {
-  height: calc(100% - 50px);
   max-width: 100%;
   width: 100%;
   margin-right: 0 !important;
   margin-left: 0 !important;
+}
+
+.split-container-no-tags {
+  height: calc(100% - 50px);
+}
+
+.split-container-with-tags {
+  height: calc(100% - 60px);
 }
 
 .overflow-y-auto {

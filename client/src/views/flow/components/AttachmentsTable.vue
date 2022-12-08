@@ -34,9 +34,9 @@
   <!--          </v-btn>-->
             <div class="file-name-container">
               <div class="file-name-div">
-                <a @click="selectFile(item)" class="text-left no-text-decoration file-name">
+                <div @click="selectFile(item)" class="text-left no-text-decoration file-name">
                   {{ item.displayName }}
-                </a>
+                </div>
               </div>
               <div class="text-left uploaded-by">
                 {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}
@@ -53,7 +53,7 @@
         <v-col cols="2" class="text-right pa-0 height-one-hunned">
           <v-btn icon v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
                  :disabled="performingLink"
-                 text color="primary" @click="linkAttachment(item, true)"  @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0 button-position">
+                 text color="neurtal" @click="linkAttachment(item, true)"  @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0 button-position">
             <v-icon size="25">link</v-icon>
           </v-btn>
           <v-btn icon  v-if="!allowUpload && loadLinked"
