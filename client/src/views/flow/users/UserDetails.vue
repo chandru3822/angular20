@@ -1,7 +1,7 @@
 <template>
   <div id="user-detail-container">
     <!--    modal for editing user fields -->
-    <ConfirmationDialog :open-dialog="showEditModal" @confirm="validateForm" @close-dialog="showEditModal = false">
+    <ConfirmationDialog :open-dialog="showEditModal" @confirm="validateForm" @close-dialog="showEditModal = false" parent-close>
       <template v-slot:title>User Overview</template>
       <v-form ref="userEditForm">
         <v-select attach v-model="tempUser.userStatusTypeId"
@@ -389,6 +389,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+      this.showEditModal = false
     },
     async saveUser() {
       if (this.$refs.userForm.validate()) {

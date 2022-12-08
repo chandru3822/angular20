@@ -386,7 +386,7 @@
 
   <project.update>
     update flow.project set
-    project_name = :projectName,
+    project_name = trim(:projectName),
     street1 = :street1,
     city = :city,
     company_state_id = :companyStateId,
