@@ -22,6 +22,11 @@ public class CustomFieldController {
     return customFieldService.getAllCustomFields(criteria);
   }
 
+  @GetMapping(value = "/{id}")
+  public CustomField getOneCustomField(@PathVariable Long id) {
+    return customFieldService.findCustomFieldById(id);
+  }
+
   @PostMapping(value = "")
   public CustomField saveField(@RequestBody CustomField customField) throws SQLException {
     // add the field and list of values

@@ -115,7 +115,7 @@ export default {
     },
     async fetchObjectFields(objectCode) {
       const {data} = await getRequestWithParams(
-        `/customField/${objectCode}`,
+        `/customField/object/${objectCode}`,
         {},
         this.apiPath
       )

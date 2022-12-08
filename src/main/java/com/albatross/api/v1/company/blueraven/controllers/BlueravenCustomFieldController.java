@@ -6,7 +6,6 @@ import com.albatross.api.v1.flow.model.ListOfValue;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +27,11 @@ public class BlueravenCustomFieldController {
   @GetMapping(value = "/getAll")
   public List<CustomField> getAllCustomFields() {
     return customFieldService.getAllCustomFields();
+  }
+
+  @GetMapping(value = "/{id}")
+  public CustomField getOneCustomField(@PathVariable Long id) {
+    return customFieldService.findCustomFieldById(id);
   }
 
   @PostMapping(value = "")
@@ -54,7 +58,7 @@ public class BlueravenCustomFieldController {
     return customFieldService.deleteField(id);
   }
 
-  @GetMapping(value = "/{objectCode}")
+  @GetMapping(value = "/object/{objectCode}")
   public List<CustomField> findAllByObjectCode(@PathVariable String objectCode) {
     return customFieldService.findCustomFieldsByObjectCode(objectCode);
   }
