@@ -66,6 +66,7 @@
                     upv.company_id
     from flow.user_positions_vw upv
     where upv.user_id = :userId
+    and upv.company_id = :companyId
     and upv.archived is not true
     and upv.primary_flag is true
     and upv.archived is false

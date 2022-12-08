@@ -37,8 +37,8 @@
           hide-details
         ></v-text-field>
 
-        <v-btn class="my-4 mr-3"  :color="compare ? 'primary' : 'white'"
-               :class="{'white--text': compare, 'primary--text' : !compare}"
+        <v-btn class="my-4 mr-3"  :color="compare ? 'white' : 'primary'"
+               :class="{'primary--text': compare, 'white--text' : !compare}"
                small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
                v-if="compare">
           Cancel Comparison

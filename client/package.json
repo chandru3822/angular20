@@ -48,7 +48,7 @@
     "uuid": "^8.3.0",
     "vue": "^2.7.2",
     "vue-beautiful-chat": "^2.5.0",
-    "vue-frag": "^1.4.0",
+    "vue-frag": "^1.4.2",
     "vue-gtag": "^1.16.1",
     "vue-json-excel": "0.3.0",
     "vue-mention": "^1.0.0",
@@ -61,12 +61,12 @@
     "vuex": "^3.6.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue2": "^2.0.0",
+    "@vitejs/plugin-vue2": "^2.1.0",
     "eslint": "^8.18.0",
     "eslint-plugin-vue": "^9.1.1",
     "prettier": "^2.7.1",
     "sass": "1.32.6",
-    "unplugin-vue-components": "^0.22.8",
-    "vite": "^3.1.7"
+    "unplugin-vue-components": "^0.22.11",
+    "vite": "^3.2.5"
   }
 }
