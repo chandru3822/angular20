@@ -3,7 +3,7 @@
     <span v-if="!isEditMode">{{ displayText || name }}</span>
     <v-text-field v-else v-model="name" solo single-line flat autofocus />
     <div v-if="editable">
-      <v-btn small icon @click="handleEdit" class="pl-2" v-if="editable">
+      <v-btn small icon color="primary" @click="handleEdit" class="pl-2" v-if="editable">
         <v-icon v-if="!isEditMode">mdi-pencil</v-icon>
         <v-icon v-else>mdi-close</v-icon>
       </v-btn>

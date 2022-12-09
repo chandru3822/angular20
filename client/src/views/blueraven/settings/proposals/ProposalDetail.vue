@@ -7,8 +7,8 @@
     <v-toolbar flat class="app-toolbar">
       <v-toolbar-title v-if="detail">
         <span class="app-title">Version {{ detail.version }}</span>
-        <v-chip class="ma-2" label>{{ detail.status | capitalize }}</v-chip>
-        <v-chip class="ma-2" color="blue" label v-if="detail.primaryVersion">
+        <v-chip class="ma-2" color="grey lighten-2" label>{{ detail.status | capitalize }}</v-chip>
+        <v-chip class="ma-2 default-text-color" color="primary lighten-9" label v-if="detail.primaryVersion">
           Current
         </v-chip>
       </v-toolbar-title>
