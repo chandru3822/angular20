@@ -512,7 +512,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left" style="width: 65px">{{ item.requirementNbr }}</td>
-                  <td class="text-left">{{ item.processStepRequirementType }}</td>
+                  <td class="text-left"><a :href="`/settings/processStep/${item.processStepId}/components`">{{ item.processStepRequirementType }}</a></td>
                   <td class="text-left">
                     <span v-if="item.processStepRequirementTypeId === 1">
                       {{ item.parentName }} | {{ item.fieldName }}

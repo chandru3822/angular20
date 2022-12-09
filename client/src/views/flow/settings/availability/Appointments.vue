@@ -175,7 +175,7 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.startTime | formatDate(item.allDay ? 'timestampAsDate' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'timestampAsDate' : 'timestamp')}}</td>
+              <td class="text-left">{{item.startTime | formatDate(item.allDay ? 'date' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'date' : 'timestamp')}}</td>
               <td class="text-left">{{item.title}}</td>
               <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
               <td class="text-left">
@@ -213,12 +213,13 @@
   import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, deleteRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
-  import orderBy from "lodash.orderby"
+  import orderBy from 'lodash.orderby'
   import moment from 'moment-timezone'
-  import constants from "@/helpers/constants"
-  import MultiOptionDialog from "@/components/MultiOptionDialog";
+  import constants from '@/helpers/constants'
+  import MultiOptionDialog from '@/components/MultiOptionDialog'
+  import { DateTime } from 'luxon'
 
-  const { VITE_ENV } =  import.meta.env
+  const { VITE_ENV } = import.meta.env
 
   export default {
     name: 'Appointments',
@@ -356,9 +357,13 @@
           this.saveErrorMsg = '* Appointment End must be after Appointment Start'
         } else {
           if(appt.repeat) {
-            //if it is a repeating appt, then save the current users timezone and offset (required for adjusting DST later)
-            appt.originTimezone = this.timezone
-            appt.originTimezoneOffset = moment.tz(moment.utc(appt.startTime), this.timezone).utcOffset() * 60
+            // All day appointments don't have an attached timezone
+            //@TODO: ask randa if it's ok we only set these for non all-day recurring appointments
+            if (!appt.allDay) {
+              //if it is a repeating appt, then save the current users timezone and offset (required for adjusting DST later)
+              appt.originTimezone = this.timezone
+              appt.originTimezoneOffset = moment.tz(moment.utc(appt.startTime), this.timezone).utcOffset() * 60
+            }
           } else {
             //clear out recurrence fields if not repeat when saved
             appt.recurrence = null
@@ -366,9 +371,13 @@
           }
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            if( appt.allDay) {
-              appt.startTime = moment(appt.startTime).startOf('day').utc().format()
-              appt.endTime = moment(appt.endTime).endOf('day').utc().format()
+
+            if(appt.allDay) {
+              appt.startTime = DateTime.fromISO(appt.startTime, {zone: 'utc'}).set({hour: 0, minute: 0, second: 0}).toISO()
+              appt.endTime = DateTime.fromISO(appt.endTime, {zone: 'utc'})
+                                     .set({hour: 0, minute: 0, second: 0})
+                                     .plus({days: 1})
+                                     .toISO()
             }
 
             //if the local date and the utc date are different, set the startTimeOffsetDay to true so the server knows what to do
@@ -378,14 +387,14 @@
               orgId: this.orgId,
               userId: this.userId,
               ...appt,
-              startTimeOffsetDay: !localAndUtcSame,
+              startTimeOffsetDay: !localAndUtcSame && !appt.allDay,
             }
             const {data, status} = await postRequest(`/availability/appointment`, params)
             this.addNew = false
             this.expanded = []
             //if repeating appointment - reload appointments to get full list
             this.newAppt = {}
-            if(appt.repeat) {
+            if(appt.repeat || appt.allDay) {
               await this.getAppointments()
             } else if(!appt.id) {
               //else if new appointment - push into appointments
@@ -402,7 +411,15 @@
         }
       },
       filterAppointments () {
-        return this.appointments.filter(a => { return !a.archived})
+        return this.appointments.filter(a => { return !a.archived}).map(a => {
+          if (a.allDay) {
+            const endTime = DateTime.fromISO(a.endTime, {zone: 'utc'})
+                                .minus({days: 1})
+                                .toISO()
+            return {...a, endTime}
+          }
+          return a
+        })
       },
       async deleteAppointment(deleteAllRecurring) {
         const item = this.itemToDelete
