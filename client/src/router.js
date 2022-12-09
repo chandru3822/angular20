@@ -551,7 +551,17 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "companyCustomFields" */ './views/flow/settings/CompanyCustomFields.vue')
+                  return import (/* webpackChunkName: "companyCustomFields" */ './views/flow/settings/customFields/CompanyCustomFields.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'companyCustomField/:id?',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "companyCustomFields" */ './views/flow/settings/customFields/CompanyCustomField.vue')
                 } else {
                   return accessDenied()
                 }
@@ -806,7 +816,17 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/FlowCustomFields.vue')
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/customFields/FlowCustomFields.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'customField/:id?',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "customFields" */ './views/flow/settings/customFields/FlowCustomField.vue')
                 } else {
                   return accessDenied()
                 }
