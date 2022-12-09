@@ -1,13 +1,13 @@
 <template>
-  <CustomFields></CustomFields>
+  <CustomField></CustomField>
 </template>
 
 <script>
-  import CustomFields from "@/views/flow/settings/CustomFields"
+  import CustomField from "@/views/flow/settings/customFields/CustomField.vue"
   export default {
-    name: 'FlowCustomFields',
+    name: 'FlowCustomField',
     components: {
-      CustomFields,
+      CustomField,
     },
     data() {
       return {

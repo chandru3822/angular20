@@ -34,12 +34,12 @@
                         item-value="id"
                               attach
               ></v-autocomplete>
-              <v-select attach v-model="org.companyStateId"
+              <v-autocomplete attach v-model="org.companyStateId"
                         :items="states"
                         label="State"
                         item-text="state"
                         item-value="id"
-              ></v-select>
+              ></v-autocomplete>
               <v-checkbox label="Show in Scheduling Tool" class="mb-n4" v-model="org.schedulable" @change="getCompanyTimezones(org.schedulable)"></v-checkbox>
               <div v-if="org.schedulable">
                 <v-autocomplete v-model="org.companyTimezoneId"
