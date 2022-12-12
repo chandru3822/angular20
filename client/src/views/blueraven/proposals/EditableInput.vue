@@ -7,7 +7,7 @@
         <v-icon v-if="!isEditMode">mdi-pencil</v-icon>
         <v-icon v-else>mdi-close</v-icon>
       </v-btn>
-      <v-btn small icon @click="handleSave" v-if="editable && isEditMode" >
+      <v-btn small icon color="primary" @click="handleSave" v-if="editable && isEditMode" >
         <v-icon>mdi-cloud</v-icon>
       </v-btn>
     </div>
