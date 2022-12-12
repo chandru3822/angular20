@@ -1,5 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyEventStatusType;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
@@ -10,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +29,7 @@ import java.util.Optional;
 public class ProjectProcessStepEventController {
 
   private final ProjectProcessStepEventService projectProcessStepEventService;
+  private final PubSubService pubSubService;
 
   @PostMapping(value = "/{eventId}")
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
@@ -94,7 +97,7 @@ public class ProjectProcessStepEventController {
   }
 
   // action
-  @Transactional
+
   @PostMapping(
       value = "/{eventId}/action/{actionId}/perform",
       produces = MediaType.APPLICATION_JSON_VALUE)
@@ -108,7 +111,16 @@ public class ProjectProcessStepEventController {
     projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent);
 
     // do the action
-    return projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
+    ProjectProcessStepEventService.PpseActionResult ppseActionResult = projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
+
+    if(ppseActionResult.getShouldRunProjectTagUpdate().get()) {
+      //todo: when tags are assigned/removed without using actions, remove this and move it to the new place
+      ProjectTagMessage ptm = new ProjectTagMessage();
+      ptm.setProjectId(ppseActionResult.getProjectId());
+      pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+    }
+
+    return ResponseEntity.ok(getPpsEvent(ppsId, ppseActionResult.getPpsEventId()));
   }
 
   @PostMapping(value = "/{eventId}/status")

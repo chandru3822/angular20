@@ -296,7 +296,7 @@ export default {
     async getCustomField() {
       if (this.customFieldId != null) {
         try {
-          const {data, status} = await getRequest(`/customField/${this.customFieldId}`, this.apiPath, null, []);
+          const {data, status} = await getRequest(`/customField/${this.customFieldId}`, this.apiPath, []);
           this.customField = data
           this.customField.companyDataType = this.companyDataTypes.find(dt => dt.id === data.companyDataTypeId);
           if (null != this.customField.companySystemListId) {

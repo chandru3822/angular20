@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -22,6 +23,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -29,10 +31,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -41,6 +43,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,6 +55,8 @@ public class ProjectProcessStepEventService {
   private final SecurityService securityService;
   private final CustomFieldValueService customFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
+
+  private final PubSubService pubSubService;
   private final ProcessStepEventService processStepEventService;
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
   private final AttachmentService attachmentService;
@@ -325,7 +330,8 @@ public class ProjectProcessStepEventService {
             ProcessStepEventAction.class, om));
   }
 
-  public ResponseEntity<Object> performStepEventAction(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
+  @Transactional
+  public PpseActionResult performStepEventAction(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
     /*
     **High level pseudo logic:**
 
@@ -422,12 +428,12 @@ public class ProjectProcessStepEventService {
             }
           }
 
-          var childFunctionResults = performChildFunctions(processStepEventAction.getId(), ppsEventId, pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
-          var childFunctionsRan = Boolean.parseBoolean(childFunctionResults.get("didFunctionsRun").toString());
-          List<Long> newChildPpsIds = (List<Long>) childFunctionResults.get("newChildPpsIds");
+          PpseActionResult ppseActionResult = performChildFunctions(processStepEventAction.getId(), ppsEventId, pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
+//          var childFunctionsRan = Boolean.parseBoolean(childFunctionResults.get("didFunctionsRun").toString());
+          List<Long> newChildPpsIds = ppseActionResult.getNewChildPpsIds();
 
           //moved this out of the status check section so we could do it after child functions have been run
-          if(doAutoTriggers || childFunctionsRan) {
+          if(doAutoTriggers || ppseActionResult.getDidFunctionsRun()) {
             projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails());
           }
 
@@ -444,7 +450,7 @@ public class ProjectProcessStepEventService {
           }
 
           //if new PPSs were created by DB functions, run through autotriggers
-          if (childFunctionsRan && !newChildPpsIds.isEmpty()) {
+          if (ppseActionResult.getDidFunctionsRun() && !newChildPpsIds.isEmpty()) {
             for (Long newPpsId : newChildPpsIds) {
               projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
 
@@ -466,7 +472,10 @@ public class ProjectProcessStepEventService {
           params.put("allowMultipleUses", processStepEventAction.getMultipleUses());
           sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
 
-          return ResponseEntity.ok(getPpsEvent(ppsId, ppsEventId));
+          ppseActionResult.setPpsEventId(ppsEventId);
+          ppseActionResult.setProjectId(pps.getProjectId());
+          return ppseActionResult;
+//          return ResponseEntity.ok(getPpsEvent(ppsId, ppsEventId));
         } else {
           throw new ResponseStatusException(
               HttpStatus.PRECONDITION_FAILED,
@@ -483,6 +492,15 @@ public class ProjectProcessStepEventService {
     }
   }
 
+
+  @Data
+  public static class PpseActionResult {
+    private Boolean didFunctionsRun;
+    private AtomicBoolean shouldRunProjectTagUpdate;
+    private List<Long> newChildPpsIds = new ArrayList<>();
+    private Long ppsEventId, projectId;
+  }
+
   /**
    *
    * @param actionId
@@ -494,11 +512,12 @@ public class ProjectProcessStepEventService {
    *  didFunctionsRun: Boolean, true if any DB function was successfully ran, false otherwise
    *  newChildPpsIds: List<Long>, List of all newly created PPS IDs
    */
-  public Map<String, Object> performChildFunctions(Long actionId, Long ppsEventId, Long ppsId, Long processStepId, Long projectId) {
-    Map<String, Object> functionResults = new HashMap<>();
-    functionResults.put("didFunctionsRun", false);
+  public PpseActionResult performChildFunctions(Long actionId, Long ppsEventId, Long ppsId, Long processStepId, Long projectId) {
+    PpseActionResult ppseActionResult = new PpseActionResult();
+    ppseActionResult.setDidFunctionsRun(false);
     List<Long> newChildPpsIds = new ArrayList<>();
     List<ProcessStepEventActionChildFunction> childFunctions = processStepEventService.getChildFunctionsWithParamValues(actionId, ppsEventId);
+    AtomicBoolean doProjectTagUpdate = new AtomicBoolean(false);
     childFunctions.forEach(childFunction -> {
       try {
         if (childFunction.getRunInBackend()) {
@@ -525,6 +544,9 @@ public class ProjectProcessStepEventService {
             // @TODO: Add company IDs here during onboarding
           }
         } else {
+          if(childFunction.getFunctionName().equals("flow.assign_tag_to_project")) {
+            doProjectTagUpdate.set(true);
+          }
           String params = String.join(", ", projectProcessStepService.prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, ppsEventId));
           String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
           Optional<Object> newChildPpsId = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
@@ -545,12 +567,12 @@ public class ProjectProcessStepEventService {
     });
 
     if (!childFunctions.isEmpty()) {
-      functionResults.put("didFunctionsRun", true);
+      ppseActionResult.setDidFunctionsRun(true);
     }
+    ppseActionResult.setShouldRunProjectTagUpdate(doProjectTagUpdate);
+    ppseActionResult.setNewChildPpsIds(newChildPpsIds);
 
-    functionResults.put("newChildPpsIds", newChildPpsIds);
-
-    return functionResults;
+    return ppseActionResult;
   }
 
   public List<Attachment> getProjectProcessStepEventAttachments(Long projectProcessStepEventId, Boolean isMobile, Boolean linked) {
