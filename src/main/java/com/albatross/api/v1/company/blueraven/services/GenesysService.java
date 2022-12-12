@@ -244,9 +244,15 @@ public class GenesysService {
     getCfvValues(contactMap, values);
     String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
     // Genesys contact list names that require additional parameters
-    Set<String> genesysAppointmentContactLists = new HashSet<>(Arrays.asList("Sales Dev Retargeted Leads"));
-    if (!genesysContactListName.isEmpty() && genesysAppointmentContactLists.contains(genesysContactListName)) {
-      getAppointmentValues(contactId, contactMap);
+    Set<String> genesysAppointmentContactLists = new HashSet<>(Arrays.asList("Sales Dev Retargeted Leads", "Inside Sales Pitched Not Booked"));
+    if (!genesysContactListName.isEmpty()) {
+      if (genesysAppointmentContactLists.contains(genesysContactListName)) {
+        getAppointmentValues(contactId, contactMap);
+      }
+
+      if (genesysContactListName.equals("Inside Sales Pitched Not Booked")) {
+        getPitchedNotBookedValues(contactId, contactMap);
+      }
     }
 
     String leadLevel = (String) contactMap.remove("lead_level");
@@ -353,6 +359,26 @@ public class GenesysService {
     else {
       contactMap.put("Appointment Outcome", "");
     }
+  }
+
+  private void getPitchedNotBookedValues(Long contactId, HashMap<String, Object> contactMap) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    Optional<Boolean> pitchedNotBooked =
+      sqlCache.get(
+        "genesys.getContactPitchedNotBooked",
+        params,
+        new SingleColumnRowMapper<>(Boolean.class));
+
+    if (pitchedNotBooked.isPresent()) {
+      contactMap.put("PNB", pitchedNotBooked.get());
+    }
+    else {
+      contactMap.put("PNB", false);
+    }
+
+    contactMap.remove("referral");
+    contactMap.remove("retargeted");
   }
 
   public void updateContact(Long contactId) throws IOException, ApiException {
@@ -784,6 +810,9 @@ public class GenesysService {
 
     contacts = sqlCache.query("genesys.getContactIdsSalDevRetargets", null, Contact.class);
     addContactsToGenesys(contacts, "Sales Dev Retargeted Leads");
+
+    contacts = sqlCache.query("genesys.getContactIdsInsideSalesPitchedNotBooked", null, Contact.class);
+    addContactsToGenesys(contacts, "Inside Sales Pitched Not Booked");
   }
 
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
