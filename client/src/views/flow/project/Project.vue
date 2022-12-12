@@ -104,7 +104,8 @@
                                                     'project-header-with-tags': project && project.tags && project.tags.length > 0,
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
                v-if="!projectLoading && project && project.id">
-      <v-toolbar-title class="app-title albatross-header-1 align-center">
+      <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
+      :class="{'mt-4': project.tags && project.tags.length > 0}">
         <div>
           <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
           <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
@@ -120,9 +121,10 @@
             </router-link>
           </span>
         </div>
-        <div>
+        <div class="mt-2">
           <v-chip v-for="(tag, idx) in project.tags"
                   small
+                  class="tag-chip"
                   :color="tag.bgColor"
                   :text-color="tag.fontColor"
                   :close="tag.removable"
@@ -597,7 +599,7 @@ export default {
 }
 
 .project-header-with-tags {
-  height: 74px !important;
+  height: 94px !important;
 }
 
 .project-split-container {
@@ -662,6 +664,11 @@ export default {
   width: calc(50% - 36px);
   padding: 24px 10px 10px 10px !important;
 }
+
+.tag-chip {
+  font-weight: 600;
+}
+
 
 .center-width-right-side-collapse {
   width: calc(83.33% - 72px);

@@ -90,7 +90,8 @@
                           :color="tag.bgColor"
                           :text-color="tag.fontColor"
                           :close="tag.removable"
-                          :class="{'mb-2': idx === item.tags.length - 1}">
+                          :class="{'mb-4': idx === item.tags.length - 1,
+                                   'mb-2': idx !== item.tags.length - 1}">
                     {{tag.tagName}}
                   </v-chip>
                 </div>
@@ -706,6 +707,7 @@ export default {
 
 .tag-chip {
   display: table;
+  font-weight: 600;
 }
 
 .remove-left-margin {
