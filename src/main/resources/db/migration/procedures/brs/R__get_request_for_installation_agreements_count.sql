@@ -30,7 +30,8 @@ BEGIN
     and (pd.cancelled_date is null or p_show_cancelled is true)
     AND p.archived is false
     AND c.company_id = p_company_id
-    AND p.project_name ILIKE '%' || p_searchterm || '%';
+    AND (p.project_name ILIKE '%' || p_searchterm || '%'
+        OR CAST(p.id AS TEXT) ILIKE '%' || p_searchterm || '%');
   return p_agreement_count;
 END
 $function$
