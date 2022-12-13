@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class Smartlistv2Service {
+public class SmartlistServicev2 {
 
   private final SqlCache sqlCache;
 
@@ -25,5 +25,10 @@ public class Smartlistv2Service {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
     return sqlCache.query("smartlistv2.getMine", params, Smartlistv2.class);
+  }
+
+  public List<Smartlistv2> getPublic() {
+    User user = securityService.getCurrentUser();
+    return sqlCache.query("smartlistv2.getPublic", Map.of("companyId", user.getCompanyId()), Smartlistv2.class);
   }
 }
