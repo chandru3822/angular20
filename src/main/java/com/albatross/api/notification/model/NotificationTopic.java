@@ -6,7 +6,8 @@ public enum NotificationTopic {
   UNKNOWN("unknown"),
   PING("ping"),
   SMS_REPLY("sms_reply"),
-  SMS_OWNERSHIP("sms_ownership");
+  SMS_OWNERSHIP("sms_ownership"),
+  PROJECT_TAG("project_tag");
 
   private final String name;
 

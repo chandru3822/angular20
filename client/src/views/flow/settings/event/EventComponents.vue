@@ -53,7 +53,7 @@
 
             <template #item="{ item, index }">
               <tr class="clickable" :class="{'shaded-row': index % 2}">
-                <td class="text-left">{{ item.eventStatusType }}</td>
+                <td class="text-left"><a href="/settings/eventStatuses">{{ item.eventStatusType }}</a></td>
                 <td class="text-left">{{ item.rootEventStatusType }}</td>
                 <td class="text-right">
                   <div class="flex-display align-center">

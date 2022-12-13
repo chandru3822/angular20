@@ -153,6 +153,7 @@ export default {
       }, {
         path: '/settings/companyCustomFields',
         title: 'Company Custom Fields',
+        pathMatch: '/settings/companyCustomField',
         show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath,
       }, {
         path: '/settings/companyObjectTypes',
@@ -178,11 +179,17 @@ export default {
         show: this.hasSettingsAccess
       }, {
         path: '/settings/customFields',
+        pathMatch: '/settings/customField',
         title: 'Custom Fields',
+
         show: this.hasSettingsAccess
       }, {
         path: '/settings/links',
         title: 'Links',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/tags',
+        title: 'Tags',
         show: this.hasSettingsAccess
       }, {
         path: '/settings/functions',

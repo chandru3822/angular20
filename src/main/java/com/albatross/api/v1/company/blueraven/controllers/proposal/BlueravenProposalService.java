@@ -212,17 +212,12 @@ public class BlueravenProposalService {
       });
   }
 
-  public Optional<ContentAwareByteArrayOutputStream> generateProposalPDF(Long proposalId, Long templateId, boolean isFinal) {
-    return getProposal(proposalId)
-      .map(proposal -> {
-        try {
-          final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, isFinal);
-          return proposalTemplateService.generatePdf(templateId, context, false);
-        } catch (IOException | TemplateException e) {
-          log.error("Error generating proposal template");
-          throw new ApiException(e);
-        }
-      });
+  public Optional<ContentAwareByteArrayOutputStream> generateProposalPDF(Long proposalId, Long templateId, boolean isFinal) throws Exception {
+    final Proposal proposal = getProposal(proposalId)
+      .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
+
+    final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, isFinal);
+    return Optional.ofNullable(proposalTemplateService.generatePdf(templateId, context, false));
   }
 
   private Map<String, Object> getCalculatedProposalValues(

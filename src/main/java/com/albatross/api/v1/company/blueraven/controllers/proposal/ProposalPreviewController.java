@@ -41,7 +41,7 @@ public class ProposalPreviewController {
             final var pdf = proposalTemplateService.generatePdf(templateId, new HashMap<>(), true);
             response.addHeader(HttpHeaders.CONTENT_LENGTH, pdf.getContentLength().toString());
             IOUtils.copy(pdf.getInputStream(), outputStream);
-          } catch (TemplateException e) {
+          } catch (Exception e) {
             log.error("[Proposal] Error generating preview PDF", e);
             throw new ApiException("Error generating preview");
           }

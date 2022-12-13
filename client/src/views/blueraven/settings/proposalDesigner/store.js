@@ -63,10 +63,8 @@ export default {
     setTemplate(state, { template, theme }) {
       //store a copy of the original
       state._template = cloneDeep(template)
-      // state.template = template
-      // TODO: figure out why this doesn't reload
-      state.template = Object.assign([], template)
-      state.theme = theme
+      state.template = [...template]
+      state.theme = { ...theme }
     },
     [ProposalMutations.RESET](state) {
       state.template = cloneDeep(state._template)

@@ -323,6 +323,22 @@
         cot.status_read_only,
         cot.owner_read_only,
         coalesce((
+             SELECT array_to_json(array_agg(row_to_json(tags)))
+             FROM (
+                    SELECT pt.id,
+                           pt.project_id as "projectId",
+                           pt.tag_id as "tagId",
+                           t.tag_name as "tagName",
+                           t.font_color as "fontColor",
+                           t.bg_color as "bgColor",
+                           pt.created_by_id as "createdById",
+                           pt.modified_by_id as "modifiedById",
+                           pt.archived
+                    FROM flow.project_tag pt
+                      inner join flow.tag t on t.id = pt.tag_id
+                    WHERE pt.project_id = p.id
+                      AND pt.archived is not true) tags), '[]') AS "tags",
+        coalesce((
                      SELECT array_to_json(array_agg(row_to_json(wlp)))
                      FROM (
                               SELECT wlp.id,
@@ -370,7 +386,7 @@
 
   <project.update>
     update flow.project set
-    project_name = :projectName,
+    project_name = trim(:projectName),
     street1 = :street1,
     city = :city,
     company_state_id = :companyStateId,

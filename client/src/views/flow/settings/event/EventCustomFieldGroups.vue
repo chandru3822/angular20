@@ -340,7 +340,7 @@
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            {{ cf.fieldName }} <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
+                            <a :href="`/settings/customField/${cf.id}`">{{ cf.fieldName }} </a><span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                             <div>
                               Detail View:
                               <input type="checkbox" class="ml-2" v-model="cf.detailView"

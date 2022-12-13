@@ -1,8 +1,13 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
+import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
@@ -40,6 +45,8 @@ public class ProjectProcessStepController {
   private final CustomFieldValueService customFieldValueService;
 
   private final SqlCache sqlCache;
+
+  private final PubSubService pubSubService;
 
   @GetMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(
@@ -135,7 +142,14 @@ public class ProjectProcessStepController {
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      projectProcessStepService.performAction(action, pps, new ArrayList<>());
+      ProjectProcessStepService.PpsActionResult ppsActionResults = projectProcessStepService.performAction(action, pps, new ArrayList<>());
+
+      if(ppsActionResults.getShouldRunProjectTagUpdate().get()) {
+        //todo: when tags are assigned/removed without using actions, remove this and move it to the new place
+        ProjectTagMessage ptm = new ProjectTagMessage();
+        ptm.setProjectId(pps.getProjectId());
+        pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+      }
 
       // Since something on the PPS might have changed, run autotriggers for it
       projectProcessStepService.performAutoTriggerActions(
