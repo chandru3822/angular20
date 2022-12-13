@@ -77,7 +77,7 @@
       </v-btn>
     </v-card>
     <v-data-table v-if="(isIos && showIos) || (!isIos && showAndroid)"
-        :headers="filterHeaders()"
+        :headers="filterHeaders"
         :items="getFilteredApps(true)"
         :fixed-header="true"
         disable-sort
@@ -116,14 +116,16 @@
           <td class="text-left">
             {{item.dateCreated | formatDate('timestamp')}}
           </td>
-          <td class="px-0">
+          <td class="px-0" v-if="userCanEdit">
             <v-btn v-if="userCanDelete" text color="primary" @click="appToDelete = item"><v-icon>delete</v-icon></v-btn>
             <v-btn v-if="userCanEdit" small text color="primary" @click="appToShowHide = item">
               {{ item.show ? 'hide' : 'show'}}
             </v-btn>
           </td>
           <td class="text-left">
-            <v-checkbox v-if="userCanEdit" v-model="item.beta" @click="appToToggleBeta = item; toggleBetaForApp()"></v-checkbox>
+            <v-checkbox v-if="userCanEdit || userHasBeta"
+                        :disabled="!userCanEdit"
+                        v-model="item.beta" @click="appToToggleBeta = item; toggleBetaForApp()"></v-checkbox>
           </td>
         </tr>
       </template>
@@ -171,6 +173,7 @@ export default {
       newApp: {},
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADD'),
       userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_ALL'),
+      userCanView: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW'),
       userHasBeta: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'DELETE'),
@@ -185,8 +188,8 @@ export default {
         {text: 'Filename', value: 'filename', show: true},
         {text: 'Version', value: 'version', show: true},
         {text: 'Created', value: 'dateCreated', show: true},
-        {text: '', value: 'icons', show: true, width: 175},
-        {text: 'Beta', value: 'beta', show: true}
+        {text: '', value: 'icons', width: 175, show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
+        {text: 'Beta', value: 'beta', show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM') || this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')}
       ],
       appToDelete: null,
       appToShowHide: null,
@@ -196,6 +199,9 @@ export default {
     }
   },
   computed:{
+    filterHeaders () {
+      return this.headers.filter(header => header.show === true)
+    },
     appToDeleteName(){
       return this.appToDelete ? this.appToDelete.filename : ''
     },
@@ -251,9 +257,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    filterHeaders () {
-      return this.headers.filter(header => header.show === true)
     },
     async saveMinVersion () {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -328,7 +331,6 @@ export default {
       const app = this.appToToggleBeta
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        app.show = !app.show
         const {status} = await putRequest(`/app/beta`, app)
         app.showConfirm = false
         this.appToToggleBeta = null
@@ -347,8 +349,13 @@ export default {
     getFilteredApps() {
       //filter archived
       return this.apps.filter(a => {
+        //user can view all or can edit then return all unarchived
         return this.userCanEdit || this.userCanViewAll ? !a.archived :
+          //if they have beta AND view access then just show them all the shown apps regardless of beta status
+          this.userHasBeta && this.userCanView ? !a.archived && a.show :
+          //if they ONLY have beta then only show them shown beta apps
           this.userHasBeta ? !a.archived && a.show && a.beta :
+          //otherwise they should only have view acces and only show them shown non-beta apps
           a.show && !a.archived && !a.beta
       })
     },

@@ -109,7 +109,7 @@
 
                 <template #item="{ item, index }">
                   <tr class="clickable" :class="{'shaded-row': index % 2}">
-                    <td class="text-left">{{ item.processStepStatusType }}</td>
+                    <td class="text-left"><a href="/settings/processStepStatuses" >{{ item.processStepStatusType }}</a></td>
                     <td class="text-left">{{ item.rootProcessStepStatusType }}</td>
                     <td class="text-left" v-if="allowNonAdminAdd">
                       <input type="checkbox" v-model="item.allowNonAdminUse"

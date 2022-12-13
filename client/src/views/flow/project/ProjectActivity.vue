@@ -59,14 +59,14 @@
 
             <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
                    :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
-                   class="text-capitalize my-4"
+                   class="text-capitalize my-4 fix-toggle-opacity"
                    style="width: 50% !important;"
             >
               Focused
             </v-btn>
             <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
                    :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
-                   class="text-capitalize"
+                   class="text-capitalize  fix-toggle-opacity"
                    style="width: 50% !important;"
             >
               All
@@ -208,9 +208,7 @@ export default {
   },
   data() {
     return {
-      //todo change this back after soft roll out is done @softRollOutChangeBack
-      userCanViewSms: true,
-      // userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
+      userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
       projectId: parseInt(this.$route.params.projectId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
@@ -463,5 +461,9 @@ export default {
 #right-sidebar-title .v-toolbar__content {
   display: flex;
   align-items: flex-start;
+}
+
+#project-activity-container .fix-toggle-opacity:before {
+  background-color: unset !important;
 }
 </style>

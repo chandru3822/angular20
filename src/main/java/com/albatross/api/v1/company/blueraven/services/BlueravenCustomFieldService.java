@@ -246,4 +246,18 @@ public class BlueravenCustomFieldService {
       return null;
     }
   }
+
+  public Long saveManagementCompany(String companyName){
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("name", companyName);
+    params.put("createdById", user.trueUserId());
+    if(sqlCache.update("blueravenCustomField.insertManagementCompany", params) == 1){
+      HashMap<String, Object> nameParam = new HashMap<>();
+      return sqlCache.queryForObject("blueravenCustomField.getListOfValueIdByName", params, Long.class);
+    }
+    else {
+      return null;
+    }
+  }
 }

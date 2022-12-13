@@ -117,14 +117,14 @@ public class BlueravenProposalService {
     if (null != attachments && attachments.size() > 0) {
       for (MultipartFile a : attachments) {
         // Proposal Request Supporting Files
-        String displayName = a.getName().substring(0, 100);
+        String displayName = a.getName().substring(0, Integer.min(a.getName().length(), 100));
         projectProcessStepService.addAttachment(a, ppsId, 946L, displayName);
       }
     }
     // upload utility bill attachments to the new step
     if (null != utilityBillAttachments && utilityBillAttachments.size() > 0) {
       for (MultipartFile a : utilityBillAttachments) {
-        String displayName = a.getName().substring(0, 100);
+        String displayName = a.getName().substring(0, Integer.min(a.getName().length(), 100));
         projectService.addAttachment(a, projectId, 47L, displayName); // Utility Bill
       }
     }
@@ -212,17 +212,12 @@ public class BlueravenProposalService {
       });
   }
 
-  public Optional<ContentAwareByteArrayOutputStream> generateProposalPDF(Long proposalId, Long templateId, boolean isFinal) {
-    return getProposal(proposalId)
-      .map(proposal -> {
-        try {
-          final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, isFinal);
-          return proposalTemplateService.generatePdf(templateId, context, false);
-        } catch (IOException | TemplateException e) {
-          log.error("Error generating proposal template");
-          throw new ApiException(e);
-        }
-      });
+  public Optional<ContentAwareByteArrayOutputStream> generateProposalPDF(Long proposalId, Long templateId, boolean isFinal) throws Exception {
+    final Proposal proposal = getProposal(proposalId)
+      .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
+
+    final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, isFinal);
+    return Optional.ofNullable(proposalTemplateService.generatePdf(templateId, context, false));
   }
 
   private Map<String, Object> getCalculatedProposalValues(

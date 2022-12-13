@@ -1,6 +1,6 @@
 <template>
   <v-btn
-    :color="stateClass"
+    :class="stateClass"
     :disabled="currentState === 'DISABLED'"
     :dark="!disabled"
     v-bind="$attrs"
@@ -14,10 +14,10 @@
 <script>
 
 const STATE_CLASS = {
-  DISABLED: 'primary',
-  ERROR: 'red',
-  SUCCESS: 'green',
-  DEFAULT: 'primary',
+  DISABLED: 'state-default',
+  ERROR: 'state-error',
+  SUCCESS: 'state-success',
+  DEFAULT: 'state-default',
 }
 
 export default {
@@ -55,3 +55,19 @@ export default {
   }
 }
 </script>
+<style scoped lang="scss">
+  .state-default {
+    background-color: var(--v-primary-base) !important;
+    border-color: var(--v-primary-base) !important;
+  }
+
+  .state-success {
+    background-color: var(--v-success-lighten1) !important;
+    border-color: var(--v-success-lighten1) !important;
+  }
+
+  .state-error {
+    background-color: var(--v-error-base) !important;
+    border-color: var(--v-error-base) !important;
+  }
+</style>

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Hidden
@@ -28,10 +29,20 @@ public class BlueravenCustomFieldController {
     return customFieldService.getAllCustomFields();
   }
 
+  @GetMapping(value = "/{id}")
+  public CustomField getOneCustomField(@PathVariable Long id) {
+    return customFieldService.findCustomFieldById(id);
+  }
+
   @PostMapping(value = "")
   public CustomField saveField(@RequestBody CustomField customField) throws SQLException {
     // add the field and list of values
     return customFieldService.saveField(customField);
+  }
+
+  @PostMapping(value = "/managementCompany")
+  public Long saveManagementCompany(@RequestBody Map<String, Object> companyName) throws SQLException {
+    return customFieldService.saveManagementCompany(companyName.get("companyName").toString());
   }
 
   @GetMapping(value = "/{id}/values")
@@ -47,7 +58,7 @@ public class BlueravenCustomFieldController {
     return customFieldService.deleteField(id);
   }
 
-  @GetMapping(value = "/{objectCode}")
+  @GetMapping(value = "/object/{objectCode}")
   public List<CustomField> findAllByObjectCode(@PathVariable String objectCode) {
     return customFieldService.findCustomFieldsByObjectCode(objectCode);
   }

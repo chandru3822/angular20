@@ -252,7 +252,8 @@
                         </v-list-item-action>
                         <v-list-item-content>
                           <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
-                            {{cf.fieldName}} <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
+                            <a :href="`/settings/customField/${cf.id}`">{{cf.fieldName}}</a>
+                            <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                             <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>

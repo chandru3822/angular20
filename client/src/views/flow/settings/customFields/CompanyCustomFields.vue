@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  import CustomFields from "@/views/flow/settings/CustomFields"
+  import CustomFields from "@/views/flow/settings/customFields/CustomFields.vue"
   export default {
     name: 'CompanyCustomFields',
     components: {

@@ -158,12 +158,13 @@
             <tr :class="{ 'shaded-row': index % 2 }">
               <td class="text-left">{{ item.startDate | formatDate('date')}}</td>
               <td class="text-left">{{ item.endDate | formatDate('date')}}</td>
-              <td class="text-left">{{ item.position }}</td>
+              <td class="text-left"><a :href="`/settings/position/${item.positionId}`">{{ item.position }}</a></td>
               <td class="text-left">
                 <input type="checkbox" v-model="item.primaryFlag" disabled>
               </td>
               <td class="text-left user-column" v-for="(f, index) in filters" :key="index">
-                {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
+                <a v-if="f.orgLevelId===7" :href="`/org/${getOrgIdForFilter(item.hierarchy, 7)}`">{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</a>
+                <span v-else>{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</span>
               </td>
               <td width="150" class="d-flex">
                 <v-btn class="align-self-center" text color="primary"
@@ -332,6 +333,10 @@
       getOrgNameForFilter(hierarchy, filterOrgLevelId) {
         const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
         return result?.orgName ?? 'N/A'
+      },
+      getOrgIdForFilter(hierarchy, filterOrgLevelId) {
+        const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
+        return result?.orgId ?? null
       },
       handleExpand (item, expand) {
         if(expand) {

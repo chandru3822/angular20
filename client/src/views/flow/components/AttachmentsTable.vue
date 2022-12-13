@@ -21,10 +21,12 @@
 
         <v-col cols="10" class="text-left pt-0 height-one-hunned">
           <div class="file-column">
+            <div @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false">
             <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
                         v-model="item.compare"
                         :disabled="!item.compare && countSelected >= maxSelectable">
             </v-checkbox>
+            </div>
   <!--          <v-btn icon text @click="selectFile(item)" class="type">-->
               <v-icon size="25" color="grey" @click="selectFile(item)">
                 {{ getIconForFile(item) }}
@@ -32,9 +34,9 @@
   <!--          </v-btn>-->
             <div class="file-name-container">
               <div class="file-name-div">
-                <a @click="selectFile(item)" class="text-left no-text-decoration file-name">
+                <div @click="selectFile(item)" class="text-left no-text-decoration file-name">
                   {{ item.displayName }}
-                </a>
+                </div>
               </div>
               <div class="text-left uploaded-by">
                 {{ item.uploadedBy ? `${item.uploadedBy}, ` : '' }}
@@ -51,19 +53,19 @@
         <v-col cols="2" class="text-right pa-0 height-one-hunned">
           <v-btn icon v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
                  :disabled="performingLink"
-                 text color="primary" @click="linkAttachment(item, true)"  @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0">
+                 text color="neurtal" @click="linkAttachment(item, true)"  @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0 button-position">
             <v-icon size="25">link</v-icon>
           </v-btn>
-          <v-btn icon v-if="!allowUpload && loadLinked"
+          <v-btn icon  v-if="!allowUpload && loadLinked"
                  :disabled="performingLink"
-                 text color="primary" @click="linkAttachment(item, false)" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0">
+                 text color="primary" @click="linkAttachment(item, false)" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0 button-position">
             <v-icon size="25">mdi-link-off</v-icon>
           </v-btn>
-          <v-btn icon v-if="allowUpload" text color="primary" @click="startDelete(item)" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0">
+          <v-btn icon v-if="allowUpload" text color="primary" @click="startDelete(item)" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0 button-position">
             <v-icon size="25">delete</v-icon>
           </v-btn>
-          <v-btn icon text color="primary" :href="item.presignedUrl" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false">
-            <v-icon size="25">mdi-tray-arrow-down</v-icon>
+          <v-btn icon text color="primary" class="button-position" :href="item.presignedUrl" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false">
+            <v-icon size="25" >mdi-tray-arrow-down</v-icon>
           </v-btn>
           <ConfirmationDialog
             :open-dialog="attachmentDeleteConfirm"
@@ -328,6 +330,11 @@ export default {
 
 .hover-effect:hover{
   background-color: #F5F5F5;
+  cursor: pointer;
+}
 
+.button-position{
+  position:relative;
+  top:4px;
 }
 </style>

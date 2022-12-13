@@ -262,7 +262,7 @@ public class ProposalTemplateService {
   }
 
 
-  public ContentAwareByteArrayOutputStream generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws IOException, TemplateException {
+  public ContentAwareByteArrayOutputStream generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws Exception {
     final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT, isDebug);
     return generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle());
   }
@@ -296,7 +296,7 @@ public class ProposalTemplateService {
         return Flux.empty();
       })
       .doOnError((e) -> {
-        throw new ApiException("Error processing PDF");
+        log.error("[PDF] Error processing PDF, error={}", e.getMessage());
       });
 
     DataBufferUtils.write(pdf, outputStream).blockLast();

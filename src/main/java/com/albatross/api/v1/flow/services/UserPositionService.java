@@ -55,9 +55,10 @@ public class UserPositionService {
         .orElse(null);
   }
 
-  public UserPosition getUserPrimaryPosition(Long userId) {
+  public UserPosition getUserPrimaryPosition(Long userId, Long companyId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
+    params.put("companyId", companyId);
 
     return sqlCache
         .get(

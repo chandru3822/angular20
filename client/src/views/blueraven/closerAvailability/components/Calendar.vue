@@ -411,10 +411,11 @@
           }
           const {data} = await postRequest(`/closerAvailability`, params, 'blueraven', [])
           data.forEach(d => {
-            //this is really stupid.  in full calendar an all day appt strips off the time. and just uses the date.
-            //so an end time of '2020-12-31 23:59:59' will strip off the time and not include it in the all day range
-            //so your event will appear to end on the 30th
-            d.allDay = false
+            if (d.allDay) {
+              d.start = moment.utc(d.start).format('YYYY-MM-DD')
+              d.end = moment.utc(d.end).format('YYYY-MM-DD')
+            }
+
             d.groupId = `${d.resourceId}`
             d.resourceId = `${d.resourceId}`
             d.color = 'var(--v-grey-darken1)'

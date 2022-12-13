@@ -14,7 +14,7 @@ build: 	bin
 				$(eval SUFFIX=_$(GOOS)_$(GOARCH))
 				go build -ldflags "-s" -o ./bin/html2pdf$(SUFFIX) ./cmd/html2pdf
 
-# compress all lanes binaries
+# compress all binaries
 compress: bin get-upx
 					@$(UPX) ./bin/html2pdf*
 
@@ -23,7 +23,7 @@ bin:
 
 
 UPX := $(shell which upx)
-upx_version := 3.96
+upx_version := 4.0.1
 
 # fetch a local copy of upx for binary compression (only if it's not already installed)
 #TODO: update based on arch

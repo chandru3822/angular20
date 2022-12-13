@@ -301,7 +301,7 @@ public class ContactService {
       }
 
       UserPosition userPrimaryPosition =
-          userPositionService.getUserPrimaryPosition(currentUser.getId());
+          userPositionService.getUserPrimaryPosition(currentUser.getId(), currentUser.getCompanyId());
       params.put(
           "ownerUserPositionId",
           null == userPrimaryPosition || null == userPrimaryPosition.getId()

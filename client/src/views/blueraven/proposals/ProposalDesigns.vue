@@ -469,7 +469,7 @@ export default {
 }
 
 .design-small-gray {
-  color: #808588;
+  color: var(--v-grey-darken1);
   font-size: 12px;
 }
 

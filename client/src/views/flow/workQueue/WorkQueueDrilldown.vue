@@ -72,11 +72,29 @@
 
           <template #item="{ item, index }">
             <tr class="clickable v-data-table-row" :class="{'shaded-row': index % 2}">
-              <td class="text-left" v-if="useProcessStepHeaders">
-                <router-link class="router-link-td elevation-0 square-card"
-                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item['Project Name'] }}
-                </router-link>
+              <td class="text-left pl-1" v-if="useProcessStepHeaders" :class="{'pt-2': item.tags && item.tags.length > 0}">
+<!--                <router-link class="router-link-td elevation-0 square-card"-->
+<!--                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">-->
+<!--                  {{ item['Project Name'] }}-->
+<!--                </router-link>-->
+                <a >
+                  <v-btn text small
+                         :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                    {{ item['Project Name'] }}
+                  </v-btn>
+                </a>
+                <div class="chip-container">
+                  <v-chip v-for="(tag, idx) in item.tags"
+                          small
+                          class="mt-1 tag-chip"
+                          :color="tag.bgColor"
+                          :text-color="tag.fontColor"
+                          :close="tag.removable"
+                          :class="{'mb-4': idx === item.tags.length - 1,
+                                   'mb-2': idx !== item.tags.length - 1}">
+                    {{tag.tagName}}
+                  </v-chip>
+                </div>
               </td>
               <td class="text-left" v-if="useProcessStepHeaders">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
@@ -112,12 +130,27 @@
                 </router-link>
               </td>
               <td v-for="c in customColumns">
-                <a v-if="!useProcessStepHeaders && c.name === 'Project Name'">
-                  <v-btn text small
-                         :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`">
-                    {{ item['Project Name'] }}
-                  </v-btn>
-                </a>
+                <div v-if="!useProcessStepHeaders && c.name === 'Project Name'"
+                     class="remove-left-margin"
+                     :class="{'pt-2': item.tags && item.tags.length > 0}">
+                  <a >
+                    <v-btn text small
+                           :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`">
+                      {{ item['Project Name'] }}
+                    </v-btn>
+                  </a>
+                  <div class="chip-container">
+                    <v-chip v-for="(tag, idx) in item.tags"
+                            small
+                            class="mt-1 tag-chip"
+                            :color="tag.bgColor"
+                            :text-color="tag.fontColor"
+                            :close="tag.removable"
+                            :class="{'mb-2': idx === item.tags.length - 1}">
+                      {{tag.tagName}}
+                    </v-chip>
+                  </div>
+                </div>
                   <router-link v-else class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                     {{ getColumnValue(item, c) }}
                   </router-link>
@@ -372,8 +405,6 @@ export default {
         // this.totalItems = data.totalElements
         this.results = data?.data || []
 
-        console.log('first results',this.results[0])
-
         this.noResults = this.results?.length === 0
         this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
 
@@ -394,6 +425,9 @@ export default {
             if('Owning Positions' in this.results[0]) {
               this.queueHasOwningPositions = true
               r.owningPositions = JSON.parse(r['Owning Positions'])
+            }
+            if('tags' in this.results[0]) {
+              r.tags = JSON.parse(r['tags'])
             }
           })
         }
@@ -662,6 +696,22 @@ export default {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.chip-container {
+  //display: flex;
+  //flex-direction: column;
+  display: block;
+  margin-left: 10px;
+}
+
+.tag-chip {
+  display: table;
+  font-weight: 600;
+}
+
+.remove-left-margin {
+  margin-left: -10px;
 }
 
 .wqt-notes-container {

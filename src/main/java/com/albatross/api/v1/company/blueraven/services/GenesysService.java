@@ -243,6 +243,17 @@ public class GenesysService {
 
     getCfvValues(contactMap, values);
     String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
+    // Genesys contact list names that require additional parameters
+    Set<String> genesysAppointmentContactLists = new HashSet<>(Arrays.asList("Sales Dev Retargeted Leads", "Inside Sales Pitched Not Booked"));
+    if (!genesysContactListName.isEmpty()) {
+      if (genesysAppointmentContactLists.contains(genesysContactListName)) {
+        getAppointmentValues(contactId, contactMap);
+      }
+
+      if (genesysContactListName.equals("Inside Sales Pitched Not Booked")) {
+        getPitchedNotBookedValues(contactId, contactMap);
+      }
+    }
 
     String leadLevel = (String) contactMap.remove("lead_level");
     if (leadLevel.equals("20")) {
@@ -318,6 +329,56 @@ public class GenesysService {
         sqlCache.queryForObjectOptional(
             "contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
     return customFieldDropdownValueId.orElse("null");
+  }
+
+  private void getAppointmentValues(Long contactId, HashMap<String, Object> contactMap) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    Optional<String> appointmentDate =
+      sqlCache.get(
+        "genesys.getContactAppointmentDate",
+        params,
+        new SingleColumnRowMapper<>(String.class));
+
+    if (appointmentDate.isPresent()) {
+      contactMap.put("Appointment Date", appointmentDate.get());
+    }
+    else {
+      contactMap.put("Appointment Date", "");
+    }
+
+    Optional<String> appointmentOutcome =
+      sqlCache.get(
+        "genesys.getContactCloserAppointmentOutcome",
+        params,
+        new SingleColumnRowMapper<>(String.class));
+
+    if (appointmentOutcome.isPresent()) {
+      contactMap.put("Appointment Outcome", appointmentOutcome.get());
+    }
+    else {
+      contactMap.put("Appointment Outcome", "");
+    }
+  }
+
+  private void getPitchedNotBookedValues(Long contactId, HashMap<String, Object> contactMap) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    Optional<Boolean> pitchedNotBooked =
+      sqlCache.get(
+        "genesys.getContactPitchedNotBooked",
+        params,
+        new SingleColumnRowMapper<>(Boolean.class));
+
+    if (pitchedNotBooked.isPresent()) {
+      contactMap.put("PNB", pitchedNotBooked.get());
+    }
+    else {
+      contactMap.put("PNB", false);
+    }
+
+    contactMap.remove("referral");
+    contactMap.remove("retargeted");
   }
 
   public void updateContact(Long contactId) throws IOException, ApiException {
@@ -749,6 +810,9 @@ public class GenesysService {
 
     contacts = sqlCache.query("genesys.getContactIdsSalDevRetargets", null, Contact.class);
     addContactsToGenesys(contacts, "Sales Dev Retargeted Leads");
+
+    contacts = sqlCache.query("genesys.getContactIdsInsideSalesPitchedNotBooked", null, Contact.class);
+    addContactsToGenesys(contacts, "Inside Sales Pitched Not Booked");
   }
 
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
@@ -809,9 +873,8 @@ public class GenesysService {
   private void addTextelParameters(HashMap<String, Object> contactMap, boolean isUpdate) {
     contactMap.put(
         "messageBody1",
-        "Hello "
-            + contactMap.get("first_name")
-            + ", this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
+        "Hello, "
+            + "this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
     contactMap.put("messageBody2", "Let me know which is better for you!");
     contactMap.put(
         "messageBody3",
@@ -824,14 +887,12 @@ public class GenesysService {
         "Just wanted to check in. We would be more than happy to assist you. Let me know when it’s a good time to talk.");
     contactMap.put(
         "messageBody6",
-        "Hey "
-            + contactMap.get("first_name")
-            + ", we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
+        "Hey, "
+            + " we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
     contactMap.put(
         "messageBody7",
-        "Hi "
-            + contactMap.get("first_name")
-            + ", are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
+        "Hi, "
+            + " are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
     contactMap.put(
         "messageBodyAfterHours",
         "Thank you for your text! We are currently out of office but will reply to your message as soon as we get back in.");

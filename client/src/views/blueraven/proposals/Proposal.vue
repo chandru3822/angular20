@@ -29,8 +29,7 @@
                             @input="handleNameChange" />
 
           </v-toolbar-title>
-          <!--          <v-chip small color="brBlue" dark class="ml-2 text-uppercase">Primary</v-chip>-->
-          <v-chip v-if="proposal.locked" small color="red" dark class="ml-2 text-uppercase">
+          <v-chip v-if="proposal.locked" small color="error" dark class="ml-2 text-uppercase">
             <v-icon small>mdi-lock</v-icon>
             Locked
           </v-chip>
@@ -72,6 +71,7 @@
             </div>
             <div class="configuration-save-container" v-if="!proposal.locked">
               <v-btn depressed
+                     color="white"
                      :disabled="dirtyCfvs.length === 0"
                      class="text-capitalize"
                      @click="resetToDefault"
@@ -111,17 +111,20 @@
                 <div class="proposal-title">Proposal <span>#{{ proposal.proposalNbr }}</span></div>
                 <v-spacer />
                 <v-btn v-if="proposal && !proposal.locked"
+                       color="grey lighten-4"
                        class="proposal-container-buttons text-capitalize"
                        @click="deleteProposal">
                   Delete
                 </v-btn>
                 <v-btn v-if="pages && pages.length"
+                       color="grey lighten-4"
                        class="proposal-container-buttons text-capitalize"
                        :disabled="dirtyCfvs.length > 0"
                        @click="duplicate">
                   Duplicate
                 </v-btn>
                 <v-btn v-if="pages && pages.length"
+                       color="grey lighten-4"
                        :disabled="dirtyCfvs.length > 0"
                        class="proposal-container-buttons text-capitalize"
                        @click="downloadPdf">
@@ -428,7 +431,7 @@ export default {
             URL.revokeObjectURL(pdfFile)
           }, 100)
 
-          this.$snackbar('INFO', 'Proposal Downloaded')
+          this.$snackbar('SUCCESS', 'Proposal Downloaded')
         }
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)

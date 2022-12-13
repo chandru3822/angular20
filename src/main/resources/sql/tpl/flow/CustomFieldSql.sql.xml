@@ -104,7 +104,7 @@ order by s.state
   ]]></customFieldSql.brs.ahjSpecificInstallationRequirements>
 
   <customFieldSql.brs.designLogBomValue><![CDATA[
-      select bom as text_value
+      select jsonb_pretty(bom::jsonb) as text_value
       from brs.design_log_history dlh
       where project_id = :projectId
       and id = (

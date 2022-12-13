@@ -42,19 +42,23 @@
 </template>
 
 <script>
+/**
+ * The confirmation dialog that should be used throughout the application
+ * @author jkburnett
+ */
 export default {
   name: "ConfirmationDialog",
   props: {
-    openDialog: Boolean,
-    hideTitle:Boolean,
-    retainFocus:Boolean,
-    itemToDelete: Object,
-    disableConfirm: Boolean,
-    hideConfirm: Boolean,
-    confirmClass: String,
-    width: Number,
-    parentClose: Boolean,
-    primaryHeader: Boolean,
+    openDialog: Boolean, //used by parent to open the dialog
+    hideTitle:Boolean, //set true if dialog should not have a title
+    retainFocus:Boolean, //sets retain-focus on v-dialog component
+    itemToDelete: Object, // @deprecated
+    disableConfirm: Boolean, //allows parent to perform validation before allowing user to confirm
+    hideConfirm: Boolean, // hides confirmation btn when only 'close' or 'cancel' is needed
+    confirmClass: String, //allows parent to control appearance of confirmation btn
+    width: Number, //width of the dialog
+    parentClose: Boolean, //set to true when validation needed before closing a dialog on confirm
+    primaryHeader: Boolean, //if set to true, header will have primary color background and white text instead of vice versa
   },
   data() {
     return {

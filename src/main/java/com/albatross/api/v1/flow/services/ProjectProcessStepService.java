@@ -21,6 +21,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -48,6 +49,7 @@ import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 
@@ -469,9 +471,9 @@ public class ProjectProcessStepService {
             ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps, reqs);
             if (actionResult.getCanPerform()) {
               performedActions.add(action.getId());
-              List<Long> newPpsIds = this.performAction(action, updatedPps, performedActions);
-              if (!newPpsIds.isEmpty()) {
-                createdPpsIds.addAll(newPpsIds);
+              PpsActionResult ppsActionResult = this.performAction(action, updatedPps, performedActions);
+              if (!ppsActionResult.getPpsIds().isEmpty()) {
+                createdPpsIds.addAll(ppsActionResult.getPpsIds());
               }
               actionsWerePerformed = true;
             }
@@ -514,7 +516,7 @@ public class ProjectProcessStepService {
   }
 
   @Transactional
-  public List<Long> performAction(ProcessStepAction action, ProjectProcessStep pps, List<Long> performedActions) {
+  public PpsActionResult performAction(ProcessStepAction action, ProjectProcessStep pps, List<Long> performedActions) {
     /*
      * transaction all queries so current state is kept on any errors
      * Performance will be key here as it will be hit a lot and business logic will grow
@@ -522,6 +524,7 @@ public class ProjectProcessStepService {
 
     var runStatusTriggers = false;
     var childFunctionsRan = false;
+    PpsActionResult actionResult = new PpsActionResult();
 
     User user = securityService.getCurrentUser();
     //update process step status if needed
@@ -540,7 +543,7 @@ public class ProjectProcessStepService {
       this.setProjectStatus(pps.getProjectId(), action.getCompanyProjectStatusTypeId());
     }
 
-    childFunctionsRan = performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
+    actionResult = performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
 
     //sends sms to contact if any are present in the configs
     performSmsTemplates(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getContactId());
@@ -556,7 +559,7 @@ public class ProjectProcessStepService {
       "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.trueUserId(), "allowMultipleUses", action.getMultipleUses()));
 
     //run autotriggers on parent pps if any functions were performed
-    if (childFunctionsRan) {
+    if (actionResult.getShouldRunAutoTriggers()) {
       this.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
     }
 
@@ -589,7 +592,8 @@ public class ProjectProcessStepService {
       }
     }
 
-    return createdPps.stream().map(step -> Long.parseLong(step.get("ppsId").toString())).toList();
+    actionResult.setPpsIds(createdPps.stream().map(step -> Long.parseLong(step.get("ppsId").toString())).toList());
+    return actionResult;
   }
 
   public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
@@ -1087,9 +1091,16 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public Boolean performChildFunctions(Long actionId, Long ppsId, Long processStepId, Long projectId) {
+  @Data public static class PpsActionResult {
+    private Boolean shouldRunAutoTriggers;
+    private AtomicBoolean shouldRunProjectTagUpdate;
+    private List<Long> ppsIds = new ArrayList<>();
+  }
+
+  public PpsActionResult performChildFunctions(Long actionId, Long ppsId, Long processStepId, Long projectId) {
     var shouldRunAutoTriggers = false;
     List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
+    AtomicBoolean doProjectTagUpdate = new AtomicBoolean(false);
     childFunctions.forEach(childFunction -> {
       try {
         if (childFunction.getRunInBackend()) {
@@ -1116,9 +1127,13 @@ public class ProjectProcessStepService {
             // @TODO: Add company IDs here during onboarding
           }
         } else {
+          if(childFunction.getFunctionName().equals("flow.assign_tag_to_project")) {
+            doProjectTagUpdate.set(true);
+          }
           String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, null));
           String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
           sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
+
         }
       } catch (InvocationTargetException e) {
         throw new RuntimeException(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", childFunction.getId(), actionId, ppsId, e.getCause().getMessage()));
@@ -1131,7 +1146,11 @@ public class ProjectProcessStepService {
       shouldRunAutoTriggers = true;
     }
 
-    return shouldRunAutoTriggers;
+    PpsActionResult results = new PpsActionResult();
+    results.setShouldRunAutoTriggers(shouldRunAutoTriggers);
+    results.setShouldRunProjectTagUpdate(doProjectTagUpdate);
+//    return shouldRunAutoTriggers;
+    return results;
   }
 
   public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId, Long ppsEventId) throws Exception {

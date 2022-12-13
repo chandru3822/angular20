@@ -61,7 +61,7 @@ public class ContactLeadService {
     params.put("companyId", 3);
     params.put("createdById", currentUser.trueUserId());
     UserPosition userPrimaryPosition =
-        userPositionService.getUserPrimaryPosition(currentUser.getId());
+        userPositionService.getUserPrimaryPosition(currentUser.getId(), 3L);
     params.put(
         "ownerUserPositionId",
         null == userPrimaryPosition || null == userPrimaryPosition.getId()
