@@ -72,6 +72,15 @@ public class BaseSqlCache {
     return generatedKeyHolder.getKey();
   }
 
+  public Number updateBySqlReturningId(String sql, Map<String, Object> params, String keyColumn) {
+    MapSqlParameterSource paramSource = new MapSqlParameterSource(params);
+
+    GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+    jdbc.update(sql, paramSource, generatedKeyHolder, new String[]{keyColumn});
+
+    return generatedKeyHolder.getKey();
+  }
+
   public <T> T queryForObject(String key, Map<String, Object> params, Class<T> elementType) {
     MapSqlParameterSource paramSource = scrubParams(params);
     String sql = getByKey(key);
@@ -162,8 +171,7 @@ public class BaseSqlCache {
     }
   }
 
-  public <T> Optional<T> get(
-    String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
+  public <T> Optional<T> get(String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
     return getBySql(sql, params, elementType);
   }
