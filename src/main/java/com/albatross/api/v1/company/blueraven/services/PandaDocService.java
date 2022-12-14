@@ -612,6 +612,36 @@ public class PandaDocService {
       tokens.put("Deal.Loan Term", result.get("custom_fields.Loan Term"));
       tokens.put("Deal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
 
+      // New params format, keeping the Deal. params until all templates are updated with the new parameter names
+      tokens.put(
+        "Proposal.Yearly Solar Production",
+        result.get("custom_fields.1st Year Production Estimate (kWh)"));
+      tokens.put("Project.Estimated ITC", result.get("custom_fields.Estimated ITC"));
+      tokens.put(
+        "Project.Estimated State Tax Credit",
+        result.get("custom_fields.Estimated State Tax Credit"));
+      tokens.put(
+        "Project.Referral Promotion Amount", result.get("custom_fields.Referral Promotion Amount"));
+      tokens.put("Proposal.Panel Brand", result.get("custom_fields.Panel Brand"));
+      tokens.put("Proposal.Inverter Brand", result.get("custom_fields.Inverter Brand"));
+      tokens.put(
+        "Proposal.Notice of Cancellation Deadline",
+        result.get("custom_fields.Notice of Cancellation Deadline"));
+      tokens.put(
+        "Project.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
+      tokens.put("Proposal.System Size", result.get("custom_fields.System Size"));
+      tokens.put(
+        "Proposal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
+      tokens.put(
+        "Proposal.Annual Utility Usage (kWh)",
+        result.get("custom_fields.Annual Utility Usage (kWh)"));
+      tokens.put(
+        "Proposal.Pre-Solar Cost per kWh ($)",
+        result.get("custom_fields.Pre-Solar Cost per kWh ($)"));
+      tokens.put("Proposal.Interest Rate", result.get("custom_fields.Interest Rate"));
+      tokens.put("Proposal.Loan Term", result.get("custom_fields.Loan Term"));
+      tokens.put("Proposal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
+
       Double totalCost =
           Double.parseDouble(
               result.get("custom_fields.Total Cost") == null
@@ -623,24 +653,29 @@ public class PandaDocService {
                   ? "0"
                   : result.get("custom_fields.Referral Promotion Amount").toString());
       tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
+      tokens.put("Project.Total System Price", totalCost - referralPromotionAmount);
 
       Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
       if (deets.getFinancier().equals("Cash")) {
         tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+        tokens.put("Proposal.NV Cash Down Payment", Math.round(cashDownPayment));
         Double progressPayment = ((totalCost - referralPromotionAmount) / 2);
         tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+        tokens.put("Proposal.NV Progress Payment", Math.round(progressPayment));
       } else {
         cashDownPayment =
             Double.min(
                 cashDownPayment,
                 Double.parseDouble(result.get("custom_fields.Total Cash Down Payment").toString()));
         tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+        tokens.put("Proposal.NV Cash Down Payment", Math.round(cashDownPayment));
         Double progressPayment =
             Double.parseDouble(
                 result.get("custom_fields.Total Cash Down Payment") == null
                     ? "0"
                     : result.get("custom_fields.Total Cash Down Payment").toString());
         tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+        tokens.put("Proposal.NV Progress Payment", Math.round(progressPayment));
       }
     } catch (EmptyResultDataAccessException e) {
       log.warn("PANDADOC Error getting proposal log values", e);
@@ -664,8 +699,30 @@ public class PandaDocService {
     tokens.put("Deal.Address.StateAbbr", deets.getMailingState());
     tokens.put("Deal.Address.PostalCode", deets.getPostalCode());
 
+    // New params format, keeping the Deal. params until all templates are updated with the new parameter names
+    tokens.put("Project.Id", deets.getProjectId());
+    tokens.put("Project.Name", deets.getProjectName());
+    tokens.put("Project.Address", getContactAddress(deets));
+    tokens.put(
+      "Project.Contact Name", deets.getCustomerFirstName() + " " + deets.getCustomerLastName());
+    tokens.put("Project.Email", deets.getCustomerEmail());
+
+    // use the customer's mobile phone if their landline is not present
+    tokens.put("Project.MobilePhone", deets.getPhone());
+
+    // make bits of the customer's address usable individually
+    tokens.put("Project.Address.State", deets.getState());
+    tokens.put("Project.Address.Street", street);
+    tokens.put("Project.Address.City", deets.getCity());
+    tokens.put("Project.Address.StateAbbr", deets.getMailingState());
+    tokens.put("Project.Address.PostalCode", deets.getPostalCode());
+
     if (!tokens.has("Deal.Proposal Number")) {
       tokens.put("Deal.Proposal Number", deets.getProposalNbr());
+    }
+
+    if (!tokens.has("Proposal.Proposal Number")) {
+      tokens.put("Proposal.Proposal Number", deets.getProposalNbr());
     }
 
     // include the current date for use in the template
@@ -673,6 +730,26 @@ public class PandaDocService {
         ZonedDateTime.now(ZoneId.of("US/Mountain"))
             .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
     tokens.put("Date", today);
+
+    // New params format:
+    Double federalTaxCredit =
+      Double.parseDouble(
+        deets.getItc() == null
+          ? "0"
+          : deets.getItc());
+
+    Double netSystemCost =
+      Double.parseDouble(
+        deets.getSystemCost() == null
+          ? "0"
+          : deets.getSystemCost());
+    tokens.put("Proposal.Total System Cost", deets.getTotalCost());
+    tokens.put("Proposal.Solar Rebate", deets.getSolarRebate());
+    tokens.put("Proposal.Optional Loan Down Payment", deets.getOptionalDownPayment());
+    tokens.put("Proposal.Federal Tax Credit", Math.round(federalTaxCredit));
+    tokens.put("Proposal.State Incentive", deets.getStateTaxCredit());
+    tokens.put("Proposal.Payment Amount", deets.getLoanAmount());
+    tokens.put("Proposal.Net System Cost", Math.round(netSystemCost));
 
     return tokens;
   }
@@ -730,9 +807,52 @@ public class PandaDocService {
       tokens.put("Deal.Address.PostalCode", result.get("postal_code"));
       tokens.put("Deal.1st Year Production Estimate (kWh)", result.get("year_1_kwh_output"));
       tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
-      tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
+      tokens.put("Deal.Total Cash Down Payment", result.get("optional_down_payment"));
       tokens.put("Deal.System Size", result.get("system_size"));
       tokens.put("Deal.Estimated ITC", result.get("estimated_itc"));
+
+      // New params format:
+      tokens.put("Project.Id", result.get("id"));
+      tokens.put("Project.Name", result.get("project_name"));
+      tokens.put(
+        "Project.Contact.Address",
+        joinIfPresent(
+          ", ",
+          result.get("street1"),
+          result.get("street2"),
+          result.get("city"),
+          result.get("state"),
+          result.get("postal_code")));
+      tokens.put(
+        "Project.Address",
+        joinIfPresent(
+          ", ",
+          result.get("street1"),
+          result.get("street2"),
+          result.get("city"),
+          result.get("state"),
+          result.get("postal_code")));
+      tokens.put("Project.Contact.FirstName", result.get("first_name"));
+      tokens.put("Project.Contact.LastName", result.get("last_name"));
+      tokens.put("Project.Contact.Name", result.get("first_name") + " " + result.get("last_name"));
+      tokens.put("Project.Contact.Email", result.get("email"));
+      tokens.put("Project.Email", result.get("email"));
+
+      // use the customer's mobile phone if their landline is not present
+      tokens.put("Project.Contact.MobilePhone", result.get("phone"));
+      tokens.put("Project.Contact.Phone", result.get("phone"));
+
+      // make bits of the customer's address usable individually
+      tokens.put("Project.Address.State", result.get("state"));
+      tokens.put("Project.Address.Street", street);
+      tokens.put("Project.Address.City", result.get("city"));
+      tokens.put("Project.Address.StateAbbr", result.get("abbreviation"));
+      tokens.put("Project.Address.PostalCode", result.get("postal_code"));
+      tokens.put("Proposal.Yearly Solar Production", result.get("year_1_kwh_output"));
+      tokens.put("Project.Referral Promotion Amount", result.get("referral_promotion_amount"));
+      tokens.put("Proposal.Optional Loan Down Payment", result.get("optional_down_payment"));
+      tokens.put("Proposal.System Size", result.get("system_size"));
+      tokens.put("Project.Estimated ITC", result.get("estimated_itc"));
 
       Double totalSystemPrice =
           Double.parseDouble(
@@ -748,12 +868,17 @@ public class PandaDocService {
       tokens.put(
           "Deal.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
 
+      tokens.put("Project.Total System Price", totalSystemPrice - referralPromotionAmount);
+      tokens.put(
+        "Project.Installation Agreement Signed", result.get("installation_agreement_signed_date"));
+
       Double cashDownPayment =
           Double.parseDouble(
               result.get("cash_down_payment") == null
                   ? "0"
                   : result.get("cash_down_payment").toString());
       tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
+      tokens.put("Proposal.NV Cash Down Payment", Math.round(cashDownPayment));
 
       Double progressPayment =
           Double.parseDouble(
@@ -762,6 +887,7 @@ public class PandaDocService {
                   : result.get("progress_payment").toString());
       progressPayment -= cashDownPayment;
       tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
+      tokens.put("Proposal.NV Progress Payment", Math.round(progressPayment));
 
       // include the current date for use in the template
       String today =

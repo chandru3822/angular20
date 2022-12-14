@@ -14,8 +14,8 @@ public class PandaDocProjectDetails {
     private String closerFirstName, closerLastName, closerEmail;
     private String customerFirstName, customerLastName, customerEmail;
     private String mailingState, city, phone, postalCode, mailingStreet1, mailingStreet2, country,
-        projectName, totalCashDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
-        loanTerm, interestRate, loanType, loanAmount;
+        projectName, optionalDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
+        loanTerm, interestRate, loanType, loanAmount, totalCost, solarRebate, itc, stateTaxCredit, systemCost;
 
     public String getTemplateName(Boolean isSpanish, String genericName) {
         StringJoiner sj = new StringJoiner("_");

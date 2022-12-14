@@ -23,7 +23,7 @@
               case when cy.country is null then 'United States' else cy.country end,
               p.project_name,
               cp.company_id,
-              plh.optional_down_payment as total_cash_down_payment,
+              plh.optional_down_payment,
               round(plh.system_size::numeric/1000,2) as system_size,
               round(plh.optional_down_payment::numeric * 0.5, 2) as first_cash_payment_amount,
               pd.total_system_price,
@@ -31,7 +31,12 @@
               plh.interest_rate,
               plh.loan_term,
               plh.loan_type,
-              plh.loan_amount
+              plh.loan_amount,
+              plh.total_cost,
+              (plh.down_payment_above_line_incentive::numeric - plh.optional_down_payment::numeric) as solar_rebate,
+              plh.itc,
+              plh.state_tax_credit,
+              (plh.loan_amount::numeric - plh.itc::numeric - plh.state_tax_credit::numeric) as system_cost
             FROM flow.project p
                    JOIN brs.project_details pd on p.id = pd.project_id
                    JOIN brs.proposal_log_history plh on p.id = plh.project_id
