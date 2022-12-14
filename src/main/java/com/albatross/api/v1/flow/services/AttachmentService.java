@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
@@ -444,7 +445,7 @@ public class AttachmentService {
     s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", cleanFilename(file.getOriginalFilename()));
+    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
@@ -461,15 +462,6 @@ public class AttachmentService {
     }
 
     return findById(attachmentId);
-  }
-
-  private String cleanFilename(String filename) {
-    if (filename == null) {
-      return null;
-    }
-    String cleanFilename = filename.replace(",", "");
-    cleanFilename = cleanFilename.replace("’", "'");
-    return cleanFilename;
   }
 
   public void addToJoinTable(

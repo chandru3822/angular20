@@ -20,6 +20,8 @@ public class CleanString {
     }
     String cleanFilename = filename.replace(",", "");
     cleanFilename = cleanFilename.replace("’", "'");
+    cleanFilename = cleanFilename.replace("“", "\"");
+    cleanFilename = cleanFilename.replace("”", "\"");
     return cleanFilename;
   }
 
