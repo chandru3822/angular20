@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Deprecated
 public class SmartlistService {
 
   private final SecurityService securityService;

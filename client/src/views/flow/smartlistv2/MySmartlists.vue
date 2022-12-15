@@ -41,13 +41,11 @@
               <td>
                 <v-icon>mdi-share-variant</v-icon>
               </td>
-              <td>
+              <td @click.stop="runSmartlist(smartlist)">
                 <v-icon>mdi-tray-arrow-down</v-icon>
               </td>
               <td>
-                <v-icon
-                  @click.stop="[deletingSmartlistId = smartlist.id, showDeleteDialog = true]"
-                >mdi-delete</v-icon>
+                <v-icon @click.stop="[deletingSmartlistId = smartlist.id, showDeleteDialog = true]">mdi-delete</v-icon>
               </td>
             </tr>
           </template>
@@ -71,6 +69,8 @@ import { ref, onMounted, getCurrentInstance } from 'vue'
 import { getRequest, logError, getSnackbar, deleteRequest, handleHidingGlobalLoader } from '@/helpers/helpers'
 import { AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from '@/ConfirmationDialog'
+import { DateTime } from 'luxon'
+import { saveAs } from 'file-saver'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
@@ -127,6 +127,24 @@ let deleteSmartlist = async () => {
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     deletingSmartlistId.value = null
     showDeleteDialog.value = false
+  }
+}
+
+let runSmartlist = async(smartlist) => {
+
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    const {data, status} = await getRequest(`/smartlist/${smartlist.id}/csv`)
+    let blob = new Blob([data], {
+      type: 'text/csv;charset=utf-8'
+    })
+    saveAs(blob, `${smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    store.commit(AppMutations.SET_LOADING, false)
+    const snackbar = getSnackbar('ERROR', e.data.message)
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    logError(e)
   }
 }
 </script>

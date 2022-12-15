@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.smartlist.SmartlistResult;
 import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
 import com.albatross.api.v1.flow.services.SmartlistServicev2;
 import lombok.RequiredArgsConstructor;
@@ -7,9 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -29,5 +29,14 @@ public class SmartlistControllerv2 {
   @GetMapping(value = "/public", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlistv2>> getPublicSmartlists() {
     return new ResponseEntity<>(smartlistServicev2.getPublic(), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{smartlistId}/export", produces = "text/csv")
+  public ResponseEntity<String> exportSmartlist(@PathVariable Long smartlistId, @RequestParam(required = false) String timezone) {
+    try {
+      return new ResponseEntity<>(smartlistServicev2.export(smartlistId, timezone), HttpStatus.OK);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export smartlist", e);
+    }
   }
 }
