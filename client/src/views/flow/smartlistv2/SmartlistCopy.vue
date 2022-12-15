@@ -4,7 +4,7 @@
 
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
-import { getSnackbar, handleHidingGlobalLoader, logError, postRequest } from '@/helpers/helpers'
+import { getSnackbar, logError, postRequest } from '@/helpers/helpers'
 import { getCurrentInstance } from 'vue'
 
 const props = defineProps({
@@ -21,17 +21,18 @@ const store = vueInstance.$store
 
 
 let copySmartlist = async () => {
+
+  let snackbar
+
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const {data, status} = await postRequest(`/smartlistv2/${props.smartlist.id}/copy`)
-    const snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    handleHidingGlobalLoader(vueInstance, status)
-    //@TODO: hand smartlist back to parent
+    const {data} = await postRequest(`/smartlistv2/${props.smartlist.id}/copy`)
+    snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
     emit('copied', data)
   } catch (e) {
     logError(e)
-    const snackbar = getSnackbar('ERROR', 'Error duplicating smartlist')
+    snackbar = getSnackbar('ERROR', 'Error duplicating smartlist')
+  } finally {
     store.commit(AppMutations.SET_LOADING, false)
     store.commit(AppMutations.SHOW_SNACK, snackbar)
   }

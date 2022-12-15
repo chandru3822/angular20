@@ -4,7 +4,7 @@
 
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
-import { getRequest, getSnackbar, handleHidingGlobalLoader, logError } from '@/helpers/helpers'
+import { getRequest, getSnackbar, logError } from '@/helpers/helpers'
 import { DateTime } from 'luxon'
 import { saveAs } from 'file-saver'
 import { getCurrentInstance } from 'vue'
@@ -23,17 +23,16 @@ let exportSmartlist = async () => {
 
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const {data, status} = await getRequest(`/smartlist/${props.smartlist.id}/csv`)
+    const {data} = await getRequest(`/smartlist/${props.smartlist.id}/csv`)
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'
     })
     saveAs(blob, `${props.smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
-    handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
-    store.commit(AppMutations.SET_LOADING, false)
-    const snackbar = getSnackbar('ERROR', e.data.message)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
     logError(e)
+    store.commit(AppMutations.SHOW_SNACK, getSnackbar('ERROR', e.data.message))
+  } finally {
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 </script>

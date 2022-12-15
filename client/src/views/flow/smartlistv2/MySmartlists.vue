@@ -48,7 +48,10 @@
                 <smartlist-export :smartlist="smartlist" />
               </td>
               <td>
-                <v-icon @click.stop="[deletingSmartlistId = smartlist.id, showDeleteDialog = true]">mdi-delete</v-icon>
+                <smartlist-delete
+                  :smartlist-id="smartlist.id"
+                  @deleted="smartlists = smartlists.filter(s => s.id !== smartlist.id)"
+                />
               </td>
             </tr>
           </template>
@@ -74,6 +77,7 @@ import { AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from '@/ConfirmationDialog'
 import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
+import SmartlistDelete from '@/views/flow/smartlistv2/SmartlistDelete.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
