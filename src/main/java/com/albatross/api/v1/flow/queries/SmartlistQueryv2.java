@@ -167,4 +167,27 @@ public class SmartlistQueryv2 {
           cot.company_id = :companyId and
           s.archived is not true
   """;
+
+  //language=PostgreSQL
+  public final static String create = """
+    insert into flow.smartlist (name, company_object_type_id, public, owner_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
+    values (:name, :companyObjectTypeId, :public, :ownerId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
+    returning id;
+  """;
+
+  //language=PostgreSQL
+  public final static String copyAssignedFields = """
+    insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified, process_step_event_id)
+    select :newId, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, :userId, now(),  :userId, now(), process_step_event_id
+    from flow.smartlist_field_assignment
+    where smartlist_id = :oldId and archived is not true
+  """;
+
+  //language=PostgreSQL
+  public final static String copyRequirements = """
+    insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, created_by_id, date_created, modified_by_id, date_modified, process_step_event_id)
+    select :newId, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, :userId, now(), :userId, now(), process_step_event_id
+    from flow.smartlist_requirement
+    where smartlist_id = :oldId and archived is not true
+  """;
 }

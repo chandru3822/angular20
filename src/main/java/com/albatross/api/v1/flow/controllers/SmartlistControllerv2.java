@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistResult;
 import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
 import com.albatross.api.v1.flow.services.SmartlistServicev2;
@@ -38,5 +39,10 @@ public class SmartlistControllerv2 {
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export smartlist", e);
     }
+  }
+
+  @PostMapping(value = "/{smartlistId}/copy")
+  public ResponseEntity<Smartlistv2> copySmartlist(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistServicev2.copy(smartlistId), HttpStatus.OK);
   }
 }

@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
+import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,6 +26,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
@@ -55,7 +57,7 @@ public class SmartlistServicev2 {
   public Smartlistv2 getById(Long id) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
-    Smartlistv2 smartlist = sqlCache.get("smartlistv2.getById", params, new SmartlistServicev2.SmartlistMapper<>(Smartlistv2.class, om))
+    Smartlistv2 smartlist = sqlCache.getBySql(SmartlistQueryv2.getById, params, new SmartlistServicev2.SmartlistMapper<>(Smartlistv2.class, om))
                                     .orElse(null);
 
     if (smartlist != null) {
@@ -330,6 +332,43 @@ public class SmartlistServicev2 {
       defaultFields.add(noteCreatedAt);
     }
     return defaultFields;
+  }
+
+  @Transactional
+  public Smartlistv2 copy(Long smartlistId) {
+
+    User user = securityService.getCurrentUser();
+    Smartlistv2 smartlist = getById(smartlistId);
+
+    if (smartlist.getId() == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No smartlist with given ID", new RuntimeException());
+    }
+
+    long copyNumber = 0L;
+    String newName;
+    boolean unique;
+
+    do {
+      newName = String.format("%s (%s)", smartlist.getName(), ++copyNumber);
+      unique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", newName, "companyId", user.getCompanyId()), Boolean.class);
+    } while (!unique);
+
+    Smartlistv2 newSmartlist = new Smartlistv2();
+    newSmartlist.setName(newName);
+    newSmartlist.setCompanyObjectTypeId(smartlist.getCompanyObjectTypeId());
+    newSmartlist.setPublic(smartlist.isPublic());
+    newSmartlist.setMainProcessSteps(smartlist.isMainProcessSteps());
+    newSmartlist.setProjectDetails(smartlist.isProjectDetails());
+
+    HashMap<String, Object> params = om.convertValue(newSmartlist, HashMap.class);
+    params.put("ownerId", user.getId());
+    params.put("createdById", user.getId());
+    Long newSmartlistId = sqlCache.updateBySqlReturningId(SmartlistQueryv2.create, params, "id").longValue();
+
+    sqlCache.updateBySql(SmartlistQueryv2.copyAssignedFields, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
+    sqlCache.updateBySql(SmartlistQueryv2.copyRequirements, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
+
+    return getById(newSmartlistId);
   }
 
   public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {
