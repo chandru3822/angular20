@@ -25,7 +25,6 @@ public class SmartlistQueryv2 {
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
-    left join flow.object_type ot1 on ot1.id = s.view_object_type_id
     inner join flow.user u on u.id = s.owner_id
     where
       cot.company_id = :companyId and
@@ -57,7 +56,6 @@ public class SmartlistQueryv2 {
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
-    left join flow.object_type ot1 on ot1.id = s.view_object_type_id
     inner join flow.user u on u.id = s.owner_id
     where
       cot.company_id = :companyId and
@@ -85,7 +83,6 @@ public class SmartlistQueryv2 {
       s.primary_user_position,
       ot.object_type,
       cot.object_type_id,
-      ot1.object_type as view_object_type,
       concat(u.first_name, ' ', u.last_name) as owner,
       coalesce((
        select array_to_json(array_agg(row_to_json(eventWorkQueueTypes)))
@@ -161,7 +158,6 @@ public class SmartlistQueryv2 {
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
-    left join flow.object_type ot1 on ot1.id = s.view_object_type_id
     inner join flow.user u on u.id = s.owner_id
     where s.id = :smartlistId and
           cot.company_id = :companyId and
