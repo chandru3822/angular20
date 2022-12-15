@@ -36,7 +36,7 @@
               <td class="text-left">{{ smartlist.name }}</td>
               <td class="text-left">{{ smartlist.owner }}</td>
               <td>
-                <v-icon>mdi-content-copy</v-icon>
+                <smartlist-export :smartlist="smartlist" />
               </td>
               <td>
                 <v-icon>mdi-tray-arrow-down</v-icon>
@@ -51,9 +51,8 @@
 
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
-import { getRequest, logError, getSnackbar, deleteRequest, handleHidingGlobalLoader } from '@/helpers/helpers'
-import { AppMutations} from '@/stores/AppStore'
-import ConfirmationDialog from '@/ConfirmationDialog'
+import { getRequest, logError } from '@/helpers/helpers'
+import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]

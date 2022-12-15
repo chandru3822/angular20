@@ -31,6 +31,7 @@ public class SmartlistQueryv2 {
       s.owner_id = :userId and
       s.archived is not true and
       s.work_queue_type_id is null
+    order by s.name, s.date_modified desc
     """;
 
   //language=PostgreSQL
@@ -62,6 +63,7 @@ public class SmartlistQueryv2 {
       s.public and
       s.archived is not true and
       s.work_queue_type_id is null
+    order by s.name, s.date_modified desc
     """;
 
   //language=PostgreSQL
