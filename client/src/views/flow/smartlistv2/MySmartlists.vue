@@ -35,8 +35,11 @@
             <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
               <td class="text-left">{{ smartlist.name }}</td>
               <td class="text-left">{{ smartlist.owner }}</td>
-              <td @click.stop="copySmartlist(smartlist)">
-                <v-icon>mdi-content-copy</v-icon>
+              <td>
+                <smartlist-copy
+                  :smartlist="smartlist"
+                  @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
+                />
               </td>
               <td>
                 <v-icon>mdi-share-variant</v-icon>
@@ -70,6 +73,7 @@ import { getRequest, logError, getSnackbar, deleteRequest, handleHidingGlobalLoa
 import { AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from '@/ConfirmationDialog'
 import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
+import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
@@ -126,22 +130,6 @@ let deleteSmartlist = async () => {
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     deletingSmartlistId.value = null
     showDeleteDialog.value = false
-  }
-}
-
-let copySmartlist = async (smartlist) => {
-  try {
-    store.commit(AppMutations.SET_LOADING, true)
-    const {data, status} = await postRequest(`/smartlistv2/${smartlist.id}/copy`)
-    const snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    handleHidingGlobalLoader(vueInstance, status)
-    smartlists.value = [data, ...smartlists.value]
-  } catch (e) {
-    logError(e)
-    const snackbar = getSnackbar('ERROR', 'Error duplicating smartlist')
-    store.commit(AppMutations.SET_LOADING, false)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
 }
 </script>

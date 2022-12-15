@@ -350,7 +350,7 @@ public class SmartlistServicev2 {
 
     do {
       newName = String.format("%s (%s)", smartlist.getName(), ++copyNumber);
-      unique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", newName, "companyId", user.getCompanyId()), Boolean.class);
+      unique = sqlCache.queryForObjectBySql(SmartlistQueryv2.isNameUnique, Map.of("name", newName, "companyId", user.getCompanyId()), Boolean.class);
     } while (!unique);
 
     Smartlistv2 newSmartlist = new Smartlistv2();

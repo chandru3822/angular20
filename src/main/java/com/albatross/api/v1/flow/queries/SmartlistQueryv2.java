@@ -188,4 +188,14 @@ public class SmartlistQueryv2 {
     from flow.smartlist_requirement
     where smartlist_id = :oldId and archived is not true
   """;
+
+  //language=PostgreSQL
+  public final static String isNameUnique = """
+    select case when count(1) > 0 then false else true end
+    from flow.smartlist s
+    inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+    where lower(s.name) = lower(:name::text) and
+    cot.company_id = :companyId and
+    s.archived is not true
+  """;
 }

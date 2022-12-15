@@ -36,10 +36,10 @@
               <td class="text-left">{{ smartlist.name }}</td>
               <td class="text-left">{{ smartlist.owner }}</td>
               <td>
-                <smartlist-export :smartlist="smartlist" />
+                <smartlist-copy :smartlist="smartlist" />
               </td>
               <td>
-                <v-icon>mdi-tray-arrow-down</v-icon>
+                <smartlist-export :smartlist="smartlist" />
               </td>
             </tr>
           </template>
@@ -53,6 +53,7 @@
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
+import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
