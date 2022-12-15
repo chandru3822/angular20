@@ -8,7 +8,6 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
-import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -81,7 +80,14 @@ public class SmartlistServicev2 {
 
   public List<Smartlistv2> getPublic() {
     User user = securityService.getCurrentUser();
-    return sqlCache.queryBySql(SmartlistQueryv2.getPublic, Map.of("companyId", user.getCompanyId()), Smartlistv2.class);
+    Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
+    return sqlCache.queryBySql(SmartlistQueryv2.getPublic, params, Smartlistv2.class);
+  }
+
+  public List<Smartlistv2> getAll() {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = Map.of("companyId", user.getCompanyId());
+    return sqlCache.queryBySql(SmartlistQueryv2.getAll, params, Smartlistv2.class);
   }
 
   private void saveError(Smartlistv2 smartlist, String query, List<SmartlistFieldAssignment> fields, Exception e) {

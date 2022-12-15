@@ -60,7 +60,39 @@ public class SmartlistQueryv2 {
     inner join flow.user u on u.id = s.owner_id
     where
       cot.company_id = :companyId and
+      s.owner_id != :userId and
       s.public and
+      s.archived is not true and
+      s.work_queue_type_id is null
+    order by s.name, s.date_modified desc
+    """;
+
+  //language=PostgreSQL
+  public final static String getAll = """
+    select
+      s.id,
+      s.name,
+      s.company_object_type_id,
+      s.public "isPublic",
+      s.owner_id,
+      s.date_created,
+      s.date_modified,
+      s.created_by_id,
+      s.modified_by_id,
+      s.archived,
+      s.main_process_steps,
+      s.project_details,
+      s.work_queue_type_id,
+      s.primary_user_position,
+      ot.object_type,
+      cot.object_type_id,
+      concat(u.first_name, ' ', u.last_name) "owner"
+    from flow.smartlist s
+    inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+    inner join flow.object_type ot on ot.id = cot.object_type_id
+    inner join flow.user u on u.id = s.owner_id
+    where
+      cot.company_id = :companyId and
       s.archived is not true and
       s.work_queue_type_id is null
     order by s.name, s.date_modified desc

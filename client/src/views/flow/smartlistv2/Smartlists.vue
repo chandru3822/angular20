@@ -15,7 +15,7 @@
           <v-tab :to="'/smartlistv2/mine'">My Smartlists</v-tab>
           <v-tab :to="'/smartlistv2/shared'">Shared with Me</v-tab>
           <v-tab :to="'/smartlistv2/public'">Public Smartlists</v-tab>
-          <v-tab>All Smartlists</v-tab>
+          <v-tab :to="'/smartlistv2/all'">All Smartlists</v-tab>
         </v-tabs>
       </v-col>
     </v-row>

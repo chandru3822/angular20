@@ -1,5 +1,5 @@
 <template>
-  <v-container id="public-smartlists">
+  <v-container id="all-smartlists">
     <v-row>
       <v-col cols="12">
         <v-card flat class="square-card pb-3 px-3" color="white">
@@ -36,10 +36,22 @@
               <td class="text-left">{{ smartlist.name }}</td>
               <td class="text-left">{{ smartlist.owner }}</td>
               <td>
-                <smartlist-copy :smartlist="smartlist" />
+                <smartlist-copy
+                  :smartlist="smartlist"
+                  @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
+                />
+              </td>
+              <td>
+                <v-icon>mdi-share-variant</v-icon>
               </td>
               <td>
                 <smartlist-export :smartlist="smartlist" />
+              </td>
+              <td>
+                <smartlist-delete
+                  :smartlist-id="smartlist.id"
+                  @deleted="smartlists = smartlists.filter(s => s.id !== smartlist.id)"
+                />
               </td>
             </tr>
           </template>
@@ -54,6 +66,7 @@ import { ref, onMounted, getCurrentInstance } from 'vue'
 import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
+import SmartlistDelete from '@/views/flow/smartlistv2/SmartlistDelete.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
@@ -63,7 +76,9 @@ const headers = ref([
   {text: 'Name', value: 'name'},
   {text: 'Owner', value: 'owner'},
   {text: 'Duplicate'},
-  {text: 'Export'}
+  {text: 'Share'},
+  {text: 'Export'},
+  {text: 'Delete'}
 ])
 
 const search = ref('')
@@ -79,7 +94,7 @@ onMounted(async () => await getSmartlists())
 let getSmartlists = async () => {
   try {
     isLoading.value = true
-    const {data} = await getRequest(`/smartlistv2/public`)
+    const {data} = await getRequest(`/smartlistv2/all`)
     smartlists.value = data
   } catch (e) {
     logError(e)
@@ -87,7 +102,6 @@ let getSmartlists = async () => {
     isLoading.value = false
   }
 }
-
 </script>
 
 <style scoped lang="scss">

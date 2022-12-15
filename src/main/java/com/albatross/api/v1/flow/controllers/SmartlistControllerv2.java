@@ -32,6 +32,12 @@ public class SmartlistControllerv2 {
     return new ResponseEntity<>(smartlistServicev2.getPublic(), HttpStatus.OK);
   }
 
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADMIN')")
+  @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Smartlistv2>> getAllSmartlists() {
+    return new ResponseEntity<>(smartlistServicev2.getAll(), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/{smartlistId}/export", produces = "text/csv")
   public ResponseEntity<String> exportSmartlist(@PathVariable Long smartlistId, @RequestParam(required = false) String timezone) {
     try {
