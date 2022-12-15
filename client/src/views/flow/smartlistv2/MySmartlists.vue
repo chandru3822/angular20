@@ -58,23 +58,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-
-    <ConfirmationDialog
-      :parent-close="true"
-      :open-dialog="showDeleteDialog"
-      @confirm="deleteSmartlist"
-      @close-dialog="[deletingSmartlistId = null, showDeleteDialog = false]"
-    >
-      Do you want to delete this smartlist?
-    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
-import { getRequest, logError, getSnackbar, deleteRequest, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers'
-import { AppMutations} from '@/stores/AppStore'
-import ConfirmationDialog from '@/ConfirmationDialog'
+import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlistv2/SmartlistDelete.vue'
@@ -94,8 +83,6 @@ const headers = ref([
 
 const search = ref('')
 const isLoading = ref(false)
-const showDeleteDialog = ref(false)
-const deletingSmartlistId = ref(null)
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -113,27 +100,6 @@ let getSmartlists = async () => {
     logError(e)
   } finally {
     isLoading.value = false
-  }
-}
-
-let deleteSmartlist = async () => {
-
-  let snackbar
-
-  try {
-    store.commit(AppMutations.SET_LOADING, true)
-    const {status} = await deleteRequest(`/smartlist/${deletingSmartlistId.value}`)
-    handleHidingGlobalLoader(vueInstance, status)
-    smartlists.value = smartlists.value.filter(s => s.id !== deletingSmartlistId.value)
-    snackbar = getSnackbar('SUCCESS', 'Smartlist Deleted')
-  } catch (e) {
-    logError(e)
-    snackbar = getSnackbar('ERROR', 'Unable to delete smartlist')
-  } finally {
-    store.commit(AppMutations.SET_LOADING, false)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    deletingSmartlistId.value = null
-    showDeleteDialog.value = false
   }
 }
 </script>
