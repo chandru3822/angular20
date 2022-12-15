@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
+import com.albatross.api.v1.flow.queries.SmartlistQueryv2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,11 +25,11 @@ public class SmartlistServicev2 {
   public List<Smartlistv2> getMine() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
-    return sqlCache.query("smartlistv2.getMine", params, Smartlistv2.class);
+    return sqlCache.queryBySql(SmartlistQueryv2.getMine, params, Smartlistv2.class);
   }
 
   public List<Smartlistv2> getPublic() {
     User user = securityService.getCurrentUser();
-    return sqlCache.query("smartlistv2.getPublic", Map.of("companyId", user.getCompanyId()), Smartlistv2.class);
+    return sqlCache.queryBySql(SmartlistQueryv2.getPublic, Map.of("companyId", user.getCompanyId()), Smartlistv2.class);
   }
 }

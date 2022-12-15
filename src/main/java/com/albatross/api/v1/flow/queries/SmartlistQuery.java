@@ -34,7 +34,7 @@ public class SmartlistQuery {
     left join flow.object_type ot1 on ot1.id = s.view_object_type_id
     inner join flow.user u on u.id = s.owner_id
     where cot.company_id = :companyId and
-          (s.owner_id = :userId or s.shared is true) and
+          (s.owner_id = :userId or s.public is true) and
           s.archived is not true and
           s.work_queue_type_id is null
     """;
@@ -125,7 +125,7 @@ public class SmartlistQuery {
         inner join flow.user u on u.id = s.owner_id
         where s.id = :smartlistId and
               cot.company_id = :companyId and
-              (s.owner_id = :userId or s.shared or :canViewAll) and
+              (s.owner_id = :userId or s.public or :canViewAll) and
               s.archived is not true
     """;
 
@@ -137,7 +137,7 @@ public class SmartlistQuery {
       s.name,
       s.company_object_type_id,
       cot.object_type_id,
-      s.shared,
+      s.public "shared",
       s.owner_id,
       s.date_created,
       s.date_modified,
@@ -152,13 +152,13 @@ public class SmartlistQuery {
           s.archived is not true and
           sfa.archived is not true and
           s.view_object_type_id = :objectTypeId and
-          (s.shared is true or s.owner_id = :userId)
+          (s.public is true or s.owner_id = :userId)
     order by s.name
   """;
 
   //language=PostgreSQL
   public final static String add = """
-    insert into flow.smartlist (name, company_object_type_id, shared, owner_id, view_object_type_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
+    insert into flow.smartlist (name, company_object_type_id, public, owner_id, view_object_type_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
     values (:name, :companyObjectTypeId, :shared, :ownerId,  :viewObjectTypeId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
     returning id;
   """;
@@ -169,7 +169,7 @@ public class SmartlistQuery {
       set
     name = :name,
     company_object_type_id = :companyObjectTypeId,
-    shared = :shared,
+    public = :shared,
     view_object_type_id = :viewObjectTypeId,
     modified_by_id = :userId,
     date_modified = now(),
