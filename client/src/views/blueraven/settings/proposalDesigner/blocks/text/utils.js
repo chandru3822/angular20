@@ -1,6 +1,6 @@
 import '@tiptap/extension-text-style'
 
-import { Extension, generateHTML } from '@tiptap/core'
+import {Extension, generateHTML} from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import TextStyle from '@tiptap/extension-text-style'
 import Superscript from '@tiptap/extension-superscript'
@@ -10,10 +10,9 @@ import Table from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableRow from '@tiptap/extension-table-row'
 import TableHeader from '@tiptap/extension-table-header'
-import { VueRenderer } from '@tiptap/vue-2'
+import {VueRenderer} from '@tiptap/vue-2'
 import tippy from 'tippy.js'
 import Fuse from 'fuse.js'
-import { getRequest } from '@/helpers/helpers'
 import ReplacementList from './ReplacementList'
 
 
@@ -77,38 +76,38 @@ const FontConfig = Extension.create({
 
   addCommands() {
     return {
-      setFontColor: color => ({ chain }) => {
+      setFontColor: color => ({chain}) => {
         return chain()
-          .setMark('textStyle', { color })
+          .setMark('textStyle', {color})
           .run()
       },
-      unsetFontColor: () => ({ chain }) => {
+      unsetFontColor: () => ({chain}) => {
         return chain()
-          .setMark('textStyle', { color: null })
+          .setMark('textStyle', {color: null})
           .removeEmptyTextStyle()
           .run()
       },
 
-      setFontSize: fontSize => ({ chain }) => {
+      setFontSize: fontSize => ({chain}) => {
         return chain()
-          .setMark('textStyle', { fontSize })
+          .setMark('textStyle', {fontSize})
           .run()
       },
-      unsetFontSize: () => ({ chain }) => {
+      unsetFontSize: () => ({chain}) => {
         return chain()
-          .setMark('textStyle', { fontSize: null })
+          .setMark('textStyle', {fontSize: null})
           .removeEmptyTextStyle()
           .run()
       },
 
-      setFontWeight: fontWeight => ({ chain }) => {
+      setFontWeight: fontWeight => ({chain}) => {
         return chain()
-          .setMark('textStyle', { fontWeight })
+          .setMark('textStyle', {fontWeight})
           .run()
       },
-      unsetFontWeight: () => ({ chain }) => {
+      unsetFontWeight: () => ({chain}) => {
         return chain()
-          .setMark('textStyle', { fontWeight: null })
+          .setMark('textStyle', {fontWeight: null})
           .removeEmptyTextStyle()
           .run()
       }
@@ -116,23 +115,17 @@ const FontConfig = Extension.create({
   }
 })
 
-const suggestion = {
+const suggestion = ({tags = []}) => ({
   char: '{',
   endChar: '}',
-  items: (() => {
-    let items = []
-    //this is kind of janky but it loads the data only once
-    getRequest('/proposal/template/tags', 'blueraven', [])
-      .then(({ data }) => items = data)
-
-    return ({ query }) => {
-      if (query === '') {
-        return items.slice(0, 10)
-      }
-      const fuse = new Fuse(items, { includeScore: true, threshold: 0.4, distance: 75 })
-      return fuse.search(query).map(({ item }) => item).slice(0, 10)
+  items: ({query}) => {
+    if (query === '') {
+      return tags.slice(0, 10)
     }
-  })(),
+    const fuse = new Fuse(tags, {includeScore: true, threshold: 0.4, distance: 75})
+    return fuse.search(query).map(({item}) => item).slice(0, 10)
+  },
+
   render: () => {
     let component
     let popup
@@ -182,7 +175,7 @@ const suggestion = {
       }
     }
   }
-}
+})
 
 const extensions = [
   StarterKit,
@@ -193,16 +186,6 @@ const extensions = [
     types: [],
     defaultAlignment: ''
   }),
-  Mention.configure({
-    suggestion,
-    renderLabel({ options, node }) {
-      return `${options.suggestion.char}VARIABLE${options.suggestion.endChar}`
-      // return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}${options.suggestion.endChar}`
-    },
-    HTMLAttributes: {
-      class: 'replacement'
-    }
-  }),
   Table.configure({
     resizable: true
   }),
@@ -212,8 +195,24 @@ const extensions = [
 ]
 
 const generateHTMLFromJSON = (json) => {
+  const extensions = getExtensions()
   return generateHTML(json, extensions)
 }
 
+const getExtensions = ({tags = []} = {}) => {
 
-export { extensions, generateHTMLFromJSON }
+  const mention = Mention.configure({
+    suggestion: suggestion({tags}),
+    renderLabel({options, node}) {
+      return `${options.suggestion.char}VARIABLE${options.suggestion.endChar}`
+      // return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}${options.suggestion.endChar}`
+    },
+    HTMLAttributes: {
+      class: 'replacement'
+    }
+  })
+
+  return [...extensions, mention]
+}
+
+export {getExtensions, extensions, generateHTMLFromJSON}

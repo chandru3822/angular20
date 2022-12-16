@@ -3,11 +3,11 @@
     <editor-content :editor="editor" />
   </fragment>
 </template>
-<script>
 
+<script>
 import { Fragment } from 'vue-frag'
 import { BubbleMenu, Editor, EditorContent } from '@tiptap/vue-2'
-import { extensions } from './utils'
+import { getExtensions } from './utils'
 
 const defaultDocument = {
   type: 'doc',
@@ -30,6 +30,10 @@ export default {
     value: {
       type: Object,
       required: true
+    },
+    tags: {
+      type: Array,
+      required: false
     }
   },
   components: { EditorContent, BubbleMenu, Fragment },
@@ -49,7 +53,7 @@ export default {
     const content = this.value ?? defaultDocument
     this.editor = new Editor({
       content,
-      extensions,
+      extensions: getExtensions({tags: this.tags}),
       onBlur: () => {
         const payload = this.editor.getJSON()
         this.$emit('blur', { ...payload })
@@ -64,8 +68,8 @@ export default {
   }
 }
 </script>
-<style lang="scss">
 
+<style lang="scss">
 .replacement {
   border-radius: 0.4rem;
   padding: 0.1rem;

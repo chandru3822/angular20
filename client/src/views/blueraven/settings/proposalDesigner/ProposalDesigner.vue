@@ -90,6 +90,11 @@
                   :cssStyle="selected.blockStyle"
                   v-if="selected"
                   @input="updateStyles" />
+
+                <advanced-panel
+                  :visibility="selected.visibility"
+                  @input="updateVisibility"/>
+
               </div>
             </v-card>
           </v-tab-item>
@@ -112,6 +117,7 @@ import ImagePanel from './panel/Image'
 import NestedTree from './panel/NestedTree'
 import AddComponentPanel from './panel/AddComponentWidget'
 import TextMenuWidget from './panel/TextMenuWidget'
+import AdvancedPanel from './panel/Advanced.vue'
 import ProposalTemplate from './ProposalTemplate'
 import { ProposalActions, ProposalMutations } from './store'
 import { apiRequest } from '@/helpers/helpers'
@@ -140,6 +146,7 @@ const StyleFixerMixin = {
 export default {
   name: 'ProposalDesigner',
   components: {
+    AdvancedPanel,
     ProposalTemplate,
     Viewport,
     StylePanel,
@@ -150,6 +157,7 @@ export default {
   },
   mixins: [StyleFixerMixin, VuexUndoRedoMixin],
   created() {
+    this.$store.dispatch(ProposalActions.FETCH_TAGS)
     this.$store.dispatch(ProposalActions.FETCH_TEMPLATE)
   },
   data() {
@@ -176,6 +184,9 @@ export default {
     activeEditor() {
       return this.$store.getters.activeEditor
     },
+    isFullAdmin(){
+      return this.$store.getters.isFullAdmin
+    },
     ...mapState({
       template: (state) => state.proposal.template
     })
@@ -195,6 +206,9 @@ export default {
     },
     updateStyles(styles) {
       this.$store.commit(ProposalMutations.SET_STYLE, { blockId: this.selected.id, styles })
+    },
+    updateVisibility(visibility) {
+      this.$store.commit(ProposalMutations.SET_VISIBILITY, { blockId: this.selected.id, visibility })
     },
     async downloadPreview() {
       try {

@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTag;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplateBlock;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -42,7 +43,7 @@ public class ProposalTemplateController {
   }
 
   @GetMapping(value = "/tags")
-  public List<String> getTemplateTags() {
+  public List<ProposalTag> getTemplateTags() {
     return proposalTemplateService.getAvailableTags();
   }
 
