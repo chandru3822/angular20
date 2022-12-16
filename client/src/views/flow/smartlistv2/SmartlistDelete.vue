@@ -55,5 +55,7 @@ let deleteSmartlist = async () => {
 </script>
 
 <style scoped lang="scss">
-
+button {
+  color: var(--v-primary-base) !important;
+}
 </style>

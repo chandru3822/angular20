@@ -91,5 +91,16 @@ let getSmartlists = async () => {
 </script>
 
 <style scoped lang="scss">
+@import "@/styles/main.scss";
 
+::v-deep {
+  .v-data-table__wrapper {
+    height: calc(100vh - 350px);
+    min-height: 300px;
+  }
+}
+
+tr:nth-of-type(even) {
+  @extend .shaded-row;
+}
 </style>

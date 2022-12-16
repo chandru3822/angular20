@@ -38,5 +38,7 @@ let exportSmartlist = async () => {
 </script>
 
 <style scoped lang="scss">
-
+button {
+  color: var(--v-primary-base) !important;
+}
 </style>

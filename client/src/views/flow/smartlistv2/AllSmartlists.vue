@@ -42,7 +42,7 @@
                 />
               </td>
               <td>
-                <v-icon>mdi-share-variant</v-icon>
+                <smartlist-share :smartlist="smartlist" />
               </td>
               <td>
                 <smartlist-export :smartlist="smartlist" />
@@ -67,6 +67,7 @@ import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlistv2/SmartlistDelete.vue'
+import SmartlistShare from '@/views/flow/smartlistv2/SmartlistShare.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
@@ -105,5 +106,16 @@ let getSmartlists = async () => {
 </script>
 
 <style scoped lang="scss">
+@import "@/styles/main.scss";
 
+::v-deep {
+  .v-data-table__wrapper {
+    height: calc(100vh - 350px);
+    min-height: 300px;
+  }
+}
+
+tr:nth-of-type(even) {
+  @extend .shaded-row;
+}
 </style>
