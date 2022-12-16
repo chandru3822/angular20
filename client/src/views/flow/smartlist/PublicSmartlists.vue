@@ -52,8 +52,8 @@
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import { getRequest, logError } from '@/helpers/helpers'
-import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
-import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
+import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
+import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
@@ -79,7 +79,7 @@ onMounted(async () => await getSmartlists())
 let getSmartlists = async () => {
   try {
     isLoading.value = true
-    const {data} = await getRequest(`/smartlistv2/public`)
+    const {data} = await getRequest(`/smartlist/public`)
     smartlists.value = data
   } catch (e) {
     logError(e)

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Smartlistv2 {
+public class Smartlist {
 
   private Long id, companyObjectTypeId, ownerId, createdById, modifiedById, objectTypeId, workQueueTypeId;
   private String name, objectType, viewObjectType, owner;

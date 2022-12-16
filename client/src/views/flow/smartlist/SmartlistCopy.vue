@@ -26,7 +26,7 @@ let copySmartlist = async () => {
 
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const {data} = await postRequest(`/smartlistv2/${props.smartlist.id}/copy`)
+    const {data} = await postRequest(`/smartlist/${props.smartlist.id}/copy`)
     snackbar = getSnackbar('SUCCESS', `Smartlist Duplicated`)
     emit('copied', data)
   } catch (e) {

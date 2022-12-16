@@ -23,7 +23,7 @@ let exportSmartlist = async () => {
 
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const {data} = await getRequest(`/smartlist/${props.smartlist.id}/csv`)
+    const {data} = await getRequest(`/smartlist/${props.smartlist.id}/export`)
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'
     })

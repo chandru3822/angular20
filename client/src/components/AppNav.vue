@@ -184,8 +184,8 @@ export default {
           feature: 'SMARTLIST',
           show: true
         }, {
-          label: 'Smartlists v2',
-          path: '/smartlistv2',
+          label: 'Smartlists',
+          path: '/smartlist',
           feature: 'SMARTLIST',
           show: true
         }, {

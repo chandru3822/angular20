@@ -12,10 +12,10 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs>
-          <v-tab :to="'/smartlistv2/mine'">My Smartlists</v-tab>
-          <v-tab :to="'/smartlistv2/shared'">Shared with Me</v-tab>
-          <v-tab :to="'/smartlistv2/public'">Public Smartlists</v-tab>
-          <v-tab :to="'/smartlistv2/all'">All Smartlists</v-tab>
+          <v-tab :to="'/smartlist/mine'">My Smartlists</v-tab>
+          <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>
+          <v-tab :to="'/smartlist/public'">Public Smartlists</v-tab>
+          <v-tab :to="'/smartlist/all'">All Smartlists</v-tab>
         </v-tabs>
       </v-col>
     </v-row>

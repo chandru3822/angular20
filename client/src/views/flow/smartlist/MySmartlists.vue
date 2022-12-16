@@ -1,5 +1,5 @@
 <template>
-  <v-container id="all-smartlists">
+  <v-container id="my-smartlists">
     <v-row>
       <v-col cols="12">
         <v-card flat class="square-card pb-3 px-3" color="white">
@@ -64,10 +64,10 @@
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import { getRequest, logError } from '@/helpers/helpers'
-import SmartlistExport from '@/views/flow/smartlistv2/SmartlistExport.vue'
-import SmartlistCopy from '@/views/flow/smartlistv2/SmartlistCopy.vue'
-import SmartlistDelete from '@/views/flow/smartlistv2/SmartlistDelete.vue'
-import SmartlistShare from '@/views/flow/smartlistv2/SmartlistShare.vue'
+import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
+import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
+import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
+import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500]
@@ -95,7 +95,7 @@ onMounted(async () => await getSmartlists())
 let getSmartlists = async () => {
   try {
     isLoading.value = true
-    const {data} = await getRequest(`/smartlistv2/all`)
+    const {data} = await getRequest(`/smartlist/mine`)
     smartlists.value = data
   } catch (e) {
     logError(e)

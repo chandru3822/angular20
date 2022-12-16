@@ -7,7 +7,7 @@ import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
+import com.albatross.api.v1.flow.model.smartlistv2.Smartlist;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv2;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SmartlistServicev2 {
+public class SmartlistService {
 
   private final SqlCache sqlCache;
 
@@ -54,11 +54,11 @@ public class SmartlistServicev2 {
 
   private final SmartlistServicev1 smartlistServicev1;
 
-  public Smartlistv2 getById(Long id) {
+  public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
-    Smartlistv2 smartlist = sqlCache.getBySql(SmartlistQueryv2.getById, params, new SmartlistServicev2.SmartlistMapper<>(Smartlistv2.class, om))
-                                    .orElse(null);
+    Smartlist smartlist = sqlCache.getBySql(SmartlistQueryv2.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
+                                  .orElse(null);
 
     if (smartlist != null) {
       // grant access to smartlist if user is owner, admin, or smartlist is public
@@ -75,7 +75,7 @@ public class SmartlistServicev2 {
 
   public void delete(Long smartlistId) {
     User user = securityService.getCurrentUser();
-    Smartlistv2 smartlist = getById(smartlistId);
+    Smartlist smartlist = getById(smartlistId);
     final boolean isSmartlistAdmin = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
 
     // allow delete only if user is smartlist owner or admin
@@ -86,25 +86,25 @@ public class SmartlistServicev2 {
     sqlCache.updateBySql(SmartlistQueryv1.delete, Map.of("id", smartlistId, "userId", securityService.getCurrentUser().getId()));
   }
 
-  public List<Smartlistv2> getMine() {
+  public List<Smartlist> getMine() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
-    return sqlCache.queryBySql(SmartlistQueryv2.getMine, params, Smartlistv2.class);
+    return sqlCache.queryBySql(SmartlistQueryv2.getMine, params, Smartlist.class);
   }
 
-  public List<Smartlistv2> getPublic() {
+  public List<Smartlist> getPublic() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
-    return sqlCache.queryBySql(SmartlistQueryv2.getPublic, params, Smartlistv2.class);
+    return sqlCache.queryBySql(SmartlistQueryv2.getPublic, params, Smartlist.class);
   }
 
-  public List<Smartlistv2> getAll() {
+  public List<Smartlist> getAll() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId());
-    return sqlCache.queryBySql(SmartlistQueryv2.getAll, params, Smartlistv2.class);
+    return sqlCache.queryBySql(SmartlistQueryv2.getAll, params, Smartlist.class);
   }
 
-  private void saveError(Smartlistv2 smartlist, String query, List<SmartlistFieldAssignment> fields, Exception e) {
+  private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, Exception e) {
     Map<String, Object> params = new HashMap<>();
     params.put("smartlistId", smartlist.getId());
     params.put("createdById", securityService.getCurrentUser().getId());
@@ -129,7 +129,7 @@ public class SmartlistServicev2 {
   }
 
   public String export(Long smartlistId, String timezone) throws JsonProcessingException {
-    Smartlistv2 smartlist = this.getById(smartlistId);
+    Smartlist smartlist = this.getById(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
@@ -355,10 +355,10 @@ public class SmartlistServicev2 {
   }
 
   @Transactional
-  public Smartlistv2 copy(Long smartlistId) {
+  public Smartlist copy(Long smartlistId) {
 
     User user = securityService.getCurrentUser();
-    Smartlistv2 smartlist = getById(smartlistId);
+    Smartlist smartlist = getById(smartlistId);
 
     if (smartlist.getId() == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No smartlist with given ID", new RuntimeException());
@@ -373,7 +373,7 @@ public class SmartlistServicev2 {
       unique = sqlCache.queryForObjectBySql(SmartlistQueryv2.isNameUnique, Map.of("name", newName, "companyId", user.getCompanyId()), Boolean.class);
     } while (!unique);
 
-    Smartlistv2 newSmartlist = new Smartlistv2();
+    Smartlist newSmartlist = new Smartlist();
     newSmartlist.setName(newName);
     newSmartlist.setCompanyObjectTypeId(smartlist.getCompanyObjectTypeId());
     newSmartlist.setPublic(smartlist.isPublic());
