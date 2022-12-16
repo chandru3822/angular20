@@ -12,7 +12,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text
+            <v-btn v-if="userCanEdit" text
               color="primary"
               :disabled="invalid(customField)"
               @click="saveChanges(customField)">
@@ -200,9 +200,10 @@
                       v-model="ddo.name">
                     </v-text-field>
                   </v-list-item-content>
-                  <v-list-item-action class="clickable" @click="ddo.archived = true">
+                  <v-list-item-action v-if="userCanDelete" class="clickable" @click="ddo.archived = true">
                     <v-icon color="primary">delete</v-icon>
                   </v-list-item-action>
+                  <v-icon v-else :disabled="true" color="primary">delete</v-icon>
                 </v-list-item>
               </v-list>
             </div>
@@ -264,6 +265,7 @@ export default {
       companyId: this.$store.state.user.details.companyId,
       userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
+      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
     };
   },
   computed: {},

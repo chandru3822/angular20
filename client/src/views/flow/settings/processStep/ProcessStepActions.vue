@@ -431,6 +431,7 @@
                               :class="{'shaded-row': item.processStepActionChildProcesses.indexOf(cp) % 2}">
                             <v-autocomplete v-model="cp.initialCompanyProcessStepStatusTypeId"
                                             :items="activeStatusesAssignedToStep"
+                                            :disabled="!userCanEdit"
                                             label="Set initial status as:"
                                             item-text="processStepStatusType"
                                             item-value="id"
@@ -438,12 +439,14 @@
                             ></v-autocomplete>
                             <v-autocomplete v-model="cp.existingCompanyProcessStepStatusTypeId"
                                             :items="cancelledCompanyStatuses"
+                                            :disabled="!userCanEdit"
                                             label="Set status of existing Active steps of the same type to:"
                                             item-text="processStepStatusType"
                                             item-value="id"
                                             attach
                             ></v-autocomplete>
                             <v-btn color="primary" class="white--text"
+                                   v-if="userCanEdit"
                                    :disabled="!cp.existingCompanyProcessStepStatusTypeId || !cp.initialCompanyProcessStepStatusTypeId"
                                    @click="saveChildProcessCancelledStatus(item, cp)">Save Changes
                             </v-btn>
