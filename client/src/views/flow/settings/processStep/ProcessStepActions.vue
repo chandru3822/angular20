@@ -911,7 +911,7 @@
                     <v-btn small text color="primary" @click="[actionExpanded = [], selectedActionIndex = index]"
                            v-if="actionExpanded.includes(item)">cancel
                     </v-btn>
-                    <v-btn small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>

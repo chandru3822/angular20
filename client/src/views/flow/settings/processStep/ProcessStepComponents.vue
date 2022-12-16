@@ -184,7 +184,7 @@
             <v-card flat color="rowShadeCustom" class="square-card mt-2">
               <v-card-title style="height: 40px" class="py-0">
                 Read Only
-                <v-checkbox type="checkbox" class="ml-3"
+                <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                             v-model="processStep.readonly"></v-checkbox>
               </v-card-title>
               <v-card-text>
@@ -231,7 +231,7 @@
                   </template>
                 </v-autocomplete>
                 <br/>
-                <v-btn color="primary" class="d-inline-block"
+                <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
                        @click="saveReadOnlyAndWhiteList()">
                   <v-icon class="mr-2">save</v-icon>
                   Save

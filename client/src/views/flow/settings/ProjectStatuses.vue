@@ -216,12 +216,13 @@
                 </v-avatar>
               </td>
               <td class="text-right">
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[initItemColor(item), expanded = [item]]">
+                <v-btn small text color="primary" v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="[initItemColor(item), expanded = [item]]">
                   <v-icon>edit</v-icon>
                 </v-btn>
+
                 <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
                 <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
-                  <v-icon>delete</v-icon>
+                  <v-icon >delete</v-icon>
                 </v-btn>
               </td>
 

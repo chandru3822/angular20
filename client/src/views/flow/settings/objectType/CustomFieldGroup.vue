@@ -38,7 +38,7 @@
     <v-card flat color="primary lighten-9" class="square-card" v-if="parseInt(typeId) === 2">
       <v-card-title style="height: 40px" class="py-0">
         Contact Owner Read Only
-        <v-checkbox type="checkbox" class="ml-3"
+        <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                     v-model="objectType.ownerReadOnly"></v-checkbox>
       </v-card-title>
       <v-card-text>
@@ -85,7 +85,7 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primary" dark class="d-inline-block white--text"
+        <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                @click="saveOwnerReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save
@@ -184,7 +184,7 @@
                       <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
-                    <v-btn small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -426,7 +426,7 @@
                         <v-btn text color="primary" small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
-                        <v-btn text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>
+                        <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>
                       </v-list-item>
                     </v-list>
                   </draggable>
