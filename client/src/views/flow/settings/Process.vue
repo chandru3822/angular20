@@ -141,7 +141,7 @@
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                     <v-icon v-else>expand_more</v-icon>
                   </v-btn>
-                  <v-btn text color="primary" @click="processStepToDelete=item"><v-icon>delete</v-icon></v-btn>
+                  <v-btn :disabled="!userCanDelete" text color="primary" @click="processStepToDelete=item"><v-icon>delete</v-icon></v-btn>
                 </div>
               </td>
             </tr>
@@ -212,6 +212,9 @@ export default {
       expanded: [],
       selectedIndex: null,
       processStepToDelete: null,
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
     }
   },
   created () {

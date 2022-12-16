@@ -1,42 +1,47 @@
 <template>
   <v-container class="mt-4">
     <v-card class="px-3">
-      <v-card-title>
+      <v-card-title class="title-large-medium">
         Add Contact
         <v-spacer></v-spacer>
-        <v-btn v-if="!constants.IS_MOBILE" text color="primary" class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn v-if="!constants.IS_MOBILE" color="primary white--text" :disabled="loadingInsertFields" @click="validate(true)">Save</v-btn>
+        <v-btn v-if="!constants.IS_MOBILE" text color="primary" class="mr-3 body-medium" to="/contacts">Cancel</v-btn>
+        <v-btn v-if="!constants.IS_MOBILE" color="primary white--text" :disabled="loadingInsertFields" @click="validate(true)" class="body-medium">Save</v-btn>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
-        <v-btn text class="mr-3" color="primary" to="/contacts">Cancel</v-btn>
+        <v-btn text class="mr-3 body-medium" color="primary" to="/contacts">Cancel</v-btn>
         <v-btn color="primary white--text" :disabled="loadingInsertFields"
-               @click="validate(true)" id="qa-add-contact-save"  >Save</v-btn>
+               @click="validate(true)" id="qa-add-contact-save" class="body-medium">Save</v-btn>
       </v-card-text>
       <v-form ref="contactForm">
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
               <v-text-field text
+                            class="body-large"
                             label="First Name"
                             id="qa-first-name-field"
                             :rules="nameRequiredRules"
                             v-model="contact.firstName"></v-text-field>
               <v-text-field text
+                            class="body-large"
                             label="Last Name"
                             id="qa-last-name-field"
                             :rules="nameRequiredRules"
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
+                            class="body-large"
                             label="Address"
                             id="qa-address-field"
                             :rules="addressRules"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
+                            class="body-large"
                             label="City"
                             id="qa-city-field"
                             :rules="cityRules"
                             v-model="contact.city"></v-text-field>
               <v-select attach v-model="contact.companyStateId"
+                        class="body-large"
                         :items="states"
                         label="State"
                         id="qa-state-field"
@@ -46,21 +51,25 @@
             </v-col>
             <v-col cols="12" sm="6">
               <v-text-field text
+                            class="body-large"
                             label="Phone"
                             :rules="contactPhoneRule"
                             id="qa-phone-field"
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
+                            class="body-large"
                             label="Mobile"
                             :rules="contactPhoneRule"
                             id="qa-mobile-field"
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
+                            class="body-large"
                             label="E-Mail"
                             id="qa-email-field"
                             :rules="emailRules"
                             v-model="contact.email"></v-text-field>
               <v-text-field text
+                            class="body-large"
                             label="Zip Code"
                             id="qa-zip-field"
                             counter
@@ -69,8 +78,10 @@
                             :rules="postalCodeRules"
                             v-model="contact.postalCode"></v-text-field>
               <v-select attach v-model="contact.companyCountryId"
+                        class="body-large"
                         :items="countries"
                         label="Country"
+                        style="color: red"
                         id="qa-country-field"
                         item-text="country"
                         item-value="id"
@@ -80,8 +91,9 @@
         </v-container>
         <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-          <h3>{{cfg.groupName}}</h3>
+          <div class="label-large">{{cfg.groupName}}</div>
           <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                            class="body-large"
                             :key="idx"
                             :callback="populateDirtyCfvs"
                             :required="cf.required"

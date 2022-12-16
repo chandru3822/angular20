@@ -151,16 +151,16 @@
             <div class="mb-2">
               Selectable Options<br/>
               Sort Alphabetically:
-              <input type="checkbox" class="ml-3" v-model="customField.sortListValuesAlphabetically">
+              <input :disabled="!userCanEdit" type="checkbox" class="ml-3" v-model="customField.sortListValuesAlphabetically">
             </div>
-            <draggable v-model="customField.listOfValues"
+            <draggable v-if="userCanEdit" v-model="customField.listOfValues"
                        group="listOfValues" @start="drag=true" @end="drag=false">
               <v-list
                 v-for="(ddo, index2) in getLovValues(customField.listOfValues, customField.sortListValuesAlphabetically)"
                 :class="{'shaded-row': index2 % 2}"
                 :key="index2">
                 <v-list-item dense>
-                  <v-list-item-action class="grab" v-if="!customField.sortListValuesAlphabetically">
+                  <v-list-item-action class="grab" v-if="!customField.sortListValuesAlphabetically && userCanEdit">
                     <v-icon color="primary">drag_handle</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
@@ -179,6 +179,34 @@
                 </v-list-item>
               </v-list>
             </draggable>
+
+            <div v-else v-model="customField.listOfValues"
+                       group="listOfValues" @start="drag=true" @end="drag=false">
+              <v-list
+                v-for="(ddo, index2) in getLovValues(customField.listOfValues, customField.sortListValuesAlphabetically)"
+                :class="{'shaded-row': index2 % 2}"
+                :key="index2">
+                <v-list-item dense>
+                  <v-list-item-action class="grab" v-if="!customField.sortListValuesAlphabetically && userCanEdit">
+                    <v-icon color="primary">drag_handle</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-text-field
+                      class="one-hunned"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      :placeholder="ddo.placeholder"
+                      @input="ddo.isDirty = true"
+                      v-model="ddo.name">
+                    </v-text-field>
+                  </v-list-item-content>
+                  <v-list-item-action class="clickable" @click="ddo.archived = true">
+                    <v-icon color="primary">delete</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </div>
+
             <v-btn
               color="primary"
               class="mt-2"
