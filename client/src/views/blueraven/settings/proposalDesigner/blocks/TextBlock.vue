@@ -1,21 +1,21 @@
 <template>
   <div class="proposal-text" :style="styles">
-    <fragment v-if="!editable" v-html="html" v-bind="$attrs" />
-    <text-editor v-else :value="blockValue" @blur="updateValue" @init="register"  />
+    <fragment v-if="!editable" v-html="html" v-bind="$attrs"/>
+    <text-editor v-else :value="blockValue" @blur="updateValue" @init="register" :tags="tags"/>
   </div>
 </template>
 <script>
 import TextEditor from './text/TextEditor'
-import { generateHTMLFromJSON } from './text/utils'
-import { mapState } from 'vuex'
-import { Fragment } from 'vue-frag'
-import { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
+import {generateHTMLFromJSON} from './text/utils'
+import {mapState} from 'vuex'
+import {Fragment} from 'vue-frag'
+import {ProposalMutations} from '@/views/blueraven/settings/proposalDesigner/store'
 
 const xmlSerializer = new XMLSerializer()
 
 export default {
   name: 'TextBlock',
-  components: { TextEditor, Fragment },
+  components: {TextEditor, Fragment},
   props: {
     id: {
       required: true
@@ -32,12 +32,12 @@ export default {
     },
     blockStyle: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
       }
     }
   },
-  data(){
+  data() {
     return {
       html: ''
     }
@@ -45,28 +45,29 @@ export default {
   computed: {
     styles() {
       const themeStyles = this.theme[this.themeKey] ?? {}
-      return { ...themeStyles, ...this.blockStyle }
+      return {...themeStyles, ...this.blockStyle}
     },
     ...mapState({
-      theme: (state) => state.proposal.theme
+      theme: (state) => state.proposal.theme,
+      tags: (state) => state.proposal.tags?.map(t => t.tagName)
     })
   },
-  watch:  {
+  watch: {
     blockValue: {
       immediate: true,
-      handler: function(newVal) {
+      handler: function (newVal) {
         this.html = this.generateHtml(newVal)
       }
     }
   },
   methods: {
     updateValue(payload) {
-      this.$store.commit(ProposalMutations.SET_VALUE, { blockId: this.id, value: payload })
+      this.$store.commit(ProposalMutations.SET_VALUE, {blockId: this.id, value: payload})
     },
     register(editor) {
-      this.$store.commit(ProposalMutations.REGISTER_EDITOR, { blockId: this.id, editor })
+      this.$store.commit(ProposalMutations.REGISTER_EDITOR, {blockId: this.id, editor})
     },
-    generateHtml(val){
+    generateHtml(val) {
       try {
         //trick the fragment into always updating
         const commentEl = document.createComment(`fragment#id=${this.id} last_updated=${new Date().valueOf()}`)
@@ -114,6 +115,7 @@ export default {
       margin: 0;
     }
   }
+
   p {
     margin: 0;
   }

@@ -161,7 +161,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20220320</version>
+      <version>20220924</version>
     </dependency>
 
     <dependency>
@@ -292,9 +292,19 @@
     <dependency>
       <groupId>com.github.sonus21</groupId>
       <artifactId>rqueue-spring-boot-starter</artifactId>
-      <version>2.10.2-RELEASE</version>
+      <version>2.11.1-RELEASE</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
+      <version>22.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+      <version>22.3.0</version>
+    </dependency>
 
     <dependency>
       <groupId>io.github.openfeign</groupId>

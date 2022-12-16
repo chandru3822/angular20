@@ -101,6 +101,11 @@ public class BaseSqlCache {
     return (T) jdbc.queryForMap(sql, paramSource);
   }
 
+  public <T> T queryForMapBySql(String sql, Map<String, Object> params) {
+    MapSqlParameterSource paramSource = scrubParams(params);
+    return (T) jdbc.queryForMap(sql, paramSource);
+  }
+
   public <T> Optional<T> queryForObjectOptional(
     String key, Map<String, Object> params, Class<T> elementType) {
     try {
@@ -213,6 +218,11 @@ public class BaseSqlCache {
 
   public void updateBatch(final String key, final List<?> objects) {
     String sql = getByKey(key);
+    SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(objects.toArray());
+    jdbc.batchUpdate(sql, batch);
+  }
+
+  public void updateBatchBySql(final String sql, final List<?> objects) {
     SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(objects.toArray());
     jdbc.batchUpdate(sql, batch);
   }
