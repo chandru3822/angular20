@@ -179,14 +179,14 @@ export default {
           feature: 'WORK_QUEUE',
           show: true
         }, {
-          label: 'Smartlists',
-          path: '/smartlist',
+          label: 'Smartlists v1',
+          path: '/smartlistv1',
           feature: 'SMARTLIST',
           show: true
         }, {
           label: 'Smartlists v2',
           path: '/smartlistv2',
-          feature: 'SMARTLIST_V2',
+          feature: 'SMARTLIST',
           show: true
         }, {
           label: 'Inbox',

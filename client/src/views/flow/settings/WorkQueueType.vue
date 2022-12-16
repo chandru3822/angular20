@@ -303,7 +303,7 @@ import {
 import constants from '@/helpers/constants'
 import draggable from 'vuedraggable'
 import ZonelessTimePickerInput from './availability/ZonelessTimePickerInput'
-import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
+import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import cloneDeep from 'lodash.clonedeep'
 
 export default {
@@ -473,7 +473,7 @@ export default {
     },
     async getCompanyObjectTypes() {
       try {
-        const {data} = await getRequest(`/smartlist/companyObjectTypes`)
+        const {data} = await getRequest(`/smartlistv1/companyObjectTypes`)
         this.companyObjectTypes = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
       } catch (e) {
         logError(e)

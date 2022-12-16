@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Deprecated
-public class Smartlist {
+public class Smartlistv1 {
 
   private Long id,
       companyObjectTypeId,

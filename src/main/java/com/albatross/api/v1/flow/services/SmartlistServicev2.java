@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
+import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -51,7 +52,7 @@ public class SmartlistServicev2 {
 
   private final ObjectMapper om;
 
-  private final SmartlistService smartlistService;
+  private final SmartlistServicev1 smartlistServicev1;
 
   public Smartlistv2 getById(Long id) {
     User user = securityService.getCurrentUser();
@@ -70,6 +71,19 @@ public class SmartlistServicev2 {
     }
 
     return null;
+  }
+
+  public void delete(Long smartlistId) {
+    User user = securityService.getCurrentUser();
+    Smartlistv2 smartlist = getById(smartlistId);
+    final boolean isSmartlistAdmin = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
+
+    // allow delete only if user is smartlist owner or admin
+    if (smartlist == null || (!smartlist.getOwnerId().equals(user.getId()) && !isSmartlistAdmin)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
+    }
+
+    sqlCache.updateBySql(SmartlistQueryv1.delete, Map.of("id", smartlistId, "userId", securityService.getCurrentUser().getId()));
   }
 
   public List<Smartlistv2> getMine() {
@@ -104,7 +118,7 @@ public class SmartlistServicev2 {
     try {
       params.put("smartlist", om.writeValueAsString(smartlist));
       params.put("fields", om.writeValueAsString(fields));
-      params.put("requirements", om.writeValueAsString(smartlistService.getRequirements(smartlist.getId(), false)));
+      params.put("requirements", om.writeValueAsString(smartlistServicev1.getRequirements(smartlist.getId(), false)));
     } catch (Exception err) {
       //noop
     }
@@ -120,14 +134,14 @@ public class SmartlistServicev2 {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistService.getAssignedProjectDetailsFields(smartlistId) : smartlistService.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistServicev1.getAssignedProjectDetailsFields(smartlistId) : smartlistServicev1.getAssignedFields(smartlistId);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
     }
 
     if (!smartlist.isProjectDetails()) {
-      fields = smartlistService.prettifyFieldNames(fields);
+      fields = smartlistServicev1.prettifyFieldNames(fields);
     }
 
     log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
@@ -135,18 +149,18 @@ public class SmartlistServicev2 {
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
     if (smartlist.isProjectDetails()) {
-      query = smartlistService.buildProjectDetailsSql(smartlist.toOriginal());
+      query = smartlistServicev1.buildProjectDetailsSql(smartlist.toOriginal());
     } else if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId()) {
       if (smartlist.getObjectTypeId() == 4) {
-        query = smartlistService.buildProcessStepSql(smartlist.toOriginal(), fields);
+        query = smartlistServicev1.buildProcessStepSql(smartlist.toOriginal(), fields);
       } else {
-        query = smartlistService.buildEventSql(smartlist.toOriginal(), fields, null, null);
+        query = smartlistServicev1.buildEventSql(smartlist.toOriginal(), fields, null, null);
       }
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
-        query = smartlistService.buildWorkQueueSql(smartlist.toOriginal(), fields, true, timezone);
+        query = smartlistServicev1.buildWorkQueueSql(smartlist.toOriginal(), fields, true, timezone);
       } else {
-        query = smartlistService.buildSql(smartlist.toOriginal(), fields, timezone, null, false);
+        query = smartlistServicev1.buildSql(smartlist.toOriginal(), fields, timezone, null, false);
       }
     }
 

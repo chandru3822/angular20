@@ -6,7 +6,7 @@
         <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text to="/smartlist/null" color="primary">
+          <v-btn text to="/smartlistv1/null" color="primary">
             <v-icon>add</v-icon>
             <span v-if="!constants.IS_MOBILE">Add Smartlist</span>
           </v-btn>
@@ -90,7 +90,7 @@ export default {
   methods: {
     async getSmartlists () {
       try {
-        const {data} = await getRequest(`/smartlist`)
+        const {data} = await getRequest(`/smartlistv1`)
         this.smartlists = data
       } catch (e) {
         logError(e)

@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.model.smartlistv2;
 
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.smartlist.Smartlist;
+import com.albatross.api.v1.flow.model.smartlist.Smartlistv1;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,8 +22,8 @@ public class Smartlistv2 {
   @JsonIgnore
   private List<ProcessStepEventWorkQueueType> eventWorkQueueTypes;
 
-  public Smartlist toOriginal() {
-    Smartlist smartlist = new Smartlist();
+  public Smartlistv1 toOriginal() {
+    Smartlistv1 smartlist = new Smartlistv1();
     smartlist.setId(this.getId());
     smartlist.setCompanyObjectTypeId(this.getCompanyObjectTypeId());
     smartlist.setOwnerId(this.getOwnerId());

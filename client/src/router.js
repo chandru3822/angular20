@@ -1585,11 +1585,11 @@ const router = new Router({
             }
           ]
         }, {
-          path: '/smartlist',
+          path: '/smartlistv1',
           meta: {title: 'Albatross - Smartlists'},
           component: () => {
             if (store.getters.userHasFeature('SMARTLIST')) {
-              return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/SmartlistHome.vue')
+              return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlistv1/SmartlistHome.vue')
             } else {
               return accessDenied()
             }
@@ -1600,7 +1600,7 @@ const router = new Router({
             name: 'smartlist',
             component: () => {
               if (store.getters.userHasFeature('SMARTLIST')) {
-                return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/Smartlists.vue')
+                return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlistv1/Smartlists.vue')
               } else {
                 return accessDenied()
               }
@@ -1611,7 +1611,7 @@ const router = new Router({
             name: 'smartlistEditor',
             component: () => {
               if (store.getters.userHasFeature('SMARTLIST')) {
-                return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/Smartlist.vue')
+                return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlistv1/Smartlist.vue')
               } else {
                 return accessDenied()
               }

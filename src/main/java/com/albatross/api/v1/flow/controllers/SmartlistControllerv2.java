@@ -1,7 +1,5 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistResult;
 import com.albatross.api.v1.flow.model.smartlistv2.Smartlistv2;
 import com.albatross.api.v1.flow.services.SmartlistServicev2;
 import lombok.RequiredArgsConstructor;
@@ -50,5 +48,12 @@ public class SmartlistControllerv2 {
   @PostMapping(value = "/{smartlistId}/copy")
   public ResponseEntity<Smartlistv2> copySmartlist(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistServicev2.copy(smartlistId), HttpStatus.OK);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_DELETE', 'SMARTLIST_ADMIN')")
+  @DeleteMapping(value = "/{smartlistId}")
+  public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
+    smartlistServicev2.delete(smartlistId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

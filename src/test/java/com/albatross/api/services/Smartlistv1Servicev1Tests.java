@@ -5,7 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.services.SmartlistService;
+import com.albatross.api.v1.flow.services.SmartlistServicev1;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ import static org.springframework.test.util.AssertionErrors.fail;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SpringBootTest
 @ActiveProfiles(profiles = "local")
-public class SmartlistServiceTests {
+public class Smartlistv1Servicev1Tests {
 
   private final SqlCache sqlCache;
 
@@ -42,7 +42,7 @@ public class SmartlistServiceTests {
 
   private final SystemListService systemListService;
 
-  private SmartlistService smartlistService;
+  private SmartlistServicev1 smartlistServicev1;
 
   @PostConstruct
   public void init() {
@@ -56,7 +56,7 @@ public class SmartlistServiceTests {
     when(securityService.getCurrentUser()).thenReturn(user);
     when(securityService.userHasFeatureAccessLevel(any(), any(), any(), any(), any())).thenReturn(true);
 
-    smartlistService = spy(new SmartlistService(securityService, sqlCache, sqlCacheRO, om, systemListService));
+    smartlistServicev1 = spy(new SmartlistServicev1(securityService, sqlCache, sqlCacheRO, om, systemListService));
   }
 
   @Test
@@ -76,7 +76,7 @@ public class SmartlistServiceTests {
     smartlistIds.forEach(id -> {
       try {
         log.info("Running smartlist ID: " + id);
-        smartlistService.getSmartlistResults(id);
+        smartlistServicev1.getSmartlistResults(id);
       } catch (Exception e) {
         if (!currentlyFailingProjectDetails.contains(id)) {
           log.error(String.format("Failed on smartlist ID: %s", id));
@@ -105,7 +105,7 @@ public class SmartlistServiceTests {
     smartlistIds.forEach(id -> {
       try {
         log.info("Running smartlist ID: " + id);
-        smartlistService.getSmartlistResults(id);
+        smartlistServicev1.getSmartlistResults(id);
       } catch (Exception e) {
         if (!currentlyFailingProcessStepNonMain.contains(id)) {
           log.error(String.format("Failed on smartlist ID: %s", id));
@@ -138,7 +138,7 @@ public class SmartlistServiceTests {
     smartlistIds.forEach(id -> {
       try {
         log.info("Running smartlist ID: " + id);
-        final String sql = smartlistService.getSmartlistSqlString(id);
+        final String sql = smartlistServicev1.getSmartlistSqlString(id);
         final Boolean isValid = sqlCacheRO.queryForObject("smartlist.isSyntaxValid", Map.of("query", sql), Boolean.class);
         if (!isValid) {
             throw new RuntimeException(String.format("Invalid Syntax, Smartlist ID: %s, Query: %s", id, sql));
