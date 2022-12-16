@@ -122,4 +122,10 @@ order by s.state
         ))
   ]]></customFieldSql.brs.designLogBomValue>
 
+  <customFieldSql.brs.finalDesignSignedDate><![CDATA[
+    select to_char(final_design_signed_date, 'FMMM/FMDD/YYYY') as text_value
+    from brs.project_details pd
+    where project_id = :projectId
+  ]]></customFieldSql.brs.finalDesignSignedDate>
+
 </sql>
