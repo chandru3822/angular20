@@ -67,7 +67,7 @@
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
-                  <td class="text-left"><a :href="`/settings/event/${item.eventId}/components`">{{item.eventName}}</a></td>
+                  <td class="text-left">{{item.eventName}} <v-icon color="primary" @click="goToPath(`/settings/event/${item.eventId}/components`)">mdi-link</v-icon></td>
                   <td class="text-left">{{item.initialEventStatusType}}</td>
                   <td>
                     <div style="display: flex; justify-content: flex-end">
@@ -264,6 +264,9 @@ export default {
     closeDeleteDialog(){
       this.showDeleteDialog = false
       this.itemToDelete = null
+    },
+    goToPath(path) {
+      this.$router.push({ path: `${path}` })
     }
   }
 
