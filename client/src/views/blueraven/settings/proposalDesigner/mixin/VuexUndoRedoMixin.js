@@ -33,7 +33,7 @@ export const VuexUndoRedoMixin = {
   created() {
     if (this.$store) {
       this.$store.subscribe((mutation) => {
-        if ([ProposalMutations.SET_VALUE, ProposalMutations.SET_STYLE].includes(mutation.type)) {
+        if ([ProposalMutations.SET_VALUE, ProposalMutations.SET_STYLE, ProposalMutations.SET_VISIBILITY].includes(mutation.type)) {
           const commit = cloneDeep(mutation)
           this.done.push(commit)
         }

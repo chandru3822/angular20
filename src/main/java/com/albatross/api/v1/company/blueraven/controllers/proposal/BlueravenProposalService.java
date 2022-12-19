@@ -1,17 +1,22 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.config.AppProperties;
-import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalDesignMapper;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
-import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
+import com.albatross.api.v1.company.blueraven.models.Proposal;
+import com.albatross.api.v1.company.blueraven.models.ProposalDesign;
+import com.albatross.api.v1.company.blueraven.models.ProposalProject;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.Attachment;
@@ -20,20 +25,16 @@ import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sonus21.rqueue.core.RqueueMessageEnqueuer;
-import freemarker.template.TemplateException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanWrapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,17 +72,17 @@ public class BlueravenProposalService {
     params.put("offset", pageable.getOffset());
 
     List<ProposalProject> results =
-      sqlCache.query("proposal.getProjects", params, ProposalProject.class);
-    Integer count = sqlCache.queryForObject("proposal.getProjectsCount", params, Integer.class);
-
+      sqlCache.queryBySql(ProposalQuery.getProjects, params, ProposalProject.class);
+    Integer count = sqlCache.queryForObjectBySql(ProposalQuery.getProjectsCount, params, Integer.class);
     return new PageImpl<>(
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public List<ProposalDesign> getProposalDesigns(@NonNull Long projectId) {
     List<ProposalDesign> results =
-      sqlCache.query(
-        "proposal.getDesigns", Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
+      sqlCache.queryBySql(
+        ProposalQuery.getDesigns,
+        Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
     for (ProposalDesign pd : results) {
       for (Attachment a : pd.getAttachments()) {
         attachmentService.setAttachmentPresignedUrl(a);
@@ -91,7 +92,7 @@ public class BlueravenProposalService {
   }
 
   public Optional<ProposalDesign> getActiveDesign(@NonNull Long projectId) {
-    return sqlCache.get("proposal.getActiveDesign", Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
+    return sqlCache.getBySql(ProposalQuery.getActiveDesign, Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
   }
 
   public List<ProposalDesign> requestNewDesign(
@@ -154,8 +155,8 @@ public class BlueravenProposalService {
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
 
     Optional<Proposal> result =
-      sqlCache.get(
-        "proposal.get",
+      sqlCache.getBySql(
+        ProposalQuery.get,
         Map.of("proposalId", proposalId),
         new ProposalMapper<>(Proposal.class, om));
 
@@ -180,7 +181,7 @@ public class BlueravenProposalService {
     params.put("companyId", currentUser.getCompanyId());
 
     Long proposalVersionId =
-      sqlCache.queryForObject("proposal.getCurrentVersion", params, Long.class);
+      sqlCache.queryForObjectBySql(ProposalQuery.getCurrentVersion, params, Long.class);
 
     if (proposalVersionId == null) {
       throw new ApiException("No published proposals available");
@@ -190,7 +191,7 @@ public class BlueravenProposalService {
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
     params.put("userId", currentUser.getId());
 
-    Long id = sqlCache.updateReturningId("proposal.insert", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(ProposalQuery.insert, params, "id").longValue();
     return getProposal(id);
   }
 
@@ -229,8 +230,8 @@ public class BlueravenProposalService {
     Map<String, Object> context = new HashMap<>();
 
     try {
-      context = sqlCache.queryForMap(
-        "proposal.getCalculatedProposalValues",
+      context = sqlCache.queryForMapBySql(
+        ProposalQuery.getCalculatedProposalValues,
         Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
     } catch (Exception e) {
       log.error("[Proposals] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
@@ -239,7 +240,7 @@ public class BlueravenProposalService {
     try {
       Map<String, Object> proposalAttachments =
         sqlCache
-          .query("proposal.getAttachments", Map.of("proposalId", proposalId), Attachment.class)
+          .queryBySql(ProposalQuery.getAttachments, Map.of("proposalId", proposalId), Attachment.class)
           .stream()
           .collect(
             Collectors.toMap(
@@ -257,7 +258,7 @@ public class BlueravenProposalService {
 
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    sqlCache.update("proposal.setLocked", Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+    sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
     rqueueMessageEnqueuer.enqueue("proposal_job", UUID.randomUUID().toString(), new ProposalJobMessage(proposalId));
     return getProposal(proposalId);
   }
@@ -271,12 +272,12 @@ public class BlueravenProposalService {
       throw new ApiException("Proposal has already been locked");
     }
 
-    sqlCache.update("proposal.setArchived", Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+    sqlCache.updateBySql(ProposalQuery.setArchived, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
   }
 
 
   public void setCreditCheckSubmitted(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    sqlCache.update("proposal.setCreditChecked", Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+    sqlCache.updateBySql(ProposalQuery.setCreditChecked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
   }
 
   public void setDocsAsSubmitted(@NonNull Long proposalId, @NonNull LoanDocType loanDocType, @NonNull UserAccountDetails details) {
@@ -287,21 +288,21 @@ public class BlueravenProposalService {
   }
 
   private void setFinanceDocsSubmitted(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    sqlCache.update("proposal.setFinanceDocsSent", Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+    sqlCache.updateBySql(ProposalQuery.setFinanceDocsSent, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
   }
 
   private void setInstallationAgreementDocsSubmitted(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    sqlCache.update("proposal.setInstallationAgreementDocsSent", Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+    sqlCache.updateBySql(ProposalQuery.setInstallationAgreementDocsSent, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
   }
 
   public void setProposalAsProcessed(@NonNull Long proposalId) {
-    sqlCache.update("proposal.setProcessed", Map.of("id", proposalId));
+    sqlCache.updateBySql(ProposalQuery.setProcessed, Map.of("id", proposalId));
   }
 
   public Proposal setProposalName(@NonNull Long proposalId, @NonNull String proposalName, @NonNull UserAccountDetails currentUser) {
     final Proposal proposal = getUnlockedProposal(proposalId);
 
-    sqlCache.update("proposal.setProposalName", Map.of(
+    sqlCache.updateBySql(ProposalQuery.setProposalName, Map.of(
       "id", proposalId,
       "name", proposalName.trim(),
       "modifiedById", currentUser.getTrueUserId()));
@@ -339,7 +340,7 @@ public class BlueravenProposalService {
   }
 
   public Optional<Proposal> createProposalDuplicate(@NonNull Long proposalId, @NonNull Long userId) {
-    Long newProposalId = sqlCache.queryForObject("proposal.duplicate", Map.of(
+    Long newProposalId = sqlCache.queryForObjectBySql(ProposalQuery.duplicate, Map.of(
       "proposalId", proposalId,
       "userId", userId
     ), Long.class);
@@ -374,45 +375,7 @@ public class BlueravenProposalService {
     other.setApproved(false);
 
     final Map<String, Object> params = Map.of("projectId", projectId);
-    return sqlCache.get("proposal.postalCodeApproved", params, ProposalPostalCodeStatus.class).orElse(other);
+    return sqlCache.getBySql(ProposalQuery.postalCodeApproved, params, ProposalPostalCodeStatus.class).orElse(other);
   }
 
-  public static class ProposalDesignMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
-
-    public ProposalDesignMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass);
-      this.objectMapper = objectMapper;
-    }
-
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Proposal>> proposalsRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(
-        List.class, "proposals", new JsonCollectionDeserializer(proposalsRef, objectMapper));
-
-      TypeReference<List<Attachment>> attachmentsRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(
-        List.class, "attachments", new JsonCollectionDeserializer(attachmentsRef, objectMapper));
-    }
-  }
-
-  public static class ProposalMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
-
-    public ProposalMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass);
-      this.objectMapper = objectMapper;
-    }
-
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<CustomFieldGroup>> cfgRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(
-        List.class, "customFieldGroups", new JsonCollectionDeserializer(cfgRef, objectMapper));
-    }
-  }
 }

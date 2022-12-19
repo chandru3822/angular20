@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
@@ -33,4 +34,8 @@ public class ProposalTemplateBlock implements Serializable {
   private Integer version;
 
   private Integer parentId;
+
+  private String visibility;
+
+  private UUID blockUUID;
 }

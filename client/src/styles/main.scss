@@ -542,3 +542,105 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   overflow: hidden !important;
 }
 
+.headline-large{
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+
+.headline-medium{
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.headline-small{
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.title-large{
+  font-family: lato;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.title-medium{
+  font-family: lato;
+  font-weight: 400;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.label-large{
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.label-medium{
+  font-family: lato;
+  font-weight: 600;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+
+
+.label-small, div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
+  font-family: lato;
+  font-weight: 600;
+  font-size: .75rem;
+  line-height: 1.6;
+}
+
+.body-large, .body-large .v-select__selection, .body-large .v-label {
+  font-family: lato;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: red;
+}
+
+.body-medium, tr{
+  font-family: lato;
+  font-weight: 400;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+
+.body-small, .body-large .v-messages__message{
+  font-family: lato;
+  font-weight: 400;
+  font-size: .75rem;
+  line-height: 1.6;
+}
+
+.body-large .v-select__selections{
+  color: red;
+}
+
+@media (min-width: 600px) {
+  .title-large-medium {
+    font-family: lato;
+    font-weight: 400;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 600px) {
+  .title-large-medium {
+    font-family: lato;
+    font-weight: 400;
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+}
+
+

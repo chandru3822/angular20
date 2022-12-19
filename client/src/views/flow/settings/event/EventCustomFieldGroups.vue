@@ -17,7 +17,7 @@
               <v-card flat color="primary lighten-9" class="square-card">
                 <v-card-title style="height: 40px" class="py-0">
                   Read Only
-                  <v-checkbox type="checkbox" class="ml-3"
+                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                               v-model="event.startTimeReadOnly"></v-checkbox>
                 </v-card-title>
                 <v-card-text>
@@ -76,7 +76,7 @@
               <v-card flat color="primary lighten-9" class="square-card">
                 <v-card-title style="height: 40px" class="py-0">
                   Read Only
-                  <v-checkbox type="checkbox" class="ml-3"
+                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                               v-model="event.endTimeReadOnly"></v-checkbox>
                 </v-card-title>
                 <v-card-text>
@@ -131,6 +131,7 @@
               <v-autocomplete
                 v-model="event.resourceCustomFieldId"
                 :items="eventResourceFields"
+                :disabled="!userCanEdit"
                 label="Resource"
                 @change="resourceFieldChanged = true"
                 item-text="fieldName"
@@ -139,7 +140,7 @@
               <v-card flat color="primary lighten-9" class="square-card">
                 <v-card-title style="height: 40px" class="py-0">
                   Read Only
-                  <v-checkbox type="checkbox" class="ml-3"
+                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                               v-model="event.resourceReadOnly"></v-checkbox>
                 </v-card-title>
                 <v-card-text>
@@ -192,6 +193,7 @@
               <v-btn class="mr-0 save-btn"
                      @click="saveChangesToDefaultFields"
                      color="primary"
+                     v-if="userCanEdit"
               >Save Changes
               </v-btn>
             </v-col>
@@ -289,7 +291,7 @@
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
                       </v-btn>
-                      <v-btn text color="primary" @click="cfgToDelete=item">
+                      <v-btn v-if="userCanEdit" text color="primary" @click="cfgToDelete=item">
                         <v-icon>delete</v-icon>
                       </v-btn>
                     </div>
@@ -343,7 +345,7 @@
                             <a :href="`/settings/customField/${cf.id}`">{{ cf.fieldName }} </a><span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                             <div>
                               Detail View:
-                              <input type="checkbox" class="ml-2" v-model="cf.detailView"
+                              <input :disabled="!userCanEdit" type="checkbox" class="ml-2" v-model="cf.detailView"
                                      @input="saveDetailView(cf)">
                             </div>
                             <div class="text-left mt-3" v-if="cf.edit">

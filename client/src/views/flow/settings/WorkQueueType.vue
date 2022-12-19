@@ -154,7 +154,7 @@
         <v-card flat color="rowShadeCustom" class="square-card my-2">
           <v-card-title style="height: 40px" class="py-0 grey--text text--darken-1">
             Hidden
-            <v-checkbox type="checkbox" class="ml-3"
+            <v-checkbox :disabled="!this.userCanEdit" type="checkbox" class="ml-3"
                         v-model="workQueueType.hidden"></v-checkbox>
           </v-card-title>
           <v-card-text>
@@ -163,6 +163,7 @@
               v-model="workQueueType.hiddenWhiteListedPositions"
               :items="positions"
               :loading="positionsLoading"
+              :disabled="!this.userCanEdit"
               multiple
               clearable
               label="White Listed Positions"
@@ -201,7 +202,7 @@
               </template>
             </v-autocomplete>
             <br/>
-            <v-btn color="primary" dark class="d-inline-block white--text"
+            <v-btn v-if="this.userCanEdit" color="primary" dark class="d-inline-block white--text"
                    @click="saveHiddenAndWhiteList()">
               <v-icon class="mr-2">save</v-icon>
               Save
@@ -267,7 +268,7 @@
     <v-row>
       <SmartlistColumn
         v-if="this.workQueueType.smartlistId"
-        :can-edit="true"
+        :can-edit="this.userCanEdit"
         :smartlist-id="this.workQueueType.smartlistId"
         :company-object-types="filteredCompanyObjectTypes"
       />

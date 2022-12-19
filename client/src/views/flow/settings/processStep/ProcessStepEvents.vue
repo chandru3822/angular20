@@ -71,13 +71,16 @@
                   <td class="text-left">{{item.initialEventStatusType}}</td>
                   <td>
                     <div style="display: flex; justify-content: flex-end">
-                      <router-link class="no-text-decoration pr-3"
+                      <router-link v-if="userCanEdit" class="no-text-decoration pr-3"
                                    :to="`/settings/processStep/${processStepId}/event/${item.id}`">
-                        <v-btn small text color="primary">
+                        <v-btn :disabled="!userCanEdit" small text color="primary">
                           <v-icon>edit</v-icon>
                         </v-btn>
                       </router-link>
-                      <v-btn small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                      <v-btn v-else :disabled="!userCanEdit" small text color="primary">
+                        <v-icon>edit</v-icon>
+                      </v-btn>
+                      <v-btn :disabled="!userCanDelete" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                     </div>
                   </td>
                 </tr>
@@ -152,6 +155,7 @@ export default {
       processStepId: this.$route.params.id,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
       headers: [
         {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Event', value: 'eventName', show: true},

@@ -3,7 +3,7 @@
     <v-card flat color="primary lighten-9" class="square-card">
       <v-card-title style="height: 40px" class="py-0">
         Status Read Only
-        <v-checkbox type="checkbox" class="ml-3"
+        <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                     v-model="projectObjectType.statusReadOnly"></v-checkbox>
       </v-card-title>
       <v-card-text>
@@ -12,6 +12,7 @@
           v-model="projectObjectType.statusReadOnlyWhiteListedPositions"
           :items="positions"
           :loading="positionsLoading"
+          :disabled="!userCanEdit"
           multiple
           clearable
           label="White Listed Positions"
@@ -50,7 +51,7 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primary" dark class="d-inline-block white--text"
+        <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                @click="saveReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save
@@ -60,7 +61,7 @@
     <v-card flat color="primary lighten-9" class="square-card mt-5">
       <v-card-title style="height: 40px" class="py-0">
         Owner Read Only
-        <v-checkbox type="checkbox" class="ml-3"
+        <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                     v-model="projectObjectType.ownerReadOnly"></v-checkbox>
       </v-card-title>
       <v-card-text>
@@ -107,7 +108,7 @@
           </template>
         </v-autocomplete>
         <br/>
-        <v-btn color="primary" dark class="d-inline-block white--text"
+        <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                @click="saveOwnerReadOnlyAndWhiteList()">
           <v-icon class="mr-2">save</v-icon>
           Save

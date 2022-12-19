@@ -9,7 +9,7 @@
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
                    to="/newContact" color="primary" >
               <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add Contact</span>
+              <span v-if="!constants.IS_MOBILE" class="body-medium">Add Contact</span>
             </v-btn>
             <v-menu data-app left
                     v-else-if="canAdd && companies && companies.length > 1"
@@ -21,7 +21,7 @@
               <template v-slot:activator="{ on }">
                 <v-btn text v-on="on" color="primary">
                   <v-icon>add</v-icon>
-                  <span v-if="!constants.IS_MOBILE">Add Contact</span>
+                  <span v-if="!constants.IS_MOBILE" class="body-medium">Add Contact</span>
                 </v-btn>
               </template>
               <v-list dense class="pa-3">
@@ -40,7 +40,7 @@
           class="elevation-1 mt-3"
         >
           <v-text-field
-              class="mt-5"
+              class="mt-5 body-large"
               prepend-inner-icon="search"
               text
               clearable

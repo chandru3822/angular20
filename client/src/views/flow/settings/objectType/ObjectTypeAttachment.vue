@@ -7,7 +7,7 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <div class="mt-4">
-                <v-checkbox v-if="showReadOnly" style="display: flex; justify-content: flex-end" v-model="selectedAttachment.readOnly" label="Read-Only (temp backwards compatible)" @change="updateReadOnly(selectedAttachment)"></v-checkbox>
+                <v-checkbox :disabled="!userCanEdit" v-if="showReadOnly" style="display: flex; justify-content: flex-end" v-model="selectedAttachment.readOnly" label="Read-Only (temp backwards compatible)" @change="updateReadOnly(selectedAttachment)"></v-checkbox>
               </div>
             </v-toolbar-items>
           </v-toolbar>

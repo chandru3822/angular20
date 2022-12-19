@@ -138,7 +138,7 @@
                       <v-icon v-if="selectedWorkQueueCategoryId === item.id" @click="saveCategory(item)">save</v-icon>
                       <v-icon v-else @click="selectedWorkQueueCategoryId = item.id">edit</v-icon>
                     </v-btn>
-                    <v-btn small text color="primary" class="clickable" @click="categoryToDelete=item">
+                    <v-btn :disabled="!userCanDelete" small text color="primary" class="clickable" @click="categoryToDelete=item">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>

@@ -52,7 +52,7 @@
                 <v-btn small fab text color="primary" class="d-inline-block" @click="clickRow(item.id)">
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <v-btn :disabled="!userCanDelete" small text color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -87,7 +87,10 @@
           {text: 'Org Type', value: 'orgType', show: true},
           {text: '', value: 'icons', show: false, width: '100px'},
         ],
-        positionToDelete: null
+        positionToDelete: null,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
       }
     },
     computed:{

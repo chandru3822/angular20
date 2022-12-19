@@ -38,7 +38,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]">
+            <v-btn v-if="userCanEdit" text color="primary" @click="[addNew = !addNew, newType = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -99,7 +99,7 @@
                     item-text="processStepStatusType"
                     attach></v-autocomplete>
 
-                  <v-btn color="primary" dark class="white--text mr-4"
+                  <v-btn v-if="userCanEdit" color="primary" dark class="white--text mr-4"
                          :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
                          @click="saveType(item, false)">Save</v-btn>
                 </td>
