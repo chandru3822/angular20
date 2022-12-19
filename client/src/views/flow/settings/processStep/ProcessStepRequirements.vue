@@ -512,17 +512,17 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left" style="width: 65px">{{ item.requirementNbr }}</td>
-                  <td class="text-left"><a :href="`/settings/processStep/${item.processStepId}/components`">{{ item.processStepRequirementType }}</a></td>
+                  <td class="text-left">{{ item.processStepRequirementType }}</td>
                   <td class="text-left">
                     <span v-if="item.processStepRequirementTypeId === 1">
-                      {{ item.parentName }} | {{ item.fieldName }}
+                      <a :href="`/settings/processStep/${item.processStepId}/components`">{{ item.parentName }}</a> | {{ item.fieldName }}
                     </span>
                     <span v-else-if="item.processStepRequirementTypeId === 2">
-                      {{ item.companyFunctionName }}
+                      <a :href="`/settings/function/${item.companyFunctionId}`">{{ item.companyFunctionName }}</a>
                     </span>
                     <span
                       v-else-if="item.processStepRequirementTypeId === 7 || item.processStepRequirementTypeId === 8">
-                      {{ item.referenceProcessStepName }}
+                      <a :href="`/settings/processStep/${item.referenceProcessStepId}/components`">{{ item.referenceProcessStepName }}</a>
                     </span>
                     <span v-else>
                       {{ item.fieldName }}
