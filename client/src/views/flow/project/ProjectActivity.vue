@@ -97,7 +97,7 @@
     </div>
     <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
     <div class="project-activity-inner-container">
-      <div v-show="!isSidebarCollapsed" class="height-one-hunned">
+      <div v-show="!isSidebarCollapsed" class="scrollable-area">
         <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
         <ProjectNotes :contact-id="contactId" :user-id="userId"
                       :object-type-id="objectTypeId" :project-id="projectId"
@@ -454,6 +454,11 @@ export default {
 
 .toggle-btn {
   width: 50% !important;
+}
+
+//not sure why/when this broke but we were always showing a scrollbar this makes it show only when needed
+.scrollable-area {
+  height: calc(100% - 5px);
 }
 </style>
 
