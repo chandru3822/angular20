@@ -385,7 +385,8 @@ export default {
     },
     getProjectTags: async function () {
       try {
-        const {data, status} = await getRequest(`/tag/project/${this.projectId}`)
+        const {data, status} = await getRequestWithParams(`/tag/project/${this.projectId}`,
+          {skipCancel: true }, null, [])
         this.project.tags = data
       } catch (e) {
         logError(e)
