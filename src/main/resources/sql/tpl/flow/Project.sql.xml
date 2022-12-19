@@ -19,6 +19,12 @@
     where pps.id = :projectProcessStepId
   ]]></project.getProjectIdByProjectProcessStepId>
 
+  <project.getProjectIdsByPpsIds><![CDATA[
+    select distinct project_id
+    from flow.project_process_step pps
+    where pps.id = any(:ppsIds::bigint[])
+  ]]></project.getProjectIdsByPpsIds>
+
   <project.getProjectIdByProjectProcessStepEventId><![CDATA[
     select pps.project_id
     from flow.project_process_step_event ppse

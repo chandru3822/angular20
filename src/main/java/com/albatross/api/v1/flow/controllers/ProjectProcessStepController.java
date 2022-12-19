@@ -1,8 +1,5 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.pubsub.PubSubService;
-import com.albatross.api.pubsub.model.EventChannel;
-import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
@@ -45,8 +42,6 @@ public class ProjectProcessStepController {
   private final CustomFieldValueService customFieldValueService;
 
   private final SqlCache sqlCache;
-
-  private final PubSubService pubSubService;
 
   @GetMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(
@@ -116,6 +111,7 @@ public class ProjectProcessStepController {
   public ResponseEntity<ProjectProcessStepStatus> performAction(
       @PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
+      List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
       ProjectProcessStep pps =
           projectProcessStepService.getProjectProcessStep(projectProcessStepId);
       ProjectProcessStepAction action =
@@ -142,18 +138,11 @@ public class ProjectProcessStepController {
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      ProjectProcessStepService.PpsActionResult ppsActionResults = projectProcessStepService.performAction(action, pps, new ArrayList<>());
-
-      if(ppsActionResults.getShouldRunProjectTagUpdate().get()) {
-        //todo: when tags are assigned/removed without using actions, remove this and move it to the new place
-        ProjectTagMessage ptm = new ProjectTagMessage();
-        ptm.setProjectId(pps.getProjectId());
-        pubSubService.publish(EventChannel.NOTIFICATION, ptm);
-      }
+      actionResults.add(projectProcessStepService.performAction(action, pps, new ArrayList<>()));
 
       // Since something on the PPS might have changed, run autotriggers for it
-      projectProcessStepService.performAutoTriggerActions(
-          projectProcessStepId, securityService.getCurrentUserDetails());
+      actionResults.add(projectProcessStepService.performAutoTriggerActions(
+          projectProcessStepId, securityService.getCurrentUserDetails()));
 
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
       // Consolidate to projectProcessStepService
@@ -166,8 +155,8 @@ public class ProjectProcessStepController {
         for (Long ppsId : ppsIds) {
           // Don't re-check the ppsId we just previously did
           if (!ppsId.equals(projectProcessStepId)) {
-            projectProcessStepService.performAutoTriggerActions(
-                ppsId, securityService.getCurrentUserDetails());
+            actionResults.add(projectProcessStepService.performAutoTriggerActions(
+                ppsId, securityService.getCurrentUserDetails()));
           }
         }
       }
@@ -183,12 +172,16 @@ public class ProjectProcessStepController {
       for (ProjectProcessStep step : steps) {
         // only run if the referring PPS is active
         if (step.getProcessStepStatusTypeId() == 1) {
-          projectProcessStepService.performAutoTriggerActions(
-              step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+          actionResults.add(projectProcessStepService.performAutoTriggerActions(
+              step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
         }
       }
       ProjectProcessStepStatus status =
           projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
+
+      boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+      projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, pps.getProjectId(), null);
+
       return new ResponseEntity<>(status, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
@@ -223,6 +216,7 @@ public class ProjectProcessStepController {
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
       // Consolidate to projectProcessStepService
       List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(newPpsId);
+      List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =
             projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
@@ -230,8 +224,8 @@ public class ProjectProcessStepController {
         for (Long ppsId : ppsIds) {
           // Don't re-check the ppsId we just previously did
           if (!ppsId.equals(newPpsId)) {
-            projectProcessStepService.performAutoTriggerActions(
-                ppsId, securityService.getCurrentUserDetails());
+            actionResults.add(projectProcessStepService.performAutoTriggerActions(
+                ppsId, securityService.getCurrentUserDetails()));
           }
         }
       }
@@ -247,10 +241,12 @@ public class ProjectProcessStepController {
       for (ProjectProcessStep step : steps) {
         // only run if the referring PPS is active
         if (step.getProcessStepStatusTypeId() == 1) {
-          projectProcessStepService.performAutoTriggerActions(
-              step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+          actionResults.add(projectProcessStepService.performAutoTriggerActions(
+              step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
         }
       }
+      boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+      projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, projectProcessStep.getProjectId(), null);
     } catch (Exception e) {
       final String errMessage =
           String.format(
@@ -316,6 +312,7 @@ public class ProjectProcessStepController {
   public ResponseEntity<Void> updateProjectProcessStepStatus(
       @PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
+      List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
       projectProcessStepService.setStatus(
           projectProcessStepId,
           status.getProcessStepStatusTypeId(),
@@ -325,8 +322,8 @@ public class ProjectProcessStepController {
       // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free
       // time... good one
       try {
-        projectProcessStepService.performAutoTriggerActions(
-            projectProcessStepId, securityService.getCurrentUserDetails());
+        actionResults.add(projectProcessStepService.performAutoTriggerActions(
+            projectProcessStepId, securityService.getCurrentUserDetails()));
 
         // check for any actions using this PS - Status as a requirement - NOT including SELF
         // (because that creates a potential infinite loop) if active
@@ -339,10 +336,16 @@ public class ProjectProcessStepController {
         for (ProjectProcessStep step : steps) {
           // only run if the referring PPS is active
           if (step.getProcessStepStatusTypeId() == 1) {
-            projectProcessStepService.performAutoTriggerActions(
-                step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+            actionResults.add(projectProcessStepService.performAutoTriggerActions(
+                step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
           }
         }
+
+        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+        List<Long> ppsIds = new ArrayList<>();
+        ppsIds.add(projectProcessStepId);
+        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
+
       } catch (Exception e) {
         final String errMessage =
             String.format(

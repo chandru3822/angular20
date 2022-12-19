@@ -2,6 +2,9 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
@@ -62,6 +65,8 @@ public class AvailabilityService {
   private final MapboxApiService mapboxApiService;
 
   private final MarketoService marketoService;
+
+  private final PubSubService pubSubService;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
@@ -737,8 +742,15 @@ public class AvailabilityService {
 
           // then run manually run the schedule event action which is process_step_action_id = 1
           // this will also run auto triggers if needed
-          projectProcessStepEventService.performStepEventAction(
+          ProjectProcessStepEventService.PpseActionResult ppseActionResult = projectProcessStepEventService.performStepEventAction(
               request.getProjectProcessStepId(), request.getProjectProcessStepEventId(), 1L);
+
+          if (ppseActionResult.getShouldRunProjectTagUpdate()) {
+            //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
+            ProjectTagMessage ptm = new ProjectTagMessage();
+            ptm.setProjectId(ppseActionResult.getProjectId());
+            pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+          }
 
           // after the auto triggers have run then get the event
           Optional<ProjectProcessStepEvent> ppsEvent =

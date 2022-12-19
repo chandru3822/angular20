@@ -116,8 +116,8 @@ public class ProjectProcessStepEventController {
       // do the action
       ProjectProcessStepEventService.PpseActionResult ppseActionResult = projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
 
-      if (ppseActionResult.getShouldRunProjectTagUpdate().get()) {
-        //todo: when tags are assigned/removed without using actions, remove this and move it to the new place
+      if (ppseActionResult.getShouldRunProjectTagUpdate()) {
+        //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
         ProjectTagMessage ptm = new ProjectTagMessage();
         ptm.setProjectId(ppseActionResult.getProjectId());
         pubSubService.publish(EventChannel.NOTIFICATION, ptm);
