@@ -604,7 +604,6 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   font-weight: 400;
   font-size: 1rem;
   line-height: 1.6;
-  color: red;
 }
 
 .body-medium, tr{
@@ -614,15 +613,11 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.6;
 }
 
-.body-small, .body-large .v-messages__message{
+.body-small, .body-large .v-messages__message {
   font-family: lato;
   font-weight: 400;
   font-size: .75rem;
   line-height: 1.6;
-}
-
-.body-large .v-select__selections{
-  color: red;
 }
 
 @media (min-width: 600px) {
