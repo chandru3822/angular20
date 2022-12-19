@@ -104,17 +104,21 @@ public class CustomFieldValueController {
     List<CustomFieldGroup> groups =
         customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
 
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {
       // grab all PPS where the updated fields are ancillary and perform auto triggers there
       List<Long> cfgaIds =
           values.stream().map(CustomFieldValue::getCustomFieldGroupAssignmentId).toList();
       if (!cfgaIds.isEmpty()) {
+        Long ppsForProjectId = null;
         List<Long> ppsIds =
             projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
         for (Long ppsId : ppsIds) {
-          projectProcessStepService.performAutoTriggerActions(
-              ppsId, securityService.getCurrentUserDetails());
+          actionResults.add(projectProcessStepService.performAutoTriggerActions(
+              ppsId, securityService.getCurrentUserDetails()));
         }
+        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
       }
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -150,6 +154,7 @@ public class CustomFieldValueController {
         customFieldValueService.updateCustomFieldValues(
             values, projectId, ObjectType.PROJECT.toString());
 
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {
       // grab all PPS where the updated fields are ancillary and perform auto triggers there
       List<Long> cfgaIds =
@@ -158,9 +163,11 @@ public class CustomFieldValueController {
         List<Long> ppsIds =
             projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
         for (Long ppsId : ppsIds) {
-          projectProcessStepService.performAutoTriggerActions(
-              ppsId, securityService.getCurrentUserDetails());
+          actionResults.add(projectProcessStepService.performAutoTriggerActions(
+              ppsId, securityService.getCurrentUserDetails()));
         }
+        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
       }
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -179,9 +186,10 @@ public class CustomFieldValueController {
         customFieldValueService.updateCustomFieldValues(
             values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {
-      projectProcessStepService.performAutoTriggerActions(
-          projectProcessStepId, securityService.getCurrentUserDetails());
+      actionResults.add(projectProcessStepService.performAutoTriggerActions(
+          projectProcessStepId, securityService.getCurrentUserDetails()));
 
       // grab all PPS where the updated fields are ancillary and perform auto triggers there
       List<Long> cfgaIds =
@@ -192,10 +200,12 @@ public class CustomFieldValueController {
         for (Long ppsId : ppsIds) {
           // Don't re-check the ppsId we just previously did
           if (!ppsId.equals(projectProcessStepId)) {
-            projectProcessStepService.performAutoTriggerActions(
-                ppsId, securityService.getCurrentUserDetails());
+            actionResults.add(projectProcessStepService.performAutoTriggerActions(
+                ppsId, securityService.getCurrentUserDetails()));
           }
         }
+        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
       }
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -214,7 +224,7 @@ public class CustomFieldValueController {
       Optional<Project> project = projectService.getProject(projectId);
       if (project.isPresent()) {
         customFieldValueService.updateProjectCustomFieldValue(cfv, projectId, customFieldId);
-
+        List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
         try {
           // grab all PPS where the updated fields are ancillary and perform auto triggers there
           ArrayList<Long> cfgaIds = new ArrayList<>();
@@ -223,9 +233,11 @@ public class CustomFieldValueController {
             List<Long> ppsIds =
                 projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
             for (Long ppsId : ppsIds) {
-              projectProcessStepService.performAutoTriggerActions(
-                  ppsId, securityService.getCurrentUserDetails());
+              actionResults.add(projectProcessStepService.performAutoTriggerActions(
+                  ppsId, securityService.getCurrentUserDetails()));
             }
+            boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+            projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
           }
         } catch (Exception e) {
           throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());

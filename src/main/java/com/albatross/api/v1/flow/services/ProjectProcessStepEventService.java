@@ -432,9 +432,10 @@ public class ProjectProcessStepEventService {
 //          var childFunctionsRan = Boolean.parseBoolean(childFunctionResults.get("didFunctionsRun").toString());
           List<Long> newChildPpsIds = ppseActionResult.getNewChildPpsIds();
 
+          List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
           //moved this out of the status check section so we could do it after child functions have been run
           if(doAutoTriggers || ppseActionResult.getDidFunctionsRun()) {
-            projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+            actionResults.add(projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
           }
 
           //if the pps status was updated (or marked to be updated if the actual status didn't change)
@@ -444,7 +445,7 @@ public class ProjectProcessStepEventService {
             for(ProjectProcessStep step : steps) {
               //only run if the referring PPS is active and not the parent PPS
               if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
-                projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+                actionResults.add(projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
               }
             }
           }
@@ -452,7 +453,7 @@ public class ProjectProcessStepEventService {
           //if new PPSs were created by DB functions, run through autotriggers
           if (ppseActionResult.getDidFunctionsRun() && !newChildPpsIds.isEmpty()) {
             for (Long newPpsId : newChildPpsIds) {
-              projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
+              actionResults.add(projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails()));
 
               //run auto triggers for PPSs which use the new PPS status
               List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
@@ -460,7 +461,7 @@ public class ProjectProcessStepEventService {
                 //only run if the referring PPS is active and not the parent PPS (which shouldn't happen since these are newly created PPSs)
                 //it's assumed the DB function that created this new ID put it in an active status/category
                 if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
-                  projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails());
+                  actionResults.add(projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails()));
                 }
               }
             }
@@ -474,6 +475,13 @@ public class ProjectProcessStepEventService {
 
           ppseActionResult.setPpsEventId(ppsEventId);
           ppseActionResult.setProjectId(pps.getProjectId());
+
+          //if the manually triggered action did not tell us to run project tag updates, then check if any of the auto triggered ones did.
+          if(!ppseActionResult.getShouldRunProjectTagUpdate()) {
+            boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+            ppseActionResult.setShouldRunProjectTagUpdate(doTagUpdate);
+          }
+
           return ppseActionResult;
 //          return ResponseEntity.ok(getPpsEvent(ppsId, ppsEventId));
         } else {
@@ -496,7 +504,7 @@ public class ProjectProcessStepEventService {
   @Data
   public static class PpseActionResult {
     private Boolean didFunctionsRun;
-    private AtomicBoolean shouldRunProjectTagUpdate;
+    private Boolean shouldRunProjectTagUpdate;
     private List<Long> newChildPpsIds = new ArrayList<>();
     private Long ppsEventId, projectId;
   }
@@ -569,9 +577,8 @@ public class ProjectProcessStepEventService {
     if (!childFunctions.isEmpty()) {
       ppseActionResult.setDidFunctionsRun(true);
     }
-    ppseActionResult.setShouldRunProjectTagUpdate(doProjectTagUpdate);
+    ppseActionResult.setShouldRunProjectTagUpdate(doProjectTagUpdate.get());
     ppseActionResult.setNewChildPpsIds(newChildPpsIds);
-
     return ppseActionResult;
   }
 

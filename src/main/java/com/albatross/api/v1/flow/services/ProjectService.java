@@ -51,6 +51,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
@@ -70,6 +71,8 @@ public class ProjectService {
 
   private final MapboxApiService mapboxApiService;
 
+  private final SqlArrayService sqlArrayService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -86,6 +89,19 @@ public class ProjectService {
     params.put("projectProcessStepId", projectProcessStepId);
     return sqlCache.queryForObject(
         "project.getProjectIdByProjectProcessStepId", params, Long.class);
+  }
+
+  public List<Long> getDistinctProjectIdsByPpsIds(List<Long> ppsIds) {
+    HashMap<String, Object> params = new HashMap<>();
+    try {
+      params.put("ppsIds", sqlArrayService.createSqlArrayOfType("int", ppsIds));
+      List<Long> results = sqlCache.query("project.getProjectIdsByPpsIds", params, new SingleColumnRowMapper<>(Long.class));
+      return results;
+    } catch (SQLException e) {
+      log.error("PROJECT: error retrieving project ids for ppsIds: {}", e.getMessage());
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
+    }
   }
 
   public Long getProjectIdByProjectProcessStepEventId(Long projectProcessStepEventId) {

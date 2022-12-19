@@ -227,6 +227,7 @@ import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "../../../ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import debounce from 'lodash.debounce'
+import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 
 export default {
   name: 'Project',
@@ -284,6 +285,8 @@ export default {
     },
     projectTagEvents: async function () {
       if(this.projectTagEvents?.length > 0) {
+        console.log('PTEEEEE', this.projectTagEvents)
+        this.$store.dispatch(NotificationActions.PROCESS_PROJECT_MSG, this.projectId)
         await this.getProjectTags()
       }
     }

@@ -2,6 +2,9 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -76,6 +79,8 @@ public class ProjectProcessStepService {
   private final ListOfValueService listOfValueService;
   private final CommunicationService communicationService;
   private final MessagingService messagingService;
+
+  private final PubSubService pubSubService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -266,7 +271,8 @@ public class ProjectProcessStepService {
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
     var ppsId = this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId);
     if (performAutoTrigger) {
-      this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+      PpsActionResult ppsActionResult = this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+      this.updateProjectTagsViaRedis(ppsActionResult.getShouldRunProjectTagUpdate(), projectId, null);
     }
     return ppsId;
   }
@@ -420,9 +426,9 @@ public class ProjectProcessStepService {
       cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
       try {
         log.info(String.format("TRIGGERS: Starting #%s for ppsId: %s", counter++, result.get("ppsId")));
-        List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
-        if (!newPpsIds.isEmpty()) {
-          createdPpsIds.addAll(newPpsIds);
+        PpsActionResult ppsActionResult = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
+        if (!ppsActionResult.getPpsIds().isEmpty()) {
+          createdPpsIds.addAll(ppsActionResult.getPpsIds());
         }
       } catch (Exception e) {
         // Errors will already be printed to log. Silently swallow exception so we can keep trying other PPSs
@@ -433,13 +439,33 @@ public class ProjectProcessStepService {
     log.info("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
+  public void updateProjectTagsViaRedis(Boolean doUpdate, Long projectId, List<Long> ppsIds) {
+    if(doUpdate) {
+      List<Long> projectIds;
+      if(null == projectId) {
+        //this is a list of distinct project ids, so it should only run once per project. some auto triggers can happen for multiple projects at the same time. like when saving contact custom fields
+        projectIds = projectService.getDistinctProjectIdsByPpsIds(ppsIds);
+        for(Long projId : projectIds) {
+          ProjectTagMessage ptm = new ProjectTagMessage();
+          ptm.setProjectId(projId);
+          pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+        }
+      } else {
+        //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
+        ProjectTagMessage ptm = new ProjectTagMessage();
+        ptm.setProjectId(projectId);
+        pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+      }
+    }
+  }
+
   @Transactional
-  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
+  public PpsActionResult performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
     return performAutoTriggerActions(ppsId, userDetails, null, null, null, new ArrayList<>());
   }
 
   @Transactional
-  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, Long callingPpsId, List<Long> performedActions) {
+  public PpsActionResult performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, Long callingPpsId, List<Long> performedActions) {
     // Set the security context so we have user details in the async downline
     securityService.setCurrentUserDetails(userDetails);
 
@@ -448,6 +474,8 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     boolean actionsWerePerformed = false;
+    boolean doProjectUpdate = false;
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
 
     if (pps.getProcessStepStatusTypeId() == 1) {
       for (ProjectProcessStepAction action : pps.getActions()) {
@@ -472,6 +500,9 @@ public class ProjectProcessStepService {
             if (actionResult.getCanPerform()) {
               performedActions.add(action.getId());
               PpsActionResult ppsActionResult = this.performAction(action, updatedPps, performedActions);
+              if(ppsActionResult.getShouldRunProjectTagUpdate()) {
+                doProjectUpdate = true;
+              }
               if (!ppsActionResult.getPpsIds().isEmpty()) {
                 createdPpsIds.addAll(ppsActionResult.getPpsIds());
               }
@@ -496,14 +527,22 @@ public class ProjectProcessStepService {
           for (Long checkingPpsId : ppsIds) {
             // Don't re-check the ppsId we are in currently
             if (!checkingPpsId.equals(ppsId)) {
-              performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), ppsId, performedActions);
+              actionResults.add(performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), ppsId, performedActions));
             }
           }
         }
       }
     }
 
-    return createdPpsIds;
+    PpsActionResult result = new PpsActionResult();
+    result.setPpsIds(createdPpsIds);
+    result.setShouldRunProjectTagUpdate(doProjectUpdate);
+    //if the manually triggered action did not tell us to run project tag updates, then check if any of the auto triggered ones did.
+    if(!result.getShouldRunProjectTagUpdate()) {
+      boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+      result.setShouldRunProjectTagUpdate(doTagUpdate);
+    }
+    return result;
   }
 
   //putting this here due to circular reference issue i dont want to solve. yes it is weird i know
@@ -525,6 +564,7 @@ public class ProjectProcessStepService {
     var runStatusTriggers = false;
     var childFunctionsRan = false;
     PpsActionResult actionResult = new PpsActionResult();
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
 
     User user = securityService.getCurrentUser();
     //update process step status if needed
@@ -560,13 +600,13 @@ public class ProjectProcessStepService {
 
     //run autotriggers on parent pps if any functions were performed
     if (actionResult.getShouldRunAutoTriggers()) {
-      this.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
+      actionResults.add(this.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
     }
 
     //run autotriggers for all created child PPSs which have any auto trigger actions
     createdPps.stream()
               .filter(childStep -> Boolean.parseBoolean(childStep.get("shouldAutoTrigger").toString()))
-              .forEach(childStep -> this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
+              .forEach(childStep -> actionResults.add(this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions)));
 
     //run autotriggers for actions which use the new child PPSs status
     if (!createdPps.isEmpty()) {
@@ -575,7 +615,7 @@ public class ProjectProcessStepService {
       for (ProjectProcessStep step : steps) {
         //only run if the referring PPS is active, not the parent PPS, and not a new child PPS (since we already ran through those autotriggers)
         if (step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId()) && !ids.contains(step.getProjectProcessStepId())) {
-          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
+          actionResults.add(performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
         }
       }
     }
@@ -587,12 +627,19 @@ public class ProjectProcessStepService {
       for (ProjectProcessStep step : steps) {
         //only run if the referring PPS is active and not the parent PPS
         if (step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
-          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
+          actionResults.add(performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
         }
       }
     }
 
     actionResult.setPpsIds(createdPps.stream().map(step -> Long.parseLong(step.get("ppsId").toString())).toList());
+
+    //if the manually triggered action did not tell us to run project tag updates, then check if any of the auto triggered ones did.
+    if(!actionResult.getShouldRunProjectTagUpdate()) {
+      boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+      actionResult.setShouldRunProjectTagUpdate(doTagUpdate);
+    }
+
     return actionResult;
   }
 
@@ -1093,7 +1140,7 @@ public class ProjectProcessStepService {
 
   @Data public static class PpsActionResult {
     private Boolean shouldRunAutoTriggers;
-    private AtomicBoolean shouldRunProjectTagUpdate;
+    private Boolean shouldRunProjectTagUpdate;
     private List<Long> ppsIds = new ArrayList<>();
   }
 
@@ -1148,7 +1195,7 @@ public class ProjectProcessStepService {
 
     PpsActionResult results = new PpsActionResult();
     results.setShouldRunAutoTriggers(shouldRunAutoTriggers);
-    results.setShouldRunProjectTagUpdate(doProjectTagUpdate);
+    results.setShouldRunProjectTagUpdate(doProjectTagUpdate.get());
 //    return shouldRunAutoTriggers;
     return results;
   }
