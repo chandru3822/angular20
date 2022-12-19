@@ -211,7 +211,7 @@
                           </v-list-item-action>
                           <v-list-item-content>
                             <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
-                              <a :href="`/settings/customField/${cf.id}`">{{cf.fieldName}}</a>
+                              <a :href="`/settings/customField/${cf.customFieldId}`">{{cf.fieldName}}</a>
                               <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                               <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                               <div class="text-left mt-3" v-if="cf.edit">
@@ -346,7 +346,7 @@
                               </div>
                             </div>
                             <div v-else>
-                              <a :href="`/settings/customField/${cf.id}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
+                              <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
                                 (Ancillary)</a>
                               <div v-if="cf.edit" class="mt-3">
                                 <label>Use Parent Data: </label>
