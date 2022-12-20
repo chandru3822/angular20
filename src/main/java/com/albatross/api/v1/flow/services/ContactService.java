@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepProcess;
 import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -480,7 +481,7 @@ public class ContactService {
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());
 
-    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
 
     params.clear();
     params.put("contactId", contactId);

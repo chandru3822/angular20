@@ -1,6 +1,10 @@
-<sql>
-  <attachment.findById><![CDATA[
-    SELECT a.id,
+package com.albatross.api.v1.flow.queries;
+
+public class AttachmentQuery {
+
+  //language=PostgreSQL
+  public final static String findById = """
+ SELECT a.id,
            a.attachment_type_id,
            a.company_id,
            a.filename,
@@ -10,7 +14,7 @@
            a.size,
            a.uuid,
            a.archived,
-           substring(filename, '\.([^\.]+)$') as file_extension,
+           substring(filename, '\\.([^\\.]+)$') as file_extension,
            a.date_created,
            a.date_modified,
            a.created_by_id,
@@ -25,10 +29,11 @@
       left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     WHERE a.id = :id
       and a.archived is not true
-  ]]></attachment.findById>
+    """;
 
-  <attachment.getAttachmentForUuidCheck><![CDATA[
-    SELECT
+  //language=PostgreSQL
+  public final static String getAttachmentForUuidCheck = """
+ SELECT
       a.id,
       a.content_type,
       a.display_name,
@@ -38,10 +43,11 @@
     FROM flow.attachment a
     WHERE a.id = :id
       AND a.archived IS NOT TRUE
-  ]]></attachment.getAttachmentForUuidCheck>
+    """;
 
-  <attachment.getAttachmentById><![CDATA[
-    SELECT
+  //language=PostgreSQL
+  public final static String getAttachmentById = """
+SELECT
       a.id,
       a.attachment_type_id,
       a.content_type,
@@ -50,7 +56,7 @@
       a.s3_key,
       a.display_name,
       a.size,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       a.archived,
       a.date_created,
       concat(u.first_name, ' ', u.last_name) as uploaded_by,
@@ -59,10 +65,11 @@
     inner join flow."user" u on u.id = a.created_by_id
     WHERE a.id = :id
       AND a.archived IS NOT TRUE
-  ]]></attachment.getAttachmentById>
+    """;
 
-  <attachment.getAttachmentsByType><![CDATA[
-    SELECT
+  //language=PostgreSQL
+  public final static String getAttachmentsByType = """
+SELECT
       a.id,
       a.attachment_type_id,
       a.content_type,
@@ -72,7 +79,7 @@
       a.display_name,
       a.uuid,
       a.show,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       src.source_id,
       a.date_created,
       concat(u.first_name, ' ', u.last_name) as uploaded_by,
@@ -84,9 +91,10 @@
     WHERE a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
       order by a.date_created desc
-  ]]></attachment.getAttachmentsByType>
+    """;
 
-  <attachment.getAttachmentByUUID><![CDATA[
+  //language=PostgreSQL
+  public final static String getAttachmentByUUID = """
     SELECT
       a.id,
       a.attachment_type_id,
@@ -97,7 +105,7 @@
       a.size,
       a.uuid,
       a.show,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       a.date_created,
       concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
@@ -105,10 +113,11 @@
     FROM flow.attachment a
     inner join flow."user" u on u.id = a.created_by_id
     WHERE a.uuid = :uuid
-  ]]></attachment.getAttachmentByUUID>
+    """;
 
-  <attachment.getAttachmentsByTypeNoSource><![CDATA[
-    SELECT
+  //language=PostgreSQL
+  public final static String getAttachmentsByTypeNoSource = """
+SELECT
       a.id,
       a.attachment_type_id,
       a.content_type,
@@ -118,7 +127,7 @@
       a.display_name,
       a.uuid,
       a.show,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       a.date_created,
       concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
@@ -128,14 +137,15 @@
     WHERE a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
       order by a.date_created desc
-  ]]></attachment.getAttachmentsByTypeNoSource>
+    """;
 
-  <attachment.getAttachmentBySourceAndType><![CDATA[
+  //language=PostgreSQL
+  public final static String getAttachmentBySourceAndType = """
     SELECT
       a.id,
       a.attachment_type_id,
       a.content_type,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       a.filename,
       a.s3_key,
       a.size,
@@ -153,9 +163,10 @@
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
     LIMIT 1
-  ]]></attachment.getAttachmentBySourceAndType>
+    """;
 
-  <attachment.getAttachmentsBySourceIdAndType><![CDATA[
+  //language=PostgreSQL
+  public final static String getAttachmentsBySourceIdAndType = """
     SELECT a.id,
            a.attachment_type_id,
            a.content_type,
@@ -165,7 +176,7 @@
            a.display_name,
            a.size,
            concat(u.first_name, ' ', u.last_name) as uploaded_by,
-           substring(a.filename, '\.([^\.]+)$') as file_extension,
+           substring(a.filename, '\\.([^\\.]+)$') as file_extension,
            src.source_id,
            a.archived,
            false as linked
@@ -175,10 +186,11 @@
     WHERE case when :sourceId::bigint IS NOT NULL then src.source_id = :sourceId else 1 = 1 end
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
-  ]]></attachment.getAttachmentsBySourceIdAndType>
+    """;
 
-  <attachment.getAttachmentBySourceAndTypeForUserList><![CDATA[
-    SELECT
+  //language=PostgreSQL
+  public final static String getAttachmentBySourceAndTypeForUserList = """
+SELECT
       a.id,
       a.attachment_type_id,
       a.content_type,
@@ -188,7 +200,7 @@
       a.uuid,
       a.display_name,
       a.archived,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       src.source_id,
       a.date_created,
       concat(u.first_name, ' ', u.last_name) as uploaded_by,
@@ -199,28 +211,32 @@
     WHERE src.source_id = any( array [ :sourceIds ]::bigint[] )
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived is not true
-  ]]></attachment.getAttachmentBySourceAndTypeForUserList>
+    """;
 
-  <attachment.create><![CDATA[
-    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid, display_name)
+  //language=PostgreSQL
+  public final static String create = """
+INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid, display_name)
     VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4(), :displayName)
-  ]]></attachment.create>
+    """;
 
-  <attachment.addToJoinTable><![CDATA[
+  //language=PostgreSQL
+  public final static String addToJoinTable = """
     INSERT INTO flow.attachment_source(attachment_id, source_id)
     VALUES (:attachmentId, :sourceId)
-  ]]></attachment.addToJoinTable>
+    """;
 
-  <attachment.deleteById><![CDATA[
+  //language=PostgreSQL
+  public final static String deleteById = """
     UPDATE flow.attachment
     SET
       archived = TRUE,
       date_modified = now(),
       modified_by_id = :modifiedById
     WHERE id = :id
-  ]]></attachment.deleteById>
+    """;
 
-  <attachment.deleteBySourceAndType><![CDATA[
+  //language=PostgreSQL
+  public final static String deleteBySourceAndType = """
     UPDATE flow.attachment a
     SET
       archived = TRUE,
@@ -234,9 +250,10 @@
         AND a.attachment_type_id = :attachmentTypeId
     ) AS s
     WHERE a.id = s.attachment_id
-  ]]></attachment.deleteBySourceAndType>
+    """;
 
-  <attachment.getAttachmentType><![CDATA[
+  //language=PostgreSQL
+  public final static String getAttachmentType = """
     select at.id,
            at.attachment_type,
            at.is_system,
@@ -245,10 +262,11 @@
     from flow.attachment_type at
       inner join flow.key_pattern kp on kp.id = at.key_pattern_id
     where at.id = :id
-  ]]></attachment.getAttachmentType>
+    """;
 
-  <attachment.getAttachmentSource><![CDATA[
-    select project_id as id_to_use,
+  //language=PostgreSQL
+  public final static String getAttachmentSource = """
+select project_id as id_to_use,
            'project' as object_type_text
     from flow.project_attachment
     where attachment_id = :attachmentId
@@ -289,19 +307,21 @@
     where attachment_id = :attachmentId
       and linked is false
       and archived is false
-  ]]></attachment.getAttachmentSource>
+    """;
 
-  <attachment.update><![CDATA[
+  //language=PostgreSQL
+  public final static String update = """
     update flow.attachment
     set display_name = :displayName,
         date_modified = now(),
         modified_by_id = :userId
     where id = :id
-  ]]></attachment.update>
+    """;
 
-  <attachment.getComparisonFields><![CDATA[
+  //language=PostgreSQL
+  public final static String getComparisonFields = """
     select *
     from flow.get_attachment_compare_fields(:attachmentId::bigint);
-  ]]></attachment.getComparisonFields>
+    """;
 
-</sql>
+}

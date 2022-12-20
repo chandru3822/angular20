@@ -1,13 +1,18 @@
-<sql>
-  <country.getAll><![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class CountryQuery {
+
+  //language=PostgreSQL
+  public final static String getAll = """
     select c.id,
        c.country,
        c.abbreviation
     from flow.country c
     order by c.country
-  ]]></country.getAll>
+    """;
 
-  <country.getAllForCompany><![CDATA[
+  //language=PostgreSQL
+  public final static String getAllForCompany = """
     select cc.id,
        cc.company_id,
        cc.archived,
@@ -19,6 +24,6 @@
     where cc.archived is not true
       and cc.company_id = :companyId
     order by c.country
-  ]]></country.getAllForCompany>
+    """;
 
-</sql>
+}

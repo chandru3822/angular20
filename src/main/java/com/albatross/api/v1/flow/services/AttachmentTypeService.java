@@ -8,6 +8,9 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.event.EventAttachmentType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.queries.AttachmentTypeQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -35,20 +38,20 @@ public class AttachmentTypeService {
     params.put("companyId", user.getCompanyId());
 
     List<AttachmentType> attachmentTypes =
-        sqlCache.query("attachmentType.getTypesForCompany", params, AttachmentType.class);
+        sqlCache.queryBySql(AttachmentTypeQuery.getTypesForCompany, params, AttachmentType.class);
     return attachmentTypes;
   }
 
   public List<AttachmentType> getSystemAttachmentTypes() {
-    return sqlCache.query(
-        "attachmentType.getSystemTypes", Collections.emptyMap(), AttachmentType.class);
+    return sqlCache.queryBySql(
+      AttachmentTypeQuery.getSystemTypes, Collections.emptyMap(), AttachmentType.class);
   }
 
   public Optional<AttachmentType> getType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
-    return sqlCache.get(
-        "attachmentType.getType",
+    return sqlCache.getBySql(
+      AttachmentTypeQuery.getType,
         ImmutableMap.of("companyId", currentUser.getCompanyId(), "typeId", typeId),
       new AttachmentTypeMapper<>(AttachmentType.class, om));
   }
@@ -63,8 +66,8 @@ public class AttachmentTypeService {
     params.put("linkable", linkable);
     params.put("focused", focused);
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query(
-      "attachmentType.getProcessStepTypesByPps", params, ProcessStepAttachmentType.class);
+    return sqlCache.queryBySql(
+      AttachmentTypeQuery.getProcessStepTypesByPps, params, ProcessStepAttachmentType.class);
   }
 
   public ResponseEntity<List<FieldInUse>> deleteType(Long typeId) {
@@ -75,8 +78,8 @@ public class AttachmentTypeService {
     if (!fields.isEmpty()) {
       return ResponseEntity.badRequest().body(fields);
     } else {
-      sqlCache.update(
-        "attachmentType.deleteType",
+      sqlCache.updateBySql(
+        AttachmentTypeQuery.deleteType,
         ImmutableMap.of("id", typeId, "modifiedById", currentUser.trueUserId()));
       return ResponseEntity.ok().build();
     }
@@ -85,15 +88,15 @@ public class AttachmentTypeService {
   public List<FieldInUse> getAllUsingAttachmentType(Long typeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
-    List<FieldInUse> fieldsInUse = sqlCache.query("attachmentType.getAllUsingType", params, FieldInUse.class);
+    List<FieldInUse> fieldsInUse = sqlCache.queryBySql(AttachmentTypeQuery.getAllUsingType, params, FieldInUse.class);
     return fieldsInUse;
   }
 
   public void updateType(AttachmentType type) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update(
-        "attachmentType.updateType",
+    sqlCache.updateBySql(
+      AttachmentTypeQuery.updateType,
         ImmutableMap.of(
             "companyId",
             type.getCompanyId(),
@@ -112,8 +115,8 @@ public class AttachmentTypeService {
 
     Long id =
         sqlCache
-            .updateReturningId(
-                "attachmentType.insertType",
+            .updateBySqlReturningId(
+              AttachmentTypeQuery.insertType,
                 ImmutableMap.of(
                     "attachmentType",
                     type.getAttachmentType(),
@@ -135,8 +138,8 @@ public class AttachmentTypeService {
     params.put("allowUpload", allowUpload);
     params.put("focused", focused);
     params.put("linkable", linkable);
-    return sqlCache.query(
-        "attachmentType.getEventTypesByPpsEventId", params, EventAttachmentType.class);
+    return sqlCache.queryBySql(
+      AttachmentTypeQuery.getEventTypesByPpsEventId, params, EventAttachmentType.class);
   }
 
   //these endpoints are for the admin side of things
@@ -246,10 +249,11 @@ public class AttachmentTypeService {
     params.put("focused", false);
     params.put("linkable", false);
 
-    //because we dont pass in any of the 3 variables, this "attachmentType.project.getAssignedTypes" should return them all
-    String sqlKey = null != ppsEventId ? "projectProcessStepEvent.getEventAttachmentTypes" : null != ppsId ? "projectProcessStep.getStepAttachmentTypes" : "attachmentType.project.getAssignedTypes";
+    //because we don't have to pass in any of the 3 variables, this AttachmentTypeQuery.projectGetAssignedTypes should return them all
+    String sql = null != ppsEventId ? ProjectProcessStepEventQuery.getEventAttachmentTypes :
+                   null != ppsId ? ProjectProcessStepQuery.getStepAttachmentTypes : AttachmentTypeQuery.projectGetAssignedTypes;
 
-    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
+    return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
   //these endpoints are for the non-admin side of things
@@ -260,12 +264,12 @@ public class AttachmentTypeService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("ppsId", ppsId);
     params.put("ppsEventId", ppsEventId);
-    String sqlKey = "attachmentType.getCombinedTypesForProject";
+    String sql = AttachmentTypeQuery.getCombinedTypesForProject;
     if(focused) {
-      sqlKey = null != ppsEventId ? "attachmentType.getFocusedTypesForPpsEvent" :
-               null != ppsId ? "attachmentType.getFocusedTypesForPps" : "attachmentType.getFocusedTypesForProject";
+      sql = null != ppsEventId ? AttachmentTypeQuery.getFocusedTypesForPpsEvent :
+               null != ppsId ? AttachmentTypeQuery.getFocusedTypesForPps : AttachmentTypeQuery.getFocusedTypesForProject;
     }
-    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
+    return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
 

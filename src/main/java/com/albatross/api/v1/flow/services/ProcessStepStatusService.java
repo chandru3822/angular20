@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +55,7 @@ public class ProcessStepStatusService {
       // the right statuses back
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("projectProcessStepId", projectProcessStepId);
-      companyId = sqlCache.queryForObject("projectProcessStep.getCompanyId", p2, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, p2, Long.class);
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -94,7 +95,7 @@ public class ProcessStepStatusService {
       // the right statuses back
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("projectProcessStepId", projectProcessStepId);
-      companyId = sqlCache.queryForObject("projectProcessStep.getCompanyId", p2, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, p2, Long.class);
     }
 
     HashMap<String, Object> params = new HashMap<>();

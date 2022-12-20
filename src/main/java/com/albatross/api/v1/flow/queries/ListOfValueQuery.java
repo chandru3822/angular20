@@ -1,5 +1,9 @@
-<sql>
-<listOfValue.getByCustomFieldId>
+package com.albatross.api.v1.flow.queries;
+
+public class ListOfValueQuery {
+
+  //language=PostgreSQL
+  public final static String getByCustomFieldId = """
     select
     lov.id,
     lov.name,
@@ -20,5 +24,8 @@
     order by
     case when cf.sort_list_values_alphabetically is true then lov.name end,
     case when cf.sort_list_values_alphabetically is false then lov.display_order end
-</listOfValue.getByCustomFieldId>
-</sql>
+    """;
+
+
+
+}

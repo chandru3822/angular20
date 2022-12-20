@@ -1,13 +1,18 @@
-<sql>
-  <dataType.getSystemDataTypes><![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class DataTypeQuery {
+
+  //language=PostgreSQL
+  public final static String getSystemDataTypes = """
     select dt.id,
        dt.data_type,
        dt.custom_behavior,
        dt.system_list
     from flow.data_type dt
-  ]]></dataType.getSystemDataTypes>
+    """;
 
-  <dataType.getCompanyDataTypes><![CDATA[
+  //language=PostgreSQL
+  public final static String getCompanyDataTypes = """
     select cdt.id,
        cdt.company_id,
        cdt.company_data_type,
@@ -22,11 +27,13 @@
            inner join flow.data_type dt on dt.id = cdt.data_type_id
     where cdt.company_id = :companyId
       and cdt.archived is not true
-  ]]></dataType.getCompanyDataTypes>
+    """;
 
-  <dataType.getDataTypeRequirements><![CDATA[
+  //language=PostgreSQL
+  public final static String getDataTypeRequirements = """
     select *
     from flow.data_type_requirement
     where data_type_id = :dataTypeId
-  ]]></dataType.getDataTypeRequirements>
-</sql>
+    """;
+
+}

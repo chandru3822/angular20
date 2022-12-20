@@ -16,6 +16,7 @@ import com.albatross.api.v1.flow.model.project.ProjectStatusType;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
+import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -540,7 +541,7 @@ public class ProjectService {
     params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("attachmentTypeId", attachmentTypeId);
 
-    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
 
     params.clear();
     params.put("projectId", projectId);

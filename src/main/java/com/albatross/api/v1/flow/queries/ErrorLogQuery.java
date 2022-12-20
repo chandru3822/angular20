@@ -1,5 +1,9 @@
-<sql>
-  <errorLog.getAllForCompany><![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class ErrorLogQuery {
+
+  //language=PostgreSQL
+  public final static String getAllForCompany = """
     select cel.id,
            cel.company_feature_id,
            cf.feature_name,
@@ -18,15 +22,16 @@
     where cf.company_id = :companyId
       and cel.archived is not true
     order by cel.date_created
-  ]]></errorLog.getAllForCompany>
+    """;
 
-  <errorLog.delete><![CDATA[
+  //language=PostgreSQL
+  public final static String delete = """
     update flow.company_error_log
       set archived = true,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
-  ]]></errorLog.delete>
+    """;
 
 
-</sql>
+}

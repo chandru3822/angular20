@@ -1,5 +1,9 @@
-<sql>
-  <timezone.getAllForCompany><![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class TimezoneQuery {
+
+  //language=PostgreSQL
+  public final static String getAllForCompany = """
     select ct.id,
            ct.timezone_id,
            t.timezone,
@@ -10,5 +14,8 @@
     where ct.company_id = :companyId
         and ct.archived is not true
     order by t.timezone
-  ]]></timezone.getAllForCompany>
-</sql>
+    """;
+
+
+
+}

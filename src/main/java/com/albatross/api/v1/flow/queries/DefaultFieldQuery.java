@@ -1,7 +1,9 @@
-<!-- When adding custom field sql queries, also create a genericized version for smartlists which selects every row in the table -->
+package com.albatross.api.v1.flow.queries;
 
-<sql>
-  <defaultField.getCompanyDefaultFieldsByObjectType><![CDATA[
+public class DefaultFieldQuery {
+
+  //language=PostgreSQL
+  public final static String getCompanyDefaultFieldsByObjectType = """
     select cdf.id,
            df.data_type_id,
            df.object_type_id,
@@ -17,14 +19,16 @@
     where cdf.company_id = :companyId
     and df.object_type_id = :objectTypeId
     order by df.field_name
-  ]]></defaultField.getCompanyDefaultFieldsByObjectType>
+    """;
 
-  <defaultField.saveCompanyDefaultField><![CDATA[
+  //language=PostgreSQL
+  public final static String saveCompanyDefaultField = """
     update flow.company_default_field
     set show_on_user_profile = :showOnUserProfile,
         modified_by_id = :userId,
         date_modified = now()
     where id = :id
-  ]]></defaultField.saveCompanyDefaultField>
+    """;
 
-</sql>
+
+}

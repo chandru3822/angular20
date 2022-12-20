@@ -1,5 +1,9 @@
-<sql>
-  <objectType.getCompanyObjectTypes><![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class ObjectTypeQuery {
+
+  //language=PostgreSQL
+  public final static String getCompanyObjectTypes = """
     select cot.id,
            cot.id company_object_type_id,
            cot.object_type_id,
@@ -10,9 +14,10 @@
       inner join flow.object_type ot on ot.id = cot.object_type_id
     where cot.company_id = :companyId
     and cot.archived is not true
-  ]]></objectType.getCompanyObjectTypes>
+    """;
 
-  <objectType.getSmartlistCompanyObjectTypes><![CDATA[
+  //language=PostgreSQL
+  public final static String getSmartlistCompanyObjectTypes = """
     select cot.id,
            cot.id company_object_type_id,
            cot.object_type_id,
@@ -25,10 +30,11 @@
       and ot.smartlist is true
       and cot.archived is not true
     order by ot.object_type
-  ]]></objectType.getSmartlistCompanyObjectTypes>
+    """;
 
-  <objectType.getCompanyObjectTypeDetail><![CDATA[
-    select cot.id,
+  //language=PostgreSQL
+  public final static String getCompanyObjectTypeDetail = """
+select cot.id,
            cot.id company_object_type_id,
            cot.object_type_id,
            ot.object_type,
@@ -66,21 +72,24 @@
     where cot.company_id = :companyId
     and cot.object_type_id = :objectTypeId
     and cot.archived is not true
-  ]]></objectType.getCompanyObjectTypeDetail>
+    """;
 
-  <objectType.saveStatusReadOnly><![CDATA[
+  //language=PostgreSQL
+  public final static String saveStatusReadOnly = """
     update flow.company_object_type
       set status_read_only = :statusReadOnly,
           date_modified = now(),
           modified_by_id = :userId
     where id = :companyObjectTypeId
-  ]]></objectType.saveStatusReadOnly>
+    """;
 
-  <objectType.saveOwnerReadOnly><![CDATA[
+  //language=PostgreSQL
+  public final static String saveOwnerReadOnly = """
     update flow.company_object_type
       set owner_read_only = :ownerReadOnly,
           date_modified = now(),
           modified_by_id = :userId
     where id = :companyObjectTypeId
-  ]]></objectType.saveOwnerReadOnly>
-</sql>
+    """;
+
+}
