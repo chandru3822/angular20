@@ -9,6 +9,8 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepProcess;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.ContactQuery;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -95,20 +97,16 @@ public class ContactService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    //    String searchSqlKey = viewAll ? "contact.search" : viewCustom ? "contact.searchDownline"
-    // : "contact.searchByOwner";
-    String searchSqlKey = "contact.searchByOwner";
+    String searchSql = ContactQuery.searchByOwner;
     if (viewCustom) {
-      searchSqlKey = "contact.searchDownline";
+      searchSql = ContactQuery.searchDownline;
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
-      searchSqlKey = "contact.search";
+      searchSql = ContactQuery.search;
     }
 
     List<Contact> results =
-        sqlCache.query(searchSqlKey, params, new ContactMapper<>(Contact.class, om));
+        sqlCache.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
 
-    //    Integer count = sqlCache.queryForObject("contact.searchContactsCount", params,
-    // Integer.class);
     Integer count = 10000;
     return new PageImpl<>(
         results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
@@ -128,7 +126,7 @@ public class ContactService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     Optional<Contact> contact =
-        sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
+        sqlCache.getBySql(ContactQuery.getById, params, new ContactMapper<>(Contact.class, om));
 
     if (contact.isPresent()
         && null != contact.get().getOwner()
@@ -150,7 +148,7 @@ public class ContactService {
     params.put("parentCompanyId", 3L);
     params.put("isParent", false);
     return sqlCache
-        .get("contact.getById", params, new ContactMapper<>(Contact.class, om))
+        .getBySql(ContactQuery.getById, params, new ContactMapper<>(Contact.class, om))
         .orElse(null);
   }
 
@@ -163,7 +161,7 @@ public class ContactService {
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
     return sqlCache
-        .get("contact.getByProjectId", params, new ContactMapper<>(Contact.class, om))
+        .getBySql(ContactQuery.getByProjectId, params, new ContactMapper<>(Contact.class, om))
         .orElse(null);
   }
 
@@ -172,7 +170,7 @@ public class ContactService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.trueUserId());
     params.put("contactId", contactId);
-    sqlCache.update("contact.delete", params);
+    sqlCache.updateBySql(ContactQuery.delete, params);
   }
 
   // todo: take this function away after we update the 1.6 million records geo temp
@@ -184,7 +182,7 @@ public class ContactService {
     log.info("*** CONTACTS: attempting to update lat/long for {} contacts ***", limitCount);
     // this list should already only include contacts that had at least a street1 and city
     List<Contact> contactsToUpdate =
-        sqlCache.query("contact.getContactsToUpdateForLatLong", params, Contact.class);
+        sqlCache.queryBySql(ContactQuery.getContactsToUpdateForLatLong, params, Contact.class);
 
     for (Contact contact : contactsToUpdate) {
       Double latitude = null, longitude = null;
@@ -208,7 +206,7 @@ public class ContactService {
       params2.put("id", contact.getId());
       params2.put("latitude", latitude);
       params2.put("longitude", longitude);
-      sqlCache.update("contact.updateLatLongTemp", params2);
+      sqlCache.updateBySql(ContactQuery.updateLatLongTemp, params2);
     }
     log.info("*** CONTACTS: finished updating lat/long for {} contacts ***", limitCount);
   }
@@ -268,7 +266,7 @@ public class ContactService {
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
       // add update when we add that to the UI
-      sqlCache.update("contact.updateContact", params);
+      sqlCache.updateBySql(ContactQuery.updateContact, params);
 
       if (!existingContact.getProjects().isEmpty()
           && !existingContact
@@ -276,8 +274,7 @@ public class ContactService {
               .get(0)
               .getProjectName()
               .equals(contact.getFirstName() + " " + contact.getLastName())) {
-        sqlCache.update(
-            "project.updateNameByContactId",
+        sqlCache.updateBySql(ProjectQuery.updateNameByContactId,
             Map.of(
                 "contactId",
                 id,
@@ -321,7 +318,7 @@ public class ContactService {
       params.put("longitude", longitude);
       params.put("contactTypeId", ContactType.LEAD.id);
       params.put("createdById", currentUser.trueUserId());
-      id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(ContactQuery.insertContact, params, "id").longValue();
     }
 
     return getContact(id);
@@ -344,7 +341,7 @@ public class ContactService {
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("contact.updateOwner", params);
+    sqlCache.updateBySql(ContactQuery.updateOwner, params);
   }
 
   public void updateMailingAddress(Contact contact) {
@@ -359,14 +356,14 @@ public class ContactService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", contact.getId());
     // add update when we add that to the UI
-    sqlCache.update("contact.updateMailingAddress", params);
+    sqlCache.updateBySql(ContactQuery.updateMailingAddress, params);
   }
 
   public List<Owner> getOwnersForContact(Long contactId) {
     User user = securityService.getCurrentUser();
     Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    return sqlCache.query(
-        "contact.getOwners",
+    return sqlCache.queryBySql(
+      ContactQuery.getOwners,
         Map.of("companyId", user.getCompanyId(), "inParentCompany", inParentCompany),
         Owner.class);
   }
@@ -380,7 +377,7 @@ public class ContactService {
     params.put("contactId", contactId);
     params.put("contactTypeId", ContactType.CUSTOMER.id);
     params.put("modifiedById", currentUser.trueUserId());
-    sqlCache.update("contact.convertToContact", params);
+    sqlCache.updateBySql(ContactQuery.convertToContact, params);
 
     // get contact to get their full name for the project and also so a parent can find this contact
     Contact contact = getContact(contactId);
@@ -425,7 +422,7 @@ public class ContactService {
     params.put("linked", linked);
     params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
-        sqlCache.query("contact.getContactAttachments", params, Attachment.class);
+        sqlCache.queryBySql(ContactQuery.getContactAttachments, params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
@@ -438,11 +435,11 @@ public class ContactService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    String sqlKey = "contact.linkAttachment";
+    String sql = ContactQuery.linkAttachment;
     if(!doLink) {
-      sqlKey = "contact.unlinkAttachment";
+      sql = ContactQuery.unlinkAttachment;
     }
-    sqlCache.update(sqlKey, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
@@ -488,7 +485,7 @@ public class ContactService {
     params.put("attachmentId", attachmentId);
     params.put("createdById", user.trueUserId());
 
-    sqlCache.update("contact.addAttachment", params);
+    sqlCache.updateBySql(ContactQuery.addAttachment, params);
 
     return attachmentService.findById(attachmentId);
   }

@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueCategory;
+import com.albatross.api.v1.flow.queries.WorkQueueCategoryQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -49,19 +50,19 @@ public class WorkQueueCategoryService {
     params.put("hiddenWqcOverride", userIsSuperAdmin);
     params.put("filtered", filtered);
 
-    return sqlCache.query(
-        "workQueueCategory.getCategoriesForCompany", params, new WorkQueueCategoryMapper<>(WorkQueueCategory.class, om));
+    return sqlCache.queryBySql(
+      WorkQueueCategoryQuery.getCategoriesForCompany, params, new WorkQueueCategoryMapper<>(WorkQueueCategory.class, om));
   }
 
   public Optional<WorkQueueCategory> getCategory(Long id) {
-    return sqlCache.get(
-        "workQueueCategory.getCategory", ImmutableMap.of("id", id), WorkQueueCategory.class);
+    return sqlCache.getBySql(
+      WorkQueueCategoryQuery.getCategory, ImmutableMap.of("id", id), WorkQueueCategory.class);
   }
 
   public void deleteCategory(Long categoryId) {
     User user = securityService.getCurrentUser();
-    sqlCache.update(
-        "workQueueCategory.deleteCategory",
+    sqlCache.updateBySql(
+      WorkQueueCategoryQuery.deleteCategory,
         ImmutableMap.of("id", categoryId, "modifiedById", user.trueUserId()));
   }
 
@@ -75,11 +76,11 @@ public class WorkQueueCategoryService {
     params.put("wqcId", workQueueCategory.getId());
     params.put("whiteListTypeId", WhiteListType.WORK_QUEUE_CATEGORY_HIDDEN.id);
 
-    sqlCache.update("workQueueCategory.saveHidden", params);
+    sqlCache.updateBySql(WorkQueueCategoryQuery.saveHidden, params);
 
     if (!workQueueCategory.getHidden()) {
       // if ps is not readonly archive any white listed positions for it
-      sqlCache.update("workQueueCategory.archiveWhiteListPositions", params);
+      sqlCache.updateBySql(WorkQueueCategoryQuery.archiveWhiteListPositions, params);
     } else if (null != savePositions && savePositions) {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<WhiteListedPosition> positionsToUse = workQueueCategory.getHiddenWhiteListedPositions();
@@ -88,16 +89,16 @@ public class WorkQueueCategoryService {
                                                 .collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
       if (positionIdsUsed.size() > 0) {
-        sqlCache.update("workQueueCategory.archiveWhiteListPositionsNoLongerUsed", params);
+        sqlCache.updateBySql(WorkQueueCategoryQuery.archiveWhiteListPositionsNoLongerUsed, params);
       } else {
         // this means they removed ALL white listed positions
-        sqlCache.update("workQueueCategory.archiveWhiteListPositions", params);
+        sqlCache.updateBySql(WorkQueueCategoryQuery.archiveWhiteListPositions, params);
       }
 
       for (WhiteListedPosition wlp : positionsToUse) {
         params.put("positionId", wlp.getPositionId());
         // this insert checks if there is already a non-archived row with the same values
-        sqlCache.update("workQueueCategory.insertWhiteListPosition", params);
+        sqlCache.updateBySql(WorkQueueCategoryQuery.insertWhiteListPosition, params);
       }
     }
   }
@@ -111,7 +112,7 @@ public class WorkQueueCategoryService {
     params.put("id", category.getId());
     params.put("workQueueCategory", category.getWorkQueueCategory());
     params.put("displayOrder", category.getDisplayOrder());
-    sqlCache.update("workQueueCategory.updateCategory", params);
+    sqlCache.updateBySql(WorkQueueCategoryQuery.updateCategory, params);
 
     return getCategory(category.getId());
   }
@@ -128,8 +129,8 @@ public class WorkQueueCategoryService {
     User user = securityService.getCurrentUser();
     Long id =
         sqlCache
-            .updateReturningId(
-                "workQueueCategory.insertCategory",
+            .updateBySqlReturningId(
+              WorkQueueCategoryQuery.insertCategory,
                 ImmutableMap.of(
                     "workQueueCategory",
                     category.getWorkQueueCategory(),

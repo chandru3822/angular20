@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +50,7 @@ public class ProcessStepStatusService {
       // the right statuses back
       HashMap<String, Object> p1 = new HashMap<>();
       p1.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", p1, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, p1, Long.class);
     } else if (null != projectProcessStepId) {
       // had to change this so that a parent looking at a child project process step could will get
       // the right statuses back
@@ -89,7 +90,7 @@ public class ProcessStepStatusService {
       // the right statuses back
       HashMap<String, Object> p1 = new HashMap<>();
       p1.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", p1, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, p1, Long.class);
     } else if (null != projectProcessStepId) {
       // had to change this so that a parent looking at a child project process step could will get
       // the right statuses back

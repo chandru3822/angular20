@@ -1,27 +1,28 @@
-<sql>
-  <company.getAll>
-    <![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class CompanyQuery {
+
+  //language=PostgreSQL
+  public final static String getAll = """
       select id,
         company_name
       from flow.company
       where archived is not true
-      order by parent_company_id nulls first, company_name;
-    ]]>
-  </company.getAll>
+      order by parent_company_id nulls first, company_name
+    """;
 
-  <company.getById>
-    <![CDATA[
+  //language=PostgreSQL
+  public final static String getById = """
       select id,
         company_name,
         default_password,
         minute_increment
       from flow.company
-      where id = :id;
-    ]]>
-  </company.getById>
+      where id = :id
+    """;
 
-  <company.getCompaniesAssignedToUser>
-    <![CDATA[
+  //language=PostgreSQL
+  public final static String getCompaniesAssignedToUser = """
       with t1 as (
         select c1.id
         from (
@@ -50,11 +51,10 @@
       where cus.user_id = :userId
         and ust.has_access is true
       order by c.level, c.parent_company_id, c.company_name
-    ]]>
-  </company.getCompaniesAssignedToUser>
+    """;
 
-  <company.getCompaniesAvailableForUser>
-    <![CDATA[
+  //language=PostgreSQL
+  public final static String getCompaniesAvailableForUser = """
       with t1 as (
         select c1.id
         from (
@@ -74,11 +74,10 @@
       from t1
        join lateral flow.company_hierarchy_filter_down(t1.id) as t2 on true
       order by parent_company_id, company_name
-    ]]>
-  </company.getCompaniesAvailableForUser>
+    """;
 
-  <company.updateCompany>
-    <![CDATA[
+  //language=PostgreSQL
+  public final static String updateCompany = """
       update flow.company
         set company_name = :companyName,
             default_password = :defaultPassword,
@@ -86,24 +85,24 @@
             modified_by_id = :modifiedById,
             date_modified = now()
       where id = :id
-    ]]>
-  </company.updateCompany>
+    """;
 
-  <company.getConfigurationValues><![CDATA[
+  //language=PostgreSQL
+  public final static String getConfigurationValues = """
     select *
     from flow.company_configuration_value
     where archived is false
     and readonly is false
-    order by name;
-  ]]></company.getConfigurationValues>
+    order by name
+    """;
 
-  <company.updateConfigurationValue><![CDATA[
+  //language=PostgreSQL
+  public final static String updateConfigurationValue = """
     update flow.company_configuration_value
       set value = trim(:value),
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
-  ]]></company.updateConfigurationValue>
+    """;
 
-
-</sql>
+}

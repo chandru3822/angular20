@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.CustomFieldQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +29,8 @@ public class CustomFieldService {
 
   public CustomField findCustomFieldById(Long id) {
     Optional<CustomField> result =
-      sqlCache.get(
-        "customField.getOne",
+      sqlCache.getBySql(
+        CustomFieldQuery.getOne,
         Map.of("id", id),
         new CustomField.CustomFieldMapper<>(CustomField.class, om));
     return result.orElse(null);
@@ -42,8 +43,8 @@ public class CustomFieldService {
     params.put("hasListValues", criteria.hasListValues());
     params.put("query", criteria.query());
 
-    return sqlCache.query(
-      "customField.getAll", params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
+    return sqlCache.queryBySql(
+      CustomFieldQuery.getAll, params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
 
   /*
@@ -86,7 +87,7 @@ public class CustomFieldService {
       id = customField.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
-      sqlCache.update("customField.saveField", params);
+      sqlCache.updateBySql(CustomFieldQuery.saveField, params);
     } else {
       // have to insert the list of values first if needed to get the listOfValueId
       doInsertAfterHandlingOtherScenarios = true;
@@ -106,7 +107,7 @@ public class CustomFieldService {
         lovParent.put("createdById", user.trueUserId());
         parentId =
           sqlCache
-            .updateReturningId("customField.insertListOfValue", lovParent, "id")
+            .updateBySqlReturningId(CustomFieldQuery.insertListOfValue, lovParent, "id")
             .longValue();
       } else {
         parentId = customField.getListOfValueId();
@@ -124,14 +125,14 @@ public class CustomFieldService {
         if (null != lov.getId() && lov.getIsDirty() && !lov.getArchived()) {
           // do update of row
           lovParams.put("id", lov.getId());
-          sqlCache.update("customField.updateListOfValue", lovParams);
+          sqlCache.updateBySql(CustomFieldQuery.updateListOfValue, lovParams);
         } else if (null != lov.getId() && lov.getArchived()) {
           // do archive of row
           lovParams.put("id", lov.getId());
-          sqlCache.update("customField.archiveListOfValue", lovParams);
+          sqlCache.updateBySql(CustomFieldQuery.archiveListOfValue, lovParams);
         } else if(null == lov.getId() && !lov.getArchived()) {
           // do row insert
-          sqlCache.update("customField.insertListOfValue", lovParams);
+          sqlCache.updateBySql(CustomFieldQuery.insertListOfValue, lovParams);
         }
       }
     }
@@ -146,7 +147,7 @@ public class CustomFieldService {
       params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
       // insert new custom field with listOfValueId if needed
-      id = sqlCache.updateReturningId("customField.insertField", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(CustomFieldQuery.insertField, params, "id").longValue();
     }
 
     return findCustomFieldById(id);
@@ -160,14 +161,14 @@ public class CustomFieldService {
 
     // check if field is in use by a custom field group
     List<CustomField> fields =
-      sqlCache.query("customField.getGroupsUsingField", params, CustomField.class);
+      sqlCache.queryBySql(CustomFieldQuery.getGroupsUsingField, params, CustomField.class);
 
     // if the field is assigned somewhere, return those values to frontend
     if (!fields.isEmpty()) {
       return fields;
     } else {
       // archive single custom field
-      sqlCache.update("customField.deleteField", params);
+      sqlCache.updateBySql(CustomFieldQuery.deleteField, params);
       return null;
     }
   }
@@ -175,8 +176,8 @@ public class CustomFieldService {
   public List<CustomField> getByProcessStepEvent(Long id) {
     User user = securityService.getCurrentUser();
     return sqlCache
-             .query(
-               "customField.getByProcessStepEvent",
+             .queryBySql(
+               CustomFieldQuery.getByProcessStepEvent,
                Map.of("companyId", user.getCompanyId(), "id", id),
                new CustomField.CustomFieldMapper<>(CustomField.class, om))
              .stream()
@@ -194,8 +195,8 @@ public class CustomFieldService {
     User user = securityService.getCurrentUser();
     //for now i am only returning start, end and resource from the default field list. will prob add the rest in later
     return sqlCache
-             .query(
-               "customField.getByEvent",
+             .queryBySql(
+               CustomFieldQuery.getByEvent,
                Map.of("companyId", user.getCompanyId(), "id", id),
                new CustomField.CustomFieldMapper<>(CustomField.class, om))
              .stream()
@@ -212,8 +213,8 @@ public class CustomFieldService {
   public List<CustomField> getByParentProcessStep(Long id, Boolean excludedUnhandledDataTypes) {
     User user = securityService.getCurrentUser();
     return sqlCache
-             .query(
-               "customField.getByParentProcessStep",
+             .queryBySql(
+               CustomFieldQuery.getByParentProcessStep,
                Map.of("companyId", user.getCompanyId(), "id", id,
                  "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
                new CustomField.CustomFieldMapper<>(CustomField.class, om))
@@ -231,8 +232,8 @@ public class CustomFieldService {
   public List<CustomField> getByParentType(Long id, Boolean excludedUnhandledDataTypes) {
     User user = securityService.getCurrentUser();
     return sqlCache
-             .query(
-               "customField.getByParentType",
+             .queryBySql(
+               CustomFieldQuery.getByParentType,
                Map.of("companyId", user.getCompanyId(), "id", id,
                  "excludedUnhandledDataTypes", excludedUnhandledDataTypes != null ? excludedUnhandledDataTypes : false),
                new CustomField.CustomFieldMapper<>(CustomField.class, om))
@@ -282,7 +283,7 @@ public class CustomFieldService {
     params.put("companyId", user.getCompanyId());
     params.put("positionId", positionId);
 
-    return sqlCache.query(
-      "customField.getAllByPositionId", params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
+    return sqlCache.queryBySql(
+      CustomFieldQuery.getAllByPositionId, params, new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
 }

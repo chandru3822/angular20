@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.org.OrgLevel;
 import com.albatross.api.v1.flow.model.org.OrgType;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.OrgTypeQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class OrgTypeService {
 
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("orgType.getAllForCompany", params, OrgType.class);
+    return sqlCache.queryBySql(OrgTypeQuery.getAllForCompany, params, OrgType.class);
   }
 
   public List<OrgType> getSchedulableOrgTypesForCompany() {
@@ -39,7 +40,7 @@ public class OrgTypeService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    return sqlCache.query("orgType.getSchedulableForCompany", params, OrgType.class);
+    return sqlCache.queryBySql(OrgTypeQuery.getSchedulableForCompany, params, OrgType.class);
   }
 
   public List<OrgLevel> getOrgLevels() {
@@ -47,19 +48,19 @@ public class OrgTypeService {
 
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("orgType.getLevels", params, OrgLevel.class);
+    return sqlCache.queryBySql(OrgTypeQuery.getLevels, params, OrgLevel.class);
   }
 
   public OrgLevel getOrgLevel(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("orgType.getOrgLevel", params, OrgLevel.class).orElse(null);
+    return sqlCache.getBySql(OrgTypeQuery.getOrgLevel, params, OrgLevel.class).orElse(null);
   }
 
   public void deleteOrgLevel(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("orgType.deleteOrgLevel", params);
+    sqlCache.updateBySql(OrgTypeQuery.deleteOrgLevel, params);
     // todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving.
     // don't actually delete
   }
@@ -75,9 +76,9 @@ public class OrgTypeService {
     if (null != level.getId()) {
       id = level.getId();
       params.put("id", id);
-      sqlCache.update("orgType.updateOrgLevel", params);
+      sqlCache.updateBySql(OrgTypeQuery.updateOrgLevel, params);
     } else {
-      id = sqlCache.updateReturningId("orgType.insertOrgLevel", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(OrgTypeQuery.insertOrgLevel, params, "id").longValue();
     }
 
     return getOrgLevel(id);
@@ -86,7 +87,7 @@ public class OrgTypeService {
   public OrgType getOrgType(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("orgType.getOne", params, OrgType.class).orElse(null);
+    return sqlCache.getBySql(OrgTypeQuery.getOne, params, OrgType.class).orElse(null);
   }
 
   public OrgType saveOrgType(OrgType orgType) {
@@ -108,10 +109,10 @@ public class OrgTypeService {
       id = orgType.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
-      sqlCache.update("orgType.updateOrgType", params);
+      sqlCache.updateBySql(OrgTypeQuery.updateOrgType, params);
     } else {
       params.put("createdById", user.trueUserId());
-      id = sqlCache.updateReturningId("orgType.insertOrgType", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(OrgTypeQuery.insertOrgType, params, "id").longValue();
     }
 
     return getOrgType(id);

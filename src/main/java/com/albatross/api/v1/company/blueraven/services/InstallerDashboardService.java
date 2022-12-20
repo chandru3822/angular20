@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueue;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
+import com.albatross.api.v1.flow.queries.WorkQueueQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class InstallerDashboardService {
     params.put("endDate", endDate);
     params.put("installationCrewId", installationCrewId);
 
-    return sqlCache.query("workQueue.getWorkQueueOwners", params, WorkQueueOwner.class);
+    return sqlCache.queryBySql(WorkQueueQuery.getWorkQueueOwners, params, WorkQueueOwner.class);
   }
 
   public List<Owner> getRegionalManagers() {
@@ -138,7 +139,7 @@ public class InstallerDashboardService {
     // currently we only show active process steps. but sending in as a list in case that changes
     params.put("processStepStatusTypeIds", List.of(ProcessStepStatusType.ACTIVE.id));
 
-    return sqlCache.query("workQueue.getInstallerDashboardWorkQueues", params, WorkQueue.class);
+    return sqlCache.queryBySql(WorkQueueQuery.getInstallerDashboardWorkQueues, params, WorkQueue.class);
   }
 
   public List<WorkQueue> getWorkQueues(List<Long> installationCrewIds) {
@@ -154,6 +155,6 @@ public class InstallerDashboardService {
     params.put("processStepStatusTypeIds", List.of(ProcessStepStatusType.ACTIVE.id));
     params.put("crewIds", installationCrewIds);
 
-    return sqlCache.query("workQueue.getInstallerDashboardWorkQueues", params, WorkQueue.class);
+    return sqlCache.queryBySql(WorkQueueQuery.getInstallerDashboardWorkQueues, params, WorkQueue.class);
   }
 }

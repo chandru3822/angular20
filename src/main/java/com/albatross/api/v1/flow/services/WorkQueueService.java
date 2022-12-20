@@ -16,6 +16,7 @@ import com.albatross.api.v1.flow.model.workQueue.WorkQueue;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueMetric;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
+import com.albatross.api.v1.flow.queries.WorkQueueQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class WorkQueueService {
     params.put("positionIds", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(UserPosition::getPositionId).collect(Collectors.toList())) : null);
     params.put("hiddenWqtOverride", userIsSuperAdmin);
 
-    return sqlCacheRO.query("workQueue.getWorkQueueCards", params, WorkQueue.class);
+    return sqlCacheRO.queryBySql(WorkQueueQuery.getWorkQueueCards, params, WorkQueue.class);
   }
 
   public List<WorkQueueMetric> getWorkQueueMetrics(
@@ -69,7 +70,7 @@ public class WorkQueueService {
     params.put("workQueueCategoryId", workQueueCategoryId);
     params.put("companyId", user.getCompanyId());
 
-    return sqlCacheRO.query("workQueue.getWorkQueueMetrics", params, WorkQueueMetric.class);
+    return sqlCacheRO.queryBySql(WorkQueueQuery.getWorkQueueMetrics, params, WorkQueueMetric.class);
   }
 
   public SmartlistResult getWorkQueueDetails(
@@ -96,7 +97,7 @@ public class WorkQueueService {
     params.put("positionIds", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(UserPosition::getPositionId).collect(Collectors.toList())) : null);
     params.put("hiddenWqtOverride", userIsSuperAdmin);
 
-    Boolean userHasAccess = sqlCache.queryForObject("workQueue.userCanAccessData", params, Boolean.class);
+    Boolean userHasAccess = sqlCache.queryForObjectBySql(WorkQueueQuery.userCanAccessData, params, Boolean.class);
 
     if (userHasAccess) {
       Optional<WorkQueueType> workQueueType = workQueueTypeService.getType(workQueueTypeId);
@@ -184,7 +185,7 @@ public class WorkQueueService {
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("workQueue.getWorkQueueOwners", params, WorkQueueOwner.class);
+    return sqlCache.queryBySql(WorkQueueQuery.getWorkQueueOwners, params, WorkQueueOwner.class);
   }
 
   public static class WorkQueueDetailMapper<T> extends BeanPropertyRowMapper<T> {

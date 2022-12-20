@@ -1,26 +1,33 @@
-<sql>
-  <contact.searchDownline><![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class ContactQuery {
+
+  //language=PostgreSQL
+  public final static String searchDownline = """
     select *
     from flow.search_contacts_with_down_line(:query::character varying, :companyId::bigint,
                                                             :isParent::boolean,
                                                             :userId::bigint,
                                                             :limit::bigint, :offset::bigint)
-  ]]></contact.searchDownline>
+    """;
 
-  <contact.search><![CDATA[
+  //language=PostgreSQL
+  public final static String search = """
     select *
     from flow.search_contacts(:query::character varying, :companyId::bigint,
                               :isParent::boolean,:limit::bigint, :offset::bigint)
-  ]]></contact.search>
+    """;
 
-  <contact.searchByOwner><![CDATA[
+  //language=PostgreSQL
+  public final static String searchByOwner = """
     select *
     from flow.search_contacts_by_user(:query::character varying, :companyId::bigint,
                                    :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint)
-  ]]></contact.searchByOwner>
+    """;
 
-  <contact.getById><![CDATA[
-    select c.id,
+  //language=PostgreSQL
+  public final static String getById = """
+select c.id,
        c.first_name,
        c.last_name,
        c.date_created,
@@ -113,11 +120,11 @@
                                                  from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else c.company_id = :companyId end
             and c.archived is not true
+    """;
 
-  ]]></contact.getById>
-
-  <contact.getByProjectId><![CDATA[
-    select
+  //language=PostgreSQL
+  public final static String getByProjectId = """
+ select
       c.id,
       c.first_name,
       c.last_name,
@@ -148,9 +155,10 @@
                                                  from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else c.company_id = :companyId end
             and c.archived is not true
-  ]]></contact.getByProjectId>
+    """;
 
-  <contact.updateContact><![CDATA[
+  //language=PostgreSQL
+  public final static String updateContact = """
     update flow.contact set
            contact_type_id = :contactTypeId,
            first_name = trim(:firstName),
@@ -168,23 +176,26 @@
            modified_by_id = :modifiedById,
            date_modified = now()
     where id = :id
-  ]]></contact.updateContact>
+    """;
 
-  <contact.delete><![CDATA[
+  //language=PostgreSQL
+  public final static String delete = """
     update flow.contact set
            archived = true,
            modified_by_id = :modifiedById,
            date_modified = now()
     where id = :contactId
-  ]]></contact.delete>
+    """;
 
-  <contact.insertContact><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, date_created, modified_by_id, date_modified, company_id, owner_user_position_id, latitude, longitude)
+  //language=PostgreSQL
+  public final static String insertContact = """
+insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, date_created, modified_by_id, date_modified, company_id, owner_user_position_id, latitude, longitude)
     values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, trim(:postalCode), :companyCountryId, :phone, :email, :mobile, :createdById, now(), :createdById, now(), :companyId, :ownerUserPositionId, :latitude, :longitude)
-  ]]></contact.insertContact>
+    """;
 
-  <contact.getContactsToUpdateForLatLong><![CDATA[
-    select c.id, c.street1, c.city, c.company_state_id, st.state, st.abbreviation, c.postal_code
+  //language=PostgreSQL
+  public final static String getContactsToUpdateForLatLong = """
+select c.id, c.street1, c.city, c.company_state_id, st.state, st.abbreviation, c.postal_code
     from flow.contact c
     left join flow.company_state cs on c.company_state_id = cs.id
     left join flow.state st on st.id = cs.state_id
@@ -205,30 +216,34 @@
       )
     order by date_created desc
     limit :limit
-  ]]></contact.getContactsToUpdateForLatLong>
+    """;
 
-  <contact.updateLatLongTemp><![CDATA[
+  //language=PostgreSQL
+  public final static String updateLatLongTemp = """
     update flow.contact
     set latitude = :latitude,
         longitude = :longitude,
         temp_geo_attempted = true,
         date_modified = now()
     where id = :id
-  ]]></contact.updateLatLongTemp>
+    """;
 
-  <contact.getOwners><![CDATA[
-    select * from flow.get_contact_available_owners(:companyId::bigint, :inParentCompany)
-  ]]></contact.getOwners>
+  //language=PostgreSQL
+  public final static String getOwners = """
+select * from flow.get_contact_available_owners(:companyId::bigint, :inParentCompany)
+    """;
 
-  <contact.updateOwner><![CDATA[
+  //language=PostgreSQL
+  public final static String updateOwner = """
     update flow.contact set
            modified_by_id = :modifiedById,
            owner_user_position_id = :ownerUserPositionId,
            date_modified = now()
     where id = :id
-  ]]></contact.updateOwner>
+    """;
 
-  <contact.updateMailingAddress><![CDATA[
+  //language=PostgreSQL
+  public final static String updateMailingAddress = """
     update flow.contact set
            mailing_street1 = :street1,
            mailing_street2 = :street2,
@@ -238,24 +253,27 @@
            modified_by_id = :modifiedById,
            date_modified = now()
     where id = :id
-  ]]></contact.updateMailingAddress>
+    """;
 
-  <contact.convertToContact><![CDATA[
+  //language=PostgreSQL
+  public final static String convertToContact = """
     update flow.contact set
            modified_by_id = :modifiedById,
            contact_type_id = :contactTypeId,
            date_modified = now()
     where id = :contactId
-  ]]></contact.convertToContact>
+    """;
 
-  <contact.getCompanyId><![CDATA[
+  //language=PostgreSQL
+  public final static String getCompanyId = """
     select c.company_id
     from flow.contact c
     where c.id = :contactId
-  ]]></contact.getCompanyId>
+    """;
 
-  <contact.getContactAttachments><![CDATA[
-    select
+  //language=PostgreSQL
+  public final static String getContactAttachments = """
+select
       a.id,
       a.size,
       a.uuid,
@@ -267,7 +285,7 @@
       a.s3_key,
       a.display_name,
       a.archived,
-      substring(filename, '\.([^\.]+)$') as file_extension,
+      substring(filename, '\\.([^\\.]+)$') as file_extension,
       ca.contact_id,
       ca.linked,
       concat(u.first_name, ' ', u.last_name) AS uploaded_by,
@@ -286,14 +304,16 @@
       and case when :linked is true then ca.linked is true and uat.linkable is true else ca.linked is false end
       and a.archived is not true
     order by ca.date_created desc
-  ]]></contact.getContactAttachments>
+    """;
 
-  <contact.linkAttachment><![CDATA[
+  //language=PostgreSQL
+  public final static String linkAttachment = """
     insert into flow.contact_attachment(attachment_id, contact_id, created_by_id, linked)
     values(:attachmentId, :contactId, :userId, true)
-  ]]></contact.linkAttachment>
+    """;
 
-  <contact.unlinkAttachment><![CDATA[
+  //language=PostgreSQL
+  public final static String unlinkAttachment = """
     update flow.contact_attachment
       set archived = true,
           date_modified = now(),
@@ -301,11 +321,12 @@
     where attachment_id = :attachmentId
     and contact_id = :contactId
     and linked is true
-  ]]></contact.unlinkAttachment>
+    """;
 
-  <contact.addAttachment><![CDATA[
+  //language=PostgreSQL
+  public final static String addAttachment = """
     insert into flow.contact_attachment(attachment_id, contact_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:attachmentId, :contactId, :createdById, now(), :createdById, now())
-  ]]></contact.addAttachment>
+    """;
 
-</sql>
+}

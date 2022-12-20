@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.CompanyFeature;
 import com.albatross.api.v1.flow.model.Feature;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.FeatureQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,14 +34,14 @@ public class FeatureService {
   private final SecurityService securityService;
 
   public List<Feature> getAllFeatures() {
-    return sqlCache.query("feature.getAll", Map.of(), Feature.class);
+    return sqlCache.queryBySql(FeatureQuery.getAll, Map.of(), Feature.class);
   }
 
   public List<Feature> getCompanySpecificTools() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("feature.getCompanyTools", params, Feature.class);
+    return sqlCache.queryBySql(FeatureQuery.getCompanyTools, params, Feature.class);
   }
 
   public List<FeatureAccessControl> getPositionAccessForUser(Long userId) {
@@ -49,14 +50,14 @@ public class FeatureService {
     Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("feature.getPositionAccessForUser", params, FeatureAccessControl.class);
+    return sqlCache.queryBySql(FeatureQuery.getPositionAccessForUser, params, FeatureAccessControl.class);
   }
 
   public List<Feature> getHomePagesForCompany() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("feature.getHomePagesForCompany", params, Feature.class);
+    return sqlCache.queryBySql(FeatureQuery.getHomePagesForCompany, params, Feature.class);
   }
 
   public Feature saveFeature(Feature f) {
@@ -73,10 +74,10 @@ public class FeatureService {
     if (null != f.getId()) {
       id = f.getId();
       params.put("id", id);
-      sqlCache.update("feature.updateFeature", params);
+      sqlCache.updateBySql(FeatureQuery.updateFeature, params);
 
     } else {
-      id = sqlCache.updateReturningId("feature.insertFeature", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(FeatureQuery.insertFeature, params, "id").longValue();
     }
     return getOneFeature(id);
   }
@@ -84,29 +85,29 @@ public class FeatureService {
   public Feature getOneFeature(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<Feature> f = sqlCache.get("feature.getOneFeature", params, Feature.class);
+    Optional<Feature> f = sqlCache.getBySql(FeatureQuery.getOneFeature, params, Feature.class);
     return f.orElse(null);
   }
 
   public void deleteFeature(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("feature.deleteFeature", params);
+    sqlCache.updateBySql(FeatureQuery.deleteFeature, params);
   }
 
   public List<CompanyFeature> getFeaturesForCompany() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("feature.getAllForCompany", params, CompanyFeature.class);
+    return sqlCache.queryBySql(FeatureQuery.getAllForCompany, params, CompanyFeature.class);
   }
 
   public List<CompanyFeature> getFeaturesForCompanyWithAccess() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query(
-      "feature.getAllForCompanyWithAccess",
+    return sqlCache.queryBySql(
+      FeatureQuery.getAllForCompanyWithAccess,
       params,
       new CompanyFeatureMapper<>(CompanyFeature.class, om));
   }
@@ -116,8 +117,8 @@ public class FeatureService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userId", userId);
-    return sqlCache.query(
-      "feature.getForUser", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
+    return sqlCache.queryBySql(
+      FeatureQuery.getForUser, params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
   }
 
   public List<CompanyFeature> saveUserCompanyFeatures(Long userId, List<CompanyFeature> features) {
@@ -132,7 +133,7 @@ public class FeatureService {
           params.put("accessControlId", ac.getAccessControlId());
           params.put("userId", userId);
 
-          sqlCache.update("feature.upsertUserFeatureAccessControl", params);
+          sqlCache.updateBySql(FeatureQuery.upsertUserFeatureAccessControl, params);
         }
       }
     }
@@ -142,13 +143,13 @@ public class FeatureService {
   public CompanyFeature getOneCompanyFeature(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("feature.getOneCompanyFeature", params, CompanyFeature.class).orElse(null);
+    return sqlCache.getBySql(FeatureQuery.getOneCompanyFeature, params, CompanyFeature.class).orElse(null);
   }
 
   public void deleteCompanyFeature(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("feature.deleteCompanyFeature", params);
+    sqlCache.updateBySql(FeatureQuery.deleteCompanyFeature, params);
   }
 
   public CompanyFeature saveCompanyFeature(CompanyFeature cf) {
@@ -164,10 +165,10 @@ public class FeatureService {
     if (null != cf.getId()) {
       id = cf.getId();
       params.put("id", id);
-      sqlCache.update("feature.updateCompanyFeature", params);
+      sqlCache.updateBySql(FeatureQuery.updateCompanyFeature, params);
 
     } else {
-      id = sqlCache.updateReturningId("feature.insertCompanyFeature", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(FeatureQuery.insertCompanyFeature, params, "id").longValue();
     }
     return getOneCompanyFeature(id);
   }

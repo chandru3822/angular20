@@ -9,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.models.commissionManagement.Overri
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -129,7 +130,7 @@ public class OverridePlanService {
     params.put("projectId", projectId);
 
     //see if project is valid.  this is the smallest pre-existing query even though it returns the company id
-    Optional<Long> companyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+    Optional<Long> companyId = sqlCache.queryForObjectOptionalBySql(ProjectQuery.getCompanyId, params, Long.class);
 
     //see if project is already assigned
     Optional<Long> commissionPlanId = sqlCache.queryForObjectOptional("overridePlan.checkProjectAssignment", params, Long.class);

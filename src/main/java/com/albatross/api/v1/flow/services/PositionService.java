@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.ProcessQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -183,7 +184,7 @@ public class PositionService {
         params.put("processStepProcessId", owningPosition.getProcessStepProcessId());
         params.put("positionId", positionId);
         params.put("createdById", user.trueUserId());
-        sqlCache.update("process.insertOwningPosition", params);
+        sqlCache.updateBySql(ProcessQuery.insertOwningPosition, params);
       }
     }
 

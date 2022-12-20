@@ -1,5 +1,9 @@
-<sql>
-  <project.getAllForCompanyProcess><![CDATA[
+package com.albatross.api.v1.flow.queries;
+
+public class ProjectQuery {
+
+  //language=PostgreSQL
+  public final static String getAllForCompanyProcess = """
     select p.id,
        cp.company_id,
        cp.process_id,
@@ -10,30 +14,33 @@
     where cp.company_id = :companyId
       and cp.process_id = :processId
       and p.archived is not true
-      ;
-  ]]></project.getAllForCompanyProcess>
+    """;
 
-  <project.getProjectIdByProjectProcessStepId><![CDATA[
+  //language=PostgreSQL
+  public final static String getProjectIdByProjectProcessStepId = """
     select project_id
     from flow.project_process_step pps
     where pps.id = :projectProcessStepId
-  ]]></project.getProjectIdByProjectProcessStepId>
+    """;
 
-  <project.getProjectIdsByPpsIds><![CDATA[
+  //language=PostgreSQL
+  public final static String getProjectIdsByPpsIds = """
     select distinct project_id
     from flow.project_process_step pps
     where pps.id = any(:ppsIds::bigint[])
-  ]]></project.getProjectIdsByPpsIds>
+    """;
 
-  <project.getProjectIdByProjectProcessStepEventId><![CDATA[
+  //language=PostgreSQL
+  public final static String getProjectIdByProjectProcessStepEventId = """
     select pps.project_id
     from flow.project_process_step_event ppse
     inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
     where ppse.id = :projectProcessStepEventId
-  ]]></project.getProjectIdByProjectProcessStepEventId>
+    """;
 
-  <project.getProjectsInGeoArea><![CDATA[
-    SELECT p.id,
+  //language=PostgreSQL
+  public final static String getProjectsInGeoArea = """
+SELECT p.id,
            p.project_name,
            cpst.project_status_type,
            p.latitude,
@@ -61,10 +68,11 @@
       and p.archived is false
      and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::bigint[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::bigint[] ) else 1=1 end
      and case when :searchTypeId::bigint = 2 then up.user_id = :currentUserId::bigint else 1=1 end
-  ]]></project.getProjectsInGeoArea>
+    """;
 
-  <project.getProjectsInGeoAreaDownline><![CDATA[
-    SELECT limited_projects.id,
+  //language=PostgreSQL
+  public final static String getProjectsInGeoAreaDownline = """
+SELECT limited_projects.id,
            limited_projects.project_name,
            limited_projects.city,
            limited_projects.state_abbreviation as state,
@@ -170,10 +178,11 @@
                                       :upperBoundLongitude, :upperBoundLatitude,
                                       :lowerBoundLongitude, :lowerBoundLatitude,
                                       4326)
-           ) as limited_projects;
-  ]]></project.getProjectsInGeoAreaDownline>
+           ) as limited_projects
+    """;
 
-  <project.existsInHierarchy><![CDATA[
+  //language=PostgreSQL
+  public final static String existsInHierarchy = """
     select p.id
     from flow.project p
       inner join flow.company_process cp on cp.id = p.company_process_id
@@ -181,43 +190,47 @@
     where p.id = :projectId
       and p.archived is not true
       and c.id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
-  ]]></project.existsInHierarchy>
+    """;
 
-  <project.exists><![CDATA[
+  //language=PostgreSQL
+  public final static String exists = """
     select p.id
     from flow.project p
     where p.id = :projectId
     and p.archived is not true
-  ]]></project.exists>
+    """;
 
-  <project.getCompanyId><![CDATA[
+  //language=PostgreSQL
+  public final static String getCompanyId = """
     select cp.company_id
     from flow.project p
         inner join flow.company_process cp on cp.id = p.company_process_id
     where p.id = :projectId
       and p.archived is not true
-  ]]></project.getCompanyId>
+    """;
 
-  <project.searchDownline><![CDATA[
-    select *
+  //language=PostgreSQL
+  public final static String searchDownline = """
+select *
     from flow.search_projects_with_down_line(:query::character varying, :companyId::bigint,
                                                             :userId::bigint,
                                                             :isParent::boolean,
                                                             :limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying)
-  ]]></project.searchDownline>
+    """;
 
-
-  <project.searchDownlineCount><![CDATA[
+  //language=PostgreSQL
+  public final static String searchDownlineCount = """
       select *
       from flow.search_projects_with_down_line_count(:query::character varying, :companyId::bigint,
                                                               :userId::bigint,
                                                               :isParent::boolean,
                                                             :companyProjectStatusTypeId::bigint)
-    ]]></project.searchDownlineCount>
+    """;
 
-  <project.search><![CDATA[
+  //language=PostgreSQL
+  public final static String search = """
     select *
     from flow.search_all_projects(:query::character varying,
                                   :companyId::bigint,
@@ -227,39 +240,45 @@
                                   :companyProjectStatusTypeId::bigint,
                                   :sortColumn::character varying,
                                   :sortDirection::character varying)
-  ]]></project.search>
+    """;
 
-  <project.searchCount><![CDATA[
+  //language=PostgreSQL
+  public final static String searchCount = """
     select * from flow.search_all_projects_count(:query::character varying, :companyId::bigint, :isParent::boolean,
                                                             :companyProjectStatusTypeId::bigint)
-  ]]></project.searchCount>
+    """;
 
-  <project.searchByOwner><![CDATA[
-    select *
+  //language=PostgreSQL
+  public final static String searchByOwner = """
+select *
     from flow.search_projects_by_user(:query::character varying, :companyId::bigint,
                                  :userId::bigint,  :isParent::boolean,:limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying)
-  ]]></project.searchByOwner>
+    """;
 
-  <project.searchByOwnerCount><![CDATA[
+  //language=PostgreSQL
+  public final static String searchByOwnerCount = """
     select * from flow.search_projects_by_user_count(:query::character varying, :companyId::bigint, :userId::bigint, :isParent::boolean,
                                                             :companyProjectStatusTypeId::bigint)
-  ]]></project.searchByOwnerCount>
+    """;
 
-  <project.countsByStatus><![CDATA[
+  //language=PostgreSQL
+  public final static String countsByStatus = """
     select *
     from flow.project_count_by_company_status(:companyId::bigint)
-  ]]></project.countsByStatus>
+    """;
 
-  <project.countsByStatusByUser><![CDATA[
+  //language=PostgreSQL
+  public final static String countsByStatusByUser = """
     select *
     from flow.project_count_by_company_status_by_user(:companyId::bigint,
                                                             :userId::bigint,
                                                             :viewCustom::boolean)
-  ]]></project.countsByStatusByUser>
+    """;
 
-  <project.generateReport><![CDATA[
+  //language=PostgreSQL
+  public final static String generateReport = """
     select
       p.id as "ID",
       p.project_name as "Name",
@@ -275,10 +294,11 @@
       p.archived is not true and
       p.project_name ilike '%' || :query || '%'
     order by p.date_created desc
-  ]]></project.generateReport>
+    """;
 
-  <project.get><![CDATA[
-      select
+  //language=PostgreSQL
+  public final static String get = """
+select
         p.id,
         p.street1,
         p.street2,
@@ -388,9 +408,10 @@
             then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else cp.company_id = :companyId end
             and p.archived is not true
-  ]]></project.get>
+    """;
 
-  <project.update>
+  //language=PostgreSQL
+  public final static String update = """
     update flow.project set
     project_name = trim(:projectName),
     street1 = :street1,
@@ -404,25 +425,26 @@
     longitude = :longitude,
     time_zone = :timezone
     where id = :id
-  </project.update>
+    """;
 
-  <project.delete>
+  //language=PostgreSQL
+  public final static String delete = """
     update flow.project set
     archived = true,
     modified_by_id = :modifiedById,
     date_modified = now()
     where id = :projectId
-  </project.delete>
+    """;
 
-  <project.insert>
-    <![CDATA[
-      insert into flow.project (contact_id, company_process_id, project_name, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone, created_by_id, date_created, modified_by_id, date_modified)
+  //language=PostgreSQL
+  public final static String insert = """
+insert into flow.project (contact_id, company_process_id, project_name, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone, created_by_id, date_created, modified_by_id, date_modified)
       values (:contactId, :processId, trim(:projectName), :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone, :createdById, now(), :createdById, now())
-    ]]>
-  </project.insert>
+    """;
 
-  <project.getProcessStepsByProjectId><![CDATA[
-    select
+  //language=PostgreSQL
+  public final static String getProcessStepsByProjectId = """
+select
       ps.id as process_step_id,
       pps.id as project_process_step_id,
       pps.process_step_complete_date,
@@ -462,11 +484,12 @@
       and pps.archived is not true
       and p.archived is not true
       and case when :statusTypeId::bigint is not null then :statusTypeId::bigint = cpsst.process_step_status_type_id else 1=1 end
-    order by ps.process_step_name;
-  ]]></project.getProcessStepsByProjectId>
+    order by ps.process_step_name
+    """;
 
-  <project.getEventsByProjectId><![CDATA[
-     select
+  //language=PostgreSQL
+  public final static String getEventsByProjectId = """
+select
         ppse.id,
         pps.id as project_process_step_id,
         pps.project_id,
@@ -506,18 +529,19 @@
         and p.archived is not true
         and case when :statusTypeId::bigint is not null then :statusTypeId::bigint = cest.event_status_type_id else 1=1 end
       order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
+    """;
 
-  ]]></project.getEventsByProjectId>
-
-  <project.getProjectDetailTemplateFields><![CDATA[
+  //language=PostgreSQL
+  public final static String getProjectDetailTemplateFields = """
      select primary_financier_name as primaryFinancier, installation_start_time, installation_end_time, closer_appointment_start as localCloserAppointmentStartTime,
             ahj_inspection_work_date as ahjInspectionWorkStartTime
       from brs.project_details
     where project_id = :projectId
-  ]]></project.getProjectDetailTemplateFields>
+    """;
 
-  <project.getCombinedAttachments><![CDATA[
-    select
+  //language=PostgreSQL
+  public final static String getCombinedAttachments = """
+select
         a.id,
         a.size,
         a.uuid,
@@ -525,7 +549,7 @@
         a.date_created,
         concat(u.first_name, ' ', u.last_name) as uploaded_by,
         a.date_modified,
-        substring(a.filename, '\.([^\.]+)$') as file_extension,
+        substring(a.filename, '\\.([^\\.]+)$') as file_extension,
         a.filename,
         a.attachment_type_id,
         a.content_type,
@@ -556,7 +580,7 @@
         a.date_created,
         concat(u.first_name, ' ', u.last_name) as uploaded_by,
         a.date_modified,
-        substring(a.filename, '\.([^\.]+)$') as file_extension,
+        substring(a.filename, '\\.([^\\.]+)$') as file_extension,
         a.filename,
         a.attachment_type_id,
         a.content_type,
@@ -588,7 +612,7 @@
         a.date_created,
         concat(u.first_name, ' ', u.last_name) as uploaded_by,
         a.date_modified,
-        substring(a.filename, '\.([^\.]+)$') as file_extension,
+        substring(a.filename, '\\.([^\\.]+)$') as file_extension,
         a.filename,
         a.attachment_type_id,
         a.content_type,
@@ -614,18 +638,18 @@
         and ppsa.linked is not true
         and ppsa.archived is not true
       order by date_created desc
+    """;
 
-  ]]></project.getCombinedAttachments>
-
-  <project.getAttachments><![CDATA[
-    select
+  //language=PostgreSQL
+  public final static String getAttachments = """
+select
       a.id,
       a.size,
       a.uuid,
       a.date_created,
       concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       a.filename,
       a.attachment_type_id,
       a.content_type,
@@ -647,15 +671,17 @@
       and uat.archived is false
       and case when :linked is true then pa.linked is true and uat.linkable is true else pa.linked is false end
       and a.archived is not true
-    order by pa.date_created desc;
-  ]]></project.getAttachments>
+    order by pa.date_created desc
+    """;
 
-  <project.linkAttachment><![CDATA[
+  //language=PostgreSQL
+  public final static String linkAttachment = """
     insert into flow.project_attachment(attachment_id, project_id, created_by_id, linked)
     values(:attachmentId, :projectId, :userId, true)
-  ]]></project.linkAttachment>
+    """;
 
-  <project.unlinkAttachment><![CDATA[
+  //language=PostgreSQL
+  public final static String unlinkAttachment = """
     update flow.project_attachment
       set archived = true,
           date_modified = now(),
@@ -663,10 +689,11 @@
     where attachment_id = :attachmentId
     and project_id = :projectId
     and linked is true
-  ]]></project.unlinkAttachment>
+    """;
 
-  <project.getAttachmentById><![CDATA[
-    select
+  //language=PostgreSQL
+  public final static String getAttachmentById = """
+select
       a.id,
       a.uuid,
       a.size,
@@ -674,7 +701,7 @@
       a.date_created,
       concat(u.first_name, ' ', u.last_name) as uploaded_by,
       a.date_modified,
-      substring(a.filename, '\.([^\.]+)$') as file_extension,
+      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
       a.filename,
       a.attachment_type_id,
       a.content_type,
@@ -686,26 +713,30 @@
            inner join flow."user" u on u.id = a.created_by_id
     where pa.id = :id
       and a.archived is not true
-  ]]></project.getAttachmentById>
+    """;
 
-  <project.addAttachment><![CDATA[
+  //language=PostgreSQL
+  public final static String addAttachment = """
     insert into flow.project_attachment(attachment_id, project_id, created_by_id, date_created, modified_by_id, date_modified, linked)
     values (:attachmentId, :projectId, :createdById, now(), :createdById, now(), :linked)
-  ]]></project.addAttachment>
+    """;
 
-  <project.updateOwner><![CDATA[
-    update flow.project
+  //language=PostgreSQL
+  public final static String updateOwner = """
+ update flow.project
         set user_position_id = :ownerUserPositionId,
             modified_by_id = :modifiedById,
             date_modified = now()
     where id = :id
-  ]]></project.updateOwner>
+    """;
 
-  <project.getOwners><![CDATA[
-    select * from flow.get_project_available_owners(:companyId::bigint, :parentCompanyId::bigint, :isParent::bool)
-  ]]></project.getOwners>
+  //language=PostgreSQL
+  public final static String getOwners = """
+select * from flow.get_project_available_owners(:companyId::bigint, :parentCompanyId::bigint, :isParent::bool)
+    """;
 
-  <project.getDefaultProjectStatusTypeByCompanyId><![CDATA[
+  //language=PostgreSQL
+  public final static String getDefaultProjectStatusTypeByCompanyId = """
     select
       id,
       project_status_type_id,
@@ -720,10 +751,11 @@
     where company_id = :companyId
       and is_default is true
       and archived is not true
-  ]]></project.getDefaultProjectStatusTypeByCompanyId>
+    """;
 
-  <project.getStatusesForWqt><![CDATA[
-      select
+  //language=PostgreSQL
+  public final static String getStatusesForWqt = """
+select
         null::bigint as id,
         'Category' as header,
         null::bigint as "projectStatusTypeId",
@@ -781,9 +813,10 @@
       where cpst.company_id = :companyId
         and cpst.archived is not true
       order by display_sort, root_project_status_type, project_status_type
-]]></project.getStatusesForWqt>
+    """;
 
-  <project.getCompanyStatuses><![CDATA[
+  //language=PostgreSQL
+  public final static String getCompanyStatuses = """
     select
         cpst.id,
         cpst.project_status_type,
@@ -797,9 +830,10 @@
     inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where cpst.company_id = :companyId and cpst.archived is not true
     order by cpst.display_order
-]]></project.getCompanyStatuses>
+    """;
 
-  <project.getOneCompanyStatus><![CDATA[
+  //language=PostgreSQL
+  public final static String getOneCompanyStatus = """
     select
         cpst.id,
         cpst.project_status_type,
@@ -811,9 +845,10 @@
     from flow.company_project_status_type cpst
     inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where cpst.id = :id
-]]></project.getOneCompanyStatus>
+    """;
 
-  <project.getStatuses><![CDATA[
+  //language=PostgreSQL
+  public final static String getStatuses = """
     select
         pst.id,
         pst.project_status_type,
@@ -821,9 +856,10 @@
     from flow.project_status_type pst
     where pst.archived is not true
     order by pst.project_status_type
-]]></project.getStatuses>
+    """;
 
-  <project.updateCompanyStatus><![CDATA[
+  //language=PostgreSQL
+  public final static String updateCompanyStatus = """
     update flow.company_project_status_type
     set project_status_type = :projectStatusType,
         modified_by_id = :currentUserId,
@@ -831,40 +867,57 @@
         color = :color,
         date_modified = now()
     where id = :id
-]]></project.updateCompanyStatus>
+    """;
 
-  <project.getProjectsWithStatusInUse><![CDATA[
-    select project_name
+  //language=PostgreSQL
+  public final static String getProjectsWithStatusInUse = """
+select project_name
     from flow.project
     where company_project_status_type_id = :companyProjectStatusTypeId
       and archived is false
-]]></project.getProjectsWithStatusInUse>
+    """;
 
-  <project.psaWithStatusInUse><![CDATA[
-      select psa.action_name, ps.process_step_name
+  //language=PostgreSQL
+  public final static String psaWithStatusInUse = """
+select psa.action_name, ps.process_step_name
       from flow.process_step_action psa
          inner join flow.process_step ps on ps.id = psa.process_step_id
       where psa.archived is not true and ps.archived is not true
         and psa.company_project_status_type_id = :companyProjectStatusTypeId
-  ]]></project.psaWithStatusInUse>
+    """;
 
-  <project.getPserWithStatusInUse><![CDATA[
-      select e.event_name, ps.process_step_name
+  //language=PostgreSQL
+  public final static String getPserWithStatusInUse = """
+select e.event_name, ps.process_step_name
       from flow.process_step_event_requirement pser
         inner join flow.process_step_event pse on pser.process_step_event_id = pse.id
         inner join flow.process_step ps on pse.process_step_id = ps.id
         inner join flow.event e on pse.event_id = e.id
       where pser.archived is false and pse.archived is false and pser.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (pser.list_of_value_ids)
-  ]]></project.getPserWithStatusInUse>
+    """;
 
-  <project.getPsrWithStatusInUse><![CDATA[
-      select ps.process_step_name
+  //language=PostgreSQL
+  public final static String getPsrWithStatusInUse = """
+select ps.process_step_name
       from flow.process_step_requirement psr
         inner join flow.process_step ps on psr.process_step_id = ps.id
       where psr.archived is false and psr.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (psr.list_of_value_ids)
-  ]]></project.getPsrWithStatusInUse>
+    """;
 
-  <project.getPsaWithStatusInUse><![CDATA[
+  //language=PostgreSQL
+  public final static String getPsaWithStatusInUse = """
+select psa.action_name, ps.process_step_name
+      from flow.process_step_action_logic psl
+        inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
+        inner join flow.process_step ps on ps.id = psa.process_step_id
+      where psa.company_project_status_type_id = :companyProjectStatusTypeId
+        and psl.archived is not true
+        and psa.archived is not true
+      group by psa.action_name, ps.process_step_name
+    """;
+
+  //language=PostgreSQL
+  public final static String getEventReqWithStatusInUse = """
       select psa.action_name, ps.process_step_name
       from flow.process_step_action_logic psl
         inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
@@ -873,10 +926,11 @@
         and psl.archived is not true
         and psa.archived is not true
       group by psa.action_name, ps.process_step_name
-]]></project.getPsaWithStatusInUse>
+    """;
 
-  <project.getEventReqWithStatusInUse><![CDATA[
-      select psa.action_name, ps.process_step_name
+  //language=PostgreSQL
+  public final static String getActionReqWithStatusInUse = """
+ select psa.action_name, ps.process_step_name
       from flow.process_step_action_logic psl
         inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
         inner join flow.process_step ps on ps.id = psa.process_step_id
@@ -884,52 +938,43 @@
         and psl.archived is not true
         and psa.archived is not true
       group by psa.action_name, ps.process_step_name
-]]></project.getEventReqWithStatusInUse>
+    """;
 
-  <project.getActionReqWithStatusInUse><![CDATA[
-      select psa.action_name, ps.process_step_name
-      from flow.process_step_action_logic psl
-        inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
-        inner join flow.process_step ps on ps.id = psa.process_step_id
-      where psa.company_project_status_type_id = :companyProjectStatusTypeId
-        and psl.archived is not true
-        and psa.archived is not true
-      group by psa.action_name, ps.process_step_name
-]]></project.getActionReqWithStatusInUse>
-\
-
-  <project.deleteCompanyStatus><![CDATA[
+  //language=PostgreSQL
+  public final static String deleteCompanyStatus = """
     update flow.company_project_status_type
     set archived = true,
         modified_by_id = :currentUserId,
         date_modified = now()
     where id = :id
-]]></project.deleteCompanyStatus>
+    """;
 
-  <project.saveInitialProjectStatusType>
-    <![CDATA[
-      update flow.company_project_status_type
+  //language=PostgreSQL
+  public final static String saveInitialProjectStatusType = """
+update flow.company_project_status_type
       set is_default = false, date_modified = now()
       where company_id = :companyId;
       update flow.company_project_status_type
       set is_default = true, date_modified = now()
-      where id = :id;
-    ]]>
-  </project.saveInitialProjectStatusType>
+      where id = :id
+    """;
 
-  <project.insertCompanyStatus><![CDATA[
-    insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+  //language=PostgreSQL
+  public final static String insertCompanyStatus = """
+insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
     values (:rootProjectStatusTypeId, :projectStatusType, :companyId, (select coalesce(max(display_order) + 1, 0) from flow.company_project_status_type where company_id = :companyId and archived is not true), :currentUserId, now(), :currentUserId, now())
-]]></project.insertCompanyStatus>
+    """;
 
-  <project.updateStatus><![CDATA[
+  //language=PostgreSQL
+  public final static String updateStatus = """
     update flow.project
     set company_project_status_type_id = :companyProjectStatusTypeId,
         date_modified = now()
     where id = :projectId
-]]></project.updateStatus>
+    """;
 
-  <project.getStatusDetails><![CDATA[
+  //language=PostgreSQL
+  public final static String getStatusDetails = """
      select p.id,
             p.company_project_status_type_id as "companyProjectStatusTypeId",
             cpst.project_status_type         as "projectStatusType",
@@ -939,27 +984,29 @@
             inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
             inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
      where p.id = :projectId
-]]></project.getStatusDetails>
+    """;
 
-  <project.updateGeoLocation><![CDATA[
+  //language=PostgreSQL
+  public final static String updateGeoLocation = """
     update flow.project
       set latitude = :latitude,
           longitude = :longitude,
           time_zone = :timeZone,
           date_modified = now()
     where id = :id
-  ]]></project.updateGeoLocation>
+    """;
 
-  <project.updateNameByContactId><![CDATA[
+  //language=PostgreSQL
+  public final static String updateNameByContactId = """
 update flow.project
 set project_name = :name,
     modified_by_id = :userId,
     date_modified = now()
 where contact_id = :contactId
-]]></project.updateNameByContactId>
+    """;
 
-
-  <project.getProjectInstallationScopeOfWork><![CDATA[
+  //language=PostgreSQL
+  public final static String getProjectInstallationScopeOfWork = """
     select lov.name from flow.project_process_step_custom_field_value ppscfv
         left join flow.list_of_value lov ON ppscfv.int_value = lov.id
     where ppscfv.custom_field_group_assignment_id = 23248 and ppscfv.project_process_step_id =
@@ -979,5 +1026,7 @@ where contact_id = :contactId
                (select id from flow.company_event_status_type cest2 where cest2.company_id = :companyId
                                                                       and cest2.event_status_type = 'Active')
          order by ppse.start_time desc limit 1)
-  ]]></project.getProjectInstallationScopeOfWork>
-</sql>
+    """;
+
+
+}

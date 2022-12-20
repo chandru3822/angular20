@@ -12,6 +12,7 @@ import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.*;
+import com.albatross.api.v1.flow.queries.WorkQueueTypeQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -48,7 +49,7 @@ public class WorkQueueTypeService {
             ? "order by wqt.work_queue_type"
             : "order by wqc.display_order, wqt.display_order, wqt.work_queue_type";
 
-    String sql = sqlCache.getByKey("workQueueType.getTypesForCompany");
+    String sql = WorkQueueTypeQuery.getTypesForCompany;
     sql += orderBy;
     return sqlCache.queryBySql(sql, params, WorkQueueType.class);
   }
@@ -56,18 +57,18 @@ public class WorkQueueTypeService {
   public String getItemsUsingWorkQueueType(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("wqtId", id);
-    String results = sqlCache.queryForObject("workQueueType.getItemsUsingType", params, String.class);
+    String results = sqlCache.queryForObjectBySql(WorkQueueTypeQuery.getItemsUsingType, params, String.class);
     return results;
   }
 
   public List<DurationType> getDurationTypes() {
-    return sqlCache.query(
-        "workQueueType.getDurationTypes", Collections.emptyMap(), DurationType.class);
+    return sqlCache.queryBySql(
+      WorkQueueTypeQuery.getDurationTypes, Collections.emptyMap(), DurationType.class);
   }
 
   public Optional<WorkQueueType> getType(Long id) {
-    return sqlCache.get(
-        "workQueueType.getType",
+    return sqlCache.getBySql(
+      WorkQueueTypeQuery.getType,
         ImmutableMap.of("id", id),
         new WorkQueueTypeMapper<>(WorkQueueType.class, om));
   }
@@ -82,11 +83,11 @@ public class WorkQueueTypeService {
     params.put("wqtId", workQueueType.getId());
     params.put("whiteListTypeId", WhiteListType.WORK_QUEUE_TYPE_HIDDEN.id);
 
-    sqlCache.update("workQueueType.saveHidden", params);
+    sqlCache.updateBySql(WorkQueueTypeQuery.saveHidden, params);
 
     if (!workQueueType.getHidden()) {
       // if ps is not readonly archive any white listed positions for it
-      sqlCache.update("workQueueType.archiveWhiteListPositions", params);
+      sqlCache.updateBySql(WorkQueueTypeQuery.archiveWhiteListPositions, params);
     } else if (null != savePositions && savePositions) {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<WhiteListedPosition> positionsToUse = workQueueType.getHiddenWhiteListedPositions();
@@ -95,16 +96,16 @@ public class WorkQueueTypeService {
                                               .collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
       if (positionIdsUsed.size() > 0) {
-        sqlCache.update("workQueueType.archiveWhiteListPositionsNoLongerUsed", params);
+        sqlCache.updateBySql(WorkQueueTypeQuery.archiveWhiteListPositionsNoLongerUsed, params);
       } else {
         // this means they removed ALL white listed positions
-        sqlCache.update("workQueueType.archiveWhiteListPositions", params);
+        sqlCache.updateBySql(WorkQueueTypeQuery.archiveWhiteListPositions, params);
       }
 
       for (WhiteListedPosition wlp : positionsToUse) {
         params.put("positionId", wlp.getPositionId());
         // this insert checks if there is already a non-archived row with the same values
-        sqlCache.update("workQueueType.insertWhiteListPosition", params);
+        sqlCache.updateBySql(WorkQueueTypeQuery.insertWhiteListPosition, params);
       }
     }
   }
@@ -116,8 +117,8 @@ public class WorkQueueTypeService {
     if (!fields.isEmpty()) {
       return ResponseEntity.badRequest().body(fields);
     } else {
-      sqlCache.update(
-        "workQueueType.deleteType",
+      sqlCache.updateBySql(
+        WorkQueueTypeQuery.deleteType,
         ImmutableMap.of("id", typeId, "modifiedById", user.trueUserId()));
       return ResponseEntity.ok().build();
     }
@@ -127,7 +128,7 @@ public class WorkQueueTypeService {
     //this actually returns process steps and events using the wqtId
     HashMap<String, Object> params = new HashMap<>();
     params.put("wqtId", wqtId);
-    List<FieldInUse> fieldsInUse = sqlCache.query("workQueueType.getProcessStepsUsingWqt", params, FieldInUse.class);
+    List<FieldInUse> fieldsInUse = sqlCache.queryBySql(WorkQueueTypeQuery.getProcessStepsUsingWqt, params, FieldInUse.class);
     return fieldsInUse;
   }
 
@@ -153,7 +154,7 @@ public class WorkQueueTypeService {
         null != type.getInverseExpectation() ? type.getInverseExpectation() : false);
     params.put("expectedTarget", type.getExpectedTarget());
     params.put("schedule", null != type.getSchedule() ? type.getSchedule().toString() : null);
-    sqlCache.update("workQueueType.updateType", params);
+    sqlCache.updateBySql(WorkQueueTypeQuery.updateType, params);
 
     return getType(type.getId());
   }
@@ -174,7 +175,7 @@ public class WorkQueueTypeService {
     params.put("createdById", user.trueUserId());
     params.put("workQueueCategoryId", type.getWorkQueueCategoryId());
     params.put("companyId", user.getCompanyId());
-    Long id = sqlCache.updateReturningId("workQueueType.insertType", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(WorkQueueTypeQuery.insertType, params, "id").longValue();
 
     // any time a work queue type is created we need to create a smartlist placeholder for any
     // custom fields in the dropdown
@@ -182,7 +183,7 @@ public class WorkQueueTypeService {
     // this is the root object type, then we combine it with company id to get the
     // company_object_type_id
     params.put("objectTypeId", useEventData ? ObjectType.EVENT.id : ObjectType.PROCESS_STEP.id);
-    sqlCache.update("workQueueType.addSmartlist", params);
+    sqlCache.updateBySql(WorkQueueTypeQuery.addSmartlist, params);
 
     return getType(id);
   }
@@ -191,8 +192,8 @@ public class WorkQueueTypeService {
     User currentUser = securityService.getCurrentUser();
 
     //this was updated to also delete the psWqt - process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
-    sqlCache.update(
-        "workQueueType.deleteProcessStepWorkQueueType",
+    sqlCache.updateBySql(
+      WorkQueueTypeQuery.deleteProcessStepWorkQueueType,
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
 
     callConfigChangeFunction(id, null);
@@ -200,8 +201,8 @@ public class WorkQueueTypeService {
 
   public Optional<ProcessStepWorkQueueType> getProcessStepWorkQueueType(Long id) {
 
-    return sqlCache.get(
-        "workQueueType.getProcessStepWorkQueueType",
+    return sqlCache.getBySql(
+      WorkQueueTypeQuery.getProcessStepWorkQueueType,
         ImmutableMap.of("id", id),
         new ProcessStepWorkQueueTypeMapper<>(ProcessStepWorkQueueType.class, om));
   }
@@ -212,8 +213,8 @@ public class WorkQueueTypeService {
 
     Long id =
         sqlCache
-            .updateReturningId(
-                "workQueueType.insertProcessStepWorkQueueType",
+            .updateBySqlReturningId(
+              WorkQueueTypeQuery.insertProcessStepWorkQueueType,
                 ImmutableMap.of(
                     "createdById",
                     currentUser.trueUserId(),
@@ -240,8 +241,8 @@ public class WorkQueueTypeService {
     params.put("companyId", user.getHighestParentCompanyId());
     params.put("id", id);
 
-    return sqlCache.query(
-        "workQueueType.getAvailableWorkQueueTypesForStep", params, WorkQueueType.class);
+    return sqlCache.queryBySql(
+      WorkQueueTypeQuery.getAvailableWorkQueueTypesForStep, params, WorkQueueType.class);
   }
 
   public List<WorkQueueTypeProjectStatus> saveProjectStatusTypesToWorkQueueType(
@@ -249,14 +250,14 @@ public class WorkQueueTypeService {
       ProcessStepEventWorkQueueType processStepEventWorkQueueType) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    String insertSqlKey = "workQueueType.insertProjectStatusTypeForProcessStep";
-    String updateSqlKey = "workQueueType.updateProjectStatusTypeForProcessStep";
+    String insertSql = WorkQueueTypeQuery.insertProjectStatusTypeForProcessStep;
+    String updateSql = WorkQueueTypeQuery.updateProjectStatusTypeForProcessStep;
     if (null != processStepWorkQueueType) {
       params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
     } else {
       params.put("processStepEventWorkQueueTypeId", processStepEventWorkQueueType.getId());
-      insertSqlKey = "workQueueType.insertProjectStatusTypeForEvent";
-      updateSqlKey = "workQueueType.updateProjectStatusTypeForEvent";
+      insertSql = WorkQueueTypeQuery.insertProjectStatusTypeForEvent;
+      updateSql = WorkQueueTypeQuery.updateProjectStatusTypeForEvent;
     }
     params.put("userId", currentUser.trueUserId());
 
@@ -268,13 +269,11 @@ public class WorkQueueTypeService {
       if (null != ps.getId() && ps.getArchived()) {
         params.put("archived", ps.getArchived());
         params.put("id", ps.getId());
-        String sql = sqlCache.getByKey(updateSqlKey);
-        sqlCache.updateBySql(sql, params);
+        sqlCache.updateBySql(updateSql, params);
       } else if (null == ps.getId() && !ps.getArchived()) {
         params.put("companyProjectStatusTypeId", ps.getCompanyProjectStatusTypeId());
         params.put("projectStatusTypeId", ps.getIsRoot() ? ps.getProjectStatusTypeId() : null);
-        String sql = sqlCache.getByKey(insertSqlKey);
-        sqlCache.updateBySql(sql, params);
+        sqlCache.updateBySql(insertSql, params);
       }
     }
 
@@ -293,9 +292,9 @@ public class WorkQueueTypeService {
     params.put("pseWqtId", pseWqtId);
 
     if (null != psWqtId) {
-      sqlCache.queryForObject("workQueueType.callPsConfigChangeFunction", params, String.class);
+      sqlCache.queryForObjectBySql(WorkQueueTypeQuery.callPsConfigChangeFunction, params, String.class);
     } else {
-      sqlCache.queryForObject("workQueueType.callEventConfigChangeFunction", params, String.class);
+      sqlCache.queryForObjectBySql(WorkQueueTypeQuery.callEventConfigChangeFunction, params, String.class);
     }
   }
 
@@ -304,14 +303,14 @@ public class WorkQueueTypeService {
       ProcessStepEventWorkQueueType processStepEventWorkQueueType) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    String insertSqlKey = "workQueueType.insertProcessStepStatusTypeForProcessStep";
-    String updateSqlKey = "workQueueType.updateProcessStepStatusTypeForProcessStep";
+    String insertSql = WorkQueueTypeQuery.insertProcessStepStatusTypeForProcessStep;
+    String updateSql = WorkQueueTypeQuery.updateProcessStepStatusTypeForProcessStep;
     if (null != processStepWorkQueueType) {
       params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
     } else {
       params.put("processStepEventWorkQueueTypeId", processStepEventWorkQueueType.getId());
-      insertSqlKey = "workQueueType.insertProcessStepStatusTypeForEvent";
-      updateSqlKey = "workQueueType.updateProcessStepStatusTypeForEvent";
+      insertSql = WorkQueueTypeQuery.insertProcessStepStatusTypeForEvent;
+      updateSql = WorkQueueTypeQuery.updateProcessStepStatusTypeForEvent;
     }
     params.put("userId", currentUser.trueUserId());
 
@@ -323,14 +322,12 @@ public class WorkQueueTypeService {
       if (null != ps.getId() && ps.getArchived()) {
         params.put("archived", ps.getArchived());
         params.put("id", ps.getId());
-        String sql = sqlCache.getByKey(updateSqlKey);
-        sqlCache.updateBySql(sql, params);
+        sqlCache.updateBySql(updateSql, params);
       } else if (null == ps.getId() && !ps.getArchived()) {
         params.put("companyProcessStepStatusTypeId", ps.getCompanyProcessStepStatusTypeId());
         params.put(
             "processStepStatusTypeId", ps.getIsRoot() ? ps.getProcessStepStatusTypeId() : null);
-        String sql = sqlCache.getByKey(insertSqlKey);
-        sqlCache.updateBySql(sql, params);
+        sqlCache.updateBySql(insertSql, params);
       }
     }
 
@@ -352,11 +349,11 @@ public class WorkQueueTypeService {
       if (null != ps.getId() && ps.getArchived()) {
         params.put("archived", ps.getArchived());
         params.put("id", ps.getId());
-        sqlCache.update("workQueueType.updateEventStatusType", params);
+        sqlCache.updateBySql(WorkQueueTypeQuery.updateEventStatusType, params);
       } else if (null == ps.getId() && !ps.getArchived()) {
         params.put("companyEventStatusTypeId", ps.getCompanyEventStatusTypeId());
         params.put("eventStatusTypeId", ps.getIsRoot() ? ps.getEventStatusTypeId() : null);
-        sqlCache.update("workQueueType.insertEventStatusType", params);
+        sqlCache.update(WorkQueueTypeQuery.insertEventStatusType, params);
       }
     }
 
@@ -368,8 +365,8 @@ public class WorkQueueTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepEventWorkQueueTypeId", processStepEventWorkQueueTypeId);
 
-    return sqlCache.query(
-        "workQueueType.getEventStatusesForWorkQueueType", params, WorkQueueTypeProjectStatus.class);
+    return sqlCache.queryBySql(
+      WorkQueueTypeQuery.getEventStatusesForWorkQueueType, params, WorkQueueTypeProjectStatus.class);
   }
 
   public List<WorkQueueTypeProjectStatus> getProjectStatusTypesForWorkQueueType(
@@ -377,11 +374,10 @@ public class WorkQueueTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepWorkQueueTypeId", processStepWorkQueueTypeId);
     params.put("processStepEventWorkQueueTypeId", processStepEventWorkQueueTypeId);
-    String sqlKey =
+    String sql =
         null != processStepWorkQueueTypeId
-            ? "workQueueType.getProjectStatusesForPsWorkQueueType"
-            : "workQueueType.getProjectStatusesForEventWorkQueueType";
-    String sql = sqlCache.getByKey(sqlKey);
+            ? WorkQueueTypeQuery.getProjectStatusesForPsWorkQueueType
+            : WorkQueueTypeQuery.getProjectStatusesForEventWorkQueueType;
     return sqlCache.queryBySql(sql, params, WorkQueueTypeProjectStatus.class);
   }
 
@@ -391,11 +387,10 @@ public class WorkQueueTypeService {
     params.put("processStepWorkQueueTypeId", processStepWorkQueueTypeId);
     params.put("processStepEventWorkQueueTypeId", processStepEventWorkQueueTypeId);
 
-    String sqlKey =
+    String sql =
         null != processStepWorkQueueTypeId
-            ? "workQueueType.getProcessStepStatusesForPsWorkQueueType"
-            : "workQueueType.getProcessStepStatusesForEventWorkQueueType";
-    String sql = sqlCache.getByKey(sqlKey);
+            ? WorkQueueTypeQuery.getProcessStepStatusesForPsWorkQueueType
+            : WorkQueueTypeQuery.getProcessStepStatusesForEventWorkQueueType;
 
     return sqlCache.queryBySql(sql, params, WorkQueueTypeProcessStepStatus.class);
   }
@@ -407,16 +402,16 @@ public class WorkQueueTypeService {
     params.put("companyId", user.getHighestParentCompanyId());
     params.put("id", id);
 
-    return sqlCache.query(
-        "workQueueType.getAvailableWorkQueueTypesForEvent", params, WorkQueueType.class);
+    return sqlCache.queryBySql(
+      WorkQueueTypeQuery.getAvailableWorkQueueTypesForEvent, params, WorkQueueType.class);
   }
 
   public void deleteEventWorkQueueType(Long id) {
     User currentUser = securityService.getCurrentUser();
 
     //this was updated to also deletes the pseWqt - events statuses, process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
-    sqlCache.update(
-        "workQueueType.deleteEventWorkQueueType",
+    sqlCache.updateBySql(
+        WorkQueueTypeQuery.deleteEventWorkQueueType,
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
 
     callConfigChangeFunction(null, id);
@@ -424,8 +419,8 @@ public class WorkQueueTypeService {
 
   public Optional<ProcessStepEventWorkQueueType> getEventWorkQueueType(Long id) {
 
-    return sqlCache.get(
-        "workQueueType.getProcessStepEventWorkQueueType",
+    return sqlCache.getBySql(
+      WorkQueueTypeQuery.getProcessStepEventWorkQueueType,
         ImmutableMap.of("id", id),
         new ProcessStepEventWorkQueueTypeMapper<>(ProcessStepEventWorkQueueType.class, om));
   }
@@ -436,8 +431,8 @@ public class WorkQueueTypeService {
 
     Long id =
         sqlCache
-            .updateReturningId(
-                "workQueueType.insertProcessStepEventWorkQueueType",
+            .updateBySqlReturningId(
+              WorkQueueTypeQuery.insertProcessStepEventWorkQueueType,
                 ImmutableMap.of(
                     "createdById",
                     currentUser.trueUserId(),

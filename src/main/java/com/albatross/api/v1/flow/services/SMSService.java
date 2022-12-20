@@ -9,6 +9,7 @@ import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.smsQueue.*;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,8 +81,8 @@ public class SMSService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    return sqlCache.query(
-      "project.getOwners",
+    return sqlCache.queryBySql(
+      ProjectQuery.getOwners,
       Map.of(
         "companyId", user.getCompanyId(),
         "isParent", isParent,

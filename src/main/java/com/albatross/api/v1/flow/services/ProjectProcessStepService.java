@@ -17,9 +17,7 @@ import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
-import com.albatross.api.v1.flow.queries.AttachmentQuery;
-import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
-import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
+import com.albatross.api.v1.flow.queries.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -288,7 +286,7 @@ public class ProjectProcessStepService {
       //had to change this so that a parent looking at a child project could still see right statuses
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -2055,7 +2053,7 @@ public class ProjectProcessStepService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     Optional<Contact> contact =
-      sqlCache.get("contact.getById", params, new ContactService.ContactMapper<>(Contact.class, om));
+      sqlCache.getBySql(ContactQuery.getById, params, new ContactService.ContactMapper<>(Contact.class, om));
 
     return contact.orElse(null);
   }

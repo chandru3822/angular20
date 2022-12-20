@@ -10,6 +10,8 @@ import com.albatross.api.v1.flow.controllers.UserController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.CompanyQuery;
+import com.albatross.api.v1.flow.queries.UserQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -74,8 +76,8 @@ public class UserService {
     params.put("offset", pageable.getOffset());
 
     List<User> results =
-        sqlCache.query("user.searchUsers", params, new UserMapper<>(User.class, om));
-    Integer count = sqlCache.queryForObject("user.searchUserCount", params, Integer.class);
+        sqlCache.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
+    Integer count = sqlCache.queryForObjectBySql(UserQuery.searchUserCount, params, Integer.class);
 
     return new PageImpl<>(
         results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
@@ -89,7 +91,7 @@ public class UserService {
     params.put("companyId", user.getCompanyId());
     params.put("homePageCompanyFeatureId", homePageCompanyFeatureId);
 
-    sqlCache.update("user.saveUserHomePage", params);
+    sqlCache.updateBySql(UserQuery.saveUserHomePage, params);
   }
 
   public boolean emailExists(String email, Long userId) {
@@ -97,7 +99,7 @@ public class UserService {
     params.put("email", email);
     params.put("userId", userId);
 
-    List<User> results = sqlCache.query("user.checkEmailExists", params, User.class);
+    List<User> results = sqlCache.queryBySql(UserQuery.checkEmailExists, params, User.class);
     return null != results && !results.isEmpty();
   }
 
@@ -106,7 +108,7 @@ public class UserService {
     params.put("username", username);
     params.put("userId", userId);
 
-    List<User> results = sqlCache.query("user.checkUsernameExists", params, User.class);
+    List<User> results = sqlCache.queryBySql(UserQuery.checkUsernameExists, params, User.class);
     return null != results && !results.isEmpty();
   }
 
@@ -116,10 +118,10 @@ public class UserService {
     params.put("uuid", user.getUuid());
     params.put("expiryDate", user.getExpiryDate());
 
-    sqlCache.update("user.saveForgotPasswordFields", params);
+    sqlCache.updateBySql(UserQuery.saveForgotPasswordFields, params);
     if (updatePassword) {
       params.put("password", user.getPassword());
-      sqlCache.update("user.saveUserPassword", params);
+      sqlCache.updateBySql(UserQuery.saveUserPassword, params);
     }
   }
 
@@ -142,7 +144,7 @@ public class UserService {
       id = user.getId();
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
-      sqlCache.update("user.updateUser", params);
+      sqlCache.updateBySql(UserQuery.updateUser, params);
       // save user status
       if (null != user.getUserStatusTypeId()) {
         saveUserStatus(true, id, user.getUserStatusTypeId());
@@ -168,7 +170,7 @@ public class UserService {
       // get the default password
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("id", currentUser.getCompanyId());
-      Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
+      Optional<Company> c = sqlCache.getBySql(CompanyQuery.getById, p2, Company.class);
       params.put("createdById", currentUser.trueUserId());
       String newPwd = null;
       if (c.isPresent() && null != c.get().getDefaultPassword()) {
@@ -177,11 +179,11 @@ public class UserService {
       params.put("defaultPassword", newPwd);
       // for now we are inserting new users with the same email and username. maybe we will change
       // that later and let them enter it here
-      id = sqlCache.updateReturningId("user.insertUser", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(UserQuery.insertUser, params, "id").longValue();
       // insert a row into user_company
       params.put("id", id);
       params.put("isDefault", true);
-      sqlCache.update("user.insertUserCompany", params);
+      sqlCache.updateBySql(UserQuery.insertUserCompany, params);
       // insert a row into user_status
       saveUserStatus(false, id, user.getUserStatusTypeId());
     }
@@ -201,9 +203,9 @@ public class UserService {
       params.put("companyId", currentUser.getCompanyId());
       Optional<User> result;
       if (userIsAlbatross) {
-        result = sqlCache.get("user.getOneAlbatross", params, new UserMapper<>(User.class, om));
+        result = sqlCache.getBySql(UserQuery.getOneAlbatross, params, new UserMapper<>(User.class, om));
       } else {
-        result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
+        result = sqlCache.getBySql(UserQuery.getOne, params, new UserMapper<>(User.class, om));
       }
       return result;
     } catch (Exception e) {
@@ -222,7 +224,7 @@ public class UserService {
     params.put("ids", ids);
     params.put("companyId", currentUser.getCompanyId());
 
-    return sqlCache.query("user.getByIds", params, new UserMapper<>(User.class, om));
+    return sqlCache.queryBySql(UserQuery.getByIds, params, new UserMapper<>(User.class, om));
   }
 
   public List<User> getAllActiveUsers() {
@@ -231,7 +233,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
 
-    return sqlCache.query("user.getAllActiveUsers", params, new UserMapper<>(User.class, om));
+    return sqlCache.queryBySql(UserQuery.getAllActiveUsers, params, new UserMapper<>(User.class, om));
   }
 
   public List<User> getSchedulingUsers(Long companyStateId, Boolean isSchedulingTool) {
@@ -247,7 +249,7 @@ public class UserService {
     params.put("isParent", isParent);
     params.put("isSchedulingTool", isSchedulingTool);
 
-    return sqlCache.query("user.getSchedulingUsers", params, new UserMapper<>(User.class, om));
+    return sqlCache.queryBySql(UserQuery.getSchedulingUsers, params, new UserMapper<>(User.class, om));
   }
 
   public User findByUsernameIgnoreCase(String username, Long userId) {
@@ -259,7 +261,7 @@ public class UserService {
     // had to make a change cuz for a 7oaks employee in a non-alba context it wasn't loading some
     // company specific columns we needed on the frontend
     Optional<User> user =
-        sqlCache.get("user.findByUsernameIgnoreCase", params, new UserMapper<>(User.class, om));
+        sqlCache.getBySql(UserQuery.findByUsernameIgnoreCase, params, new UserMapper<>(User.class, om));
     return user.orElse(null);
   }
 
@@ -268,7 +270,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("loginAttempts", loginAttempts);
     params.put("userId", userId);
-    sqlCache.update("user.updateLoginAttempts", params);
+    sqlCache.updateBySql(UserQuery.updateLoginAttempts, params);
   }
 
   public User findByUsernameOrEmailIgnoreCase(String usernameOrEmail) {
@@ -277,14 +279,14 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("usernameOrEmail", usernameOrEmail);
     return sqlCache
-        .get("user.findByUsernameOrEmailIgnoreCase", params, new UserMapper<>(User.class, om))
+        .getBySql(UserQuery.findByUsernameOrEmailIgnoreCase, params, new UserMapper<>(User.class, om))
         .orElse(null);
   }
 
   public User findByUserUuid(UUID uuid) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("uuid", uuid);
-    return sqlCache.get("user.findByUserUuid", params, User.class).orElse(null);
+    return sqlCache.getBySql(UserQuery.findByUserUuid, params, User.class).orElse(null);
   }
 
   public User findUserById(Long id) {
@@ -292,14 +294,14 @@ public class UserService {
     params.put("id", id);
     // note: i had to change this query a bunch cuz if it was a 7oaks employee it was not returning
     // the company's api path or aws bucket even when in that context
-    return sqlCache.get("user.findUserById", params, new UserMapper<>(User.class, om)).orElse(null);
+    return sqlCache.getBySql(UserQuery.findUserById, params, new UserMapper<>(User.class, om)).orElse(null);
   }
 
   public List<UserStatusType> getCompanyUserStatuses(Long companyId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", null != companyId ? companyId : user.getCompanyId());
-    return sqlCache.query("user.getCompanyUserStatuses", params, UserStatusType.class);
+    return sqlCache.queryBySql(UserQuery.getCompanyUserStatuses, params, UserStatusType.class);
   }
 
   public void saveUserStatusType(UserStatusType userStatusType) {
@@ -308,7 +310,7 @@ public class UserService {
     params.put("id", userStatusType.getId());
     params.put("hasAccess", userStatusType.getHasAccess());
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("user.saveUserStatusType", params);
+    sqlCache.updateBySql(UserQuery.saveUserStatusType, params);
   }
 
   public void unlockUser(Long userId) {
@@ -316,7 +318,7 @@ public class UserService {
     params.put("userId", userId);
     params.put("loginAttempts", 0);
 
-    sqlCache.update("user.updateLoginAttempts", params);
+    sqlCache.updateBySql(UserQuery.updateLoginAttempts, params);
   }
 
   public List<Company> removeFromCompany(UserController.NewUserCompanyRequest req) {
@@ -325,12 +327,12 @@ public class UserService {
     params.put("companyId", req.getCompanyId());
     params.put("userId", req.getUserId());
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("user.deleteUserCompany", params);
+    sqlCache.updateBySql(UserQuery.deleteUserCompany, params);
 
     // per judson request also remove the user_status for that company and user
-    sqlCache.update("user.archiveUserStatus", params);
+    sqlCache.updateBySql(UserQuery.archiveUserStatus, params);
 
-    return sqlCache.query("user.getUserCompanies", params, Company.class);
+    return sqlCache.queryBySql(UserQuery.getUserCompanies, params, Company.class);
   }
 
   public List<Company> addToCompany(UserController.NewUserCompanyRequest req) {
@@ -340,12 +342,12 @@ public class UserService {
     params.put("userId", req.getUserId());
     params.put("userStatusTypeId", req.getCompanyUserStatusTypeId());
     params.put("currentUserId", user.trueUserId());
-    sqlCache.update("user.upsertUserCompany", params);
+    sqlCache.updateBySql(UserQuery.upsertUserCompany, params);
 
     // check if there is already a user status for this user and company, if not, add new
-    sqlCache.update("user.upsertUserStatus", params);
+    sqlCache.updateBySql(UserQuery.upsertUserStatus, params);
 
-    return sqlCache.query("user.getUserCompanies", params, Company.class);
+    return sqlCache.queryBySql(UserQuery.getUserCompanies, params, Company.class);
   }
 
   public void saveUserStatus(Boolean update, Long userId, Long userStatusTypeId) {
@@ -357,9 +359,9 @@ public class UserService {
     params.put("userStatusTypeId", userStatusTypeId);
 
     if (update) {
-      sqlCache.update("user.updateUserStatus", params);
+      sqlCache.updateBySql(UserQuery.updateUserStatus, params);
     } else {
-      sqlCache.update("user.insertUserStatus", params);
+      sqlCache.updateBySql(UserQuery.insertUserStatus, params);
     }
 
     List<UserStatusType> userStatusTypes = getCompanyUserStatuses(user.getCompanyId());
@@ -393,7 +395,7 @@ public class UserService {
     params.put("userId", user.getId());
     params.put("companyId", companyId);
 
-    sqlCache.update("user.updateAdminDefault", params);
+    sqlCache.updateBySql(UserQuery.updateAdminDefault, params);
 
     return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
   }
@@ -405,7 +407,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
     List<Company> companies =
-        sqlCache.query("company.getCompaniesAssignedToUser", params, Company.class);
+        sqlCache.queryBySql(CompanyQuery.getCompaniesAssignedToUser, params, Company.class);
 
     // verify they have access to the company id that was sent in
     for (Company c : companies) {
@@ -418,7 +420,7 @@ public class UserService {
     // if valid, update the default for the user and return full user details including permissions
     if (match) {
       params.put("companyId", companyId);
-      sqlCache.update("user.updateDefault", params);
+      sqlCache.updateBySql(UserQuery.updateDefault, params);
       User newUserObj = findByUsernameIgnoreCase(null, user.getId());
       List<FeatureAccessControl> results =
           securityService.getUserFeatureAccess(newUserObj.getId(), newUserObj.getCompanyId());
@@ -489,7 +491,7 @@ public class UserService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
     List<User> results =
-        sqlCache.query("user.mentionableUsers", params, new UserMapper<>(User.class, om));
+        sqlCache.queryBySql(UserQuery.mentionableUsers, params, new UserMapper<>(User.class, om));
 
     List<Long> userIds = results.stream().map(User::getId).collect(Collectors.toList());
     Map<Long, String> userImageUrls =
@@ -509,8 +511,8 @@ public class UserService {
 
   public void addNotificationToken(Long userId, String token) {
     try {
-      sqlCache.update(
-          "user.addNotificationToken",
+      sqlCache.updateBySql(
+        UserQuery.addNotificationToken,
           Map.of(
               "userId",
               userId,
@@ -532,7 +534,7 @@ public class UserService {
     params.put("linked", linked);
     params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
-        sqlCache.query("user.getUserAttachments", params, Attachment.class);
+        sqlCache.queryBySql(UserQuery.getUserAttachments, params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
@@ -545,11 +547,11 @@ public class UserService {
     params.put("currentUserId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    String sqlKey = "user.linkAttachment";
+    String sql = UserQuery.linkAttachment;
     if(!doLink) {
-      sqlKey = "user.unlinkAttachment";
+      sql = UserQuery.unlinkAttachment;
     }
-    sqlCache.update(sqlKey, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
@@ -596,7 +598,7 @@ public class UserService {
     params.put("attachmentId", attachmentId);
     params.put("createdById", user.trueUserId());
 
-    sqlCache.update("user.addAttachment", params);
+    sqlCache.updateBySql(UserQuery.addAttachment, params);
 
     return attachmentService.findById(attachmentId);
   }
