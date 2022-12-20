@@ -285,7 +285,6 @@ export default {
     },
     projectTagEvents: async function () {
       if(this.projectTagEvents?.length > 0) {
-        console.log('PTEEEEE', this.projectTagEvents)
         this.$store.dispatch(NotificationActions.PROCESS_PROJECT_MSG, this.projectId)
         await this.getProjectTags()
       }
