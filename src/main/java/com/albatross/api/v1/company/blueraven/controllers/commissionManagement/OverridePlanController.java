@@ -59,7 +59,7 @@ public class OverridePlanController {
     String detail = overridePlanService.updateOverridePlan(overridePlan);
 
     blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
-        ObjectType.COMMISSION_OVERRIDE.textValue(),
+        ObjectType.COMMISSION_OVERRIDE,
         overridePlan.getCustomFieldGroups(),
         overridePlan.getId());
 

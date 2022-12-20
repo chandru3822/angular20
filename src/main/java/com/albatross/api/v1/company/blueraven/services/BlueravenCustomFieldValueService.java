@@ -64,7 +64,7 @@ public class BlueravenCustomFieldValueService {
         params.put("id", cfv.getId());
 
         // this is actually doing an upsert
-        String sql = getInsertSqlStatement(objectType.textValue());
+        String sql = getInsertSqlStatement(objectType);
         sqlCache.updateBySql(sql, params);
       }
     } catch (Exception e) {
@@ -75,7 +75,7 @@ public class BlueravenCustomFieldValueService {
   }
 
   public void handleSavingCustomFieldValuesUsingGroups(
-      String objectType, List<CustomFieldGroup> groups, Long sourceId) {
+      ObjectType objectType, List<CustomFieldGroup> groups, Long sourceId) {
     User currentUser = securityService.getCurrentUser();
 
     if (groups != null && groups.size() > 0) {
@@ -115,21 +115,23 @@ public class BlueravenCustomFieldValueService {
     }
   }
 
-  public String getUpdateSqlStatement(String objectType, Boolean isMultiple) {
-    String sql =
-        "update brs."
-            + objectType
-            + "_custom_field_value"
-            + "    set date_value = :dateValue::date,\n"
-            + "        timestamp_value = :timestampValue::timestamp,\n"
-            + "        boolean_value = :booleanValue,\n"
-            + "        text_value = :textValue,\n"
-            + "        rich_text_value = :richTextValue,\n"
-            + "        numeric_value = :numericValue,\n"
-            + "        int_value = :intValue,\n"
-            + "        int_array_value = :intArrayValue::bigint[],\n"
-            + "        modified_by_id = :modifiedById,\n"
-            + "        date_modified = now()\n";
+  public String getUpdateSqlStatement(ObjectType objectType, Boolean isMultiple) {
+
+    String sql = """
+      update brs.%s
+        set date_value = :dateValue::date,
+            timestamp_value = :timestampValue::timestamp,
+            boolean_value = :booleanValue,
+            text_value = :textValue,
+            rich_text_value = :richTextValue,
+            numeric_value = :numericValue,
+            int_value = :intValue,
+            int_array_value = :intArrayValue::bigint[],
+            modified_by_id = :modifiedById,
+            date_modified = now()
+      """.formatted(objectType.tableName);
+
+
     if (isMultiple) {
       sql += "    where id in (:cfvIds)";
     } else {
@@ -139,31 +141,25 @@ public class BlueravenCustomFieldValueService {
     return sql;
   }
 
-  public String getInsertSqlStatement(String objectType) {
-    // writing this as an upsert so it can be used for new or existing
-    String primaryKeyColumn = ObjectType.get(objectType).primaryKeyColumn;
-    String sql =
-        "insert into brs."
-            + objectType
-            + "_custom_field_value"
-            + "("
-            + primaryKeyColumn
-            + ", date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)"
-            + " values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now())"
-            + " ON CONFLICT ("
-            + primaryKeyColumn
-            + ", custom_field_group_assignment_id)\n"
-            + "      DO UPDATE\n"
-            + "        set date_value = :dateValue::date,\n"
-            + "        timestamp_value = :timestampValue::timestamp,\n"
-            + "        boolean_value = :booleanValue,\n"
-            + "        text_value = :textValue,\n"
-            + "        rich_text_value = :richTextValue,\n"
-            + "        numeric_value = :numericValue,\n"
-            + "        int_value = :intValue,\n"
-            + "        int_array_value = :intArrayValue::bigint[],\n"
-            + "        modified_by_id = :userId,\n"
-            + "        date_modified = now()";
+  public String getInsertSqlStatement(ObjectType objectType) {
+    // writing this as an upsert, so it can be used for new or existing
+    String sql = """
+      insert into brs.%s ( %s, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
+       values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now())
+       ON CONFLICT (%s, custom_field_group_assignment_id)
+            DO UPDATE
+              set date_value = :dateValue::date,
+              timestamp_value = :timestampValue::timestamp,
+              boolean_value = :booleanValue,
+              text_value = :textValue,
+              rich_text_value = :richTextValue,
+              numeric_value = :numericValue,
+              int_value = :intValue,
+              int_array_value = :intArrayValue::bigint[],
+              modified_by_id = :userId,
+              date_modified = now()
+      """.formatted(objectType.tableName, objectType.primaryKeyColumn, objectType.primaryKeyColumn);
+
     return sql;
   }
 
@@ -180,7 +176,7 @@ public class BlueravenCustomFieldValueService {
   }
 
   public void bulkHandleSavingCustomFieldValuesUsingGroups(
-      String objectType, List<CustomFieldGroup> groups, List<Long> sourceIds) {
+      ObjectType objectType, List<CustomFieldGroup> groups, List<Long> sourceIds) {
     User currentUser = securityService.getCurrentUser();
 
     if (groups != null && groups.size() > 0) {
@@ -211,15 +207,13 @@ public class BlueravenCustomFieldValueService {
                     // if no, do insert, if yes, add to ids to get updated at the end
                     params.put("sourceId", sourceId);
 
-                    String primaryKeyColumn = ObjectType.get(objectType).primaryKeyColumn;
-                    String sql =
-                        "select id from brs."
-                            + objectType
-                            + "_custom_field_value"
-                            + " where "
-                            + primaryKeyColumn
-                            + " = :sourceId "
-                            + " and custom_field_group_assignment_id = :customFieldGroupAssignmentId";
+                    String primaryKeyColumn = objectType.primaryKeyColumn;
+
+                    String sql = """
+                      select id from brs.%s
+                      where %s = :sourceId
+                      and custom_field_group_assignment_id = :customFieldGroupAssignmentId
+                    """.formatted(objectType.tableName, primaryKeyColumn);
 
                     Optional<Long> id =
                         sqlCache.getBySql(

@@ -4,7 +4,7 @@
   <customFieldSql.brs.ahjList><![CDATA[
     select a.id,
        a.name
-    from brs.ahj a
+    from brs.feat_db_ahj a
     where archived is not true
     order by a.name
   ]]></customFieldSql.brs.ahjList>
@@ -12,14 +12,14 @@
   <customFieldSql.brs.ahjList.smartlist><![CDATA[
     select a.id,
        a.name
-    from brs.ahj a
+    from brs.feat_db_ahj a
     where archived is not true
   ]]></customFieldSql.brs.ahjList.smartlist>
 
   <customFieldSql.brs.utilityCompanyList><![CDATA[
     select a.id,
            a.name
-    from brs.ahj_utility a
+    from brs.feat_db_utility a
     where archived is not true
     order by a.name
   ]]></customFieldSql.brs.utilityCompanyList>
@@ -27,7 +27,7 @@
   <customFieldSql.brs.utilityCompanyList.smartlist><![CDATA[
     select a.id,
            a.name
-    from brs.ahj_utility a
+    from brs.feat_db_utility a
     where archived is not true
   ]]></customFieldSql.brs.utilityCompanyList.smartlist>
 
@@ -96,9 +96,9 @@ order by s.state
   <customFieldSql.brs.ahjSpecificInstallationRequirements><![CDATA[
       select concat('AHJ Specific Requirements: ',  chr(13), chr(13), text_value) as text_value
       from brs.project_details pd
-       inner join brs.ahj a on a.id = pd.ahj
-         inner join brs.ahj_inspection ai on ai.ahj_id = a.id
-         inner join brs.ahj_inspection_custom_field_value aicfv on aicfv.ahj_inspection_id = ai.id
+       inner join brs.feat_db_ahj a on a.id = pd.ahj
+         inner join brs.feat_db_ahj_inspection ai on ai.ahj_id = a.id
+         inner join brs.feat_db_ahj_inspection_custom_field_value aicfv on aicfv.ahj_inspection_id = ai.id
       where custom_field_group_assignment_id = 207
       and pd.project_id = :projectId
   ]]></customFieldSql.brs.ahjSpecificInstallationRequirements>
