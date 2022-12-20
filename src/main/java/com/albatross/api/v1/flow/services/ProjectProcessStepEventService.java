@@ -98,7 +98,7 @@ public class ProjectProcessStepEventService {
     params.put("ppseId", ppseId);
     params.put("userId", user.getId());
 
-    sqlCache.updateBySql(ProjectProcessStepEventQuery.delete, params, "id");
+    sqlCache.updateBySql(ProjectProcessStepEventQuery.delete, params);
   }
 
   public List<CompanyEventStatusType> getCancelledAssignedToPpsEvent(Long ppseId) {
