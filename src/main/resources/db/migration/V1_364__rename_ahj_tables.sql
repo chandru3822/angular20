@@ -97,9 +97,6 @@ ALTER TABLE IF EXISTS brs.ahj_utility_custom_field_value
 alter table brs.feat_db_utility_custom_field_value
   RENAME COLUMN ahj_utility_id to utility_id;
 
-alter table brs.feat_db_utility_custom_field_value
-  RENAME COLUMN ahj_utility_id TO utility_id;
-
 ALTER TABLE IF EXISTS brs.ahj_utility_custom_field_value_audit
   RENAME TO feat_db_utility_custom_field_value_audit;
 
