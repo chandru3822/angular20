@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.CompanyObjectType;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
+import com.albatross.api.v1.flow.queries.ObjectTypeQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -35,14 +36,14 @@ public class ObjectTypeService {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("objectType.getCompanyObjectTypes", params, CompanyObjectType.class);
+    return sqlCache.queryBySql(ObjectTypeQuery.getCompanyObjectTypes, params, CompanyObjectType.class);
   }
 
   public List<CompanyObjectType> getSmartlistCompanyObjectTypes() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("objectType.getSmartlistCompanyObjectTypes", params, CompanyObjectType.class);
+    return sqlCache.queryBySql(ObjectTypeQuery.getSmartlistCompanyObjectTypes, params, CompanyObjectType.class);
   }
 
   public Optional<CompanyObjectType> getCompanyObjectTypeDetail(Long objectTypeId) {
@@ -60,8 +61,8 @@ public class ObjectTypeService {
         objectTypeId.equals(ObjectType.PROJECT.id)
             ? WhiteListType.PROJECT_STATUS_READ_ONLY.id
             : null);
-    return sqlCache.get(
-        "objectType.getCompanyObjectTypeDetail",
+    return sqlCache.getBySql(
+      ObjectTypeQuery.getCompanyObjectTypeDetail,
         params,
         new CompanyObjectTypeMapper<>(CompanyObjectType.class, om));
   }
@@ -85,9 +86,9 @@ public class ObjectTypeService {
     if (savingStatusReadOnly) {
       // these all say "customFieldGroupAssignment" but really they are just generic whitelist
       // position functions
-      sqlCache.update("objectType.saveStatusReadOnly", params);
+      sqlCache.updateBySql(ObjectTypeQuery.saveStatusReadOnly, params);
     } else {
-      sqlCache.update("objectType.saveOwnerReadOnly", params);
+      sqlCache.updateBySql(ObjectTypeQuery.saveOwnerReadOnly, params);
     }
 
     if ((savingStatusReadOnly && !companyObjectType.getStatusReadOnly())

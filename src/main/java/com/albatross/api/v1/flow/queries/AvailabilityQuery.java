@@ -1,0 +1,507 @@
+package com.albatross.api.v1.flow.queries;
+
+public class AvailabilityQuery {
+
+  //language=PostgreSQL
+  public final static String getAllForResource = """
+    SELECT
+            rs.id,
+            rs.org_id,
+            rs.user_id,
+            rs.start_date,
+            rs.end_date,
+            rs.archived,
+            rs.company_id,
+            (
+                SELECT array_to_json(array_agg(row_to_json(d)))
+                FROM (
+                         select rsa.id,
+                            rsa.resource_schedule_id as "resourceScheduleId",
+                            dow.id as "dayOfWeekId",
+                            rsa.resource_slot_schedule_id as "resourceSlotScheduleId",
+                            dow.day_of_week as "dayOfWeek",
+                            rsa.start_time as "startTime",
+                            rsa.end_time as "endTime",
+                            rsa.daylight_savings as "daylightSavings",
+                            coalesce(rsa.archived, false) as archived,
+                            coalesce((select array_agg(erst.resource_slot_time_id)
+               from flow.excluded_resource_slot_time erst
+              where erst.resource_schedule_availability_id = rsa.id
+                and erst.archived is not true), '{}') as "excludedResourceSlotTimeIds"
+                        from flow.day_of_week dow
+                                 left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id and rsa.archived is not true
+                        order by dow.id < (select day_of_week_id
+                                            from flow.company_week_start
+                                            where company_id = :companyId), "dayOfWeekId") d
+            ) as resource_schedule_availability
+        FROM flow.resource_schedule rs
+             LEFT JOIN flow.org o ON o.id = rs.org_id
+             LEFT JOIN flow.user u ON u.id = rs.org_id
+        WHERE case when :orgId::bigint is not null then rs.org_id = :orgId
+            else rs.user_id = :userId end
+        and rs.company_id = :companyId
+        and rs.archived is not true
+        and (rs.end_date is null OR rs.end_date > now() - interval '30 days')
+        order by rs.start_date
+        """;
+
+  //language=PostgreSQL
+  public final static String getWorkDays = """
+    select dow.*,
+        (select day_of_week_id
+                   from flow.company_week_start
+                   where company_id = :companyId) as company_week_start_day_of_week_id
+    from flow.day_of_week dow
+    order by dow.id < (select day_of_week_id
+                   from flow.company_week_start
+                   where company_id = :companyId), id
+    """;
+
+  //language=PostgreSQL
+  public final static String updateSchedule = """
+    update flow.resource_schedule
+    set start_date = :startDate,
+        end_date = :endDate,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String updateScheduleWithoutEndDate = """
+    update flow.resource_schedule
+    set end_date = :startDate::date - interval '1 day',
+        date_modified = now(),
+        modified_by_id = :modifiedById,
+        archived = case when :startDate::date = start_date::date then true else archived end
+    where case when user_id::bigint is not null then user_id::bigint = :userId else org_id::bigint = :orgId end
+      and company_id = :companyId
+      and archived is not true
+      and end_date is null
+      and case when :endDate::date is not null then
+          start_date < :startDate
+          else id != :id end
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteSchedule = """
+    update flow.resource_schedule
+      set archived = true,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertSchedule = """
+    insert into flow.resource_schedule(company_id, user_id, org_id, start_date, end_date, created_by_id, date_created, modified_by_id, date_modified)
+    values (:companyId, :userId, :orgId, :startDate, :endDate, :createdById, now(), :createdById, now())
+    """;
+
+  //language=PostgreSQL
+  public final static String getOne = """
+    SELECT
+            rs.id,
+            rs.org_id,
+            rs.user_id,
+            rs.start_date,
+            rs.end_date,
+            rs.company_id,
+            (
+                SELECT array_to_json(array_agg(row_to_json(d)))
+                FROM (
+                         select rsa.id,
+                            rsa.resource_schedule_id as "resourceScheduleId",
+                            rsa.resource_slot_schedule_id as "resourceSlotScheduleId",
+                            dow.id as "dayOfWeekId",
+                            dow.day_of_week as "dayOfWeek",
+                            rsa.start_time as "startTime",
+                            rsa.end_time as "endTime",
+                            coalesce(rsa.archived, false) as archived
+                        from flow.day_of_week dow
+                                 left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id and rsa.archived is not true
+                        order by dow.id < (select day_of_week_id
+                                            from flow.company_week_start
+                                            where company_id = :companyId), "dayOfWeekId") d
+            ) as resource_schedule_availability
+        FROM flow.resource_schedule rs
+             LEFT JOIN flow.org o ON o.id = rs.org_id
+             LEFT JOIN flow.user u ON u.id = rs.org_id
+        WHERE rs.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String updateHours = """
+    update flow.resource_schedule_availability
+     set start_time = to_char(:startTime::time, 'HH24:MI')::time,
+         end_time = to_char(:endTime::time, 'HH24:MI')::time,
+         resource_slot_schedule_id = :resourceSlotScheduleId,
+         modified_by_id = :modifiedById,
+         daylight_savings = :daylightSavings,
+         date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String archiveHours = """
+    update flow.resource_schedule_availability
+     set modified_by_id = :modifiedById,
+         date_modified = now(),
+         archived = true
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertHours = """
+    insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, resource_slot_schedule_id, daylight_savings, created_by_id, date_created, modified_by_id, date_modified)
+        values (:resourceScheduleId, to_char(:startTime::time, 'HH24:MI')::time, to_char(:endTime::time, 'HH24:MI')::time, :dayOfWeekId, :resourceSlotScheduleId, :daylightSavings, :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String updateAppointment = """
+    update flow.resource_appointment
+    set start_time = :startTime::timestamp,
+        end_time = :endTime::timestamp,
+        modified_by_id = :modifiedById,
+        date_modified = now(),
+        all_day = :allDay,
+        description = :description,
+        location = :location,
+        latitude = :latitude,
+        longitude = :longitude,
+        title = :title,
+        recurrence = :recurrence,
+        recurring_start_time = :recurringStartTime,
+        recurring_end_time = :recurringEndTime
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertAppointment = """
+    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, all_day, description, title, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type, location,  latitude, longitude, origin_timezone, origin_timezone_offset, created_by_id, date_created, modified_by_id, date_modified)
+        values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :allDay, :description, :title, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType, :location,  :latitude, :longitude, :originTimezone, :originTimezoneOffset, :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String getAppointment = """
+    SELECT
+            ra.id,
+            ra.org_id,
+            ra.start_time,
+            ra.end_time,
+            ra.company_id,
+            ra.archived,
+            ra.description,
+            ra.all_day,
+            ra.title,
+            ra.location,
+            ra.latitude,
+            ra.longitude,
+            ra.recurrence,
+            ra.recurring_event_end_type,
+            ra.recurring_event_id,
+            case when ra.recurrence is not null then true else false end as repeat,
+            ra.recurring_start_time as "recurringStartTime",
+            ra.recurring_end_time as "recurringEndTime"
+        FROM flow.resource_appointment ra
+                 LEFT JOIN flow.org o ON o.id = ra.org_id
+                 LEFT JOIN flow.user u ON u.id = ra.org_id
+        WHERE ra.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String getAppointmentsForResource = """
+    SELECT
+            ra.id,
+            ra.org_id,
+            ra.start_time,
+           case when ra.recurrence is not null then true else false end as repeat,
+            ra.end_time,
+            ra.archived,
+            ra.description,
+            ra.company_id,
+            ra.title,
+            ra.location,
+            ra.latitude,
+            ra.longitude,
+            ra.all_day,
+            ra.recurrence,
+            ra.recurring_event_id,
+            ra.recurring_event_end_type,
+            ra.recurring_start_time as "recurringStartTime",
+            ra.recurring_end_time as "recurringEndTime"
+        FROM flow.resource_appointment ra
+                 LEFT JOIN flow.org o ON o.id = ra.org_id
+                 LEFT JOIN flow.user u ON u.id = ra.user_id
+        WHERE case when :orgId::bigint is not null then ra.org_id = :orgId
+                   else ra.user_id = :userId end
+          and ra.company_id = :companyId
+          and ra.archived is not true
+          and (ra.start_time >= (now() - '7 days'::interval) OR ra.end_time >= (now() - '7 days'::interval))
+          order by ra.start_time, ra.end_time, ra.all_day
+          limit :limit
+          offset :offset
+        """;
+
+  //language=PostgreSQL
+  public final static String getAppointmentsForResourceCount = """
+    SELECT count (*)
+    FROM flow.resource_appointment ra
+             LEFT JOIN flow.org o ON o.id = ra.org_id
+             LEFT JOIN flow.user u ON u.id = ra.user_id
+    WHERE case when :orgId::bigint is not null then ra.org_id = :orgId
+               else ra.user_id = :userId end
+      and ra.company_id = :companyId
+      and ra.archived is not true
+      and (ra.start_time >= (now() - '7 days'::interval) OR ra.end_time >= (now() - '7 days'::interval))
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteAppointment = """
+    update flow.resource_appointment
+    set modified_by_id = :modifiedById,
+        date_modified = now(),
+        archived = true
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteAppointmentsByRecurrence = """
+    update flow.resource_appointment
+    set modified_by_id = :modifiedById,
+        date_modified = now(),
+        archived = true
+    where recurring_event_id = :recurringEventId
+    """;
+
+  //language=PostgreSQL
+  public final static String getUserAppointmentLength = """
+    select default_appointment_length
+      from flow.user_company
+      where user_id = :userId
+        and company_id = :companyId
+    """;
+
+  //language=PostgreSQL
+  public final static String getOrgAppointmentLength = """
+    select default_appointment_length
+      from flow.org
+      where id = :orgId
+    """;
+
+  //language=PostgreSQL
+  public final static String saveUserAppointmentLength = """
+    update flow.user_company
+      set default_appointment_length = :appointmentLength,
+          date_modified = now()
+    where user_id = :userId
+      and company_id = :companyId
+    """;
+
+  //language=PostgreSQL
+  public final static String saveOrgAppointmentLength = """
+    update flow.org
+      set default_appointment_length = :appointmentLength,
+           date_modified = now()
+    where id = :orgId
+    """;
+
+  //language=PostgreSQL
+  public final static String getTimeSlots = """
+    select success, scheduled_start_time, array_to_json(users) as users from flow.get_availability_time_slots(:projectId::bigint, :startTime::timestamp, :endTime::timestamp, :availableDate::date, :remote::boolean)
+        """;
+
+  //language=PostgreSQL
+  public final static String setCloserAppointment = """
+    select * from flow.set_closer_appointment(:projectId::bigint, :userId::bigint, :projectProcessStepId::bigint, :projectProcessStepEventId::bigint, :appointmentTime::timestamp, :users::bigint[], :remote::boolean);
+        """;
+
+  //language=PostgreSQL
+  public final static String saveOverrideInfoToAudit = """
+    insert into brs.set_closer_appointment_audit(project_id, user_position_id, project_process_step_id, created_date, created_by_id, override)
+    values(:projectId, :userPositionId, :projectProcessStepId, now(), :createdById, true)
+    """;
+
+  //language=PostgreSQL
+  public final static String getDistinctRecurringEvents = """
+    with recurring as (
+            select distinct ra.recurring_event_id,
+                            ra.recurrence,
+                            ra.company_id,
+                            ra.user_id,
+                            ra.org_id,
+                            ra.recurring_event_end_type,
+                            ra.recurring_start_time,
+                            ra.description, ra.all_day,
+                            EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration,
+                            ra.origin_timezone,
+                            ra.origin_timezone_offset
+            from flow.resource_appointment ra
+                     inner join flow."user" u on u.id = ra.user_id
+                     inner join flow.company_user_status cus on cus.user_id = u.id
+                     inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = ra.company_id
+            where ra.recurring_event_end_type is null
+              and ra.recurring_event_id is not null
+              and ra.archived is not true
+              and ust.has_access is true
+            union
+            select distinct ra.recurring_event_id,
+                            ra.recurrence,
+                            ra.company_id,
+                            ra.user_id,
+                            ra.org_id,
+                            ra.recurring_event_end_type,
+                            ra.recurring_start_time,
+                            ra.description, ra.all_day,
+                            EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration,
+                            ra.origin_timezone,
+                            ra.origin_timezone_offset
+            from flow.resource_appointment ra
+                     inner join flow."org" o on o.id = ra.org_id
+            where ra.recurring_event_end_type is null
+              and ra.recurring_event_id is not null
+              and o.active_flag is true
+              and o.archived is not true
+              and ra.archived is not true
+        )
+        select recurring_event_id,
+               recurrence,
+               user_id,
+               org_id,
+               recurring_event_end_type,
+               recurring_start_time,
+               description,
+               company_id,
+               all_day,
+               duration,
+               origin_timezone,
+               origin_timezone_offset,
+               coalesce((
+                            SELECT array_to_json(array_agg(row_to_json(appointments)))
+                            FROM (
+                                     SELECT
+                                         ra.id,
+                                         ra.org_id as "orgId",
+                                         ra.start_time as "startTime",
+                                         ra.start_time as "startTimeString",
+                                         case when ra.recurrence is not null then true else false end as repeat,
+                                         ra.end_time as "endTime",
+                                         ra.end_time as "endTimeString",
+                                         ra.archived,
+                                         ra.description,
+                                         ra.company_id as "companyId",
+                                         ra.all_day as "allDay",
+                                         ra.recurrence,
+                                         ra.recurring_event_id as "recurringEventId",
+                                         ra.recurring_event_end_type as "recurringEventEndType",
+                                         ra.recurring_start_time as "recurringStartTime",
+                                         ra.recurring_end_time as "recurringEndTime"
+                                     FROM flow.resource_appointment ra
+                                        where ra.recurring_event_id = r.recurring_event_id
+                                          and ra.start_time >= :startingDate
+                                 ) appointments), '[]') AS "appointments"
+           from recurring r
+        """;
+
+  //language=PostgreSQL
+  public final static String cacheAvailability = """
+     select from brs.cache_available_time_slots()
+    """;
+
+  //language=PostgreSQL
+  public final static String updateSlotSchedule = """
+    update flow.resource_slot_schedule
+    set schedule_name = :scheduleName,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertSlotSchedule = """
+    insert into flow.resource_slot_schedule(company_id, schedule_name, created_by_id, date_created, modified_by_id, date_modified)
+    values (:companyId, :scheduleName, :userId, now(), :userId, now())
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteSlotSchedule = """
+    update flow.resource_slot_schedule
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getSlotSchedule = """
+    select *,
+       coalesce((
+                SELECT array_to_json(array_agg(row_to_json(wlp)))
+                FROM (
+                         SELECT rst.id,
+                                rst.start_time as "startTime",
+                                rst.end_time as "endTime",
+                                rst.resource_slot_schedule_id as "resourceSlotScheduleId",
+                                rst.archived
+                         FROM flow.resource_slot_time rst
+                         WHERE rst.resource_slot_schedule_id = rss.id
+                           AND rst.archived is not true
+                           order by rst.start_time, rst.end_time) wlp), '[]') AS "slotTimes"
+    from flow.resource_slot_schedule rss
+    where rss.id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getAllSlotSchedules = """
+    select *,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(wlp)))
+                    FROM (
+                             SELECT rst.id,
+                                    rst.start_time as "startTime",
+                                    rst.end_time as "endTime",
+                                    rst.resource_slot_schedule_id as "resourceSlotScheduleId",
+                                    rst.archived
+                             FROM flow.resource_slot_time rst
+                             WHERE rst.resource_slot_schedule_id = rss.id
+                               AND rst.archived is not true
+                               order by rst.start_time, rst.end_time) wlp), '[]') AS "slotTimes"
+    from flow.resource_slot_schedule rss
+    where rss.archived is not true
+    order by rss.schedule_name
+    """;
+
+  //language=PostgreSQL
+  public final static String updateSlotTime = """
+    update flow.resource_slot_time
+    set start_time = :startTime::time,
+        end_time = :endTime::time,
+        archived = :archived,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertSlotTime = """
+    insert into flow.resource_slot_time(resource_slot_schedule_id, start_time, end_time, created_by_id, date_created, modified_by_id, date_modified)
+    values (:resourceSlotScheduleId, :startTime::time, :endTime::time, :userId, now(), :userId, now())
+      """;
+
+  //language=PostgreSQL
+  public final static String archiveUnusedExcludedSlots = """
+    update flow.excluded_resource_slot_time
+        set archived = true,
+            modified_by_id = :userId,
+            date_modified = now()
+        where resource_schedule_availability_id = :resourceScheduleAvailabilityId
+        and case when :excludedIsEmpty::boolean is true then 1=1 else resource_slot_time_id not in (:excludedResourceSlotTimeIds) end
+        """;
+
+  //language=PostgreSQL
+  public final static String addExcludedSlots = """
+    insert into flow.excluded_resource_slot_time(resource_slot_time_id, resource_schedule_availability_id, date_created, created_by_id, date_modified, modified_by_id)
+        select time_slot_id, :resourceScheduleAvailabilityId, now(), :userId, now(), :userId from unnest(ARRAY[ :excludedResourceSlotTimeIds ]) as time_slot_id
+        on conflict (resource_slot_time_id, resource_schedule_availability_id) do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
+        """;
+}

@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.queries.ListOfValueQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,6 @@ public class ListOfValueService {
     private final SqlCache sqlCache;
 
     public List<ListOfValue> getByCustomFieldId(Long customFieldId) {
-        return sqlCache.query("listOfValue.getByCustomFieldId", Map.of("customFieldId", customFieldId), ListOfValue.class);
+        return sqlCache.queryBySql(ListOfValueQuery.getByCustomFieldId, Map.of("customFieldId", customFieldId), ListOfValue.class);
     }
 }

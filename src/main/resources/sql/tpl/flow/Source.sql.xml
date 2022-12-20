@@ -1,7 +1,0 @@
-<sql>
-  <source.getAllSources><![CDATA[
-    select id,
-       source
-    from flow.source
-  ]]></source.getAllSources>
-</sql>

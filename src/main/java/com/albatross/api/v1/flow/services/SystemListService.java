@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.SystemList;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.SystemListQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class SystemListService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("systemList.getSystemListsForCompany", params, SystemList.class);
+    return sqlCache.queryBySql(SystemListQuery.getSystemListsForCompany, params, SystemList.class);
   }
 
   public List<ListOfValue> getSystemListOptionsForCompany(
@@ -46,8 +47,7 @@ public class SystemListService {
     params.put("subOptions", subOptions);
     params.put("systemListOptionIds", systemListOptionIds);
     params.put("intValue", intValue);
-    String sqlKey = "systemList.getSystemListOptionsForCompany";
 
-    return sqlCache.query(sqlKey, params, ListOfValue.class);
+    return sqlCache.queryBySql(SystemListQuery.getSystemListOptionsForCompany, params, ListOfValue.class);
   }
 }

@@ -4,8 +4,9 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyState;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.StateQuery;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -20,16 +21,14 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class StateService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
 
   public List<CompanyState> getAllStates() {
-    List<CompanyState> states = sqlCache.query("state.getAllStates", Collections.emptyMap(), CompanyState.class);
+    List<CompanyState> states = sqlCache.queryBySql(StateQuery.getAllStates, Collections.emptyMap(), CompanyState.class);
     return states;
   }
 
@@ -37,7 +36,7 @@ public class StateService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<CompanyState> states = sqlCache.query("state.getAvailableStates", params, CompanyState.class);
+    List<CompanyState> states = sqlCache.queryBySql(StateQuery.getAvailableStates, params, CompanyState.class);
     return states;
   }
 
@@ -46,7 +45,7 @@ public class StateService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<CompanyState> states = sqlCache.query("state.getActiveStatesByCompany", params, CompanyState.class);
+    List<CompanyState> states = sqlCache.queryBySql(StateQuery.getActiveStatesByCompany, params, CompanyState.class);
     return states;
   }
 
@@ -55,21 +54,21 @@ public class StateService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", null != companyId ? companyId : user.getCompanyId());
-    List<CompanyState> states = sqlCache.query("state.getAllCompanyStates", params, CompanyState.class);
+    List<CompanyState> states = sqlCache.queryBySql(StateQuery.getAllCompanyStates, params, CompanyState.class);
     return states;
   }
 
   public CompanyState getOneCompanyState(Long companyStateId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyStateId", companyStateId);
-    Optional<CompanyState> state = sqlCache.get("state.getOneCompanyState", params, CompanyState.class);
+    Optional<CompanyState> state = sqlCache.getBySql(StateQuery.getOneCompanyState, params, CompanyState.class);
     return state.orElse(null);
   }
 
   public void deleteCompanyState(Long companyStateId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyStateId", companyStateId);
-    sqlCache.update("state.deleteCompanyState", params);
+    sqlCache.updateBySql(StateQuery.deleteCompanyState, params);
   }
 
   public CompanyState saveCompanyState(CompanyState state) {
@@ -87,10 +86,10 @@ public class StateService {
     if(null != state.getId()) {
       companyStateId = state.getId();
       params.put("companyStateId", companyStateId);
-      sqlCache.update("state.updateCompanyState", params);
+      sqlCache.updateBySql(StateQuery.updateCompanyState, params);
 
     } else {
-      companyStateId = sqlCache.updateReturningId("state.insertCompanyState", params, "id").longValue();
+      companyStateId = sqlCache.updateBySqlReturningId(StateQuery.insertCompanyState, params, "id").longValue();
     }
     return getOneCompanyState(companyStateId);
   }
@@ -101,7 +100,7 @@ public class StateService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     // i dont even know why we have this anymore
-    List<CompanyState> states = sqlCache.query("state.getActiveStatesByHierarchy", params, CompanyState.class);
+    List<CompanyState> states = sqlCache.queryBySql(StateQuery.getActiveStatesByHierarchy, params, CompanyState.class);
     return states;
   }
 

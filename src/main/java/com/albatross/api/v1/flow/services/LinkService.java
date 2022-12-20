@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Link;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLink;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.LinkQuery;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class LinkService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("link.getLinksForCompany", params, Link.class);
+    return sqlCache.queryBySql(LinkQuery.getLinksForCompany, params, Link.class);
   }
 
   public void updateOrderInProcessStep(List<ProcessStepLink> links) {
@@ -45,14 +46,14 @@ public class LinkService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("displayOrder", link.getDisplayOrder());
 
-    sqlCache.update("link.updateOrderInProcessStep", params);
+    sqlCache.updateBySql(LinkQuery.updateOrderInProcessStep, params);
   }
 
   public List<ProcessStepLink> getLinksForProcessStep(Long processStepId) {
     Map<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
 
-    return sqlCache.query("link.getLinksForProcessStep", params, ProcessStepLink.class);
+    return sqlCache.queryBySql(LinkQuery.getLinksForProcessStep, params, ProcessStepLink.class);
   }
 
   public List<Link> getAvailableLinksForProcessStep(Long id) {
@@ -61,25 +62,25 @@ public class LinkService {
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
-    return sqlCache.query("link.getAvailableLinksForProcessStep", params, Link.class);
+    return sqlCache.queryBySql(LinkQuery.getAvailableLinksForProcessStep, params, Link.class);
   }
 
   public Optional<Link> getLink(Long companyId, Long linkId) {
-    return sqlCache.get(
-        "link.getLink", ImmutableMap.of("companyId", companyId, "linkId", linkId), Link.class);
+    return sqlCache.getBySql(
+      LinkQuery.getLink, ImmutableMap.of("companyId", companyId, "linkId", linkId), Link.class);
   }
 
   public void deleteProcessStepLink(Long id) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update(
-        "link.deleteProcessStepLink",
+    sqlCache.updateBySql(
+      LinkQuery.deleteProcessStepLink,
         ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
   }
 
   public Optional<ProcessStepLink> getProcessStepLink(Long id) {
-    return sqlCache.get(
-        "link.getProcessStepLink", ImmutableMap.of("id", id), ProcessStepLink.class);
+    return sqlCache.getBySql(
+      LinkQuery.getProcessStepLink, ImmutableMap.of("id", id), ProcessStepLink.class);
   }
 
   public Optional<ProcessStepLink> insertProcessStepLink(ProcessStepLink link) {
@@ -87,8 +88,8 @@ public class LinkService {
 
     Long id =
         sqlCache
-            .updateReturningId(
-                "link.insertProcessStepLink",
+            .updateBySqlReturningId(
+              LinkQuery.insertProcessStepLink,
                 ImmutableMap.of(
                     "createdById",
                     currentUser.trueUserId(),
@@ -103,12 +104,12 @@ public class LinkService {
   }
 
   public void deleteLink(Long linkId) {
-    sqlCache.update("link.deleteLink", ImmutableMap.of("id", linkId));
+    sqlCache.updateBySql(LinkQuery.deleteLink, ImmutableMap.of("id", linkId));
   }
 
   public void updateLink(Link link) {
-    sqlCache.update(
-        "link.updateLink",
+    sqlCache.updateBySql(
+      LinkQuery.updateLink,
         ImmutableMap.of(
             "companyId",
             link.getCompanyId(),
@@ -123,8 +124,8 @@ public class LinkService {
   public Optional<Link> insertLink(Link link) {
     Long id =
         sqlCache
-            .updateReturningId(
-                "link.insertLink",
+            .updateBySqlReturningId(
+              LinkQuery.insertLink,
                 ImmutableMap.of(
                     "link", link.getLink(), "companyId", link.getCompanyId(), "url", link.getUrl()),
                 "id")
@@ -139,7 +140,7 @@ public class LinkService {
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
-    return sqlCache.query("link.getAvailableLinksForAction", params, Link.class);
+    return sqlCache.queryBySql(LinkQuery.getAvailableLinksForAction, params, Link.class);
   }
 
   public List<Link> getAvailableLinksForEventAction(Long id) {
@@ -148,6 +149,6 @@ public class LinkService {
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
-    return sqlCache.query("link.getAvailableLinksForEventAction", params, Link.class);
+    return sqlCache.queryBySql(LinkQuery.getAvailableLinksForEventAction, params, Link.class);
   }
 }

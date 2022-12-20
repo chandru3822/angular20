@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.StatusType;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.StatusQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,21 +26,21 @@ public class StatusService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("status.getTypesForCompany", params, StatusType.class);
+    return sqlCache.queryBySql(StatusQuery.getTypesForCompany, params, StatusType.class);
   }
 
   public Optional<StatusType> getType(Long companyId, Long typeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("typeId", typeId);
-    return sqlCache.get("status.getType", params, StatusType.class);
+    return sqlCache.getBySql(StatusQuery.getType, params, StatusType.class);
   }
 
   public void deleteType(Long typeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
 
-    sqlCache.update("status.deleteType", params);
+    sqlCache.updateBySql(StatusQuery.deleteType, params);
   }
 
   public void updateType(StatusType type) {
@@ -47,14 +48,14 @@ public class StatusService {
     params.put("id", type.getId());
     params.put("statusType", type.getStatusType());
 
-    sqlCache.update("status.updateType", params);
+    sqlCache.updateBySql(StatusQuery.updateType, params);
   }
 
   public Optional<StatusType> insertType(StatusType type) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", type.getId());
     params.put("statusType", type.getStatusType());
-    Long id = sqlCache.updateReturningId("status.insertType", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(StatusQuery.insertType, params, "id").longValue();
 
     return getType(type.getCompanyId(), id);
   }

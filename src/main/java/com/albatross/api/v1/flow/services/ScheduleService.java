@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.controllers.ScheduleController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.ProjectWithEvents;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -177,7 +178,7 @@ public class ScheduleService {
       params.put("saveVersion", ev.getSaveVersion());
       params.put("modifiedById", user.getId());
       //i am lazy and didn't want to re-code the frontend so this this calls the right function even though that seems weird
-      int countUpdatedRows = sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+      int countUpdatedRows = sqlCache.updateBySql(ProjectProcessStepEventQuery.savePpsEventDetails, params);
       if (countUpdatedRows == 0) {
         throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Save Version Mismatch", new Exception());

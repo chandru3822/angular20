@@ -9,6 +9,7 @@ import com.albatross.api.v1.flow.model.postalCode.PostalCodeAllocationUser;
 import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
 import com.albatross.api.v1.flow.model.postalCode.PostalCodeZonePostalCode;
 import com.albatross.api.v1.flow.model.postalCode.PostalCodeZoneUser;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -309,7 +310,7 @@ public class PostalCodeService {
       // had to change this so that a parent looking at a child project could still see project tabs
       params.put("projectId", projectId);
       Optional<Long> overrideCompanyId =
-          sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+          sqlCache.queryForObjectOptionalBySql(ProjectQuery.getCompanyId, params, Long.class);
       if (overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {

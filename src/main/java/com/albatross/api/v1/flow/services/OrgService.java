@@ -13,6 +13,7 @@ import com.albatross.api.v1.flow.model.UserOrgAccess;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.org.OrgExportTemplate;
 import com.albatross.api.v1.flow.model.org.OrgFilter;
+import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -349,7 +350,7 @@ public class OrgService {
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", user.getCompanyId());
 
-    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
 
     params.clear();
     params.put("orgId", orgId);

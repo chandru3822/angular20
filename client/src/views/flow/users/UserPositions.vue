@@ -163,7 +163,7 @@
                 <input type="checkbox" v-model="item.primaryFlag" disabled>
               </td>
               <td class="text-left user-column" v-for="(f, index) in filters" :key="index">
-                <a v-if="f.orgLevelId===7" :href="`/org/${getOrgIdForFilter(item.hierarchy, 7)}`">{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</a>
+                <a v-if="getOrgIdForFilter(item.hierarchy, f.orgLevelId)" :href="`/org/${getOrgIdForFilter(item.hierarchy, f.orgLevelId)}`">{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</a>
                 <span v-else>{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</span>
               </td>
               <td width="150" class="d-flex">

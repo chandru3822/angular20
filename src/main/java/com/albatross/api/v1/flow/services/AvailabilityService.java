@@ -2,6 +2,9 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
@@ -11,6 +14,7 @@ import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.queries.AvailabilityQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,6 +67,8 @@ public class AvailabilityService {
 
   private final MarketoService marketoService;
 
+  private final PubSubService pubSubService;
+
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
@@ -74,8 +80,8 @@ public class AvailabilityService {
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query(
-        "availability.getAllForResource",
+    return sqlCache.queryBySql(
+      AvailabilityQuery.getAllForResource,
         params,
         new ResourceScheduleMapper<>(ResourceSchedule.class, om));
   }
@@ -86,7 +92,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("availability.getWorkDays", params, WorkDay.class);
+    return sqlCache.queryBySql(AvailabilityQuery.getWorkDays, params, WorkDay.class);
   }
 
   public ResourceSchedule getOneResourceAvailability(Long id) {
@@ -97,8 +103,8 @@ public class AvailabilityService {
     params.put("companyId", user.getCompanyId());
 
     Optional<ResourceSchedule> result =
-        sqlCache.get(
-            "availability.getOne",
+        sqlCache.getBySql(
+          AvailabilityQuery.getOne,
             params,
             new ResourceScheduleMapper<>(ResourceSchedule.class, om));
     return result.orElse(null);
@@ -121,15 +127,15 @@ public class AvailabilityService {
     if (null != ra.getId()) {
       id = ra.getId();
       params.put("id", id);
-      sqlCache.update("availability.updateSchedule", params);
+      sqlCache.updateBySql(AvailabilityQuery.updateSchedule, params);
     } else {
-      id = sqlCache.updateReturningId("availability.insertSchedule", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(AvailabilityQuery.insertSchedule, params, "id").longValue();
     }
 
     // this should account for a new infinite schedule, or a schedule added after an infinite one
     // but that has an end date
     params.put("id", id);
-    sqlCache.update("availability.updateScheduleWithoutEndDate", params);
+    sqlCache.updateBySql(AvailabilityQuery.updateScheduleWithoutEndDate, params);
 
     // handle saving each day's working hours
     if (!ra.getResourceScheduleAvailability().isEmpty()) {
@@ -177,7 +183,7 @@ public class AvailabilityService {
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
 
-    sqlCache.update("availability.deleteSchedule", params);
+    sqlCache.updateBySql(AvailabilityQuery.deleteSchedule, params);
   }
 
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
@@ -223,15 +229,15 @@ public class AvailabilityService {
       rsaId = rsa.getId();
       params.put("id", rsa.getId());
       params.put("modifiedById", user.trueUserId());
-      sqlCache.update("availability.archiveHours", params);
+      sqlCache.updateBySql(AvailabilityQuery.archiveHours, params);
     } else if (hasId) {
       rsaId = rsa.getId();
       params.put("id", rsa.getId());
       params.put("modifiedById", user.trueUserId());
-      sqlCache.update("availability.updateHours", params);
+      sqlCache.updateBySql(AvailabilityQuery.updateHours, params);
     } else if ((null != rsa.getResourceSlotScheduleId())
         || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
-      rsaId = sqlCache.updateReturningId("availability.insertHours", params, "id").longValue();
+      rsaId = sqlCache.updateBySqlReturningId(AvailabilityQuery.insertHours, params, "id").longValue();
     }
 
     // handle the saving of excluded slot times
@@ -253,12 +259,12 @@ public class AvailabilityService {
       excludedParams.put("userId", user.trueUserId());
 
       // delete any existing excluded slots that are no longer in the excluded array
-      sqlCache.update("availability.archiveUnusedExcludedSlots", excludedParams);
+      sqlCache.updateBySql(AvailabilityQuery.archiveUnusedExcludedSlots, excludedParams);
 
       // add any excluded slots that do not already exist - if there are any sent in
       if (null != rsa.getExcludedResourceSlotTimeIds()
           && !rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
-        sqlCache.update("availability.addExcludedSlots", excludedParams);
+        sqlCache.updateBySql(AvailabilityQuery.addExcludedSlots, excludedParams);
       }
     }
   }
@@ -275,12 +281,12 @@ public class AvailabilityService {
     Optional<Long> result;
     if (orgId != null) {
       result =
-          sqlCache.queryForObjectOptional(
-              "availability.getOrgAppointmentLength", params, Long.class);
+          sqlCache.queryForObjectOptionalBySql(
+            AvailabilityQuery.getOrgAppointmentLength, params, Long.class);
     } else {
       result =
-          sqlCache.queryForObjectOptional(
-              "availability.getUserAppointmentLength", params, Long.class);
+          sqlCache.queryForObjectOptionalBySql(
+            AvailabilityQuery.getUserAppointmentLength, params, Long.class);
     }
     return result.orElse(null);
   }
@@ -295,9 +301,9 @@ public class AvailabilityService {
     params.put("companyId", user.getCompanyId());
 
     if (al.getOrgId() != null) {
-      sqlCache.update("availability.saveOrgAppointmentLength", params);
+      sqlCache.updateBySql(AvailabilityQuery.saveOrgAppointmentLength, params);
     } else {
-      sqlCache.update("availability.saveUserAppointmentLength", params);
+      sqlCache.updateBySql(AvailabilityQuery.saveUserAppointmentLength, params);
     }
   }
 
@@ -310,7 +316,7 @@ public class AvailabilityService {
     params.put("projectProcessStepId", audit.getProjectProcessStepId());
     params.put("userPositionId", audit.getUserPositionId());
 
-    sqlCache.update("availability.saveOverrideInfoToAudit", params);
+    sqlCache.updateBySql(AvailabilityQuery.saveOverrideInfoToAudit, params);
   }
 
   //  appointments
@@ -326,11 +332,11 @@ public class AvailabilityService {
     params.put("offset", pageable.getOffset());
 
     List<ResourceAppointment> results =
-        sqlCache.query(
-            "availability.getAppointmentsForResource", params, ResourceAppointment.class);
+        sqlCache.queryBySql(
+          AvailabilityQuery.getAppointmentsForResource, params, ResourceAppointment.class);
     Integer count =
-        sqlCache.queryForObject(
-            "availability.getAppointmentsForResourceCount", params, Integer.class);
+        sqlCache.queryForObjectBySql(
+          AvailabilityQuery.getAppointmentsForResourceCount, params, Integer.class);
 
     return new PageImpl<>(
         results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
@@ -386,7 +392,7 @@ public class AvailabilityService {
       params.put("latitude", latitude);
       params.put("longitude", longitude);
 
-      sqlCache.update("availability.updateAppointment", params);
+      sqlCache.updateBySql(AvailabilityQuery.updateAppointment, params);
     } else {
       if (null != ra.getLocation()) {
         List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
@@ -406,7 +412,7 @@ public class AvailabilityService {
         params.put("recurringEventId", null);
         params.put("originTimezone", null);
         params.put("originTimezoneOffset", null);
-        id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
+        id = sqlCache.updateBySqlReturningId(AvailabilityQuery.insertAppointment, params, "id").longValue();
       } else {
         if ((null != ra.getOriginTimezoneOffset() && null != ra.getOriginTimezone()) || ra.getAllDay()) {
           createRecurringEvents(ra);
@@ -431,8 +437,8 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("startingDate", startingDate);
     List<RecurringResourceAppointment> recurringAppointments =
-        sqlCache.query(
-            "availability.getDistinctRecurringEvents",
+        sqlCache.queryBySql(
+          AvailabilityQuery.getDistinctRecurringEvents,
             params,
             new RecurringAppointmentMapper<>(RecurringResourceAppointment.class, om));
 
@@ -647,7 +653,7 @@ public class AvailabilityService {
 
   public void insertEvent(HashMap<String, Object> params) {
     // insert using the params we created before
-    sqlCache.update("availability.insertAppointment", params);
+    sqlCache.updateBySql(AvailabilityQuery.insertAppointment, params);
   }
 
   public void deleteAppointment(Long id) {
@@ -657,7 +663,7 @@ public class AvailabilityService {
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
 
-    sqlCache.update("availability.deleteAppointment", params);
+    sqlCache.updateBySql(AvailabilityQuery.deleteAppointment, params);
   }
 
   public void deleteAppointmentsByRecurrence(String recurringEventId) {
@@ -667,7 +673,7 @@ public class AvailabilityService {
     params.put("recurringEventId", recurringEventId);
     params.put("modifiedById", user.trueUserId());
 
-    sqlCache.update("availability.deleteAppointmentsByRecurrence", params);
+    sqlCache.updateBySql(AvailabilityQuery.deleteAppointmentsByRecurrence, params);
   }
 
   public List<TimeSlot> getTimeSlots(
@@ -682,8 +688,8 @@ public class AvailabilityService {
       params.put("remote", null != remote ? remote : false);
 
       List<TimeSlot> results =
-          sqlCache.query(
-              "availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+          sqlCache.queryBySql(
+            AvailabilityQuery.getTimeSlots, params, new TimeSlotMapper<>(TimeSlot.class, om));
       if (!results.isEmpty() && results.get(0) != null && !results.get(0).getSuccess()) {
         throw new ResponseStatusException(
             HttpStatus.BAD_REQUEST,
@@ -721,8 +727,8 @@ public class AvailabilityService {
       params.put("remote", null != request.getRemote() ? request.getRemote() : false);
 
       List<CloserAppointmentResult> results =
-          sqlCache.query(
-              "availability.setCloserAppointment", params, CloserAppointmentResult.class);
+          sqlCache.queryBySql(
+            AvailabilityQuery.setCloserAppointment, params, CloserAppointmentResult.class);
 
       if (!results.isEmpty()) {
         if (null != results.get(0) && results.get(0).getSuccess()) {
@@ -737,8 +743,15 @@ public class AvailabilityService {
 
           // then run manually run the schedule event action which is process_step_action_id = 1
           // this will also run auto triggers if needed
-          projectProcessStepEventService.performStepEventAction(
+          ProjectProcessStepEventService.PpseActionResult ppseActionResult = projectProcessStepEventService.performStepEventAction(
               request.getProjectProcessStepId(), request.getProjectProcessStepEventId(), 1L);
+
+          if (ppseActionResult.getShouldRunProjectTagUpdate()) {
+            //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
+            ProjectTagMessage ptm = new ProjectTagMessage();
+            ptm.setProjectId(ppseActionResult.getProjectId());
+            pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+          }
 
           // after the auto triggers have run then get the event
           Optional<ProjectProcessStepEvent> ppsEvent =
@@ -851,7 +864,7 @@ public class AvailabilityService {
   }
 
   public void cacheAvailability() {
-    sqlCache.query("availability.cacheAvailability", Collections.emptyMap(), String.class);
+    sqlCache.queryBySql(AvailabilityQuery.cacheAvailability, Collections.emptyMap(), String.class);
   }
 
   public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {
@@ -865,9 +878,9 @@ public class AvailabilityService {
     if (null != slotSchedule.getId()) {
       id = slotSchedule.getId();
       params.put("id", id);
-      sqlCache.update("availability.updateSlotSchedule", params);
+      sqlCache.updateBySql(AvailabilityQuery.updateSlotSchedule, params);
     } else {
-      id = sqlCache.updateReturningId("availability.insertSlotSchedule", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(AvailabilityQuery.insertSlotSchedule, params, "id").longValue();
     }
 
     // handle the slot times
@@ -894,9 +907,9 @@ public class AvailabilityService {
       params.put("id", slotTime.getId());
       // this update will also archive if needed
       params.put("archived", archived);
-      sqlCache.update("availability.updateSlotTime", params);
+      sqlCache.updateBySql(AvailabilityQuery.updateSlotTime, params);
     } else if (null == slotTime.getArchived() || !slotTime.getArchived()) {
-      sqlCache.update("availability.insertSlotTime", params);
+      sqlCache.updateBySql(AvailabilityQuery.insertSlotTime, params);
     }
   }
 
@@ -904,8 +917,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     Optional<SlotSchedule> result =
-        sqlCache.get(
-            "availability.getSlotSchedule",
+        sqlCache.getBySql(AvailabilityQuery.getSlotSchedule,
             params,
             new SlotScheduleMapper<>(SlotSchedule.class, om));
     return result;
@@ -915,8 +927,8 @@ public class AvailabilityService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query(
-        "availability.getAllSlotSchedules",
+    return sqlCache.queryBySql(
+      AvailabilityQuery.getAllSlotSchedules,
         params,
         new SlotScheduleMapper<>(SlotSchedule.class, om));
   }
@@ -926,7 +938,7 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("userId", user.trueUserId());
-    sqlCache.update("availability.deleteSlotSchedule", params);
+    sqlCache.updateBySql(AvailabilityQuery.deleteSlotSchedule, params);
   }
 
   public ResourceAppointment getOneResourceAppointment(Long id) {
@@ -934,7 +946,7 @@ public class AvailabilityService {
     params.put("id", id);
 
     return sqlCache
-        .get("availability.getAppointment", params, ResourceAppointment.class)
+        .getBySql(AvailabilityQuery.getAppointment, params, ResourceAppointment.class)
         .orElse(null);
   }
 

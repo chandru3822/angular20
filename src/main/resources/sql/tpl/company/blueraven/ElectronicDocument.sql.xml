@@ -4,7 +4,7 @@
             select s.abbreviation || ' - ' || ah.name
                 from brs.project_details pd
                 inner join flow.project p on p.id = pd.project_id
-                inner join brs.ahj ah on ah.id = pd.ahj
+                inner join brs.feat_db_ahj ah on ah.id = pd.ahj
                 left outer join flow.company_state cs on cs.id = p.company_state_id
                 left outer join flow.state s on s.id = cs.state_id
             where pd.project_id = :projectId
@@ -16,7 +16,7 @@
             select s.abbreviation || ' - ' || au.name
                 from brs.project_details pd
                 inner join flow.project p on p.id = pd.project_id
-                inner join brs.ahj_utility au on au.id = pd.utility_company
+                inner join brs.feat_db_utility au on au.id = pd.utility_company
                 left outer join flow.company_state cs on cs.id = p.company_state_id
                 left outer join flow.state s on s.id = cs.state_id
             where pd.project_id = :projectId

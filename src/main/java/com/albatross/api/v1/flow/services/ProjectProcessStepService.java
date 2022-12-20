@@ -2,6 +2,9 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -14,6 +17,7 @@ import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
+import com.albatross.api.v1.flow.queries.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -77,6 +81,8 @@ public class ProjectProcessStepService {
   private final CommunicationService communicationService;
   private final MessagingService messagingService;
 
+  private final PubSubService pubSubService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -87,7 +93,7 @@ public class ProjectProcessStepService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("linked", null != linked ? linked : false);
-    List<Attachment> attachments = sqlCache.query("projectProcessStep.getProjectProcessStepAttachments", params, Attachment.class);
+    List<Attachment> attachments = sqlCache.queryBySql(ProjectProcessStepQuery.getProjectProcessStepAttachments, params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
@@ -99,11 +105,11 @@ public class ProjectProcessStepService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    String sqlKey = "projectProcessStep.linkAttachment";
+    String sql = ProjectProcessStepQuery.linkAttachment;
     if(!doLink) {
-      sqlKey = "projectProcessStep.unlinkAttachment";
+      sql = ProjectProcessStepQuery.unlinkAttachment;
     }
-    sqlCache.update(sqlKey, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
@@ -117,7 +123,7 @@ public class ProjectProcessStepService {
     //had to change this so that a parent looking at a child project could still see project statuses
     HashMap<String, Object> p2 = new HashMap<>();
     p2.put("projectProcessStepId", projectProcessStepId);
-    Long companyId = sqlCache.queryForObject("projectProcessStep.getCompanyId", p2, Long.class);
+    Long companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, p2, Long.class);
 
     //get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
@@ -144,14 +150,14 @@ public class ProjectProcessStepService {
     params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("companyId", companyId);
 
-    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
 
     params.clear();
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("attachmentId", attachmentId);
     params.put("createdById", user.trueUserId());
 
-    sqlCache.update("projectProcessStep.addAttachment", params);
+    sqlCache.updateBySql(ProjectProcessStepQuery.addAttachment, params);
 
     return attachmentService.findById(attachmentId);
   }
@@ -162,7 +168,7 @@ public class ProjectProcessStepService {
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("userId", user.trueUserId());
 
-    sqlCache.update("projectProcessStep.removeOwner", params);
+    sqlCache.updateBySql(ProjectProcessStepQuery.removeOwner, params);
   }
 
   public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, Long cancelledCompanyProcessStepStatusTypeId) {
@@ -186,7 +192,7 @@ public class ProjectProcessStepService {
     params.put("processStepId", pps.getProcessStepId());
     params.put("cancelledStatusTypeId", cancelledCompanyProcessStepStatusTypeId);
 
-    sqlCache.query("projectProcessStep.setStatus", params, String.class);
+    sqlCache.queryBySql(ProjectProcessStepQuery.setStatus, params, String.class);
   }
 
   public void setMain(Long ppsId, CompanyProcessStepStatusType status) {
@@ -195,7 +201,7 @@ public class ProjectProcessStepService {
     params.put("activeCompanyProcessStepStatusTypeId", status.getId());
     params.put("cancelledCompanyProcessStepStatusTypeId", status.getCancelledCompanyProcessStepStatusTypeId());
     params.put("userId", securityService.getCurrentUser().getId());
-    sqlCache.query("projectProcessStep.setMain", params, String.class);
+    sqlCache.queryBySql(ProjectProcessStepQuery.setMain, params, String.class);
   }
 
   public void setProjectStatus(Long projectId, Long companyProjectStatusTypeId) {
@@ -229,12 +235,12 @@ public class ProjectProcessStepService {
     boolean canSave = false;
     if (null != blockOverride && blockOverride) {
       //check for existing owner
-      Long id = sqlCache.queryForObject("projectProcessStep.getOwner", params, Long.class);
+      Long id = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getOwner, params, Long.class);
       canSave = id == null;
     }
 
     if (null == blockOverride || !blockOverride || canSave) {
-      sqlCache.update("projectProcessStep.updateOwner", params);
+      sqlCache.updateBySql(ProjectProcessStepQuery.updateOwner, params);
       return ResponseEntity.ok("Owner Saved");
     } else {
       return ResponseEntity.badRequest().body("Project Process Step is already assigned to another user. Please refresh page.");
@@ -246,7 +252,7 @@ public class ProjectProcessStepService {
     User user = securityService.getCurrentUser();
 
     try {
-      String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId, "companyId", user.getCompanyId()), String.class);
+      String json = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getProjectProcessStep, Map.of("stepId", stepId, "companyId", user.getCompanyId()), String.class);
       if (null != json) {
         return om.readValue(json, new TypeReference<>() {
         });
@@ -259,14 +265,15 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStepStatus getProjectProcessStepStatus(Long stepId) {
-    Optional<ProjectProcessStepStatus> status = sqlCache.get("projectProcessStep.getStatus", Map.of("stepId", stepId), ProjectProcessStepStatus.class);
+    Optional<ProjectProcessStepStatus> status = sqlCache.getBySql(ProjectProcessStepQuery.getStatus, Map.of("stepId", stepId), ProjectProcessStepStatus.class);
     return status.orElse(null);
   }
 
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long initialCompanyProcessStepStatusTypeId, Long existingCompanyProcessStepStatusTypeId) {
     var ppsId = this.insertProjectProcessStep(projectId, processStepId, userPositionId, parentProjectProcessStepId, initialCompanyProcessStepStatusTypeId, existingCompanyProcessStepStatusTypeId);
     if (performAutoTrigger) {
-      this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+      PpsActionResult ppsActionResult = this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+      this.updateProjectTagsViaRedis(ppsActionResult.getShouldRunProjectTagUpdate(), projectId, null);
     }
     return ppsId;
   }
@@ -279,7 +286,7 @@ public class ProjectProcessStepService {
       //had to change this so that a parent looking at a child project could still see right statuses
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -292,7 +299,7 @@ public class ProjectProcessStepService {
     params.put("initialCompanyProcessStepStatusTypeId", initialCompanyProcessStepStatusTypeId);
     params.put("existingCompanyProcessStepStatusTypeId", existingCompanyProcessStepStatusTypeId);
 
-    return sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
+    return sqlCache.queryForObjectBySql(ProjectProcessStepQuery.insertProjectProcessStep, params, Long.class);
   }
 
   @Transactional
@@ -304,12 +311,12 @@ public class ProjectProcessStepService {
         throw new RuntimeException("Can not delete a primary process step. Must designate another primary step first");
       }
 
-      sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+      sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId), String.class);
     }
   }
 
   public List<ProjectProcessStepHistory> getPpsHistory(Long projectProcessStepId) {
-    List<ProjectProcessStepHistory> results = sqlCache.query("projectProcessStep.getHistory", Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStepHistory.class);
+    List<ProjectProcessStepHistory> results = sqlCache.queryBySql(ProjectProcessStepQuery.getHistory, Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStepHistory.class);
     return results;
   }
 
@@ -343,7 +350,7 @@ public class ProjectProcessStepService {
   }
 
   public List<Owner> getOwners(Long processStepProcessId) {
-    return sqlCache.query("projectProcessStep.getOwners", Map.of("processStepProcessId", processStepProcessId), Owner.class);
+    return sqlCache.queryBySql(ProjectProcessStepQuery.getOwners, Map.of("processStepProcessId", processStepProcessId), Owner.class);
   }
 
   public List<Long> getIdsForAutoTriggerByCfgaIds(Long projectId, Long contactId, List<Long> cfgaIds) {
@@ -351,7 +358,7 @@ public class ProjectProcessStepService {
     params.put("projectId", projectId);
     params.put("contactId", contactId);
     params.put("cfgaIds", cfgaIds);
-    return sqlCache.query("projectProcessStep.getIdsByAutoTriggerActionsAndReqs", params, new SingleColumnRowMapper<>(Long.class));
+    return sqlCache.queryBySql(ProjectProcessStepQuery.getIdsByAutoTriggerActionsAndReqs, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
@@ -388,7 +395,7 @@ public class ProjectProcessStepService {
 //    User cronUser = new User();
 //    cronUser.setId(SystemSettings.CRON_USER.getId());
 //
-//    final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getInitialAutoTriggerPps", null, new ColumnMapRowMapper());
+//    final List<Map<String, Object>> results = sqlCache.queryBySql(ProjectProcessStepQuery.getInitialAutoTriggerPps, null, new ColumnMapRowMapper());
 //
 //    List<Long> createdPpsIds = new ArrayList<>();
 //
@@ -410,7 +417,7 @@ public class ProjectProcessStepService {
     User cronUser = new User();
     cronUser.setId(SystemSettings.CRON_USER.getId());
 
-    final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getTimeBasedAutoTriggerPps", null, new ColumnMapRowMapper());
+    final List<Map<String, Object>> results = sqlCache.queryBySql(ProjectProcessStepQuery.getTimeBasedAutoTriggerPps, null, new ColumnMapRowMapper());
 
     List<Long> createdPpsIds = new ArrayList<>();
 
@@ -420,9 +427,9 @@ public class ProjectProcessStepService {
       cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
       try {
         log.info(String.format("TRIGGERS: Starting #%s for ppsId: %s", counter++, result.get("ppsId")));
-        List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
-        if (!newPpsIds.isEmpty()) {
-          createdPpsIds.addAll(newPpsIds);
+        PpsActionResult ppsActionResult = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
+        if (!ppsActionResult.getPpsIds().isEmpty()) {
+          createdPpsIds.addAll(ppsActionResult.getPpsIds());
         }
       } catch (Exception e) {
         // Errors will already be printed to log. Silently swallow exception so we can keep trying other PPSs
@@ -433,13 +440,33 @@ public class ProjectProcessStepService {
     log.info("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
+  public void updateProjectTagsViaRedis(Boolean doUpdate, Long projectId, List<Long> ppsIds) {
+    if(doUpdate) {
+      List<Long> projectIds;
+      if(null == projectId) {
+        //this is a list of distinct project ids, so it should only run once per project. some auto triggers can happen for multiple projects at the same time. like when saving contact custom fields
+        projectIds = projectService.getDistinctProjectIdsByPpsIds(ppsIds);
+        for(Long projId : projectIds) {
+          ProjectTagMessage ptm = new ProjectTagMessage();
+          ptm.setProjectId(projId);
+          pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+        }
+      } else {
+        //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
+        ProjectTagMessage ptm = new ProjectTagMessage();
+        ptm.setProjectId(projectId);
+        pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+      }
+    }
+  }
+
   @Transactional
-  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
+  public PpsActionResult performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
     return performAutoTriggerActions(ppsId, userDetails, null, null, null, new ArrayList<>());
   }
 
   @Transactional
-  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, Long callingPpsId, List<Long> performedActions) {
+  public PpsActionResult performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails, Long callingProcessStepActionId, Long callingProcessStepId, Long callingPpsId, List<Long> performedActions) {
     // Set the security context so we have user details in the async downline
     securityService.setCurrentUserDetails(userDetails);
 
@@ -448,6 +475,8 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     boolean actionsWerePerformed = false;
+    boolean doProjectUpdate = false;
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
 
     if (pps.getProcessStepStatusTypeId() == 1) {
       for (ProjectProcessStepAction action : pps.getActions()) {
@@ -472,6 +501,9 @@ public class ProjectProcessStepService {
             if (actionResult.getCanPerform()) {
               performedActions.add(action.getId());
               PpsActionResult ppsActionResult = this.performAction(action, updatedPps, performedActions);
+              if(ppsActionResult.getShouldRunProjectTagUpdate()) {
+                doProjectUpdate = true;
+              }
               if (!ppsActionResult.getPpsIds().isEmpty()) {
                 createdPpsIds.addAll(ppsActionResult.getPpsIds());
               }
@@ -496,14 +528,22 @@ public class ProjectProcessStepService {
           for (Long checkingPpsId : ppsIds) {
             // Don't re-check the ppsId we are in currently
             if (!checkingPpsId.equals(ppsId)) {
-              performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), ppsId, performedActions);
+              actionResults.add(performAutoTriggerActions(checkingPpsId, securityService.getCurrentUserDetails(), null, pps.getProcessStepId(), ppsId, performedActions));
             }
           }
         }
       }
     }
 
-    return createdPpsIds;
+    PpsActionResult result = new PpsActionResult();
+    result.setPpsIds(createdPpsIds);
+    result.setShouldRunProjectTagUpdate(doProjectUpdate);
+    //if the manually triggered action did not tell us to run project tag updates, then check if any of the auto triggered ones did.
+    if(!result.getShouldRunProjectTagUpdate()) {
+      boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+      result.setShouldRunProjectTagUpdate(doTagUpdate);
+    }
+    return result;
   }
 
   //putting this here due to circular reference issue i dont want to solve. yes it is weird i know
@@ -511,7 +551,7 @@ public class ProjectProcessStepService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ppseId", ppseId);
 
-    Optional<ProjectProcessStepEvent> result = sqlCache.get("projectProcessStepEvent.getWithStatus", params, ProjectProcessStepEvent.class);
+    Optional<ProjectProcessStepEvent> result = sqlCache.getBySql(ProjectProcessStepEventQuery.getWithStatus, params, ProjectProcessStepEvent.class);
     return result;
   }
 
@@ -525,6 +565,7 @@ public class ProjectProcessStepService {
     var runStatusTriggers = false;
     var childFunctionsRan = false;
     PpsActionResult actionResult = new PpsActionResult();
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
 
     User user = securityService.getCurrentUser();
     //update process step status if needed
@@ -555,27 +596,27 @@ public class ProjectProcessStepService {
       createdPps.add(Map.of("ppsId", ppsId, "shouldAutoTrigger", childStep.getAutoTriggerActionCount() > 0));
     }
 
-    sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(),
+    sqlCache.updateBySql(ProjectProcessStepQuery.insertPerformedAction, Map.of("ppsId", pps.getProjectProcessStepId(),
       "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.trueUserId(), "allowMultipleUses", action.getMultipleUses()));
 
     //run autotriggers on parent pps if any functions were performed
     if (actionResult.getShouldRunAutoTriggers()) {
-      this.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
+      actionResults.add(this.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
     }
 
     //run autotriggers for all created child PPSs which have any auto trigger actions
     createdPps.stream()
               .filter(childStep -> Boolean.parseBoolean(childStep.get("shouldAutoTrigger").toString()))
-              .forEach(childStep -> this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
+              .forEach(childStep -> actionResults.add(this.performAutoTriggerActions(Long.parseLong(childStep.get("ppsId").toString()), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions)));
 
     //run autotriggers for actions which use the new child PPSs status
     if (!createdPps.isEmpty()) {
       List<Long> ids = createdPps.stream().map(step -> Long.parseLong(step.get("ppsId").toString())).toList();
-      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", ids), ProjectProcessStep.class);
+      List<ProjectProcessStep> steps = sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds, Map.of("projectProcessStepIds", ids), ProjectProcessStep.class);
       for (ProjectProcessStep step : steps) {
         //only run if the referring PPS is active, not the parent PPS, and not a new child PPS (since we already ran through those autotriggers)
         if (step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId()) && !ids.contains(step.getProjectProcessStepId())) {
-          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
+          actionResults.add(performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
         }
       }
     }
@@ -583,16 +624,23 @@ public class ProjectProcessStepService {
     // If there was a status change by updating the parent PPS
     if (runStatusTriggers) {
       //run auto triggers for PPSs which use the new PPS status
-      List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
+      List<ProjectProcessStep> steps = sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds, Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
       for (ProjectProcessStep step : steps) {
         //only run if the referring PPS is active and not the parent PPS
         if (step.getProcessStepStatusTypeId() == 1 && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
-          performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions);
+          actionResults.add(performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails(), action.getId(), pps.getProcessStepId(), pps.getProjectProcessStepId(), performedActions));
         }
       }
     }
 
     actionResult.setPpsIds(createdPps.stream().map(step -> Long.parseLong(step.get("ppsId").toString())).toList());
+
+    //if the manually triggered action did not tell us to run project tag updates, then check if any of the auto triggered ones did.
+    if(!actionResult.getShouldRunProjectTagUpdate()) {
+      boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+      actionResult.setShouldRunProjectTagUpdate(doTagUpdate);
+    }
+
     return actionResult;
   }
 
@@ -812,7 +860,7 @@ public class ProjectProcessStepService {
       params.put("ppsId", projectProcessStepId);
 //      params.put("selectedCompanyStatusIds", requirement.getListOfValueIds());
 
-      Optional<ProjectProcessStep> projectProcessStep = sqlCache.get("projectProcessStep.getPrimaryByReferenceProcessStepAndStatus", params, ProjectProcessStep.class);
+      Optional<ProjectProcessStep> projectProcessStep = sqlCache.getBySql(ProjectProcessStepQuery.getPrimaryByReferenceProcessStepAndStatus, params, ProjectProcessStep.class);
 
       //if we found a primary pss of that type
       if (projectProcessStep.isPresent()) {
@@ -1093,7 +1141,7 @@ public class ProjectProcessStepService {
 
   @Data public static class PpsActionResult {
     private Boolean shouldRunAutoTriggers;
-    private AtomicBoolean shouldRunProjectTagUpdate;
+    private Boolean shouldRunProjectTagUpdate;
     private List<Long> ppsIds = new ArrayList<>();
   }
 
@@ -1148,7 +1196,7 @@ public class ProjectProcessStepService {
 
     PpsActionResult results = new PpsActionResult();
     results.setShouldRunAutoTriggers(shouldRunAutoTriggers);
-    results.setShouldRunProjectTagUpdate(doProjectTagUpdate);
+    results.setShouldRunProjectTagUpdate(doProjectTagUpdate.get());
 //    return shouldRunAutoTriggers;
     return results;
   }
@@ -2005,7 +2053,7 @@ public class ProjectProcessStepService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     Optional<Contact> contact =
-      sqlCache.get("contact.getById", params, new ContactService.ContactMapper<>(Contact.class, om));
+      sqlCache.getBySql(ContactQuery.getById, params, new ContactService.ContactMapper<>(Contact.class, om));
 
     return contact.orElse(null);
   }

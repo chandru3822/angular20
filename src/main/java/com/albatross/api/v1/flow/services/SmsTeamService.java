@@ -9,6 +9,7 @@ import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamOrg;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamPosition;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamUser;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -41,8 +42,8 @@ public class SmsTeamService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    return sqlCache.query(
-        "project.getOwners",
+    return sqlCache.queryBySql(
+      ProjectQuery.getOwners,
         Map.of(
             "companyId", user.getCompanyId(),
             "isParent", isParent,

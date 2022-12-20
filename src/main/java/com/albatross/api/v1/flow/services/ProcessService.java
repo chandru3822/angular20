@@ -7,6 +7,9 @@ import com.albatross.api.v1.flow.enums.StatusType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepProcess;
+import com.albatross.api.v1.flow.queries.ContactQuery;
+import com.albatross.api.v1.flow.queries.ProcessQuery;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -38,21 +41,21 @@ public class ProcessService {
       // had to change this so that a parent looking at a child contact could still see processes
       HashMap<String, Object> params = new HashMap<>();
       params.put("contactId", contactId);
-      companyId = sqlCache.queryForObject("contact.getCompanyId", params, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ContactQuery.getCompanyId, params, Long.class);
     }
 
-    return sqlCache.query(
-        "process.getAllForCompany", ImmutableMap.of("companyId", companyId), CompanyProcess.class);
+    return sqlCache.queryBySql(
+      ProcessQuery.getAllForCompany, ImmutableMap.of("companyId", companyId), CompanyProcess.class);
   }
 
   public Optional<CompanyProcess> getProcess(Long companyId, Long processId, Long projectId) {
     if (null != projectId) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
     }
-    return sqlCache.get(
-        "process.get",
+    return sqlCache.getBySql(
+      ProcessQuery.get,
         ImmutableMap.of(
             "companyId", companyId,
             "processId", processId),
@@ -62,20 +65,20 @@ public class ProcessService {
   public void deleteProcess(Long processId) {
     User user = securityService.getCurrentUser();
     // delete company process
-    sqlCache.update(
-        "process.deleteCompanyProcess",
+    sqlCache.updateBySql(
+      ProcessQuery.deleteCompanyProcess,
         ImmutableMap.of("companyId", user.getCompanyId(), "processId", processId));
 
     // delete process (this will likely change one day when we allow processes to be shared between
     // companies)
-    sqlCache.update("process.delete", ImmutableMap.of("processId", processId));
+    sqlCache.updateBySql(ProcessQuery.delete, ImmutableMap.of("processId", processId));
   }
 
   public void updateProcess(CompanyProcess process) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update(
-        "process.update",
+    sqlCache.updateBySql(
+      ProcessQuery.update,
         ImmutableMap.of(
             "companyId",
             process.getCompanyId(),
@@ -94,8 +97,8 @@ public class ProcessService {
     // parentCompanyId will be used for sharing processes later on
     Long id =
         sqlCache
-            .updateReturningId(
-                "process.insert",
+            .updateBySqlReturningId(
+              ProcessQuery.insert,
                 ImmutableMap.of(
                     "processName",
                     process.getProcessName(),
@@ -107,8 +110,8 @@ public class ProcessService {
             .longValue();
 
     // add row to company_process, this uses the true companyId
-    sqlCache.update(
-        "process.insertCompanyProcess",
+    sqlCache.updateBySql(
+      ProcessQuery.insertCompanyProcess,
         ImmutableMap.of(
             "processId",
             id,
@@ -124,8 +127,8 @@ public class ProcessService {
   public void deleteProcessStepFromProcess(Long processStepProcessId) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update(
-        "process.deleteProcessStepFromProcess",
+    sqlCache.updateBySql(
+      ProcessQuery.deleteProcessStepFromProcess,
         ImmutableMap.of(
             "companyId",
             currentUser.getCompanyId(),
@@ -138,8 +141,8 @@ public class ProcessService {
   public List<ProcessStep> availableProcessSteps(Long companyProcessId) {
     User user = securityService.getCurrentUser();
 
-    return sqlCache.query(
-        "process.availableProcessSteps",
+    return sqlCache.queryBySql(
+      ProcessQuery.availableProcessSteps,
         ImmutableMap.of("companyProcessId", companyProcessId, "companyId", user.getCompanyId()),
         ProcessStep.class);
   }
@@ -149,22 +152,22 @@ public class ProcessService {
     if (null != projectId) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
     } else {
       User user = securityService.getCurrentUser();
       companyId = user.getCompanyId();
     }
 
-    return sqlCache.query(
-        "process.nonAdminProcessStepsForProcess",
+    return sqlCache.queryBySql(
+      ProcessQuery.nonAdminProcessStepsForProcess,
         ImmutableMap.of("companyProcessId", companyProcessId, "companyId", companyId),
         ProcessStep.class);
   }
 
   public Optional<ProcessStepProcess> getOneProcessStepProcess(Long id) {
 
-    return sqlCache.get(
-        "process.getOneProcessStepProcess",
+    return sqlCache.getBySql(
+      ProcessQuery.getOneProcessStepProcess,
         ImmutableMap.of("id", id),
         new ProcessStepProcessMapper<>(ProcessStepProcess.class, om));
   }
@@ -178,14 +181,14 @@ public class ProcessService {
     params.put("processStepId", processStepProcess.getProcessStepId());
 
     Long id =
-        sqlCache.updateReturningId("process.insertProcessStepProcess", params, "id").longValue();
+        sqlCache.updateBySqlReturningId(ProcessQuery.insertProcessStepProcess, params, "id").longValue();
 
     for (OwningPosition p : processStepProcess.getOwningPositions()) {
       params.put("processStepProcessId", id);
       params.put("positionId", p.getPositionId());
 
       // added unique constraint and changed to upsert. will unarchive if trying to add dupe
-      sqlCache.update("process.insertOwningPosition", params);
+      sqlCache.updateBySql(ProcessQuery.insertOwningPosition, params);
     }
 
     return getOneProcessStepProcess(id);
@@ -216,7 +219,7 @@ public class ProcessService {
         "companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
     params.put("processStepProcessId", processStepProcess.getId());
 
-    sqlCache.update("process.updateProcessStepProcess", params);
+    sqlCache.updateBySql(ProcessQuery.updateProcessStepProcess, params);
 
     List<Long> usedPositionIds =
         processStepProcess.getOwningPositions().stream()
@@ -225,7 +228,7 @@ public class ProcessService {
     // delete any existing rows that are not in the above list
     params.put("usedPositionIds", usedPositionIds);
     if (!usedPositionIds.isEmpty()) {
-      sqlCache.update("process.deleteOldOwningPositions", params);
+      sqlCache.updateBySql(ProcessQuery.deleteOldOwningPositions, params);
     }
 
     for (OwningPosition p : processStepProcess.getOwningPositions()) {
@@ -234,7 +237,7 @@ public class ProcessService {
         params.put("positionId", p.getPositionId());
         params.put("createdById", currentUser.trueUserId());
         // added unique constraint and changed to upsert. will unarchive if trying to add dupe
-        sqlCache.update("process.insertOwningPosition", params);
+        sqlCache.updateBySql(ProcessQuery.insertOwningPosition, params);
       }
     }
 
@@ -245,7 +248,7 @@ public class ProcessService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyProcessId", companyProcessId);
 
-    return sqlCache.query("process.getInitialProcessStepProcesses", params, ProcessStepProcess.class);
+    return sqlCache.queryBySql(ProcessQuery.getInitialProcessStepProcesses, params, ProcessStepProcess.class);
   }
 
   public static class ProcessMapper<T> extends BeanPropertyRowMapper<T> {

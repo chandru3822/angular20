@@ -456,7 +456,7 @@
 
                       <template #item="{ item:cp, index }">
                         <tr :class="{'shaded-row': index % 2}">
-                          <td class="text-left">{{ cp.processStepName }}</td>
+                          <td class="text-left"><a :href="`/settings/processStep/${cp.processStepId}/components`">{{ cp.processStepName }}</a></td>
                           <td class="text-left">{{ cp.initialProcessStepStatusType }}</td>
                           <td class="text-left">{{ cp.existingProcessStepStatusType }}</td>
                           <td class="text-right">

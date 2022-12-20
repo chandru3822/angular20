@@ -1,0 +1,31 @@
+package com.albatross.api.v1.flow.queries;
+
+public class ListOfValueQuery {
+
+  //language=PostgreSQL
+  public final static String getByCustomFieldId = """
+    select
+    lov.id,
+    lov.name,
+    lov.code,
+    lov.parent_id as "parentId",
+    lov.date_created as "dateCreated",
+    lov.date_modified as "dateModified",
+    lov.created_by_id as "createdById",
+    lov.modified_by_id as "modifiedById",
+    lov.display_order as "displayOrder",
+    lov.archived
+    from flow.list_of_value lov
+    inner join flow.custom_field cf on lov.parent_id = cf.list_of_value_id
+    where
+    cf.id = :customFieldId and
+    lov.parent_id = cf.list_of_value_id and
+    lov.archived is not true
+    order by
+    case when cf.sort_list_values_alphabetically is true then lov.name end,
+    case when cf.sort_list_values_alphabetically is false then lov.display_order end
+    """;
+
+
+
+}
