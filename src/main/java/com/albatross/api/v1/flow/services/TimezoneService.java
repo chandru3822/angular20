@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyTimezone;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.TimezoneQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,6 @@ public class TimezoneService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("timezone.getAllForCompany", params, CompanyTimezone.class);
+    return sqlCache.queryBySql(TimezoneQuery.getAllForCompany, params, CompanyTimezone.class);
   }
 }

@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.function.CompanyFunction;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.CompanyFunctionQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class CompanyFunctionService {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("companyFunction.getFunctions", params, CompanyFunction.class);
+    return sqlCache.queryBySql(CompanyFunctionQuery.getFunctions, params, CompanyFunction.class);
   }
 
   public List<CompanyFunction> getCompanyFunctionsByType(Long typeId, Long objectTypeId) {
@@ -45,7 +46,7 @@ public class CompanyFunctionService {
     params.put("eventActionable", objectTypeId.equals(ObjectType.EVENT.id));
     //event = 6, ps = 4
 
-    List<CompanyFunction> results = sqlCache.query("companyFunction.getFunctionsByType", params, CompanyFunction.class);
+    List<CompanyFunction> results = sqlCache.queryBySql(CompanyFunctionQuery.getFunctionsByType, params, CompanyFunction.class);
     return results;
   }
 
@@ -53,15 +54,15 @@ public class CompanyFunctionService {
     //    todo: add updated by and date
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("companyFunction.deleteCompanyFunction", params);
+    sqlCache.updateBySql(CompanyFunctionQuery.deleteCompanyFunction, params);
   }
 
   public CompanyFunction getFunctionDetails(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     return sqlCache
-        .get(
-            "companyFunction.getFunctionDetails",
+        .getBySql(
+          CompanyFunctionQuery.getFunctionDetails,
             params,
             new CompanyFunctionMapper<>(CompanyFunction.class, om))
         .orElse(null);
@@ -73,8 +74,8 @@ public class CompanyFunctionService {
     // 2 = dynamic value params - maybe we pass this in later if needed
     params.put("parameterTypeId", 2);
 //    this returns "false" as the default for boolean fields. fyi.  maybe we add this as an option to the dfp later
-    return sqlCache.query(
-        "companyFunction.getFunctionDynamicParams", params, RequirementParamDynamicValue.class);
+    return sqlCache.queryBySql(
+      CompanyFunctionQuery.getFunctionDynamicParams, params, RequirementParamDynamicValue.class);
   }
 
   public CompanyFunctionParam saveFunctionParams(Long functionId, CompanyFunctionParam param) {
@@ -97,7 +98,7 @@ public class CompanyFunctionService {
       id = param.getId();
       queryParams.put("id", param.getId());
 
-      sqlCache.update("companyFunction.updateCompanyFunctionParam", queryParams);
+      sqlCache.updateBySql(CompanyFunctionQuery.updateCompanyFunctionParam, queryParams);
     } else if (null != param.getCustomFieldGroupAssignmentId()
         || null != param.getDynamicValue()
         || null != param.getSystemValueId()) {
@@ -105,7 +106,7 @@ public class CompanyFunctionService {
 
       id =
           sqlCache
-              .updateReturningId("companyFunction.insertCompanyFunctionParam", queryParams, "id")
+              .updateBySqlReturningId(CompanyFunctionQuery.insertCompanyFunctionParam, queryParams, "id")
               .longValue();
     }
 
@@ -116,7 +117,7 @@ public class CompanyFunctionService {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     return sqlCache
-        .get("companyFunction.getCompanyParam", params, CompanyFunctionParam.class)
+        .getBySql(CompanyFunctionQuery.getCompanyParam, params, CompanyFunctionParam.class)
         .orElse(null);
   }
 

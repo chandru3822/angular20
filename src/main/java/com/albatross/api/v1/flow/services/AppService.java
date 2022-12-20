@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.AppAttachment;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.AppQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
@@ -94,7 +95,7 @@ public class AppService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     Optional<AppAttachment> result =
-      sqlCache.get("app.getLatestAppByAppTypeIdAndType", params, AppAttachment.class);
+      sqlCache.getBySql(AppQuery.getLatestAppByAppTypeIdAndType, params, AppAttachment.class);
 
     if (result.isPresent()) {
       AppAttachment attachment = result.get();
@@ -114,7 +115,7 @@ public class AppService {
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("app.deleteById", params);
+    sqlCache.updateBySql(AppQuery.deleteById, params);
   }
 
   /**
@@ -128,7 +129,7 @@ public class AppService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     List<AppAttachment> attachments =
-      sqlCache.query("app.getAttachmentsByAttachmentType", params, AppAttachment.class);
+      sqlCache.queryBySql(AppQuery.getAttachmentsByAttachmentType, params, AppAttachment.class);
     attachments.forEach(
       attachment -> {
         setAttachmentUrl(storageBucket, attachment);
@@ -145,7 +146,7 @@ public class AppService {
     params.put("appTypeId", appTypeId);
 
     List<AppAttachment> attachments =
-      sqlCache.query("app.getAttachmentsByAppAndAttachmentType", params, AppAttachment.class);
+      sqlCache.queryBySql(AppQuery.getAttachmentsByAppAndAttachmentType, params, AppAttachment.class);
     attachments.forEach(
       attachment -> {
         setAttachmentUrl(storageBucket, attachment);
@@ -159,15 +160,15 @@ public class AppService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("appTypeId", appTypeId);
 
-    return sqlCache.queryForObject("app.getMinVersionForType", params, Long.class);
+    return sqlCache.queryForObjectBySql(AppQuery.getMinVersionForType, params, Long.class);
   }
 
   public List<Long> getBuildNumbersForType(Long appTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("appTypeId", appTypeId);
 
-    return sqlCache.query(
-      "app.getBuildNumbersForType", params, new SingleColumnRowMapper<>(Long.class));
+    return sqlCache.queryBySql(
+      AppQuery.getBuildNumbersForType, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   public void saveMinVersionForType(Long appTypeId, Long minBuildNumber) {
@@ -175,7 +176,7 @@ public class AppService {
     params.put("appTypeId", appTypeId);
     params.put("minBuildNumber", minBuildNumber);
 
-    sqlCache.update("app.saveMinVersionForType", params);
+    sqlCache.updateBySql(AppQuery.saveMinVersionForType, params);
   }
 
   public void showOrHideAttachment(AppAttachment attachment) {
@@ -186,7 +187,7 @@ public class AppService {
     params.put("show", attachment.getShow());
     params.put("userId", currentUser.trueUserId());
 
-    sqlCache.update("app.showOrHideAttachment", params);
+    sqlCache.updateBySql(AppQuery.showOrHideAttachment, params);
   }
 
   public void toggleBetaForAttachment(AppAttachment attachment) {
@@ -197,7 +198,7 @@ public class AppService {
     params.put("beta", attachment.getBeta());
     params.put("userId", currentUser.trueUserId());
 
-    sqlCache.update("app.toggleBetaForAttachment", params);
+    sqlCache.updateBySql(AppQuery.toggleBetaForAttachment, params);
   }
 
   // endpoint for automating mobile build uploads
@@ -232,7 +233,7 @@ public class AppService {
     fixMissingAppTable();
 
     // then add the record in
-    Long id = sqlCache.updateReturningId("app.insertAttachmentRecord", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(AppQuery.insertAttachmentRecord, params, "id").longValue();
 
     return findById(id);
   }
@@ -276,7 +277,7 @@ public class AppService {
   public void fixMissingAppTable() {
     if (null != environment && (environment.equals("stage") || environment.equals("flux"))) {
       // this will create the flow.app_attachment table if it is not already present
-      sqlCache.update("app.createMissingTable", Collections.emptyMap());
+      sqlCache.updateBySql(AppQuery.createMissingTable, Collections.emptyMap());
     }
     // else do nothing
   }
@@ -346,7 +347,7 @@ public class AppService {
       params.put("versionNumber", versionNumber);
       params.put("buildNumber", Integer.valueOf(buildNumber));
 
-      sqlCache.update("app.insertMissingAppRecord", params);
+      sqlCache.updateBySql(AppQuery.insertMissingAppRecord, params);
     }
   }
 
@@ -375,7 +376,7 @@ public class AppService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    List<AppAttachment> attachments = sqlCache.query("app.findById", params, AppAttachment.class);
+    List<AppAttachment> attachments = sqlCache.queryBySql(AppQuery.findById, params, AppAttachment.class);
     if (attachments.isEmpty()) {
       return null;
     }
@@ -393,6 +394,6 @@ public class AppService {
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("app.deleteBySourceAndType", params);
+    sqlCache.updateBySql(AppQuery.deleteBySourceAndType, params);
   }
 }

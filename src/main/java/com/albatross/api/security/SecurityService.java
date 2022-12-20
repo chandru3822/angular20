@@ -3,6 +3,8 @@ package com.albatross.api.security;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.FeatureQuery;
+import com.albatross.api.v1.flow.queries.UserQuery;
 import com.albatross.api.v1.flow.services.CompanyService;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -159,7 +161,7 @@ public class SecurityService implements UserDetailsService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("companyId", companyId);
-    return sqlCache.query("feature.getAccessForUser", params, FeatureAccessControl.class);
+    return sqlCache.queryBySql(FeatureQuery.getAccessForUser, params, FeatureAccessControl.class);
   }
 
   public List<FeatureAccessControl> getMasqueradedUserFeatureAccess(
@@ -169,8 +171,8 @@ public class SecurityService implements UserDetailsService {
     params.put("userId", userId);
     params.put("companyId", companyId);
     params.put("trueUserId", trueUserId);
-    return sqlCache.query(
-        "feature.getMasqueradedUserFeatureAccess", params, FeatureAccessControl.class);
+    return sqlCache.queryBySql(
+      FeatureQuery.getMasqueradedUserFeatureAccess, params, FeatureAccessControl.class);
   }
 
   public void updateUserPassword(Long userId, String newPassword) {
@@ -178,7 +180,7 @@ public class SecurityService implements UserDetailsService {
     String newPwd = BCrypt.hashpw(newPassword, BCrypt.gensalt(10));
     params.put("password", newPwd);
     params.put("id", userId);
-    sqlCache.update("user.saveUserPassword", params);
+    sqlCache.updateBySql(UserQuery.saveUserPassword, params);
   }
 
   public Boolean userIsSuperAdmin(Long userId) {
@@ -186,7 +188,7 @@ public class SecurityService implements UserDetailsService {
     params.put("userId", userId);
 
     return sqlCache
-        .queryForObjectOptional("user.isSuperAdmin", params, Boolean.class)
+        .queryForObjectOptionalBySql(UserQuery.isSuperAdmin, params, Boolean.class)
         .orElse(false);
   }
 
@@ -197,7 +199,7 @@ public class SecurityService implements UserDetailsService {
     params.put("companyId", companyId);
 
     return sqlCache
-        .queryForObjectOptional("user.hasAccessInCompany", params, Boolean.class)
+        .queryForObjectOptionalBySql(UserQuery.hasAccessInCompany, params, Boolean.class)
         .orElse(false);
   }
 

@@ -1,0 +1,453 @@
+package com.albatross.api.v1.flow.queries;
+
+public class CustomFieldQuery {
+
+  //language=PostgreSQL
+  public final static String getOne = """
+    select cf.id,
+         cf.list_of_value_id,
+         cf.company_id,
+         case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+         cf.system_readonly,
+         cf.field_name,
+         cf.archived,
+         cf.sort_list_values_alphabetically,
+         cf.created_by_id,
+         cf.modified_by_id,
+         cdt.data_type_id,
+         cf.allow_now,
+         cf.company_data_type_id,
+         cf.custom_field_sql_key,
+         cf.custom_field_sql_reference_table,
+         cf.company_system_list_id,
+         array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+         coalesce((
+                       select array_to_json(array_agg(rows))
+                       from (
+                                 select lv.id,
+                                        lv.name,
+                                        lv.parent_id as "parentId",
+                                        lv.date_created as "dateCreated",
+                                        lv.date_modified as "dateModified",
+                                        lv.created_by_id as "createdById",
+                                        lv.modified_by_id as "modifiedById",
+                                        lv.display_order as "displayOrder",
+                                        lv.archived
+                                 from flow.list_of_value lv
+                                 where lv.parent_id = cf.list_of_value_id
+                                 and lv.archived is not true
+                                 order by
+                                   case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                                   case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                            ) rows), '[]') AS list_of_values
+        from flow.custom_field cf
+          inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+        where cf.id = :id
+        order by cf.field_name
+        """;
+
+  //language=PostgreSQL
+  public final static String getAll = """
+    select cf.id,
+           cf.list_of_value_id,
+           cf.company_id,
+           case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+           cf.system_readonly,
+           cf.field_name,
+           cf.sort_list_values_alphabetically,
+           cf.archived,
+           cf.created_by_id,
+           cf.modified_by_id,
+           cf.company_data_type_id,
+           cdt.data_type_id,
+           cf.allow_now,
+           cf.custom_field_sql_key,
+           cf.custom_field_sql_reference_table,
+           cf.company_system_list_id,
+           array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           coalesce((
+                         select array_to_json(array_agg(rows))
+                         from (
+                                   select lv.id,
+                                          lv.name,
+                                          lv.parent_id as "parentId",
+                                          lv.date_created as "dateCreated",
+                                          lv.date_modified as "dateModified",
+                                          lv.created_by_id as "createdById",
+                                          lv.modified_by_id as "modifiedById",
+                                          lv.display_order as "displayOrder",
+                                          lv.archived
+                                   from flow.list_of_value lv
+                                   where lv.parent_id = cf.list_of_value_id
+                                   and lv.archived is not true
+                                   order by
+                                   case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                                   case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                              ) rows), '[]') AS list_of_values
+        from flow.custom_field cf
+        inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+        where cf.company_id = :companyId
+          and cf.archived is not true
+          and (case
+                   when :hasListValues::boolean is true then cdt.has_list_values is true
+                   when :hasListValues::boolean is false then cdt.has_list_values is false
+                   else 1 = 1
+            end)
+          and (case
+                   when :query::varchar is not null then lower(field_name) like lower(:query::varchar) || '%'
+                   else 1 = 1
+            end)
+        order by cf.field_name
+        """;
+
+  //language=PostgreSQL
+  public final static String getAllByPositionId = """
+    select cf.id,
+           cf.list_of_value_id,
+           cf.company_id,
+           case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+           cf.system_readonly,
+           cf.field_name,
+           cf.sort_list_values_alphabetically,
+           cf.archived,
+           cf.created_by_id,
+           cf.modified_by_id,
+           cf.company_data_type_id,
+           cdt.data_type_id,
+           cf.allow_now,
+           cf.custom_field_sql_key,
+           cf.custom_field_sql_reference_table,
+           cf.company_system_list_id,
+           array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           coalesce((
+                         select array_to_json(array_agg(rows))
+                         from (
+                                   select lv.id,
+                                          lv.name,
+                                          lv.parent_id as "parentId",
+                                          lv.date_created as "dateCreated",
+                                          lv.date_modified as "dateModified",
+                                          lv.created_by_id as "createdById",
+                                          lv.modified_by_id as "modifiedById",
+                                          lv.display_order as "displayOrder",
+                                          lv.archived
+                                   from flow.list_of_value lv
+                                   where lv.parent_id = cf.list_of_value_id
+                                   and lv.archived is not true
+                                   order by
+                                   case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                                   case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                              ) rows), '[]') AS list_of_values
+        from flow.custom_field cf
+        inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+        where cf.company_id = :companyId
+          and cf.archived is not true
+          and cf.company_system_list_id = 2
+          and :positionId = any(cf.system_list_option_ids)
+        order by cf.field_name
+        """;
+
+  //language=PostgreSQL
+  public final static String getGroupsUsingField = """
+    select cf.id,
+               cf.field_name,
+               cfg.group_name,
+               ot.object_type,
+               ps.process_step_name
+        from flow.custom_field_group cfg
+                inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                inner join flow.object_type ot on ot.id = cot.object_type_id
+                left join flow.process_step ps on ps.id = cfg.process_step_id
+        where cf.id = :fieldId
+          and cfg.archived is not true
+          and cfga.archived is not true
+        order by ot.object_type, ps.process_step_name, cfg.group_name, cf.field_name
+        """;
+
+  //language=PostgreSQL
+  public final static String deleteField = """
+    update flow.custom_field
+      set archived = true,
+      modified_by_id = :modifiedById,
+      date_modified = now()
+    where id = :fieldId
+    """;
+
+  //language=PostgreSQL
+  public final static String saveField = """
+    update flow.custom_field
+         set field_name = trim(:fieldName),
+             company_system_list_id = :systemListId,
+             readonly = :readonly,
+             allow_now = :allowNow,
+             system_readonly = :systemReadonly,
+             sort_list_values_alphabetically = :sortListValuesAlphabetically,
+             system_list_option_ids = :systemListOptionIds::bigint[],
+             modified_by_id = :modifiedById,
+             date_modified = now()
+       where id = :id
+       """;
+
+  //language=PostgreSQL
+  public final static String insertField = """
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key,
+                                  custom_field_sql_reference_table, company_system_list_id, system_list_option_ids,
+                                  readonly, sort_list_values_alphabetically,
+                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now)
+    values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey,
+            :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::bigint[], :readonly,
+            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow)
+    returning id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertListOfValue = """
+    insert into flow.list_of_value(name, parent_id, display_order, date_created, created_by_id, date_modified, modified_by_id)
+       values (trim(:name), :parentId, (select coalesce(max(display_order) + 1, 0) from flow.list_of_value where parent_id = :parentId and archived is not true), now(), :createdById, now(), :createdById)
+        """;
+
+  //language=PostgreSQL
+  public final static String updateListOfValue = """
+    update flow.list_of_value
+    set name = trim(:name),
+        parent_id = :parentId,
+        modified_by_id = :modifiedById,
+        display_order = :displayOrder,
+        date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String archiveListOfValue = """
+    update flow.list_of_value
+    set archived = true,
+      modified_by_id = :modifiedById,
+      date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getByProcessStepEvent = """
+    select cf.id,
+               cf.list_of_value_id,
+               cf.system_readonly,
+               case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+               cf.custom_field_sql_key,
+               cf.company_id,
+               cf.field_name,
+               cf.company_data_type_id,
+               cf.date_created,
+               cf.date_modified,
+               cf.created_by_id,
+               cf.modified_by_id,
+               cf.archived,
+               cf.company_system_list_id,
+               cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+               array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+               cfga.id as custom_field_group_assignment_id,
+               cdt.data_type_id,
+               cdt.allow_multiple,
+               coalesce((
+                          select array_to_json(array_agg(rows))
+                          from (
+                                 select lv.id,
+                                        lv.name,
+                                        lv.parent_id as "parentId",
+                                        lv.date_created as "dateCreated",
+                                        lv.date_modified as "dateModified",
+                                        lv.created_by_id as "createdById",
+                                        lv.modified_by_id as "modifiedById",
+                                        lv.display_order as "displayOrder",
+                                        lv.archived
+                                 from flow.list_of_value lv
+                                 where lv.parent_id = cf.list_of_value_id
+                                   and lv.archived is not true
+                                 order by
+                                   case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                                   case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                               ) rows), '[]') AS list_of_values
+        from flow.process_step_event pse
+            inner join flow.event e on pse.event_id = e.id
+               inner join flow.custom_field_group cfg on e.id = cfg.event_id
+               inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+               inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+        where pse.id = :id
+          and cfg.archived is not true
+          and cfga.archived is not true
+          and cf.archived is not null
+        order by cf.field_name
+        """;
+
+  //language=PostgreSQL
+  public final static String getByEvent = """
+    select cf.id,
+               cf.list_of_value_id,
+               cf.system_readonly,
+               case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+               cf.custom_field_sql_key,
+               cf.company_id,
+               cf.field_name,
+               cf.company_data_type_id,
+               cf.date_created,
+               cf.date_modified,
+               cf.created_by_id,
+               cf.modified_by_id,
+               cf.archived,
+               cf.company_system_list_id,
+               cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+               array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+               cfga.id as custom_field_group_assignment_id,
+               cdt.data_type_id,
+               cdt.allow_multiple,
+               coalesce((
+                          select array_to_json(array_agg(rows))
+                          from (
+                                 select lv.id,
+                                        lv.name,
+                                        lv.parent_id as "parentId",
+                                        lv.date_created as "dateCreated",
+                                        lv.date_modified as "dateModified",
+                                        lv.created_by_id as "createdById",
+                                        lv.modified_by_id as "modifiedById",
+                                        lv.display_order as "displayOrder",
+                                        lv.archived
+                                 from flow.list_of_value lv
+                                 where lv.parent_id = cf.list_of_value_id
+                                   and lv.archived is not true
+                                 order by
+                                   case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                                   case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                               ) rows), '[]') AS list_of_values,
+               null as default_field_id
+        from flow.event e
+               inner join flow.custom_field_group cfg on e.id = cfg.event_id
+               inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+               inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+        where e.id = :id
+          and cfg.archived is not true
+          and cfga.archived is not true
+          and cf.archived is not null
+        union all
+        select null, null, null, null, null, null, df.field_name, null, null, null,
+               null, null, null, null, null, null, null, null, null, null,
+               df.id as default_field_id
+        from flow.default_field df
+        where object_type_id = 6
+          and archived is false
+          and df.id in (10,11,12)
+        order by field_name
+        """;
+
+  //language=PostgreSQL
+  public final static String getByParentProcessStep = """
+    select cf.id,
+           cf.list_of_value_id,
+           cf.system_readonly,
+           case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+           cf.custom_field_sql_key,
+           cf.company_id,
+           cf.field_name,
+           cf.company_data_type_id,
+           cf.date_created,
+           cf.date_modified,
+           cf.created_by_id,
+           cf.modified_by_id,
+           cf.archived,
+           cf.company_system_list_id,
+           cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+           array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           cfga.id as custom_field_group_assignment_id,
+           cdt.data_type_id,
+           cdt.allow_multiple,
+           coalesce((
+                        select array_to_json(array_agg(rows))
+                        from (
+                                 select lv.id,
+                                        lv.name,
+                                        lv.parent_id as "parentId",
+                                        lv.date_created as "dateCreated",
+                                        lv.date_modified as "dateModified",
+                                        lv.created_by_id as "createdById",
+                                        lv.modified_by_id as "modifiedById",
+                                        lv.display_order as "displayOrder",
+                                        lv.archived
+                                 from flow.list_of_value lv
+                                 where lv.parent_id = cf.list_of_value_id
+                                   and lv.archived is not true
+                                 order by
+                                   case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                                   case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                             ) rows), '[]') AS list_of_values
+        from flow.process_step ps
+                 inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
+                 inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                 inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+        where ps.id = :id
+          and case when :excludedUnhandledDataTypes is true then cdt.data_type_id != 12 else 1=1 end
+          and cfga.ancillary_custom_field_group_assignment_id is null
+          and cfg.archived is not true
+          and cfga.archived is not true
+          and cf.archived is not null
+        order by cf.field_name
+        """;
+
+  //language=PostgreSQL
+  public final static String getByParentType = """
+    select  cf.id,
+                cf.list_of_value_id,
+                case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                cf.custom_field_sql_key,
+                cf.company_id,
+                cf.field_name,
+                cf.company_data_type_id,
+                cf.company_system_list_id,
+                cf.date_created,
+                cf.date_modified,
+                cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+                cf.created_by_id,
+                cf.modified_by_id,
+                cf.archived,
+                array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+                cfga.id as custom_field_group_assignment_id,
+                cdt.data_type_id,
+                cdt.allow_multiple,
+                coalesce((
+                             select array_to_json(array_agg(rows))
+                             from (
+                                      select lv.id,
+                                             lv.name,
+                                             lv.parent_id as "parentId",
+                                             lv.date_created as "dateCreated",
+                                             lv.date_modified as "dateModified",
+                                             lv.created_by_id as "createdById",
+                                             lv.modified_by_id as "modifiedById",
+                                             lv.display_order as "displayOrder",
+                                             lv.archived
+                                      from flow.list_of_value lv
+                                      where lv.parent_id = cf.list_of_value_id
+                                        and lv.archived is not true
+                                      order by
+                                       case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                                       case when cf.sort_list_values_alphabetically is false then lv.display_order end
+                                  ) rows), '[]') AS list_of_values
+        from flow.company_object_type cot
+                 inner join flow.custom_field_group cfg on cfg.company_object_type_id = cot.id
+                 inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                 inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+        where cot.object_type_id = :id
+          and cot.company_id = :companyId
+          and case when :excludedUnhandledDataTypes is true then cdt.data_type_id != 12 else 1=1 end
+          and cfga.ancillary_custom_field_group_assignment_id is null
+          and cfg.archived is not true
+          and cfga.archived is not true
+          and cf.archived is not true
+        order by cf.field_name
+        """;
+
+}

@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -71,7 +72,7 @@ public class CommissionManagementService {
     params.put("projectId", projectId);
 
     //see if project is valid.  this is the smallest pre-existing query even though it returns the company id
-    Optional<Long> companyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+    Optional<Long> companyId = sqlCache.queryForObjectOptionalBySql(ProjectQuery.getCompanyId, params, Long.class);
 
     //see if project is already assigned
     Optional<Long> commissionPlanId = sqlCache.queryForObjectOptional("commissionPlan.checkProjectAssignment", params, Long.class);

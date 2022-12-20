@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ObjectTypeTab;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class ObjectTypeTabService {
       // had to change this so that a parent looking at a child project could still see project tabs
       params.put("projectId", projectId);
       Optional<Long> overrideCompanyId =
-          sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+          sqlCache.queryForObjectOptionalBySql(ProjectQuery.getCompanyId, params, Long.class);
       if (overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {

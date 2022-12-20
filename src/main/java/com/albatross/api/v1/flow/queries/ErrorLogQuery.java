@@ -1,0 +1,37 @@
+package com.albatross.api.v1.flow.queries;
+
+public class ErrorLogQuery {
+
+  //language=PostgreSQL
+  public final static String getAllForCompany = """
+    select cel.id,
+           cel.company_feature_id,
+           cf.feature_name,
+           cel.error_message,
+           cel.error_log_status_id,
+           cel.date_created,
+           cel.date_modified,
+           cel.created_by_id,
+           cel.modified_by_id,
+           cel.archived,
+           cf.company_id,
+           els.status as error_log_status
+    from flow.company_error_log cel
+        inner join flow.error_log_status els on els.id = cel.error_log_status_id
+        inner join flow.company_feature cf on cf.id = cel.company_feature_id
+    where cf.company_id = :companyId
+      and cel.archived is not true
+    order by cel.date_created
+    """;
+
+  //language=PostgreSQL
+  public final static String delete = """
+    update flow.company_error_log
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+    where id = :id
+    """;
+
+
+}

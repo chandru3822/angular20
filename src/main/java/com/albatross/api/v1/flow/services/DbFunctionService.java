@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.function.CompanyFunction;
 import com.albatross.api.v1.flow.model.function.DbFunction;
 import com.albatross.api.v1.flow.model.function.DbFunctionParam;
 import com.albatross.api.v1.flow.model.function.DbFunctionType;
+import com.albatross.api.v1.flow.queries.DbFunctionQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -27,36 +28,36 @@ public class DbFunctionService {
   private final ObjectMapper om;
 
   public List<DbFunction> getDbFunctions() {
-    return sqlCache.query("dbFunction.getAll", Collections.emptyMap(), DbFunction.class);
+    return sqlCache.queryBySql(DbFunctionQuery.getAll, Collections.emptyMap(), DbFunction.class);
   }
 
   public List<Company> getAvailableCompanies(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("dbFunctionId", id);
-    return sqlCache.query("dbFunction.getAvailableCompanies", params, Company.class);
+    return sqlCache.queryBySql(DbFunctionQuery.getAvailableCompanies, params, Company.class);
   }
 
   public DbFunction getDbFunction(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     return sqlCache
-        .get("dbFunction.getOne", params, new DbFunctionMapper<>(DbFunction.class, om))
+        .getBySql(DbFunctionQuery.getOne, params, new DbFunctionMapper<>(DbFunction.class, om))
         .orElse(null);
   }
 
   public void archiveDbFunction(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("dbFunction.archive", params);
+    sqlCache.updateBySql(DbFunctionQuery.archive, params);
   }
 
   public List<DbFunctionType> getDbFunctionTypes() {
-    return sqlCache.query("dbFunction.getTypes", Collections.emptyMap(), DbFunctionType.class);
+    return sqlCache.queryBySql(DbFunctionQuery.getTypes, Collections.emptyMap(), DbFunctionType.class);
   }
 
   public List<ParameterType> getParameterTypes() {
-    return sqlCache.query(
-        "dbFunction.getParameterTypes", Collections.emptyMap(), ParameterType.class);
+    return sqlCache.queryBySql(
+      DbFunctionQuery.getParameterTypes, Collections.emptyMap(), ParameterType.class);
   }
 
   public DbFunction insertDbFunction(DbFunction dbFunction) {
@@ -74,7 +75,7 @@ public class DbFunctionService {
     params.put("processStepActionable", dbFunction.getProcessStepActionable() != null && dbFunction.getProcessStepActionable());
     params.put("eventActionable", dbFunction.getEventActionable() != null && dbFunction.getEventActionable());
 
-    Long id = sqlCache.updateReturningId("dbFunction.insertFunction", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(DbFunctionQuery.insertFunction, params, "id").longValue();
     return getDbFunction(id);
   }
 
@@ -86,7 +87,7 @@ public class DbFunctionService {
     params.put("parameterTypeId", dbFunctionParam.getParameterTypeId());
     params.put("systemValueId", dbFunctionParam.getSystemValueId());
 
-    sqlCache.update("dbFunction.insertParam", params);
+    sqlCache.updateBySql(DbFunctionQuery.insertParam, params);
     return getDbFunction(dbFunctionParam.getDbFunctionId());
   }
 
@@ -97,14 +98,14 @@ public class DbFunctionService {
 
     for (Long companyId : req.getSelectedCompanyIds()) {
       params.put("companyId", companyId);
-      sqlCache.update("dbFunction.addToCompany", params);
+      sqlCache.updateBySql(DbFunctionQuery.addToCompany, params);
     }
 
     return getDbFunction(functionId);
   }
 
   public List<SystemValue> getSystemValues() {
-    return sqlCache.query("dbFunction.getSystemValues", Collections.emptyMap(), SystemValue.class);
+    return sqlCache.queryBySql(DbFunctionQuery.getSystemValues, Collections.emptyMap(), SystemValue.class);
   }
 
   public static class DbFunctionMapper<T> extends BeanPropertyRowMapper<T> {

@@ -7,6 +7,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import lombok.NonNull;
@@ -133,7 +134,7 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     List<Attachment> attachments =
-        sqlCache.query("attachment.getAttachmentsBySourceIdAndType", params, Attachment.class);
+        sqlCache.queryBySql(AttachmentQuery.getAttachmentsBySourceIdAndType, params, Attachment.class);
     attachments.forEach(
         attachment -> {
           setAttachmentUrl(storageBucket, attachment);
@@ -156,7 +157,7 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     Optional<Attachment> result =
-        sqlCache.get("attachment.getAttachmentBySourceAndType", params, Attachment.class);
+        sqlCache.getBySql(AttachmentQuery.getAttachmentBySourceAndType, params, Attachment.class);
 
     if (result.isPresent()) {
       Attachment attachment = result.get();
@@ -180,7 +181,7 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     List<Attachment> attachments =
-        sqlCache.query("attachment.getAttachmentsByType", params, Attachment.class);
+        sqlCache.queryBySql(AttachmentQuery.getAttachmentsByType, params, Attachment.class);
     attachments.forEach(
         attachment -> {
           setAttachmentUrl(storageBucket, attachment);
@@ -203,7 +204,7 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     List<Attachment> attachments =
-        sqlCache.query("attachment.getAttachmentsByTypeNoSource", params, Attachment.class);
+        sqlCache.queryBySql(AttachmentQuery.getAttachmentsByTypeNoSource, params, Attachment.class);
     attachments.forEach(
         attachment -> {
           setAttachmentUrl(storageBucket, attachment);
@@ -230,7 +231,7 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     Optional<Attachment> attachment =
-        sqlCache.get("attachment.getAttachmentBySourceAndType", params, Attachment.class);
+        sqlCache.getBySql(AttachmentQuery.getAttachmentBySourceAndType, params, Attachment.class);
 
     String preSignedUrl = null;
 
@@ -254,7 +255,7 @@ public class AttachmentService {
 
     // when setting type as UUID got NoSuchMethodException for returning a UUID
     Optional<Attachment> attachment =
-        sqlCache.get("attachment.getAttachmentForUuidCheck", params, Attachment.class);
+        sqlCache.getBySql(AttachmentQuery.getAttachmentForUuidCheck, params, Attachment.class);
     attachment.ifPresent(value -> setAttachmentPresignedUrl(storageBucket, value));
     return attachment;
   }
@@ -270,7 +271,7 @@ public class AttachmentService {
     params.put("id", id);
 
     Optional<Attachment> attachment =
-        sqlCache.get("attachment.getAttachmentById", params, Attachment.class);
+        sqlCache.getBySql(AttachmentQuery.getAttachmentById, params, Attachment.class);
 
     String preSignedUrl = null;
 
@@ -296,8 +297,8 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
 
     List<Attachment> attachments =
-        sqlCache.query(
-            "attachment.getAttachmentBySourceAndTypeForUserList", params, Attachment.class);
+        sqlCache.queryBySql(
+          AttachmentQuery.getAttachmentBySourceAndTypeForUserList, params, Attachment.class);
 
     Map<Long, String> preSignedUrls = new HashMap<>();
 
@@ -344,7 +345,7 @@ public class AttachmentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    List<Attachment> attachments = sqlCache.query("attachment.findById", params, Attachment.class);
+    List<Attachment> attachments = sqlCache.queryBySql(AttachmentQuery.findById, params, Attachment.class);
     if (attachments.isEmpty()) {
       return null;
     }
@@ -358,7 +359,7 @@ public class AttachmentService {
 
   @Cacheable(value = CachingConfig.ATTACHMENT)
   public Optional<Attachment> findAttachmentByUUID(@NonNull UUID uuid) {
-    return sqlCache.get("attachment.getAttachmentByUUID", Map.of("uuid", uuid), Attachment.class);
+    return sqlCache.getBySql(AttachmentQuery.getAttachmentByUUID, Map.of("uuid", uuid), Attachment.class);
   }
 
   /**
@@ -380,7 +381,7 @@ public class AttachmentService {
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("attachment.deleteById", params);
+    sqlCache.updateBySql(AttachmentQuery.deleteById, params);
   }
 
   public void deleteBySourceAndType(Long sourceId, Long attachmentTypeId) {
@@ -391,14 +392,14 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("attachment.deleteBySourceAndType", params);
+    sqlCache.updateBySql(AttachmentQuery.deleteBySourceAndType, params);
   }
 
   public AttachmentType getAttachmentType(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    return sqlCache.get("attachment.getAttachmentType", params, AttachmentType.class).orElse(null);
+    return sqlCache.getBySql(AttachmentQuery.getAttachmentType, params, AttachmentType.class).orElse(null);
   }
 
   public Attachment update(Long id, Attachment attachment) {
@@ -409,7 +410,7 @@ public class AttachmentService {
     params.put("displayName", attachment.getDisplayName().length() > 100 ? attachment.getDisplayName().substring(0, 100) : attachment.getDisplayName());
     params.put("userId", currentUser.trueUserId());
 
-    sqlCache.update("attachment.update", params);
+    sqlCache.updateBySql(AttachmentQuery.update, params);
 
     return findById(id);
   }
@@ -454,7 +455,7 @@ public class AttachmentService {
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", currentUser.getCompanyId());
 
-    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
     // add to join - only if they sent in a sourceId (sometimes we have to upload the attachment
     // first before having the source id (i.e. reimbursement requests)
     if (null != sourceId) {
@@ -475,6 +476,6 @@ public class AttachmentService {
     params.put("sourceId", sourceId);
     params.put("attachmentTypeId", attachmentTypeId);
 
-    sqlCache.update("attachment.addToJoinTable", params);
+    sqlCache.updateBySql(AttachmentQuery.addToJoinTable, params);
   }
 }

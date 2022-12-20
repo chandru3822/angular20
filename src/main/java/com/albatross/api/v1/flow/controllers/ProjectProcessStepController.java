@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
@@ -165,8 +166,7 @@ public class ProjectProcessStepController {
       // that creates a potential infinite loop) if active
       // run auto triggers for those actions
       List<ProjectProcessStep> steps =
-          sqlCache.query(
-              "projectProcessStep.getUsingStatusByPpsIds",
+          sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
               Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
               ProjectProcessStep.class);
       for (ProjectProcessStep step : steps) {
@@ -234,8 +234,7 @@ public class ProjectProcessStepController {
       // that creates a potential infinite loop) if active
       // run auto triggers for those actions
       List<ProjectProcessStep> steps =
-          sqlCache.query(
-              "projectProcessStep.getUsingStatusByPpsIds",
+          sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
               Map.of("projectProcessStepIds", List.of(newPpsId)),
               ProjectProcessStep.class);
       for (ProjectProcessStep step : steps) {
@@ -329,8 +328,7 @@ public class ProjectProcessStepController {
         // (because that creates a potential infinite loop) if active
         // run auto triggers for those actions
         List<ProjectProcessStep> steps =
-            sqlCache.query(
-                "projectProcessStep.getUsingStatusByPpsIds",
+            sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
                 Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
                 ProjectProcessStep.class);
         for (ProjectProcessStep step : steps) {

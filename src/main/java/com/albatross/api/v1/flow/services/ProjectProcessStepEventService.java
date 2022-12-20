@@ -17,6 +17,9 @@ import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
+import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -85,7 +88,7 @@ public class ProjectProcessStepEventService {
     params.put("createdById", user.getId());
 
     Long id =
-        sqlCache.updateReturningId("projectProcessStepEvent.insertEvent", params, "id").longValue();
+        sqlCache.updateBySqlReturningId(ProjectProcessStepEventQuery.insertEvent, params, "id").longValue();
     return getPpsEvent(projectProcessStepId, id);
   }
 
@@ -95,15 +98,14 @@ public class ProjectProcessStepEventService {
     params.put("ppseId", ppseId);
     params.put("userId", user.getId());
 
-    sqlCache.update("projectProcessStepEvent.delete", params, "id");
+    sqlCache.updateBySql(ProjectProcessStepEventQuery.delete, params);
   }
 
   public List<CompanyEventStatusType> getCancelledAssignedToPpsEvent(Long ppseId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ppseId", ppseId);
 
-    return sqlCache.query(
-        "projectProcessStepEvent.getCancelledAssignedToPpsEvent",
+    return sqlCache.queryBySql(ProjectProcessStepEventQuery.getCancelledAssignedToPpsEvent,
         params,
         CompanyEventStatusType.class);
   }
@@ -128,7 +130,7 @@ public class ProjectProcessStepEventService {
     params.put("companyEventStatusTypeId", companyEventStatusTypeId);
     params.put("userId", user.trueUserId());
 
-    sqlCache.update("projectProcessStepEvent.setStatus", params);
+    sqlCache.updateBySql(ProjectProcessStepEventQuery.setStatus, params);
   }
 
   public Optional<ProjectProcessStepEvent> getPpsEvent(Long ppsId, Long ppsEventId) throws Exception {
@@ -138,8 +140,7 @@ public class ProjectProcessStepEventService {
 
     //using ppsId ensures that they cannot modify the url and have a mismatch of ppsId vs event.project_process_step_id
     Optional<ProjectProcessStepEvent> result =
-        sqlCache.get(
-            "projectProcessStepEvent.get",
+        sqlCache.getBySql(ProjectProcessStepEventQuery.get,
             params,
             new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
     if (result.isPresent()) {
@@ -295,13 +296,13 @@ public class ProjectProcessStepEventService {
       // once mobile updates then we can remove the else statement here
       if (null != saveEvent.getSaveVersion()) {
         int countUpdatedRows =
-            sqlCache.update("projectProcessStepEvent.savePpsEventDetails", params);
+            sqlCache.updateBySql(ProjectProcessStepEventQuery.savePpsEventDetails, params);
         if (countUpdatedRows == 0) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST, "Save Version Mismatch", new Exception());
         }
       } else {
-        sqlCache.update("projectProcessStepEvent.savePpsEventDetailsNoVersion", params);
+        sqlCache.updateBySql(ProjectProcessStepEventQuery.savePpsEventDetailsNoVersion, params);
       }
 
       if (null != saveEvent.getCustomFieldValues() && !saveEvent.getCustomFieldValues().isEmpty()) {
@@ -323,8 +324,7 @@ public class ProjectProcessStepEventService {
     params.put("ppsEventId", ppsEventId);
     params.put("actionId", actionId);
 
-    return sqlCache.get(
-        "projectProcessStepEvent.getPpsEventAction",
+    return sqlCache.getBySql(ProjectProcessStepEventQuery.getPpsEventAction,
         params,
         new ProcessStepEventService.ProcessStepEventActionMapper<>(
             ProcessStepEventAction.class, om));
@@ -355,7 +355,7 @@ public class ProjectProcessStepEventService {
 
       HashMap<String, Object> eventParams = new HashMap<>();
       eventParams.put("id", ppsEventId);
-      Optional<ProjectProcessStepEvent> event = sqlCache.get("projectProcessStepEvent.getBasic", eventParams, ProjectProcessStepEvent.class);
+      Optional<ProjectProcessStepEvent> event = sqlCache.getBySql(ProjectProcessStepEventQuery.getBasic, eventParams, ProjectProcessStepEvent.class);
 
       if (event.isPresent()) {
         List<ProjectProcessStepRequirement> requirements =
@@ -391,7 +391,7 @@ public class ProjectProcessStepEventService {
                 && !ppse.get()
                     .getCompanyEventStatusTypeId()
                     .equals(processStepEventAction.getCompanyEventStatusTypeId())) {
-              sqlCache.update("projectProcessStepEvent.updateCompanyEventStatus", params);
+              sqlCache.updateBySql(ProjectProcessStepEventQuery.updateCompanyEventStatus, params);
             }
           }
 
@@ -413,13 +413,13 @@ public class ProjectProcessStepEventService {
                 !processStepEventAction
                     .getRootProcessStepStatusTypeId()
                     .equals(ProcessStepStatusType.CANCELLED.id));
-            sqlCache.update("projectProcessStepEvent.updatePpsStatus", params);
+            sqlCache.updateBySql(ProjectProcessStepEventQuery.updatePpsStatus, params);
 
             // if the new status was cancel, check for a single existence of this PPS type in
             // Complete status and set as primary if only one found
             params.put("projectId", pps.getProjectId());
             params.put("processStepId", pps.getProcessStepId());
-            sqlCache.update("projectProcessStepEvent.updatePrimaryIfOnlyOne", params);
+            sqlCache.updateBySql(ProjectProcessStepEventQuery.updatePrimaryIfOnlyOne, params);
 
             // if the new status was a root ACTIVE status then run pps auto triggers
             // only run if the referring project process step is active
@@ -441,7 +441,7 @@ public class ProjectProcessStepEventService {
           //if the pps status was updated (or marked to be updated if the actual status didn't change)
           if (processStepEventAction.getCompanyProcessStepStatusTypeId() != null) {
             //run auto triggers for PPSs which use the new PPS status
-            List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
+            List<ProjectProcessStep> steps = sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds, Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
             for(ProjectProcessStep step : steps) {
               //only run if the referring PPS is active and not the parent PPS
               if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
@@ -456,7 +456,7 @@ public class ProjectProcessStepEventService {
               actionResults.add(projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails()));
 
               //run auto triggers for PPSs which use the new PPS status
-              List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getUsingStatusByPpsIds", Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
+              List<ProjectProcessStep> steps = sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds, Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
               for(ProjectProcessStep step : steps) {
                 //only run if the referring PPS is active and not the parent PPS (which shouldn't happen since these are newly created PPSs)
                 //it's assumed the DB function that created this new ID put it in an active status/category
@@ -471,7 +471,7 @@ public class ProjectProcessStepEventService {
           params.put("processStepEventActionId", processStepEventAction.getId());
           params.put("createdById", currentUser.getId());
           params.put("allowMultipleUses", processStepEventAction.getMultipleUses());
-          sqlCache.update("projectProcessStepEvent.insertAuditRow", params);
+          sqlCache.updateBySql(ProjectProcessStepEventQuery.insertAuditRow, params);
 
           ppseActionResult.setPpsEventId(ppsEventId);
           ppseActionResult.setProjectId(pps.getProjectId());
@@ -592,8 +592,7 @@ public class ProjectProcessStepEventService {
     // there is currently no where in the UI where event attachments are not viewed side by side
     // with ps attachments, so for now this actually returns both
     List<Attachment> attachments =
-        sqlCache.query(
-            "projectProcessStepEvent.getProjectProcessStepEventAttachments",
+        sqlCache.queryBySql(ProjectProcessStepEventQuery.getProjectProcessStepEventAttachments,
             params,
             Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
@@ -608,11 +607,11 @@ public class ProjectProcessStepEventService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    String sqlKey = "projectProcessStepEvent.linkAttachment";
+    String sql = ProjectProcessStepEventQuery.linkAttachment;
     if(!doLink) {
-      sqlKey = "projectProcessStepEvent.unlinkAttachment";
+      sql = ProjectProcessStepEventQuery.unlinkAttachment;
     }
-    sqlCache.update(sqlKey, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
@@ -631,7 +630,7 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> p2 = new HashMap<>();
     p2.put("sourceId", projectProcessStepEventId);
     Long companyId =
-        sqlCache.queryForObject("projectProcessStepEvent.getCompanyId", p2, Long.class);
+        sqlCache.queryForObjectBySql(ProjectProcessStepEventQuery.getCompanyId, p2, Long.class);
 
     // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
@@ -659,14 +658,14 @@ public class ProjectProcessStepEventService {
     params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("companyId", companyId);
 
-    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
 
     params.clear();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
     params.put("attachmentId", attachmentId);
     params.put("createdById", user.getId());
 
-    sqlCache.update("projectProcessStepEvent.addAttachment", params);
+    sqlCache.updateBySql(ProjectProcessStepEventQuery.addAttachment, params);
 
     return attachmentService.findById(attachmentId);
   }
@@ -676,7 +675,7 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
-    return sqlCache.get("projectProcessStepEvent.getActiveCloserAppointment", params, ProjectProcessStepEvent.class);
+    return sqlCache.getBySql(ProjectProcessStepEventQuery.getActiveCloserAppointment, params, ProjectProcessStepEvent.class);
   }
 
   public Optional<ProjectProcessStepEvent> getActiveAhjInspectionWork(Long projectId) {
@@ -684,7 +683,7 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
-    return sqlCache.get("projectProcessStepEvent.getActiveAhjInspectionWork", params, ProjectProcessStepEvent.class);
+    return sqlCache.getBySql(ProjectProcessStepEventQuery.getActiveAhjInspectionWork, params, ProjectProcessStepEvent.class);
   }
 
   public Optional<ProjectProcessStepEvent> getActiveInstallation(Long projectId) {
@@ -692,7 +691,7 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
-    return sqlCache.get("projectProcessStepEvent.getActiveInstallation", params, ProjectProcessStepEvent.class);
+    return sqlCache.getBySql(ProjectProcessStepEventQuery.getActiveInstallation, params, ProjectProcessStepEvent.class);
   }
 
   public static class PpsEventMapper<T> extends BeanPropertyRowMapper<T> {

@@ -6,6 +6,7 @@ import com.albatross.api.v1.flow.model.CompanyDataType;
 import com.albatross.api.v1.flow.model.DataType;
 import com.albatross.api.v1.flow.model.DataTypeRequirement;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.DataTypeQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,19 +25,19 @@ public class DataTypeService {
   private final SecurityService securityService;
 
   public List<DataType> getSystemDataTypes() {
-    return sqlCache.query("dataType.getSystemDataTypes", Collections.emptyMap(), DataType.class);
+    return sqlCache.queryBySql(DataTypeQuery.getSystemDataTypes, Collections.emptyMap(), DataType.class);
   }
 
   public List<CompanyDataType> getCompanyDataTypes() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("dataType.getCompanyDataTypes", params, CompanyDataType.class);
+    return sqlCache.queryBySql(DataTypeQuery.getCompanyDataTypes, params, CompanyDataType.class);
   }
 
   public List<DataTypeRequirement> getDataTypeRequirements(Long dataTypeId) {
     Map<String, Object> params = new HashMap<>();
     params.put("dataTypeId", dataTypeId);
-    return sqlCache.query("dataType.getDataTypeRequirements", params, DataTypeRequirement.class);
+    return sqlCache.queryBySql(DataTypeQuery.getDataTypeRequirements, params, DataTypeRequirement.class);
   }
 }

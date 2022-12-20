@@ -5,6 +5,8 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -148,7 +150,7 @@ public class CustomFieldValueService {
       if(objectType.equals("user")) {
         companyId = user.getCompanyId();
       } else if(objectType.equals("event")) {
-        companyId = sqlCache.queryForObject("projectProcessStepEvent.getCompanyId", params, Long.class);
+        companyId = sqlCache.queryForObjectBySql(ProjectProcessStepEventQuery.getCompanyId, params, Long.class);
       } else {
         companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
       }
@@ -204,7 +206,7 @@ public class CustomFieldValueService {
       ComparisonResponse attachmentBody = new ComparisonResponse();
       attachmentBody.setAttachmentId(attachmentId);
       params.put("attachmentId", attachmentId);
-      List<CustomFieldValue> values = sqlCache.query("attachment.getComparisonFields", params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
+      List<CustomFieldValue> values = sqlCache.queryBySql(AttachmentQuery.getComparisonFields, params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
       for(CustomFieldValue value : values) {
         handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId(), null);
       }
@@ -226,7 +228,7 @@ public class CustomFieldValueService {
     params.put("attachmentId", attachmentId);
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", companyId);
-    Optional<AttachmentObject> optionalObj = sqlCache.get("attachment.getAttachmentSource", params, AttachmentObject.class);
+    Optional<AttachmentObject> optionalObj = sqlCache.getBySql(AttachmentQuery.getAttachmentSource, params, AttachmentObject.class);
 
     if(optionalObj.isPresent()) {
       AttachmentObject obj = optionalObj.get();

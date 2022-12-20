@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ProjectTag;
 import com.albatross.api.v1.flow.model.Tag;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.TagQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,13 +27,13 @@ public class TagService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tagTypeId", tagTypeId);
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("tag.getAll", params, Tag.class);
+    return sqlCache.queryBySql(TagQuery.getAll, params, Tag.class);
   }
 
   public Optional<Tag> getTag(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("tag.getOne", params, Tag.class);
+    return sqlCache.getBySql(TagQuery.getOne, params, Tag.class);
   }
 
   public Optional<Tag> saveTag(Tag tag) {
@@ -47,11 +48,11 @@ public class TagService {
     if(null != tag.getId()) {
       id = tag.getId();
       params.put("id", id);
-      sqlCache.update("tag.update", params);
+      sqlCache.updateBySql(TagQuery.update, params);
 
     } else {
       params.put("tagTypeId", tag.getTagTypeId());
-      id = sqlCache.updateReturningId("tag.insert", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(TagQuery.insert, params, "id").longValue();
     }
 
     return getTag(id);
@@ -62,13 +63,13 @@ public class TagService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tagId", tagId);
     params.put("userId", user.getId());
-    sqlCache.update("tag.delete", params);
+    sqlCache.updateBySql(TagQuery.delete, params);
   }
 
   public List<ProjectTag> getProjectTags(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    return sqlCache.query("tag.projectTags", params, ProjectTag.class);
+    return sqlCache.queryBySql(TagQuery.projectTags, params, ProjectTag.class);
   }
 
 }

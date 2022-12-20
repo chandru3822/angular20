@@ -16,6 +16,8 @@ import com.albatross.api.v1.flow.model.project.ProjectStatusType;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
+import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -78,8 +80,8 @@ public class ProjectService {
 
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
-    return sqlCache.query(
-        "project.getAllForCompanyProcess",
+    return sqlCache.queryBySql(
+      ProjectQuery.getAllForCompanyProcess,
         ImmutableMap.of("companyId", user.getCompanyId(), "processId", processId),
         Project.class);
   }
@@ -87,15 +89,15 @@ public class ProjectService {
   public Long getProjectIdByProjectProcessStepId(Long projectProcessStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    return sqlCache.queryForObject(
-        "project.getProjectIdByProjectProcessStepId", params, Long.class);
+    return sqlCache.queryForObjectBySql(
+      ProjectQuery.getProjectIdByProjectProcessStepId, params, Long.class);
   }
 
   public List<Long> getDistinctProjectIdsByPpsIds(List<Long> ppsIds) {
     HashMap<String, Object> params = new HashMap<>();
     try {
       params.put("ppsIds", sqlArrayService.createSqlArrayOfType("int", ppsIds));
-      List<Long> results = sqlCache.query("project.getProjectIdsByPpsIds", params, new SingleColumnRowMapper<>(Long.class));
+      List<Long> results = sqlCache.queryBySql(ProjectQuery.getProjectIdsByPpsIds, params, new SingleColumnRowMapper<>(Long.class));
       return results;
     } catch (SQLException e) {
       log.error("PROJECT: error retrieving project ids for ppsIds: {}", e.getMessage());
@@ -107,8 +109,8 @@ public class ProjectService {
   public Long getProjectIdByProjectProcessStepEventId(Long projectProcessStepEventId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
-    return sqlCache.queryForObject(
-        "project.getProjectIdByProjectProcessStepEventId", params, Long.class);
+    return sqlCache.queryForObjectBySql(
+      ProjectQuery.getProjectIdByProjectProcessStepEventId, params, Long.class);
   }
 
   public List<ProjectDensityResult> getProjectsInGeoArea(DensitySearch search) {
@@ -133,11 +135,11 @@ public class ProjectService {
       // if no search type is sent in then return "all projects" //1 = all project, 2 = my projects,
       // 3 = downline projects
       if (null != search.getSearchTypeId() && search.getSearchTypeId() == 3L) {
-        return sqlCache.query(
-            "project.getProjectsInGeoAreaDownline", params, ProjectDensityResult.class);
+        return sqlCache.queryBySql(
+          ProjectQuery.getProjectsInGeoAreaDownline, params, ProjectDensityResult.class);
       } else {
         params.put("searchTypeId", null == search.getSearchTypeId() ? 1 : search.getSearchTypeId());
-        return sqlCache.query("project.getProjectsInGeoArea", params, ProjectDensityResult.class);
+        return sqlCache.queryBySql(ProjectQuery.getProjectsInGeoArea, params, ProjectDensityResult.class);
       }
     } else {
       throw new ResponseStatusException(
@@ -186,18 +188,16 @@ public class ProjectService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    String searchSqlKey = "project.searchByOwner";
+    String searchSql = ProjectQuery.searchByOwner;
     if (viewCustom) {
-      searchSqlKey = "project.searchDownline";
+      searchSql = ProjectQuery.searchDownline;
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
-      searchSqlKey = "project.search";
+      searchSql = ProjectQuery.search;
     }
-    //    String countSqlKey = viewAll ? "project.searchCount" : viewCustom ?
-    // "project.searchDownlineCount" : "project.searchByOwnerCount";
 
     List<Project> projects =
-        sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
-    //    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
+        sqlCache.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
+
     Integer total = 10000;
     return new PageImpl<>(
         projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
@@ -230,17 +230,16 @@ public class ProjectService {
     params.put("userId", user.getId());
     params.put("viewCustom", viewCustom);
 
-    String searchSqlKey = "project.countsByStatusByUser";
+    String searchSql = ProjectQuery.countsByStatusByUser;
     if (viewAll
         && (null == overrideType
             || (!overrideType.equalsIgnoreCase("view")
                 && !overrideType.equalsIgnoreCase("downline")))) {
-      searchSqlKey = "project.countsByStatus";
+      searchSql = ProjectQuery.countsByStatus;
     }
-    //    String searchSqlKey = viewAll ? "project.countsByStatus" : "project.countsByStatusByUser";
 
     List<ProjectStatusCount> results =
-        sqlCache.query(searchSqlKey, params, ProjectStatusCount.class);
+        sqlCache.queryBySql(searchSql, params, ProjectStatusCount.class);
 
     for (ProjectStatusCount c : results) {
       // set the icon for the status
@@ -257,7 +256,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("parentCompanyId", parentCompanyId);
-    Optional<Project> proj = sqlCache.get("project.existsInHierarchy", params, Project.class);
+    Optional<Project> proj = sqlCache.getBySql(ProjectQuery.existsInHierarchy, params, Project.class);
     return proj.isPresent();
   }
 
@@ -265,7 +264,7 @@ public class ProjectService {
   public Boolean projectExists(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    Optional<Project> proj = sqlCache.get("project.exists", params, Project.class);
+    Optional<Project> proj = sqlCache.getBySql(ProjectQuery.exists, params, Project.class);
     return proj.isPresent();
   }
 
@@ -273,7 +272,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
 
     Map<String, Object> params = ImmutableMap.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
-      Optional<Project> result = sqlCache.get("project.get", params, new ProjectMapper<>(Project.class, om));
+      Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
       if (result.isPresent()) {
           return result;
       } else {
@@ -296,15 +295,15 @@ public class ProjectService {
     params.put("modifiedById", user.trueUserId());
     params.put("projectId", projectId);
 
-    sqlCache.update("project.delete", params);
+    sqlCache.updateBySql(ProjectQuery.delete, params);
   }
 
   public List<Owner> getOwners() {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    return sqlCache.query(
-        "project.getOwners",
+    return sqlCache.queryBySql(
+      ProjectQuery.getOwners,
         ImmutableMap.of(
             "companyId", user.getCompanyId(),
             "isParent", isParent,
@@ -355,7 +354,7 @@ public class ProjectService {
     params.put("longitude", longitude);
     params.put("timezone", timezone);
 
-    sqlCache.update("project.update", params);
+    sqlCache.updateBySql(ProjectQuery.update, params);
   }
 
   public void updateProjectOwner(Long projectId, Owner owner) {
@@ -366,7 +365,7 @@ public class ProjectService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("ownerUserPositionId", owner.getUserPositionId());
 
-    sqlCache.update("project.updateOwner", params);
+    sqlCache.updateBySql(ProjectQuery.updateOwner, params);
   }
 
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress)
@@ -409,7 +408,7 @@ public class ProjectService {
         params.put("timezone", null);
       }
 
-      Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
+      Long id = sqlCache.updateBySqlReturningId(ProjectQuery.insert, params, "id").longValue();
       return getProject(id);
     } else {
       throw new ResponseStatusException(
@@ -433,7 +432,7 @@ public class ProjectService {
               params.put("timeZone", res.timezone());
               params.put("id", id);
 
-              sqlCache.update("project.updateGeoLocation", params);
+              sqlCache.updateBySql(ProjectQuery.updateGeoLocation, params);
             });
   }
 
@@ -465,7 +464,7 @@ public class ProjectService {
     params.put("companyId", currentUser.getCompanyId());
     // Get project attachments
     List<Attachment> attachments =
-        sqlCache.query("project.getAttachments", params, Attachment.class);
+        sqlCache.queryBySql(ProjectQuery.getAttachments, params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
@@ -479,7 +478,7 @@ public class ProjectService {
     params.put("companyId", currentUser.getCompanyId());
     // Get project attachments
     List<Attachment> attachments =
-      sqlCache.query("project.getCombinedAttachments", params, Attachment.class);
+      sqlCache.queryBySql(ProjectQuery.getCombinedAttachments, params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
       attachments, storageBucket, false);
   }
@@ -492,11 +491,11 @@ public class ProjectService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    String sqlKey = "project.linkAttachment";
+    String sql = ProjectQuery.linkAttachment;
     if(!doLink) {
-      sqlKey = "project.unlinkAttachment";
+      sql = ProjectQuery.unlinkAttachment;
     }
-    sqlCache.update(sqlKey, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
@@ -515,7 +514,7 @@ public class ProjectService {
 
     // had to change this so that a parent looking at a child project could still see project
     // statuses
-    Long companyId = sqlCache.queryForObject("project.getCompanyId", Map.of("projectId", projectId), Long.class);
+    Long companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, Map.of("projectId", projectId), Long.class);
 
     // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
@@ -540,7 +539,7 @@ public class ProjectService {
     params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
     params.put("attachmentTypeId", attachmentTypeId);
 
-    Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
 
     params.clear();
     params.put("projectId", projectId);
@@ -548,14 +547,14 @@ public class ProjectService {
     params.put("linked", false);
     params.put("createdById", currentUser.trueUserId());
 
-    sqlCache.update("project.addAttachment", params);
+    sqlCache.updateBySql(ProjectQuery.addAttachment, params);
 
     return attachmentService.findById(attachmentId);
   }
 
   public Optional<Project> updateStatus(Long projectId, Long companyProjectStatusTypeId) {
-    sqlCache.update(
-        "project.updateStatus",
+    sqlCache.updateBySql(
+      ProjectQuery.updateStatus,
         Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
     return getStatus(projectId);
   }
@@ -563,13 +562,13 @@ public class ProjectService {
   public Optional<Project> getStatus(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    return sqlCache.get("project.getStatusDetails", params, Project.class);
+    return sqlCache.getBySql(ProjectQuery.getStatusDetails, params, Project.class);
   }
 
   private CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
     return sqlCache
-        .get(
-            "project.getDefaultProjectStatusTypeByCompanyId",
+        .getBySql(
+          ProjectQuery.getDefaultProjectStatusTypeByCompanyId,
             Map.of("companyId", companyId),
             CompanyProjectStatusType.class)
         .orElse(null);
@@ -584,8 +583,8 @@ public class ProjectService {
     params.put("statusTypeId", statusTypeId);
     params.put("isParent", isParent);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    return sqlCache.query(
-        "project.getProcessStepsByProjectId",
+    return sqlCache.queryBySql(
+      ProjectQuery.getProcessStepsByProjectId,
         params,
         new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
@@ -594,12 +593,12 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);
-    return sqlCache.query("project.getEventsByProjectId", params, ProjectProcessStepEvent.class);
+    return sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, ProjectProcessStepEvent.class);
   }
 
   public CommunicationController.ProjectDetails getProjectDetailTemplateFields(Long projectId) {
     return sqlCache
-      .get("project.getProjectDetailTemplateFields", Map.of("projectId", projectId), CommunicationController.ProjectDetails.class)
+      .getBySql(ProjectQuery.getProjectDetailTemplateFields, Map.of("projectId", projectId), CommunicationController.ProjectDetails.class)
       .orElse(null);
   }
 
@@ -608,7 +607,7 @@ public class ProjectService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("project.getStatusesForWqt", params, WorkQueueTypeProjectStatus.class);
+    return sqlCache.queryBySql(ProjectQuery.getStatusesForWqt, params, WorkQueueTypeProjectStatus.class);
   }
 
   public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId) {
@@ -620,13 +619,13 @@ public class ProjectService {
       // statuses
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
     }
 
     // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
     List<ProjectStatusType> results =
-        sqlCache.query(
-            "project.getCompanyStatuses",
+        sqlCache.queryBySql(
+          ProjectQuery.getCompanyStatuses,
             ImmutableMap.of("companyId", companyId),
             ProjectStatusType.class);
 
@@ -641,8 +640,8 @@ public class ProjectService {
 
   public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
     Optional<ProjectStatusType> result =
-        sqlCache.get(
-            "project.getOneCompanyStatus", ImmutableMap.of("id", id), ProjectStatusType.class);
+        sqlCache.getBySql(
+          ProjectQuery.getOneCompanyStatus, ImmutableMap.of("id", id), ProjectStatusType.class);
 
     if (result.isPresent()) {
       Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
@@ -660,7 +659,7 @@ public class ProjectService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("project.saveInitialProjectStatusType", params);
+    sqlCache.updateBySql(ProjectQuery.saveInitialProjectStatusType, params);
   }
 
   public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
@@ -677,9 +676,9 @@ public class ProjectService {
       id = status.getId();
       params.put("id", id);
       params.put("displayOrder", status.getDisplayOrder());
-      sqlCache.update("project.updateCompanyStatus", params);
+      sqlCache.updateBySql(ProjectQuery.updateCompanyStatus, params);
     } else {
-      id = sqlCache.updateReturningId("project.insertCompanyStatus", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(ProjectQuery.insertCompanyStatus, params, "id").longValue();
     }
 
     // handle attachment
@@ -699,13 +698,13 @@ public class ProjectService {
     params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
-    List<Project> projectsWithStatus = sqlCache.query("project.getProjectsWithStatusInUse", Map.of("companyProjectStatusTypeId", id), Project.class);
-    List<ProcessStepAction> processStepActions = sqlCache.query("project.psaWithStatusInUse", Map.of("companyProjectStatusTypeId", id), ProcessStepAction.class);
-    List<ProjectController.ProcessStepEventData> processStepEventRequirements = sqlCache.query("project.getPserWithStatusInUse", Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
-    List<ProjectController.ProcessStepEventData> processStepRequirements = sqlCache.query("project.getPsrWithStatusInUse", Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
+    List<Project> projectsWithStatus = sqlCache.queryBySql(ProjectQuery.getProjectsWithStatusInUse, Map.of("companyProjectStatusTypeId", id), Project.class);
+    List<ProcessStepAction> processStepActions = sqlCache.queryBySql(ProjectQuery.psaWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProcessStepAction.class);
+    List<ProjectController.ProcessStepEventData> processStepEventRequirements = sqlCache.queryBySql(ProjectQuery.getPserWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
+    List<ProjectController.ProcessStepEventData> processStepRequirements = sqlCache.queryBySql(ProjectQuery.getPsrWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
 
     if (projectsWithStatus.isEmpty() && processStepActions.isEmpty() && processStepRequirements.isEmpty()) {
-      sqlCache.update("project.deleteCompanyStatus", params);
+      sqlCache.updateBySql(ProjectQuery.deleteCompanyStatus, params);
       return ResponseEntity.ok().build();
     }
     else {
@@ -724,21 +723,21 @@ public class ProjectService {
     params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
     return
-      sqlCache.get(
-        "project.getProjectInstallationScopeOfWork",
+      sqlCache.getBySql(
+        ProjectQuery.getProjectInstallationScopeOfWork,
         params,
         new SingleColumnRowMapper<>(String.class));
   }
 
   public List<ProjectStatusType> getProjectStatuses() {
-    return sqlCache.query("project.getStatuses", Collections.emptyMap(), ProjectStatusType.class);
+    return sqlCache.queryBySql(ProjectQuery.getStatuses, Collections.emptyMap(), ProjectStatusType.class);
   }
 
   public String generateReport(String query) {
     User user = securityService.getCurrentUser();
     List<Map<String, Object>> projects =
-        sqlCache.query(
-            "project.generateReport",
+        sqlCache.queryBySql(
+          ProjectQuery.generateReport,
             Map.of("companyId", user.getCompanyId(), "query", query),
             new ColumnMapRowMapper());
 

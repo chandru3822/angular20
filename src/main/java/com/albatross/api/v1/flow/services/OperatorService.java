@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.OperatorType;
+import com.albatross.api.v1.flow.queries.OperatorQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,6 @@ public class OperatorService {
   public List<OperatorType> getOperatorTypes(Long dataTypeId) {
     Map<String, Object> params = new HashMap<>();
     params.put("dataTypeId", dataTypeId);
-    return sqlCache.query("operator.getTypesByDataType", params, OperatorType.class);
+    return sqlCache.queryBySql(OperatorQuery.getTypesByDataType, params, OperatorType.class);
   }
 }

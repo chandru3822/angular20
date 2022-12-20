@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyDefaultField;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.DefaultFieldQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,8 +28,8 @@ public class DefaultFieldService {
     params.put("companyId", user.getCompanyId());
     params.put("objectTypeId", objectTypeId);
 
-    return sqlCache.query(
-        "defaultField.getCompanyDefaultFieldsByObjectType", params, CompanyDefaultField.class);
+    return sqlCache.queryBySql(
+      DefaultFieldQuery.getCompanyDefaultFieldsByObjectType, params, CompanyDefaultField.class);
   }
 
   public void saveCompanyDefaultField(CompanyDefaultField field) {
@@ -41,6 +42,6 @@ public class DefaultFieldService {
         "showOnUserProfile",
         null != field.getShowOnUserProfile() ? field.getShowOnUserProfile() : false);
 
-    sqlCache.update("defaultField.saveCompanyDefaultField", params);
+    sqlCache.updateBySql(DefaultFieldQuery.saveCompanyDefaultField, params);
   }
 }
