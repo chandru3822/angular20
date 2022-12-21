@@ -66,6 +66,13 @@ BEGIN
     v_payment_nbr := v_payment_nbr + 1;
   END LOOP;
 
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Create Rebate Payments', 'p_project_id: ' || p_project_id ||
+                                    ' p_created_by_user_id: ' || p_created_by_user_id ||
+                                    ' p_total_promotion_amount: ' || p_total_promotion_amount ||
+                                    ' p_number_of_promotion_payments: ' || p_number_of_promotion_payments,
+          p_created_by_user_id);
+
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE

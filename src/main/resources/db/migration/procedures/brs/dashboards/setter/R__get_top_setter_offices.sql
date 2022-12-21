@@ -1,6 +1,6 @@
 -- SELECT * FROM brs.get_top_setter_offices(10, 30);
-drop function if exists brs.get_top_setter_offices(p_limit bigint, p_time_interval character varying, p_days bigint);
-  CREATE OR REPLACE FUNCTION brs.get_top_setter_offices(p_limit bigint, p_time_interval character varying, p_days bigint DEFAULT 30)
+drop function if exists brs.get_top_setter_offices(p_limit bigint, p_time_interval character varying, p_days bigint, p_run_by_id bigint);
+  CREATE OR REPLACE FUNCTION brs.get_top_setter_offices(p_limit bigint, p_time_interval character varying, p_days bigint DEFAULT 30, p_run_by_id bigint)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS $function$
@@ -62,6 +62,13 @@ BEGIN
              order by pitches desc, org_id
              limit p_limit
     ) as sub_rows;
+
+insert into flow.company_function_log(function_name, parameters, run_by_id)
+values ('Get Top Setter Offices', 'p_limit: ' || p_limit ||
+                                  ' p_time_interval: ' || p_time_interval ||
+                                  ' p_days: ' || p_days ||
+                                  ' p_run_by_id: ' || p_run_by_id,
+        p_run_by_id);
 
 END
 $function$

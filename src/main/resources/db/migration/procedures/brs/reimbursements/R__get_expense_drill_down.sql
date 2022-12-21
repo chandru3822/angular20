@@ -240,6 +240,14 @@ BEGIN
 
     END CASE;
 
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Get Expense Drill Down', 'p_user_id: ' || p_user_id ||
+                                    ' p_start_date: ' || p_start_date ||
+                                    ' p_end_date: ' || p_end_date ||
+                                    ' p_status: ' || p_status ||
+                                    ' p_budget_id: ' || p_budget_id,
+          p_user_id);
+
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE

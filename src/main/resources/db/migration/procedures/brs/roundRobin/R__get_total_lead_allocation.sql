@@ -289,6 +289,11 @@ BEGIN
                           foo2.sum_manual_allocation) as foo3;
   drop table round_robin_users;
 
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Get Total Lead Allocation', 'p_postal_code_zone_id: ' || p_postal_code_zone_id ||
+                                       ' p_run_manual_allocation: '|| p_run_manual_allocation ||
+                                       ' p_remote: '|| p_remote);
+
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

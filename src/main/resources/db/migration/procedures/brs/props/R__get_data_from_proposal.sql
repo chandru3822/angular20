@@ -3,10 +3,12 @@
 -- DROP FUNCTION brs.get_data_from_proposal(bigint, bigint);
 drop function if exists brs.get_data_from_proposal(
   p_project_id bigint,
-  p_proposal_nbr bigint);
+  p_proposal_nbr bigint,
+  p_run_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.get_data_from_proposal(
   p_project_id bigint,
-  p_proposal_nbr bigint)
+  p_proposal_nbr bigint,
+  p_run_by_id bigint)
   RETURNS SETOF json AS
 $BODY$
 declare
@@ -137,6 +139,12 @@ begin
                  INNER JOIN flow.contact c ON c.id = p.contact_id
                  inner join flow.company_state cs on c.company_state_id = cs.id
                where pl.project_id = p_project_id and pl.proposal_nbr = p_proposal_nbr;
+
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Get Data from Proposal', 'p_project_id: ' || p_project_id ||
+                                    ' p_proposal_nbr: ' || p_proposal_nbr ||
+                                    ' p_run_by_id: ' || p_run_by_id,
+          p_run_by_id);
 
 END
 $BODY$

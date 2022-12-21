@@ -1,118 +1,120 @@
-<sql>
-  <closerDashboard.getIncentiveFdcCounts>
-    <![CDATA[
-      WITH quarters AS (
-        select (extract('year' from now()) || '-01-01')::date as q1_start,
-               (extract('year' from now()) || '-03-31')::date as q1_end,
-               (extract('year' from now()) || '-04-01')::date as q2_start,
-               (extract('year' from now()) || '-06-30')::date as q2_end,
-               (extract('year' from now()) || '-07-01')::date as q3_start,
-               (extract('year' from now()) || '-09-30')::date as q3_end,
-               (extract('year' from now()) || '-10-01')::date as q4_start,
-               (extract('year' from now()) || '-12-31')::date as q4_end
-      ), q1_self_gen AS (
-        select case when count(1) > 0 then true else false end qualification_met
-        from brs.project_details pd
-          inner join flow.project p on p.id = pd.project_id
-          inner join flow.user u on u.id = pd.closer_user_id
-        where pd.final_design_complete_date is not null
-          and pd.final_design_complete_date::date between (select q1_start from quarters) and (select q1_end from quarters)
-          and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
-          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
-          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-          and u.id = :currentUserId
-          and pd.company_id = 3
-      ), q2_self_gen AS (
-        select case when count(1) > 0 then true else false end qualification_met
-        from brs.project_details pd
-          inner join flow.project p on p.id = pd.project_id
-          inner join flow.user u on u.id = pd.closer_user_id
-        where pd.final_design_complete_date is not null
-          and pd.final_design_complete_date::date between (select q2_start from quarters) and (select q2_end from quarters)
-          and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
-          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
-          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-          and u.id = :currentUserId
-          and pd.company_id = 3
-      ), q3_self_gen AS (
-        select case when count(1) > 0 then true else false end qualification_met
-        from brs.project_details pd
-          inner join flow.project p on p.id = pd.project_id
-          inner join flow.user u on u.id = pd.closer_user_id
-        where pd.final_design_complete_date is not null
-          and pd.final_design_complete_date::date between (select q3_start from quarters) and (select q3_end from quarters)
-          and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
-          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
-          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-          and u.id = :currentUserId
-          and pd.company_id = 3
-      ), q4_self_gen AS (
-        select case when count(1) > 0 then true else false end qualification_met
-        from brs.project_details pd
-          inner join flow.project p on p.id = pd.project_id
-          inner join flow.user u on u.id = pd.closer_user_id
-        where pd.final_design_complete_date is not null
-          and pd.final_design_complete_date::date between (select q4_start from quarters) and (select q4_end from quarters)
-          and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
-          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
-          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-          and u.id = :currentUserId
-          and pd.company_id = 3
-      )
-      SELECT (select qualification_met from q1_self_gen) q1_qualification_met,
-             (select count(1)
-              from brs.project_details pd
-                inner join flow.project p on p.id = pd.project_id
-                inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_complete_date is not null
-                and pd.final_design_complete_date::date between (select q1_start from quarters) and (select q1_end from quarters)
-                and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
-                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-                and u.id = :currentUserId
-                and pd.company_id = 3
-             ) as "q1",
-             (select qualification_met from q2_self_gen) q2_qualification_met,
-             (select count(1)
-              from brs.project_details pd
-                inner join flow.project p on p.id = pd.project_id
-                inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_complete_date is not null
-                and pd.final_design_complete_date::date between (select q2_start from quarters) and (select q2_end from quarters)
-                and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
-                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-                and u.id = :currentUserId
-                and pd.company_id = 3
-             ) as "q2",
-             (select qualification_met from q3_self_gen) q3_qualification_met,
-             (select count(1)
-              from brs.project_details pd
-                inner join flow.project p on p.id = pd.project_id
-                inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_complete_date is not null
-                and pd.final_design_complete_date::date between (select q3_start from quarters) and (select q3_end from quarters)
-                and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
-                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-                and u.id = :currentUserId
-                and pd.company_id = 3
-             ) as "q3",
-             (select qualification_met from q4_self_gen) q4_qualification_met,
-             (select count(1)
-              from brs.project_details pd
-                inner join flow.project p on p.id = pd.project_id
-                inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_complete_date is not null
-                and pd.final_design_complete_date::date between (select q4_start from quarters) and (select q4_end from quarters)
-                and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
-                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-                and u.id = :currentUserId
-                and pd.company_id = 3
-             ) as "q4"
-    ]]>
-  </closerDashboard.getIncentiveFdcCounts>
+package com.albatross.api.v1.company.blueraven.services.queries;
 
-  <closerDashboard.getAllRoundRobins>
-    <![CDATA[
-      SELECT pcz.id,
+public class CloserDashboardQuery {
+
+  //language=PostgreSQL
+  public final static String getIncentiveFdcCounts = """
+    WITH quarters AS (
+            select (extract('year' from now()) || '-01-01')::date as q1_start,
+                   (extract('year' from now()) || '-03-31')::date as q1_end,
+                   (extract('year' from now()) || '-04-01')::date as q2_start,
+                   (extract('year' from now()) || '-06-30')::date as q2_end,
+                   (extract('year' from now()) || '-07-01')::date as q3_start,
+                   (extract('year' from now()) || '-09-30')::date as q3_end,
+                   (extract('year' from now()) || '-10-01')::date as q4_start,
+                   (extract('year' from now()) || '-12-31')::date as q4_end
+          ), q1_self_gen AS (
+            select case when count(1) > 0 then true else false end qualification_met
+            from brs.project_details pd
+              inner join flow.project p on p.id = pd.project_id
+              inner join flow.user u on u.id = pd.closer_user_id
+            where pd.final_design_complete_date is not null
+              and pd.final_design_complete_date::date between (select q1_start from quarters) and (select q1_end from quarters)
+              and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+              and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
+              and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+              and u.id = :currentUserId
+              and pd.company_id = 3
+          ), q2_self_gen AS (
+            select case when count(1) > 0 then true else false end qualification_met
+            from brs.project_details pd
+              inner join flow.project p on p.id = pd.project_id
+              inner join flow.user u on u.id = pd.closer_user_id
+            where pd.final_design_complete_date is not null
+              and pd.final_design_complete_date::date between (select q2_start from quarters) and (select q2_end from quarters)
+              and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+              and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
+              and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+              and u.id = :currentUserId
+              and pd.company_id = 3
+          ), q3_self_gen AS (
+            select case when count(1) > 0 then true else false end qualification_met
+            from brs.project_details pd
+              inner join flow.project p on p.id = pd.project_id
+              inner join flow.user u on u.id = pd.closer_user_id
+            where pd.final_design_complete_date is not null
+              and pd.final_design_complete_date::date between (select q3_start from quarters) and (select q3_end from quarters)
+              and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+              and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
+              and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+              and u.id = :currentUserId
+              and pd.company_id = 3
+          ), q4_self_gen AS (
+            select case when count(1) > 0 then true else false end qualification_met
+            from brs.project_details pd
+              inner join flow.project p on p.id = pd.project_id
+              inner join flow.user u on u.id = pd.closer_user_id
+            where pd.final_design_complete_date is not null
+              and pd.final_design_complete_date::date between (select q4_start from quarters) and (select q4_end from quarters)
+              and pd.source in (523, 524, 530, 20016) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+              and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
+              and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+              and u.id = :currentUserId
+              and pd.company_id = 3
+          )
+          SELECT (select qualification_met from q1_self_gen) q1_qualification_met,
+                 (select count(1)
+                  from brs.project_details pd
+                    inner join flow.project p on p.id = pd.project_id
+                    inner join flow.user u on u.id = pd.closer_user_id
+                  where pd.final_design_complete_date is not null
+                    and pd.final_design_complete_date::date between (select q1_start from quarters) and (select q1_end from quarters)
+                    and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
+                    and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+                    and u.id = :currentUserId
+                    and pd.company_id = 3
+                 ) as "q1",
+                 (select qualification_met from q2_self_gen) q2_qualification_met,
+                 (select count(1)
+                  from brs.project_details pd
+                    inner join flow.project p on p.id = pd.project_id
+                    inner join flow.user u on u.id = pd.closer_user_id
+                  where pd.final_design_complete_date is not null
+                    and pd.final_design_complete_date::date between (select q2_start from quarters) and (select q2_end from quarters)
+                    and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
+                    and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+                    and u.id = :currentUserId
+                    and pd.company_id = 3
+                 ) as "q2",
+                 (select qualification_met from q3_self_gen) q3_qualification_met,
+                 (select count(1)
+                  from brs.project_details pd
+                    inner join flow.project p on p.id = pd.project_id
+                    inner join flow.user u on u.id = pd.closer_user_id
+                  where pd.final_design_complete_date is not null
+                    and pd.final_design_complete_date::date between (select q3_start from quarters) and (select q3_end from quarters)
+                    and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
+                    and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+                    and u.id = :currentUserId
+                    and pd.company_id = 3
+                 ) as "q3",
+                 (select qualification_met from q4_self_gen) q4_qualification_met,
+                 (select count(1)
+                  from brs.project_details pd
+                    inner join flow.project p on p.id = pd.project_id
+                    inner join flow.user u on u.id = pd.closer_user_id
+                  where pd.final_design_complete_date is not null
+                    and pd.final_design_complete_date::date between (select q4_start from quarters) and (select q4_end from quarters)
+                    and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
+                    and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+                    and u.id = :currentUserId
+                    and pd.company_id = 3
+                 ) as "q4"
+    """;
+
+  //language=PostgreSQL
+  public final static String getAllRoundRobins = """
+    SELECT pcz.id,
        pcz.company_id,
        pcz.zone_name,
        pcz.archived
@@ -120,12 +122,11 @@
       WHERE pcz.archived IS FALSE
       and pcz.company_id = :companyId
       ORDER BY pcz.zone_name
-    ]]>
-  </closerDashboard.getAllRoundRobins>
+    """;
 
-  <closerDashboard.getRoundRobins>
-    <![CDATA[
-      SELECT pcz.id,
+  //language=PostgreSQL
+  public final static String getRoundRobins = """
+    SELECT pcz.id,
        pcz.company_id,
        pcz.zone_name,
        pczu.archived
@@ -137,18 +138,16 @@
         and pcz.company_id = 3
         -- postal_code_zone_user_type_id = 1 means schedule to (2 = schedule by)
         AND pczu.postal_code_zone_user_type_id = 1
-    ]]>
-  </closerDashboard.getRoundRobins>
+    """;
 
-  <closerDashboard.getRoundRobinLeadAllocationRank>
-    <![CDATA[
-      SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::bigint, :timeInterval::bigint)
-    ]]>
-  </closerDashboard.getRoundRobinLeadAllocationRank>
+  //language=PostgreSQL
+  public final static String getRoundRobinLeadAllocationRank = """
+    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::bigint, :timeInterval::bigint, :currentUserId::bigint)
+    """;
 
-  <closerDashboard.getAllCloserOffices>
-    <![CDATA[
-      SELECT o.id,
+  //language=PostgreSQL
+  public final static String getAllCloserOffices = """
+    SELECT o.id,
              o.company_id,
              o.org_name,
              o.active_flag
@@ -158,12 +157,11 @@
         AND o.company_id = :companyId
         AND ot.org_type = 'Closer Sales Office'
       ORDER BY o.org_name
-    ]]>
-  </closerDashboard.getAllCloserOffices>
+    """;
 
-  <closerDashboard.getCloserDownline>
-    <![CDATA[
-      SELECT o.id,
+  //language=PostgreSQL
+  public final static String getCloserDownline = """
+    SELECT o.id,
              o.company_id,
              o.org_name,
              o.active_flag
@@ -174,12 +172,11 @@
         AND o.company_id = :companyId
         AND ot.org_type = 'Closer Sales Office'
       ORDER BY o.org_name
-    ]]>
-  </closerDashboard.getCloserDownline>
+    """;
 
-  <closerDashboard.getCloserOffice>
-    <![CDATA[
-      SELECT o.id,
+  //language=PostgreSQL
+  public final static String getCloserOffice = """
+    SELECT o.id,
              o.company_id,
              o.org_name,
              o.active_flag
@@ -190,12 +187,11 @@
         AND o.company_id = :companyId
         AND ot.org_type = 'Closer Sales Office'
       ORDER BY o.org_name
-    ]]>
-  </closerDashboard.getCloserOffice>
+    """;
 
-  <closerDashboard.getCloserTableScoresOffice>
-    <![CDATA[
-      SELECT u.id,
+  //language=PostgreSQL
+  public final static String getCloserTableScoresOffice = """
+    SELECT u.id,
              concat(u.first_name, ' ', u.last_name) AS name,
              ust.user_status_type,
              o.org_name as officeName,
@@ -252,12 +248,11 @@
         AND pd.company_id = 3
         and (up.end_date is null or up.end_date >= (now() at time zone 'US/Mountain')::date - :timeInterval)
       GROUP BY u.id, officeName, region, metroArea, ust.user_status_type
-    ]]>
-  </closerDashboard.getCloserTableScoresOffice>
+    """;
 
-  <closerDashboard.getCloserTableScoresRep>
-    <![CDATA[
-      with current_closers as (
+  //language=PostgreSQL
+  public final static String getCloserTableScoresRep = """
+    with current_closers as (
         select u.id,
                concat(u.first_name, ' ', u.last_name) AS name,
                o.org_name as office_name,
@@ -325,13 +320,11 @@
              inner join current_closers cc on cc.id = pd.closer_user_id
       WHERE pd.company_id = 3
       GROUP BY cc.id, name, office_name, region, cc.metro_area
-    ]]>
-  </closerDashboard.getCloserTableScoresRep>
+    """;
 
-
-  <closerDashboard.getBrsProvidedSources>
-    <![CDATA[
-      SELECT DISTINCT pd.source source_id,
+  //language=PostgreSQL
+  public final static String getBrsProvidedSources = """
+    SELECT DISTINCT pd.source source_id,
              lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
@@ -339,12 +332,11 @@
         AND lov.parent_id = 520
         AND pd.company_id = 3
       ORDER BY source_name
-    ]]>
-  </closerDashboard.getBrsProvidedSources>
+    """;
 
-  <closerDashboard.getSelfGenSources>
-    <![CDATA[
-      SELECT DISTINCT pd.source source_id,
+  //language=PostgreSQL
+  public final static String getSelfGenSources = """
+    SELECT DISTINCT pd.source source_id,
              lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
@@ -352,6 +344,5 @@
         AND lov.parent_id = 520
         AND pd.company_id = 3
       ORDER BY source_name
-    ]]>
-  </closerDashboard.getSelfGenSources>
-</sql>
+    """;
+}

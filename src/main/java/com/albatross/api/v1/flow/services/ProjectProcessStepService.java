@@ -311,7 +311,8 @@ public class ProjectProcessStepService {
         throw new RuntimeException("Can not delete a primary process step. Must designate another primary step first");
       }
 
-      sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId), String.class);
+      sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId,
+        "currentUserId", securityService.getCurrentUser().trueUserId()), String.class);
     }
   }
 

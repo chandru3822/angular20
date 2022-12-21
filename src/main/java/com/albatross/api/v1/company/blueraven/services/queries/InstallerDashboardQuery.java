@@ -1,5 +1,9 @@
-<sql>
-  <installerDashboard.getRegionalManagers><![CDATA[
+package com.albatross.api.v1.company.blueraven.services.queries;
+
+public class InstallerDashboardQuery {
+
+  //language=PostgreSQL
+  public final static String getRegionalManagers = """
     select up.org_id as positionId, concat(u.first_name, ' ', u.last_name) AS full_name,
         (case when u.id = :userId then u.id end) as userId
     from flow.user u
@@ -14,9 +18,10 @@
             else o.company_id = :companyId
         end
     order by full_name
-  ]]></installerDashboard.getRegionalManagers>
+    """;
 
-  <installerDashboard.getInstallationCrew><![CDATA[
+  //language=PostgreSQL
+  public final static String getInstallationCrew = """
     select o.id as positionId, o.org_name AS full_name
     from flow.org o
         inner join flow.org_type ot on o.org_type_id = ot.id
@@ -26,13 +31,20 @@
           then o.company_id = :parentCompanyId
           else o.company_id = :companyId
     end
-  ]]></installerDashboard.getInstallationCrew>
+    """;
 
-  <installerDashboard.getPerformanceMetrics><![CDATA[
-    select * from brs.get_installer_dashboard_rankings(:startDate::date,:endDate::date, :companyId::bigint, :parentCompanyId::bigint, :isParent)
-  ]]></installerDashboard.getPerformanceMetrics>
+  //language=PostgreSQL
+  public final static String getPerformanceMetrics = """
+    select * from brs.get_installer_dashboard_rankings(:startDate::date,:endDate::date, :companyId::bigint, :parentCompanyId::bigint, :isParent, :currentUserId::bigint)
+    """;
 
-  <installerDashboard.getDashboardValues><![CDATA[
+  //language=PostgreSQL
+  public final static String getRoundRobinLeadAllocationRank = """
+    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::bigint, :timeInterval::bigint, :currentUserId::bigint)
+    """;
+
+  //language=PostgreSQL
+  public final static String getDashboardValues = """
     select json_build_object(
            'substantialCompletions', (select (select count(*)
           from brs.project_details pd
@@ -389,5 +401,5 @@
                                       pd.installation_resource in (:crewIds)
                                 order by pd.ahj_inspection_start_time asc) ia), '[]')
         )
-  ]]></installerDashboard.getDashboardValues>
-</sql>
+    """;
+}

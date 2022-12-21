@@ -145,6 +145,13 @@ BEGIN
             end case;
     end if;
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Tournament User Score Drill Down', 'p_tournament_id: ' || p_tournament_id ||
+                                                    ' p_start_date: ' || p_start_date ||
+                                                    ' p_end_date: ' || p_end_date ||
+                                                    ' p_user_id: '|| p_user_id,
+            p_user_id);
+
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE;

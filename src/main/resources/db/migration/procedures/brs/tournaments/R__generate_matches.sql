@@ -97,6 +97,12 @@ BEGIN
     update brs.tournament_bracket
         set matches_generated = true
     where id = p_tournament_bracket_id;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Generate Matches', 'p_tournament_bracket_id: ' || p_tournament_bracket_id ||
+                                ' p_user_id: '|| p_user_id,
+            p_user_id);
+
 END
 
 $BODY$

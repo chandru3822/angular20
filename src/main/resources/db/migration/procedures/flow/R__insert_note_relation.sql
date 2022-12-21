@@ -1,5 +1,5 @@
-drop function if exists flow.insert_note_relation(p_primary_id bigint, p_note_id bigint, p_object_type_id bigint);
-  CREATE OR REPLACE FUNCTION flow.insert_note_relation(p_primary_id bigint, p_note_id bigint, p_object_type_id bigint)
+drop function if exists flow.insert_note_relation(p_primary_id bigint, p_note_id bigint, p_object_type_id bigint, p_user_id bigint);
+  CREATE OR REPLACE FUNCTION flow.insert_note_relation(p_primary_id bigint, p_note_id bigint, p_object_type_id bigint, p_user_id bigint)
 
 RETURNS boolean
     LANGUAGE plpgsql
@@ -31,6 +31,13 @@ BEGIN
       values (p_primary_id, p_note_id);
       return true;
     end case;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Insert Note Relation', 'p_primary_id: ' || p_primary_id ||
+                                    ' p_note_id: ' || p_note_id ||
+                                    ' p_object_type_id: ' || p_object_type_id ||
+                                    ' p_user_id: ' || p_user_id,
+            p_user_id);
 
 END;
 $function$

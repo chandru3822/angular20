@@ -6,6 +6,11 @@ $BODY$
 declare
     v_new_action_id bigint;
 BEGIN
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Duplicate Action', 'p_process_step_action_id: ' || p_process_step_action_id ||
+                                ' p_current_user_id: ' || p_current_user_id ||
+                                ' p_company_id: ' || p_company_id,
+            p_current_user_id);
   -- the company_id comes from the login token, so it ensures the user has access to the company/data
 
   --duplicate the action

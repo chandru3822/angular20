@@ -20,6 +20,12 @@ begin
     returning id into ret;
   end if;
 
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Upsert Proposal Custom Field Group', 'p_proposal_version: ' || p_proposal_version ||
+                                                 ' p_group_uuid: ' || p_group_uuid ||
+                                                 ' p_current_user: ' || p_current_user,
+          p_current_user);
+
   return ret;
 end;
 $$ language plpgsql;

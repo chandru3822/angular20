@@ -94,6 +94,12 @@ BEGIN
                         and eb.start_date between p_start_date and p_end_date
                       group by eb.id, eb.budget_type_id, bt.name, eb.amount, eb.start_date, eb.end_date) results;
 
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Get Monthly Expense Budget Report', 'p_user_id: ' || p_user_id ||
+                                               ' p_start_date: ' || p_start_date ||
+                                               ' p_end_date: ' || p_end_date,
+          p_user_id);
+
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE

@@ -94,6 +94,15 @@ BEGIN
       end if;
     END LOOP;
 
+    insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
+    values ('Send Email', 61, 'p_project_id: ' || p_project_id ||
+                              ' p_current_user_id: '|| p_current_user_id ||
+                              ' p_message_type_id: ' || p_message_type_id ||
+                              ' p_from_email: '|| p_from_email ||
+                              ' p_from_display_name: ' || p_project_id ||
+                              ' p_subject: '|| p_current_user_id ||
+                              ' p_addressees: ' || p_addressees,
+            p_current_user_id);
 
 END
 $function$

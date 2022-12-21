@@ -14,6 +14,9 @@ BEGIN
     where p.id = p_project_id
       and cpst.project_status_type_id = 2;
 
+    insert into flow.company_function_log(function_name, db_function_id, parameters)
+    values ('Project Status Cancelled', 9, 'p_project_id: ' || p_project_id);
+
     return v_cancelled;
 
 END

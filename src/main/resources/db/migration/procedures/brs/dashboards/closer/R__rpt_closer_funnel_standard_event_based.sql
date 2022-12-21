@@ -1,7 +1,7 @@
-﻿drop function if exists brs.rpt_closer_funnel_standard_event_based(date, date, bigint[], bigint[]);
+﻿drop function if exists brs.rpt_closer_funnel_standard_event_based(date, date, bigint[], bigint[], bigint);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard_event_based(p_custom_start_date date, p_custom_end_date date,
                                                                       p_user_position_ids bigint[],
-                                                                      p_org_ids bigint[])
+                                                                      p_org_ids bigint[], p_run_by_id bigint)
   RETURNS table
           (
             id                                 bigint,
@@ -140,6 +140,13 @@ BEGIN
     where f.archived is false
       and f.funnel_type_id = 1;
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Closer Funnel Standard Event Based', 'p_custom_start_date: ' || p_custom_start_date ||
+                                                  ' p_custom_end_date: ' || p_custom_end_date ||
+                                                  ' p_user_position_ids: ' || p_user_position_ids ||
+                                                  ' p_org_ids: ' || p_org_ids ||
+                                                  ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
 END
 $function$

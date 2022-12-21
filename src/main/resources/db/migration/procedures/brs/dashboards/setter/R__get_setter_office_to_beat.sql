@@ -1,14 +1,20 @@
 -- DROP FUNCTION brs.get_setter_office_to_beat(bigint, date, date);
 
 -- SELECT * FROM brs.get_setter_office_to_beat(723, '2020-06-01', '2020-06-07');
-drop function if exists brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date);
-  CREATE OR REPLACE FUNCTION brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date)
+drop function if exists brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date, p_run_by_id bigint);
+  CREATE OR REPLACE FUNCTION brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date, p_run_by_id bigint)
     RETURNS JSON AS
 $BODY$
 DECLARE
     v_rank_box_data json;
 
 BEGIN
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Setter Office to Beat', 'p_office_id: ' || p_office_id ||
+                                         ' p_start_date: ' || p_start_date ||
+                                         ' p_end_date: ' || p_end_date ||
+                                         ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
     SELECT row_to_json(sub_rows)
     INTO v_rank_box_data

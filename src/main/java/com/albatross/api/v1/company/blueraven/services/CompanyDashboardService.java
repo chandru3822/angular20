@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
+import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +35,13 @@ public class CompanyDashboardService {
   public List<CompanyDashboardTargets> getTargets() {
     populateDates();
 
-    return sqlCache.query("dash.getTargets", null, CompanyDashboardTargets.class);
+    return sqlCache.queryBySql(CompanyDashboardQuery.getTargets, null, CompanyDashboardTargets.class);
   }
 
   public String getWeekTargets(java.sql.Date targetDate) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("targetDate", targetDate);
-    return sqlCache.queryForObject("dash.getWeekTargets", params, String.class);
+    return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getWeekTargets, params, String.class);
   }
 
   /*
@@ -53,7 +54,7 @@ public class CompanyDashboardService {
     DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
 
     // Get all of the dates already in the DB
-    String existingDates = sqlCache.queryForObject("dash.getDates", Maps.newHashMap(), String.class);
+    String existingDates = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getDates, Maps.newHashMap(), String.class);
     LocalDate currentTrackDate = startOfTrackingDate;
     // Check to see if any Monday is missing from the starting Date (11/25/19) until next week's Monday
     while (currentTrackDate.isBefore(nextMonday) || currentTrackDate.isEqual(nextMonday)) {
@@ -72,7 +73,7 @@ public class CompanyDashboardService {
         params.put("finalCompletionsBrs", latestTargetsJson.isNull("final_completions_partner") ? null : latestTargetsJson.get("final_completions_brs"));
         params.put("finalCompletionsPartner", latestTargetsJson.isNull("final_completions_partner") ? null : latestTargetsJson.get("final_completions_partner"));
         params.put("targetDate", java.sql.Date.valueOf(currentTrackDate));
-        sqlCache.update("dash.insertTargets", new MapSqlParameterSource(params));
+        sqlCache.updateBySql(CompanyDashboardQuery.insertTargets, params);
       }
       currentTrackDate = currentTrackDate.plusWeeks(1);
     }
@@ -91,7 +92,7 @@ public class CompanyDashboardService {
       params.put("finalCompletionsBrs", targetValueRow.getFinalCompletionsBrs());
       params.put("finalCompletionsPartner", targetValueRow.getFinalCompletionsPartner());
 
-      sqlCache.update("dash.updateTargets", params);
+      sqlCache.updateBySql(CompanyDashboardQuery.updateTargets, params);
     }
   }
 
@@ -103,8 +104,9 @@ public class CompanyDashboardService {
     params.put("endDate", endDate);
     params.put("companyId", user.getCompanyId());
     params.put("targetTypeId", targetTypeId);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    String results = sqlCache.queryForObject("dash.getCompanyDashboard", params, String.class);
+    String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
     return results;
   }
 
@@ -117,8 +119,9 @@ public class CompanyDashboardService {
     params.put("companyId", user.getCompanyId());
     params.put("milestoneTypeId", milestoneTypeId);
     params.put("loadPartners", loadPartners);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    String results = sqlCache.queryForObject("dash.getCompanyDashboardDrilldown", params, String.class);
+    String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboardDrilldown, params, String.class);
     return results;
   }
 }

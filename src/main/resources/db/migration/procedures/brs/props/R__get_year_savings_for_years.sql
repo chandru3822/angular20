@@ -15,6 +15,17 @@ BEGIN
 
     end loop;
 
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Get Year Savings for Years', 'p_khw_rate: ' || p_khw_rate ||
+                                        ' p_utility_cost_escalator: ' || p_utility_cost_escalator ||
+                                        ' p_estimated_annual_consumption: ' || p_estimated_annual_consumption ||
+                                        ' p_first_year_annual_production: ' || p_first_year_annual_production ||
+                                        ' p_panel_degradation_factor: ' || p_panel_degradation_factor ||
+                                        ' p_monthly_solar_payment: ' || p_monthly_solar_payment ||
+                                        ' p_loan_term: ' || p_loan_term ||
+                                        ' p_cash_down_payment: ' || p_cash_down_payment ||
+                                        ' p_years: ' || p_years);
+
   return coalesce(v_amount  + (p_monthly_solar_payment * 12 * p_loan_term) -p_cash_down_payment, 0);
 END
 $$;

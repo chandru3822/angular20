@@ -151,11 +151,11 @@
     ]]></payroll.status>
 
     <payroll.overridesOpen><![CDATA[
-        SELECT * FROM brs.get_all_users_overrides_earned_in_open_payroll(:payrollId::bigint)
+        SELECT * FROM brs.get_all_users_overrides_earned_in_open_payroll(:payrollId::bigint, :currentUserId)
     ]]></payroll.overridesOpen>
 
     <payroll.overridesSnapshot><![CDATA[
-        SELECT * FROM brs.get_all_users_overrides_earned_in_payroll_snapshot(:payrollId::bigint)
+        SELECT * FROM brs.get_all_users_overrides_earned_in_payroll_snapshot(:payrollId::bigint, :currentUserId)
     ]]></payroll.overridesSnapshot>
 
     <payroll.addActionHistory><![CDATA[
@@ -180,15 +180,15 @@
     ]]></payroll.checkSummaryPreparationStatus>
 
     <payroll.getCurrentSummary><![CDATA[
-        SELECT brs.get_commission_summary(:positionId::bigint)
+        SELECT brs.get_commission_summary(:positionId::bigint, :currentUserId)
     ]]></payroll.getCurrentSummary>
 
     <payroll.getSummary><![CDATA[
         SELECT CASE WHEN p.payroll_status_id = 3 and p.position_id = 1
-              THEN brs.get_commission_summary_from_snapshot(p.id)
+              THEN brs.get_commission_summary_from_snapshot(p.id, :currentUserId)
             WHEN p.payroll_status_id = 3 and p.position_id = 4
-              THEN brs.get_commission_summary_from_snapshot_for_setters(p.id)
-            ELSE brs.get_commission_summary(p.position_id) END
+              THEN brs.get_commission_summary_from_snapshot_for_setters(p.id, :currentUserId)
+            ELSE brs.get_commission_summary(p.position_id, :currentUserId) END
         FROM brs.payroll p
         WHERE id = :payrollId
     ]]></payroll.getSummary>

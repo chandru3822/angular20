@@ -1,5 +1,5 @@
-drop function if exists brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint);
-CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint)
+drop function if exists brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint, p_run_by_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint, p_run_by_id bigint)
     RETURNS table
             (
                 user_id              bigint,
@@ -237,6 +237,12 @@ BEGIN
                                                                                                                             foo2.score else
                                                                                                                                 foo2.score *
                                                                                                                                 (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric;
+insert into flow.company_function_log(function_name, parameters, run_by_id)
+values ('Get Round Robin Lead Allocation Rank', 'p_postal_code_zone_id: ' || p_postal_code_zone_id ||
+                                                ' p_time_interval: '|| p_time_interval ||
+                                                ' p_run_by_id: '|| p_run_by_id ,
+        p_run_by_id);
+
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

@@ -1,5 +1,5 @@
-drop function if exists brs.cache_available_time_slots();
-  CREATE OR REPLACE FUNCTION brs.cache_available_time_slots()
+drop function if exists brs.cache_available_time_slots(p_run_by_id      bigint);
+  CREATE OR REPLACE FUNCTION brs.cache_available_time_slots(p_run_by_id      bigint)
     RETURNS void
 AS
 $BODY$
@@ -42,6 +42,9 @@ BEGIN
                      (d + interval '23 hours 59 minutes 59 seconds')::timestamp,
                      d::date,ap.timezone) as t on true) as foo
     group by foo.user);
+
+    insert into flow.company_function_log(function_name, run_by_id)
+    values ('Cache Available Time Slots', p_run_by_id);
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

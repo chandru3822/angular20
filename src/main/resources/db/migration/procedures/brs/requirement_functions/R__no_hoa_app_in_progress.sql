@@ -36,6 +36,9 @@ BEGIN
         and ps2.parent_process_step_id = 3116
         and ps2.archived is not true);
 
+    insert into flow.company_function_log(function_name, db_function_id, parameters)
+    values ('No HOA App In-Progress', 4, 'p_project_id: ' || p_project_id);
+
     return v_hoa_approved_date > v_hoa_request_for_submitted_date;
 END
 $BODY$

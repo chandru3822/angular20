@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.tournament.*;
+import com.albatross.api.v1.company.blueraven.services.tournament.queries.TournamentQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -36,14 +37,14 @@ public class TournamentService {
   private final ObjectMapper om;
 
   public List<Tournament> getTournaments() {
-    List<Tournament> results = sqlCache.query("tournament.getTournaments", Collections.emptyMap(), Tournament.class);
+    List<Tournament> results = sqlCache.queryBySql(TournamentQuery.getTournaments, Collections.emptyMap(), Tournament.class);
     return results;
   }
 
   public String getFormulaColumns(Long tournamentId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
-    String result = sqlCache.queryForObject("tournament.getFormulaColumns", params, String.class);
+    String result = sqlCache.queryForObjectBySql(TournamentQuery.getFormulaColumns, params, String.class);
     return result;
   }
 
@@ -53,26 +54,26 @@ public class TournamentService {
     params.put("userId", userId);
     params.put("startDate", startDate);
     params.put("endDate", endDate);
-    Optional<String> results = sqlCache.queryForObjectOptional("tournament.getUserScores", params, String.class);
+    Optional<String> results = sqlCache.queryForObjectOptionalBySql(TournamentQuery.getUserScores, params, String.class);
     return results.orElse(null);
   }
 
   public List<TournamentOwnerType> getTournamentOwnerTypes() {
-    List<TournamentOwnerType> results = sqlCache.query("tournament.getOwnerTypes", Collections.emptyMap(), TournamentOwnerType.class);
+    List<TournamentOwnerType> results = sqlCache.queryBySql(TournamentQuery.getOwnerTypes, Collections.emptyMap(), TournamentOwnerType.class);
     return results;
   }
 
   public List<TournamentFormula> getTournamentFormulas(Long ownerTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ownerTypeId", ownerTypeId);
-    List<TournamentFormula> results = sqlCache.query("tournament.getFormulas", params, TournamentFormula.class);
+    List<TournamentFormula> results = sqlCache.queryBySql(TournamentQuery.getFormulas, params, TournamentFormula.class);
     return results;
   }
 
   public List<TournamentFormulaField> getTournamentFormulaFields(Long formulaId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("formulaId", formulaId);
-    List<TournamentFormulaField> results = sqlCache.query("tournament.getFormulaFields", params, TournamentFormulaField.class);
+    List<TournamentFormulaField> results = sqlCache.queryBySql(TournamentQuery.getFormulaFields, params, TournamentFormulaField.class);
     return results;
   }
 
@@ -83,7 +84,7 @@ public class TournamentService {
     params.put("userId", user.trueUserId());
     params.put("id", id);
 
-    sqlCache.update("tournament.delete", params);
+    sqlCache.updateBySql(TournamentQuery.delete, params);
   }
 
   public Optional<Tournament> updateTournament(Tournament tournament) {
@@ -99,7 +100,7 @@ public class TournamentService {
     params.put("active", null != tournament.getActive() ? tournament.getActive() : false);
 
     //update the tournament itself
-    Long id = sqlCache.updateReturningId("tournament.update", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(TournamentQuery.update, params, "id").longValue();
 
     saveTournamentFormulaFields(tournament.getTournamentFormulaFields(), id, user.trueUserId());
 
@@ -115,8 +116,7 @@ public class TournamentService {
       tffParams.put("tournamentId", tournamentId);
       tffParams.put("userId", userId);
 
-      String sql = "tournament.saveFieldValue";
-      sqlCache.update(sql, tffParams);
+      sqlCache.updateBySql(TournamentQuery.saveFieldValue, tffParams);
     }
   }
 
@@ -132,7 +132,7 @@ public class TournamentService {
     params.put("endDate", tournament.getEndDate());
 
     // this also adds a qualifying, loser and winner pool
-    Long id = sqlCache.queryForObject("tournament.insert", params, Long.class);
+    Long id = sqlCache.queryForObjectBySql(TournamentQuery.insert, params, Long.class);
 
     saveTournamentFormulaFields(tournament.getTournamentFormulaFields(), id, user.trueUserId());
 
@@ -140,7 +140,7 @@ public class TournamentService {
   }
 
   public List<Tournament> getActiveTournaments() {
-    List<Tournament> results = sqlCache.query("tournament.getActiveTournaments", Collections.emptyMap(), Tournament.class);
+    List<Tournament> results = sqlCache.queryBySql(TournamentQuery.getActiveTournaments, Collections.emptyMap(), Tournament.class);
     return results;
   }
 
@@ -148,7 +148,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<Tournament> result = sqlCache.get("tournament.get", params, new TournamentMapper<>(Tournament.class, om));
+    Optional<Tournament> result = sqlCache.getBySql(TournamentQuery.get, params, new TournamentMapper<>(Tournament.class, om));
     if(result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
       result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(bucket, result.get().getBackgroundAttachmentId()));
     }
@@ -158,8 +158,9 @@ public class TournamentService {
   public String getBrackets(Long tournamentId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    String results = sqlCache.queryForObject("tournament.getBrackets", params, String.class);
+    String results = sqlCache.queryForObjectBySql(TournamentQuery.getBrackets, params, String.class);
     return results;
   }
 
@@ -167,7 +168,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<Bracket> result = sqlCache.get("tournament.getBracket", params, new BracketMapper<>(Bracket.class, om));
+    Optional<Bracket> result = sqlCache.getBySql(TournamentQuery.getBracket, params, new BracketMapper<>(Bracket.class, om));
     return result;
   }
 
@@ -179,7 +180,7 @@ public class TournamentService {
     params.put("tournamentId", bracket.getTournamentId());
     params.put("createdById", user.trueUserId());
 
-    Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(TournamentQuery.addBracket, params, "id").longValue();
     return getBracket(id);
   }
 
@@ -192,7 +193,7 @@ public class TournamentService {
     params.put("tournamentId", bracket.getTournamentId());
     params.put("createdById", user.trueUserId());
 
-    Long id = sqlCache.updateReturningId("tournament.addBracket", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(TournamentQuery.addBracket, params, "id").longValue();
 
     for(Round round : bracket.getRounds()) {
       round.setTournamentBracketId(id);
@@ -209,7 +210,7 @@ public class TournamentService {
     params.put("userId", user.trueUserId());
     params.put("id", id);
 
-    sqlCache.update("tournament.deleteBracket", params);
+    sqlCache.updateBySql(TournamentQuery.deleteBracket, params);
   }
 
   public Optional<Bracket> saveRound(Round round, Boolean replicate) {
@@ -224,9 +225,9 @@ public class TournamentService {
     //if replicating then always insert
     if(null != round.getId() && !replicate) {
       params.put("id", round.getId());
-      sqlCache.update("tournament.updateRound", params);
+      sqlCache.updateBySql(TournamentQuery.updateRound, params);
     } else {
-      sqlCache.update("tournament.addRound", params);
+      sqlCache.updateBySql(TournamentQuery.addRound, params);
     }
 
     //return the bracket because the sort order of the rounds may have changed
@@ -240,7 +241,7 @@ public class TournamentService {
     params.put("userId", user.trueUserId());
     params.put("id", round.getId());
 
-    sqlCache.update("tournament.deleteRound", params);
+    sqlCache.updateBySql(TournamentQuery.deleteRound, params);
     return getBracket(round.getTournamentBracketId());
   }
 
@@ -251,7 +252,7 @@ public class TournamentService {
     params.put("userId", user.trueUserId());
     params.put("bracketId", bracketId);
 
-    sqlCache.query("tournament.generateMatches", params, String.class);
+    sqlCache.queryBySql(TournamentQuery.generateMatches, params, String.class);
   }
 
   public void advanceWinners(Long tournamentId, Long roundId, List<Match> matches) {
@@ -267,7 +268,7 @@ public class TournamentService {
       params.put("user1Score", m.getUser1Score());
       params.put("user2Score", m.getUser2Score());
       params.put("tournamentId", tournamentId);
-      sqlCache.update("tournament.advanceWinners", params);
+      sqlCache.updateBySql(TournamentQuery.advanceWinners, params);
     }
   }
 
@@ -284,12 +285,12 @@ public class TournamentService {
       params.put("user1Score", m.getUser1Score());
       params.put("user2Score", m.getUser2Score());
       params.put("winnerUserId", m.getWinnerUserId());
-      sqlCache.update("tournament.advanceMatch", params);
+      sqlCache.update(TournamentQuery.advanceMatch, params);
 
       //put the losers into the last chance pool
       params.put("tournamentId", tournamentId);
       params.put("loserUserId", m.getWinnerUserId().equals(m.getUser1Id()) ? m.getUser2Id() : m.getUser1Id());
-      sqlCache.update("tournament.insertLoserToLastChance", params);
+      sqlCache.update(TournamentQuery.insertLoserToLastChance, params);
     }
   }
 
@@ -301,8 +302,12 @@ public class TournamentService {
     params.put("userId", userId);
     params.put("matchId", matchId);
 
-    String sqlKey = overrideUser1 ? "tournament.overrideMatchUser1" : "tournament.overrideMatchUser2";
-    sqlCache.update(sqlKey, params);
+    if (overrideUser1) {
+      sqlCache.updateBySql(TournamentQuery.overrideMatchUser1, params);
+    }
+    else {
+      sqlCache.updateBySql(TournamentQuery.overrideMatchUser2, params);
+    }
   }
 
 

@@ -25,6 +25,11 @@ BEGIN
                                                                         ((foo.pitched_count between cpa2.min and cpa2.max) or (foo.pitched_count > cpa2.max))
                 group by cancelled_date),0)
     into v_total;
+
+    insert into flow.company_function_log(function_name, parameters)
+    values ('Get Commissions Earned for Setters', 'p_project_ids: ' || p_project_ids ||
+                                                  ' p_period_end: ' || p_period_end);
+
     return v_total;
 END;
 $BODY$

@@ -1,5 +1,5 @@
-drop function if exists brs.get_all_users_overrides_earned_in_open_payroll(p_payroll_id bigint);
-CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_open_payroll(p_payroll_id bigint)
+drop function if exists brs.get_all_users_overrides_earned_in_open_payroll(p_payroll_id bigint, p_run_by_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_open_payroll(p_payroll_id bigint, p_run_by_id bigint)
     RETURNS TABLE
             (
                 project_id            bigint,
@@ -216,6 +216,11 @@ BEGIN
                            and op.position_id = 4) as foo;
 
         end case;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get All Users Overrides Earned in Open Payroll', 'p_payroll_id: ' || p_payroll_id ||
+                                                              ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
 END;
 $BODY$

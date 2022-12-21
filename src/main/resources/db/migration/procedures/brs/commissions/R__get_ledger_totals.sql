@@ -28,6 +28,12 @@ BEGIN
              )
     into v_total;
 
+    insert into flow.company_function_log(function_name, parameters)
+    values ('Get Ledger Totals', 'p_payroll_id: ' || p_payroll_id ||
+                                 ' p_project_ids: ' || p_project_ids ||
+                                 ' p_ledger_type_id: ' || p_ledger_type_id ||
+                                 ' p_position_id:' || p_position_id);
+
   return v_total;
 END;
 $BODY$

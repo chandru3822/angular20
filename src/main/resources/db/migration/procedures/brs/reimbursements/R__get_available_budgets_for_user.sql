@@ -96,5 +96,10 @@ BEGIN
            ORDER BY bt.name
          ) as sub_rows;
 
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Get Available Budgets for User', 'p_platform_user_id: ' || p_platform_user_id ||
+                                            ' p_expense_date: ' || p_expense_date,
+          p_platform_user_id);
+
 END
 $function$

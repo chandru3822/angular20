@@ -19,6 +19,12 @@ BEGIN
       v_amount = v_amount + (p_khw_rate * power((1+ p_utility_cost_escalator),i-1) * p_estimated_annual_consumption);
   end loop;
 
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Get Year Cost By Years', 'p_khw_rate: ' || p_khw_rate ||
+                                    ' p_utility_cost_escalator: ' || p_utility_cost_escalator ||
+                                    ' p_estimated_annual_consumption: ' || p_estimated_annual_consumption ||
+                                    ' p_years: ' || p_years);
+
   return coalesce(v_amount, 0);
 END
 $BODY$

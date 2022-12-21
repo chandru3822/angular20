@@ -1,11 +1,14 @@
 ﻿drop function if exists brs.rpt_closer_funnel_appts_created_pipeline(p_custom_start_date date,
                                                                      p_custom_end_date date,
                                                                      p_brs_provided_source_ids bigint[],
-                                                                     p_self_gen_source_ids bigint[]);
+                                                                     p_self_gen_source_ids bigint[],
+                                                                     p_run_by_id bigint
+    );
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline(p_custom_start_date date,
                                                                         p_custom_end_date date,
                                                                         p_brs_provided_source_ids bigint[],
-                                                                        p_self_gen_source_ids bigint[])
+                                                                        p_self_gen_source_ids bigint[],
+                                                                        p_run_by_id bigint)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
@@ -85,6 +88,14 @@ BEGIN
                            ) as row_counts
                       order by display_order
                     ) as funnel_rows;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Closer Funnel Appointments Created Pipeline Report', 'p_custom_start_date: ' || p_custom_start_date ||
+                                                                  ' p_custom_end_date: ' || p_custom_end_date ||
+                                                                  ' p_brs_provided_source_ids: ' || p_brs_provided_source_ids ||
+                                                                  ' p_self_gen_source_ids: ' || p_self_gen_source_ids ||
+                                                                  ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
 END
 $function$
