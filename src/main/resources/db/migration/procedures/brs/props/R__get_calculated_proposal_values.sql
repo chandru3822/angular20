@@ -218,7 +218,7 @@ create type brs.excluded_proposal_value as
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
   p_proposal_id bigint,
   p_insert_prop_log_history boolean default false,
-  p_run_by_id bigint
+  p_run_by_id bigint default 99999999
 )
 
   RETURNS TABLE

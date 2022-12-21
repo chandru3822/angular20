@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id bigint,
                                                             p_end_time timestamp,
                                                             p_available_date date,
                                                             p_remote boolean default false,
-                                                            p_run_by_id bigint)
+                                                            p_run_by_id bigint default 99999999)
   RETURNS TABLE
           (
             success              boolean,
