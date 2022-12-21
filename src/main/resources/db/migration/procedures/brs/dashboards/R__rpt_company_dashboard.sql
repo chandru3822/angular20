@@ -5,7 +5,7 @@
 CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard(p_custom_start_date date, p_custom_end_date date,
                                                      p_company_id bigint,
                                                      p_target_type_id bigint default -1::bigint,
-                                                     p_run_by_id bigint) -- if p_target_type_id = 1 then it's a single day
+                                                     p_run_by_id bigint default 99999999) -- if p_target_type_id = 1 then it's a single day
 -- if p_target_type_id > 1 then use dates for target
   RETURNS SETOF json
   LANGUAGE plpgsql
