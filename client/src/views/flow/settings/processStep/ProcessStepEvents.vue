@@ -67,7 +67,7 @@
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
-                  <td class="text-left">{{item.eventName}} <v-icon color="primary" @click="goToPath(`/settings/event/${item.eventId}/components`)">mdi-link</v-icon></td>
+                  <td class="text-left">{{item.eventName}} <a :href="`/settings/event/${item.eventId}/components`" target="_blank" :style="{'text-decoration': 'none'}"><v-icon color="primary">mdi-link</v-icon></a></td>
                   <td class="text-left">{{item.initialEventStatusType}}</td>
                   <td>
                     <div style="display: flex; justify-content: flex-end">
