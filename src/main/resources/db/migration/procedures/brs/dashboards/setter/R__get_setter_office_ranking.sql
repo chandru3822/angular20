@@ -2,7 +2,7 @@
 
 -- SELECT * FROM brs.get_setter_office_ranking(13, 30);
 drop function if exists brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint, p_run_by_id bigint);
-  CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint DEFAULT 30, p_run_by_id bigint)
+  CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint DEFAULT 30, p_run_by_id bigint default 99999999)
     RETURNS SETOF JSON AS
 $BODY$
 BEGIN
