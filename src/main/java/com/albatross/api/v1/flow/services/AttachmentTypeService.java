@@ -221,7 +221,7 @@ public class AttachmentTypeService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("userId", currentUser.trueUserId());
     String sql = AttachmentTypeQuery.deleteType(objectType.tablePrefix);
-    sqlCache.update(sql, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   //this endpoint is specifically for mobile. they want all attachment types back and they will parse them as needed

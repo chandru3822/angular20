@@ -4141,9 +4141,10 @@ public class SmartlistService {
     }
   }
 
-  public List<ListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
-    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), ListOfValue.class);
-  }
+//  @humes - i commented this out because it had no usages and was still using sqlCache.query and it was bugging me
+//  public List<ListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
+//    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), ListOfValue.class);
+//  }
 
   /**
    * Creates a select sql snippet based on an object type ID

@@ -242,7 +242,7 @@ public class PositionService {
   private List<WhiteListedPosition> getWhiteListedPositionsByPosition(Long positionId) {
     User user = securityService.getCurrentUser();
 
-    return sqlCache.query(
+    return sqlCache.queryBySql(
       PositionQuery.getWhiteListedPositionsByPosition,
       ImmutableMap.of("companyId", user.getCompanyId(), "positionId", positionId),
       WhiteListedPosition.class);

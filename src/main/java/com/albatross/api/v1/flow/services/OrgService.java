@@ -312,7 +312,7 @@ public class OrgService {
     if(!doLink) {
       sql = OrgQuery.unlinkAttachment;
     }
-    sqlCache.update(sql, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
