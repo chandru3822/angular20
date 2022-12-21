@@ -9,6 +9,7 @@ import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
+import com.albatross.api.v1.flow.queries.customFieldValues.ProcessStepCfvQuery;
 import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * This class is to hold functions performed by actions which perform gnhttp calls.
@@ -97,7 +101,7 @@ public class BrsProcessStepActionFunctionService {
               params.put("intArrayValue", null);
               params.put("richTextValue", null);
 
-              sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+              sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
             } else {
               //we think that sometimes this code fails to find a cfgaId. adding this log/code to help isolate and find out when/why
               log.error("ACTION FUNCTION: Could not find cfgaId for project {}", projectId);
@@ -134,7 +138,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("intArrayValue", null);
             params.put("richTextValue", null);
 
-            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } catch (GoodleapService.NotFoundException e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
@@ -160,7 +164,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("intArrayValue", null);
             params.put("richTextValue", null);
 
-            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } catch (GoodleapService.NotFoundException e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
@@ -194,7 +198,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("intArrayValue", null);
             params.put("richTextValue", null);
 
-            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } catch (GoodleapService.NotFoundException e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
@@ -221,7 +225,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("intArrayValue", null);
             params.put("richTextValue", null);
 
-            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
@@ -258,7 +262,7 @@ public class BrsProcessStepActionFunctionService {
             params.put("intArrayValue", null);
             params.put("richTextValue", null);
 
-            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } catch (Exception e) {
             throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
@@ -366,19 +370,19 @@ public class BrsProcessStepActionFunctionService {
                     // Divide by 1000 to get kilowatt system size
                     float systemSizeInKw = Float.parseFloat(design.get("system_size_stc").toString()) / 1000;
                     params.put("numericValue", systemSizeInKw);
-                    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                    sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
                 } else if (paramName.contains("Panel Quantity")) {
                     params.put("intValue", panelQuantity);
-                    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                    sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
                 } else if (paramName.contains("Production Estimate")) {
                     params.put("intValue", productionEstimate);
-                    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                    sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
                 } else if (paramName.contains("Panel Brand")) {
                     if (manufacturer != null) {
                         try {
                             Long lovId = sqlCache.queryForObjectBySql(CustomFieldValueQuery.getListOfValueIdByCfgaIdAndName, Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
                             params.put("intValue", lovId);
-                            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
                         } catch (EmptyResultDataAccessException e) {
                             throw new RuntimeException("Unable to find list item for given panel brand");
                         }
@@ -400,21 +404,21 @@ public class BrsProcessStepActionFunctionService {
                                                          .orElse(null);
                         if (inverterLovId != null) {
                             params.put("intValue", inverterLovId);
-                            sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
                         } else {
                             throw new RuntimeException("Unable to find list item for given inverter brand");
                         }
                     }
                 } else if (paramName.contains("Panel Watts")) {
                     params.put("intValue", panelWatts);
-                    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                  sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
                 } else if (paramName.contains("Design JSON")) {
                     //store the entire json object for future proposal log history calculations
                     params.put("jsonValue", design.toString());
                     sqlCache.updateBySql(CustomFieldValueQuery.upsertAuroraDesign, params);
                 } else if (paramName.contains("Panel Name")) {
                     params.put("textValue", panelName);
-                    sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+                  sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
                 }
             }
         } catch (Exception e) {

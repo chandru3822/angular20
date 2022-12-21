@@ -235,9 +235,8 @@ public class CustomFieldValueService {
     if(optionalObj.isPresent()) {
       AttachmentObject obj = optionalObj.get();
       params.put("idToUse", obj.idToUse);
-      //todo: fix this
-      String sqlPrefix = "customFieldValues." + obj.objectTypeText + ".getAncillaryCustomFieldGroupsAndValuesForAttachments";
-      List<CustomFieldGroup> fieldGroups = sqlCache.queryBySql(sqlPrefix, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+      ObjectType objectType = ObjectType.get(obj.objectTypeText);
+      List<CustomFieldGroup> fieldGroups = sqlCache.queryBySql(objectType.getAncillaryCustomFieldGroupsAndValuesForAttachmentsQuery, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
       for(CustomFieldGroup group : fieldGroups) {
         for (CustomFieldValue value : group.getCustomFieldValues()) {
           handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId(), null);

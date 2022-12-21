@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.VersusLeadEvent;
+import com.albatross.api.v1.flow.queries.customFieldValues.ContactCfvQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -59,7 +60,7 @@ public class VerseWebhookService {
         params.put("sourceId", Long.parseLong(versusLeadEvent.getExternalLeadId()));
         // Sales Dev Lead's user ID
         params.put("userId", 2371412L);
-        sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+        sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
         msg =
             "VERSE: Contact Id "
                 + versusLeadEvent.getExternalLeadId()
