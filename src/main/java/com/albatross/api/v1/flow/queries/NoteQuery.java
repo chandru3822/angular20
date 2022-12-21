@@ -1,10 +1,15 @@
-<sql>
-  <note.getByPrimaryAndType><![CDATA[
-    select * from flow.get_notes(:primaryId::bigint, :typeId::bigint, :companyId::bigint)
-  ]]></note.getByPrimaryAndType>
+package com.albatross.api.v1.flow.queries;
 
-  <note.getProjectProcessStepWorkQueueNotes><![CDATA[
-    select n.id,
+public class NoteQuery {
+
+  //language=PostgreSQL
+  public final static String getByPrimaryAndType = """
+select * from flow.get_notes(:primaryId::bigint, :typeId::bigint, :companyId::bigint)
+    """;
+
+  //language=PostgreSQL
+  public final static String getProjectProcessStepWorkQueueNotes = """
+select n.id,
        n.note,
        n.archived,
        n.parent_id,
@@ -45,15 +50,16 @@
       and pn.project_process_step_id = :projectProcessStepId
       and pn.process_step_work_queue_type_id = :processStepWorkQueueTypeId
     order by n.date_created desc;
+    """;
 
-  ]]></note.getProjectProcessStepWorkQueueNotes>
-
-  <note.insertNote><![CDATA[
+  //language=PostgreSQL
+  public final static String insertNote = """
     insert into flow.note(parent_id, note, follow_up_date, created_by_id, date_created, modified_by_id, date_modified)
     values (:parentId, :note, :followUpDate::date, :userId, now(), :userId, now())
-  ]]></note.insertNote>
+    """;
 
-  <note.getNote><![CDATA[
+  //language=PostgreSQL
+  public final static String getNote = """
     select n.id,
            n.note,
            n.parent_id,
@@ -67,42 +73,48 @@
     from flow.note n
     inner join flow.user creator on creator.id = n.created_by_id
     where n.id = :id
-  ]]></note.getNote>
+    """;
 
-  <note.updateNote><![CDATA[
+  //language=PostgreSQL
+  public final static String updateNote = """
     update flow.note
         set note = :note,
             modified_by_id = :userId,
             date_modified = now(),
             follow_up_date = :followUpDate::date
     where id = :id
-  ]]></note.updateNote>
+    """;
 
-  <note.insertNoteRelation><![CDATA[
-    select * from flow.insert_note_relation(:primaryId::bigint, :noteId::bigint, :typeId::bigint)
-  ]]></note.insertNoteRelation>
+  //language=PostgreSQL
+  public final static String insertNoteRelation = """
+select * from flow.insert_note_relation(:primaryId::bigint, :noteId::bigint, :typeId::bigint)
+    """;
 
-  <note.insertProjectProcessStepWorkQueueNoteRelation><![CDATA[
+  //language=PostgreSQL
+  public final static String insertProjectProcessStepWorkQueueNoteRelation = """
     insert into flow.project_process_step_process_step_work_queue_type_note(project_process_step_id, process_step_work_queue_type_id, note_id)
       values (:projectProcessStepId, :processStepWorkQueueTypeId, :noteId)
-  ]]></note.insertProjectProcessStepWorkQueueNoteRelation>
+    """;
 
-  <note.insertProjectProcessStepEventWorkQueueNoteRelation><![CDATA[
+  //language=PostgreSQL
+  public final static String insertProjectProcessStepEventWorkQueueNoteRelation = """
     insert into flow.pps_event_process_step_event_work_queue_type_note(project_process_step_event_id, process_step_event_work_queue_type_id, note_id)
       values (:projectProcessStepEventId, :processStepEventWorkQueueTypeId, :noteId)
-  ]]></note.insertProjectProcessStepEventWorkQueueNoteRelation>
+    """;
 
-  <note.insertProjectProdStatsNoteRelation><![CDATA[
-    insert into flow.project_prod_stats_note(project_id, project_production_stats_type_id, note_id)
+  //language=PostgreSQL
+  public final static String insertProjectProdStatsNoteRelation = """
+insert into flow.project_prod_stats_note(project_id, project_production_stats_type_id, note_id)
       values (:projectId, (select id from flow.project_production_stats_type where production_stats_type = :productionType), :noteId)
-  ]]></note.insertProjectProdStatsNoteRelation>
+    """;
 
-  <note.deleteNote><![CDATA[
+  //language=PostgreSQL
+  public final static String deleteNote = """
     update flow.note
         set archived = true,
             modified_by_id = :modifiedById,
             date_modified = now()
     where id = :noteId
-  ]]></note.deleteNote>
+    """;
 
-</sql>
+}

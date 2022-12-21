@@ -41,18 +41,18 @@ public class CustomFieldValueController {
   // gets for all types
   @GetMapping(value = "/contact/{id}")
   public List<CustomFieldGroup> getCustomFieldValues(@PathVariable Long id) {
-    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT.toString(), id);
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT, id);
   }
 
   @GetMapping(value = "/org/{id}")
   public List<CustomFieldGroup> getOrgCustomValues(@PathVariable Long id) {
     return customFieldValueService.getCustomFieldGroupsAndValues(
-        ObjectType.ORGANIZATION.toString(), id);
+        ObjectType.ORGANIZATION, id);
   }
 
   @GetMapping(value = "/user/{id}")
   public List<CustomFieldGroup> getUserCustomValues(@PathVariable Long id) {
-    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.USER.toString(), id);
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.USER, id);
   }
 
   @GetMapping(value = "/getUserProfileFields")
@@ -63,7 +63,7 @@ public class CustomFieldValueController {
   @GetMapping(value = "/project/{projectId}")
   public List<CustomFieldGroup> getFieldsByProjectId(@PathVariable Long projectId) {
     return customFieldValueService.getCustomFieldGroupsAndValues(
-        ObjectType.PROJECT.toString(), projectId);
+        ObjectType.PROJECT, projectId);
   }
 
   @GetMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}")
@@ -71,20 +71,20 @@ public class CustomFieldValueController {
       @PathVariable Long projectId, @PathVariable Long projectProcessStepId) {
     return new ResponseEntity<>(
         customFieldValueService.getCustomFieldGroupsAndValues(
-            ObjectType.PROCESS_STEP.textValue(), projectProcessStepId),
+            ObjectType.PROCESS_STEP, projectProcessStepId),
         HttpStatus.OK);
   }
 
   @GetMapping(value = "/event/{id}")
   public List<CustomFieldGroup> getEventCustomFieldValues(@PathVariable Long id) {
-    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), id);
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT, id);
   }
 
   @GetMapping(value = "/attachmentType/{attachmentTypeId}")
   public List<CustomFieldGroup> getFieldsByAttachmentTypeId(@PathVariable Long attachmentTypeId,
                                                             @RequestParam(required = false) Long attachmentId) {
     return customFieldValueService.getCustomFieldGroupsAndValues(
-      ObjectType.ATTACHMENT_TYPE.textValue(), attachmentTypeId, attachmentId, true);
+      ObjectType.ATTACHMENT_TYPE, attachmentTypeId, attachmentId, true);
   }
 
   @Data
@@ -102,7 +102,7 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> updateContactCustomFieldValues(
       @RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
     List<CustomFieldGroup> groups =
-        customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
+        customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT);
 
     List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {
@@ -131,20 +131,20 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> updateOrgCustomFieldValues(
       @RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
     return customFieldValueService.updateCustomFieldValues(
-        values, id, ObjectType.ORGANIZATION.toString());
+        values, id, ObjectType.ORGANIZATION);
   }
 
   @PostMapping(value = "/attachmentType/{attachmentTypeId}/attachment/{attachmentId}")
   public List<CustomFieldGroup> updateAttachmentCustomFieldValues(@RequestBody List<CustomFieldValue> values,
                                                                   @PathVariable Long attachmentTypeId,
                                                                   @PathVariable Long attachmentId) {
-    return customFieldValueService.updateCustomFieldValues(values, attachmentTypeId, ObjectType.ATTACHMENT_TYPE.textValue(), attachmentId, true);
+    return customFieldValueService.updateCustomFieldValues(values, attachmentTypeId, ObjectType.ATTACHMENT_TYPE, attachmentId, true);
   }
 
   @PostMapping(value = "/user/{id}")
   public List<CustomFieldGroup> updateUserCustomFieldValues(
       @RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
-    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.USER.toString());
+    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.USER);
   }
 
   @PostMapping(value = "/project/{projectId}")
@@ -152,7 +152,7 @@ public class CustomFieldValueController {
       @RequestBody List<CustomFieldValue> values, @PathVariable Long projectId) {
     List<CustomFieldGroup> groups =
         customFieldValueService.updateCustomFieldValues(
-            values, projectId, ObjectType.PROJECT.toString());
+            values, projectId, ObjectType.PROJECT);
 
     List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {
@@ -184,7 +184,7 @@ public class CustomFieldValueController {
       @PathVariable Long projectProcessStepId) {
     List<CustomFieldGroup> groups =
         customFieldValueService.updateCustomFieldValues(
-            values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
+            values, projectProcessStepId, ObjectType.PROCESS_STEP);
 
     List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {
@@ -260,6 +260,6 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> updateEventCustomFieldValues(
       @RequestBody List<CustomFieldValue> values, @PathVariable Long projectProcessStepEventId) {
     return customFieldValueService.updateCustomFieldValues(
-        values, projectProcessStepEventId, ObjectType.EVENT.textValue());
+        values, projectProcessStepEventId, ObjectType.EVENT);
   }
 }

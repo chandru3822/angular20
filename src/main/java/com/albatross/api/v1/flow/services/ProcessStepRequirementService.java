@@ -7,6 +7,8 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirement;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirementType;
+import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
+import com.albatross.api.v1.flow.queries.ProcessStepRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +36,8 @@ public class ProcessStepRequirementService {
     params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
     List<ProcessStepRequirement> results =
-        sqlCache.query(
-            "processStepRequirement.getRequirementsForStep",
+        sqlCache.queryBySql(
+          ProcessStepRequirementQuery.getRequirementsForStep,
             params,
             new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om));
 
@@ -63,27 +65,27 @@ public class ProcessStepRequirementService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("requirementId", requirementId);
     List<ProcessStepAction> actionsUsingRequirement =
-        sqlCache.query(
-            "processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
+        sqlCache.queryBySql(
+          ProcessStepActionQuery.actionsUsingRequirement, params, ProcessStepAction.class);
 
     if (!actionsUsingRequirement.isEmpty()) {
       return actionsUsingRequirement;
     } else {
-      sqlCache.update("processStepRequirement.deleteRequirement", params);
+      sqlCache.updateBySql(ProcessStepRequirementQuery.deleteRequirement, params);
       return null;
     }
   }
 
   public List<ProcessStepRequirementType> getRequirementTypes() {
-    return sqlCache.query(
-        "processStepRequirement.getRequirementTypes",
+    return sqlCache.queryBySql(
+      ProcessStepRequirementQuery.getRequirementTypes,
         Collections.emptyMap(),
         ProcessStepRequirementType.class);
   }
 
   public List<ProcessStepRequirementType> getEventRequirementTypes() {
-    return sqlCache.query(
-      "processStepRequirement.getEventRequirementTypes",
+    return sqlCache.queryBySql(
+      ProcessStepRequirementQuery.getEventRequirementTypes,
       Collections.emptyMap(),
       ProcessStepRequirementType.class);
   }
@@ -94,8 +96,8 @@ public class ProcessStepRequirementService {
     params.put("id", id);
 
     return sqlCache
-        .get(
-            "processStepRequirement.getRequirement",
+        .getBySql(
+          ProcessStepRequirementQuery.getRequirement,
             params,
             new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om))
         .orElse(null);
@@ -126,7 +128,7 @@ public class ProcessStepRequirementService {
 
     Long id =
         sqlCache
-            .updateReturningId("processStepRequirement.updateRequirement", params, "id")
+            .updateBySqlReturningId(ProcessStepRequirementQuery.updateRequirement, params, "id")
             .longValue();
     return getRequirementById(id);
   }
@@ -160,7 +162,7 @@ public class ProcessStepRequirementService {
 
     Long id =
         sqlCache
-            .updateReturningId("processStepRequirement.insertRequirement", params, "id")
+            .updateBySqlReturningId(ProcessStepRequirementQuery.insertRequirement, params, "id")
             .longValue();
 
     handleDynamicValueParams(requirement.getRequirementParamDynamicValues(), id);
@@ -182,12 +184,12 @@ public class ProcessStepRequirementService {
         if (null != p.getId()) {
           dynamicParams.put("id", p.getId());
           dynamicParams.put("modifiedById", currentUser.trueUserId());
-          sqlCache.update(
-              "processStepRequirement.updateRequirementParamDynamicValue", dynamicParams);
+          sqlCache.updateBySql(
+            ProcessStepRequirementQuery.updateRequirementParamDynamicValue, dynamicParams);
         } else {
           dynamicParams.put("createdById", currentUser.trueUserId());
-          sqlCache.update(
-              "processStepRequirement.insertRequirementParamDynamicValue", dynamicParams);
+          sqlCache.updateBySql(
+            ProcessStepRequirementQuery.insertRequirementParamDynamicValue, dynamicParams);
         }
       }
     }

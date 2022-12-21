@@ -10,6 +10,7 @@ import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.smsQueue.*;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
+import com.albatross.api.v1.flow.queries.SmsServiceQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +22,6 @@ import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
 import com.twilio.type.PhoneNumber;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -70,9 +70,9 @@ public class SMSService {
       Map.of(
         "limit", pageable.getPageSize(),
         "offset", pageable.getOffset());
-    final Long count = sqlCache.queryForObject("sms.getSmsQueue.count", Map.of(), Long.class);
+    final Long count = sqlCache.queryForObjectBySql(SmsServiceQuery.getSmsQueueCount, Map.of(), Long.class);
     List<SmsQueueRow> results =
-      sqlCache.query("sms.getSmsQueue", params, new SMSQueuePageMapper<>(SmsQueueRow.class, om));
+      sqlCache.queryBySql(SmsServiceQuery.getSmsQueue, params, new SMSQueuePageMapper<>(SmsQueueRow.class, om));
     return new PageImpl<>(
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
@@ -92,21 +92,21 @@ public class SMSService {
 
   public List<SMSQueueExportItem> exportSmsQueue() {
 
-    return sqlCache.query(
-      "sms.queue.exportAll", Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
+    return sqlCache.queryBySql(
+      SmsServiceQuery.exportAll, Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
   }
 
   public Optional<SMSQueueItem> getSmsById(Long id) {
     Map<String, Object> params = Map.of("id", id);
 
-    return sqlCache.get(
-      "sms.queue.fetch", params, new SMSQueueMapper<>(SMSQueueItem.class, om), "sms.id = :id");
+    return sqlCache.getBySql(
+      SmsServiceQuery.fetch, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
     Map<String, Object> params = Map.of("projectId", projectId);
-    return sqlCache.query(
-      "sms.queue.fetchByProjectId", params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+    return sqlCache.queryBySql(
+      SmsServiceQuery.fetchByProjectId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public SMSQueueItem queueMessage(
@@ -120,7 +120,7 @@ public class SMSService {
     RecipientType recipientType,
     Long sentByUserId,
     Long sentBySmsTeamId) {
-    String queueInsert = sqlCache.getByKey("sms.queue.insert");
+    String queueInsert = SmsServiceQuery.insert;
 
     MapSqlParameterSource source = new MapSqlParameterSource();
     source.addValue("messageGroup", messageGroup);
@@ -153,8 +153,8 @@ public class SMSService {
   @Transactional
   public void processMessages() {
 
-    String queueNext = sqlCache.getByKey("sms.queue.next");
-    String queueUpdate = sqlCache.getByKey("sms.queue.updateById");
+    String queueNext = SmsServiceQuery.next;
+    String queueUpdate = SmsServiceQuery.updateById;
 
     RateLimiter limiter = RateLimiter.create(1);
 
@@ -301,7 +301,7 @@ public class SMSService {
         "fromPhone", fromPhone,
         "dateReceived", dateReceived);
 
-    return jdbcTemplate.update(sqlCache.getByKey("sms.queue.updateByMessageSid"), params) > 0;
+    return jdbcTemplate.update(SmsServiceQuery.updateByMessageSid, params) > 0;
   }
 
   /**
@@ -411,12 +411,12 @@ public class SMSService {
     params.put(
       "ownerUserPositionId",
       smsQueueItem.getOwner() != null ? smsQueueItem.getOwner().getUserPositionId() : null);
-    sqlCache.update("sms.update", params);
+    sqlCache.updateBySql(SmsServiceQuery.update, params);
   }
 
   public void saveReply(TwilioMessageRequest sms) {
     log.debug("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
-    sqlCache.update("sms.reply.save", sms.toHashMap());
+    sqlCache.updateBySql(SmsServiceQuery.saveReply, sms.toHashMap());
   }
 
   public String cleanPhoneNumber(String input, String region) throws NumberParseException {
@@ -444,11 +444,7 @@ public class SMSService {
         "phone", phoneE164,
         "since", since);
 
-    return sqlCache.get("sms.reply.fetch", params, TwilioMessageRequest.class);
-  }
-
-  public Optional<SMSTemplate> getTemplate(@NonNull Long id) {
-    return sqlCache.get("sms.template.fetch", Map.of("id", id), SMSTemplate.class);
+    return sqlCache.getBySql(SmsServiceQuery.fetchReply, params, TwilioMessageRequest.class);
   }
 
   public static class SMSQueueMapper<T> extends BeanPropertyRowMapper<T> {

@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserOrgHierarchy;
 import com.albatross.api.v1.flow.model.UserPosition;
+import com.albatross.api.v1.flow.queries.UserPositionQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +34,8 @@ public class UserPositionService {
     params.put("companyId", user.getCompanyId());
     params.put("userId", userId);
 
-    return sqlCache.query(
-        "userPosition.getAll", params, new UserPositionMapper<>(UserPosition.class, om));
+    return sqlCache.queryBySql(
+      UserPositionQuery.getAll, params, new UserPositionMapper<>(UserPosition.class, om));
   }
 
   public List<UserPosition> getAllActiveUserPositions(Long userId) {
@@ -42,8 +43,8 @@ public class UserPositionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
 
-    return sqlCache.query(
-        "userPosition.getAllActive", params, new UserPositionMapper<>(UserPosition.class, om));
+    return sqlCache.queryBySql(
+      UserPositionQuery.getAllActive, params, new UserPositionMapper<>(UserPosition.class, om));
   }
 
   public UserPosition getOne(Long id) {
@@ -51,7 +52,7 @@ public class UserPositionService {
     params.put("id", id);
 
     return sqlCache
-        .get("userPosition.getOne", params, new UserPositionMapper<>(UserPosition.class, om))
+        .getBySql(UserPositionQuery.getOne, params, new UserPositionMapper<>(UserPosition.class, om))
         .orElse(null);
   }
 
@@ -61,8 +62,8 @@ public class UserPositionService {
     params.put("companyId", companyId);
 
     return sqlCache
-        .get(
-            "userPosition.getUserPrimaryPosition",
+        .getBySql(
+          UserPositionQuery.getUserPrimaryPosition,
             params,
             new UserPositionMapper<>(UserPosition.class, om))
         .orElse(null);
@@ -81,7 +82,7 @@ public class UserPositionService {
     params.put("userId", user.trueUserId());
     params.put("userPositionId", userPositionId);
 
-    sqlCache.update("userPosition.delete", params);
+    sqlCache.updateBySql(UserPositionQuery.delete, params);
   }
 
   public UserPosition saveUserPosition(UserPosition userPosition) {
@@ -99,8 +100,8 @@ public class UserPositionService {
 
     UserPosition formerPrimaryPosition =
       sqlCache
-      .get(
-        "userPosition.getPrimaryPosition",
+      .getBySql(
+        UserPositionQuery.getPrimaryPosition,
         params,
         new UserPositionMapper<>(UserPosition.class, om))
       .orElse(null);
@@ -110,10 +111,10 @@ public class UserPositionService {
       id = userPosition.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
-      sqlCache.update("userPosition.updateUserPosition", params);
+      sqlCache.updateBySql(UserPositionQuery.updateUserPosition, params);
     } else {
       params.put("createdById", user.trueUserId());
-      id = sqlCache.updateReturningId("userPosition.insertUserPosition", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(UserPositionQuery.insertUserPosition, params, "id").longValue();
       params.put("id", id);
     }
 
@@ -125,7 +126,7 @@ public class UserPositionService {
       }
 
       // if setting a position to primary, need to remove all other primary positions
-      sqlCache.update("userPosition.resetPrimaryFlags", params);
+      sqlCache.updateBySql(UserPositionQuery.resetPrimaryFlags, params);
     }
 
     return getOne(id);

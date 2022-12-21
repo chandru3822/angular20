@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.PositionQuery;
 import com.albatross.api.v1.flow.queries.ProcessQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +33,7 @@ public class PositionService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("position.getAllForCompany", params, Position.class);
+    return sqlCache.queryBySql(PositionQuery.getAllForCompany, params, Position.class);
   }
 
   public List<Position> getSchedulablePositions() {
@@ -44,7 +45,7 @@ public class PositionService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    return sqlCache.query("position.getSchedulablePositions", params, Position.class);
+    return sqlCache.queryBySql(PositionQuery.getSchedulablePositions, params, Position.class);
   }
 
   public List<Position> getPositionsForCompanyWithParent() {
@@ -52,7 +53,7 @@ public class PositionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    return sqlCache.query("position.getAllForCompanyWithParent", params, Position.class);
+    return sqlCache.queryBySql(PositionQuery.getAllForCompanyWithParent, params, Position.class);
   }
 
   public Position getPosition(Long id) {
@@ -61,7 +62,7 @@ public class PositionService {
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
     return sqlCache
-        .get("position.getOne", params, new PositionMapper<>(Position.class, om))
+        .getBySql(PositionQuery.getOne, params, new PositionMapper<>(Position.class, om))
         .orElse(null);
   }
 
@@ -82,7 +83,7 @@ public class PositionService {
         "availableToChildren",
         null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("createdById", user.trueUserId());
-    Long positionId = sqlCache.updateReturningId("position.insert", params, "id").longValue();
+    Long positionId = sqlCache.updateBySqlReturningId(PositionQuery.insert, params, "id").longValue();
 
     for (CompanyFeature cf : p.getCompanyFeatures()) {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
@@ -90,7 +91,7 @@ public class PositionService {
           params.put("companyFeatureId", cf.getId());
           params.put("accessControlId", ac.getId());
           params.put("positionId", positionId);
-          sqlCache.update("position.insertPositionFeatureAccessControl", params);
+          sqlCache.updateBySql(PositionQuery.insertPositionFeatureAccessControl, params);
         }
       }
     }
@@ -116,7 +117,7 @@ public class PositionService {
         null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("id", p.getId());
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("position.update", params);
+    sqlCache.updateBySql(PositionQuery.update, params);
 
     // i think these dirty checks are redundant now that i filtered the frontend but i am leaving
     // them in cuz it works and i dont want to update it and have to test it again
@@ -127,12 +128,12 @@ public class PositionService {
             if (null != ac.getId()) {
               params.put("enabled", ac.isEnabled());
               params.put("id", ac.getId());
-              sqlCache.update("position.updatePositionFeatureAccessControl", params);
+              sqlCache.updateBySql(PositionQuery.updatePositionFeatureAccessControl, params);
             } else if (ac.isEnabled()) {
               params.put("companyFeatureId", cf.getId());
               params.put("accessControlId", ac.getAccessControlId());
               params.put("positionId", p.getId());
-              sqlCache.update("position.insertPositionFeatureAccessControl", params);
+              sqlCache.updateBySql(PositionQuery.insertPositionFeatureAccessControl, params);
             }
           }
         }
@@ -160,7 +161,7 @@ public class PositionService {
       "availableToChildren",
       null != clonedPosition.getAvailableToChildren() ? clonedPosition.getAvailableToChildren() : false);
     params.put("createdById", user.trueUserId());
-    Long positionId = sqlCache.updateReturningId("position.insert", params, "id").longValue();
+    Long positionId = sqlCache.updateBySqlReturningId(PositionQuery.insert, params, "id").longValue();
 
     if (p.getCloneAccess() != null && p.getCloneAccess()) {
       for (CompanyFeature cf : clonedPosition.getCompanyFeatures()) {
@@ -170,7 +171,7 @@ public class PositionService {
             params.put("companyFeatureId", cf.getId());
             params.put("accessControlId", ac.getAccessControlId());
             params.put("positionId", positionId);
-            sqlCache.update("position.insertPositionFeatureAccessControl", params);
+            sqlCache.updateBySql(PositionQuery.insertPositionFeatureAccessControl, params);
           }
         }
       }
@@ -201,7 +202,7 @@ public class PositionService {
         params.put("whiteListTypeId", whiteListedPosition.getWhiteListTypeId());
         params.put("eventId", whiteListedPosition.getEventId());
         params.put("userId", user.trueUserId());
-        sqlCache.update("position.insertWhiteListPosition", params);
+        sqlCache.updateBySql(PositionQuery.insertWhiteListPosition, params);
       }
     }
 
@@ -228,12 +229,12 @@ public class PositionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("position.delete", params);
+    sqlCache.updateBySql(PositionQuery.delete, params);
   }
 
   private List<OwningPosition> getOwnerPositionsByPosition(Long positionId) {
-    return sqlCache.query(
-      "process.getOwnerPositionsByPosition",
+    return sqlCache.queryBySql(
+      ProcessQuery.getOwnerPositionsByPosition,
       ImmutableMap.of("positionId", positionId),
       OwningPosition.class);
   }
@@ -241,8 +242,8 @@ public class PositionService {
   private List<WhiteListedPosition> getWhiteListedPositionsByPosition(Long positionId) {
     User user = securityService.getCurrentUser();
 
-    return sqlCache.query(
-      "position.getWhiteListedPositionsByPosition",
+    return sqlCache.queryBySql(
+      PositionQuery.getWhiteListedPositionsByPosition,
       ImmutableMap.of("companyId", user.getCompanyId(), "positionId", positionId),
       WhiteListedPosition.class);
   }
