@@ -125,6 +125,7 @@ public class NoteService {
         p2.put("primaryId", note.getPrimaryId());
         p2.put("noteId", noteId);
         p2.put("typeId", typeId);
+        p2.put("currentUserId", securityService.getCurrentUser().trueUserId());
         sqlCache.queryBySql(NoteQuery.insertNoteRelation, p2, String.class);
       }
     }

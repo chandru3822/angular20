@@ -1,29 +1,37 @@
-<sql>
-  <tournament.getTournaments><![CDATA[
+package com.albatross.api.v1.company.blueraven.services.tournament.queries;
+
+public class TournamentQuery {
+
+  //language=PostgreSQL
+  public final static String getTournaments = """
     select t.*
     from brs.tournament t
     where archived is not true
     order by t.active is not true, t.tournament_name
-  ]]></tournament.getTournaments>
+    """;
 
-  <tournament.getFormulaColumns><![CDATA[
-      select tf.columns
+  //language=PostgreSQL
+  public final static String getFormulaColumns = """
+    select tf.columns
       from brs.tournament_formula tf
       inner join brs.tournament t on tf.id = t.tournament_formula_id
       where t.id = :tournamentId
-  ]]></tournament.getFormulaColumns>
+    """;
 
-  <tournament.getUserScores><![CDATA[
-      select * from brs.get_tournament_user_score_drill_down(:tournamentId::bigint, :startDate::date, :endDate::date, :userId::bigint)
-  ]]></tournament.getUserScores>
+  //language=PostgreSQL
+  public final static String getUserScores = """
+    select * from brs.get_tournament_user_score_drill_down(:tournamentId::bigint, :startDate::date, :endDate::date, :userId::bigint)
+    """;
 
-  <tournament.getOwnerTypes><![CDATA[
+  //language=PostgreSQL
+  public final static String getOwnerTypes = """
     select *
     from brs.tournament_owner_type
     where archived is not true
-  ]]></tournament.getOwnerTypes>
+    """;
 
-  <tournament.getFormulas><![CDATA[
+  //language=PostgreSQL
+  public final static String getFormulas = """
     select id,
        formula_title,
        formula_description,
@@ -37,10 +45,11 @@
     from brs.tournament_formula
     where archived is not true
     and tournament_owner_type_id = :ownerTypeId
-  ]]></tournament.getFormulas>
+    """;
 
-  <tournament.getFormulaFields><![CDATA[
-      select tff.id,
+  //language=PostgreSQL
+  public final static String getFormulaFields = """
+    select tff.id,
             tff.tournament_formula_id as "tournamentFormulaId",
             tff.field_name as "fieldName",
             tff.archived,
@@ -49,17 +58,19 @@
      where tff.tournament_formula_id = :formulaId
       and tff.archived is false
       order by tff.display_order
-  ]]></tournament.getFormulaFields>
+    """;
 
-  <tournament.delete><![CDATA[
+  //language=PostgreSQL
+  public final static String delete = """
     update brs.tournament
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
     where id = :id
-  ]]></tournament.delete>
+    """;
 
-  <tournament.update><![CDATA[
+  //language=PostgreSQL
+  public final static String update = """
     update brs.tournament
     set tournament_name = :tournamentName,
         tournament_owner_type_id = :tournamentOwnerTypeId,
@@ -69,9 +80,10 @@
         modified_by_id = :userId,
         date_modified = now()
     where id = :id
-  ]]></tournament.update>
+    """;
 
-  <tournament.insert><![CDATA[
+  //language=PostgreSQL
+  public final static String insert = """
     with tourney as (insert into brs.tournament(tournament_name, tournament_owner_type_id, start_date, end_date, tournament_formula_id, created_by_id, date_created, modified_by_id, date_modified)
         values(:tournamentName, :tournamentOwnerTypeId, :startDate, :endDate, :tournamentFormulaId, :userId, now(), :userId, now())
         returning id),
@@ -82,16 +94,18 @@
                         ((select id from tourney), 3, :startDate, :endDate, :userId)
          )
     select id from tourney
-  ]]></tournament.insert>
+    """;
 
-  <tournament.getActiveTournaments><![CDATA[
+  //language=PostgreSQL
+  public final static String getActiveTournaments = """
     select *
     from brs.tournament t
     where active is true
     and archived is not true
-  ]]></tournament.getActiveTournaments>
+    """;
 
-  <tournament.get><![CDATA[
+  //language=PostgreSQL
+  public final static String get = """
     select t.*,
         ( select a.id
             from flow.attachment a
@@ -180,14 +194,16 @@
                            ) fields), '[]') AS "tournamentFormulaFields"
       from brs.tournament t
       where id = :id
-  ]]></tournament.get>
+    """;
 
-  <tournament.getBrackets><![CDATA[
-        select *
-        from brs.get_tournament_brackets(:tournamentId::bigint)
-  ]]></tournament.getBrackets>
+  //language=PostgreSQL
+  public final static String getBrackets = """
+    select *
+        from brs.get_tournament_brackets(:tournamentId::bigint, :currentUserId::bigint)
+    """;
 
-  <tournament.getBracket><![CDATA[
+  //language=PostgreSQL
+  public final static String getBracket = """
     SELECT tb.id,
        tb.tournament_id as "tournamentId",
        tb.matches_generated,
@@ -229,49 +245,55 @@
                              order by tr.start_date) tb), '[]') AS "rounds"
       FROM brs.tournament_bracket tb
       WHERE tb.id = :id
-  ]]></tournament.getBracket>
+    """;
 
-  <tournament.deleteBracket><![CDATA[
+  //language=PostgreSQL
+  public final static String deleteBracket = """
     update brs.tournament_bracket
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
     where id = :id
-  ]]></tournament.deleteBracket>
+    """;
 
-  <tournament.addBracket><![CDATA[
+  //language=PostgreSQL
+  public final static String addBracket = """
     insert into brs.tournament_bracket(tournament_id, number_of_users, created_by_id, date_created, modified_by_id, date_modified)
     values (:tournamentId, :numberOfUsers, :createdById, now(), :createdById, now())
-  ]]></tournament.addBracket>
+    """;
 
-  <tournament.deleteRound><![CDATA[
+  //language=PostgreSQL
+  public final static String deleteRound = """
     update brs.tournament_round
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
     where id = :id
-  ]]></tournament.deleteRound>
+    """;
 
-  <tournament.addRound><![CDATA[
+  //language=PostgreSQL
+  public final static String addRound = """
     insert into brs.tournament_round(start_date, end_date, tournament_bracket_id, created_by_id, date_created, modified_by_id, date_modified)
     values(:startDate, :endDate, :bracketId, :userId, now(), :userId, now())
-  ]]></tournament.addRound>
+    """;
 
-  <tournament.updateRound><![CDATA[
+  //language=PostgreSQL
+  public final static String updateRound = """
     update brs.tournament_round
     set start_date = :startDate,
         end_date = :endDate,
         date_modified = now(),
         modified_by_id = :userId
     where id = :id
-  ]]></tournament.updateRound>
+    """;
 
-  <tournament.generateMatches><![CDATA[
+  //language=PostgreSQL
+  public final static String generateMatches = """
     select from brs.generate_matches(:bracketId::bigint, :userId::bigint)
-  ]]></tournament.generateMatches>
+    """;
 
-
-  <tournament.advanceWinners><![CDATA[
+  //language=PostgreSQL
+  public final static String advanceWinners = """
     update brs.tournament_match
         set date_modified = now(),
           user_1_score = :user1Score,
@@ -290,9 +312,10 @@
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, date_created, created_by_id, date_modified, modified_by_id)
     select user_2_id, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 3 ), now(), :userId, now(), :userId
     from brs.tournament_match tm where id = :matchId;
-  ]]></tournament.advanceWinners>
+    """;
 
-  <tournament.advanceMatch><![CDATA[
+  //language=PostgreSQL
+  public final static String advanceMatch = """
     update brs.tournament_match
       set user_1_id = :winnerUserId,
           date_modified = now(),
@@ -317,35 +340,39 @@
           modified_by_id = :userId,
           match_advanced = true
     where id = :matchId;
-  ]]></tournament.advanceMatch>
+    """;
 
-  <tournament.insertLoserToLastChance><![CDATA[
+  //language=PostgreSQL
+  public final static String insertLoserToLastChance = """
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:loserUserId, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 2), :userId, now(), :userId, now())
-  ]]></tournament.insertLoserToLastChance>
+    """;
 
-  <tournament.overrideMatchUser1><![CDATA[
+  //language=PostgreSQL
+  public final static String overrideMatchUser1 = """
     update brs.tournament_match
     set user_1_id = :userId,
         date_modified = now(),
         modified_by_id = :currentUserId
     where id = :matchId
-  ]]></tournament.overrideMatchUser1>
+    """;
 
-  <tournament.overrideMatchUser2><![CDATA[
+  //language=PostgreSQL
+  public final static String overrideMatchUser2 = """
     update brs.tournament_match
     set user_2_id = :userId,
         date_modified = now(),
         modified_by_id = :currentUserId
     where id = :matchId
-  ]]></tournament.overrideMatchUser2>
+    """;
 
-  <tournament.saveFieldValue><![CDATA[
+  //language=PostgreSQL
+  public final static String saveFieldValue = """
     insert into brs.tournament_formula_field_value(field_value, tournament_formula_field_id, tournament_id, created_by_id)
     values (:fieldValue::text, :fieldId, :tournamentId, :userId)
     on conflict (tournament_formula_field_id, tournament_id)
     do update set field_value = :fieldValue::text,
                   date_modified = now(),
-                  modified_by_id = :userId;
-  ]]></tournament.saveFieldValue>
-</sql>
+                  modified_by_id = :userId
+    """;
+}

@@ -1,5 +1,5 @@
-drop function if exists brs.get_allocation_by_zone(p_postal_code_zone_id bigint);
-CREATE OR REPLACE FUNCTION brs.get_allocation_by_zone(p_postal_code_zone_id bigint)
+drop function if exists brs.get_allocation_by_zone(p_postal_code_zone_id bigint, p_run_by_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_allocation_by_zone(p_postal_code_zone_id bigint, p_run_by_id bigint)
     RETURNS table
             (
                 user_id                  bigint,
@@ -54,6 +54,11 @@ BEGIN
                  inner join prescribed p on p.user_id = t.user_id
                  inner join flow."user" u on u.id = t.user_id
         order by t.total_lead_allocation desc, p.prescribed_allocation desc, t.manual_allocation desc;
+
+        insert into flow.company_function_log(function_name, parameters, run_by_id)
+        values ('Get Allocation by Zone', 'p_postal_code_zone_id: ' || p_postal_code_zone_id ||
+                                          ' p_run_by_id: ' || p_run_by_id,
+                p_run_by_id);
 
 END
 $BODY$

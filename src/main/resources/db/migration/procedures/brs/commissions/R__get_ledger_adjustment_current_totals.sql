@@ -16,6 +16,12 @@ BEGIN
           pca.payroll_adjustment_type_id = p_payroll_adjustment_type_id
   )
   into v_total;
+
+    insert into flow.company_function_log(function_name, parameters)
+    values ('Get Ledger Adjustment Current Totals', 'p_payroll_id: ' || p_payroll_id ||
+                                                    ' p_project_ids: ' || p_project_ids ||
+                                                    ' p_payroll_adjustment_type_id: ' || p_payroll_adjustment_type_id);
+
   return v_total;
 END;
 $BODY$

@@ -3,13 +3,15 @@ drop function if exists brs.rpt_closer_funnel_standard_and_cohort_drilldown(p_st
                                                                             p_user_position_ids bigint[],
                                                                             p_org_ids bigint[],
                                                                             p_is_checked_in_column boolean,
-                                                                            p_is_cohort boolean);
+                                                                            p_is_cohort boolean,
+                                                                            p_run_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard_and_cohort_drilldown(p_start_date date, p_end_date date,
                                                                                p_funnel_id bigint,
                                                                                p_user_position_ids bigint[],
                                                                                p_org_ids bigint[],
                                                                                p_is_checked_in_column boolean,
-                                                                               p_is_cohort boolean)
+                                                                               p_is_cohort boolean,
+                                                                               p_run_by_id bigint)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
@@ -266,6 +268,17 @@ BEGIN
                       case when v_order_by_closer_appt_start then closer_appointment_start else appointment_date end
            ) as funnel_rows;
   END IF;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Closer Funnel Standard and Cohort Drildown Report',
+                'p_start_date: ' || p_start_date ||
+                ' p_end_date: ' || p_end_date ||
+                ' p_funnel_id: ' || p_funnel_id ||
+                ' p_user_position_ids: ' || p_user_position_ids ||
+                ' p_org_ids: ' || p_org_ids ||
+                ' p_is_checked_in_column: ' || p_is_checked_in_column ||
+                ' p_is_cohort: ' || p_is_cohort,
+            p_run_by_id);
 
 END
 $function$

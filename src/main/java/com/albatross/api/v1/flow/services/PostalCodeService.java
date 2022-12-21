@@ -89,6 +89,7 @@ public class PostalCodeService {
   public List<PostalCodeAllocationUser> getScheduleToUsers(Long zoneId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return sqlCache.queryBySql(PostalCodeQuery.getScheduleToUsers, params, PostalCodeAllocationUser.class);
   }
@@ -96,6 +97,7 @@ public class PostalCodeService {
   public List<PostalCodeZoneUser> getScheduleByUsers(Long zoneId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return sqlCache.queryBySql(PostalCodeQuery.getScheduleByUsers, params, PostalCodeZoneUser.class);
   }

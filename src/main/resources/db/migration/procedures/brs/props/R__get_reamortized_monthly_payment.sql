@@ -6,6 +6,10 @@ $BODY$
 declare
   p_pmt numeric (38,9);
 begin
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Get Reamortized Monthly Payment', 'p_rate: ' || p_rate ||
+                                             ' p_periods: ' || p_periods ||
+                                             ' p_principal: ' || p_principal);
   select p_principal
            / (power(1+p_rate,p_periods)-1)
            * (p_rate*power(1+p_rate,p_periods))

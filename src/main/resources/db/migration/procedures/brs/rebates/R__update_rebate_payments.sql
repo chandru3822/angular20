@@ -25,6 +25,13 @@ BEGIN
 insert into brs.project_rebate_payment_audit (project_id, audit, changed_date, changed_by_user_id) values (v_project_id, 'Updated payment_id: '||p_payment_id||' old payment_amount: '||v_old_payment_amount||
                                                                                                                       ' new payment_amount: '||p_payment_amount,
                                                                                                                       (now() at time zone 'US/Mountain')::date, p_updated_by_user_id);
+
+insert into flow.company_function_log(function_name, parameters, run_by_id)
+values ('Update Rebate Payments', 'p_payment_id: ' || p_payment_id ||
+                                  ' p_updated_by_user_id: ' || p_updated_by_user_id ||
+                                  ' p_payment_amount: ' || p_payment_amount,
+        p_updated_by_user_id);
+
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE

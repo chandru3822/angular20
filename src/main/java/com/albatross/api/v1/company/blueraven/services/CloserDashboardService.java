@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.services.queries.CloserDashboardQuery;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
 import com.albatross.api.v1.flow.model.User;
@@ -36,7 +37,7 @@ public class CloserDashboardService {
     params.put("currentUserId", securityService.getCurrentUser().getId());
 
     return sqlCache
-        .query("closerDashboard.getIncentiveFdcCounts", params, IncentiveCounts.class)
+        .queryBySql(CloserDashboardQuery.getIncentiveFdcCounts, params, IncentiveCounts.class)
         .get(0);
   }
 
@@ -66,10 +67,12 @@ public class CloserDashboardService {
     params.put("viewAll", viewAll);
     params.put("companyId", user.getCompanyId());
 
-    String sqlKey =
-        viewAll ? "closerDashboard.getAllRoundRobins" : "closerDashboard.getRoundRobins";
-
-    return sqlCache.query(sqlKey, params, PostalCodeZone.class);
+    if (viewAll) {
+      return sqlCache.queryBySql(CloserDashboardQuery.getAllRoundRobins, params, PostalCodeZone.class);
+    }
+    else {
+      return sqlCache.queryBySql(CloserDashboardQuery.getRoundRobins, params, PostalCodeZone.class);
+    }
   }
 
   public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(
@@ -77,10 +80,11 @@ public class CloserDashboardService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", postalCodeZoneId);
     params.put("timeInterval", timeInterval);
+    params.put("currentUserId", securityService.getCurrentUser().getId());
 
     List<RoundRobinLeadAllocationScores> roundRobinLeadAllocationData =
-        sqlCache.query(
-            "closerDashboard.getRoundRobinLeadAllocationRank",
+        sqlCache.queryBySql(
+            CloserDashboardQuery.getRoundRobinLeadAllocationRank,
             params,
             RoundRobinLeadAllocationScores.class);
     List<Long> userIds = new ArrayList<>();
@@ -125,13 +129,16 @@ public class CloserDashboardService {
     params.put("companyId", user.getCompanyId());
 
     if (viewAll) {
-      return sqlCache.query("closerDashboard.getAllCloserOffices", params, Org.class);
+      return sqlCache.queryBySql(CloserDashboardQuery.getAllCloserOffices, params, Org.class);
     } else {
       params.put("userOrgId", userOrgId);
-      String sqlKey =
-          viewCustom ? "closerDashboard.getCloserDownline" : "closerDashboard.getCloserOffice";
 
-      return sqlCache.query(sqlKey, params, Org.class);
+      if (viewCustom) {
+        return sqlCache.queryBySql(CloserDashboardQuery.getCloserDownline, params, Org.class);
+      }
+      else {
+        return sqlCache.queryBySql(CloserDashboardQuery.getCloserOffice, params, Org.class);
+      }
     }
   }
 
@@ -228,35 +235,37 @@ public class CloserDashboardService {
   }
 
   public List<Source> getBrsProvidedSources() {
-    return sqlCache.query("closerDashboard.getBrsProvidedSources", null, Source.class);
+    return sqlCache.queryBySql(CloserDashboardQuery.getBrsProvidedSources, null, Source.class);
   }
 
   public List<Source> getSelfGenSources() {
-    return sqlCache.query("closerDashboard.getSelfGenSources", null, Source.class);
+    return sqlCache.queryBySql(CloserDashboardQuery.getSelfGenSources, null, Source.class);
   }
 
   public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[])";
+        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[], :currentUserId::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
     parameters.addValue("endDate", funnelRequest.getEnd());
     parameters.addValue("brsProvidedSourceIds", funnelRequest.getBrsProvidedSources());
     parameters.addValue("selfGenSourceIds", funnelRequest.getSelfGenSources());
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
   public String apptsCreatedPipelineDrilldown(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :sourceIds ]::bigint[])";
+        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :sourceIds ]::bigint[], :currentUserId::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
     parameters.addValue("endDate", funnelRequest.getEnd());
     parameters.addValue("funnelId", funnelRequest.getFunnelId());
     parameters.addValue("sourceIds", funnelRequest.getSources());
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
@@ -345,7 +354,7 @@ public class CloserDashboardService {
 
   public String funnelApptDateCohort(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
+        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
 
     return runFunnelQuery(
         sqlQuery,
@@ -362,6 +371,7 @@ public class CloserDashboardService {
     parameters.addValue("endDate", end);
     parameters.addValue("userIds", userIds);
     parameters.addValue("orgIds", orgIds);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
@@ -409,6 +419,7 @@ public class CloserDashboardService {
     parameters.addValue("userIds", userIds);
     parameters.addValue("orgIds", orgIds);
     parameters.addValue("isCheckedInColumn", isCheckedInColumn);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }

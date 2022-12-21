@@ -210,6 +210,14 @@ BEGIN
     return query select false::boolean, null::bigint, null::timestamp, null::timestamp, null::text, null::text,null::bigint;
   end if;
 
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Set Closer Appointment', 'p_project_id: ' || p_project_id ||
+                                    ' p_current_user_id: '|| p_current_user_id ||
+                                    ' p_project_process_step_id: '|| p_project_process_step_id ||
+                                    ' p_project_process_step_event_id: '|| p_project_process_step_event_id ||
+                                    ' p_appointment_start_time: '|| p_appointment_start_time ||
+                                    ' p_users: '|| p_users ||
+                                    ' p_remote: '|| p_remote);
 
 END
 $BODY$

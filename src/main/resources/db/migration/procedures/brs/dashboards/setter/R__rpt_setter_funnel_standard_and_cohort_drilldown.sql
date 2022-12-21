@@ -89,5 +89,13 @@ BEGIN
                       order by setter_name, contact_name
 --                       order by setter_name, coalesce(pd.prioritized_closer_appointment_outcome_date,pd.closer_appointment_start)
                     ) as funnel_rows;
+
+insert into flow.company_function_log(function_name, parameters)
+values ('Setter Funnel Standard and Cohort Drilldown Report', 'p_start_date: ' || p_start_date ||
+                                                              ' p_end_date: ' || p_end_date ||
+                                                              ' p_funnel_id: ' || p_funnel_id ||
+                                                              ' p_user_position_ids: ' || p_user_position_ids ||
+                                                              ' p_org_ids: ' || p_org_ids);
+
 END
 $function$

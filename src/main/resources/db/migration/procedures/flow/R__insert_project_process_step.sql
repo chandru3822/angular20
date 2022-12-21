@@ -58,6 +58,18 @@ insert into flow.project_process_step(project_id, process_step_id, company_proce
 values (p_project_id, p_process_step_id, p_initial_company_process_step_status_type_id, true, p_user_position_id, p_parent_project_process_step_id, p_user_id, now(), p_user_id, now(), p_parent_project_process_step_event_id)
 returning id into p_project_process_step_id;
 
+insert into flow.company_function_log(function_name, parameters, run_by_id)
+values ('Insert Project Process Step', 'p_project_id: ' || p_project_id ||
+                                       ' p_process_step_id: ' || p_process_step_id ||
+                                       ' p_user_position_id: ' || p_user_position_id ||
+                                       ' p_company_id: ' || p_company_id ||
+                                       ' p_user_id: ' || p_user_id ||
+                                       ' p_parent_project_process_step_id: ' || p_parent_project_process_step_id ||
+                                       ' p_initial_company_process_step_status_type_id: ' || p_initial_company_process_step_status_type_id ||
+                                       ' p_existing_company_process_step_status_type_id: ' || p_existing_company_process_step_status_type_id ||
+                                       ' p_parent_project_process_step_event_id: ' || p_parent_project_process_step_event_id,
+        p_user_id);
+
 RETURN p_project_process_step_id;
 END;
 $$

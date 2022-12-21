@@ -1,9 +1,11 @@
 drop function if exists brs.rpt_closer_funnel_appts_created_pipeline_drilldown(p_start_date date, p_end_date date,
                                                                                p_funnel_id bigint,
-                                                                               p_source_ids bigint[]);
+                                                                               p_source_ids bigint[],
+                                                                               p_run_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline_drilldown(p_start_date date, p_end_date date,
                                                                                   p_funnel_id bigint,
-                                                                                  p_source_ids bigint[])
+                                                                                  p_source_ids bigint[],
+                                                                                  p_run_by_id bigint)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
@@ -45,6 +47,15 @@ BEGIN
                               else pd.source = any (p_source_ids) end
                       order by owner_name, pd.project_created_date
                     ) as funnel_rows;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Closer Funnel Appointments Created Pipeline Drilldown Report',
+                'p_start_date: ' || p_start_date ||
+                ' p_end_date: ' || p_end_date ||
+                ' p_funnel_id: ' || p_funnel_id ||
+                ' p_source_ids: ' || p_source_ids ||
+                ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
 END
 $function$

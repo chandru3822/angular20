@@ -1,4 +1,4 @@
-drop function if exists brs.get_calculated_proposal_values(bigint, boolean);
+drop function if exists brs.get_calculated_proposal_values(bigint, boolean, bigint);
 drop type if exists brs.calculated_proposal_value;
 
 create type brs.calculated_proposal_value as
@@ -217,7 +217,9 @@ create type brs.excluded_proposal_value as
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
   p_proposal_id bigint,
-  p_insert_prop_log_history boolean default false)
+  p_insert_prop_log_history boolean default false,
+  p_run_by_id bigint
+)
 
   RETURNS TABLE
           (
@@ -2114,6 +2116,13 @@ BEGIN
            v_csu_rebate_unit_type_id;
 
   drop table proposal_value;
+
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Get Calculated Proposal Values', 'p_proposal_id: ' || p_proposal_id ||
+                                            ' p_insert_prop_log_history: ' || p_insert_prop_log_history ||
+                                            ' p_run_by_id: ' || p_run_by_id,
+          p_run_by_id);
+
 
 END
 $BODY$

@@ -1,7 +1,9 @@
 ﻿drop function if exists brs.rpt_closer_funnel_standard(p_custom_start_date date, p_custom_end_date date,
-                                                       p_user_position_ids bigint[], p_org_ids bigint[]);
+                                                       p_user_position_ids bigint[], p_org_ids bigint[],
+                                                       p_run_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_standard(p_custom_start_date date, p_custom_end_date date,
-                                                          p_user_position_ids bigint[], p_org_ids bigint[])
+                                                          p_user_position_ids bigint[], p_org_ids bigint[],
+                                                        p_run_by_id bigint)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
@@ -161,6 +163,14 @@ BEGIN
                       )
                     )
                       as funnel_rows;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Closer Funnel Standard Report', 'p_custom_start_date: ' || p_custom_start_date ||
+                                             ' p_custom_end_date: ' || p_custom_end_date ||
+                                             ' p_user_position_ids: ' || p_user_position_ids ||
+                                             ' p_org_ids: ' || p_org_ids ||
+                                             ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
 END
 $function$

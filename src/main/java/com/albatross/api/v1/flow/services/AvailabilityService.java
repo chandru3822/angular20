@@ -686,6 +686,7 @@ public class AvailabilityService {
       params.put("endTime", endTime);
       params.put("availableDate", availableDate);
       params.put("remote", null != remote ? remote : false);
+      params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
       List<TimeSlot> results =
           sqlCache.queryBySql(
@@ -864,7 +865,7 @@ public class AvailabilityService {
   }
 
   public void cacheAvailability() {
-    sqlCache.queryBySql(AvailabilityQuery.cacheAvailability, Collections.emptyMap(), String.class);
+    sqlCache.queryBySql(AvailabilityQuery.cacheAvailability,  Map.of("currentUserId", securityService.getCurrentUser().trueUserId()), String.class);
   }
 
   public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {

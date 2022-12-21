@@ -125,6 +125,12 @@ BEGIN
          where apu.user_id not in (select unnest(array [ v_user_ids ]::bigint[]))
            and apu.archived is not true);
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Assign Users to Matches', 'p_tournament_id: ' || p_tournament_id ||
+                                       ' p_tournament_pool_id: '|| p_tournament_pool_id ||
+                                       ' p_user_id: '|| p_user_id ||
+                                       ' p_seeded_matches: '|| p_seeded_matches,
+            p_user_id);
 
 END
 

@@ -19,7 +19,8 @@ BEGIN
           and pps.project_id = p_project_id -- on this project
         );
 
-
+        insert into flow.company_function_log(function_name, db_function_id, parameters)
+        values ('Cancel Future Schedule Closer Appointments', 15, 'p_project_id: ' || p_project_id);
 
 END
 $function$

@@ -106,8 +106,11 @@ BEGIN
       end if;
     END LOOP;
 
-
-
+    insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
+    values ('Send Text to Resource', 54, 'p_pps_event_id: ' || p_pps_event_id ||
+                                         ' p_current_user_id: '|| p_current_user_id ||
+                                         ' p_message_type_id: ' || p_message_type_id,
+            p_current_user_id);
 
 END
 $function$

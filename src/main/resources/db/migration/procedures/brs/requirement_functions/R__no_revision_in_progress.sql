@@ -37,6 +37,9 @@ BEGIN
                                    and ps2.parent_process_step_id = 3227
                                    and ps2.archived is not true);
 
+    insert into flow.company_function_log(function_name, db_function_id, parameters)
+    values ('No Revision in-progress', 6, 'p_project_id: ' || p_project_id);
+
     return v_permit_approved > v_plan_set_created;
 END
 $BODY$

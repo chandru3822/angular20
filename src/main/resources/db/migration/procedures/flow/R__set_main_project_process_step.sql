@@ -56,5 +56,13 @@ BEGIN
     set company_process_step_status_type_id = p_cancelled_company_process_step_status_type_id
     where id = v_previous_main_project_process_step_id;
   END IF;
+
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Set Main Project Process Step', 'p_project_process_step_id: ' || p_project_process_step_id ||
+                                           ' p_active_company_process_step_status_type_id: ' || p_active_company_process_step_status_type_id ||
+                                           ' p_cancelled_company_process_step_status_type_id: ' || p_cancelled_company_process_step_status_type_id ||
+                                           ' p_user_id: ' || p_user_id,
+          p_user_id);
+
 END;
 $$

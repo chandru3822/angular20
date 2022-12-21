@@ -76,6 +76,14 @@ BEGIN
         order by foo2.scheduled_start_time;
     set TimeZone = 'UTC';
     drop table if exists excluded_appointments;
+
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Past Available Time Slot', 'p_user_id: ' || p_user_id ||
+                                      ' p_start_time: '|| p_start_time ||
+                                      ' p_end_time: '|| p_end_time ||
+                                      ' p_available_date: '|| p_available_date ||
+                                      ' p_time_zone: '|| p_time_zone);
+
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

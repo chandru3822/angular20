@@ -570,8 +570,9 @@ public class PandaDocService {
       MapSqlParameterSource parameters = new MapSqlParameterSource();
       parameters.addValue("projectId", deets.getProjectId().intValue());
       parameters.addValue("proposalNumber", deets.getProposalNbr().intValue());
+      parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
       String sql =
-          "SELECT to_json(get_data_from_proposal) FROM brs.get_data_from_proposal(:projectId, :proposalNumber)";
+          "SELECT to_json(get_data_from_proposal) FROM brs.get_data_from_proposal(:projectId, :proposalNumber, :currentUserId)";
       Map<String, Object> result = jdbc.queryForObject(sql, parameters, new ColumnMapRowMapper());
       if (result == null) {
         throw new RuntimeException("Invalid object returned");

@@ -359,6 +359,11 @@ BEGIN
       perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
 
+    insert into flow.company_function_log(function_name, db_function_id, parameters)
+    values ('Populate System and Financial Fields for Booking', 16,
+                'p_project_id: ' || p_project_id ||
+                ' p_process_step_id: '|| p_process_step_id ||
+                ' p_project_process_step_id: ' || p_project_process_step_id);
 
 END
 $function$

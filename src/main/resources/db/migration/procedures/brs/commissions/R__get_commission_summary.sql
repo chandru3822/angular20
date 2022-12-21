@@ -1,10 +1,14 @@
-drop function if exists brs.get_commission_summary(p_position_id bigint);
-CREATE or replace function brs.get_commission_summary(p_position_id bigint)
+drop function if exists brs.get_commission_summary(p_position_id bigint, p_run_by_id bigint);
+CREATE or replace function brs.get_commission_summary(p_position_id bigint, p_run_by_id bigint)
     RETURNS JSON AS
 $BODY$
 declare
     v_json json;
 begin
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Commission Summary', 'p_position_id: ' || p_position_id ||
+                                      ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
     case when p_position_id = 1 then
         with all_project_ids as (

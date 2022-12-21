@@ -17,6 +17,11 @@ BEGIN
       v_amount = v_amount + (p_first_year_annual_production * power((1- p_panel_degradation_factor),i-1));
   end loop;
 
+ insert into flow.company_function_log(function_name, parameters)
+ values ('Get System Production 25 year', 'p_first_year_annual_production: ' || p_first_year_annual_production ||
+                                          ' p_panel_degradation_factor: ' || p_panel_degradation_factor ||
+                                          ' p_years: ' || p_years);
+
   return coalesce(v_amount, 0);
 END
 $BODY$

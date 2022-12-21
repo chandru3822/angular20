@@ -245,6 +245,8 @@ public class PayrollService {
   public String getAccountSummaryForCurrentPayroll(Long positionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("positionId", positionId);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
+
     return sqlCache
         .get("payroll.getCurrentSummary", params, new SingleColumnRowMapper<>(String.class))
         .orElse("[]");
@@ -253,6 +255,7 @@ public class PayrollService {
   public String getAccountSummaryByPayrollId(Long payrollId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("payrollId", payrollId);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return sqlCache
         .get("payroll.getSummary", params, new SingleColumnRowMapper<>(String.class))
@@ -261,6 +264,7 @@ public class PayrollService {
 
   public List<OverrideResult> getAllOverrideDetails(Long payrollId) {
     Map<String, Object> params = ImmutableMap.of("payrollId", payrollId);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
     Optional<Integer> payrollStatusId =
         sqlCache.get("payroll.status", params, SingleColumnRowMapper.newInstance(Integer.class));
 

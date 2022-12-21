@@ -116,5 +116,9 @@ BEGIN
     --         insert into brs.project_residual( project_id, residual_plan_id)
 --         values (p_project_id,v_residual_plan_id);
 
+    insert into flow.company_function_log(function_name, db_function_id, parameters)
+        values ('Insert Commissions on Project', 18, 'p_project_id: ' || p_project_id);
+
+
 END;
 $function$

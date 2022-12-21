@@ -42,6 +42,13 @@ BEGIN
       and psel.archived is false);
 
   return v_new_event_action_id;
+
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Duplicate Event Action', 'p_process_step_event_action_id: ' || p_process_step_event_action_id ||
+                                    ' p_current_user_id: ' || p_current_user_id ||
+                                    ' p_company_id: ' || p_company_id,
+          p_current_user_id);
+
 END
 
 $BODY$

@@ -14,6 +14,9 @@ BEGIN
     where p.id = p_project_id
       and cpst.project_status_type_id = 1;
 
+    insert into flow.company_function_log(function_name, db_function_id, parameters)
+    values ('Project status Active', 8, 'p_project_id: ' || p_project_id);
+
     return v_active;
 
 END

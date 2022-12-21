@@ -1,5 +1,9 @@
-<sql>
-  <tournamentPool.getDetails><![CDATA[
+package com.albatross.api.v1.company.blueraven.services.tournament.queries;
+
+public class TournamentPoolQuery {
+
+  //language=PostgreSQL
+  public final static String getDetails = """
     select tp.*,
     ( select a.id
             from flow.attachment a
@@ -38,9 +42,10 @@
       inner join brs.tournament_pool_type tpt on tp.tournament_pool_type_id = tpt.id
     where tp.tournament_id = :tournamentId
     and tp.tournament_pool_type_id = :tournamentPoolTypeId
-  ]]></tournamentPool.getDetails>
+    """;
 
-  <tournamentPool.updatePool><![CDATA[
+  //language=PostgreSQL
+  public final static String updatePool = """
     update brs.tournament_pool
     set start_date = :startDate::date,
         end_date = :endDate::date,
@@ -48,62 +53,70 @@
         modified_by_id = :userId,
         date_modified = now()
     where id = :poolId
-  ]]></tournamentPool.updatePool>
+    """;
 
-  <tournamentPool.getPoolUsers><![CDATA[
+  //language=PostgreSQL
+  public final static String getPoolUsers = """
     select *
-    from brs.get_tournament_pool_users(:tournamentId::bigint, :tournamentPoolTypeId::bigint)
-  ]]></tournamentPool.getPoolUsers>
+    from brs.get_tournament_pool_users(:tournamentId::bigint, :tournamentPoolTypeId::bigint, :currentUserId::bigint)
+    """;
 
-  <tournamentPool.getPosition><![CDATA[
+  //language=PostgreSQL
+  public final static String getPosition = """
     select tpp.*,
            p.position
     from brs.tournament_pool_position tpp
     inner join flow.position p on p.id = tpp.position_id
     where tpp.id = :id
-  ]]></tournamentPool.getPosition>
+    """;
 
-  <tournamentPool.addPosition><![CDATA[
+  //language=PostgreSQL
+  public final static String addPosition = """
     insert into brs.tournament_pool_position(position_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:positionId, :poolId, :createdById,now(),:createdById, now())
-  ]]></tournamentPool.addPosition>
+    """;
 
-  <tournamentPool.deletePosition><![CDATA[
-      update brs.tournament_pool_position
+  //language=PostgreSQL
+  public final static String deletePosition = """
+    update brs.tournament_pool_position
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
       where id = :tournamentPoolPositionId
-  ]]></tournamentPool.deletePosition>
+    """;
 
-
-  <tournamentPool.getUser><![CDATA[
+  //language=PostgreSQL
+  public final static String getUser = """
     select tpu.*,
            concat(u.first_name, ' ', u.last_name) as full_name
     from brs.tournament_pool_user tpu
     inner join flow.user u on u.id = tpu.user_id
     where tpu.id = :id
-  ]]></tournamentPool.getUser>
+    """;
 
-  <tournamentPool.addUser><![CDATA[
+  //language=PostgreSQL
+  public final static String addUser = """
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:userId, :poolId, :createdById, now(), :createdById, now())
-  ]]></tournamentPool.addUser>
+    """;
 
-  <tournamentPool.deleteUser><![CDATA[
-      update brs.tournament_pool_user
+  //language=PostgreSQL
+  public final static String deleteUser = """
+    update brs.tournament_pool_user
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId
       where id = :tournamentPoolUserId
-  ]]></tournamentPool.deleteUser>
+    """;
 
-  <tournamentPool.assignUsersToMatches><![CDATA[
+  //language=PostgreSQL
+  public final static String assignUsersToMatches = """
     select from brs.assign_users_to_matches(:tournamentId::bigint, :tournamentPoolId::bigint, :userId::bigint, :seededMatches::jsonb)
-  ]]></tournamentPool.assignUsersToMatches>
+    """;
 
-  <tournamentPool.advanceUsersToWinnerPool><![CDATA[
-      update brs.tournament_pool_user
+  //language=PostgreSQL
+  public final static String advanceUsersToWinnerPool = """
+    update brs.tournament_pool_user
           set qualified = true,
               date_modified = now()
       where tournament_pool_id = :tournamentPoolId
@@ -114,6 +127,5 @@
       from brs.tournament_pool_user tpu
       where tpu.tournament_pool_id = :tournamentPoolId
         and tpu.user_id  in ( :userIds );
-
-  ]]></tournamentPool.advanceUsersToWinnerPool>
-</sql>
+    """;
+}

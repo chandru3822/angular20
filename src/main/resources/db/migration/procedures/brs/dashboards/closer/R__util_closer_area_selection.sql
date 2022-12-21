@@ -60,5 +60,10 @@ BEGIN
 
     end case;
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Closer Area Selection', 'p_platform_user_id: ' || p_platform_user_id ||
+                                     ' p_permission_override: ' || p_permission_override,
+            p_platform_user_id);
+
 END
 $function$

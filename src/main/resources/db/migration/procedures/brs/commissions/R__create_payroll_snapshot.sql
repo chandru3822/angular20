@@ -13,6 +13,10 @@ DECLARE
     v_snapshot_id bigint;
     v_position_id bigint;
 BEGIN
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Create Payroll Snapshot', 'p_payroll_id: ' || p_payroll_id ||
+                                       ' p_updated_by_id: '|| p_updated_by_id,
+            p_updated_by_id);
 
     select position_id
     into v_position_id

@@ -1,5 +1,5 @@
--- drop function if exists brs.get_tournament_pool_users(p_tournament_id bigint, p_tournament_pool_type_id bigint);
-CREATE OR REPLACE FUNCTION brs.get_tournament_pool_users(p_tournament_id bigint, p_tournament_pool_type_id bigint)
+-- drop function if exists brs.get_tournament_pool_users(p_tournament_id bigint, p_tournament_pool_type_id bigint, p_run_by_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_tournament_pool_users(p_tournament_id bigint, p_tournament_pool_type_id bigint, p_run_by_id bigint)
   RETURNS SETOF json
 AS
 $BODY$
@@ -53,6 +53,13 @@ BEGIN
                                and tp.tournament_pool_type_id = p_tournament_pool_type_id
                                --group by 1, 2, 3, t.tournament_formula_id, tp.start_date, tp.end_date
                              order by 4 desc nulls last, 1) as pools), '[]') as pools;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Tournament Pool Users', 'p_tournament_id: ' || p_tournament_id ||
+                                         ' p_tournament_pool_type_id: '|| p_tournament_pool_type_id ||
+                                         ' p_run_by_id: '|| p_run_by_id,
+            p_run_by_id);
+
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE;

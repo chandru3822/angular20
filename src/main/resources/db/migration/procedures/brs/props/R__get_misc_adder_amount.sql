@@ -35,6 +35,9 @@ BEGIN
       end if;
     end loop;
 
+    insert into flow.company_function_log(function_name, parameters)
+    values ('Get Miscellaneous Adder Amount', 'p_system_size: ' || p_system_size);
+
   return coalesce(v_amount, 0);
 END
 $BODY$
