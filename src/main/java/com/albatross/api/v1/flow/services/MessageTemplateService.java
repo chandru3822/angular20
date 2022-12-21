@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.MessageTemplateQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +26,14 @@ public class MessageTemplateService {
 
   public List<com.albatross.api.v1.flow.model.MessageTemplate> getTemplates() {
     HashMap<String, Object> params = new HashMap<>();
-    List<com.albatross.api.v1.flow.model.MessageTemplate> results = sqlCache.query("messageTemplate.getAllTemplates", params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
+    List<com.albatross.api.v1.flow.model.MessageTemplate> results = sqlCache.queryBySql(MessageTemplateQuery.getAllTemplates, params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
 
     return results;
   }
 
   public List<com.albatross.api.v1.flow.model.MessageTemplate> getTemplatesWithTeamInfo() {
     HashMap<String, Object> params = new HashMap<>();
-    List<com.albatross.api.v1.flow.model.MessageTemplate> results = sqlCache.query("messageTemplate.getAllTemplatesWithTeamInfo", params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
+    List<com.albatross.api.v1.flow.model.MessageTemplate> results = sqlCache.queryBySql(MessageTemplateQuery.getAllTemplatesWithTeamInfo, params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
 
     return results;
   }
@@ -40,7 +41,7 @@ public class MessageTemplateService {
   public com.albatross.api.v1.flow.model.MessageTemplate getTemplate(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<com.albatross.api.v1.flow.model.MessageTemplate> result = sqlCache.get("messageTemplate.getTemplate", params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
+    Optional<com.albatross.api.v1.flow.model.MessageTemplate> result = sqlCache.getBySql(MessageTemplateQuery.getTemplate, params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
     return result.orElse(null);
   }
 
@@ -49,7 +50,7 @@ public class MessageTemplateService {
     Set<com.albatross.api.v1.flow.model.MessageTemplate> templates = new HashSet<>();
     for (Long teamId: teamIds) {
       params.put("teamId", teamId);
-      List<com.albatross.api.v1.flow.model.MessageTemplate> results = sqlCache.query("messageTemplate.getTemplates", params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
+      List<com.albatross.api.v1.flow.model.MessageTemplate> results = sqlCache.queryBySql(MessageTemplateQuery.getTemplates, params, new MessageTemplateService.MessageTemplateMapper<>(com.albatross.api.v1.flow.model.MessageTemplate.class, om));
       templates.addAll(results);
     }
 
@@ -68,10 +69,10 @@ public class MessageTemplateService {
       id = mt.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
-      sqlCache.update("messageTemplate.updateTemplate", params);
+      sqlCache.updateBySql(MessageTemplateQuery.updateTemplate, params);
     } else {
       params.put("createdById", user.trueUserId());
-      id = sqlCache.updateReturningId("messageTemplate.insertTemplate", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(MessageTemplateQuery.insertTemplate, params, "id").longValue();
     }
 
     return getTemplate(id);
@@ -83,7 +84,7 @@ public class MessageTemplateService {
 
     params.put("id", templateId);
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("messageTemplate.deleteTemplate", params);
+    sqlCache.updateBySql(MessageTemplateQuery.deleteTemplate, params);
   }
 
   public static class MessageTemplateMapper<T> extends BeanPropertyRowMapper<T> {

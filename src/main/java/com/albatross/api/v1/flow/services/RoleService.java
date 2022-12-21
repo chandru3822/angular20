@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.CompanyFeature;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.Role;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.RoleQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class RoleService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Role> results = sqlCache.query("role.getAllForCompany", params, Role.class);
+    List<Role> results = sqlCache.queryBySql(RoleQuery.getAllForCompany, params, Role.class);
     return results;
   }
 
@@ -49,7 +50,7 @@ public class RoleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
-    Optional<Role> result = sqlCache.get("role.getOne", params, new RoleMapper<>(Role.class, om));
+    Optional<Role> result = sqlCache.getBySql(RoleQuery.getOne, params, new RoleMapper<>(Role.class, om));
     return result.orElse(null);
   }
 
@@ -59,7 +60,7 @@ public class RoleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("roleName", role.getRoleName());
     params.put("companyId", user.getCompanyId());
-    Long roleId = sqlCache.updateReturningId("role.insertRole", params, "id").longValue();
+    Long roleId = sqlCache.updateBySqlReturningId(RoleQuery.insertRole, params, "id").longValue();
 
     for(CompanyFeature cf : role.getCompanyFeatures()) {
       for(FeatureAccessControl ac : cf.getAccessControl()) {
@@ -67,7 +68,7 @@ public class RoleService {
           params.put("companyFeatureId", cf.getId());
           params.put("accessControlId", ac.getId());
           params.put("roleId", roleId);
-          sqlCache.update("role.insertRoleFeatureAccessControl", params);
+          sqlCache.updateBySql(RoleQuery.insertRoleFeatureAccessControl, params);
         }
       }
     }
@@ -77,7 +78,7 @@ public class RoleService {
   public void deleteRole(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("role.archiveRole", params);
+    sqlCache.updateBySql(RoleQuery.archiveRole, params);
   }
 
   public Role updateRole(Role role) {
@@ -85,19 +86,19 @@ public class RoleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", role.getId());
     params.put("roleName", role.getRoleName());
-    sqlCache.update("role.updateRole", params);
+    sqlCache.updateBySql(RoleQuery.updateRole, params);
 
     for(CompanyFeature cf : role.getCompanyFeatures()) {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
         if(null != ac.getId()) {
           params.put("enabled", ac.isEnabled());
           params.put("roleFeatureAccessControlId", ac.getAccessControlId());
-          sqlCache.update("role.updateRoleFeatureAccessControl", params);
+          sqlCache.updateBySql(RoleQuery.updateRoleFeatureAccessControl, params);
         } else if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());
           params.put("accessControlId", ac.getAccessControlId());
           params.put("roleId", role.getId());
-          sqlCache.update("role.insertRoleFeatureAccessControl", params);
+          sqlCache.updateBySql(RoleQuery.insertRoleFeatureAccessControl, params);
         }
       }
     }
@@ -116,10 +117,10 @@ public class RoleService {
       id = role.getId();
       params.put("modifiedById", user.getCompanyId());
       params.put("id", id);
-      sqlCache.update("role.updateRole", params);
+      sqlCache.updateBySql(RoleQuery.updateRole, params);
     } else {
       params.put("createdById", user.getCompanyId());
-      id = sqlCache.updateReturningId("role.insertRole", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(RoleQuery.insertRole, params, "id").longValue();
     }
 
     return getRole(id);

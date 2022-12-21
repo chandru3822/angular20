@@ -146,7 +146,7 @@ public class ProjectProcessStepEventService {
     if (result.isPresent()) {
       ProjectProcessStepEvent event = result.get();
       event.setCustomFieldGroups(
-          customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT.toString(), ppsEventId));
+          customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT, ppsEventId));
 
       if (null != event.getEventActions() && !event.getEventActions().isEmpty()) {
         // if there are event actions, then check if the pps status change can be performed here
@@ -308,7 +308,7 @@ public class ProjectProcessStepEventService {
       if (null != saveEvent.getCustomFieldValues() && !saveEvent.getCustomFieldValues().isEmpty()) {
         // the fields sent in here are the dirty fields, save those
         customFieldValueService.updateCustomFieldValues(
-            saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT.textValue());
+            saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT);
       }
 
       return getPpsEvent(ppsId, eventId);

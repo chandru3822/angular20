@@ -6,6 +6,8 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.queries.ProcessStepEventQuery;
+import com.albatross.api.v1.flow.queries.ProcessStepEventRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +35,7 @@ public class ProcessStepEventService {
   public List<ProcessStepEvent> getStepEvents(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    return sqlCache.query("processStepEvent.getStepEvents", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    return sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
   public List<ProcessStepEvent> getAvailableEventsForStep(Long processStepId) {
@@ -42,13 +44,13 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
     params.put("companyId", currentUser.getCompanyId());
-    return sqlCache.query("processStepEvent.getAvailableEventsForStep", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    return sqlCache.queryBySql(ProcessStepEventQuery.getAvailableEventsForStep, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
   public Optional<ProcessStepEvent> getProcessStepEvent(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<ProcessStepEvent> result = sqlCache.get("processStepEvent.get", params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    Optional<ProcessStepEvent> result = sqlCache.getBySql(ProcessStepEventQuery.get, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
     return result;
   }
 
@@ -60,7 +62,7 @@ public class ProcessStepEventService {
     params.put("createdById", currentUser.trueUserId());
     params.put("eventId", processStepEvent.getEventId());
     params.put("initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
-    Long id = sqlCache.updateReturningId("processStepEvent.addEventToStep", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(ProcessStepEventQuery.addEventToStep, params, "id").longValue();
     return getProcessStepEvent(id);
   }
 
@@ -72,7 +74,7 @@ public class ProcessStepEventService {
     params.put("initialCompanyEventStatusTypeId", processStepEvent.getInitialCompanyEventStatusTypeId());
     params.put("userId", currentUser.trueUserId());
     params.put("eventId", eventId);
-    sqlCache.update("processStepEvent.updateStepEvent", params);
+    sqlCache.updateBySql(ProcessStepEventQuery.updateStepEvent, params);
   }
 
   public void updateEventOrder(List<ProcessStepEvent> events) {
@@ -84,7 +86,7 @@ public class ProcessStepEventService {
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", event.getId());
       // save each display_order
-      sqlCache.update("processStepEvent.updateDisplayOrder", params);
+      sqlCache.updateBySql(ProcessStepEventQuery.updateDisplayOrder, params);
     }
   }
 
@@ -93,7 +95,7 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepEventId", processStepEventId);
 
-    List<Long> whiteListedPositionIds = sqlCache.query("processStepEvent.getStartTimeWhitelistedPositionIds", params, new SingleColumnRowMapper<>(Long.class));
+    List<Long> whiteListedPositionIds = sqlCache.queryBySql(ProcessStepEventQuery.getStartTimeWhitelistedPositionIds, params, new SingleColumnRowMapper<>(Long.class));
 
     return securityService.userHasPosition(currentUser.getHighestCompanyId(), whiteListedPositionIds, currentUser.getUserPositions());
   }
@@ -103,13 +105,13 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("userId", currentUser.trueUserId());
-    sqlCache.update("processStepEvent.deleteEventFromStep", params);
+    sqlCache.updateBySql(ProcessStepEventQuery.deleteEventFromStep, params);
   }
 
   public Optional<ProcessStepEventAction> getStepEventAction(Long processStepEventActionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", processStepEventActionId);
-    return sqlCache.get("processStepEvent.getStepEventAction", params, new ProcessStepEventActionMapper<>(ProcessStepEventAction.class, om));
+    return sqlCache.getBySql(ProcessStepEventQuery.getStepEventAction, params, new ProcessStepEventActionMapper<>(ProcessStepEventAction.class, om));
   }
 
   public Optional<ProcessStepEventAction> duplicateAction(Long processStepEventActionId) {
@@ -120,7 +122,7 @@ public class ProcessStepEventService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    Long newActionId = sqlCache.queryForObject("processStepEvent.duplicateAction", params, Long.class);
+    Long newActionId = sqlCache.queryForObjectBySql(ProcessStepEventQuery.duplicateAction, params, Long.class);
     return getStepEventAction(newActionId);
   }
 
@@ -150,11 +152,11 @@ public class ProcessStepEventService {
     if (null != processStepEventAction.getId()) {
       id = processStepEventAction.getId();
       params.put("id", id);
-      sqlCache.update("processStepEvent.updateStepEventAction", params);
+      sqlCache.updateBySql(ProcessStepEventQuery.updateStepEventAction, params);
 
       if (null != processStepEventAction.getLogicListChanged() && processStepEventAction.getLogicListChanged()) {
         // archive all old logic before saving new logic
-        sqlCache.update("processStepEvent.archiveOldLogic", params);
+        sqlCache.updateBySql(ProcessStepEventQuery.archiveOldLogic, params);
 
         if (!processStepEventAction.getProcessStepEventLogicList().isEmpty()) {
           // handle saving logic items.
@@ -166,7 +168,7 @@ public class ProcessStepEventService {
               // because it should already be true by now)
               HashMap<String, Object> psrParams = new HashMap<>();
               psrParams.put("id", logic.getProcessStepEventRequirementId());
-              sqlCache.update("processStepEventRequirement.setImmutable", psrParams);
+              sqlCache.updateBySql(ProcessStepEventRequirementQuery.setImmutable, psrParams);
             }
 
             HashMap<String, Object> logicParams = new HashMap<>();
@@ -175,13 +177,13 @@ public class ProcessStepEventService {
             logicParams.put("operationTypeId", logic.getOperationTypeId());
             logicParams.put("sqlOrder", count);
             logicParams.put("createdById", currentUser.trueUserId());
-            sqlCache.update("processStepEvent.insertLogic", logicParams);
+            sqlCache.updateBySql(ProcessStepEventQuery.insertLogic, logicParams);
             count++;
           }
         }
       }
     } else {
-      id = sqlCache.updateReturningId("processStepEvent.addStepEventAction", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(ProcessStepEventQuery.addStepEventAction, params, "id").longValue();
     }
 
     return getStepEventAction(id);
@@ -190,7 +192,7 @@ public class ProcessStepEventService {
   public String getActionLogicString(Long actionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionId", actionId);
-    Optional<String> logicString = sqlCache.queryForObjectOptional("processStepEvent.actionLogicString", params, String.class);
+    Optional<String> logicString = sqlCache.queryForObjectOptionalBySql(ProcessStepEventQuery.actionLogicString, params, String.class);
     return logicString.orElse("");
   }
 
@@ -203,7 +205,7 @@ public class ProcessStepEventService {
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", action.getId());
       // save each display_order
-      sqlCache.update("processStepEvent.updateActionDisplayOrder", params);
+      sqlCache.updateBySql(ProcessStepEventQuery.updateActionDisplayOrder, params);
     }
   }
 
@@ -212,7 +214,7 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("userId", currentUser.trueUserId());
-    sqlCache.update("processStepEvent.deleteActionFromEvent", params);
+    sqlCache.updateBySql(ProcessStepEventQuery.deleteActionFromEvent, params);
   }
 
   // CHILD LINKS
@@ -224,7 +226,7 @@ public class ProcessStepEventService {
     params.put("createdById", currentUser.trueUserId());
 
     Long id =
-      sqlCache.updateReturningId("processStepEvent.addLinkToAction", params, "id").longValue();
+      sqlCache.updateBySqlReturningId(ProcessStepEventQuery.addLinkToAction, params, "id").longValue();
     return getActionChildLink(id);
   }
 
@@ -233,7 +235,7 @@ public class ProcessStepEventService {
     params.put("id", id);
 
     return sqlCache
-      .get("processStepEvent.getActionChildLink", params, ProcessStepEventActionLink.class)
+      .getBySql(ProcessStepEventQuery.getActionChildLink, params, ProcessStepEventActionLink.class)
       .orElse(null);
   }
 
@@ -243,7 +245,7 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childLinkId);
-    sqlCache.update("processStepEvent.deleteLinkFromAction", params);
+    sqlCache.updateBySql(ProcessStepEventQuery.deleteLinkFromAction, params);
   }
 
   //functions
@@ -255,7 +257,7 @@ public class ProcessStepEventService {
     params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.trueUserId());
 
-    Long id = sqlCache.updateReturningId("processStepEvent.addChildFunctionToAction", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(ProcessStepEventQuery.addChildFunctionToAction, params, "id").longValue();
 
     processStepActionService.handleDynamicValueParams(child.getActionParamDynamicValues(), null, id);
 
@@ -268,7 +270,7 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childProcessId);
-    sqlCache.update("processStepEvent.deleteActionChildFunction", params);
+    sqlCache.updateBySql(ProcessStepEventQuery.deleteActionChildFunction, params);
   }
 
   public void updateActionChildFunction(Long actionId, ProcessStepActionChildFunction child) {
@@ -278,21 +280,21 @@ public class ProcessStepEventService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
-    sqlCache.update("processStepEvent.updateActionChildFunction", params);
+    sqlCache.updateBySql(ProcessStepEventQuery.updateActionChildFunction, params);
 
     processStepActionService.handleDynamicValueParams(child.getActionParamDynamicValues(), null, child.getId());
   }
 
   public List<ProcessStepEventActionChildFunction> getChildFunctionsWithParamValues(Long actionId, Long ppsEventId) {
     Map<String, Object> params = Map.of("id", actionId, "ppsEventId", ppsEventId);
-    return sqlCache.query("processStepEvent.getChildFunctionsByPpsEventId", params, new ProcessStepEventActionChildFunctionMapper<>(ProcessStepEventActionChildFunction.class, om));
+    return sqlCache.queryBySql(ProcessStepEventQuery.getChildFunctionsByPpsEventId, params, new ProcessStepEventActionChildFunctionMapper<>(ProcessStepEventActionChildFunction.class, om));
   }
 
   public ProcessStepEventActionChildFunction getActionChildFunction(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<ProcessStepEventActionChildFunction> result = sqlCache.get("processStepEvent.getActionChildFunction", params, new ProcessStepEventActionChildFunctionMapper<>(ProcessStepEventActionChildFunction.class, om));
+    Optional<ProcessStepEventActionChildFunction> result = sqlCache.getBySql(ProcessStepEventQuery.getActionChildFunction, params, new ProcessStepEventActionChildFunctionMapper<>(ProcessStepEventActionChildFunction.class, om));
     return result.orElse(null);
   }
 
@@ -314,13 +316,13 @@ public class ProcessStepEventService {
     // if there is already a record then update it IF required or optional is true
     if (null != processStepEventActionField.getId() && (processStepEventActionField.getOptional() || processStepEventActionField.getRequired())) {
       id = processStepEventActionField.getId();
-      sqlCache.update("processStepEvent.updateRequiredFieldStatus", params);
+      sqlCache.updateBySql(ProcessStepEventQuery.updateRequiredFieldStatus, params);
     } else if (null != processStepEventActionField.getId() && !processStepEventActionField.getRequired() && !processStepEventActionField.getOptional()) {
       // if there is already a record and not optional or required, then archive it
-      sqlCache.update("processStepEvent.archiveRequiredFieldStatus", params);
+      sqlCache.updateBySql(ProcessStepEventQuery.archiveRequiredFieldStatus, params);
     } else {
       // otherwise add a new row
-      id = sqlCache.updateReturningId("processStepEvent.addRequiredFieldStatus", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(ProcessStepEventQuery.addRequiredFieldStatus, params, "id").longValue();
     }
 
     return id;

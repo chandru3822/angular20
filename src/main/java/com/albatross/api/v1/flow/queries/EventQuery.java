@@ -1,0 +1,662 @@
+package com.albatross.api.v1.flow.queries;
+
+public class EventQuery {
+
+  //language=PostgreSQL
+  public final static String getAllForCompany = """
+    select *
+        from flow.event
+        where company_id = :companyId
+        and archived is not true
+        order by event_name
+        """;
+
+  //language=PostgreSQL
+  public final static String getAttachmentType = """
+    select oat.id,
+                 oat.event_id,
+                 oat.attachment_type_id,
+                 at.attachment_type,
+                 oat.focused,
+                 oat.linkable,
+                 oat.allow_upload,
+                 oat.archived,
+                 oat.read_only,
+                 coalesce((
+                            SELECT array_to_json(array_agg(row_to_json(cfGroups)))
+                            FROM (
+                                   SELECT cfg.id,
+                                          cfg.group_name as "groupName",
+                                          cot.object_type_id as "objectTypeId",
+                                          cot.id as "companyObjectTypeId",
+                                          cfg.archived,
+                                          cfg.group_order as "groupOrder",
+                                          cfg.process_step_id as "processStepId",
+                                          coalesce((
+                                                     SELECT array_to_json(array_agg(row_to_json(customFields)))
+                                                     FROM (
+                                                            SELECT cfga.id,
+                                                                   cfga.custom_field_group_id as "customFieldGroupId",
+                                                                   cfga.custom_field_id as "customFieldId",
+                                                                   cfga.use_parent_data as "useParentData",
+                                                                   cfga.id as "customFieldGroupAssignmentId",
+                                                                   cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                   cfga.field_order as "fieldOrder",
+                                                                   cfga.archived,
+                                                                   cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                                   cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                                   cfga.detail_view as "detailView",
+                                                                   cf.field_name as "fieldName",
+                                                                   cf.system_readonly as "systemReadonly",
+                                                                   cfg1.group_name as "groupName",
+                                                                   null as "eventName",
+                                                                   ps.process_step_name as "processStepName",
+                                                                   ot.object_type as "objectType",
+                                                                   '[]' as whiteListedPositions,
+                                                                   coalesce((
+                                                                              SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                              FROM (
+                                                                                     SELECT wlp.id,
+                                                                                            wlp.position_id as "positionId",
+                                                                                            wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                            wlp.created_by_id as "createdById",
+                                                                                            wlp.modified_by_id as "modifiedById",
+                                                                                            wlp.archived
+                                                                                     FROM flow.white_listed_position wlp
+                                                                                     WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                       AND wlp.white_list_type_id = 2
+                                                                                       AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions",
+                                                                   null::int as "defaultFieldId"
+                                                            FROM flow.custom_field_group_assignment cfga
+                                                                   inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                                                   inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                                                   inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
+                                                                   left join flow.process_step ps on ps.id = cfg1.process_step_id
+                                                                   inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
+                                                                   inner join flow.object_type ot on ot.id = cot.object_type_id
+                                                            WHERE cfga.custom_field_group_id = cfg.id
+                                                              AND cfga.archived is not true
+                                                              and cf.archived is not true
+                                                          union all
+                                                           select null, cfga.custom_field_group_id, null, false, cfga.id, null, cfga.field_order, cfga.archived, false, false,
+                                                                   false, df.field_name, false, cfg3.group_name, null, null, ot2.object_type, '[]' as whiteListedPositions, '[]' as hiddenWhiteListedPositions,
+                                                                   df.id as "defaultFieldId"
+                                                            from flow.custom_field_group_assignment cfga
+                                                              inner join flow.default_field df on cfga.default_field_id = df.id
+                                                              inner join flow.custom_field_group cfg3 on cfg3.id = cfga.custom_field_group_id
+                                                              inner join flow.object_type ot2 on ot2.id = df.object_type_id
+                                                            where cfga.archived is false
+                                                              and cfga.custom_field_group_id = cfg.id
+                                                            ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+                                   FROM flow.custom_field_group cfg
+                                          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                                   WHERE cfg.event_attachment_type_id = oat.id AND cfg.archived is not true
+                                   order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
+          from flow.event_attachment_type oat
+                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
+          where oat.id = :id
+          and at.company_id = :companyId
+        """;
+
+  //language=PostgreSQL
+  public final static String getProcessStepsUsingEvent = """
+    select ps.process_step_name
+       from flow.process_step_event pse
+         inner join flow.process_step ps on pse.process_step_id = ps.id
+       where pse.event_id = :eventId
+         and pse.archived is false
+       """;
+
+  //language=PostgreSQL
+  public final static String get = """
+    select e.id,
+               event_name,
+               resource_custom_field_id,
+               company_id,
+               start_time_read_only,
+               end_time_read_only,
+               resource_read_only,
+               archived,
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(companyEventStatusTypes)))
+                          FROM (
+                                 SELECT ecest.id,
+                                        ecest.event_id as "eventId",
+                                        ecest.company_event_status_type_id as "companyEventStatusTypeId",
+                                        ecest.archived,
+                                        e2.event_name as "eventName",
+                                        cest.event_status_type as "eventStatusType",
+                                        cest.event_status_type_id as "eventStatusTypeId",
+                                        cest.company_id as "companyId",
+                                        est.event_status_type as "rootEventStatusType"
+                                 FROM flow.event_company_event_status_type ecest
+                                        inner join flow.event e2 on ecest.event_id = e2.id
+                                        inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+                                        inner join flow.event_status_type est on cest.event_status_type_id = est.id
+                                 WHERE ecest.event_id = e.id AND ecest.archived is not true
+                                 order by cest.event_status_type) companyEventStatusTypes), '[]') AS "companyEventStatusTypes",
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(cfGroups)))
+                          FROM (
+                                 SELECT cfg.id,
+                                        cfg.group_name as "groupName",
+                                        cot.object_type_id as "objectTypeId",
+                                        cot.id as "companyObjectTypeId",
+                                        cfg.archived,
+                                        cfg.group_order as "groupOrder",
+                                        cfg.process_step_id as "processStepId",
+                                        coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(customFields)))
+                                                   FROM (
+                                                          SELECT cfga.id,
+                                                                 cfga.custom_field_group_id as "customFieldGroupId",
+                                                                 cfga.custom_field_id as "customFieldId",
+                                                                 cfga.use_parent_data as "useParentData",
+                                                                 cfga.id as "customFieldGroupAssignmentId",
+                                                                 cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                 cfga.field_order as "fieldOrder",
+                                                                 cfga.archived,
+                                                                 cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                                 cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                                 cfga.detail_view as "detailView",
+                                                                 cf.field_name as "fieldName",
+                                                                 cf.system_readonly as "systemReadonly",
+                                                                 cfg1.group_name as "groupName",
+                                                                 e.event_name as "eventName",
+                                                                 null as "processStepName",
+                                                                 ot.object_type as "objectType",
+                                                                 coalesce((
+                                                                            SELECT array_to_json(array_agg(row_to_json(links)))
+                                                                            FROM (
+                                                                                   SELECT wlp.id,
+                                                                                          wlp.position_id as "positionId",
+                                                                                          wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                          wlp.created_by_id as "createdById",
+                                                                                          wlp.modified_by_id as "modifiedById",
+                                                                                          wlp.archived
+                                                                                   FROM flow.white_listed_position wlp
+                                                                                   WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.white_list_type_id = 1
+                                                                                     AND wlp.archived is not true) links), '[]') AS "whiteListedPositions",
+                                                                 coalesce((
+                                                                            SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                            FROM (
+                                                                                   SELECT wlp.id,
+                                                                                          wlp.position_id as "positionId",
+                                                                                          wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                          wlp.created_by_id as "createdById",
+                                                                                          wlp.modified_by_id as "modifiedById",
+                                                                                          wlp.archived
+                                                                                   FROM flow.white_listed_position wlp
+                                                                                   WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.white_list_type_id = 2
+                                                                                     AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                          FROM flow.custom_field_group_assignment cfga
+                                                                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                                                 inner join flow.custom_field_group cfg1 on cfg1.id = cfga.custom_field_group_id
+                                                                 inner join flow.event e on e.id = cfg1.event_id
+                                                                 inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
+                                                                 inner join flow.object_type ot on ot.id = cot.object_type_id
+                                                          WHERE cfga.custom_field_group_id = cfg.id
+                                                            AND cfg.archived is not true
+                                                            and cfga.archived is not true
+                                                            and cf.archived is not true
+                                                          union all
+                                                          SELECT cfga.id,
+                                                                 cfga.custom_field_group_id as "customFieldGroupId",
+                                                                 cfga.custom_field_id as "customFieldId",
+                                                                 cfga.use_parent_data as "useParentData",
+                                                                 cfga.id as "customFieldGroupAssignmentId",
+                                                                 cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                 cfga.field_order as "fieldOrder",
+                                                                 cfga.archived,
+                                                                 cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                                 cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                                 cfga.detail_view as "detailView",
+                                                                 cf.field_name as "fieldName",
+                                                                 cf.system_readonly as "systemReadonly",
+                                                                 cfg1.group_name as "groupName",
+                                                                 null as "eventName",
+                                                                 ps.process_step_name as "processStepName",
+                                                                 ot.object_type as "objectType",
+                                                                 '[]' as whiteListedPositions,
+                                                                 coalesce((
+                                                                            SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                            FROM (
+                                                                                   SELECT wlp.id,
+                                                                                          wlp.position_id as "positionId",
+                                                                                          wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                          wlp.created_by_id as "createdById",
+                                                                                          wlp.modified_by_id as "modifiedById",
+                                                                                          wlp.archived
+                                                                                   FROM flow.white_listed_position wlp
+                                                                                   WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.white_list_type_id = 2
+                                                                                     AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                          FROM flow.custom_field_group_assignment cfga
+                                                                 inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                                                 inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                                                 inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
+                                                                 left join flow.process_step ps on ps.id = cfg1.process_step_id
+                                                                 inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
+                                                                 inner join flow.object_type ot on ot.id = cot.object_type_id
+                                                          WHERE cfga.custom_field_group_id = cfg.id
+                                                            AND cfga.archived is not true
+                                                            and cf.archived is not true
+                                                          ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+                                 FROM flow.custom_field_group cfg
+                                        inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                                 WHERE cfg.event_id = e.id AND cfg.archived is not true
+                                 order by cfg.group_order) cfGroups), '[]') AS custom_field_groups,
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(wlp)))
+                          FROM (
+                                 SELECT wlp.id,
+                                        wlp.position_id as "positionId",
+                                        wlp.created_by_id as "createdById",
+                                        wlp.modified_by_id as "modifiedById",
+                                        wlp.archived
+                                 FROM flow.white_listed_position wlp
+                                 WHERE wlp.white_list_type_id = 6
+                                   and wlp.event_id = e.id
+                                   AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(wlp)))
+                          FROM (
+                                 SELECT wlp.id,
+                                        wlp.position_id as "positionId",
+                                        wlp.created_by_id as "createdById",
+                                        wlp.modified_by_id as "modifiedById",
+                                        wlp.archived
+                                 FROM flow.white_listed_position wlp
+                                 WHERE wlp.white_list_type_id = 7
+                                   and wlp.event_id = e.id
+                                   AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(wlp)))
+                          FROM (
+                                 SELECT wlp.id,
+                                        wlp.position_id as "positionId",
+                                        wlp.created_by_id as "createdById",
+                                        wlp.modified_by_id as "modifiedById",
+                                        wlp.archived
+                                 FROM flow.white_listed_position wlp
+                                 WHERE wlp.white_list_type_id = 8
+                                   and wlp.event_id = e.id
+                                   AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
+        from flow.event e
+        where e.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String delete = """
+      update flow.event
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where id = :eventId
+    """;
+
+  //language=PostgreSQL
+  public final static String saveChangesToDefaultFields = """
+      update flow.event
+      set modified_by_id = :modifiedById,
+          date_modified = now(),
+          resource_custom_field_id = :resourceCustomFieldId,
+          start_time_read_only = :startTimeReadOnly,
+          end_time_read_only = :endTimeReadOnly,
+          resource_read_only = :resourceReadOnly
+      where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String update = """
+      update flow.event
+      set modified_by_id = :modifiedById,
+          date_modified = now(),
+          event_name = :name
+      where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insert = """
+      insert into flow.event (company_id, event_name, created_by_id, resource_custom_field_id)
+        values (:companyId, :name, :createdById, :resourceCustomFieldId)
+    """;
+
+  //language=PostgreSQL
+  public final static String getStatuses = """
+    select
+            pst.id,
+            pst.event_status_type,
+            pst.archived
+        from flow.event_status_type pst
+        where pst.archived is not true
+        order by pst.event_status_type
+        """;
+
+
+  //language=PostgreSQL
+  public final static String getStatusesForWqt = """
+    select
+          null::bigint as id,
+          'Category' as header,
+          null::bigint as "eventStatusTypeId",
+          null::bigint as "companyEventStatusTypeId",
+          false as archived,
+          null::text as "uniqueText",
+          null::text as "group",
+          false as is_root,
+          null::text as event_status_type,
+          null::text as root_event_status_type,
+          0 as display_sort
+        union all
+        select
+          null::bigint as id,
+          null::text as header,
+          est.id as "eventStatusTypeId",
+          null::bigint as "companyEventStatusTypeId",
+          est.archived,
+          concat(est.event_status_type, 'EST')::text as "uniqueText",
+          'Category' as "group",
+          true as is_root,
+          est.event_status_type,
+          est.event_status_type as root_event_status_type,
+          1 as display_sort
+        from flow.event_status_type est
+        where est.archived is not true
+        union all
+        select
+          null::bigint as id,
+          'Event Status' as header,
+          null::bigint as "eventStatusTypeId",
+          null::bigint as "companyEventStatusTypeId",
+          false as archived,
+          null::text as "uniqueText",
+          null::text as "group",
+          false as is_root,
+          null::text as event_status_type,
+          null::text as root_event_status_type,
+          2 as display_sort
+        union all
+        select
+          null::bigint as id,
+          null::text as header,
+          est.id as "eventStatusTypeId",
+          cest.id as "companyEventStatusTypeId",
+          cest.archived,
+          concat(cest.event_status_type, 'CEST')::text as "uniqueText",
+          'Event' as "group",
+          false as is_root,
+          cest.event_status_type,
+          est.event_status_type as root_event_status_type,
+          3 as display_sort
+        from flow.event_company_event_status_type ecest
+               inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+               inner join flow.event_status_type est on est.id = cest.event_status_type_id
+        where cest.company_id = :companyId
+          and cest.archived is not true
+          and ecest.archived is not true
+          and ecest.event_id = :eventId
+        order by display_sort, root_event_status_type, event_status_type
+        """;
+
+  //language=PostgreSQL
+  public final static String getAssignedStatuses = """
+    select
+      cest.id,
+      cest.event_status_type,
+      ecest.archived,
+      est.event_status_type as rootEventStatusType,
+      cest.event_status_type_id
+    from flow.event_company_event_status_type ecest
+      inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+      inner join flow.event_status_type est on cest.event_status_type_id = est.id
+    where ecest.event_id = :eventId
+    and ecest.archived is not true
+    """;
+
+  //language=PostgreSQL
+  public final static String getAssignedProcessStepEventStatuses = """
+      select
+        cest.id,
+        cest.event_status_type,
+        ecest.archived,
+        est.event_status_type as rootEventStatusType,
+        cest.event_status_type_id
+      from flow.process_step_event pse
+          inner join flow.event_company_event_status_type ecest on ecest.event_id = pse.event_id
+          inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+          inner join flow.event_status_type est on cest.event_status_type_id = est.id
+      where pse.id = :pseId
+        and ecest.archived is not true
+    """;
+
+  //language=PostgreSQL
+  public final static String getCompanyStatuses = """
+    select
+            cpst.id,
+            cpst.event_status_type,
+            cpst.display_order,
+            pst.id as event_status_type_id,
+            cpst.archived,
+            pst.event_status_type as "rootEventStatusType"
+        from flow.company_event_status_type cpst
+        inner join flow.event_status_type pst on pst.id = cpst.event_status_type_id
+        where cpst.company_id = :companyId and cpst.archived is not true
+        order by cpst.display_order
+        """;
+
+  //language=PostgreSQL
+  public final static String getOneCompanyStatus = """
+      select
+        cpst.id,
+        cpst.event_status_type,
+        pst.id as event_status_type_id,
+        cpst.archived,
+        pst.event_status_type as "rootEventStatusType"
+    from flow.company_event_status_type cpst
+    inner join flow.event_status_type pst on pst.id = cpst.event_status_type_id
+    where cpst.id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String updateCompanyStatus = """
+      update flow.company_event_status_type
+    set event_status_type = :eventStatusType,
+        event_status_type_id = :rootEventStatusTypeId,
+        modified_by_id = :currentUserId,
+        display_order = :displayOrder,
+        date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertCompanyStatus = """
+    insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
+      values (:rootEventStatusTypeId, :eventStatusType, :companyId, :currentUserId)
+      """;
+
+  //language=PostgreSQL
+  public final static String deleteStatusFromEvent = """
+      update flow.event_company_event_status_type
+        set archived = true,
+        modified_by_id = :currentUserId,
+        date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getEventsWithStatusInUse = """
+      select e.event_name
+      from flow.event_company_event_status_type ecest
+        inner join flow.event e on ecest.event_id = e.id
+      where e.archived is false and company_event_status_type_id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getPseaWithStatusInUse = """
+      select psea.action_name, e.event_name, ps.process_step_name
+      from flow.process_step_event_action psea
+          inner join flow.process_step_event pse on psea.process_step_event_id = pse.id
+        inner join flow.event e on pse.event_id = e.id
+      inner join flow.process_step ps on pse.process_step_id = ps.id
+      where psea.archived is false and ps.archived is false and e.archived is false
+        and psea.company_event_status_type_id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getPsrWithStatusInUse = """
+    select e.event_name, ps.process_step_name
+          from flow.process_step_event_requirement psr
+            inner join flow.process_step_event pse on psr.process_step_event_id = pse.id
+            inner join flow.process_step ps on pse.process_step_id = ps.id
+            inner join flow.event e on pse.event_id = e.id
+          where psr.archived is false and pse.archived is false and psr.process_step_requirement_type_id = 11 and :id = any (psr.list_of_value_ids)
+        """;
+
+  //language=PostgreSQL
+  public final static String deleteCompanyStatus = """
+      update flow.company_event_status_type
+        set archived = true,
+        modified_by_id = :currentUserId,
+        date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String assignStatusToEvent = """
+      insert into flow.event_company_event_status_type(event_id, company_event_status_type_id, created_by_id)
+        values (:eventId, :companyEventStatusTypeId, :createdById)
+    """;
+
+  //language=PostgreSQL
+  public final static String getEventCompanyEventStatusType = """
+    select ecest.*,
+                 e.event_name,
+                 cest.event_status_type,
+                 cest.company_id,
+                 cest.event_status_type_id,
+                 est.event_status_type as root_event_status_type
+          from flow.event_company_event_status_type ecest
+                 inner join flow.event e on ecest.event_id = e.id
+                 inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+                 inner join flow.event_status_type est on cest.event_status_type_id = est.id
+          where ecest.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String availableStatusesForEvent = """
+    select cest.*,
+                 est.event_status_type as root_event_status_type
+          from flow.company_event_status_type cest
+                 inner join flow.event_status_type est on est.id = cest.event_status_type_id
+          where cest.archived is not true
+            and company_id = :companyId
+            and not exists (
+              select id
+              from flow.event_company_event_status_type ecest
+              where ecest.company_event_status_type_id = cest.id
+                and ecest.archived is not true
+                and ecest.event_id = :eventId
+            )
+          order by cest.event_status_type
+        """;
+
+  //language=PostgreSQL
+  public final static String getProcessStepEventsByEventId = """
+    select pse.id,
+               pse.process_step_id,
+               pse.initial_company_event_status_type_id,
+               cest.event_status_type as initial_event_status_type,
+               pse.event_id,
+               pse.archived,
+               e.event_name,
+               ps.process_step_name,
+               pse.display_order
+        from flow.process_step_event pse
+        inner join flow.event e on pse.event_id = e.id
+        inner join flow.process_step ps on ps.id = pse.process_step_id
+        left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
+        where pse.event_id = :eventId and
+              e.resource_custom_field_id is not null and
+              pse.archived is not true
+        order by pse.display_order
+        """;
+
+  //language=PostgreSQL
+  public final static String getAvailableOwners = """
+    with customField as (
+      select cf.id,
+             cf.company_system_list_id,
+             cf.system_list_option_ids
+      from flow.custom_field cf
+             inner join flow.event e on e.resource_custom_field_id = cf.id
+      where e.id = :eventId
+    )
+    select o.*
+    from customField, flow.get_system_list_options(:companyId::bigint, customField.company_system_list_id::bigint, true, customField.system_list_option_ids::bigint[]) o
+        """;
+
+  //language=PostgreSQL
+  public final static String getAssignedEventStatusesByListOfValue = """
+    select cest.id,
+           cest.event_status_type as name
+    from flow.event_company_event_status_type ecest
+    inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+    WHERE ecest.event_id = :eventId and
+          cest.company_id = :companyId and
+          ecest.archived is not true
+    order by cest.event_status_type
+        """;
+
+  //language=PostgreSQL
+  public final static String getAssignedEventCategoriesByListOfValue = """
+    select est.id,
+           est.event_status_type as name
+    from flow.event_company_event_status_type ecest
+    inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+    inner join flow.event_status_type est on cest.event_status_type_id = est.id
+    WHERE ecest.event_id = :eventId and
+          cest.company_id = :companyId and
+          ecest.archived is not true
+    order by cest.event_status_type
+        """;
+
+  //language=PostgreSQL
+  public final static String archiveWhiteListPositions = """
+    update flow.white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where event_id = :eventId
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
+    """;
+
+  //language=PostgreSQL
+  public final static String archiveUnusedWhiteListPositions = """
+    update flow.white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where event_id = :eventId
+      and position_id not in (:positionIdsUsed)
+      and company_id = :companyId
+      and white_list_type_id = :whiteListTypeId
+    """;
+
+  //language=PostgreSQL
+  public final static String insertWhiteListPosition = """
+    insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified, event_id)
+    select :positionId, null, :whiteListTypeId, :companyId, :userId, now(), :userId, now(), :eventId
+    where not exists (  select id
+                        from flow.white_listed_position
+                        where event_id = :eventId
+                          and position_id = :positionId
+                          and company_id = :companyId
+                          and white_list_type_id = :whiteListTypeId
+                           and archived is not true)
+    """;
+
+}

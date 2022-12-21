@@ -4,12 +4,6 @@
         <v-col cols="12" class="pt-0 px-0">
           <v-toolbar flat>
             <v-toolbar-title class="app-title">{{ selectedAttachment.attachmentType }}</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <div class="mt-4">
-                <v-checkbox :disabled="!userCanEdit" v-if="showReadOnly" style="display: flex; justify-content: flex-end" v-model="selectedAttachment.readOnly" label="Read-Only (temp backwards compatible)" @change="updateReadOnly(selectedAttachment)"></v-checkbox>
-              </div>
-            </v-toolbar-items>
           </v-toolbar>
         </v-col>
       </v-row>
@@ -541,20 +535,6 @@ export default {
         return !cfg.archived
       })
     },
-    async updateReadOnly(attachmentType) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/attachmentType/project/updateReadOnly`, attachmentType)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error updating Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
   }
 }
 </script>

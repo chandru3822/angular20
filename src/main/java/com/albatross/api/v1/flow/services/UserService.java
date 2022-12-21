@@ -11,6 +11,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.CompanyQuery;
+import com.albatross.api.v1.flow.queries.SmsTeamQuery;
 import com.albatross.api.v1.flow.queries.UserQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -610,11 +611,11 @@ public class UserService {
     for (SmsTeam smsTeam: smsTeams) {
       params.put("smsTeamId", smsTeam.getId());
       if (smsTeam.getReceiveUnassignedNotifications() != null && smsTeam.getReceiveUnassignedNotifications()) {
-        sqlCache.update("smsTeam.upsertSmsTeamUserUnassignedNotification", params);
+        sqlCache.updateBySql(SmsTeamQuery.upsertSmsTeamUserUnassignedNotification, params);
       }
       else {
         params.put("modifiedById", userId);
-        sqlCache.update("smsTeam.deleteSmsTeamUserUnassignedNotification", params);
+        sqlCache.updateBySql(SmsTeamQuery.deleteSmsTeamUserUnassignedNotification, params);
       }
     }
   }

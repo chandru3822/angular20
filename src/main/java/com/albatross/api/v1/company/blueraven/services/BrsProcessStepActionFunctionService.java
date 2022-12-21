@@ -8,6 +8,7 @@ import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
 import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -375,7 +376,7 @@ public class BrsProcessStepActionFunctionService {
                 } else if (paramName.contains("Panel Brand")) {
                     if (manufacturer != null) {
                         try {
-                            Long lovId = sqlCache.queryForObject("customFieldValue.getListOfValueIdByCfgaIdAndName", Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
+                            Long lovId = sqlCache.queryForObjectBySql(CustomFieldValueQuery.getListOfValueIdByCfgaIdAndName, Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
                             params.put("intValue", lovId);
                             sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
                         } catch (EmptyResultDataAccessException e) {
@@ -410,7 +411,7 @@ public class BrsProcessStepActionFunctionService {
                 } else if (paramName.contains("Design JSON")) {
                     //store the entire json object for future proposal log history calculations
                     params.put("jsonValue", design.toString());
-                    sqlCache.update("customFieldValue.upsertAuroraDesign", params);
+                    sqlCache.updateBySql(CustomFieldValueQuery.upsertAuroraDesign, params);
                 } else if (paramName.contains("Panel Name")) {
                     params.put("textValue", panelName);
                     sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);

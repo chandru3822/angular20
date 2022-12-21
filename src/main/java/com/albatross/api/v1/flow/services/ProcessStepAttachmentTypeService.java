@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.queries.ProcessStepAttachmentTypeQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ProcessStepAttachmentTypeService {
   public List<ProcessStepAttachmentType> getStepTypes(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    return sqlCache.query("processStepAttachmentType.getStepTypes", params, ProcessStepAttachmentType.class);
+    return sqlCache.queryBySql(ProcessStepAttachmentTypeQuery.getStepTypes, params, ProcessStepAttachmentType.class);
   }
 
   public List<ProcessStepAttachmentType> getAvailableTypesForStep(Long processStepId) {
@@ -39,13 +40,13 @@ public class ProcessStepAttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
     params.put("companyId", currentUser.getCompanyId());
-    return sqlCache.query("processStepAttachmentType.getAvailableTypesForStep", params, ProcessStepAttachmentType.class);
+    return sqlCache.queryBySql(ProcessStepAttachmentTypeQuery.getAvailableTypesForStep, params, ProcessStepAttachmentType.class);
   }
 
   public Optional<ProcessStepAttachmentType> getProcessStepAttachmentType(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<ProcessStepAttachmentType> result = sqlCache.get("processStepAttachmentType.get", params, new ProcessStepAttachmentTypeMapper<>(ProcessStepAttachmentType.class, om));
+    Optional<ProcessStepAttachmentType> result = sqlCache.getBySql(ProcessStepAttachmentTypeQuery.get, params, new ProcessStepAttachmentTypeMapper<>(ProcessStepAttachmentType.class, om));
     return result;
   }
 
@@ -56,7 +57,7 @@ public class ProcessStepAttachmentTypeService {
     params.put("processStepId", processStepId);
     params.put("createdById", currentUser.trueUserId());
     params.put("attachmentTypeId", processStepAttachmentType.getAttachmentTypeId());
-    Long id = sqlCache.updateReturningId("processStepAttachmentType.addTypeToStep", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(ProcessStepAttachmentTypeQuery.addTypeToStep, params, "id").longValue();
     return getProcessStepAttachmentType(id);
   }
 
@@ -69,7 +70,7 @@ public class ProcessStepAttachmentTypeService {
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", at.getId());
       // save each display_order
-      sqlCache.update("processStepAttachmentType.updateDisplayOrder", params);
+      sqlCache.updateBySql(ProcessStepAttachmentTypeQuery.updateDisplayOrder, params);
     }
   }
 
@@ -82,8 +83,7 @@ public class ProcessStepAttachmentTypeService {
     params.put("allowUpload", null != attachmentType.getAllowUpload() && attachmentType.getAllowUpload());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", attachmentType.getId());
-    String sqlKey = "processStepAttachmentType.update";
-    sqlCache.update(sqlKey, params);
+    sqlCache.updateBySql(ProcessStepAttachmentTypeQuery.update, params);
   }
 
   public void deleteTypeFromStep(Long id) {
@@ -91,7 +91,7 @@ public class ProcessStepAttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("userId", currentUser.trueUserId());
-    sqlCache.update("processStepAttachmentType.deleteTypeFromStep", params);
+    sqlCache.updateBySql(ProcessStepAttachmentTypeQuery.deleteTypeFromStep, params);
   }
 
   public static class ProcessStepAttachmentTypeMapper<T> extends BeanPropertyRowMapper<T> {

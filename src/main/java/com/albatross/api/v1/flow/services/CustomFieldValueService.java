@@ -6,7 +6,10 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.CustomFieldGroupAssignmentQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
+import com.albatross.api.v1.flow.queries.customFieldValues.ProjectCfvQuery;
+import com.albatross.api.v1.flow.queries.customFieldValues.UserCfvQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -76,10 +79,10 @@ public class CustomFieldValueService {
     }
   }
 
-  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, ObjectType objectType) {
     return updateCustomFieldValues(values, sourceId, objectType, null, false);
   }
-  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType, Long secondaryId, Boolean doCustomAttachmentLoad) {
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, ObjectType objectType, Long secondaryId, Boolean doCustomAttachmentLoad) {
     User currentUser = securityService.getCurrentUser();
     try {
       for (CustomFieldValue cfv : values) {
@@ -104,8 +107,7 @@ public class CustomFieldValueService {
         //only used on upsert
         params.put("id", cfv.getId());
 
-        String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
-        sqlCache.update(sql, params);
+        sqlCache.updateBySql(objectType.upsertCustomFieldValueQuery, params);
       }
       return getCustomFieldGroupsAndValues(objectType, sourceId, secondaryId, doCustomAttachmentLoad);
     } catch (Exception e) {
@@ -115,11 +117,11 @@ public class CustomFieldValueService {
   }
 
   //overloading cuz im too lazy to go fix it everywhere
-  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
+  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(ObjectType objectType, Long id) {
     return getCustomFieldGroupsAndValues(objectType, id, null, false);
   }
 
-  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id, Long secondaryId, Boolean doCustomAttachmentLoad) {
+  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(ObjectType objectType, Long id, Long secondaryId, Boolean doCustomAttachmentLoad) {
     //todo: @randa - this has a security bug - if a user were to send in a contact id for a company they did not have access to it would still load the data
     try {
       User user;
@@ -137,13 +139,13 @@ public class CustomFieldValueService {
       }
 
       HashMap<String, Object> params = new HashMap<>();
-      params.put("objectTypeId", ObjectType.get(objectType).id);
+      params.put("objectTypeId", objectType.id);
       params.put("sourceId", id);
       //this is new and only required for attachments because we need to know the attachmentTypeId AND the attachmentId in order to load these values
       params.put("secondarySourceId", secondaryId);
       params.put("userPositions", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
       params.put("systemAdmin", systemAdmin);
-      String sqlPrefix = "customFieldValues." + objectType;
+      String sqlPrefix = "customFieldValues." + objectType.textValue();
 
 //    note: this company id needs to be the company_id of the object (contact, project, org, process_step, user) so that users in the parent can see the custom field groups still
       Long companyId;
@@ -152,11 +154,11 @@ public class CustomFieldValueService {
       } else if(objectType.equals("event")) {
         companyId = sqlCache.queryForObjectBySql(ProjectProcessStepEventQuery.getCompanyId, params, Long.class);
       } else {
-        companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
+        companyId = sqlCache.queryForObjectBySql(objectType.getCompanyIdQuery, params, Long.class);
       }
       params.put("companyId", companyId);
 
-      List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+      List<CustomFieldGroup> fieldGroups = sqlCache.queryBySql(objectType.getCustomFieldGroupsAndValuesQuery, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
       if(doCustomAttachmentLoad) {
         //secondaryId = attachmentId
@@ -233,8 +235,9 @@ public class CustomFieldValueService {
     if(optionalObj.isPresent()) {
       AttachmentObject obj = optionalObj.get();
       params.put("idToUse", obj.idToUse);
+      //todo: fix this
       String sqlPrefix = "customFieldValues." + obj.objectTypeText + ".getAncillaryCustomFieldGroupsAndValuesForAttachments";
-      List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+      List<CustomFieldGroup> fieldGroups = sqlCache.queryBySql(sqlPrefix, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
       for(CustomFieldGroup group : fieldGroups) {
         for (CustomFieldValue value : group.getCustomFieldValues()) {
           handleCustomListValueForCfv(value, value.getProjectId(), currentUser.getId(), currentUser.getCompanyId(), null);
@@ -256,7 +259,7 @@ public class CustomFieldValueService {
     params.put("timestampValue", cfv.getTimestampValue());
     params.put("dateValue", cfv.getDateValue());
     params.put("userId", user.trueUserId());
-    sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
+    sqlCache.updateBySql(ProjectCfvQuery.updateValueUsingCfId, params);
   }
 
   public List<CustomFieldValue> getUserProfileFields(Long companyId, Long objectTypeId) {
@@ -267,7 +270,7 @@ public class CustomFieldValueService {
     params.put("objectTypeId", objectTypeId);
     params.put("userId", user.trueUserId());
 
-    List<CustomFieldValue> results = sqlCache.query("customFieldValues.user.getUserProfileFields", params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
+    List<CustomFieldValue> results = sqlCache.queryBySql(UserCfvQuery.getUserProfileFields, params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
 
     for(CustomFieldValue cv : results) {
       handleCustomListValueForCfv(cv, null, user.trueUserId(), realCompanyId, null);
@@ -277,7 +280,7 @@ public class CustomFieldValueService {
   }
 
   public List<Long> getIdsByPPSId(Long ppsId) {
-    return sqlCache.query("customFieldGroupAssignment.getIdsByPPSId", Map.of("ppsId", ppsId), new SingleColumnRowMapper<>(Long.class));
+    return sqlCache.queryBySql(CustomFieldGroupAssignmentQuery.getIdsByPPSId, Map.of("ppsId", ppsId), new SingleColumnRowMapper<>(Long.class));
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

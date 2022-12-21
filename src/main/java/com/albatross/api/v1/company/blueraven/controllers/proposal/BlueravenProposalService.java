@@ -22,6 +22,7 @@ import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValue
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
@@ -144,7 +145,7 @@ public class BlueravenProposalService {
 
   private void updateCustomFieldValue(@NonNull Long projectId, @NonNull Long userId, @NonNull Long cfgaId, @NonNull String value) {
     final Map<String, Object> params = Map.of("projectId", projectId, "userId", userId, "cfgaId", cfgaId, "value", value);
-    sqlCache.query("customFieldValue.updateValueUsingFunction", params, String.class);
+    sqlCache.queryBySql(CustomFieldValueQuery.updateValueUsingFunction, params, String.class);
   }
 
   private Long insertProjectProcessStep(@NonNull Long projectId, @NonNull Long processStepId) {

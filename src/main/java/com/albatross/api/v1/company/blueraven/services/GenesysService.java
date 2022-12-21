@@ -416,7 +416,7 @@ public class GenesysService {
 
     List<CustomFieldGroup> customFieldGroups =
         customFieldValueService.getCustomFieldGroupsAndValues(
-            ObjectType.CONTACT.toString(), contactId);
+            ObjectType.CONTACT, contactId);
     List<CustomFieldValue> values = customFieldGroups.get(0).getCustomFieldValues();
     // Add Lead Level custom field so that value gets pulled
     values.add(
@@ -819,7 +819,7 @@ public class GenesysService {
     for (Contact contact : contacts) {
       List<CustomFieldGroup> customFieldGroups =
           customFieldValueService.getCustomFieldGroupsAndValues(
-              ObjectType.CONTACT.toString(), contact.getId());
+              ObjectType.CONTACT, contact.getId());
       List<CustomFieldValue> values = customFieldGroups.get(0).getCustomFieldValues();
 
       CustomFieldValue genesysContactListName = new CustomFieldValue();

@@ -1,0 +1,937 @@
+package com.albatross.api.v1.flow.queries;
+
+public class ProcessStepEventQuery {
+
+  //language=PostgreSQL
+  public final static String getStepEvents = """
+    select pse.id,
+           pse.process_step_id,
+           pse.initial_company_event_status_type_id,
+           cest.event_status_type as initial_event_status_type,
+           pse.event_id,
+           pse.archived,
+           e.event_name,
+           pse.display_order,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(psea)))
+                      FROM (
+                             SELECT psea.id,
+                                    psea.content,
+                                    psea.bg_color as "bgColor",
+                                    psea.color,
+                                    at.action_type as "actionType",
+                                    psea.action_type_id as "actionTypeId",
+                                    psea.action_name as "actionName",
+                                    psea.require_start_time as "requireStartTime",
+                                    psea.require_end_time as "requireEndTime",
+                                    psea.require_resource as "requireResource",
+                                    psea.hide_from_web as "hideFromWeb",
+                                    psea.hide_from_mobile as "hideFromMobile",
+                                    psea.process_step_event_id as "processStepEventId",
+                                    psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                    psea.company_event_status_type_id as "companyEventStatusTypeId",
+                                    psea.created_by_id as "createdById",
+                                    psea.modified_by_id as "modifiedById",
+                                    cpsst.process_step_status_type as "processStepStatusType",
+                                    cest.event_status_type as "eventStatusType",
+                                    psea.archived,
+                                    psea.display_order as "displayOrder"
+                             FROM flow.process_step_event_action psea
+                                inner join flow.action_type at on at.id = psea.action_type_id
+                                    left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+                                    left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+                             WHERE psea.process_step_event_id = pse.id
+                               AND psea.archived is not true
+                               ORDER BY psea.display_order) psea), '[]') AS "processStepEventActions"
+    from flow.process_step_event pse
+           inner join flow.event e on pse.event_id = e.id
+           left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
+    where pse.process_step_id = :processStepId
+      and e.resource_custom_field_id is not null
+      and pse.archived is not true
+      order by pse.display_order
+        """;
+
+  //language=PostgreSQL
+  public final static String getAvailableEventsForStep = """
+    select e.id,
+                 e.event_name,
+                 e.archived,
+                 coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(statuses)))
+                      FROM (
+                             select
+                               cest.id,
+                               cest.event_status_type as "eventStatusType",
+                               ecest.archived,
+                               est.event_status_type as "rootEventStatusType",
+                               cest.event_status_type_id as "eventStatusTypeId"
+                             from flow.event_company_event_status_type ecest
+                                    inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
+                                    inner join flow.event_status_type est on cest.event_status_type_id = est.id
+                             where ecest.event_id = e.id
+                               and ecest.archived is not true
+                           ) statuses), '[]') AS "companyEventStatusTypes"
+          from flow.event e
+          where e.archived is not true
+          and e.company_id = :companyId
+          and not exists (
+              select pse.event_id
+              from flow.process_step_event pse
+              where pse.process_step_id = :processStepId
+                and pse.event_id = e.id
+                and pse.archived is not true
+            )
+            order by e.event_name
+        """;
+
+  //language=PostgreSQL
+  public final static String get = """
+    select pse.id,
+               pse.process_step_id,
+               pse.event_id,
+               pse.initial_company_event_status_type_id,
+               cest.event_status_type as initialEventStatusType,
+               e.event_name,
+               pse.archived,
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(psea)))
+                          FROM (
+                                 SELECT psea.id,
+                                        psea.action_type_id as "actionTypeId",
+                                        psea.content,
+                                        psea.bg_color as "bgColor",
+                                        psea.color,
+                                        at.action_type as "actionType",
+                                        psea.action_name as "actionName",
+                                        psea.require_start_time as "requireStartTime",
+                                        psea.require_end_time as "requireEndTime",
+                                        psea.require_resource as "requireResource",
+                                        psea.hide_from_web as "hideFromWeb",
+                                        psea.hide_from_mobile as "hideFromMobile",
+                                        psea.process_step_event_id as "processStepEventId",
+                                        psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                        psea.company_event_status_type_id as "companyEventStatusTypeId",
+                                        psea.created_by_id as "createdById",
+                                        psea.modified_by_id as "modifiedById",
+                                        cpsst.process_step_status_type as "processStepStatusType",
+                                        cest.event_status_type as "eventStatusType",
+                                        psea.archived,
+                                        psea.display_order as "displayOrder",
+                                        psea.always_enabled as "alwaysEnabled",
+                                        psea.multiple_uses as "multipleUses",
+                                        coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(logic)))
+                                                   FROM (
+                                                        SELECT psl.id,
+                                                               psl.archived,
+                                                               psl.process_step_event_requirement_id    as "processStepEventRequirementId",
+                                                               psl.operation_type_id                    as "operationTypeId",
+                                                               ot.operation_type                        as "operationType",
+                                                               ot.id                                    as "operationTypeId",
+                                                               ot.operation_code                        as "operationCode",
+                                                               psl.created_by_id                        as "createdById",
+                                                               psl.modified_by_id                       as "modifiedById",
+                                                               pser.requirement_nbr                     as "requirementNbr",
+                                                               pser.immutable                           as "processStepRequirementImmutable",
+                                                               pser.process_step_requirement_type_id    as "processStepRequirementTypeId",
+                                                               psrt.process_step_requirement_type       as "processStepRequirementType",
+                                                               psl.sql_order                            as "sqlOrder",
+                                                               opt.operator_type                        as "operatorType",
+                                                               pser.requirement_value                   as "requirementValue",
+                                                               pser.secondary_requirement_value         as "secondaryRequirementValue",
+                                                               ps.process_step_name                     as "parentName",
+                                                               rps.process_step_name                    as "referenceProcessStepName",
+                                                               cf.field_name                            as "fieldName",
+                                                               cfn.company_function_name                as "companyFunctionName",
+                                                               (select json_build_object(
+                                                                           'id', dtr.id,
+                                                                           'dataTypeValue', dtr.data_type_value,
+                                                                           'secondaryRequirement', dtr.secondary_requirement
+                                                                         ))                             as "dataTypeRequirement",
+                                                               (select case
+                                                                         when lov.id is not null then json_build_object(
+                                                                             'id', lov.id,
+                                                                             'name', lov.name
+                                                                           )
+                                                                         else '{}' end)                 as "listOfValue",
+                                                               case
+                                                                 when pser.process_step_requirement_type_id = 7 then
+                                                                   coalesce((
+                                                                              SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                                              FROM (
+                                                                                     select pscpsst.company_process_step_status_type_id as id,
+                                                                                            concat(cpsst.process_step_status_type, ' (', psst.process_step_status_type,
+                                                                                                   ')')                                 as name
+                                                                                     from flow.process_step_company_process_step_status_type pscpsst
+                                                                                            inner join flow.company_process_step_status_type cpsst
+                                                                                                       on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                                            inner join flow.process_step_status_type psst
+                                                                                                       on psst.id = cpsst.process_step_status_type_id
+                                                                                     where pscpsst.process_step_id = pser.reference_process_step_id
+                                                                                       and pscpsst.archived is not true
+                                                                                       and cpsst.id = any (pser.list_of_value_ids)
+                                                                                   ) lov), '[]')
+                                                                 when pser.process_step_requirement_type_id = 8 then
+                                                                   coalesce((
+                                                                              SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                                              FROM (
+                                                                                     select distinct psst.id,
+                                                                                                     psst.process_step_status_type as name
+                                                                                     from flow.process_step_company_process_step_status_type pscpsst
+                                                                                            inner join flow.company_process_step_status_type cpsst
+                                                                                                       on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                                            inner join flow.process_step_status_type psst
+                                                                                                       on psst.id = cpsst.process_step_status_type_id
+                                                                                     where pscpsst.process_step_id = pser.reference_process_step_id
+                                                                                       and pscpsst.archived is not true
+                                                                                       and cpsst.id = any (pser.list_of_value_ids)
+                                                                                   ) lov), '[]')
+                                                                 when pser.process_step_requirement_type_id = 9 then
+                                                                   coalesce((
+                                                                              SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                                              FROM (
+                                                                                     select cpst.id,
+                                                                                            concat(cpst.project_status_type, ' (', pst.project_status_type, ')') as name
+                                                                                     from flow.company_project_status_type cpst
+                                                                                            inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+                                                                                     where cpst.archived is not true
+                                                                                       and cpst.id = any (pser.list_of_value_ids)
+                                                                                   ) lov), '[]')
+                                                                 when pser.process_step_requirement_type_id = 10 then
+                                                                   coalesce((
+                                                                              SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                                              FROM (
+                                                                                     select pst.id,
+                                                                                            pst.project_status_type as name
+                                                                                     from flow.project_status_type pst
+                                                                                     where pst.archived is not true
+                                                                                       and pst.id = any (pser.list_of_value_ids)
+                                                                                   ) lov), '[]')
+                                                                 when pser.process_step_requirement_type_id = 11 then
+                                                                   coalesce((
+                                                                              SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                                              FROM (
+                                                                                     select est.id,
+                                                                                            est.event_status_type as name
+                                                                                     from flow.company_event_status_type est
+                                                                                     where est.archived is not true
+                                                                                       and est.id = any (pser.list_of_value_ids)
+                                                                                   ) lov), '[]')
+                                                                 else coalesce((
+                                                                                 SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                                                 FROM (
+                                                                                        select lv.id,
+                                                                                               lv.name
+                                                                                        from flow.list_of_value lv
+                                                                                        where lv.id = any (pser.list_of_value_ids)
+                                                                                      ) lov), '[]') end AS "listOfValues"
+                                                        FROM flow.process_step_event_action_logic psl
+                                                               left join flow.operation_type ot on ot.id = psl.operation_type_id
+                                                               left join flow.process_step_event_requirement pser on pser.id = psl.process_step_event_requirement_id
+                                                               left join flow.process_step_requirement_type psrt on pser.process_step_requirement_type_id = psrt.id
+                                                               left join flow.operator_type opt on opt.id = pser.operator_type_id
+                                                               left join flow.custom_field_group_assignment cfga on cfga.id = pser.custom_field_group_assignment_id
+                                                               left join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                                               left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                                               left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                                               left join flow.process_step ps on ps.id = cfg.process_step_id
+                                                               left join flow.process_step rps on rps.id = pser.reference_process_step_id
+                                                               left join flow.company_function cfn on cfn.id = pser.company_function_id
+                                                               left join flow.db_function df on df.id = cfn.db_function_id
+                                                               left join flow.data_type_requirement dtr on dtr.id = pser.data_type_requirement_id
+                                                               left join flow.list_of_value lov on lov.id = pser.list_of_value_id
+                                                        WHERE psl.process_step_event_action_id = psea.id
+                                                          and psl.archived is not true
+                                                        ORDER BY psl.sql_order
+                                                           ) logic), '[]') AS "processStepEventLogicList",
+                                                          coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(childFn)))
+                                               FROM (
+                                                      SELECT psacf.id,
+                                                             psacf.archived,
+                                                             psacf.process_step_event_action_id as "processStepActionId",
+                                                             psacf.company_function_id as "companyFunctionId",
+                                                             psacf.display_order as "displayOrder",
+                                                             psacf.created_by_id as "createdById",
+                                                             psacf.modified_by_id as "modifiedById",
+                                                             cf.company_function_name as "companyFunctionName",
+                                                             coalesce((
+                                                                        SELECT array_to_json(array_agg(row_to_json(params)))
+                                                                        FROM (
+                                                                               select apdv.id,
+                                                                                      apdv.archived,
+                                                                                      dfp.db_function_id as "dbFunctionId",
+                                                                                      dfp.parameter_name as "parameterName",
+                                                                                      dfp.data_type_id as "dataTypeId",
+                                                                                      dfp.id as "dbFunctionParamId",
+                                                                                      dfp.description,
+                                                                                      apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
+                                                                                      apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
+                                                                                      apdv.dynamic_value as "dynamicValue"
+                                                                               from flow.db_function_param dfp
+                                                                                      left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = psacf.id
+                                                                               where dfp.db_function_id = cf.db_function_id
+                                                                                 and dfp.parameter_type_id = 2
+                                                                                 and apdv.archived is not true
+                                                                                 and dfp.archived is not true
+                                                                               order by dfp.display_order
+                                                                             ) params), '[]') AS "actionParamDynamicValues"
+                                                      FROM flow.process_step_event_action_company_function psacf
+                                                             inner join flow.company_function cf on cf.id = psacf.company_function_id
+                                                      WHERE psacf.process_step_event_action_id = psea.id
+                                                        and psacf.archived is not true
+                                                      order by psacf.display_order, cf.company_function_name
+                                                    ) childFn), '[]') AS "childFunctions",
+                                          coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(links)))
+                                               FROM (
+                                                      SELECT psal.id,
+                                                             psal.archived,
+                                                             psal.process_step_event_action_id as "processStepEventActionId",
+                                                             psal.created_by_id as "createdById",
+                                                             psal.modified_by_id as "modifiedById",
+                                                             l.link,
+                                                             l.url
+                                                      FROM flow.process_step_event_action_link psal
+                                                             inner join flow.link l on l.id = psal.link_id
+                                                      WHERE psal.process_step_event_action_id = psea.id
+                                                        and psal.archived is not true
+                                                      order by l.link
+                                                    ) links), '[]') AS "childLinks",
+                                        coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(fields)))
+                                                   FROM (
+                                                          select pseaf.id,
+                                                                 cf.id as "customFieldId",
+                                                                 cdt.data_type_id as "dataTypeId",
+                                                                 pseaf.process_step_event_action_id as "processStepEventActionId",
+                                                                 cfg.group_name as "groupName",
+                                                                 cf.field_name as "fieldName",
+                                                                 cfga.id as "customFieldGroupAssignmentId",
+                                                                 coalesce(pseaf.required, false) as required,
+                                                                 coalesce(not pseaf.required, false) as optional
+                                                          from flow.custom_field_group_assignment cfga
+                                                                 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                                                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                                                 inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                                                 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                                                                 left join flow.process_step_event_action_field pseaf on cfga.id = pseaf.custom_field_group_assignment_id and pseaf.process_step_event_action_id = psea.id and pseaf.archived is false
+                                                          where cot.object_type_id = 6
+                                                            and cfga.archived is not true
+                                                            and cf.archived is not true
+                                                            and cfg.archived is not true
+                                                            and cfg.event_id = e.id
+                                                          order by cfg.group_order, cfga.field_order ) fields), '[]') AS "customFields"
+                                 FROM flow.process_step_event_action psea
+                                 inner join flow.action_type at on at.id = psea.action_type_id
+                                        left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+                                        left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+                                 WHERE psea.process_step_event_id = pse.id
+                                   AND psea.archived is not true
+                                 ORDER BY psea.display_order) psea), '[]') AS "processStepEventActions",
+               coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(workQueueTypes)))
+                          FROM (
+                                 SELECT pswqt.id,
+                                        pswqt.work_queue_type_id as "workQueueTypeId",
+                                        pswqt.process_step_event_id as "processStepEventId",
+                                        wqt.work_queue_type as "workQueueType",
+                                        wqc.work_queue_category as "workQueueCategory",
+                                        pswqt.archived,
+                                        coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(projectStatuses)))
+                                                   FROM (
+                                                          SELECT pswqtpst.id,
+                                                                 pswqtpst.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId",
+                                                                 pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
+                                                                 coalesce(pswqtpst.project_status_type_id, cpst.project_status_type_id) as "projectStatusTypeId",
+                                                                 case when pswqtpst.project_status_type_id is not null then true else false end as "isRoot",
+                                                                 case when pswqtpst.project_status_type_id is not null then 'Category' else 'Project Status' end as "group",
+                                                                 case when pswqtpst.project_status_type_id is not null then concat(coalesce(cpst.project_status_type, pst.project_status_type), 'PST') else concat(coalesce(cpst.project_status_type, pst.project_status_type), 'CPST') end as "uniqueText",
+                                                                 pswqtpst.archived,
+                                                                 coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType"
+                                                          FROM flow.process_step_event_work_queue_type_project_status_type pswqtpst
+                                                                 left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id
+                                                                 left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
+                                                          WHERE pswqtpst.process_step_event_work_queue_type_id = pswqt.id AND pswqtpst.archived is not true
+                                                          order by pst.project_status_type, cpst.project_status_type
+                                                        ) projectStatuses), '[]') AS "projectStatuses",
+                                        coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(processStepStatuses)))
+                                                   FROM (
+                                                          SELECT pswqtpsst.id,
+                                                                 pswqtpsst.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId",
+                                                                 pswqtpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                                                 coalesce(pswqtpsst.process_step_status_type_id, cpsst.process_step_status_type_id) as "processStepStatusTypeId",
+                                                                 pswqtpsst.archived,
+                                                                 case when pswqtpsst.process_step_status_type_id is not null then true else false end as "isRoot",
+                                                                 case when pswqtpsst.process_step_status_type_id is not null then 'Category' else 'Process Step Status' end as "group",
+                                                                 case when pswqtpsst.process_step_status_type_id is not null then concat(coalesce(cpsst.process_step_status_type, psst.process_step_status_type), 'PSST') else concat(coalesce(cpsst.process_step_status_type, psst.process_step_status_type), 'CPSST') end as "uniqueText",
+                                                                 coalesce(cpsst.process_step_status_type, psst.process_step_status_type) as "processStepStatusType"
+                                                          FROM flow.process_step_event_work_queue_type_process_step_status_type pswqtpsst
+                                                                 left join flow.company_process_step_status_type cpsst on pswqtpsst.company_process_step_status_type_id = cpsst.id
+                                                                 left join flow.process_step_status_type psst on pswqtpsst.process_step_status_type_id = psst.id
+                                                          WHERE pswqtpsst.process_step_event_work_queue_type_id = pswqt.id AND pswqtpsst.archived is not true
+                                                          order by psst.process_step_status_type, cpsst.process_step_status_type
+                                                        ) processStepStatuses), '[]') AS "processStepStatuses",
+                                        coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(eventStatuses)))
+                                                   FROM (
+                                                          SELECT pswqtpst.id,
+                                                                 pswqtpst.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId",
+                                                                 pswqtpst.company_event_status_type_id as "companyEventStatusTypeId",
+                                                                 coalesce(pswqtpst.event_status_type_id, cpst.event_status_type_id) as "eventStatusTypeId",
+                                                                 case when pswqtpst.event_status_type_id is not null then true else false end as "isRoot",
+                                                                 case when pswqtpst.event_status_type_id is not null then 'Category' else 'Event Status' end as "group",
+                                                                 case when pswqtpst.event_status_type_id is not null then concat(coalesce(cpst.event_status_type, pst.event_status_type), 'EST') else concat(coalesce(cpst.event_status_type, pst.event_status_type), 'CEST') end as "uniqueText",
+                                                                 pswqtpst.archived,
+                                                                 coalesce(cpst.event_status_type, pst.event_status_type) as "eventStatusType"
+                                                          FROM flow.process_step_event_work_queue_type_event_status_type pswqtpst
+                                                                 left join flow.company_event_status_type cpst on pswqtpst.company_event_status_type_id = cpst.id
+                                                                 left join flow.event_status_type pst on pswqtpst.event_status_type_id = pst.id
+                                                          WHERE pswqtpst.process_step_event_work_queue_type_id = pswqt.id AND pswqtpst.archived is not true
+                                                          order by pst.event_status_type, cpst.event_status_type
+                                                        ) eventStatuses), '[]') AS "eventStatuses"
+                                 FROM flow.process_step_event_work_queue_type pswqt
+                                        inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+                                        inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
+                                 WHERE pswqt.process_step_event_id = pse.id AND pswqt.archived is not true
+                                 order by wqt.work_queue_type
+                               ) workQueueTypes), '[]') AS "workQueueTypes"
+        from flow.process_step_event pse
+               inner join flow.event e on pse.event_id = e.id
+               inner join flow.company_event_status_type cest on pse.initial_company_event_status_type_id = cest.id
+        where pse.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String addEventToStep = """
+    insert into flow.process_step_event(process_step_id, event_id, created_by_id, initial_company_event_status_type_id, display_order)
+       values (:processStepId, :eventId, :createdById, :initialCompanyEventStatusTypeId,
+               (select coalesce(max(display_order) + 1, 0) from flow.process_step_event pse
+                 where process_step_id = :processStepId and archived is false))
+       """;
+
+  //language=PostgreSQL
+  public final static String updateStepEvent = """
+    update flow.process_step_event
+       set initial_company_event_status_type_id = :initialCompanyEventStatusTypeId,
+           date_modified = now(),
+           modified_by_id = :userId
+       where process_step_id = :processStepId
+       and event_id = :eventId
+       """;
+
+  //language=PostgreSQL
+  public final static String updateDisplayOrder = """
+    update flow.process_step_event
+           set display_order = :displayOrder,
+               modified_by_id = :modifiedById,
+               date_modified = now()
+           where id = :id
+       """;
+
+  //language=PostgreSQL
+  public final static String deleteEventFromStep = """
+    update flow.process_step_event
+        set archived = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String addStepEventAction = """
+    insert into flow.process_step_event_action(process_step_event_id, company_event_status_type_id, company_process_step_status_type_id, action_name, created_by_id, display_order, content, color, bg_color, action_type_id)
+        values(:processStepEventId, :companyEventStatusTypeId, :companyProcessStepStatusTypeId, :actionName, :userId,
+               (select coalesce(max(display_order) + 1, 0) from flow.process_step_event_action psea
+                where process_step_event_id = :processStepEventId and archived is false), :content, :color, :bgColor, :actionTypeId)
+        """;
+
+  //language=PostgreSQL
+  public final static String updateStepEventAction = """
+    update flow.process_step_event_action
+          set company_event_status_type_id = :companyEventStatusTypeId,
+              action_name = :actionName,
+              content = :content,
+              bg_color = :bgColor,
+              color = :color,
+              require_start_time = :requireStartTime,
+              require_end_time = :requireEndTime,
+              require_resource = :requireResource,
+              always_enabled = :alwaysEnabled,
+              multiple_uses = :multipleUses,
+              hide_from_web = :hideFromWeb,
+              hide_from_mobile = :hideFromMobile,
+              company_process_step_status_type_id = :companyProcessStepStatusTypeId,
+              modified_by_id = :userId,
+              date_modified = now()
+        where id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String updateActionDisplayOrder = """
+    update flow.process_step_event_action
+            set display_order = :displayOrder,
+                modified_by_id = :modifiedById,
+                date_modified = now()
+            where id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String duplicateAction = """
+    select * from flow.duplicate_event_action(:actionId::bigint, :userId::bigint, :companyId::bigint)
+        """;
+
+  //language=PostgreSQL
+  public final static String getStepEventAction = """
+    select  psea.*,
+            at.action_type as "actionType",
+            cpsst.process_step_status_type as "processStepStatusType",
+            cest.event_status_type as "eventStatusType",
+            coalesce((
+                       SELECT array_to_json(array_agg(row_to_json(links)))
+                       FROM (
+                              SELECT psal.id,
+                                     psal.archived,
+                                     psal.process_step_event_action_id as "processStepEventActionId",
+                                     psal.created_by_id as "createdById",
+                                     psal.modified_by_id as "modifiedById",
+                                     l.link,
+                                     l.url
+                              FROM flow.process_step_event_action_link psal
+                                     inner join flow.link l on l.id = psal.link_id
+                              WHERE psal.process_step_event_action_id = psea.id
+                                and psal.archived is not true
+                              order by l.link
+                            ) links), '[]') AS "childLinks",
+            coalesce((
+                       SELECT array_to_json(array_agg(row_to_json(logic)))
+                       FROM (
+                              SELECT psl.id,
+                                     psl.archived,
+                                     psl.process_step_event_requirement_id as "processStepEventRequirementId",
+                                     psl.operation_type_id as "operationTypeId",
+                                     ot.operation_type as "operationType",
+                                     ot.operation_code as "operationCode",
+                                     psl.created_by_id as "createdById",
+                                     psl.modified_by_id as "modifiedById",
+                                     psr.requirement_nbr as "requirementNbr",
+                                     psr.immutable as "processStepRequirementImmutable",
+                                     psl.sql_order as "sqlOrder",
+                                     psr.process_step_requirement_type_id as "processStepRequirementTypeId",
+                                     psrt.process_step_requirement_type as "processStepRequirementType",
+                                     psl.sql_order as "sqlOrder",
+                                     opt.operator_type as "operatorType",
+                                     psr.requirement_value as "requirementValue",
+                                     psr.secondary_requirement_value as "secondaryRequirementValue",
+                                     ps.process_step_name as "parentName",
+                                     rps.process_step_name as "referenceProcessStepName",
+                                     cf.field_name as "fieldName",
+                                     cfn.company_function_name as "companyFunctionName",
+                                     (select json_build_object(
+                                                 'id', dtr.id,
+                                                 'dataTypeValue', dtr.data_type_value,
+                                                 'secondaryRequirement', dtr.secondary_requirement
+                                               ))                                     as "dataTypeRequirement",
+                                     (select case when lov.id is not null then json_build_object(
+                                         'id', lov.id,
+                                         'name', lov.name
+                                       ) else '{}' end )                                     as "listOfValue",
+                                     case when psr.process_step_requirement_type_id = 7 then
+                                            coalesce((
+                                                       SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                       FROM (
+                                                              select pscpsst.company_process_step_status_type_id as id,
+                                                                     concat(cpsst.process_step_status_type, ' (', psst.process_step_status_type, ')')  as name
+                                                              from flow.process_step_company_process_step_status_type pscpsst
+                                                                     inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                     inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+                                                              where pscpsst.process_step_id = psr.reference_process_step_id
+                                                                and pscpsst.archived is not true
+                                                                and cpsst.id = any(psr.list_of_value_ids)
+                                                            ) lov), '[]')
+                                          when psr.process_step_requirement_type_id = 8 then
+                                            coalesce((
+                                                       SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                       FROM (
+                                                              select distinct psst.id,
+                                                                              psst.process_step_status_type  as name
+                                                              from flow.process_step_company_process_step_status_type pscpsst
+                                                                     inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                     inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+                                                              where pscpsst.process_step_id = psr.reference_process_step_id
+                                                                and pscpsst.archived is not true
+                                                                and cpsst.id = any(psr.list_of_value_ids)
+                                                            ) lov), '[]')
+                                          when psr.process_step_requirement_type_id = 9 then
+                                            coalesce((
+                                                       SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                       FROM (
+                                                              select cpst.id,
+                                                                     concat(cpst.project_status_type, ' (', pst.project_status_type, ')')  as name
+                                                              from flow.company_project_status_type cpst
+                                                                     inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+                                                              where cpst.archived is not true
+                                                                and cpst.id = any(psr.list_of_value_ids)
+                                                            ) lov), '[]')
+                                          when psr.process_step_requirement_type_id = 10 then
+                                            coalesce((
+                                                       SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                       FROM (
+                                                              select pst.id,
+                                                                     pst.project_status_type as name
+                                                              from flow.project_status_type pst
+                                                              where pst.archived is not true
+                                                                and pst.id = any(psr.list_of_value_ids)
+                                                            ) lov), '[]')
+                                          else coalesce((
+                                                          SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                          FROM (
+                                                                 select lv.id,
+                                                                        lv.name
+                                                                 from flow.list_of_value lv
+                                                                 where lv.id = any(psr.list_of_value_ids)
+                                                               ) lov), '[]') end AS "listOfValues"
+                              FROM flow.process_step_event_action_logic psl
+                                     left join flow.operation_type ot on ot.id = psl.operation_type_id
+                                     left join flow.process_step_event_requirement psr on psr.id = psl.process_step_event_requirement_id
+                                     left join flow.process_step_requirement_type psrt on psr.process_step_requirement_type_id = psrt.id
+                                     left join flow.operator_type opt on opt.id = psr.operator_type_id
+                                     left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+                                     left join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                     left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                     left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                     left join flow.process_step ps on ps.id = cfg.process_step_id
+                                     left join flow.process_step rps on rps.id = psr.reference_process_step_id
+                                     left join flow.company_function cfn on cfn.id = psr.company_function_id
+                                     left join flow.db_function df on df.id = cfn.db_function_id
+                                     left join flow.data_type_requirement dtr on dtr.id = psr.data_type_requirement_id
+                                     left join flow.list_of_value lov on lov.id = psr.list_of_value_id
+                              WHERE psl.process_step_event_action_id = psea.id
+                                and psl.archived is not true
+                              ORDER BY psl.sql_order ) logic), '[]') AS "processStepEventLogicList",
+            coalesce((
+                       SELECT array_to_json(array_agg(row_to_json(fields)))
+                       FROM (
+                              select pseaf.id,
+                                     cf.id as "customFieldId",
+                                     pseaf.process_step_event_action_id as "processStepEventActionId",
+                                     cfg.group_name as "groupName",
+                                     cf.field_name as "fieldName",
+                                     cfga.id as "customFieldGroupAssignmentId",
+                                     coalesce(pseaf.required, false) as required,
+                                     coalesce(not pseaf.required, false) as optional
+                              from flow.custom_field_group_assignment cfga
+                                     inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                     inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                     inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                                     left join flow.process_step_event_action_field pseaf on cfga.id = pseaf.custom_field_group_assignment_id and pseaf.process_step_event_action_id = psea.id and pseaf.archived is false
+                              where cot.object_type_id = 6
+                                and cfga.archived is not true
+                                and cf.archived is not true
+                                and cfg.archived is not true
+                                and cfg.event_id = pse.event_id
+                              order by cfg.group_order, cfga.field_order ) fields), '[]') AS "customFields"
+    from flow.process_step_event_action psea
+           inner join flow.action_type at on at.id = psea.action_type_id
+           inner join flow.process_step_event pse on psea.process_step_event_id = pse.id
+           left join flow.company_process_step_status_type cpsst on psea.company_process_step_status_type_id = cpsst.id
+           left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
+    where psea.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String deleteActionFromEvent = """
+    update flow.process_step_event_action
+        set archived = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String addLinkToAction = """
+    insert into flow.process_step_event_action_link (process_step_event_action_id, link_id, created_by_id, date_created, modified_by_id, date_modified)
+        values (:processStepEventActionId, :linkId, :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String getActionChildLink = """
+    select psal.id,
+          psal.process_step_event_action_id,
+          psal.link_id,
+          psal.archived,
+          psal.created_by_id,
+          psal.date_created,
+          psal.modified_by_id,
+          psal.date_modified,
+          l.link,
+          l.url
+       from flow.process_step_event_action_link psal
+           inner join flow.link l on l.id = psal.link_id
+       where psal.id = :id
+       """;
+
+  //language=PostgreSQL
+  public final static String deleteLinkFromAction = """
+    update flow.process_step_event_action_link
+          set archived = true,
+              modified_by_id = :modifiedById,
+              date_modified = now()
+        where id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String addChildFunctionToAction = """
+    insert into flow.process_step_event_action_company_function (process_step_event_action_id, company_function_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
+        values (:processStepEventActionId, :companyFunctionId, :displayOrder, :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String getActionChildFunction = """
+    select cp.id,
+           cp.process_step_event_action_id,
+           cp.company_function_id,
+           cp.display_order,
+           cp.archived,
+           cp.date_created,
+           cp.date_modified,
+           cp.created_by_id,
+           cp.modified_by_id,
+           cf.company_function_name,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(params)))
+                        FROM (
+                                 select apdv.id,
+                                        apdv.archived,
+                                        dfp.db_function_id as "dbFunctionId",
+                                        dfp.parameter_name as "parameterName",
+                                        dfp.data_type_id as "dataTypeId",
+                                        dfp.id as "dbFunctionParamId",
+                                        dfp.description,
+                                        apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
+                                        apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
+                                        apdv.dynamic_value as "dynamicValue"
+                                 from flow.db_function_param dfp
+                                          left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = cp.id
+                                 where dfp.db_function_id = cf.db_function_id
+                                   and dfp.parameter_type_id = 2
+                                   and apdv.archived is not true and
+                                       dfp.archived is not true
+                                   order by dfp.display_order
+                             ) params), '[]') AS "actionParamDynamicValues"
+        from flow.process_step_event_action_company_function cp
+                 inner join flow.company_function cf on cf.id = cp.company_function_id
+        where cp.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String deleteActionChildFunction = """
+    update flow.process_step_event_action_company_function
+         set archived = true,
+             modified_by_id = :modifiedById,
+             date_modified = now()
+       where id = :id
+       """;
+
+  //language=PostgreSQL
+  public final static String updateActionChildFunction = """
+    update flow.process_step_event_action_company_function
+         set display_order = :displayOrder,
+             modified_by_id = :modifiedById,
+             date_modified = now()
+       where id = :id
+       """;
+
+  //language=PostgreSQL
+  public final static String getChildFunctionsByPpsEventId = """
+    select
+          psacf.id,
+          psacf.archived,
+          psacf.process_step_event_action_id as "processStepEventActionId",
+          psacf.company_function_id as "companyFunctionId",
+          psacf.display_order as "displayOrder",
+          psacf.created_by_id as "createdById",
+          psacf.modified_by_id as "modifiedById",
+          cf.company_function_name as "companyFunctionName",
+          df.function_name as "functionName",
+          df.run_in_backend as "runInBackend",
+          df.creates_pps as "createsPps",
+          pps.project_id as "projectId",
+          coalesce((
+                     SELECT array_to_json(array_agg(row_to_json(params)))
+                     FROM (
+                            select
+                              apdv.id,
+                              apdv.archived,
+                              dfp.db_function_id as "dbFunctionId",
+                              dfp.parameter_name as "parameterName",
+                              dfp.data_type_id as "dataTypeId",
+                              dfp.id as "dbFunctionParamId",
+                              dfp.description,
+                              apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
+                              apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
+                              apdv.dynamic_value as "dynamicValue"
+                            from flow.db_function_param dfp
+                                   left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = psacf.id
+                            where
+                                dfp.db_function_id = cf.db_function_id and
+                                dfp.parameter_type_id = 2 and
+                              apdv.archived is not true and
+                              dfp.archived is not true
+                              order by dfp.display_order
+                          ) params), '[]') AS "actionParamDynamicValues",
+          coalesce((
+                     SELECT array_to_json(array_agg(row_to_json(params)))
+                     FROM (
+                            select dfp.data_type_id as "dataTypeId",
+                                   dfp.parameter_type_id as "parameterTypeId",
+                                   dfp.display_order as "displayOrder",
+                                   ppscfv.text_value as "textValue",
+                                   ppscfv.date_value as "dateValue",
+                                   ppscfv.timestamp_value as "timestampValue",
+                                   ppscfv.boolean_value as "booleanValue",
+                                   ppscfv.numeric_value as "numericValue",
+                                   ppscfv.int_value as "intValue",
+                                   dfp.system_value_id as "systemValueId",
+                                   apdv.dynamic_value as "dynamicValue"
+                            from flow.db_function_param dfp
+                                   left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true and cfp.company_function_id = cf.id
+                                   left join flow.system_value sv on sv.id = dfp.system_value_id
+                                   left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_event_action_company_function_id = psacf.id
+                                   left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = ppse.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
+                            where dfp.db_function_id = df.id
+                              and dfp.archived is not true
+                            order by dfp.display_order) params), '[]') AS "companyFunctionParams"
+        from flow.process_step_event_action_company_function psacf
+               inner join flow.company_function cf on cf.id = psacf.company_function_id
+               inner join flow.db_function df on df.id = cf.db_function_id
+               inner join flow.project_process_step_event ppse on ppse.id = :ppsEventId
+               inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+        where
+            psacf.process_step_event_action_id = :id and
+          psacf.archived is not true
+        order by
+          psacf.display_order,
+          cf.company_function_name
+        """;
+
+  //language=PostgreSQL
+  public final static String archiveOldLogic = """
+    update flow.process_step_event_action_logic
+        set archived = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where process_step_event_action_id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String insertLogic = """
+    insert into flow.process_step_event_action_logic (process_step_event_requirement_id, operation_type_id, sql_order, process_step_event_action_id, date_created, created_by_id)
+       values (:processStepEventRequirementId, :operationTypeId, :sqlOrder, :id, now(), :createdById)
+       """;
+
+  //language=PostgreSQL
+  public final static String updateRequiredFieldStatus = """
+    update flow.process_step_event_action_field
+           set required = :required,
+               modified_by_id = :userId,
+               date_modified = now()
+         where id = :pseafId
+       """;
+
+  //language=PostgreSQL
+  public final static String archiveRequiredFieldStatus = """
+    update flow.process_step_event_action_field
+         set archived = true,
+             modified_by_id = :userId,
+             date_modified = now()
+       where id = :pseafId
+       """;
+
+  //language=PostgreSQL
+  public final static String addRequiredFieldStatus = """
+    insert into flow.process_step_event_action_field(process_step_event_action_id, custom_field_group_assignment_id, required)
+    values (:actionId, :cfgaId, :required)
+    """;
+
+  //language=PostgreSQL
+  public final static String getStartTimeWhitelistedPositionIds = """
+    SELECT wlp.position_id
+        FROM flow.white_listed_position wlp
+        WHERE wlp.white_list_type_id = 6
+          and wlp.event_id = (
+            select pse.event_id
+            from flow.process_step_event pse
+            where pse.id = :processStepEventId)
+          AND wlp.archived is not true
+        """;
+
+
+  //language=PostgreSQL
+  public final static String actionLogicString = """
+    with logic as (
+                select case
+                   when ot.operation_type is not null then ot.operation_type
+                   when obt.id in (1, 2, 3, 4) then
+                     concat(upper(obt.object_type), ': ',
+                            case when ps.process_step_name is not null then concat(ps.process_step_name, ': ') end,
+                            cfg.group_name, ' - ', cf.field_name, ' ', opt.operator_type, ' ',
+                            coalesce(psr.requirement_value, dtr.data_type_value), case
+                                                                                    when psr.secondary_requirement_value is not null
+                                                                                      then concat('(', psr.secondary_requirement_value, ')') end,
+                            case
+                              when custom_sql_option_id is not null then concat('<', cf.custom_field_sql_key, '> Option: ',
+                                                                                custom_sql_option_id) end)
+                   when psr.company_function_id is not null then
+                     concat('FUNCTION: ', company_function_name, ' ', opt.operator_type, ' ',
+                            coalesce(psr.requirement_value, dtr.data_type_value))
+                   when process_step_requirement_type_id = 7 then
+                     concat('Company PS Status of ', ref_ps.process_step_name, ' in (', array_to_string(
+                         array(select process_step_status_type
+                               from flow.company_process_step_status_type cpst
+                               where cpst.id = any (list_of_value_ids)), ','), ')')
+                   when process_step_requirement_type_id = 8 then
+                     concat('ROOT PS Status of ', ref_ps.process_step_name, ' in (', array_to_string(
+                         array(select process_step_status_type
+                               from flow.process_step_status_type cpst
+                               where cpst.id = any (list_of_value_ids)), ','), ')')
+                   when process_step_requirement_type_id = 9 then
+                     concat('Company Project Status in (', array_to_string(array(select project_status_type
+                                                                                 from flow.company_project_status_type cpst
+                                                                                 where cpst.id = any (list_of_value_ids)), ','),
+                            ')')
+                   when process_step_requirement_type_id = 10 then
+                     concat('ROOT Project Status in (', array_to_string(array(select project_status_type
+                                                                              from flow.project_status_type cpst
+                                                                              where cpst.id = any (list_of_value_ids)), ','),
+                            ')')
+                   when process_step_requirement_type_id = 11 then
+                     concat('Company Event Status in (', array_to_string(array(select event_status_type
+                                                                              from flow.company_event_status_type cpst
+                                                                              where cpst.id = any (list_of_value_ids)), ','),
+                            ')')
+                   end as value
+          from flow.process_step_event_action_logic psl
+                 left join flow.operation_type ot on psl.operation_type_id = ot.id
+                 left join flow.process_step_event_requirement psr on psl.process_step_event_requirement_id = psr.id
+                 left join flow.operator_type opt on psr.operator_type_id = opt.id
+                 left join flow.data_type_requirement dtr on psr.data_type_requirement_id = dtr.id
+                 left join flow.custom_field_group_assignment cfga on psr.custom_field_group_assignment_id = cfga.id
+                 left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                 left join flow.process_step ps on cfg.process_step_id = ps.id
+                 left join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+                 left join flow.object_type obt on cot.object_type_id = obt.id
+                 left join flow.custom_field cf on cfga.custom_field_id = cf.id
+                 left join flow.company_function cfn on psr.company_function_id = cfn.id
+                 left join flow.process_step ref_ps on ref_ps.id = psr.reference_process_step_id
+          where psl.process_step_event_action_id = :actionId
+            and psl.archived is false
+          order by psl.sql_order
+        )
+        select array_to_string(array(select value from logic), ' ')
+        """;
+
+}

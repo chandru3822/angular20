@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ObjectTypeTab;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.ObjectTypeTabQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,14 +47,14 @@ public class ObjectTypeTabService {
     params.put("objectTypeId", objectTypeId);
     params.put("companyId", companyId);
 
-    return sqlCache.query("objectTypeTab.getProjectTabs", params, ObjectTypeTab.class);
+    return sqlCache.queryBySql(ObjectTypeTabQuery.getProjectTabs, params, ObjectTypeTab.class);
   }
 
   public ObjectTypeTab getTab(Long tabId) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", tabId);
 
-    return sqlCache.get("objectTypeTab.getTab", params, ObjectTypeTab.class).orElse(null);
+    return sqlCache.getBySql(ObjectTypeTabQuery.getTab, params, ObjectTypeTab.class).orElse(null);
   }
 
   public ObjectTypeTab saveTab(ObjectTypeTab tab, Long objectTypeId) {
@@ -69,9 +70,9 @@ public class ObjectTypeTabService {
     if (null != tab.getId()) {
       id = tab.getId();
       params.put("id", id);
-      sqlCache.update("objectTypeTab.updateTab", params);
+      sqlCache.updateBySql(ObjectTypeTabQuery.updateTab, params);
     } else {
-      id = sqlCache.updateReturningId("objectTypeTab.insertTab", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(ObjectTypeTabQuery.insertTab, params, "id").longValue();
     }
 
     return getTab(id);
@@ -86,7 +87,7 @@ public class ObjectTypeTabService {
       params.put("userId", currentUser.trueUserId());
       params.put("id", tab.getId());
       // save each display_order
-      sqlCache.update("objectTypeTab.updateTabDisplayOrder", params);
+      sqlCache.updateBySql(ObjectTypeTabQuery.updateTabDisplayOrder, params);
     }
   }
 
@@ -96,6 +97,6 @@ public class ObjectTypeTabService {
     Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.trueUserId());
     params.put("id", tabId);
-    sqlCache.update("objectTypeTab.deleteTab", params);
+    sqlCache.updateBySql(ObjectTypeTabQuery.deleteTab, params);
   }
 }

@@ -738,7 +738,7 @@ public class AvailabilityService {
             customFieldValueService.updateCustomFieldValues(
                 request.getCustomFieldValues(),
                 request.getProjectProcessStepEventId(),
-                ObjectType.EVENT.textValue());
+                ObjectType.EVENT);
           }
 
           // then run manually run the schedule event action which is process_step_action_id = 1

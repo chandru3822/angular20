@@ -256,7 +256,7 @@ public class BirdeyeService {
                 cfv.setCustomFieldId(customField.getCustomFieldId());
                 cfv.setTextValue(answer.getAnswer());
 
-                customFieldValueService.updateCustomFieldValues(List.of(cfv), invitation.getProjectId(), ObjectType.PROJECT.textValue());
+                customFieldValueService.updateCustomFieldValues(List.of(cfv), invitation.getProjectId(), ObjectType.PROJECT);
 
                 final BirdEyeApi.BirdEyeSurveyPageQuestion surveyQuestion = questions.getOrDefault(answer.getQuestionTitle(), null);
 

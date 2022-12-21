@@ -10,6 +10,7 @@ import com.albatross.api.v1.flow.model.Note;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.queries.NoteQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,7 @@ public class NoteService {
     params.put("typeId", typeId);
     params.put("primaryId", primaryId);
     params.put("companyId", currentUser.getCompanyId());
-    return sqlCache.query("note.getByPrimaryAndType", params, new NoteMapper<>(Note.class, om));
+    return sqlCache.queryBySql(NoteQuery.getByPrimaryAndType, params, new NoteMapper<>(Note.class, om));
   }
 
   public List<Note> getProjectProcessStepWorkQueueNotes(
@@ -58,8 +59,8 @@ public class NoteService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("processStepWorkQueueTypeId", processStepWorkQueueTypeId);
-    return sqlCache.query(
-        "note.getProjectProcessStepWorkQueueNotes", params, new NoteMapper<>(Note.class, om));
+    return sqlCache.queryBySql(
+      NoteQuery.getProjectProcessStepWorkQueueNotes, params, new NoteMapper<>(Note.class, om));
   }
 
   public Note getNote(Long noteId) {
@@ -67,7 +68,7 @@ public class NoteService {
     params.put("id", noteId);
     // currently won't return child notes. this is only called when saving a new note so it doesn't
     // matter, but would matter later on
-    return sqlCache.get("note.getNote", params, Note.class).orElse(null);
+    return sqlCache.getBySql(NoteQuery.getNote, params, Note.class).orElse(null);
   }
 
   public Note saveNote(Long typeId, Note note) {
@@ -96,9 +97,9 @@ public class NoteService {
     if (null != note.getId()) {
       noteId = note.getId();
       params.put("id", noteId);
-      sqlCache.update("note.updateNote", params);
+      sqlCache.updateBySql(NoteQuery.updateNote, params);
     } else {
-      noteId = sqlCache.updateReturningId("note.insertNote", params, "id").longValue();
+      noteId = sqlCache.updateBySqlReturningId(NoteQuery.insertNote, params, "id").longValue();
 
       HashMap<String, Object> p2 = new HashMap<>();
       if (isPpsWqtNote) {
@@ -106,25 +107,25 @@ public class NoteService {
         p2.put("processStepWorkQueueTypeId", note.getProcessStepWorkQueueTypeId());
         p2.put("noteId", noteId);
         p2.put("typeId", typeId);
-        sqlCache.update("note.insertProjectProcessStepWorkQueueNoteRelation", p2);
+        sqlCache.updateBySql(NoteQuery.insertProjectProcessStepWorkQueueNoteRelation, p2);
       } else if (isPpsEventWqtNote) {
         p2.put("projectProcessStepEventId", note.getProjectProcessStepEventId());
         p2.put("processStepEventWorkQueueTypeId", note.getProcessStepEventWorkQueueTypeId());
         p2.put("noteId", noteId);
         p2.put("typeId", typeId);
-        sqlCache.update("note.insertProjectProcessStepEventWorkQueueNoteRelation", p2);
+        sqlCache.updateBySql(NoteQuery.insertProjectProcessStepEventWorkQueueNoteRelation, p2);
       } else if (isProjectProdStats) {
         // isProjectProdStats is used for Installer Dashboard
         p2.put("projectId", note.getPrimaryId());
         p2.put("productionType", note.getInstallDashTile());
         p2.put("noteId", noteId);
-        sqlCache.update("note.insertProjectProdStatsNoteRelation", p2);
+        sqlCache.updateBySql(NoteQuery.insertProjectProdStatsNoteRelation, p2);
       } else {
         // add to the glue table only if it is a new note
         p2.put("primaryId", note.getPrimaryId());
         p2.put("noteId", noteId);
         p2.put("typeId", typeId);
-        sqlCache.query("note.insertNoteRelation", p2, String.class);
+        sqlCache.queryBySql(NoteQuery.insertNoteRelation, p2, String.class);
       }
     }
 
@@ -219,7 +220,7 @@ public class NoteService {
     params.put("noteId", noteId);
 
     params.put("modifiedById", currentUser.trueUserId());
-    sqlCache.update("note.deleteNote", params);
+    sqlCache.updateBySql(NoteQuery.deleteNote, params);
   }
 
   public static class NoteMapper<T> extends BeanPropertyRowMapper<T> {

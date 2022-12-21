@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
+import com.albatross.api.v1.flow.queries.ProcessStepRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +39,9 @@ public class ProjectProcessStepRequirementService {
 
     List<ProjectProcessStepRequirement> requirements;
     if(getEventRequirements) {
-       requirements = sqlCache.query("processStepRequirement.getEventActionRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+       requirements = sqlCache.queryBySql(ProcessStepRequirementQuery.getEventActionRequirementsWithValuesByProjectProcessStepId, params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
     } else {
-      requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+      requirements = sqlCache.queryBySql(ProcessStepRequirementQuery.getRequirementsWithValuesByProjectProcessStepId, params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
     }
 
     // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
