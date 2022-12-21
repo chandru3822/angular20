@@ -149,9 +149,9 @@ public class CustomFieldValueService {
 
 //    note: this company id needs to be the company_id of the object (contact, project, org, process_step, user) so that users in the parent can see the custom field groups still
       Long companyId;
-      if(objectType.equals("user")) {
+      if(objectType.textValue().equals("user")) {
         companyId = user.getCompanyId();
-      } else if(objectType.equals("event")) {
+      } else if(objectType.textValue().equals("event")) {
         companyId = sqlCache.queryForObjectBySql(ProjectProcessStepEventQuery.getCompanyId, params, Long.class);
       } else {
         companyId = sqlCache.queryForObjectBySql(objectType.getCompanyIdQuery, params, Long.class);
