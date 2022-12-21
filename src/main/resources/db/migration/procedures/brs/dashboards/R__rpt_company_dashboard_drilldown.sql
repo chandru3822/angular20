@@ -5,7 +5,7 @@
 CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard_drilldown(p_custom_start_date date, p_custom_end_date date,
                                                                p_company_id bigint, p_milestone_type_id bigint,
                                                                p_load_partners boolean default false,
-                                                               p_run_by_id bigint)
+                                                               p_run_by_id bigint default 99999999)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS
