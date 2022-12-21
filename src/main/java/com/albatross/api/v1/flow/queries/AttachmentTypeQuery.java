@@ -3,36 +3,6 @@ package com.albatross.api.v1.flow.queries;
 public class AttachmentTypeQuery {
 
   //language=PostgreSQL
-  public final static String projectGetAssignedTypes = """
-          select oat.id,
-                     oat.company_id,
-                     oat.attachment_type_id,
-                     oat.archived,
-                     at.attachment_type,
-                     oat.focused,
-                     oat.linkable,
-                     oat.allow_upload,
-                     oat.display_order,
-                     case when :allowUpload::boolean is true then (
-                       select cfga.id
-                       from flow.custom_field_group_assignment cfga
-                              left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
-                              left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
-                       where cfga.archived is false
-                         and (cfg2.id is not null or cfg.id is not null)
-                       limit 1
-                     ) is not null else false end as has_fields_assigned
-              from flow.project_attachment_type oat
-                     inner join flow.attachment_type at on oat.attachment_type_id = at.id
-              where oat.company_id = :companyId
-                and oat.archived is not true
-                and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
-                and case when :focused::boolean is true then oat.focused is true else 1=1 end
-                and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-              order by at.attachment_type
-    """;
-
-  //language=PostgreSQL
   public final static String getTypesForCompany = """
       select at.*,
              kp.key_pattern
@@ -151,7 +121,7 @@ public class AttachmentTypeQuery {
       """;
 
   //language=PostgreSQL
-  public final static String deleteType = """
+  public final static String deleteAttachmentType = """
           update flow.attachment_type
           set archived = true,
               modified_by_id = :modifiedById,
@@ -244,859 +214,6 @@ public class AttachmentTypeQuery {
             and case when :linkable::boolean is true then eat.linkable is true else 1=1 end
           order by at.attachment_type
       """;
-
-  //  CONTACT - should prob move to own file
-  //language=PostgreSQL
-  public final static String contactGetTypes = """
-    select oat.id,
-               oat.company_id,
-               oat.attachment_type_id,
-               oat.archived,
-               oat.focused,
-               oat.linkable,
-               oat.allow_upload,
-               at.attachment_type,
-               oat.display_order
-        from flow.contact_attachment_type oat
-               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-        where oat.company_id = :companyId
-          and oat.archived is not true
-        order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String contactGetAssignedTypes = """
-    select oat.id,
-               oat.company_id,
-               oat.attachment_type_id,
-               oat.archived,
-               at.attachment_type,
-               oat.focused,
-               oat.linkable,
-               oat.allow_upload,
-               oat.display_order,
-               (
-                 select cfga.id
-                 from flow.custom_field_group_assignment cfga
-                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
-                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
-                 where cfga.archived is false
-                   and (cfg2.id is not null or cfg.id is not null)
-                 limit 1
-               ) is not null as has_fields_assigned
-        from flow.contact_attachment_type oat
-               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-        where oat.company_id = :companyId
-          and oat.archived is not true
-          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
-          and case when :focused::boolean is true then oat.focused is true else 1=1 end
-          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-        order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String contactGetAvailableTypes = """
-    select at.id,
-                 at.attachment_type,
-                 at.archived
-          from flow.attachment_type at
-          where at.archived is not true
-            and at.company_id = :companyId
-            and at.is_system is false
-            and not exists (
-              select oat.attachment_type_id
-              from flow.contact_attachment_type oat
-              where oat.company_id = :companyId
-                and oat.attachment_type_id = at.id
-                and oat.archived is not true
-            )
-          order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String contactGet = """
-    select oat.id,
-               oat.company_id,
-               oat.attachment_type_id,
-               at.attachment_type,
-               oat.focused,
-               oat.linkable,
-               oat.allow_upload,
-               oat.archived,
-               coalesce((
-                          SELECT array_to_json(array_agg(row_to_json(cfGroups)))
-                          FROM (
-                                 SELECT cfg.id,
-                                        cfg.group_name as "groupName",
-                                        cot.object_type_id as "objectTypeId",
-                                        cot.id as "companyObjectTypeId",
-                                        cfg.archived,
-                                        cfg.group_order as "groupOrder",
-                                        cfg.process_step_id as "processStepId",
-                                        coalesce((
-                                                   SELECT array_to_json(array_agg(row_to_json(customFields)))
-                                                   FROM (
-                                                          SELECT cfga.id,
-                                                                 cfga.custom_field_group_id as "customFieldGroupId",
-                                                                 cfga.custom_field_id as "customFieldId",
-                                                                 cfga.use_parent_data as "useParentData",
-                                                                 cfga.id as "customFieldGroupAssignmentId",
-                                                                 cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                                                 cfga.field_order as "fieldOrder",
-                                                                 cfga.archived,
-                                                                 cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                                                 cfga.hidden as "customFieldGroupAssignmentHidden",
-                                                                 cfga.detail_view as "detailView",
-                                                                 cf.field_name as "fieldName",
-                                                                 cf.system_readonly as "systemReadonly",
-                                                                 cfg1.group_name as "groupName",
-                                                                 null as "eventName",
-                                                                 ps.process_step_name as "processStepName",
-                                                                 ot.object_type as "objectType",
-                                                                 '[]' as whiteListedPositions,
-                                                                 coalesce((
-                                                                            SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                                            FROM (
-                                                                                   SELECT wlp.id,
-                                                                                          wlp.position_id as "positionId",
-                                                                                          wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                                          wlp.created_by_id as "createdById",
-                                                                                          wlp.modified_by_id as "modifiedById",
-                                                                                          wlp.archived
-                                                                                   FROM flow.white_listed_position wlp
-                                                                                   WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                                     AND wlp.white_list_type_id = 2
-                                                                                     AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
-                                                          FROM flow.custom_field_group_assignment cfga
-                                                                 inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                                                                 inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                                                 inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
-                                                                 left join flow.process_step ps on ps.id = cfg1.process_step_id
-                                                                 inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
-                                                                 inner join flow.object_type ot on ot.id = cot.object_type_id
-                                                          WHERE cfga.custom_field_group_id = cfg.id
-                                                            AND cfga.archived is not true
-                                                            and cf.archived is not true
-                                                          ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
-                                 FROM flow.custom_field_group cfg
-                                        inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                                 WHERE cfg.contact_attachment_type_id = oat.id AND cfg.archived is not true
-                                 order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
-        from flow.contact_attachment_type oat
-               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-        where oat.id = :id
-        and oat.company_id = :companyId
-      """;
-
-  //language=PostgreSQL
-  public final static String contactAddType = """
-      insert into flow.contact_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
-      values (:companyId, :attachmentTypeId, :createdById,
-              (select coalesce(max(display_order) + 1, 0) from flow.contact_attachment_type
-               where company_id = :companyId and archived is false))
-    """;
-
-  //language=PostgreSQL
-  public final static String contactUpdateDisplayOrder = """
-        update flow.contact_attachment_type
-          set display_order = :displayOrder,
-              modified_by_id = :modifiedById,
-              date_modified = now()
-          where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String contactUpdate = """
-        update flow.contact_attachment_type
-          set focused = :focused,
-              linkable = :linkable,
-              allow_upload = :allowUpload,
-              modified_by_id = :modifiedById,
-              date_modified = now()
-          where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String contactDeleteType = """
-      update flow.contact_attachment_type
-      set archived = true,
-          date_modified = now(),
-          modified_by_id = :userId
-      where id = :id
-    """;
-
-  //  ORG - should prob move to own file
-  //language=PostgreSQL
-  public final static String orgGetTypes = """
-      select oat.id,
-             oat.company_id,
-             oat.attachment_type_id,
-             oat.archived,
-             at.attachment_type,
-             oat.focused,
-             oat.linkable,
-             oat.allow_upload,
-             oat.display_order
-      from flow.org_attachment_type oat
-             inner join flow.attachment_type at on oat.attachment_type_id = at.id
-      where oat.company_id = :companyId
-        and oat.archived is not true
-      order by at.attachment_type
-    """;
-
-  //language=PostgreSQL
-  public final static String orgGetAssignedTypes = """
-    select oat.id,
-               oat.company_id,
-               oat.attachment_type_id,
-               oat.archived,
-               at.attachment_type,
-               oat.focused,
-               oat.linkable,
-               oat.allow_upload,
-               oat.display_order,
-               (
-                 select cfga.id
-                 from flow.custom_field_group_assignment cfga
-                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
-                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
-                 where cfga.archived is false
-                   and (cfg2.id is not null or cfg.id is not null)
-                 limit 1
-               ) is not null as has_fields_assigned
-        from flow.org_attachment_type oat
-               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-        where oat.company_id = :companyId
-          and oat.archived is not true
-          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
-          and case when :focused::boolean is true then oat.focused is true else 1=1 end
-          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-        order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String orgGetAvailableTypes = """
-    select at.id,
-                 at.attachment_type,
-                 at.archived
-          from flow.attachment_type at
-          where at.archived is not true
-            and at.company_id = :companyId
-            and at.is_system is false
-            and not exists (
-              select oat.attachment_type_id
-              from flow.org_attachment_type oat
-              where oat.company_id = :companyId
-                and oat.attachment_type_id = at.id
-                and oat.archived is not true
-            )
-          order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String orgGet = """
-    select oat.id,
-              oat.company_id,
-              oat.attachment_type_id,
-              at.attachment_type,
-              oat.focused,
-              oat.linkable,
-              oat.allow_upload,
-              oat.archived,
-              coalesce((
-                         SELECT array_to_json(array_agg(row_to_json(cfGroups)))
-                         FROM (
-                                SELECT cfg.id,
-                                       cfg.group_name as "groupName",
-                                       cot.object_type_id as "objectTypeId",
-                                       cot.id as "companyObjectTypeId",
-                                       cfg.archived,
-                                       cfg.group_order as "groupOrder",
-                                       cfg.process_step_id as "processStepId",
-                                       coalesce((
-                                                  SELECT array_to_json(array_agg(row_to_json(customFields)))
-                                                  FROM (
-                                                         SELECT cfga.id,
-                                                                cfga.custom_field_group_id as "customFieldGroupId",
-                                                                cfga.custom_field_id as "customFieldId",
-                                                                cfga.use_parent_data as "useParentData",
-                                                                cfga.id as "customFieldGroupAssignmentId",
-                                                                cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                                                cfga.field_order as "fieldOrder",
-                                                                cfga.archived,
-                                                                cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                                                cfga.hidden as "customFieldGroupAssignmentHidden",
-                                                                cfga.detail_view as "detailView",
-                                                                cf.field_name as "fieldName",
-                                                                cf.system_readonly as "systemReadonly",
-                                                                cfg1.group_name as "groupName",
-                                                                null as "eventName",
-                                                                ps.process_step_name as "processStepName",
-                                                                ot.object_type as "objectType",
-                                                                '[]' as whiteListedPositions,
-                                                                coalesce((
-                                                                           SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                                           FROM (
-                                                                                  SELECT wlp.id,
-                                                                                         wlp.position_id as "positionId",
-                                                                                         wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                                         wlp.created_by_id as "createdById",
-                                                                                         wlp.modified_by_id as "modifiedById",
-                                                                                         wlp.archived
-                                                                                  FROM flow.white_listed_position wlp
-                                                                                  WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                                    AND wlp.white_list_type_id = 2
-                                                                                    AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
-                                                         FROM flow.custom_field_group_assignment cfga
-                                                                inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                                                                inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                                                inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
-                                                                left join flow.process_step ps on ps.id = cfg1.process_step_id
-                                                                inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
-                                                                inner join flow.object_type ot on ot.id = cot.object_type_id
-                                                         WHERE cfga.custom_field_group_id = cfg.id
-                                                           AND cfga.archived is not true
-                                                           and cf.archived is not true
-                                                         ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
-                                FROM flow.custom_field_group cfg
-                                       inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                                WHERE cfg.org_attachment_type_id = oat.id AND cfg.archived is not true
-                                order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
-       from flow.org_attachment_type oat
-              inner join flow.attachment_type at on oat.attachment_type_id = at.id
-       where oat.id = :id
-       and oat.company_id = :companyId
-     """;
-
-  //language=PostgreSQL
-  public final static String orgAddType = """
-      insert into flow.org_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
-      values (:companyId, :attachmentTypeId, :createdById,
-              (select coalesce(max(display_order) + 1, 0) from flow.org_attachment_type
-               where company_id = :companyId and archived is false))
-    """;
-
-  //language=PostgreSQL
-  public final static String orgUpdateDisplayOrder = """
-        update flow.org_attachment_type
-          set display_order = :displayOrder,
-              modified_by_id = :modifiedById,
-              date_modified = now()
-          where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String orgUpdate = """
-        update flow.org_attachment_type
-          set focused = :focused,
-              linkable = :linkable,
-              allow_upload = :allowUpload,
-              modified_by_id = :modifiedById,
-              date_modified = now()
-          where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String orgDeleteType = """
-      update flow.org_attachment_type
-      set archived = true,
-          date_modified = now(),
-          modified_by_id = :userId
-      where id = :id
-    """;
-
-  //  USER - should prob move to own file
-  //language=PostgreSQL
-  public final static String userGetTypes = """
-    select oat.id,
-               oat.company_id,
-               oat.attachment_type_id,
-               oat.archived,
-               at.attachment_type,
-               oat.focused,
-               oat.linkable,
-               oat.allow_upload,
-               oat.display_order
-        from flow.user_attachment_type oat
-               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-        where oat.company_id = :companyId
-          and oat.archived is not true
-        order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String userGetAssignedTypes = """
-    select oat.id,
-               oat.company_id,
-               oat.attachment_type_id,
-               oat.archived,
-               at.attachment_type,
-               oat.focused,
-               oat.linkable,
-               oat.allow_upload,
-               oat.display_order,
-              (
-                 select cfga.id
-                 from flow.custom_field_group_assignment cfga
-                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
-                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
-                 where cfga.archived is false
-                   and (cfg2.id is not null or cfg.id is not null)
-                 limit 1
-               ) is not null as has_fields_assigned
-        from flow.user_attachment_type oat
-               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-        where oat.company_id = :companyId
-          and oat.archived is not true
-          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
-          and case when :focused::boolean is true then oat.focused is true else 1=1 end
-          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-        order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String userGetAvailableTypes = """
-    select at.id,
-                 at.attachment_type,
-                 at.archived
-          from flow.attachment_type at
-          where at.archived is not true
-            and at.company_id = :companyId
-            and at.is_system is false
-            and not exists (
-              select oat.attachment_type_id
-              from flow.user_attachment_type oat
-              where oat.company_id = :companyId
-                and oat.attachment_type_id = at.id
-                and oat.archived is not true
-            )
-          order by at.attachment_type
-      """;
-
-  //language=PostgreSQL
-  public final static String userGet = """
-    select oat.id,
-               oat.company_id,
-               oat.attachment_type_id,
-               at.attachment_type,
-               oat.focused,
-               oat.linkable,
-               oat.allow_upload,
-               oat.archived,
-               coalesce((
-                          SELECT array_to_json(array_agg(row_to_json(cfGroups)))
-                          FROM (
-                                 SELECT cfg.id,
-                                        cfg.group_name as "groupName",
-                                        cot.object_type_id as "objectTypeId",
-                                        cot.id as "companyObjectTypeId",
-                                        cfg.archived,
-                                        cfg.group_order as "groupOrder",
-                                        cfg.process_step_id as "processStepId",
-                                        coalesce((
-                                                   SELECT array_to_json(array_agg(row_to_json(customFields)))
-                                                   FROM (
-                                                          SELECT cfga.id,
-                                                                 cfga.custom_field_group_id as "customFieldGroupId",
-                                                                 cfga.custom_field_id as "customFieldId",
-                                                                 cfga.use_parent_data as "useParentData",
-                                                                 cfga.id as "customFieldGroupAssignmentId",
-                                                                 cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                                                 cfga.field_order as "fieldOrder",
-                                                                 cfga.archived,
-                                                                 cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                                                 cfga.hidden as "customFieldGroupAssignmentHidden",
-                                                                 cfga.detail_view as "detailView",
-                                                                 cf.field_name as "fieldName",
-                                                                 cf.system_readonly as "systemReadonly",
-                                                                 cfg1.group_name as "groupName",
-                                                                 null as "eventName",
-                                                                 ps.process_step_name as "processStepName",
-                                                                 ot.object_type as "objectType",
-                                                                 '[]' as whiteListedPositions,
-                                                                 coalesce((
-                                                                            SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                                            FROM (
-                                                                                   SELECT wlp.id,
-                                                                                          wlp.position_id as "positionId",
-                                                                                          wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                                          wlp.created_by_id as "createdById",
-                                                                                          wlp.modified_by_id as "modifiedById",
-                                                                                          wlp.archived
-                                                                                   FROM flow.white_listed_position wlp
-                                                                                   WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                                     AND wlp.white_list_type_id = 2
-                                                                                     AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
-                                                          FROM flow.custom_field_group_assignment cfga
-                                                                 inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                                                                 inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                                                 inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
-                                                                 left join flow.process_step ps on ps.id = cfg1.process_step_id
-                                                                 inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
-                                                                 inner join flow.object_type ot on ot.id = cot.object_type_id
-                                                          WHERE cfga.custom_field_group_id = cfg.id
-                                                            AND cfga.archived is not true
-                                                            and cf.archived is not true
-                                                          ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
-                                 FROM flow.custom_field_group cfg
-                                        inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                                 WHERE cfg.user_attachment_type_id = oat.id AND cfg.archived is not true
-                                 order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
-        from flow.user_attachment_type oat
-               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-        where oat.id = :id
-        and oat.company_id = :companyId
-      """;
-
-  //language=PostgreSQL
-  public final static String userAddType = """
-      insert into flow.user_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
-      values (:companyId, :attachmentTypeId, :createdById,
-              (select coalesce(max(display_order) + 1, 0) from flow.user_attachment_type
-               where company_id = :companyId and archived is false))
-    """;
-
-  //language=PostgreSQL
-  public final static String userUpdateDisplayOrder = """
-        update flow.user_attachment_type
-          set display_order = :displayOrder,
-              modified_by_id = :modifiedById,
-              date_modified = now()
-          where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String userUpdate = """
-        update flow.user_attachment_type
-          set focused = :focused,
-              linkable = :linkable,
-              allow_upload = :allowUpload,
-              modified_by_id = :modifiedById,
-              date_modified = now()
-          where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String userDeleteType = """
-      update flow.user_attachment_type
-      set archived = true,
-          date_modified = now(),
-          modified_by_id = :userId
-      where id = :id
-    """;
-
-  //  PROJECT - should prob move to own file
-  //language=PostgreSQL
-  public final static String projectGetTypes = """
-       select oat.id,
-                 oat.company_id,
-                 oat.attachment_type_id,
-                 oat.archived,
-                 at.attachment_type,
-                 oat.focused,
-                 oat.linkable,
-                 oat.allow_upload,
-                 oat.display_order
-          from flow.project_attachment_type oat
-                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
-          where oat.company_id = :companyId
-            and oat.archived is not true
-          order by at.attachment_type
-    """;
-
-  //language=PostgreSQL
-  public final static String projectGetAvailableTypes = """
-      select at.id,
-                   at.attachment_type,
-                   at.archived
-            from flow.attachment_type at
-            where at.archived is not true
-              and at.company_id = :companyId
-              and at.is_system is false
-              and not exists (
-                select oat.attachment_type_id
-                from flow.project_attachment_type oat
-                where oat.company_id = :companyId
-                  and oat.attachment_type_id = at.id
-                  and oat.archived is not true
-              )
-            order by at.attachment_type
-    """;
-
-  //language=PostgreSQL
-  public final static String projectGet = """
-      select oat.id,
-                 oat.company_id,
-                 oat.attachment_type_id,
-                 at.attachment_type,
-                 oat.allow_upload,
-                 oat.archived,
-                 oat.read_only,
-                 oat.linkable,
-                 oat.focused,
-                 coalesce((
-                            SELECT array_to_json(array_agg(row_to_json(cfGroups)))
-                            FROM (
-                                   SELECT cfg.id,
-                                          cfg.group_name as "groupName",
-                                          cot.object_type_id as "objectTypeId",
-                                          cot.id as "companyObjectTypeId",
-                                          cfg.archived,
-                                          cfg.group_order as "groupOrder",
-                                          cfg.process_step_id as "processStepId",
-                                          coalesce((
-                                                     SELECT array_to_json(array_agg(row_to_json(customFields)))
-                                                     FROM (
-                                                            SELECT cfga.id,
-                                                                   cfga.custom_field_group_id as "customFieldGroupId",
-                                                                   cfga.custom_field_id as "customFieldId",
-                                                                   cfga.use_parent_data as "useParentData",
-                                                                   cfga.id as "customFieldGroupAssignmentId",
-                                                                   cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                                                   cfga.field_order as "fieldOrder",
-                                                                   cfga.archived,
-                                                                   cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                                                   cfga.hidden as "customFieldGroupAssignmentHidden",
-                                                                   cfga.detail_view as "detailView",
-                                                                   cf.field_name as "fieldName",
-                                                                   cf.system_readonly as "systemReadonly",
-                                                                   cfg1.group_name as "groupName",
-                                                                   null as "eventName",
-                                                                   ps.process_step_name as "processStepName",
-                                                                   ot.object_type as "objectType",
-                                                                   '[]' as whiteListedPositions,
-                                                                   coalesce((
-                                                                              SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                                              FROM (
-                                                                                     SELECT wlp.id,
-                                                                                            wlp.position_id as "positionId",
-                                                                                            wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                                            wlp.created_by_id as "createdById",
-                                                                                            wlp.modified_by_id as "modifiedById",
-                                                                                            wlp.archived
-                                                                                     FROM flow.white_listed_position wlp
-                                                                                     WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                                       AND wlp.white_list_type_id = 2
-                                                                                       AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
-                                                            FROM flow.custom_field_group_assignment cfga
-                                                                   inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                                                                   inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                                                   inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
-                                                                   left join flow.process_step ps on ps.id = cfg1.process_step_id
-                                                                   inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
-                                                                   inner join flow.object_type ot on ot.id = cot.object_type_id
-                                                            WHERE cfga.custom_field_group_id = cfg.id
-                                                              AND cfga.archived is not true
-                                                              and cf.archived is not true
-                                                            ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
-                                   FROM flow.custom_field_group cfg
-                                          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                                   WHERE cfg.project_attachment_type_id = oat.id AND cfg.archived is not true
-                                   order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
-          from flow.project_attachment_type oat
-                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
-          where oat.id = :id
-          and oat.company_id = :companyId
-    """;
-
-  //language=PostgreSQL
-  public final static String projectAddType = """
-          insert into flow.project_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
-          values (:companyId, :attachmentTypeId, :createdById,
-                  (select coalesce(max(display_order) + 1, 0) from flow.project_attachment_type
-                   where company_id = :companyId and archived is false))
-    """;
-
-  //language=PostgreSQL
-  public final static String projectUpdateDisplayOrder = """
-            update flow.project_attachment_type
-              set focused = :focused,
-                  linkable = :linkable,
-                  allow_upload = :allowUpload,
-                  modified_by_id = :modifiedById,
-                  date_modified = now()
-              where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String projectUpdate = """
-            update flow.project_attachment_type
-              set display_order = :displayOrder,
-                  modified_by_id = :modifiedById,
-                  date_modified = now()
-              where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String projectDeleteType = """
-          update flow.project_attachment_type
-          set archived = true,
-              date_modified = now(),
-              modified_by_id = :userId
-          where id = :id
-    """;
-
-  //  EVENT - should prob move to own file
-  //language=PostgreSQL
-  public final static String eventGetTypes = """
-      select oat.id,
-                 oat.event_id,
-                 oat.attachment_type_id,
-                 oat.archived,
-                 at.attachment_type,
-                 oat.focused,
-                 oat.linkable,
-                 oat.allow_upload,
-                 oat.display_order
-          from flow.event_attachment_type oat
-                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
-          where oat.event_id = :eventId
-            and oat.archived is not true
-          order by at.attachment_type
-    """;
-
-  //language=PostgreSQL
-  public final static String eventGetAvailableTypes = """
-      select at.id,
-                   at.attachment_type,
-                   at.archived
-            from flow.attachment_type at
-            where at.archived is not true
-              and at.company_id = :companyId
-              and at.is_system is false
-              and not exists (
-                select oat.attachment_type_id
-                from flow.event_attachment_type oat
-                where oat.event_id = :eventId
-                  and oat.attachment_type_id = at.id
-                  and oat.archived is not true
-              )
-            order by at.attachment_type
-    """;
-
-  //language=PostgreSQL
-  public final static String eventGet = """
-      select oat.id,
-                 oat.event_id,
-                 oat.attachment_type_id,
-                 at.attachment_type,
-                 oat.focused,
-                 oat.linkable,
-                 oat.allow_upload,
-                 oat.archived,
-                 oat.read_only,
-                 coalesce((
-                            SELECT array_to_json(array_agg(row_to_json(cfGroups)))
-                            FROM (
-                                   SELECT cfg.id,
-                                          cfg.group_name as "groupName",
-                                          cot.object_type_id as "objectTypeId",
-                                          cot.id as "companyObjectTypeId",
-                                          cfg.archived,
-                                          cfg.group_order as "groupOrder",
-                                          cfg.process_step_id as "processStepId",
-                                          coalesce((
-                                                     SELECT array_to_json(array_agg(row_to_json(customFields)))
-                                                     FROM (
-                                                            SELECT cfga.id,
-                                                                   cfga.custom_field_group_id as "customFieldGroupId",
-                                                                   cfga.custom_field_id as "customFieldId",
-                                                                   cfga.use_parent_data as "useParentData",
-                                                                   cfga.id as "customFieldGroupAssignmentId",
-                                                                   cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                                                   cfga.field_order as "fieldOrder",
-                                                                   cfga.archived,
-                                                                   cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                                                   cfga.hidden as "customFieldGroupAssignmentHidden",
-                                                                   cfga.detail_view as "detailView",
-                                                                   cf.field_name as "fieldName",
-                                                                   cf.system_readonly as "systemReadonly",
-                                                                   cfg1.group_name as "groupName",
-                                                                   null as "eventName",
-                                                                   ps.process_step_name as "processStepName",
-                                                                   ot.object_type as "objectType",
-                                                                   '[]' as whiteListedPositions,
-                                                                   coalesce((
-                                                                              SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                                              FROM (
-                                                                                     SELECT wlp.id,
-                                                                                            wlp.position_id as "positionId",
-                                                                                            wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                                            wlp.created_by_id as "createdById",
-                                                                                            wlp.modified_by_id as "modifiedById",
-                                                                                            wlp.archived
-                                                                                     FROM flow.white_listed_position wlp
-                                                                                     WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                                       AND wlp.white_list_type_id = 2
-                                                                                       AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions",
-                                                                   null::int as "defaultFieldId"
-                                                            FROM flow.custom_field_group_assignment cfga
-                                                                   inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                                                                   inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                                                   inner join flow.custom_field_group cfg1 on cfg1.id = cfga2.custom_field_group_id
-                                                                   left join flow.process_step ps on ps.id = cfg1.process_step_id
-                                                                   inner join flow.company_object_type cot on cot.id = cfg1.company_object_type_id
-                                                                   inner join flow.object_type ot on ot.id = cot.object_type_id
-                                                            WHERE cfga.custom_field_group_id = cfg.id
-                                                              AND cfga.archived is not true
-                                                              and cf.archived is not true
-                                                          union all
-                                                           select null, cfga.custom_field_group_id, null, false, cfga.id, null, cfga.field_order, cfga.archived, false, false,
-                                                                   false, df.field_name, false, cfg3.group_name, null, null, ot2.object_type, '[]' as whiteListedPositions, '[]' as hiddenWhiteListedPositions,
-                                                                   df.id as "defaultFieldId"
-                                                            from flow.custom_field_group_assignment cfga
-                                                              inner join flow.default_field df on cfga.default_field_id = df.id
-                                                              inner join flow.custom_field_group cfg3 on cfg3.id = cfga.custom_field_group_id
-                                                              inner join flow.object_type ot2 on ot2.id = df.object_type_id
-                                                            where cfga.archived is false
-                                                              and cfga.custom_field_group_id = cfg.id
-                                                            ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
-                                   FROM flow.custom_field_group cfg
-                                          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                                   WHERE cfg.event_attachment_type_id = oat.id AND cfg.archived is not true
-                                   order by cfg.group_order) cfGroups), '[]') AS custom_field_groups
-          from flow.event_attachment_type oat
-                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
-          where oat.id = :id
-          and at.company_id = :companyId
-    """;
-
-  //language=PostgreSQL
-  public final static String eventAddType = """
-          insert into flow.event_attachment_type(event_id, attachment_type_id, created_by_id, display_order)
-          values (:eventId, :attachmentTypeId, :createdById,
-                  (select coalesce(max(display_order) + 1, 0) from flow.event_attachment_type
-                   where event_id = :eventId and archived is false))
-    """;
-
-  //language=PostgreSQL
-  public final static String eventUpdateDisplayOrder = """
-            update flow.event_attachment_type
-              set display_order = :displayOrder,
-                  modified_by_id = :modifiedById,
-                  date_modified = now()
-              where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String eventUpdate = """
-            update flow.event_attachment_type
-              set focused = :focused,
-                  linkable = :linkable,
-                  allow_upload = :allowUpload,
-                  modified_by_id = :modifiedById,
-                  date_modified = now()
-              where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String eventDeleteType = """
-          update flow.event_attachment_type
-          set archived = true,
-              date_modified = now(),
-              modified_by_id = :userId
-          where id = :id
-    """;
 
   //language=PostgreSQL
   public final static String getFocusedTypesForProject = """
@@ -1200,5 +317,125 @@ public class AttachmentTypeQuery {
                  coalesce(linkable, false) as linkable
           from types_with_linkable
       """;
+
+  //attachment type queries that work for different object types
+  public static String getTypes(String tablePrefix) {
+    //language=PostgreSQL
+    return """
+      select oat.id,
+               oat.company_id,
+               oat.attachment_type_id,
+               oat.archived,
+               oat.focused,
+               oat.linkable,
+               oat.allow_upload,
+               at.attachment_type,
+               oat.display_order
+        from flow.%s_attachment_type oat
+               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+        where oat.company_id = :companyId
+          and oat.archived is not true
+        order by at.attachment_type
+      """.formatted(tablePrefix);
+  }
+
+  public static String getAvailableTypes(String tablePrefix) {
+    //language=PostgreSQL
+    return """
+      select at.id,
+                   at.attachment_type,
+                   at.archived
+            from flow.attachment_type at
+            where at.archived is not true
+              and at.company_id = :companyId
+              and at.is_system is false
+              and not exists (
+                select oat.attachment_type_id
+                from flow.%s_attachment_type oat
+                where oat.company_id = :companyId
+                  and oat.attachment_type_id = at.id
+                  and oat.archived is not true
+              )
+            order by at.attachment_type
+      """.formatted(tablePrefix);
+  }
+
+  public static String addType(String tablePrefix) {
+    //language=PostgreSQL
+    return """
+      insert into flow.%s_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+      values (:companyId, :attachmentTypeId, :createdById,
+              (select coalesce(max(display_order) + 1, 0) from flow.%s_attachment_type
+               where company_id = :companyId and archived is false))
+      """.formatted(tablePrefix, tablePrefix);
+  }
+
+  public static String updateDisplayOrder(String tablePrefix) {
+    //language=PostgreSQL
+    return """
+      update flow.%s_attachment_type
+          set display_order = :displayOrder,
+              modified_by_id = :modifiedById,
+              date_modified = now()
+          where id = :id
+      """.formatted(tablePrefix);
+  }
+
+  public static String update(String tablePrefix) {
+    //language=PostgreSQL
+    return """
+      update flow.%s_attachment_type
+          set focused = :focused,
+              linkable = :linkable,
+              allow_upload = :allowUpload,
+              modified_by_id = :modifiedById,
+              date_modified = now()
+          where id = :id
+      """.formatted(tablePrefix);
+  }
+
+
+  public static String deleteType(String tablePrefix) {
+    //language=PostgreSQL
+    return """
+      update flow.%s_attachment_type
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+      where id = :id
+      """.formatted(tablePrefix);
+  }
+
+  public static String getAssignedTypes(String tablePrefix) {
+    //language=PostgreSQL
+    return """
+      select oat.id,
+               oat.company_id,
+               oat.attachment_type_id,
+               oat.archived,
+               at.attachment_type,
+               oat.focused,
+               oat.linkable,
+               oat.allow_upload,
+               oat.display_order,
+               (
+                 select cfga.id
+                 from flow.custom_field_group_assignment cfga
+                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
+                 where cfga.archived is false
+                   and (cfg2.id is not null or cfg.id is not null)
+                 limit 1
+               ) is not null as has_fields_assigned
+        from flow.%s_attachment_type oat
+               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+        where oat.company_id = :companyId
+          and oat.archived is not true
+          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
+          and case when :focused::boolean is true then oat.focused is true else 1=1 end
+          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+        order by at.attachment_type
+      """.formatted(tablePrefix);
+  }
 
 }

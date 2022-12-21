@@ -9,7 +9,9 @@ import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamOrg;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamPosition;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamUser;
+import com.albatross.api.v1.flow.queries.MessagingQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
+import com.albatross.api.v1.flow.queries.SmsTeamQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -59,7 +61,7 @@ public class SmsTeamService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    return sqlCache.query("smsTeam.getAll", params, new SmsTeamMapper<>(SmsTeam.class, om));
+    return sqlCache.queryBySql(SmsTeamQuery.getAll, params, new SmsTeamMapper<>(SmsTeam.class, om));
   }
 
   public List<SmsTeam> getTeamsUsers() {
@@ -70,14 +72,14 @@ public class SmsTeamService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    return sqlCache.query(
-        "smsTeam.getAllTeamUsers", params, new SmsTeamMapper<>(SmsTeam.class, om));
+    return sqlCache.queryBySql(
+      SmsTeamQuery.getAllTeamUsers, params, new SmsTeamMapper<>(SmsTeam.class, om));
   }
 
   public SmsTeam getTeamDetails(@NonNull Long teamId) {
     return sqlCache
-        .get(
-            "smsTeam.getDetails",
+        .getBySql(
+          SmsTeamQuery.getDetails,
             Map.of("id", teamId),
             new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om))
         .orElse(null);
@@ -94,11 +96,11 @@ public class SmsTeamService {
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
       params.put("isDefault", st.getIsDefault());
-      sqlCache.update("smsTeam.updateTeam", params);
+      sqlCache.updateBySql(SmsTeamQuery.updateTeam, params);
     } else {
       params.put("createdById", user.trueUserId());
       params.put("companyId", user.getCompanyId());
-      id = sqlCache.updateReturningId("smsTeam.insertTeam", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(SmsTeamQuery.insertTeam, params, "id").longValue();
     }
 
     return getTeamDetails(id);
@@ -110,8 +112,8 @@ public class SmsTeamService {
 
     // Get a list of Projects that have this team assigned to them
     List<Long> projectIds =
-        sqlCache.query(
-            "messaging.getProjectsBySmsTeam",
+        sqlCache.queryBySql(
+          MessagingQuery.getProjectsBySmsTeam,
             Map.of("smsTeamId", smsTeamId),
             new SingleColumnRowMapper<>(Long.class));
 
@@ -137,7 +139,7 @@ public class SmsTeamService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", smsTeamId);
     params.put("modifiedById", modifiedByUserId);
-    sqlCache.update("smsTeam.deleteTeam", params);
+    sqlCache.updateBySql(SmsTeamQuery.deleteTeam, params);
   }
 
   public Optional<SmsTeamPosition> addPosition(Long teamId, Long positionId) {
@@ -146,14 +148,14 @@ public class SmsTeamService {
     params.put("id", teamId);
     params.put("positionId", positionId);
     params.put("createdById", user.trueUserId());
-    Long id = sqlCache.updateReturningId("smsTeam.addPosition", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(SmsTeamQuery.addPosition, params, "id").longValue();
     return getTeamPosition(id);
   }
 
   public Optional<SmsTeamPosition> getTeamPosition(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("smsTeam.getPosition", params, SmsTeamPosition.class);
+    return sqlCache.getBySql(SmsTeamQuery.getPosition, params, SmsTeamPosition.class);
   }
 
   public void deletePosition(Long smsTeamId, Long positionId) {
@@ -164,7 +166,7 @@ public class SmsTeamService {
     params.put("smsTeamId", smsTeamId);
     params.put("positionId", positionId);
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("smsTeam.deletePosition", params);
+    sqlCache.updateBySql(SmsTeamQuery.deletePosition, params);
   }
 
   public Optional<SmsTeamUser> addUser(Long teamId, Long userId) {
@@ -173,14 +175,14 @@ public class SmsTeamService {
     params.put("id", teamId);
     params.put("userId", userId);
     params.put("createdById", user.trueUserId());
-    Long id = sqlCache.updateReturningId("smsTeam.addUser", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(SmsTeamQuery.addUser, params, "id").longValue();
     return getUser(id);
   }
 
   public Optional<SmsTeamUser> getUser(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("smsTeam.getUser", params, SmsTeamUser.class);
+    return sqlCache.getBySql(SmsTeamQuery.getUser, params, SmsTeamUser.class);
   }
 
   public void deleteUser(Long smsTeamId, Long teamUserId) {
@@ -192,7 +194,7 @@ public class SmsTeamService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("teamUserId", teamUserId);
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("smsTeam.deleteUser", params);
+    sqlCache.updateBySql(SmsTeamQuery.deleteUser, params);
   }
 
   // Used to remove a User when the User is no longer Active
@@ -206,7 +208,7 @@ public class SmsTeamService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("smsTeam.deleteUserByUserId", params);
+    sqlCache.updateBySql(SmsTeamQuery.deleteUserByUserId, params);
   }
 
   public Optional<SmsTeamOrg> addOrg(Long teamId, Long orgId) {
@@ -215,14 +217,14 @@ public class SmsTeamService {
     params.put("id", teamId);
     params.put("orgId", orgId);
     params.put("createdById", user.trueUserId());
-    Long id = sqlCache.updateReturningId("smsTeam.addOrg", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(SmsTeamQuery.addOrg, params, "id").longValue();
     return getOrg(id);
   }
 
   public Optional<SmsTeamOrg> getOrg(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("smsTeam.getOrg", params, SmsTeamOrg.class);
+    return sqlCache.getBySql(SmsTeamQuery.getOrg, params, SmsTeamOrg.class);
   }
 
   public void deleteOrg(Long smsTeamId, Long orgId) {
@@ -233,7 +235,7 @@ public class SmsTeamService {
     params.put("smsTeamId", smsTeamId);
     params.put("orgId", orgId);
     params.put("modifiedById", user.trueUserId());
-    sqlCache.update("smsTeam.deleteOrg", params);
+    sqlCache.updateBySql(SmsTeamQuery.deleteOrg, params);
   }
 
   public List<SmsTeam> getTeamsForUser() {
@@ -254,7 +256,7 @@ public class SmsTeamService {
     }
 
     return sqlCache
-        .query("smsTeam.getTeamsForUser", params, new SmsTeamMapper<>(SmsTeam.class, om))
+        .queryBySql(SmsTeamQuery.getTeamsForUser, params, new SmsTeamMapper<>(SmsTeam.class, om))
         .stream()
         .filter(t -> !t.getUsers().isEmpty())
         .collect(Collectors.toList());

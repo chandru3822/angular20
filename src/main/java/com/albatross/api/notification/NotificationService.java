@@ -6,6 +6,7 @@ import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.Subscriber;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.queries.NotificationQuery;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -158,8 +159,8 @@ public class NotificationService {
 
           final Array idsSqlArray = sqlArrayService.createSqlArrayOfType("bigint", insertedIds);
           final List<Notification> notifications =
-              sqlCache.query(
-                  "notification.findByIds",
+              sqlCache.queryBySql(
+                NotificationQuery.findByIds,
                   Map.of("ids", idsSqlArray),
                   new NotificationMapper(this.objectMapper));
 
@@ -183,15 +184,15 @@ public class NotificationService {
         Map.of("userId", userId, "limit", pageable.getPageSize(), "offset", pageable.getOffset());
 
     final List<Notification> notifications =
-        sqlCache.query(
-            "notification.getUnreadByUserPageable",
+        sqlCache.queryBySql(
+          NotificationQuery.getUnreadByUserPageable,
             params,
             new NotificationMapper(this.objectMapper));
 
     final Long count =
         sqlCache
-            .get(
-                "notification.getUnreadByUser.count",
+            .getBySql(
+              NotificationQuery.getUnreadByUserCount,
                 params,
                 new SingleColumnRowMapper<>(Long.class))
             .orElse((long) notifications.size());
@@ -203,16 +204,16 @@ public class NotificationService {
   @Cacheable(key = "#userId")
   public List<Notification> getUserNotifications(@NonNull Long userId) {
     final Map<String, Object> params = Map.of("userId", userId);
-    return sqlCache.query(
-        "notification.getUnreadByUser", params, new NotificationMapper(this.objectMapper));
+    return sqlCache.queryBySql(
+      NotificationQuery.getUnreadByUser, params, new NotificationMapper(this.objectMapper));
   }
 
   @Async
   public void sendUserCatchupNotifications(
       Subscriber subscriber, @NonNull Long userId, @NonNull Long afterId) {
     final List<Notification> catchupNotifications =
-        sqlCache.query(
-            "notification.getUnreadByUserAfterId",
+        sqlCache.queryBySql(
+          NotificationQuery.getUnreadByUserAfterId,
             Map.of("userId", userId, "afterId", afterId),
             new NotificationMapper(this.objectMapper));
 
@@ -246,8 +247,8 @@ public class NotificationService {
 
     final Array ids = sqlArrayService.createSqlArrayOfType("bigint", notificationIds);
     final int updatedRecords =
-        sqlCache.update(
-            "notification.markAsRead",
+        sqlCache.updateBySql(
+          NotificationQuery.markAsRead,
             Map.of("userId", userId, "modifiedById", userId, "ids", ids));
     log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
   }

@@ -6,6 +6,7 @@ import com.albatross.api.utils.SMTPAuthenticator;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.EmailSender;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.EmailQuery;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,7 +109,7 @@ public class MailService {
   public void sendUnprocessedEmails() throws InterruptedException {
     // get all unprocessed emails
     List<EmailMessage> unprocessedEmails =
-        sqlCache.query("email.getAllUnprocessed", Collections.emptyMap(), EmailMessage.class);
+        sqlCache.queryBySql(EmailQuery.getAllUnprocessed, Collections.emptyMap(), EmailMessage.class);
 
     // TODO: it would be cool if this could send "templated" emails, and pass in an array of params
     // so we could make .ftl files for these and format them more easily
@@ -223,7 +224,7 @@ public class MailService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     try {
-      return sqlCache.query("email.getSendersByCompanyId", params, EmailSender.class);
+      return sqlCache.queryBySql(EmailQuery.getSendersByCompanyId, params, EmailSender.class);
     } catch (Exception e) {
       return null;
     }
@@ -237,11 +238,11 @@ public class MailService {
     params.put("companyId", emailAddress.getCompanyId());
     params.put("createdById", user.getId());
 
-    Long id = sqlCache.updateReturningId("email.saveFromAddress", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(EmailQuery.saveFromAddress, params, "id").longValue();
     if (updateDefault) {
       params.put("isDefault", emailAddress.getIsDefault());
       params.put("id", id);
-      sqlCache.update("email.changeDefaultAddress", params);
+      sqlCache.updateBySql(EmailQuery.changeDefaultAddress, params);
     }
     return this.getEmailSenders(emailAddress.getCompanyId());
   }
@@ -255,9 +256,9 @@ public class MailService {
     params.put("modifiedBy", emailAddress.getModifiedById());
     params.put("isDefault", emailAddress.getIsDefault());
     params.put("companyId", emailAddress.getCompanyId());
-    sqlCache.update("email.updateEmailAddress", params);
+    sqlCache.updateBySql(EmailQuery.updateEmailAddress, params);
     if (updateDefault) {
-      sqlCache.update("email.changeDefaultAddress", params);
+      sqlCache.updateBySql(EmailQuery.changeDefaultAddress, params);
     }
     return this.getEmailSenders(emailAddress.getCompanyId());
     // todo: this function makes three separate database calls; I don't know if that's optimized, so
@@ -268,7 +269,7 @@ public class MailService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", emailAddressId);
     params.put("modifiedBy", userId);
-    sqlCache.update("email.deleteEmailAddress", params);
+    sqlCache.updateBySql(EmailQuery.deleteEmailAddress, params);
   }
 
   private Session getSession() {
@@ -295,7 +296,7 @@ public class MailService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    sqlCache.update("email.markProcessed", params);
+    sqlCache.updateBySql(EmailQuery.markProcessed, params);
   }
 
   private void insertEmail(
@@ -322,7 +323,7 @@ public class MailService {
         attachments.isEmpty() ? null : attachments.toString().replace("[", "").replace("]", ""));
     params.put("userId", userId);
 
-    sqlCache.update("email.insert", params);
+    sqlCache.updateBySql(EmailQuery.insert, params);
   }
 
   private String getDefaultSenderEmailAddress() {
@@ -331,7 +332,7 @@ public class MailService {
     params.put("companyId", companyId);
 
     String defaultEmail =
-        sqlCache.queryForObject("email.getDefaultSenderByCompanyId", params, String.class);
+        sqlCache.queryForObjectBySql(EmailQuery.getDefaultSenderByCompanyId, params, String.class);
     if (null == defaultEmail) {
       throw new RuntimeException("SentByEmail cannot be null");
     }

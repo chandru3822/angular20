@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
+import com.albatross.api.v1.flow.queries.ProcessStepStatusQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class ProcessStepStatusService {
   private final SecurityService securityService;
 
   public List<ProcessStepStatusType> getStatusTypes() {
-    return sqlCache.query("processStepStatus.getTypes", Collections.emptyMap(), ProcessStepStatusType.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getTypes, Collections.emptyMap(), ProcessStepStatusType.class);
   }
 
   public List<WorkQueueTypeProcessStepStatus> getStatusesForWqt(Long processStepId) {
@@ -37,7 +38,7 @@ public class ProcessStepStatusService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
-    return sqlCache.query("processStepStatus.getStatusesForWqt", params, WorkQueueTypeProcessStepStatus.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getStatusesForWqt, params, WorkQueueTypeProcessStepStatus.class);
   }
 
   public List<CompanyProcessStepStatusType> getStatusTypesForCompany(Long projectId, Long projectProcessStepId) {
@@ -66,7 +67,7 @@ public class ProcessStepStatusService {
     // if a projectId or projectProcessStepId is sent in, use that company even if isParent is true
     params.put("parentOverride", null != projectId || null != projectProcessStepId);
 
-    return sqlCache.query("processStepStatus.getTypesForCompany", params, CompanyProcessStepStatusType.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getTypesForCompany, params, CompanyProcessStepStatusType.class);
   }
 
   public List<CompanyProcessStepStatusType> getAvailableForProcessStep(Long processStepId) {
@@ -76,7 +77,7 @@ public class ProcessStepStatusService {
     params.put("processStepId", processStepId);
     params.put("companyId", user.getCompanyId());
 
-    List<CompanyProcessStepStatusType> anc= sqlCache.query("processStepStatus.availableForProcessStep", params, CompanyProcessStepStatusType.class);
+    List<CompanyProcessStepStatusType> anc= sqlCache.queryBySql(ProcessStepStatusQuery.availableForProcessStep, params, CompanyProcessStepStatusType.class);
     return anc;
   }
 
@@ -106,26 +107,26 @@ public class ProcessStepStatusService {
     // if a projectId or projectProcessStepId is sent in, use that company even if isParent is true
     params.put("parentOverride", null != projectId || null != projectProcessStepId);
 
-    return sqlCache.query("processStepStatus.getCancelledTypesForCompany", params, CompanyProcessStepStatusType.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getCancelledTypesForCompany, params, CompanyProcessStepStatusType.class);
   }
 
   public Optional<CompanyProcessStepStatusType> getType(Long companyId, Long typeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("typeId", typeId);
-    return sqlCache.get("processStepStatus.getType", params, CompanyProcessStepStatusType.class);
+    return sqlCache.getBySql(ProcessStepStatusQuery.getType, params, CompanyProcessStepStatusType.class);
   }
 
   public ResponseEntity<ProcessStepStatusController.CannotDeleteProcessStepStatus> deleteType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
-    List<ProjectProcessStep> pps = sqlCache.query("processStepStatus.typeInUseByProject", Map.of("companyProcessStepStatusTypeId", typeId), ProjectProcessStep.class);
-    List<ProcessStep> ps = sqlCache.query("processStepStatus.typeInUse", Map.of("companyProcessStepStatusTypeId", typeId), ProcessStep.class);
+    List<ProjectProcessStep> pps = sqlCache.queryBySql(ProcessStepStatusQuery.typeInUseByProject, Map.of("companyProcessStepStatusTypeId", typeId), ProjectProcessStep.class);
+    List<ProcessStep> ps = sqlCache.queryBySql(ProcessStepStatusQuery.typeInUse, Map.of("companyProcessStepStatusTypeId", typeId), ProcessStep.class);
     if (pps.isEmpty() && ps.isEmpty()) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", typeId);
       params.put("modifiedById", currentUser.trueUserId());
-      sqlCache.update("processStepStatus.deleteType", params);
+      sqlCache.updateBySql(ProcessStepStatusQuery.deleteType, params);
       return ResponseEntity.ok().build();
     }
     else {
@@ -147,7 +148,7 @@ public class ProcessStepStatusService {
     params.put("statusType", type.getProcessStepStatusType());
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.update("processStepStatus.updateType", params);
+    sqlCache.updateBySql(ProcessStepStatusQuery.updateType, params);
   }
 
   public Optional<CompanyProcessStepStatusType> insertType(CompanyProcessStepStatusType type) {
@@ -160,7 +161,7 @@ public class ProcessStepStatusService {
     params.put("processStepStatusTypeId", type.getProcessStepStatusTypeId());
     params.put("createdById", currentUser.trueUserId());
 
-    Long id = sqlCache.updateReturningId("processStepStatus.insertType", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(ProcessStepStatusQuery.insertType, params, "id").longValue();
 
     return getType(type.getCompanyId(), id);
   }
@@ -170,21 +171,21 @@ public class ProcessStepStatusService {
     params.put("processStepId", processStepId);
     params.put("nonAdmin", nonAdmin);
 
-    return sqlCache.query("processStepStatus.getActiveAssignedToProcessStep", params, CompanyProcessStepStatusType.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getActiveAssignedToProcessStep, params, CompanyProcessStepStatusType.class);
   }
 
   public List<ProcessStepStatusType> getAssignedToStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
 
-    return sqlCache.query("processStepStatus.getAssignedToStep", params, ProcessStepStatusType.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getAssignedToStep, params, ProcessStepStatusType.class);
   }
 
   public List<CompanyProcessStepStatusType> getCompanyAssignedToStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
 
-    return sqlCache.query("processStepStatus.getCompanyAssignedToStep", params, CompanyProcessStepStatusType.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getCompanyAssignedToStep, params, CompanyProcessStepStatusType.class);
   }
 
   public List<CompanyProcessStepStatusType> getCancelledAssignedToStep(Long processStepId, Boolean nonAdmin) {
@@ -192,7 +193,7 @@ public class ProcessStepStatusService {
     params.put("processStepId", processStepId);
     params.put("nonAdmin", null != nonAdmin ? nonAdmin : false);
 
-    return sqlCache.query("processStepStatus.getCancelledAssignedToStep", params, CompanyProcessStepStatusType.class);
+    return sqlCache.queryBySql(ProcessStepStatusQuery.getCancelledAssignedToStep, params, CompanyProcessStepStatusType.class);
   }
 
   public Optional<ProcessStepCompanyProcessStepStatusType> assignStatusToProcessStep(Long companyProcessStepStatusTypeId, Long processStepId) {
@@ -203,7 +204,7 @@ public class ProcessStepStatusService {
     params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
     params.put("createdById", currentUser.trueUserId());
 
-    Long id = sqlCache.updateReturningId("processStepStatus.assignStatusToProcessStep", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(ProcessStepStatusQuery.assignStatusToProcessStep, params, "id").longValue();
     return getProcessStepCompanyProcessStepStatusType(id);
   }
 
@@ -213,7 +214,7 @@ public class ProcessStepStatusService {
     params.put("userId", currentUser.trueUserId());
     params.put("id", id);
     params.put("allowNonAdminUse", null != pscpsst.getAllowNonAdminUse() ? pscpsst.getAllowNonAdminUse() : false);
-    sqlCache.update("processStepStatus.updateAllowNonAdminUse", params);
+    sqlCache.updateBySql(ProcessStepStatusQuery.updateAllowNonAdminUse, params);
 
   }
 
@@ -221,7 +222,7 @@ public class ProcessStepStatusService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    return sqlCache.get("processStepStatus.getProcessStepCompanyProcessStepStatusType", params, ProcessStepCompanyProcessStepStatusType.class);
+    return sqlCache.getBySql(ProcessStepStatusQuery.getProcessStepCompanyProcessStepStatusType, params, ProcessStepCompanyProcessStepStatusType.class);
   }
 
   public ResponseEntity<ProcessStepStatusController.CannotDeleteProcessStepStatus> deleteStatusFromProcessStep(Long id, Long processStepId) {
@@ -237,25 +238,25 @@ public class ProcessStepStatusService {
     // now. i am working this out in chunks in my mind.
 
     // check for any wq types on the step that are using this status type
-    List<WorkQueueTypeProcessStepStatus> wqtUsingStatus = sqlCache.query("processStepStatus.statusInUseByWQT", params, WorkQueueTypeProcessStepStatus.class);
+    List<WorkQueueTypeProcessStepStatus> wqtUsingStatus = sqlCache.queryBySql(ProcessStepStatusQuery.statusInUseByWQT, params, WorkQueueTypeProcessStepStatus.class);
     cannotDelete.setInUseByWqt(!wqtUsingStatus.isEmpty());
 
     // check for an initial step of this type using this status type
-    Optional<ProcessStepProcess> psp = sqlCache.get("processStepStatus.statusInUseByInitialStep", params, ProcessStepProcess.class);
+    Optional<ProcessStepProcess> psp = sqlCache.getBySql(ProcessStepStatusQuery.statusInUseByInitialStep, params, ProcessStepProcess.class);
     cannotDelete.setInUseByInitialStep(psp.isPresent());
 
     // check for any actions using this status type to set the parent step as
-    List<ProcessStepAction> actions = sqlCache.query("processStepStatus.actionsUsingStatusToSetParent", params, ProcessStepAction.class);
+    List<ProcessStepAction> actions = sqlCache.queryBySql(ProcessStepStatusQuery.actionsUsingStatusToSetParent, params, ProcessStepAction.class);
     cannotDelete.setActions(actions);
 
     // check for any child process steps of this type using this status type
-    List<ProcessStepActionChildProcess> childProcesses = sqlCache.query("processStepStatus.childProcessesUsingStatus", params, ProcessStepActionChildProcess.class);
+    List<ProcessStepActionChildProcess> childProcesses = sqlCache.queryBySql(ProcessStepStatusQuery.childProcessesUsingStatus, params, ProcessStepActionChildProcess.class);
     cannotDelete.setChildProcesses(childProcesses);
 
     // eventually check for any requirements referencing this status type for this step
 
     if (!cannotDelete.getInUseByWqt() && !cannotDelete.getInUseByInitialStep()) {
-      sqlCache.update("processStepStatus.deleteStatusFromProcessStep", params);
+      sqlCache.updateBySql(ProcessStepStatusQuery.deleteStatusFromProcessStep, params);
       return ResponseEntity.ok().build();
     } else {
       return ResponseEntity.badRequest().body(cannotDelete);

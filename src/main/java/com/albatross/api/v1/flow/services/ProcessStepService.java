@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.queries.ProcessStepQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +37,8 @@ public class ProcessStepService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query(
-        "processStep.getAllForCompany", params, new ProcessStepMapper<>(ProcessStep.class, om));
+    return sqlCache.queryBySql(
+      ProcessStepQuery.getAllForCompany, params, new ProcessStepMapper<>(ProcessStep.class, om));
   }
 
   public Optional<ProcessStep> getProcessStep(Long id) {
@@ -47,7 +48,7 @@ public class ProcessStepService {
     params.put("id", id);
     params.put("companyId", currentUser.getCompanyId());
 
-    Optional<ProcessStep> result = sqlCache.get("processStep.get", params, new ProcessStepMapper<>(ProcessStep.class, om));
+    Optional<ProcessStep> result = sqlCache.getBySql(ProcessStepQuery.get, params, new ProcessStepMapper<>(ProcessStep.class, om));
 
     if(result.isPresent()) {
       return result;
@@ -66,11 +67,11 @@ public class ProcessStepService {
     params.put("psId", processStep.getId());
     params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_READ_ONLY.id);
 
-    sqlCache.update("processStep.saveReadOnly", params);
+    sqlCache.updateBySql(ProcessStepQuery.saveReadOnly, params);
 
     if (!processStep.getReadonly()) {
       // if ps is not readonly archive any white listed positions for it
-      sqlCache.update("processStep.archiveWhiteListPositions", params);
+      sqlCache.updateBySql(ProcessStepQuery.archiveWhiteListPositions, params);
     } else if (null != savePositions && savePositions) {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<WhiteListedPosition> positionsToUse = processStep.getWhiteListedPositions();
@@ -79,16 +80,16 @@ public class ProcessStepService {
                    .collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
       if (positionIdsUsed.size() > 0) {
-        sqlCache.update("processStep.archiveWhiteListPositionsNoLongerUsed", params);
+        sqlCache.updateBySql(ProcessStepQuery.archiveWhiteListPositionsNoLongerUsed, params);
       } else {
         // this means they removed ALL white listed positions
-        sqlCache.update("processStep.archiveWhiteListPositions", params);
+        sqlCache.updateBySql(ProcessStepQuery.archiveWhiteListPositions, params);
       }
 
       for (WhiteListedPosition wlp : positionsToUse) {
         params.put("positionId", wlp.getPositionId());
         // this insert checks if there is already a non-archived row with the same values
-        sqlCache.update("processStep.insertWhiteListPosition", params);
+        sqlCache.updateBySql(ProcessStepQuery.insertWhiteListPosition, params);
       }
     }
   }
@@ -104,7 +105,7 @@ public class ProcessStepService {
     if (!fields.isEmpty()) {
       return fields;
     } else {
-      sqlCache.update("processStep.delete", params);
+      sqlCache.updateBySql(ProcessStepQuery.delete, params);
       return null;
     }
   }
@@ -116,7 +117,7 @@ public class ProcessStepService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("name", processStep.getProcessStepName());
     params.put("nonAdminAdd", processStep.getNonAdminAdd());
-    sqlCache.update("processStep.update", params);
+    sqlCache.updateBySql(ProcessStepQuery.update, params);
   }
 
   public Optional<ProcessStep> insertStep(ProcessStep processStep) {
@@ -126,7 +127,7 @@ public class ProcessStepService {
     params.put("createdById", currentUser.trueUserId());
     params.put("name", processStep.getProcessStepName());
     params.put("nonAdminAdd", processStep.getNonAdminAdd() != null && processStep.getNonAdminAdd());
-    Long id = sqlCache.updateReturningId("processStep.insert", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(ProcessStepQuery.insert, params, "id").longValue();
 
     return getProcessStep(id);
   }
@@ -137,7 +138,7 @@ public class ProcessStepService {
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
-    return sqlCache.query("processStep.getParentObjects", params, ProcessStep.class);
+    return sqlCache.queryBySql(ProcessStepQuery.getParentObjects, params, ProcessStep.class);
   }
 
   public List<CombinedStepAndType> getParentObjectsIncludingTypes(Long id) {
@@ -146,13 +147,13 @@ public class ProcessStepService {
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
-    return sqlCache.query(
-        "processStep.getParentObjectsIncludingTypes", params, CombinedStepAndType.class);
+    return sqlCache.queryBySql(
+      ProcessStepQuery.getParentObjectsIncludingTypes, params, CombinedStepAndType.class);
   }
 
   public List<ProcessStep> getByCompanyId() {
-    return sqlCache.query(
-        "processStep.getProcessStepProcessByCompanyId",
+    return sqlCache.queryBySql(
+      ProcessStepQuery.getProcessStepProcessByCompanyId,
         Map.of("companyId", securityService.getCurrentUser().getCompanyId()),
         ProcessStep.class);
   }
@@ -160,8 +161,8 @@ public class ProcessStepService {
   public List<Owner> getOwners(Long id) {
     User user = securityService.getCurrentUser();
     Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    return sqlCache.query(
-        "processStep.getOwners",
+    return sqlCache.queryBySql(
+      ProcessStepQuery.getOwners,
         Map.of("id", id, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany),
         Owner.class);
   }

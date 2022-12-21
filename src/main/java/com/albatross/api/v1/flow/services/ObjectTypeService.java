@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.CompanyObjectType;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
+import com.albatross.api.v1.flow.queries.CustomFieldGroupAssignmentQuery;
 import com.albatross.api.v1.flow.queries.ObjectTypeQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -94,7 +95,7 @@ public class ObjectTypeService {
     if ((savingStatusReadOnly && !companyObjectType.getStatusReadOnly())
         || (!savingStatusReadOnly && !companyObjectType.getOwnerReadOnly())) {
       // if field is not readonly archive any white listed positions for it
-      sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositions", params);
+      sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.archiveWhiteListPositions, params);
     } else if (null != savePositions && savePositions) {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<WhiteListedPosition> positionsToUse =
@@ -107,16 +108,16 @@ public class ObjectTypeService {
               .collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
       if (positionIdsUsed.size() > 0) {
-        sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
+        sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.archiveWhiteListPositionsNoLongerUsed, params);
       } else {
         // this means they removed ALL white listed positions
-        sqlCache.update("customFieldGroupAssignment.archiveAllWhiteListedPositions", params);
+        sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.archiveAllWhiteListedPositions, params);
       }
 
       for (WhiteListedPosition wlp : positionsToUse) {
         params.put("positionId", wlp.getPositionId());
         // this insert checks if there is already a non-archived row with the same values
-        sqlCache.update("customFieldGroupAssignment.insertWhiteListPosition", params);
+        sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.insertWhiteListPosition, params);
       }
     }
   }

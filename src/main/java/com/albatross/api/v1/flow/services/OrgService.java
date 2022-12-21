@@ -14,6 +14,7 @@ import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.org.OrgExportTemplate;
 import com.albatross.api.v1.flow.model.org.OrgFilter;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.OrgQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -61,14 +62,14 @@ public class OrgService {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.query("org.getAllForCompany", params, Org.class);
+    return sqlCache.queryBySql(OrgQuery.getAllForCompany, params, Org.class);
   }
 
   public List<User> getUsersInOrg(Long orgId) {
     Map<String, Object> params = new HashMap<>();
     params.put("orgId", orgId);
 
-    return sqlCache.query("org.getUsersInOrg", params, User.class);
+    return sqlCache.queryBySql(OrgQuery.getUsersInOrg, params, User.class);
   }
 
   public List<Org> getSchedulingOrgs(Long companyStateId, Boolean isSchedulingTool) {
@@ -82,7 +83,7 @@ public class OrgService {
     params.put("isParent", isParent);
     params.put("isSchedulingTool", isSchedulingTool);
 
-    return sqlCache.query("org.getSchedulingOrgs", params, Org.class);
+    return sqlCache.queryBySql(OrgQuery.getSchedulingOrgs, params, Org.class);
   }
 
   public List<Org> getOrgsByType(Long typeId) {
@@ -90,7 +91,7 @@ public class OrgService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("typeId", typeId);
-    return sqlCache.query("org.getOrgsByType", params, Org.class);
+    return sqlCache.queryBySql(OrgQuery.getOrgsByType, params, Org.class);
   }
 
   public ResponseEntity exportOrgs(String query) {
@@ -100,7 +101,7 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
 
-    List<Org> results = sqlCache.query("org.exportOrgs", params, Org.class);
+    List<Org> results = sqlCache.queryBySql(OrgQuery.exportOrgs, params, Org.class);
 
     // set up CSV writing
     CsvMapper mapper = new CsvMapper();
@@ -131,7 +132,7 @@ public class OrgService {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
-    Optional<Org> result = sqlCache.get("org.getOne", params, new OrgMapper<>(Org.class, om));
+    Optional<Org> result = sqlCache.getBySql(OrgQuery.getOne, params, new OrgMapper<>(Org.class, om));
     if(result.isPresent()) {
       return result.get();
     } else {
@@ -159,17 +160,17 @@ public class OrgService {
       id = org.getId();
       params.put("modifiedById", user.trueUserId());
       params.put("id", id);
-      sqlCache.update("org.updateOrg", params);
+      sqlCache.updateBySql(OrgQuery.updateOrg, params);
     } else {
       params.put("createdById", user.trueUserId());
-      id = sqlCache.updateReturningId("org.insertOrg", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(OrgQuery.insertOrg, params, "id").longValue();
     }
 
     if (null != org.getCustomFieldGroups() && !org.getCustomFieldGroups().isEmpty()) {
       customFieldValueService.updateCustomFieldValues(
           org.getCustomFieldGroups().get(0).getCustomFieldValues(),
           id,
-          ObjectType.ORGANIZATION.toString());
+          ObjectType.ORGANIZATION);
     }
 
     return getOrg(id);
@@ -180,14 +181,14 @@ public class OrgService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     List<OrgFilter> results =
-        sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
+        sqlCache.queryBySql(OrgQuery.getOrgFiltersForCompany, params, OrgFilter.class);
 
     for (OrgFilter f : results) {
       // build the list of options
       HashMap<String, Object> p2 = new HashMap<>();
       p2.put("orgLevelId", f.getOrgLevelId());
       p2.put("companyId", user.getCompanyId());
-      List<Org> orgs = sqlCache.query("org.getOrgsForLevel", p2, Org.class);
+      List<Org> orgs = sqlCache.queryBySql(OrgQuery.getOrgsForLevel, p2, Org.class);
       f.setOrgs(orgs);
     }
 
@@ -197,13 +198,13 @@ public class OrgService {
   public OrgFilter getOneOrgFilter(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("org.getOneOrgFilter", params, OrgFilter.class).orElse(null);
+    return sqlCache.getBySql(OrgQuery.getOneOrgFilter, params, OrgFilter.class).orElse(null);
   }
 
   public void deleteOrgFilter(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("org.deleteOrgFilter", params);
+    sqlCache.updateBySql(OrgQuery.deleteOrgFilter, params);
     // todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving.
     // don't actually delete
   }
@@ -220,9 +221,9 @@ public class OrgService {
     if (null != filter.getId()) {
       id = filter.getId();
       params.put("id", id);
-      sqlCache.update("org.updateOrgFilter", params);
+      sqlCache.updateBySql(OrgQuery.updateOrgFilter, params);
     } else {
-      id = sqlCache.updateReturningId("org.insertOrgFilter", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(OrgQuery.insertOrgFilter, params, "id").longValue();
     }
 
     return getOneOrgFilter(id);
@@ -233,11 +234,11 @@ public class OrgService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     List<OrgFilter> results =
-        sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
+        sqlCache.queryBySql(OrgQuery.getOrgFiltersForCompany, params, OrgFilter.class);
 
     Map<String, Object> p2 = new HashMap<>();
     p2.put("selectedOrgs", selectedOrgs);
-    List<Org> orgs = sqlCache.query("org.getOrgsByHierarchyFilter", p2, Org.class);
+    List<Org> orgs = sqlCache.queryBySql(OrgQuery.getOrgsByHierarchyFilter, p2, Org.class);
 
     for (OrgFilter f : results) {
       // build the list of options
@@ -256,7 +257,7 @@ public class OrgService {
     params.put("userId", userId);
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.query("org.getOrgCalendarsForUser", params, Org.class);
+    return sqlCache.queryBySql(OrgQuery.getOrgCalendarsForUser, params, Org.class);
   }
 
   public UserOrgAccess saveOrgCalendarToUser(UserOrgAccess userOrgAccess) {
@@ -267,7 +268,7 @@ public class OrgService {
     params.put("orgId", userOrgAccess.getOrgId());
     params.put("createdById", user.trueUserId());
 
-    Long id = sqlCache.updateReturningId("org.saveOrgCalendarToUser", params, "id").longValue();
+    Long id = sqlCache.updateBySqlReturningId(OrgQuery.saveOrgCalendarToUser, params, "id").longValue();
     return getOneOrgCalendarAccess(id);
   }
 
@@ -278,13 +279,13 @@ public class OrgService {
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
 
-    sqlCache.update("org.deleteOrgCalendarFromUser", params);
+    sqlCache.updateBySql(OrgQuery.deleteOrgCalendarFromUser, params);
   }
 
   public UserOrgAccess getOneOrgCalendarAccess(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("org.getOneOrgCalendarAccess", params, UserOrgAccess.class).orElse(null);
+    return sqlCache.getBySql(OrgQuery.getOneOrgCalendarAccess, params, UserOrgAccess.class).orElse(null);
   }
 
   public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile, Boolean linked) {
@@ -294,7 +295,7 @@ public class OrgService {
     params.put("linked", linked);
     params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
-        sqlCache.query("org.getOrgAttachments", params, Attachment.class);
+        sqlCache.queryBySql(OrgQuery.getOrgAttachments, params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
         attachments, storageBucket, null != isMobile ? isMobile : false);
   }
@@ -307,11 +308,11 @@ public class OrgService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    String sqlKey = "org.linkAttachment";
+    String sql = OrgQuery.linkAttachment;
     if(!doLink) {
-      sqlKey = "org.unlinkAttachment";
+      sql = OrgQuery.unlinkAttachment;
     }
-    sqlCache.update(sqlKey, params);
+    sqlCache.updateBySql(sql, params);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
@@ -357,7 +358,7 @@ public class OrgService {
     params.put("attachmentId", attachmentId);
     params.put("createdById", user.trueUserId());
 
-    sqlCache.update("org.addAttachment", params);
+    sqlCache.updateBySql(OrgQuery.addAttachment, params);
 
     return attachmentService.findById(attachmentId);
   }

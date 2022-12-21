@@ -222,11 +222,6 @@ public class AttachmentTypeController {
     attachmentTypeService.deleteTypeForObjectType(attachmentTypeId, ObjectType.PROJECT);
   }
 
-  @PutMapping(value = "/project/updateReadOnly", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateReadOnly(@RequestBody ObjectTypeAttachmentType objectTypeAttachmentType) {
-    attachmentTypeService.updateReadOnly(objectTypeAttachmentType, ObjectType.PROJECT);
-  }
-
   //EVENT
   @GetMapping(value = "/event/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ObjectTypeAttachmentType> getTypesForEvent(@PathVariable Long eventId) {

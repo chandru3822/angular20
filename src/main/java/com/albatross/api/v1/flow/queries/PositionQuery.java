@@ -1,0 +1,191 @@
+package com.albatross.api.v1.flow.queries;
+
+public class PositionQuery {
+
+  //language=PostgreSQL
+  public final static String getAllForCompany = """
+    select p.id,
+           p.position,
+           p.id as position_id,
+           p.org_type_id,
+           ot.org_type,
+           p.archived,
+           p.schedulable,
+           p.scheduler,
+           p.use_slot_schedule,
+           p.contact_owner,
+           p.available_to_children,
+           ot.org_level_id,
+           ol.level
+        from flow.position p
+                 inner join flow.org_type ot on ot.id = p.org_type_id
+                 inner join flow.org_level ol on ol.id = ot.org_level_id
+        where ot.company_id = :companyId
+          and p.archived is not true
+        order by p.position
+        """;
+
+  //language=PostgreSQL
+  public final static String getSchedulablePositions = """
+    select p.id,
+               p.position,
+               p.id as position_id,
+               p.org_type_id,
+               ot.org_type,
+               p.archived,
+               p.schedulable,
+               p.use_slot_schedule,
+               p.scheduler,
+               p.available_to_children
+        from flow.position p
+                 inner join flow.org_type ot on ot.id = p.org_type_id
+        where case when :isParent
+                then p.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
+                else p.company_id = :companyId end
+            and p.schedulable is true
+            and p.archived is not true
+        order by p.position
+        """;
+
+  //language=PostgreSQL
+  public final static String getAllForCompanyWithParent = """
+    select p.id,
+               p.position,
+               p.id as position_id,
+               p.org_type_id,
+               ot.org_type,
+               p.use_slot_schedule,
+               p.archived,
+               p.schedulable,
+               p.scheduler,
+               p.contact_owner,
+               p.available_to_children
+        from flow.position p
+            inner join flow.org_type ot on ot.id = p.org_type_id
+        where (ot.company_id = :companyId OR (ot.company_id = :parentCompanyId AND p.available_to_children is true))
+          and p.archived is not true
+        order by p.position
+        """;
+
+  //language=PostgreSQL
+  public final static String getOne = """
+    select p.id,
+               p.position,
+               p.org_type_id,
+               ot.org_type,
+               p.archived,
+               p.schedulable,
+               p.use_slot_schedule,
+               p.scheduler,
+               p.contact_owner,
+               p.project_owner,
+               p.sms_owner,
+               p.available_to_children,
+               coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(companyFeatures)))
+                   FROM (
+                            select cf.id,
+                                   cf.feature_name as "featureName",
+                                   cf.company_id as "companyId",
+                                   cf.feature_id as "featureId",
+                                   cf.hidden,
+                                   cf.archived,
+                                   coalesce((
+                                        SELECT array_to_json(array_agg(row_to_json(accessControl)))
+                                        FROM (
+                                                 select pfac.id,
+                                                        pfac.position_id as "positionId",
+                                                        pfac.company_feature_id as "companyFeatureId",
+                                                        ac.id as "accessControlId",
+                                                        ac.access_level as "accessLevel",
+                                                        ac.access_code as "accessCode",
+                                                        pfac.enabled,
+                                                        coalesce(( select true from flow.feature_access_control fac where fac.access_control_id = ac.id and fac.feature_id = cf.feature_id), false) as "usedByFeature"
+                                                 from flow.access_control ac
+                                                    left join flow.position_feature_access_control pfac on ac.id = pfac.access_control_id
+                                                                                                                 and pfac.company_feature_id = cf.id
+                                                                                                                 and pfac.position_id = p.id
+                                                 order by ac.display_order
+                                             ) accessControl), '[]') AS "accessControl"
+                            from flow.company_feature cf
+                            where cf.company_id = :companyId
+                              and cf.archived is not true
+                            order by cf.feature_name
+                    ) companyFeatures), '[]') AS "companyFeatures"
+        from flow.position p
+            inner join flow.org_type ot on ot.id = p.org_type_id
+        where p.id = :id
+        """;
+
+  //language=PostgreSQL
+  public final static String insert = """
+        insert into flow.position(company_id, position, org_type_id, schedulable, available_to_children, scheduler,
+                              contact_owner, project_owner, sms_owner, use_slot_schedule, created_by_id, date_created,
+                              modified_by_id, date_modified)
+    values (:companyId, :position, :orgTypeId, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner,
+            :smsOwner, :useSlotSchedule, :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String update = """
+    update flow.position
+        set position = :position,
+            org_type_id = :orgTypeId,
+            modified_by_id = :modifiedById,
+            schedulable = :schedulable,
+            use_slot_schedule = :useSlotSchedule,
+            scheduler = :scheduler,
+            available_to_children = :availableToChildren,
+            contact_owner = :contactOwner,
+            project_owner = :projectOwner,
+            sms_owner = :smsOwner,
+            date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String delete = """
+    update flow.position
+        set archived = true,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertPositionFeatureAccessControl = """
+    insert into flow.position_feature_access_control(company_feature_id, access_control_id, position_id, enabled)
+    values (:companyFeatureId, :accessControlId, :positionId, true)
+    """;
+
+  //language=PostgreSQL
+  public final static String updatePositionFeatureAccessControl = """
+    update flow.position_feature_access_control
+    set enabled = :enabled, date_modified = now()
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getWhiteListedPositionsByPosition = """
+     SELECT *
+     FROM flow.white_listed_position wlp
+     WHERE wlp.archived is not true and wlp.position_id = :positionId
+    """;
+
+  //language=PostgreSQL
+  public final static String insertWhiteListPosition = """
+    insert into flow.white_listed_position(custom_field_group_assignment_id, position_id, process_step_id, white_list_type_id, work_queue_type_id, work_queue_category_id, event_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+    select :customFieldGroupAssignmentId, :positionId, :processStepId, :whiteListTypeId, :workQueueTypeId, :workQueueCategoryId, :eventId, :companyId, :userId, now(), :userId, now()
+    where not exists (select id
+                        from flow.white_listed_position
+                        where custom_field_group_assignment_id = :customFieldGroupAssignmentId
+                          and position_id = :positionId
+                          and process_step_id = :processStepId
+                          and white_list_type_id = :whiteListTypeId
+                          and work_queue_type_id = :workQueueTypeId
+                          and event_id = :eventId
+                          and company_id = :companyId
+                           and archived is not true)
+    """;
+
+}

@@ -6,6 +6,8 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
+import com.albatross.api.v1.flow.queries.ProcessStepRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +37,8 @@ public class ProcessStepActionService {
     // @randa come back to this. i was annoyed to have to keep 2 queries up-to-date when they were
     // basically doing the same thing. (single select by id, vs list select by process_step_id) but
     // this requires both calls to pass in a null param, not sure i like this
-    return sqlCache.query(
-        "processStepAction.getActionsForStep",
+    return sqlCache.queryBySql(
+      ProcessStepActionQuery.getActionsForStep,
         params,
         new ProcessStepActionMapper<>(ProcessStepAction.class, om));
   }
@@ -44,7 +46,7 @@ public class ProcessStepActionService {
   public String getActionLogicString(Long actionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionId", actionId);
-    Optional<String> logicString = sqlCache.queryForObjectOptional("processStepAction.actionLogicString", params, String.class);
+    Optional<String> logicString = sqlCache.queryForObjectOptionalBySql(ProcessStepActionQuery.actionLogicString, params, String.class);
     return logicString.orElse("");
   }
 
@@ -54,7 +56,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("actionId", actionId);
-    sqlCache.update("processStepAction.deleteAction", params);
+    sqlCache.updateBySql(ProcessStepActionQuery.deleteAction, params);
   }
 
   public ProcessStepAction getActionById(Long id) {
@@ -66,8 +68,8 @@ public class ProcessStepActionService {
     // basically doing the same thing. but this requires both calls to pass in a null param, not
     // sure i like this
     return sqlCache
-        .get(
-            "processStepAction.getActionsForStep",
+        .getBySql(
+          ProcessStepActionQuery.getActionsForStep,
             params,
             new ProcessStepActionMapper<>(ProcessStepAction.class, om))
         .orElse(null);
@@ -82,7 +84,7 @@ public class ProcessStepActionService {
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", action.getId());
       // save each display_order
-      sqlCache.update("processStepAction.updateActionDisplayOrder", params);
+      sqlCache.updateBySql(ProcessStepActionQuery.updateActionDisplayOrder, params);
     }
   }
 
@@ -94,7 +96,7 @@ public class ProcessStepActionService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
 
-    Long newActionId = sqlCache.queryForObject("processStepAction.duplicateAction", params, Long.class);
+    Long newActionId = sqlCache.queryForObjectBySql(ProcessStepActionQuery.duplicateAction, params, Long.class);
     return getActionById(newActionId);
   }
 
@@ -125,7 +127,7 @@ public class ProcessStepActionService {
     params.put("hideFromWeb", action.getHideFromWeb() != null && action.getHideFromWeb());
 
     Long id =
-        sqlCache.updateReturningId("processStepAction.updateAction", params, "id").longValue();
+        sqlCache.updateBySqlReturningId(ProcessStepActionQuery.updateAction, params, "id").longValue();
 
     // delete childProcessSteps if it is a link (if they changed the type)
     if (action.getActionTypeId() == 1L && !action.getProcessStepActionChildProcesses().isEmpty()) {
@@ -141,7 +143,7 @@ public class ProcessStepActionService {
     }
     if (null != action.getLogicListChanged() && action.getLogicListChanged()) {
       // archive all old logic before saving new logi
-      sqlCache.update("processStepAction.archiveOldLogic", params);
+      sqlCache.updateBySql(ProcessStepActionQuery.archiveOldLogic, params);
 
       if (!action.getProcessStepLogicList().isEmpty()) {
         // handle saving logic items.
@@ -155,7 +157,7 @@ public class ProcessStepActionService {
             // because it should already be true by now)
             HashMap<String, Object> psrParams = new HashMap<>();
             psrParams.put("id", logic.getProcessStepRequirementId());
-            sqlCache.update("processStepRequirement.setImmutable", psrParams);
+            sqlCache.updateBySql(ProcessStepRequirementQuery.setImmutable, psrParams);
           }
 
           HashMap<String, Object> logicParams = new HashMap<>();
@@ -164,7 +166,7 @@ public class ProcessStepActionService {
           logicParams.put("operationTypeId", logic.getOperationTypeId());
           logicParams.put("sqlOrder", count);
           logicParams.put("createdById", currentUser.trueUserId());
-          sqlCache.update("processStepAction.insertLogic", logicParams);
+          sqlCache.updateBySql(ProcessStepActionQuery.insertLogic, logicParams);
           count++;
         }
       }
@@ -197,7 +199,7 @@ public class ProcessStepActionService {
     params.put("hideFromWeb", action.getHideFromWeb() != null && action.getHideFromWeb());
 
     Long id =
-        sqlCache.updateReturningId("processStepAction.insertAction", params, "id").longValue();
+        sqlCache.updateBySqlReturningId(ProcessStepActionQuery.insertAction, params, "id").longValue();
     return getActionById(id);
   }
 
@@ -211,8 +213,8 @@ public class ProcessStepActionService {
 
     //    rn add this back to the old query if i broke things by taking it out: ps.id != :stepId
 
-    return sqlCache.query(
-        "processStepAction.getChildProcessStepsForAction", params, ProcessStep.class);
+    return sqlCache.queryBySql(
+      ProcessStepActionQuery.getChildProcessStepsForAction, params, ProcessStep.class);
   }
 
   public ProcessStepActionChildProcess addChildStepToAction(
@@ -232,7 +234,7 @@ public class ProcessStepActionService {
 
     Long id =
         sqlCache
-            .updateReturningId("processStepAction.addChildStepToAction", params, "id")
+            .updateBySqlReturningId(ProcessStepActionQuery.addChildStepToAction, params, "id")
             .longValue();
     return getActionChildStep(id);
   }
@@ -252,7 +254,7 @@ public class ProcessStepActionService {
 
     Long id =
         sqlCache
-            .updateReturningId("processStepAction.saveChildProcessStatuses", params, "id")
+            .updateBySqlReturningId(ProcessStepActionQuery.saveChildProcessStatuses, params, "id")
             .longValue();
     return getActionChildStep(id);
   }
@@ -262,8 +264,8 @@ public class ProcessStepActionService {
     params.put("id", id);
 
     Optional<ProcessStepActionChildProcess> result =
-        sqlCache.get(
-            "processStepAction.getActionChildStep", params, ProcessStepActionChildProcess.class);
+        sqlCache.getBySql(
+          ProcessStepActionQuery.getActionChildStep, params, ProcessStepActionChildProcess.class);
     return result.orElse(null);
   }
 
@@ -274,7 +276,7 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childProcessId);
 
-    sqlCache.update("processStepAction.deleteActionChildStep", params);
+    sqlCache.updateBySql(ProcessStepActionQuery.deleteActionChildStep, params);
   }
 
   public void updateActionChildStep(Long actionId, ProcessStepActionChildProcess child) {
@@ -289,7 +291,7 @@ public class ProcessStepActionService {
         child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
         "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
-    sqlCache.update("processStepAction.updateActionChildStep", params);
+    sqlCache.updateBySql(ProcessStepActionQuery.updateActionChildStep, params);
   }
 
   // CHILD LINKS
@@ -301,7 +303,7 @@ public class ProcessStepActionService {
     params.put("createdById", currentUser.trueUserId());
 
     Long id =
-        sqlCache.updateReturningId("processStepAction.addLinkToAction", params, "id").longValue();
+        sqlCache.updateBySqlReturningId(ProcessStepActionQuery.addLinkToAction, params, "id").longValue();
     return getActionChildLink(id);
   }
 
@@ -310,7 +312,7 @@ public class ProcessStepActionService {
     params.put("id", id);
 
     return sqlCache
-        .get("processStepAction.getActionChildLink", params, ProcessStepActionLink.class)
+        .getBySql(ProcessStepActionQuery.getActionChildLink, params, ProcessStepActionLink.class)
         .orElse(null);
   }
 
@@ -320,7 +322,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childLinkId);
-    sqlCache.update("processStepAction.deleteLinkFromAction", params);
+    sqlCache.updateBySql(ProcessStepActionQuery.deleteLinkFromAction, params);
   }
 
   // CHILD FUNCTIONS
@@ -335,7 +337,7 @@ public class ProcessStepActionService {
 
     Long id =
         sqlCache
-            .updateReturningId("processStepAction.addChildFunctionToAction", params, "id")
+            .updateBySqlReturningId(ProcessStepActionQuery.addChildFunctionToAction, params, "id")
             .longValue();
 
     handleDynamicValueParams(child.getActionParamDynamicValues(), id, null);
@@ -348,8 +350,7 @@ public class ProcessStepActionService {
     params.put("id", id);
 
     return sqlCache
-        .get(
-            "processStepAction.getActionChildFunction",
+        .getBySql(ProcessStepActionQuery.getActionChildFunction,
             params,
             new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om))
         .orElse(null);
@@ -361,7 +362,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childProcessId);
-    sqlCache.update("processStepAction.deleteActionChildFunction", params);
+    sqlCache.updateBySql(ProcessStepActionQuery.deleteActionChildFunction, params);
   }
 
   public void updateActionChildFunction(Long actionId, ProcessStepActionChildFunction child) {
@@ -371,7 +372,7 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
-    sqlCache.update("processStepAction.updateActionChildFunction", params);
+    sqlCache.updateBySql(ProcessStepActionQuery.updateActionChildFunction, params);
 
     handleDynamicValueParams(child.getActionParamDynamicValues(), child.getId(), null);
   }
@@ -387,7 +388,7 @@ public class ProcessStepActionService {
 
     Long id =
       sqlCache
-        .updateReturningId("processStepAction.addSmsToAction", params, "id")
+        .updateBySqlReturningId(ProcessStepActionQuery.addSmsToAction, params, "id")
         .longValue();
 
 
@@ -399,8 +400,8 @@ public class ProcessStepActionService {
     params.put("id", id);
 
     return sqlCache
-      .get(
-        "processStepAction.getActionChildSms",
+      .getBySql(
+        ProcessStepActionQuery.getActionChildSms,
         params,
         new ProcessStepActionChildSmsTemplateMapper<>(ProcessStepActionChildSmsTemplate.class, om))
       .orElse(null);
@@ -411,14 +412,14 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", childSmsId);
-    sqlCache.update("processStepAction.deleteSmsFromAction", params);
+    sqlCache.updateBySql(ProcessStepActionQuery.deleteSmsFromAction, params);
   }
 
   public List<ProcessStepActionChildSmsTemplate> getChildSmsTemplates(Long actionId) {
     Map<String, Object> params =
       Map.of("processStepActionId", actionId);
-    return sqlCache.query(
-      "processStepAction.getChildSmsTemplatesByActionId",
+    return sqlCache.queryBySql(
+      ProcessStepActionQuery.getChildSmsTemplatesByActionId,
       params,
       new ProcessStepActionChildSmsTemplateMapper<>(ProcessStepActionChildSmsTemplate.class, om));
   }
@@ -438,10 +439,10 @@ public class ProcessStepActionService {
         if (null != p.getId()) {
           dynamicParams.put("id", p.getId());
           dynamicParams.put("modifiedById", currentUser.trueUserId());
-          sqlCache.update("processStepAction.updateActionParamDynamicValue", dynamicParams);
+          sqlCache.updateBySql(ProcessStepActionQuery.updateActionParamDynamicValue, dynamicParams);
         } else {
           dynamicParams.put("createdById", currentUser.trueUserId());
-          sqlCache.update("processStepAction.insertActionParamDynamicValue", dynamicParams);
+          sqlCache.updateBySql(ProcessStepActionQuery.insertActionParamDynamicValue, dynamicParams);
         }
       }
     }
@@ -451,8 +452,8 @@ public class ProcessStepActionService {
       Long actionId, Long projectProcessStepId) {
     Map<String, Object> params =
         Map.of("id", actionId, "projectProcessStepId", projectProcessStepId);
-    return sqlCache.query(
-        "processStepAction.getChildFunctionsByProjectProcessStepId",
+    return sqlCache.queryBySql(
+      ProcessStepActionQuery.getChildFunctionsByProjectProcessStepId,
         params,
         new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om));
   }

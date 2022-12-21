@@ -353,7 +353,7 @@ public class WorkQueueTypeService {
       } else if (null == ps.getId() && !ps.getArchived()) {
         params.put("companyEventStatusTypeId", ps.getCompanyEventStatusTypeId());
         params.put("eventStatusTypeId", ps.getIsRoot() ? ps.getEventStatusTypeId() : null);
-        sqlCache.update(WorkQueueTypeQuery.insertEventStatusType, params);
+        sqlCache.updateBySql(WorkQueueTypeQuery.insertEventStatusType, params);
       }
     }
 

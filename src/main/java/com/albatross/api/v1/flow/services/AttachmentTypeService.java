@@ -79,7 +79,7 @@ public class AttachmentTypeService {
       return ResponseEntity.badRequest().body(fields);
     } else {
       sqlCache.updateBySql(
-        AttachmentTypeQuery.deleteType,
+        AttachmentTypeQuery.deleteAttachmentType,
         ImmutableMap.of("id", typeId, "modifiedById", currentUser.trueUserId()));
       return ResponseEntity.ok().build();
     }
@@ -149,8 +149,8 @@ public class AttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
     params.put("eventId", eventId);
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".getTypes";
-    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
+    String sql = AttachmentTypeQuery.getTypes(objectType.tablePrefix);
+    return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
   public Optional<ObjectTypeAttachmentType> getAttachmentType(Long id, ObjectType objectType) {
@@ -159,8 +159,8 @@ public class AttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", currentUser.getCompanyId());
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".get";
-    Optional<ObjectTypeAttachmentType> result = sqlCache.get(sqlKey, params, new ObjectTypeAttachmentTypeMapper<>(ObjectTypeAttachmentType.class, om));
+    String sql = objectType.getAttachmentTypeQuery;
+    Optional<ObjectTypeAttachmentType> result = sqlCache.getBySql(sql, params, new ObjectTypeAttachmentTypeMapper<>(ObjectTypeAttachmentType.class, om));
     return result;
   }
 
@@ -170,8 +170,8 @@ public class AttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
     params.put("eventId", eventId);
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".getAvailableTypes";
-    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
+    String sql = AttachmentTypeQuery.getAvailableTypes(objectType.tablePrefix);
+    return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
   public Optional<ObjectTypeAttachmentType> addType(ObjectTypeAttachmentType objectTypeAttachmentType, ObjectType objectType) {
@@ -182,8 +182,8 @@ public class AttachmentTypeService {
     params.put("createdById", currentUser.trueUserId());
     params.put("attachmentTypeId", objectTypeAttachmentType.getAttachmentTypeId());
     params.put("eventId", objectTypeAttachmentType.getPrimaryId());
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".addType";
-    Long id = sqlCache.updateReturningId(sqlKey, params, "id").longValue();
+    String sql = AttachmentTypeQuery.addType(objectType.tablePrefix);
+    Long id = sqlCache.updateBySqlReturningId(sql, params, "id").longValue();
     return getAttachmentType(id, objectType);
   }
 
@@ -196,8 +196,8 @@ public class AttachmentTypeService {
     params.put("allowUpload", null != attachmentType.getAllowUpload() && attachmentType.getAllowUpload());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", attachmentType.getId());
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".update";
-    sqlCache.update(sqlKey, params);
+    String sql = AttachmentTypeQuery.update(objectType.tablePrefix);
+    sqlCache.updateBySql(sql, params);
   }
 
   public void updateTypeOrder(List<ObjectTypeAttachmentType> attachmentTypes, ObjectType objectType) {
@@ -209,8 +209,8 @@ public class AttachmentTypeService {
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", at.getId());
       // save each display_order
-      String sqlKey = "attachmentType." + objectType.tablePrefix + ".updateDisplayOrder";
-      sqlCache.update(sqlKey, params);
+      String sql = AttachmentTypeQuery.updateDisplayOrder(objectType.tablePrefix);
+      sqlCache.updateBySql(sql, params);
     }
   }
 
@@ -220,19 +220,8 @@ public class AttachmentTypeService {
     params.put("id", id);
     params.put("companyId", currentUser.getCompanyId());
     params.put("userId", currentUser.trueUserId());
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".deleteType";
-    sqlCache.update(sqlKey, params);
-  }
-
-  public void updateReadOnly(ObjectTypeAttachmentType attachmentType, ObjectType objectType) {
-    User currentUser = securityService.getCurrentUser();
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", attachmentType.getId());
-    params.put("modifiedById", currentUser.trueUserId());
-    params.put("readOnly", attachmentType.getReadOnly());
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".updateReadOnly";
-    sqlCache.update(sqlKey, params);
+    String sql = AttachmentTypeQuery.deleteType(objectType.tablePrefix);
+    sqlCache.updateBySql(sql, params);
   }
 
   //this endpoint is specifically for mobile. they want all attachment types back and they will parse them as needed
@@ -251,7 +240,7 @@ public class AttachmentTypeService {
 
     //because we don't have to pass in any of the 3 variables, this AttachmentTypeQuery.projectGetAssignedTypes should return them all
     String sql = null != ppsEventId ? ProjectProcessStepEventQuery.getEventAttachmentTypes :
-                   null != ppsId ? ProjectProcessStepQuery.getStepAttachmentTypes : AttachmentTypeQuery.projectGetAssignedTypes;
+                   null != ppsId ? ProjectProcessStepQuery.getStepAttachmentTypes : AttachmentTypeQuery.getAssignedTypes("project");
 
     return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
@@ -281,8 +270,8 @@ public class AttachmentTypeService {
     params.put("allowUpload", null != allowUpload ? allowUpload : false);
     params.put("focused", null != focused ? focused : false);
     params.put("linkable", null != linkable ? linkable : false);
-    String sqlKey = "attachmentType." + objectType.tablePrefix + ".getAssignedTypes";
-    return sqlCache.query(sqlKey, params, ObjectTypeAttachmentType.class);
+    String sql = AttachmentTypeQuery.getAssignedTypes(objectType.tablePrefix);
+    return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
   public static class AttachmentTypeMapper<T> extends BeanPropertyRowMapper<T> {

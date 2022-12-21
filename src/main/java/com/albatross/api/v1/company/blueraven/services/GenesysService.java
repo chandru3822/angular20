@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.customFieldValues.ContactCfvQuery;
 import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.SMSService;
@@ -185,7 +186,7 @@ public class GenesysService {
       params.put("customFieldGroupAssignmentId", 399L);
       params.put("sourceId", contact.getId());
       params.put("userId", currentUser.trueUserId());
-      sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+      sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
       return true;
     }
 
@@ -306,7 +307,7 @@ public class GenesysService {
     }
 
     try {
-      sqlCache.update("customFieldValues.contact.upsertCustomFieldValue", params);
+      sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
 
     } catch (Exception e) {
 
@@ -416,7 +417,7 @@ public class GenesysService {
 
     List<CustomFieldGroup> customFieldGroups =
         customFieldValueService.getCustomFieldGroupsAndValues(
-            ObjectType.CONTACT.toString(), contactId);
+            ObjectType.CONTACT, contactId);
     List<CustomFieldValue> values = customFieldGroups.get(0).getCustomFieldValues();
     // Add Lead Level custom field so that value gets pulled
     values.add(
@@ -819,7 +820,7 @@ public class GenesysService {
     for (Contact contact : contacts) {
       List<CustomFieldGroup> customFieldGroups =
           customFieldValueService.getCustomFieldGroupsAndValues(
-              ObjectType.CONTACT.toString(), contact.getId());
+              ObjectType.CONTACT, contact.getId());
       List<CustomFieldValue> values = customFieldGroups.get(0).getCustomFieldValues();
 
       CustomFieldValue genesysContactListName = new CustomFieldValue();
