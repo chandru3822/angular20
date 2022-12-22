@@ -22,7 +22,7 @@ public class ProcessStepEventRequirement {
     companySystemListId, systemListOptionId, customSqlOptionId, referenceProcessStepId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, functionName, processStepName,
-    secondaryRequirementValue, customFieldSqlKey, referenceProcessStepName;
+    secondaryRequirementValue, customFieldSql, referenceProcessStepName;
 
   // not sure what type to make this yet
   private List<Integer> listOfValueIds;

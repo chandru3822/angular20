@@ -71,9 +71,9 @@ public class BlueravenCustomFieldGroupService {
   }
 
   private void handleCustomListValueForCfv(CustomFieldValue cv, Long companyId, Long projectId) {
-    if (null != cv.getCustomFieldSqlKey()) {
+    if (null != cv.getCustomFieldSql()) {
       cv.setHasListValues(true);
-      String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
+      String sql = cv.getCustomFieldSql();
       if (null != sql) {
         cv.setHasListValues(true);
         HashMap<String, Object> params = new HashMap<>();
@@ -393,7 +393,7 @@ public class BlueravenCustomFieldGroupService {
                                      cfga.required as \"required\",
                                      cf.list_of_value_id as \"listOfValueId\",
                                      cf.field_name as \"fieldName\",
-                                     cf.custom_field_sql_key as \"customFieldSqlKey\",
+                                     cf.custom_field_sql as \"customFieldSql\",
                                      cf.company_system_list_id as \"companySystemListId\",
                                      cf.system_list_option_ids as \"systemListOptionIds\",
                                      cf.company_data_type_id as \"companyDataTypeId\",

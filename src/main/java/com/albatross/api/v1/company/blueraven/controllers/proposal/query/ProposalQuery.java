@@ -237,7 +237,7 @@ public class ProposalQuery {
                                                                   flowCf.sort_list_values_alphabetically)                   as "sortListValuesAlphabetically",
                                                          cf.flow_custom_field_id                                            as "flowCustomFieldId",
                                                          -- cf.lazy_load_values                                             as "lazyLoadValues",
-                                                         coalesce(cf.custom_field_sql_key, flowCf.custom_field_sql_key)     as "customFieldSqlKey",
+                                                         coalesce(cf.custom_field_sql, flowCf.custom_field_sql)     as "customFieldSql",
                                                          coalesce(cf.company_system_list_id, flowCf.company_system_list_id) as "companySystemListId",
                                                          coalesce(cf.system_list_option_ids, flowCf.system_list_option_ids) as "systemListOptionIds",
                                                          coalesce(cf.company_data_type_id, flowCf.company_data_type_id)     as "companyDataTypeId",

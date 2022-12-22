@@ -30,7 +30,7 @@ public class CustomFieldValue {
   private Boolean valueWasChanged, required;
 
   // not sure on these types
-  private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, ancillaryCustomFieldHint;
+  private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, customFieldSql, customFieldSqlSmartlist, ancillaryCustomFieldHint;
   private Long intValue;
 
   private List<Integer> intArrayValue;

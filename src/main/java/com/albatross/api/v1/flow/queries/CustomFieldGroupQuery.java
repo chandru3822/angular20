@@ -86,7 +86,7 @@ public class CustomFieldGroupQuery {
                                         cf.id as "customFieldId",
                                         cf.field_name as "fieldName",
                                         cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
-                                        cf.custom_field_sql_key as "customFieldSqlKey",
+                                        cf.custom_field_sql as "customFieldSql",
                                         cf.company_data_type_id as "companyDataTypeId",
                                         cfga.show_on_insert as "showOnInsert",
                                         cfga.show_on_user_profile as "showOnUserProfile",

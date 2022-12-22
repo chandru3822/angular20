@@ -177,7 +177,7 @@
             ></v-switch>
             <v-text-field
               v-if="newRequirement.operatorTypeId && newRequirement.customValue && ![7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)
-                    && ((!selectedCustomField.listOfValueId || selectedCustomField.listOfValueId === null) && (!selectedCustomField.customFieldSqlKey || selectedCustomField.customFieldSqlKey === null) && (!selectedCustomField.companySystemListId || selectedCustomField.companySystemListId === null))"
+                    && ((!selectedCustomField.listOfValueId || selectedCustomField.listOfValueId === null) && (!selectedCustomField.customFieldSql || selectedCustomField.customFieldSql === null) && (!selectedCustomField.companySystemListId || selectedCustomField.companySystemListId === null))"
               v-model="newRequirement.requirementValue"
               placeholder="Enter a value"
               @input="validateRequirementForm()"
@@ -187,7 +187,7 @@
               v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
                               && ![7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)
-                              && ((selectedCustomField.listOfValueId && selectedCustomField.listOfValueId !== null) || (selectedCustomField.customFieldSqlKey && selectedCustomField.customFieldSqlKey !== null) || (selectedCustomField.companySystemListId && selectedCustomField.companySystemListId !== null))
+                              && ((selectedCustomField.listOfValueId && selectedCustomField.listOfValueId !== null) || (selectedCustomField.customFieldSql && selectedCustomField.customFieldSql !== null) || (selectedCustomField.companySystemListId && selectedCustomField.companySystemListId !== null))
                               && !selectedCustomField.allowMultiple"
               v-model="selectedListValue"
               :items="selectedCustomField.listOfValues"
@@ -410,7 +410,7 @@
                   ></v-switch>
                   <!-- single text field for non list custom values -->
                   <v-text-field
-                    v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId && !item.companySystemListId "
+                    v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSql && !item.systemListId && !item.companySystemListId "
                     v-model="item.requirementValue"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
@@ -420,7 +420,7 @@
                   <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
                     v-else-if="!item.customField.companySystemListId && item.customValue && item.customField && ![7,8,9,10,11].includes(item.processStepRequirementTypeId)
-                            && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null) && !item.customField.allowMultiple)"
+                            && ((item.customField.listOfValueId !== null || item.customField.customFieldSql !== null) && !item.customField.allowMultiple)"
                     v-model="item.listOfValueId"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
@@ -454,7 +454,7 @@
                   ></v-select>
                   <!-- not sure what to do with this custom sql one yet -->
                   <v-select
-                    v-else-if="item.customValue && item.customFieldSqlKey"
+                    v-else-if="item.customValue && item.customFieldSql"
                     v-model="item.listOfValueId"
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
@@ -538,7 +538,7 @@
                         item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'
                       }} {{ item.secondaryRequirementValue }}
                     </span>
-                    <span v-else-if="item.listOfValueId || item.customFieldSqlKey || item.companySystemListId">
+                    <span v-else-if="item.listOfValueId || item.customFieldSql || item.companySystemListId">
 <!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
                       {{ getListValueName(item) }}
                     </span>
@@ -1006,7 +1006,7 @@ export default {
           this.newRequirement.customSqlOptionId = null
           this.newRequirement.dataTypeRequirementId = null
           this.newRequirement.requirementValue = null
-        } else if (this.newRequirement.customValue && this.selectedCustomField.customFieldSqlKey && !this.selectedCustomField.allowMultiple) {
+        } else if (this.newRequirement.customValue && this.selectedCustomField.customFieldSql && !this.selectedCustomField.allowMultiple) {
           //  if from a list of values and not allow multiple use the selected value id,
           this.newRequirement.customSqlOptionId = this.selectedListValue.id
           //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values

@@ -86,8 +86,8 @@ public class BlueravenCustomFieldService {
       return cf.getListOfValues();
     }
 
-    if (cf.getCustomFieldSqlKey() != null) {
-      final var sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
+    if (cf.getCustomFieldSql() != null) {
+      final var sql = cf.getCustomFieldSql();
       if (sql != null) {
         Map<String, Object> params =
             new HashMap<>(Map.of("userId", user.trueUserId(), "companyId", user.getCompanyId()));
@@ -130,7 +130,7 @@ public class BlueravenCustomFieldService {
     params.put("fieldName", customField.getFieldName());
     params.put("sortListValuesAlphabetically", customField.getSortListValuesAlphabetically());
     params.put("systemListId", customField.getCompanySystemListId());
-    params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+    params.put("customFieldSql", customField.getCustomFieldSql());
     params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
     params.put("flowCustomFieldId", customField.getFlowCustomFieldId());
     params.put(
@@ -205,7 +205,7 @@ public class BlueravenCustomFieldService {
 
     if (doInsertAfterHandlingOtherScenarios) {
       params.put("listOfValueId", parentId);
-      params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+      params.put("customFieldSql", customField.getCustomFieldSql());
       params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
       params.put("companyId", customField.getCompanyId());
       params.put("systemListId", customField.getCompanySystemListId());
