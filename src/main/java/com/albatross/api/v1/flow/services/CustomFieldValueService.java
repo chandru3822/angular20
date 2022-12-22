@@ -54,9 +54,9 @@ public class CustomFieldValueService {
   }
 
   private void handleCustomListValueForCfv(CustomFieldValue cv, Long projectId, Long userId, Long companyId, Long ppsId) {
-    if(null != cv.getCustomFieldSqlKey()) {
+    if(null != cv.getCustomFieldSql()) {
       cv.setHasListValues(true);
-      String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
+      String sql = cv.getCustomFieldSql();
       if(null != sql) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);

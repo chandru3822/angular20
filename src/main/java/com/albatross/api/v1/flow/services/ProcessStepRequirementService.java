@@ -44,8 +44,8 @@ public class ProcessStepRequirementService {
     // todo: this is duplicated from custom field value service but didn't quite match up, probably
     // could re-write to combine the two
     for (ProcessStepRequirement psr : results) {
-      if (null != psr.getCustomFieldSqlKey()) {
-        String sql = sqlCache.getByKey(psr.getCustomFieldSqlKey());
+      if (null != psr.getCustomFieldSql()) {
+        String sql = psr.getCustomFieldSql();
         if (null != sql) {
           HashMap<String, Object> params2 = new HashMap<>();
           params2.put("projectId", null);

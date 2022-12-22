@@ -18,7 +18,7 @@ public class CustomFieldValue {
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId, uniqueBehaviorTypeId,
       companySystemListId, projectProcessStepId, ancillaryCustomFieldGroupAssignmentId;
 
-  private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, ancillaryCustomFieldHint;
+  private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, customFieldSql, customFieldSqlSmartlist, ancillaryCustomFieldHint;
   private Long intValue;
 
   private List<Integer> intArrayValue;

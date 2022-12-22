@@ -64,6 +64,9 @@ public class CustomFieldService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
+    params.put("customFieldSql", customField.getCustomFieldSql());
+    params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+    params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
     params.put(
       "sortListValuesAlphabetically",
       null != customField.getSortListValuesAlphabetically()
@@ -140,6 +143,7 @@ public class CustomFieldService {
     if (doInsertAfterHandlingOtherScenarios) {
       params.put("listOfValueId", parentId);
       params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+      params.put("customFieldSql", customField.getCustomFieldSql());
       params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
       params.put("companyId", user.getCompanyId());
       params.put("systemListId", customField.getCompanySystemListId());
@@ -185,7 +189,7 @@ public class CustomFieldService {
                cf -> {
                  final List<ListOfValue> listOfValues = getListOfValues(cf, user);
                  cf.setHasListValues(
-                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                   null != cf.getCustomFieldSql() || null != cf.getCompanySystemListId());
                  cf.setListOfValues(listOfValues);
                })
              .toList();
@@ -204,7 +208,7 @@ public class CustomFieldService {
                cf -> {
                  final List<ListOfValue> listOfValues = getListOfValues(cf, user);
                  cf.setHasListValues(
-                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                   null != cf.getCustomFieldSql() || null != cf.getCompanySystemListId());
                  cf.setListOfValues(listOfValues);
                })
              .toList();
@@ -223,7 +227,7 @@ public class CustomFieldService {
                cf -> {
                  final List<ListOfValue> listOfValues = getListOfValues(cf, user);
                  cf.setHasListValues(
-                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                   null != cf.getCustomFieldSql() || null != cf.getCompanySystemListId());
                  cf.setListOfValues(listOfValues);
                })
              .toList();
@@ -242,7 +246,7 @@ public class CustomFieldService {
                cf -> {
                  final List<ListOfValue> listOfValues = getListOfValues(cf, user);
                  cf.setHasListValues(
-                   null != cf.getCustomFieldSqlKey() || null != cf.getCompanySystemListId());
+                   null != cf.getCustomFieldSql() || null != cf.getCompanySystemListId());
                  cf.setListOfValues(listOfValues);
                })
              .toList();
@@ -261,8 +265,8 @@ public class CustomFieldService {
       return cf.getListOfValues();
     }
 
-    if (null != cf.getCustomFieldSqlKey()) {
-      String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
+    if (null != cf.getCustomFieldSql()) {
+      String sql = cf.getCustomFieldSql();
       if (null != sql) {
         HashMap<String, Object> params2 = new HashMap<>();
         params2.put("projectId", null);
