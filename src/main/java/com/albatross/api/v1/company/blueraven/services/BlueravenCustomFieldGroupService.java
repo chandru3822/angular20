@@ -7,6 +7,7 @@ import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.CustomField;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
+import com.albatross.api.v1.company.blueraven.services.queries.BlueravenCustomFieldGroupQuery;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
@@ -105,8 +106,8 @@ public class BlueravenCustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("objectTypeId", objectTypeId);
 
-    return sqlCache.query(
-      "blueravenCustomFieldGroup.assignment.getByObjectTypeId",
+    return sqlCache.queryBySql(
+      BlueravenCustomFieldGroupQuery.getByObjectTypeId,
       params,
       new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
   }
@@ -122,13 +123,13 @@ public class BlueravenCustomFieldGroupService {
 
     Long id =
       sqlCache
-        .updateReturningId("blueravenCustomFieldGroup.insertCustomFieldGroup", params, "id")
+        .updateBySqlReturningId(BlueravenCustomFieldGroupQuery.insertCustomFieldGroup, params, "id")
         .longValue();
     params.put("id", id);
 
     Optional<CustomFieldGroup> group =
-      sqlCache.get(
-        "blueravenCustomFieldGroup.assignment.getOne",
+      sqlCache.getBySql(
+        BlueravenCustomFieldGroupQuery.getOne,
         params,
         new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
@@ -143,11 +144,11 @@ public class BlueravenCustomFieldGroupService {
     params.put("objectTypeId", customFieldGroup.getObjectTypeId());
     params.put("id", customFieldGroup.getId());
 
-    sqlCache.update("blueravenCustomFieldGroup.moveGroupToColumn", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.moveGroupToColumn, params);
 
     Optional<CustomFieldGroup> group =
-      sqlCache.get(
-        "blueravenCustomFieldGroup.assignment.getOne",
+      sqlCache.getBySql(
+        BlueravenCustomFieldGroupQuery.getOne,
         params,
         new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
@@ -163,11 +164,11 @@ public class BlueravenCustomFieldGroupService {
     params.put("columnNumber", customFieldGroup.getColumnNumber());
     params.put("modifiedById", user.trueUserId());
 
-    sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldGroup", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.updateCustomFieldGroup, params);
 
     return sqlCache
-      .get(
-        "blueravenCustomFieldGroup.assignment.getOne",
+      .getBySql(
+        BlueravenCustomFieldGroupQuery.getOne,
         params,
         new CustomFieldGroupMapper<>(CustomFieldGroup.class, om))
       .orElse(null);
@@ -186,7 +187,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("modifiedById", user.trueUserId());
     params.put("id", cfgaId);
 
-    sqlCache.update("blueravenCustomFieldGroup.assignment.deleteFieldFromGroup", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.deleteFieldFromGroup, params);
   }
 
   public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId) {
@@ -194,8 +195,8 @@ public class BlueravenCustomFieldGroupService {
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupId", groupId);
 
-    return sqlCache.query(
-      "blueravenCustomFieldGroup.assignment.getAvailableCustomFieldsInGroup",
+    return sqlCache.queryBySql(
+      BlueravenCustomFieldGroupQuery.getAvailableCustomFieldsInGroup,
       params,
       CustomField.class);
   }
@@ -214,7 +215,7 @@ public class BlueravenCustomFieldGroupService {
 
     Long id =
       sqlCache
-        .updateReturningId("blueravenCustomFieldGroup.assignment.addFieldToGroup", params, "id")
+        .updateBySqlReturningId(BlueravenCustomFieldGroupQuery.addFieldToGroup, params, "id")
         .longValue();
 
     return getCustomField(id);
@@ -224,7 +225,7 @@ public class BlueravenCustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     return sqlCache
-      .get("blueravenCustomFieldGroup.assignment.getCustomField", params, CustomField.class)
+      .getBySql(BlueravenCustomFieldGroupQuery.getCustomField, params, CustomField.class)
       .orElse(null);
   }
 
@@ -235,7 +236,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("modifiedById", user.trueUserId());
     params.put("id", cfgId);
 
-    sqlCache.update("blueravenCustomFieldGroup.deleteCustomFieldGroup", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.deleteCustomFieldGroup, params);
   }
 
   public void updateFieldInGroup(CustomField customField) {
@@ -246,7 +247,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("fieldOrder", customField.getFieldOrder());
 
-    sqlCache.update("blueravenCustomFieldGroup.assignment.updateFieldInGroup", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.updateFieldInGroup, params);
   }
 
   public void updateFieldsInGroup(List<CustomField> customFields) {
@@ -263,7 +264,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("useParentData", customField.getUseParentData());
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
 
-    sqlCache.update("blueravenCustomFieldGroup.assignment.saveUseParentData", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.saveUseParentData, params);
   }
 
   public void updateRequired(CustomField customField) {
@@ -273,7 +274,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("userId", user.trueUserId());
     params.put("required", null != customField.getRequired() ? customField.getRequired() : false);
 
-    sqlCache.update("blueravenCustomFieldGroup.assignment.saveRequired", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.saveRequired, params);
   }
 
   public void saveMinMax(CustomField customField) {
@@ -284,7 +285,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("minValue", customField.getMinValue());
     params.put("maxValue", customField.getMaxValue());
 
-    sqlCache.update("blueravenCustomFieldGroup.assignment.saveMinMax", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.saveMinMax, params);
   }
 
 
@@ -297,7 +298,7 @@ public class BlueravenCustomFieldGroupService {
       params.put("modifiedById", user.trueUserId());
       params.put("conditionalOnId", customField.getConditionalOnId());
 
-      sqlCache.update("blueravenCustomFieldGroup.assignment.updateConditionalOnId", params);
+      sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.updateConditionalOnId, params);
     }
   }
 
@@ -311,7 +312,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("modifiedById", user.trueUserId());
     params.put("cfgaId", cfgaId);
 
-    sqlCache.update("blueravenCustomFieldGroup.assignment.updateHidden", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.updateHidden, params);
 
     final List<Long> positionIds = customField.getHiddenWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).toList();
     updateWhiteListedPositions(cfgaId, positionIds, 2L, user.trueUserId());
@@ -327,7 +328,7 @@ public class BlueravenCustomFieldGroupService {
     params.put("modifiedById", user.trueUserId());
     params.put("cfgaId", cfgaId);
 
-    sqlCache.update("blueravenCustomFieldGroup.assignment.updateReadOnly", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.updateReadOnly, params);
 
     final List<Long> positionIds = customField.getWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).toList();
     updateWhiteListedPositions(cfgaId, positionIds, 1L, user.trueUserId());
@@ -339,13 +340,12 @@ public class BlueravenCustomFieldGroupService {
       "positionIds", positionIds.isEmpty() ? List.of(-1L) : positionIds,
       "whiteListTypeId", whiteListTypeId,
       "userId", userId);
-    sqlCache.update("blueravenCustomFieldGroup.archiveWhiteListPositionsNoLongerUsed", params);
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.archiveWhiteListPositionsNoLongerUsed, params);
 
-    final String query = sqlCache.getByKey("blueravenCustomFieldGroup.assignment.insertWhiteList");
     final DataSource dataSource = sqlCache.getSqlJdbc().getJdbcTemplate().getDataSource();
     if (dataSource != null) {
       try (final Connection connection = dataSource.getConnection();
-           PreparedStatement ps = connection.prepareStatement(query)) {
+           PreparedStatement ps = connection.prepareStatement(BlueravenCustomFieldGroupQuery.insertWhiteList)) {
 
         for (Long positionId : positionIds) {
           ps.setLong(1, cfgaId);

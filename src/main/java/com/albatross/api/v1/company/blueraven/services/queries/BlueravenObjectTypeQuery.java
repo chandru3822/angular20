@@ -1,0 +1,66 @@
+package com.albatross.api.v1.company.blueraven.services.queries;
+
+public class BlueravenObjectTypeQuery {
+
+  //language=PostgreSQL
+  public final static String getCompanyObjectTypes = """
+    select cot.id,
+           cot.id company_object_type_id,
+           cot.object_type
+    from brs.object_type cot
+    where cot.archived is not true
+    order by cot.object_type
+    """;
+
+  //language=PostgreSQL
+  public final static String getCompanyObjectTypeDetail = """
+    select cot.id,
+           cot.id company_object_type_id,
+           cot.archived,
+           cot.allow_required,
+           cot.allow_hidden,
+           cot.allow_conditional,
+           cot.allow_readonly,
+           cot.object_type,
+           cot.allow_min_max,
+           cot.custom_columns,
+           case when (select count(1)
+                       from brs.ancillary_object_type aot
+                       where aot.object_type_id = cot.id
+                        and aot.archived is false) > 0 then true else false end as allow_ancillary
+    from brs.object_type cot
+    where cot.id = :objectTypeId
+      and cot.archived is not true
+    """;
+
+  //language=PostgreSQL
+  public final static String getParentObjectsIncludingTypes = """
+    select ps.id,
+           ps.process_step_name as name,
+           true as is_process_step
+    from flow.process_step ps
+    where ps.company_id = :companyId
+      and ps.archived is not true
+      and exists( select id from brs.ancillary_object_type
+                  where object_type_id = :objectTypeId
+                  and ancillary_object_type_id = 4
+                  and archived is false
+        )
+    union all
+    select ot.id,
+           ot.object_type as name,
+           false as is_process_step
+    from flow.company_object_type cot
+           inner join flow.object_type ot on ot.id = cot.object_type_id
+    where cot.company_id = :companyId
+      and (ot.flow_type_id = 1 OR ot.flow_type_id = 3)
+      and cot.archived is not true
+      and exists (
+        select id from brs.ancillary_object_type
+        where object_type_id = :objectTypeId
+          and ancillary_object_type_id = ot.id
+          and archived is false
+      )
+    order by name
+    """;
+}

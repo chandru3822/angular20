@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.HubspotLead;
+import com.albatross.api.v1.company.blueraven.services.queries.HubspotWebhookQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +51,7 @@ public class HubspotWebhookService {
       params.put("latitude", latitude);
       params.put("longitude", longitude);
 
-        Long contactId = sqlCache.updateReturningId("hubspotWebhook.saveLead", params, "id").longValue();
+        Long contactId = sqlCache.updateBySqlReturningId(HubspotWebhookQuery.saveLead, params, "id").longValue();
 
         // saves 'Lead Status', 'Lead Source', 'Lead Source Detail', and 'Hubspot ID'
         contactLeadService.processHubspotCustomFieldValues(lead, contactId, 2371412L);

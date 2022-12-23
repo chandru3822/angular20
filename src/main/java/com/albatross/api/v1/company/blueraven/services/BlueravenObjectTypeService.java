@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CompanyObjectType;
+import com.albatross.api.v1.company.blueraven.services.queries.BlueravenObjectTypeQuery;
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class BlueravenObjectTypeService {
     } else {
       HashMap<String, Object> params = new HashMap<>();
       params.put("companyId", user.getCompanyId());
-      return sqlCache.query("blueravenObjectType.getCompanyObjectTypes", params, CompanyObjectType.class);
+      return sqlCache.queryBySql(BlueravenObjectTypeQuery.getCompanyObjectTypes, params, CompanyObjectType.class);
     }
   }
 
@@ -47,7 +48,7 @@ public class BlueravenObjectTypeService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("companyId", user.getCompanyId());
       params.put("objectTypeId", objectTypeId);
-      return sqlCache.get("blueravenObjectType.getCompanyObjectTypeDetail", params, CompanyObjectType.class);
+      return sqlCache.getBySql(BlueravenObjectTypeQuery.getCompanyObjectTypeDetail, params, CompanyObjectType.class);
     }
   }
 
@@ -59,7 +60,7 @@ public class BlueravenObjectTypeService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("companyId", user.getCompanyId());
       params.put("objectTypeId", objectTypeId);
-      return sqlCache.query("blueravenObjectType.getParentObjectsIncludingTypes", params, CombinedStepAndType.class);
+      return sqlCache.queryBySql(BlueravenObjectTypeQuery.getParentObjectsIncludingTypes, params, CombinedStepAndType.class);
     }
   }
 }

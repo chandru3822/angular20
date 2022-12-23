@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
+import com.albatross.api.v1.company.blueraven.services.queries.SetterDashboardQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -34,7 +35,7 @@ public class SetterDashboardService {
     params.put("isSetterMgr", isSetterMgr);
     params.put("setterMgrOfficeId", setterMgrOfficeId);
 
-    IncentiveCounts incentiveCounts = sqlCache.query("setterDashboard.getIncentivePitchCounts", params, IncentiveCounts.class).get(0);
+    IncentiveCounts incentiveCounts = sqlCache.queryBySql(SetterDashboardQuery.getIncentivePitchCounts, params, IncentiveCounts.class).get(0);
     return incentiveCounts;
   }
 

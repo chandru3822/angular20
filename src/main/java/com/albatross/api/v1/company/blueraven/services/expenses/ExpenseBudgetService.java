@@ -6,6 +6,9 @@ import com.albatross.api.v1.company.blueraven.models.expenses.BudgetTemplate;
 import com.albatross.api.v1.company.blueraven.models.expenses.BudgetType;
 import com.albatross.api.v1.company.blueraven.models.expenses.Expense;
 import com.albatross.api.v1.company.blueraven.models.expenses.ExpenseBudget;
+import com.albatross.api.v1.company.blueraven.services.expenses.queries.ExpenseBudgetQuery;
+import com.albatross.api.v1.company.blueraven.services.expenses.queries.ExpenseQuery;
+import com.albatross.api.v1.company.blueraven.services.expenses.queries.ReimbursementQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,19 +33,19 @@ public class ExpenseBudgetService {
     params.put("id", id);
     params.put("userId", currentUser.trueUserId());
 
-    sqlCache.update("expenseBudget.delete", params);
+    sqlCache.updateBySql(ExpenseBudgetQuery.delete, params);
   }
 
   // budget types here
   public List<BudgetType> getBudgetTypes() {
-    return sqlCache.query(
-        "expenseBudget.budgetType.getAll", Collections.emptyMap(), BudgetType.class);
+    return sqlCache.queryBySql(
+        ExpenseBudgetQuery.getAllBudgetType, Collections.emptyMap(), BudgetType.class);
   }
 
   public Optional<BudgetType> getOneBudgetType(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("expenseBudget.budgetType.getOne", params, BudgetType.class);
+    return sqlCache.getBySql(ExpenseBudgetQuery.getOneBudgetType, params, BudgetType.class);
   }
 
   public Optional<BudgetType> updateBudgetType(BudgetType budgetType) {
@@ -57,11 +60,11 @@ public class ExpenseBudgetService {
     if (null != budgetType.getId()) {
       id = budgetType.getId();
       params.put("id", budgetType.getId());
-      sqlCache.update("expenseBudget.budgetType.updateBudgetType", params);
+      sqlCache.updateBySql(ExpenseBudgetQuery.updateBudgetType, params);
     } else {
       id =
           sqlCache
-              .updateReturningId("expenseBudget.budgetType.insertBudgetType", params, "id")
+              .updateBySqlReturningId(ExpenseBudgetQuery.insertBudgetType, params, "id")
               .longValue();
     }
     return getOneBudgetType(id);
@@ -75,14 +78,14 @@ public class ExpenseBudgetService {
     params.put("id", id);
     params.put("userId", currentUser.trueUserId());
 
-    sqlCache.update("expenseBudget.budgetType.deleteBudgetType", params);
+    sqlCache.updateBySql(ExpenseBudgetQuery.deleteBudgetType, params);
   }
   // end budget types here
 
   // budget templates here
   public List<BudgetTemplate> getAllBudgetTemplates() {
-    return sqlCache.query(
-        "expenseBudget.templates.getAll", Collections.emptyMap(), BudgetTemplate.class);
+    return sqlCache.queryBySql(
+        ExpenseBudgetQuery.getAllTemplates, Collections.emptyMap(), BudgetTemplate.class);
   }
 
   public Optional<BudgetTemplate> updateBudgetTemplate(BudgetTemplate budgetTemplate) {
@@ -99,12 +102,12 @@ public class ExpenseBudgetService {
     if (null != budgetTemplate.getId()) {
       templateId = budgetTemplate.getId();
       params.put("id", budgetTemplate.getId());
-      sqlCache.update("expenseBudget.templates.updateBudgetTemplate", params);
+      sqlCache.updateBySql(ExpenseBudgetQuery.updateBudgetTemplate, params);
     } else {
       params.put("createdById", currentUser.trueUserId());
       Long id =
           sqlCache
-              .updateReturningId("expenseBudget.templates.insertBudgetTemplate", params, "id")
+              .updateBySqlReturningId(ExpenseBudgetQuery.insertBudgetTemplate, params, "id")
               .longValue();
       templateId = id;
 
@@ -124,8 +127,8 @@ public class ExpenseBudgetService {
       // creates an expense budget if a budget does not already exist for this user, budget type,
       // and month
       Optional<ExpenseBudget> expenseBudget =
-          sqlCache.get(
-              "expenseBudget.checkIfExistsByTemplate", templateParams, ExpenseBudget.class);
+          sqlCache.getBySql(
+              ExpenseBudgetQuery.checkIfExistsByTemplate, templateParams, ExpenseBudget.class);
 
       if (expenseBudget.isEmpty()) {
 
@@ -134,21 +137,21 @@ public class ExpenseBudgetService {
 
         long newId =
             sqlCache
-                .updateReturningId("expenseBudget.insertOriginalExpenseBudget", params, "id")
+                .updateBySqlReturningId(ExpenseBudgetQuery.insertOriginalExpenseBudget, params, "id")
                 .longValue();
 
         if (newId > 0) {
           HashMap<String, Object> updateOriginal = new HashMap<>();
           updateOriginal.put("id", newId);
-          sqlCache.update("expenseBudget.updateOriginalExpenseBudget", updateOriginal);
+          sqlCache.updateBySql(ExpenseBudgetQuery.updateOriginalExpenseBudget, updateOriginal);
         }
-        //                sqlCache.update("expenseBudget.insertExpenseBudget", params);
+        //                sqlCache.updateBySql(ExpenseBudgetQuery.insertExpenseBudget, params);
       }
     }
 
     HashMap<String, Object> tParams = new HashMap<>();
     tParams.put("id", templateId);
-    return sqlCache.get("expenseBudget.templates.getOne", tParams, BudgetTemplate.class);
+    return sqlCache.getBySql(ExpenseBudgetQuery.getOneTemplates, tParams, BudgetTemplate.class);
   }
 
   public void deleteBudgetTemplate(Long id) {
@@ -159,12 +162,12 @@ public class ExpenseBudgetService {
     params.put("id", id);
     params.put("userId", currentUser.trueUserId());
 
-    sqlCache.update("expenseBudget.template.deleteBudgetTemplate", params);
+    sqlCache.updateBySql(ExpenseBudgetQuery.deleteBudgetTemplate, params);
   }
   // end budget templates here
 
   public List<ExpenseBudget> getBudgets() {
-    return sqlCache.query("expenseBudget.getAll", Collections.emptyMap(), ExpenseBudget.class);
+    return sqlCache.queryBySql(ExpenseBudgetQuery.getAll, Collections.emptyMap(), ExpenseBudget.class);
   }
 
   public Optional<ExpenseBudget> updateBudget(ExpenseBudget expenseBudget) {
@@ -192,7 +195,7 @@ public class ExpenseBudgetService {
       lineCheckParams.put("endDate", expenseBudget.getEndDate());
 
       List<Expense> expenses =
-          sqlCache.query("expenseBudget.checkLineItemDates", lineCheckParams, Expense.class);
+          sqlCache.queryBySql(ExpenseBudgetQuery.checkLineItemDates, lineCheckParams, Expense.class);
 
       // don't edit the budget if there are line items assigned to it outside the date range
       if (expenses.isEmpty()) {
@@ -201,7 +204,7 @@ public class ExpenseBudgetService {
         params.put("originalExpenseBudgetId", expenseBudget.getOriginalExpenseBudgetId());
         Long newId =
             sqlCache
-                .updateReturningId("expenseBudget.insertExpenseBudget", params, "id")
+                .updateBySqlReturningId(ExpenseBudgetQuery.insertExpenseBudget, params, "id")
                 .longValue();
         budgetIdToReturn = newId;
 
@@ -209,8 +212,8 @@ public class ExpenseBudgetService {
         HashMap<String, Object> budgetIds = new HashMap<>();
         budgetIds.put("oldBudgetId", oldId);
         budgetIds.put("newBudgetId", newId);
-        sqlCache.update("expense.updateLineItemsToNewBudgetId", budgetIds);
-        sqlCache.update("reimbursement.updateLineItemsToNewBudgetId", budgetIds);
+        sqlCache.updateBySql(ExpenseQuery.updateLineItemsToNewBudgetId, budgetIds);
+        sqlCache.updateBySql(ReimbursementQuery.updateLineItemsToNewBudgetId, budgetIds);
       } else {
         // return error message
         throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "", new Exception());
@@ -226,20 +229,20 @@ public class ExpenseBudgetService {
       templateParams.put("budgetTypeId", expenseBudget.getBudgetTypeId());
 
       Optional<ExpenseBudget> existingExpenseBudget =
-          sqlCache.get(
-              "expenseBudget.checkIfExistsByUserAndBudgetType",
+          sqlCache.getBySql(
+              ExpenseBudgetQuery.checkIfExistsByUserAndBudgetType,
               templateParams,
               ExpenseBudget.class);
       if (existingExpenseBudget.isEmpty()) {
         long id =
             sqlCache
-                .updateReturningId("expenseBudget.insertOriginalExpenseBudget", params, "id")
+                .updateBySqlReturningId(ExpenseBudgetQuery.insertOriginalExpenseBudget, params, "id")
                 .longValue();
         budgetIdToReturn = id;
         if (id > 0) {
           HashMap<String, Object> updateOriginal = new HashMap<>();
           updateOriginal.put("id", id);
-          sqlCache.update("expenseBudget.updateOriginalExpenseBudget", updateOriginal);
+          sqlCache.updateBySql(ExpenseBudgetQuery.updateOriginalExpenseBudget, updateOriginal);
         }
       } else {
         throw new ResponseStatusException(
@@ -250,15 +253,15 @@ public class ExpenseBudgetService {
     }
     HashMap<String, Object> ebParams = new HashMap<>();
     ebParams.put("id", budgetIdToReturn);
-    return sqlCache.get("expenseBudget.getOne", ebParams, ExpenseBudget.class);
+    return sqlCache.getBySql(ExpenseBudgetQuery.getOne, ebParams, ExpenseBudget.class);
   }
 
   public List<User> getAvailableUsers() {
-    return sqlCache.query("expenseBudget.getAvailableUsers", Collections.emptyMap(), User.class);
+    return sqlCache.queryBySql(ExpenseBudgetQuery.getAvailableUsers, Collections.emptyMap(), User.class);
   }
 
   public List<User> getUsersWithBudget() {
-    return sqlCache.query("expenseBudget.getUsersWithBudget", Collections.emptyMap(), User.class);
+    return sqlCache.queryBySql(ExpenseBudgetQuery.getUsersWithBudget, Collections.emptyMap(), User.class);
   }
 
   public String getAvailableBudgetsForUser(Long userId, String expenseDate) {
@@ -267,7 +270,7 @@ public class ExpenseBudgetService {
     params.put("expenseDate", expenseDate);
 
     String updated =
-        sqlCache.queryForObject("expenseBudget.getAvailableBudgetsForUser", params, String.class);
+        sqlCache.queryForObjectBySql(ExpenseBudgetQuery.getAvailableBudgetsForUser, params, String.class);
     return null != updated ? updated : "[]";
   }
 
@@ -278,15 +281,15 @@ public class ExpenseBudgetService {
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    return sqlCache.query(
-        "expenseBudget.getBudgetExpensesVsRemaining", params, ExpenseBudget.class);
+    return sqlCache.queryBySql(
+        ExpenseBudgetQuery.getBudgetExpensesVsRemaining, params, ExpenseBudget.class);
   }
 
   public Optional<ExpenseBudget> getBudgetRemainingById(Long budgetId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("budgetId", budgetId);
 
-    return sqlCache.get("expenseBudget.getBudgetRemainingById", params, ExpenseBudget.class);
+    return sqlCache.getBySql(ExpenseBudgetQuery.getBudgetRemainingById, params, ExpenseBudget.class);
   }
 
   public String getMonthlyBudgetReport(String startDate, String endDate) {
@@ -298,8 +301,8 @@ public class ExpenseBudgetService {
     params.put("endDate", endDate);
 
     return sqlCache
-        .get(
-            "expenseBudget.getMonthlyBudgetReport",
+        .getBySql(
+            ExpenseBudgetQuery.getMonthlyBudgetReport,
             params,
             new SingleColumnRowMapper<>(String.class))
         .orElse("{}");
@@ -316,8 +319,8 @@ public class ExpenseBudgetService {
     params.put("budgetId", budgetId);
 
     return sqlCache
-        .get(
-            "expenseBudget.getExpenseDrilldown",
+        .getBySql(
+            ExpenseBudgetQuery.getExpenseDrilldown,
             params,
             new SingleColumnRowMapper<>(String.class))
         .orElse("{}");

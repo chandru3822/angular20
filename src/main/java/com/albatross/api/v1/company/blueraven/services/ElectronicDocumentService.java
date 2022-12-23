@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
+import com.albatross.api.v1.company.blueraven.services.queries.ElectronicDocumentQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,10 +49,10 @@ public class ElectronicDocumentService {
     params.put("showCancelled", showCancelled);
 
     List<InstallAgreementProject> results =
-        sqlCache.query("electronicDocument.getProjects", params, InstallAgreementProject.class);
+        sqlCache.queryBySql(ElectronicDocumentQuery.getProjects, params, InstallAgreementProject.class);
 
     Integer count =
-        sqlCache.queryForObject("electronicDocument.getProjectsCount", params, Integer.class);
+        sqlCache.queryForObjectBySql(ElectronicDocumentQuery.getProjectsCount, params, Integer.class);
 
     return new PageImpl<>(
         results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
@@ -66,15 +67,15 @@ public class ElectronicDocumentService {
     if (docType == PERMITTING_DOC_TYPE) {
       // Get the permitting document templates
       queryStr =
-          sqlCache.get(
-              "electronicDocument.getAhjQueryStr",
+          sqlCache.getBySql(
+              ElectronicDocumentQuery.getAhjQueryStr,
               params,
               new SingleColumnRowMapper<>(String.class));
     } else if (docType == UTILITY_DOC_TYPE) {
       // Get the utility document templates
       queryStr =
-          sqlCache.get(
-              "electronicDocument.getUtilityQueryStr",
+          sqlCache.getBySql(
+              ElectronicDocumentQuery.getUtilityQueryStr,
               params,
               new SingleColumnRowMapper<>(String.class));
     } else {

@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapLoanStatus;
+import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -51,7 +52,7 @@ public class GoodleapService {
     Assert.notNull(projectId, "Project ID can't be null");
 
     // First try to find an application for the Deal ID, if none is found - then try the Project ID
-    Optional<Object> dealId = sqlCache.get("installAgreement.getDealId", Map.of("projectId", projectId), new SingleColumnRowMapper<>(Object.class));
+    Optional<Object> dealId = sqlCache.getBySql(InstallAgreementQuery.getDealId, Map.of("projectId", projectId), new SingleColumnRowMapper<>(Object.class));
     JSONArray applications = null;
     HttpEntity<String> request = new HttpEntity<>(null, headers);
 

@@ -8,6 +8,7 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Payroll
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.AccountSearchRequest;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
+import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.PayrollQuery;
 import com.albatross.api.v1.flow.model.OverrideResult;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.google.common.collect.ImmutableMap;
@@ -40,8 +41,8 @@ public class PayrollService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("positionId", positionId);
     List<Long> payrollIds =
-        sqlCache.query(
-            "payroll.getCurrentPayrollId", params, new SingleColumnRowMapper<>(Long.class));
+        sqlCache.queryBySql(
+            PayrollQuery.getCurrentPayrollId, params, new SingleColumnRowMapper<>(Long.class));
 
     if (payrollIds.size() > 1) {
       log.error(
@@ -61,23 +62,29 @@ public class PayrollService {
     params.put("salesRepId", searchQuery.getSalesRepId());
     params.put("projectId", searchQuery.getProjectId());
 
-    String sqlKey =
-        searchQuery.getPositionId() == 1 ? "payroll.searchClosers" : "payroll.searchSetters";
-    Optional<String> results =
-        sqlCache.get(sqlKey, params, new SingleColumnRowMapper<>(String.class));
+    Optional<String> results;
+    if (searchQuery.getPositionId() == 1) {
+      results =
+        sqlCache.getBySql(PayrollQuery.searchClosers, params, new SingleColumnRowMapper<>(String.class));
+    }
+    else {
+      results =
+        sqlCache.getBySql(PayrollQuery.searchSetters, params, new SingleColumnRowMapper<>(String.class));
+    }
+
     return results.orElse("[]");
   }
 
   public Optional<String> getPayrollById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("payrollId", id);
-    return sqlCache.get("payroll.getById", params, new SingleColumnRowMapper<>(String.class));
+    return sqlCache.getBySql(PayrollQuery.getById, params, new SingleColumnRowMapper<>(String.class));
   }
 
   public List<Payroll> getApprovedPayrolls(Long positionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("positionId", positionId);
-    return sqlCache.query("payroll.getApprovedPayrolls", params, Payroll.class);
+    return sqlCache.queryBySql(PayrollQuery.getApprovedPayrolls, params, Payroll.class);
   }
 
   @Transactional
@@ -107,7 +114,7 @@ public class PayrollService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("payrollId", payrollId);
 
-    Long positionId = sqlCache.queryForObject("payroll.getPositionId", params, Long.class);
+    Long positionId = sqlCache.queryForObjectBySql(PayrollQuery.getPositionId, params, Long.class);
     createPayroll(positionId);
   }
 
@@ -137,7 +144,7 @@ public class PayrollService {
     params.put("note", note);
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    sqlCache.update("payroll.addActionHistory", params);
+    sqlCache.updateBySql(PayrollQuery.addActionHistory, params);
   }
 
   private void setPayrollPayDate(Long payrollId, String payDate) {
@@ -154,7 +161,7 @@ public class PayrollService {
     params.put("payrollId", payrollId);
     params.put("payrollStatusId", payrollStatus.getId());
 
-    sqlCache.update("payroll.setStatus", params);
+    sqlCache.updateBySql(PayrollQuery.setStatus, params);
   }
 
   private Boolean createPayrollSnapshot(Long payrollId) {
@@ -194,13 +201,16 @@ public class PayrollService {
           sqlArrayService.createSqlArrayOfType("int", List.of(request.getProjectId())));
     }
 
-    String sqlKey =
-        request.getPositionId() == 1
-            ? "payroll.getAccountReviewForClosers"
-            : "payroll.getAccountReviewForSetters";
+    Optional<String> bySql;
+    if (request.getPositionId() == 1) {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getAccountReviewForClosers, params, new SingleColumnRowMapper<>(String.class));
+    }
+    else {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getAccountReviewForSetters, params, new SingleColumnRowMapper<>(String.class));
+    }
 
-    Optional<String> bySql =
-        sqlCache.get(sqlKey, params, new SingleColumnRowMapper<>(String.class));
     return bySql.orElse("[]");
   }
 
@@ -209,12 +219,17 @@ public class PayrollService {
     params.put("payrollId", payrollId);
     // todo:change the columns returned by the setter query
 
-    String sqlKey =
-        positionId == 1
-            ? "payroll.getPayrollSearchDetailForClosers"
-            : "payroll.getPayrollSearchDetailForSetters";
-    Optional<String> bySql =
-        sqlCache.get(sqlKey, params, new SingleColumnRowMapper<>(String.class));
+    Optional<String> bySql;
+    if (positionId == 1) {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForClosers, params, new SingleColumnRowMapper<>(String.class));
+    }
+    else {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForSetters, params, new SingleColumnRowMapper<>(String.class));
+    }
+
+
     return bySql.orElse("[]");
   }
 
@@ -229,8 +244,8 @@ public class PayrollService {
   public String checkSummaryPreparationStatus() {
     String status =
         sqlCache
-            .get(
-                "payroll.checkSummaryPreparationStatus",
+            .getBySql(
+                PayrollQuery.checkSummaryPreparationStatus,
                 null,
                 new SingleColumnRowMapper<>(String.class))
             .orElse("finished");
@@ -248,7 +263,7 @@ public class PayrollService {
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return sqlCache
-        .get("payroll.getCurrentSummary", params, new SingleColumnRowMapper<>(String.class))
+        .getBySql(PayrollQuery.getCurrentSummary, params, new SingleColumnRowMapper<>(String.class))
         .orElse("[]");
   }
 
@@ -258,7 +273,7 @@ public class PayrollService {
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return sqlCache
-        .get("payroll.getSummary", params, new SingleColumnRowMapper<>(String.class))
+        .getBySql(PayrollQuery.getSummary, params, new SingleColumnRowMapper<>(String.class))
         .orElse("[]");
   }
 
@@ -266,14 +281,16 @@ public class PayrollService {
     Map<String, Object> params = ImmutableMap.of("payrollId", payrollId);
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
     Optional<Integer> payrollStatusId =
-        sqlCache.get("payroll.status", params, SingleColumnRowMapper.newInstance(Integer.class));
+        sqlCache.getBySql(PayrollQuery.status, params, SingleColumnRowMapper.newInstance(Integer.class));
 
     if (payrollStatusId.isPresent()) {
-      String sqlKey;
-      if (payrollStatusId.get() == 3) sqlKey = "payroll.overridesSnapshot";
-      else sqlKey = "payroll.overridesOpen";
+      if (payrollStatusId.get() == 3) {
+        return sqlCache.queryBySql(PayrollQuery.overridesSnapshot, params, OverrideResult.class);
+      }
+      else {
+        return sqlCache.queryBySql(PayrollQuery.overridesOpen, params, OverrideResult.class);
+      }
 
-      return sqlCache.query(sqlKey, params, OverrideResult.class);
     } else {
       log.error("Payroll {} requested but no status found.", payrollId);
       throw new ResponseStatusException(
@@ -294,7 +311,7 @@ public class PayrollService {
         "projectIds",
         sqlArrayService.createSqlArrayOfType("bigint", updateRequest.getProjectIds()));
 
-    int update = sqlCache.update("payroll.updatePayroll", params);
+    int update = sqlCache.updateBySql(PayrollQuery.updatePayroll, params);
 
     return update != 0;
   }
@@ -310,7 +327,7 @@ public class PayrollService {
     params.put("createdById", securityService.getCurrentUser().trueUserId());
     params.put("adjustmentTypeId", adjustmentRequest.getAdjustmentType().getId());
 
-    sqlCache.update("payroll.addCommissionAdjustment", params);
+    sqlCache.updateBySql(PayrollQuery.addCommissionAdjustment, params);
   }
 
   public String getPayrollAdjustments(Long payrollId, Long projectId) {
@@ -319,8 +336,8 @@ public class PayrollService {
     params.put("projectId", projectId);
 
     Optional<String> adjustmentsOpt =
-        sqlCache.get(
-            "payroll.getCommissionAdjustments", params, new SingleColumnRowMapper<>(String.class));
+        sqlCache.getBySql(
+          PayrollQuery.getCommissionAdjustments, params, new SingleColumnRowMapper<>(String.class));
     return adjustmentsOpt.orElse("[]");
   }
 
