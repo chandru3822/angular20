@@ -285,12 +285,12 @@ public class TournamentService {
       params.put("user1Score", m.getUser1Score());
       params.put("user2Score", m.getUser2Score());
       params.put("winnerUserId", m.getWinnerUserId());
-      sqlCache.update(TournamentQuery.advanceMatch, params);
+      sqlCache.updateBySql(TournamentQuery.advanceMatch, params);
 
       //put the losers into the last chance pool
       params.put("tournamentId", tournamentId);
       params.put("loserUserId", m.getWinnerUserId().equals(m.getUser1Id()) ? m.getUser2Id() : m.getUser1Id());
-      sqlCache.update(TournamentQuery.insertLoserToLastChance, params);
+      sqlCache.updateBySql(TournamentQuery.insertLoserToLastChance, params);
     }
   }
 

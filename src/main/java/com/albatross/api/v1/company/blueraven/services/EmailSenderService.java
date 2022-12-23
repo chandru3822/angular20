@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.EmailSenderQuery;
 import com.albatross.api.v1.flow.model.EmailSender;
 import com.albatross.api.v1.flow.model.User;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class EmailSenderService {
     private SecurityService securityService;
 
     public List<EmailSender> getEmailSenders() {
-    List<EmailSender> results = sqlCache.query("emailSender.getEmailSenders", null, EmailSender.class);
+    List<EmailSender> results = sqlCache.queryBySql(EmailSenderQuery.getEmailSenders, null, EmailSender.class);
     return results;
   }
 
@@ -38,10 +39,10 @@ public class EmailSenderService {
       if(null != emailSender.getId()) {
         params.put("id", emailSender.getId());
         params.put("modifiedById", user.trueUserId());
-        sqlCache.update("emailSender.updateEmailSender", params);
+        sqlCache.updateBySql(EmailSenderQuery.updateEmailSender, params);
       } else {
         params.put("createdById", user.trueUserId());
-        sqlCache.update("emailSender.insertEmailSender", params);
+        sqlCache.updateBySql(EmailSenderQuery.insertEmailSender, params);
       }
     }
   }
@@ -50,7 +51,7 @@ public class EmailSenderService {
     HashMap<String, Object> params = new HashMap<>();
     for(Long emailSendersId : emailSenderIds) {
       params.put("id", emailSendersId);
-      sqlCache.update("customField.deleteEmailSender", params);
+      sqlCache.updateBySql(EmailSenderQuery.deleteEmailSender, params);
     }
   }
 }

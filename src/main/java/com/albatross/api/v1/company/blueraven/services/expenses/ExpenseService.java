@@ -5,6 +5,8 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.expenses.Expense;
 import com.albatross.api.v1.company.blueraven.models.expenses.GlCode;
 import com.albatross.api.v1.company.blueraven.models.expenses.ReimbursementRequest;
+import com.albatross.api.v1.company.blueraven.services.expenses.queries.ExpenseQuery;
+import com.albatross.api.v1.company.blueraven.services.expenses.queries.ReimbursementQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,13 +28,13 @@ public class ExpenseService {
   private final ReimbursementService reimbursementService;
 
   public List<GlCode> getAllGlCodes() {
-    return sqlCache.query("expense.glCodes.getAll", Collections.emptyMap(), GlCode.class);
+    return sqlCache.queryBySql(ExpenseQuery.getAllGlCodes, Collections.emptyMap(), GlCode.class);
   }
 
   public Optional<GlCode> getOneGlCode(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.get("expense.glCodes.getOne", params, GlCode.class);
+    return sqlCache.getBySql(ExpenseQuery.getOneGlCode, params, GlCode.class);
   }
 
   public Optional<GlCode> saveGlCode(GlCode glCode){
@@ -47,9 +49,9 @@ public class ExpenseService {
     if(null != glCode.getId()){
       id = glCode.getId();
       params.put("id", glCode.getId());
-      sqlCache.update("expense.glCodes.updateGlCode", params);
+      sqlCache.updateBySql(ExpenseQuery.updateGlCode, params);
     }else{
-      id = sqlCache.updateReturningId("expense.glCodes.insertGlCode", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(ExpenseQuery.insertGlCode, params, "id").longValue();
     }
 
     return getOneGlCode(id);
@@ -62,7 +64,7 @@ public class ExpenseService {
     params.put("id", id);
     params.put("userId", currentUser.trueUserId());
 
-    sqlCache.update("expense.glCodes.deleteGlCode", params);
+    sqlCache.updateBySql(ExpenseQuery.deleteGlCode, params);
   }
 
 
@@ -87,10 +89,9 @@ public class ExpenseService {
       if (null != expense.getId()) {
         params.put("id", expense.getId());
         params.put("updatedByUserId", expense.getUpdatedByUserId());
-
-        sqlCache.update("expense.updateDefaultExpense", params);
+        sqlCache.updateBySql(ExpenseQuery.updateDefaultExpense, params);
       } else {
-        sqlCache.update("expense.insertExpense", params);
+        sqlCache.updateBySql(ExpenseQuery.insertExpense, params);
       }
     }
   }
@@ -106,7 +107,7 @@ public class ExpenseService {
     params.put("expenseAmount", expense.getExpenseAmount());
     params.put("expenseBudgetId", expense.getExpenseBudgetId());
 
-    sqlCache.update("expense.addDefaultLineItem", params);
+    sqlCache.updateBySql(ExpenseQuery.addDefaultLineItem, params);
   }
 
   public List<Expense> getAllInDateRange(Date startDate, Date endDate) {
@@ -114,12 +115,12 @@ public class ExpenseService {
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    List<Expense> results = sqlCache.query("expense.getAllInDateRange", params, Expense.class);
+    List<Expense> results = sqlCache.queryBySql(ExpenseQuery.getAllInDateRange, params, Expense.class);
     return results;
   }
 
   public List<Expense> getAllUnpaidExpenses() {
-    List<Expense> results = sqlCache.query("expense.getAllUnpaid", Collections.emptyMap(), Expense.class);
+    List<Expense> results = sqlCache.queryBySql(ExpenseQuery.getAllUnpaid, Collections.emptyMap(), Expense.class);
     return results;
   }
 
@@ -128,7 +129,7 @@ public class ExpenseService {
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    List<Expense> results = sqlCache.query("expense.getAllPaidInDateRange", params, Expense.class);
+    List<Expense> results = sqlCache.queryBySql(ExpenseQuery.getAllPaidInDateRange, params, Expense.class);
     return results;
   }
 
@@ -139,12 +140,12 @@ public class ExpenseService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("id", e.getId());
       params.put("paidById", currentUser.trueUserId());
-      sqlCache.update("expense.payExpense", params);
+      sqlCache.updateBySql(ExpenseQuery.payExpense, params);
 
       if (null != e.getReimbursementRequestId()) {
         //see if there are any other expense line items for that request
         params.put("requestId", e.getReimbursementRequestId());
-        List<Expense> unpaid = sqlCache.query("expense.getUnpaidExpensesForRequest", params, Expense.class);
+        List<Expense> unpaid = sqlCache.queryBySql(ExpenseQuery.getUnpaidExpensesForRequest, params, Expense.class);
 
         //if not, mark the request as approved by the same user
         if (unpaid.isEmpty()) {
@@ -166,7 +167,7 @@ public class ExpenseService {
       params.put("approvedById", currentUser.trueUserId());
       params.put("reviewedById", null == e.getSubmittedById() ? currentUser.trueUserId() : e.getSubmittedById());
       params.put("dateReviewed", e.getDateSubmitted());
-      sqlCache.update("expense.approveExpense", params);
+      sqlCache.updateBySql(ExpenseQuery.approveExpense, params);
 
     }
   }
@@ -184,21 +185,21 @@ public class ExpenseService {
       if (null != expense.getReimbursementRequestId()) {
         //if one line item is rejected then the rest in that request have to be rejected as well
         params.put("requestId", expense.getReimbursementRequestId());
-        sqlCache.update("expense.rejectAllExpensesForRequest", params);
+        sqlCache.updateBySql(ExpenseQuery.rejectAllExpensesForRequest, params);
 
         //then reject the actual request
         HashMap<String, Object> params2 = new HashMap<>();
         params2.put("id", expense.getReimbursementRequestId());
         params2.put("reimbursementRequestStatusId", 2);
-        sqlCache.update("reimbursement.updateStatus", params2);
+        sqlCache.updateBySql(ReimbursementQuery.updateStatus, params2);
 
         if (null != expense.getNotes()) {
           params2.put("notes", expense.getNotes());
-          sqlCache.update("reimbursement.saveReimbursementNote", params2);
+          sqlCache.updateBySql(ReimbursementQuery.saveReimbursementNote, params2);
         }
       } else {
         //reject the line item
-        sqlCache.update("expense.rejectExpense", params);
+        sqlCache.updateBySql(ExpenseQuery.rejectExpense, params);
       }
 
 
@@ -225,13 +226,13 @@ public class ExpenseService {
     params.put("paidById", null == expense.getPaidDate() ? null : expense.getPaidById());
     params.put("submittedById", submittedById);
 
-    sqlCache.update("expense.updateExpense", params);
+    sqlCache.updateBySql(ExpenseQuery.updateExpense, params);
   }
 
   public void deleteExpense(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    sqlCache.update("expense.deleteExpense", params);
+    sqlCache.updateBySql(ExpenseQuery.deleteExpense, params);
   }
 
 }

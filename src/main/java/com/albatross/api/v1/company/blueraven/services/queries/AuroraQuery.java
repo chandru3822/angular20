@@ -1,0 +1,14 @@
+package com.albatross.api.v1.company.blueraven.services.queries;
+
+public class AuroraQuery {
+
+  //language=PostgreSQL
+  public final static String getIdByProjectProcessStepId = """
+    select ppscfv.text_value
+    from flow.project_process_step_custom_field_value ppscfv
+    inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
+    where ppscfv.custom_field_group_assignment_id = :cfgaId and
+          ppscfv.project_process_step_id = :ppsId and
+          pps.main is true
+    """;
+}

@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import com.albatross.api.v1.flow.enums.State;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -217,7 +218,7 @@ public class SunlightService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
-    return sqlCache.get("installAgreement.getSunlightHashId", params, new SingleColumnRowMapper<>(Object.class));
+    return sqlCache.getBySql(InstallAgreementQuery.getSunlightHashId, params, new SingleColumnRowMapper<>(Object.class));
   }
 
   private void setSunlightHashId(Long projectId, Long proposalNbr, String hashId) {
@@ -225,20 +226,20 @@ public class SunlightService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
     params.put("sunlightHashId", hashId);
-    sqlCache.update("installAgreement.setSunlightHashId", params);
+    sqlCache.updateBySql(InstallAgreementQuery.setSunlightHashId, params);
   }
 
   public Optional<Object> getCreditLastCheckedBy(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    return sqlCache.get("installAgreement.getCreditLastCheckedBy", params, new SingleColumnRowMapper<>(Object.class));
+    return sqlCache.getBySql(InstallAgreementQuery.getCreditLastCheckedBy, params, new SingleColumnRowMapper<>(Object.class));
   }
 
   public void setCreditLastCheckedBy(Long projectId, String financier) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("creditLastCheckedBy", financier);
-    sqlCache.update("installAgreement.setCreditLastCheckedBy", params);
+    sqlCache.updateBySql(InstallAgreementQuery.setCreditLastCheckedBy, params);
   }
 
   private HttpResponse request(String method, String uri, InputStream content) throws Exception {

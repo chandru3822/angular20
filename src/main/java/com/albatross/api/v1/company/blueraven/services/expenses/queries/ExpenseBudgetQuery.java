@@ -1,0 +1,353 @@
+package com.albatross.api.v1.company.blueraven.services.expenses.queries;
+
+public class ExpenseBudgetQuery {
+
+  //language=PostgreSQL
+  public final static String delete = """
+    UPDATE brs.expense_budget
+      SET archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getAllBudgetType = """
+    SELECT
+        id,
+        name,
+        archived
+    FROM brs.budget_type
+    where archived is false
+    order by name
+    """;
+
+  //language=PostgreSQL
+  public final static String getOneBudgetType = """
+    SELECT
+        id,
+        name,
+        archived
+    FROM brs.budget_type
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertBudgetType = """
+    INSERT INTO brs.budget_type(name, created_by_id)
+    values(:name, :userId)
+    """;
+
+  //language=PostgreSQL
+  public final static String updateBudgetType = """
+    UPDATE brs.budget_type
+      SET name = :name,
+          date_modified = now(),
+          modified_by_id = :userId
+    WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteBudgetType = """
+    UPDATE brs.budget_type
+      SET archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getAllTemplates = """
+    SELECT
+      tem.id,
+      bt.name as budget_type,
+      tem.budget_type_id,
+      tem.amount,
+      tem.archived,
+      tem.user_id,
+      u.first_name || ' ' || u.last_name as user_full_name
+    FROM brs.budget_template tem
+      INNER JOIN brs.budget_type bt on bt.id = tem.budget_type_id
+      INNER JOIN flow."user" u on u.id = tem.user_id
+    WHERE tem.archived is not true
+    ORDER BY user_full_name, budget_type
+    """;
+
+  //language=PostgreSQL
+  public final static String getOneTemplates = """
+    SELECT
+      tem.id,
+      bt.name as budget_type,
+      tem.budget_type_id,
+      tem.amount,
+      tem.archived,
+      tem.user_id,
+      u.first_name || ' ' || u.last_name as user_full_name
+    FROM brs.budget_template tem
+      INNER JOIN brs.budget_type bt on bt.id = tem.budget_type_id
+      INNER JOIN flow."user" u on u.id = tem.user_id
+    WHERE tem.id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertBudgetTemplate = """
+    INSERT INTO brs.budget_template(user_id, budget_type_id, amount, created_by_id)
+    values(:userId, :budgetTypeId, :amount, :createdById)
+    """;
+
+  //language=PostgreSQL
+  public final static String updateBudgetTemplate = """
+    UPDATE brs.budget_template
+      SET user_id = :userId,
+          budget_type_id = :budgetTypeId,
+          amount = :amount,
+          date_modified = now(),
+          modified_by_id = :updatedById
+    WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteBudgetTemplate = """
+    UPDATE brs.budget_template
+      SET archived = true,
+          date_modified = now(),
+          modified_by_id = :updatedById
+    WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getAll = """
+    WITH single_row AS (SELECT
+                          eb.user_id,
+                          eb.budget_type_id,
+                          eb.original_expense_budget_id,
+                          max(eb.date_created) date_created
+                        FROM brs.expense_budget eb
+                        WHERE eb.archived is not true
+                        GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id)
+    SELECT
+      eb.id,
+      bt.name as budget_type,
+      eb.budget_type_id,
+      eb.start_date,
+      eb.end_date,
+      eb.notes,
+      eb.archived,
+      eb.amount,
+      eb.user_id,
+      u.first_name || ' ' || u.last_name as user_full_name,
+      eb.date_created,
+      eb.date_modified,
+      eb.original_expense_budget_id
+    FROM brs.expense_budget eb
+           INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
+           INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+           INNER JOIN flow."user" u on u.id = eb.user_id
+    WHERE eb.archived is not true
+    ORDER BY user_full_name, start_date
+    """;
+
+  //language=PostgreSQL
+  public final static String getOne = """
+    WITH single_row AS (SELECT
+                          eb.user_id,
+                          eb.budget_type_id,
+                          eb.original_expense_budget_id,
+                          max(eb.date_created) date_created
+                        FROM brs.expense_budget eb
+                        WHERE eb.archived is not true
+                        GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id)
+    SELECT
+      eb.id,
+      bt.name as budget_type,
+      eb.budget_type_id,
+      eb.start_date,
+      eb.end_date,
+      eb.archived,
+      eb.notes,
+      eb.amount,
+      eb.user_id,
+      u.first_name || ' ' || u.last_name as user_full_name,
+      eb.date_created,
+      eb.date_modified,
+      eb.original_expense_budget_id
+    FROM brs.expense_budget eb
+           INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
+           INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+           INNER JOIN flow."user" u on u.id = eb.user_id
+    WHERE eb.id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertOriginalExpenseBudget = """
+    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, created_by_id, notes) VALUES
+    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :createdById, :notes)
+    """;
+
+  //language=PostgreSQL
+  public final static String updateOriginalExpenseBudget = """
+    UPDATE brs.expense_budget eb
+    SET original_expense_budget_id = :id
+    where eb.id = :id;
+    """;
+
+  //language=PostgreSQL
+  public final static String insertExpenseBudget = """
+    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, original_expense_budget_id, created_by_id, notes) VALUES
+    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :originalExpenseBudgetId, :createdById, :notes)
+    """;
+
+  //language=PostgreSQL
+  public final static String getAvailableBudgetsForUser = """
+    SELECT * FROM brs.get_available_budgets_for_user(:userId::bigint, :expenseDate::DATE)
+    """;
+
+  //language=PostgreSQL
+  public final static String getUsersWithBudget = """
+    select DISTINCT u.user_id as id,
+        u.first_name || ' ' || u.last_name as full_name
+    from flow.user_positions_vw u
+           INNER JOIN brs.expense_budget eb on eb.user_id = u.user_id
+    where u.archived is false
+      and u.start_date < now()
+      and (u.end_date is null or u.end_date > now())
+      and eb.archived is not true
+    ORDER BY full_name;
+    """;
+
+  //language=PostgreSQL
+  public final static String getAvailableUsers = """
+    select distinct upv.user_id as id,
+        upv.first_name || ' ' || upv.last_name as full_name
+    from flow.user_positions_vw upv
+    where position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                          from flow.company_configuration_value
+                          where code = 'BUDGET_USER_POSITIONS')
+      and upv.start_date < now()
+      and (upv.end_date is null or upv.end_date > now())
+    ORDER BY full_name
+    """;
+
+  //language=PostgreSQL
+  public final static String getBudgetExpensesVsRemaining = """
+    WITH single_row AS (SELECT
+        eb.user_id,
+        eb.budget_type_id,
+        eb.original_expense_budget_id,
+        max(eb.date_created) date_created
+        FROM brs.expense_budget eb
+        WHERE eb.archived is not true
+        GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id
+        )
+        SELECT eb.id,
+        eb.user_id,
+        u.first_name || ' ' || u.last_name user_full_name,
+        eb.budget_type_id,
+        bt.name budget_type,
+        eb.amount,
+        eb.start_date,
+        eb.end_date,
+        coalesce(sum(e.expense_amount),0) total_expenses,
+        eb.amount - (coalesce(sum(e.expense_amount),0)) balance
+        from brs.expense_budget eb
+        INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
+        INNER JOIN brs."user" u on u.id = eb.user_id
+        INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+        LEFT JOIN brs.expense e on e.expense_budget_id = eb.id and e.rejected_date is null
+        where eb.user_id = :userId
+        and ( eb.start_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
+        OR eb.end_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE)
+        and eb.archived is not true
+        and e.archived is not true
+        GROUP BY eb.id,
+        eb.user_id,
+        u.first_name,
+        u.last_name,
+        eb.budget_type_id,
+        eb.amount,
+        eb.start_date,
+        eb.end_date,
+        bt.name
+    """;
+
+  //language=PostgreSQL
+  public final static String getBudgetRemainingById = """
+    SELECT eb.id,
+           eb.amount,
+           coalesce(sum(e.expense_amount),0) total_expenses,
+           eb.amount - (coalesce(sum(e.expense_amount),0)) balance
+           from brs.expense_budget eb
+           LEFT JOIN brs.expense e on e.expense_budget_id = eb.id and e.rejected_date is null
+           where eb.id = :budgetId
+           and eb.archived is not true
+           and e.archived is not true
+           GROUP BY eb.id,
+           eb.amount
+    """;
+
+  //language=PostgreSQL
+  public final static String checkIfExistsByTemplate = """
+    with bt as (
+        select user_id,
+          budget_type_id
+        from brs.budget_template
+        where id = :id
+    )
+    select
+      eb.id,
+      eb.start_date,
+      eb.end_date
+    from brs.expense_budget eb
+      INNER JOIN bt on bt.user_id = eb.user_id and bt.budget_type_id = eb.budget_type_id
+    WHERE (:startDate between eb.start_date AND eb.end_date
+           OR :endDate between eb.start_date AND eb.end_date
+           OR eb.start_date between :startDate AND :endDate
+           OR eb.end_date between :startDate AND :endDate)
+           and eb.archived is not true
+    """;
+
+  //language=PostgreSQL
+  public final static String checkIfExistsByUserAndBudgetType = """
+    select
+      eb.id,
+      eb.start_date,
+      eb.end_date
+    from brs.expense_budget eb
+    WHERE eb.user_id = :userId
+        AND eb.budget_type_id = :budgetTypeId
+        AND (:startDate between eb.start_date AND eb.end_date
+          OR :endDate between eb.start_date AND eb.end_date
+          OR eb.start_date between :startDate AND :endDate
+          OR eb.end_date between :startDate AND :endDate)
+        AND eb.archived is not true
+    """;
+
+  //language=PostgreSQL
+  public final static String checkLineItemDates = """
+    select e.id
+    from brs.expense_budget eb
+      INNER JOIN brs.expense e on e.expense_budget_id = eb.id
+    where eb.id = :id
+          and e.archived is not true
+          and e.expense_date::DATE NOT BETWEEN :startDate::DATE AND :endDate::DATE
+
+    UNION
+
+    select r.id
+    from brs.expense_budget eb
+      INNER JOIN brs.reimbursement_request r on r.expense_budget_id = eb.id
+    where eb.id = :id
+        and r.archived is not true
+        and r.expense_date::DATE NOT BETWEEN :startDate::DATE AND :endDate::DATE
+    """;
+
+  //language=PostgreSQL
+  public final static String getMonthlyBudgetReport = """
+    select * from brs.get_monthly_expense_budget_report(:userId::bigint, :startDate::DATE, :endDate::DATE)
+    """;
+
+  //language=PostgreSQL
+  public final static String getExpenseDrilldown = """
+    select * from brs.get_expense_drilldown(:userId::bigint, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetId::bigint)
+    """;
+}

@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.integration.birdeye;
 import com.albatross.api.config.company.blueraven.BirdeyeProperties;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.BirdeyeQuery;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
@@ -66,7 +67,7 @@ public class BirdeyeService {
   public void saveCfgaValue(@NonNull Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("projectId", projectId, "userId", currentUser.trueUserId());
-    sqlCache.query("birdeye.saveReviewInviteSentValue", params, String.class);
+    sqlCache.queryBySql(BirdeyeQuery.saveReviewInviteSentValue, params, String.class);
   }
 
   public List<BirdEyeApi.BirdEyeReview> getReviews(LocalDate reviewedStart) {
@@ -140,18 +141,18 @@ public class BirdeyeService {
         "birdeyeBusinessId", invitation.getBirdeyeBusinessId(),
         "dateSent", OffsetDateTime.now(ZoneOffset.UTC),
         "rawInvitation", json);
-    return sqlCache.updateReturningId("birdeye.saveInvitation", params, "id").intValue();
+    return sqlCache.updateBySqlReturningId(BirdeyeQuery.saveInvitation, params, "id").intValue();
   }
 
   private List<String> getRequestEmail(Long projectId) {
     Optional<String> email =
-      sqlCache.get("birdeye.getEmail", Map.of("projectId", projectId), new SingleColumnRowMapper<>(String.class));
+      sqlCache.getBySql(BirdeyeQuery.getEmail, Map.of("projectId", projectId), new SingleColumnRowMapper<>(String.class));
     return email.map(List::of).orElseGet(() -> List.of("support@blueravensolar.com"));
   }
 
   private String getBusinessId(Long projectId) {
-    return sqlCache.get(
-        "birdeye.getBusinessId", Map.of("projectId", projectId),
+    return sqlCache.getBySql(
+        BirdeyeQuery.getBusinessId, Map.of("projectId", projectId),
         new SingleColumnRowMapper<>(String.class))
       .orElseThrow(() -> new RuntimeException("No Birdeye Business ID found for projectId=" + projectId));
   }
@@ -161,11 +162,11 @@ public class BirdeyeService {
       Map.of(
         "id", invitationId,
         "custId", custId);
-    sqlCache.update("birdeye.addCustomerId", params);
+    sqlCache.updateBySql(BirdeyeQuery.addCustomerId, params);
   }
 
   private OffsetDateTime getLastSyncDate(String businessNumber, String surveyId) {
-    final List<OffsetDateTime> query = sqlCache.query("birdeye.getLastSync", Map.of(
+    final List<OffsetDateTime> query = sqlCache.queryBySql(BirdeyeQuery.getLastSync, Map.of(
       "businessId", businessNumber,
       "surveyId", surveyId
     ), (rs, rowNum) -> {
@@ -176,7 +177,7 @@ public class BirdeyeService {
   }
 
   private void setLastSyncDate(String businessNumber, String surveyId, OffsetDateTime lastSyncDate) {
-    sqlCache.update("birdeye.setLastSync", Map.of(
+    sqlCache.updateBySql(BirdeyeQuery.setLastSync, Map.of(
       "businessId", businessNumber,
       "surveyId", surveyId,
       "lastSync", lastSyncDate
@@ -294,7 +295,7 @@ public class BirdeyeService {
    * @return
    */
   private Optional<BirdEyeReviewInvitation> getInviteByCustomerId(String customerId) {
-    return sqlCache.get("birdeye.getProjectByCustomer", Map.of("customerId", customerId), BirdEyeReviewInvitation.class);
+    return sqlCache.getBySql(BirdeyeQuery.getProjectByCustomer, Map.of("customerId", customerId), BirdEyeReviewInvitation.class);
   }
 
   @RequiredArgsConstructor

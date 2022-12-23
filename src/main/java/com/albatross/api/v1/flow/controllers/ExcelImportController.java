@@ -4,6 +4,7 @@ import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.Params;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.ExcelImportQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -50,19 +51,17 @@ public class ExcelImportController {
 
   @GetMapping("/excelId")
   public Long getUniqueIdForExcel() {
-    String sql = cache.getByKey("excel.import.sqlId");
-    return jdbc.queryForObject(sql, Maps.newHashMap(), Long.class);
+    return jdbc.queryForObject(ExcelImportQuery.sqlId, Maps.newHashMap(), Long.class);
   }
 
   @GetMapping("/baseConfirm/{baseId}")
   public ResponseEntity getUniqueIdForExcel(
       @PathVariable("baseId") Long projectId, @RequestHeader Map<String, String> headers) {
     debugPrintHeaders(headers);
-    String sql = cache.getByKey("excel.import.validateProjectId");
     try {
       Map<String, Object> result =
           jdbc.queryForObject(
-              sql, new Params("projectId", projectId).buildNullable(), new ColumnMapRowMapper());
+            ExcelImportQuery.validateProjectId, new Params("projectId", projectId).buildNullable(), new ColumnMapRowMapper());
       return ResponseEntity.ok(result);
     } catch (IncorrectResultSizeDataAccessException e) {
       if (e.getActualSize() < 1) {

@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.CustomActionController;
+import com.albatross.api.v1.company.blueraven.services.queries.CustomActionQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class CustomActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ppsEventId", ppsEventId);
     params.put("userId", user.getId());
-    Optional<CustomActionController.RescheduleResponse> result = sqlCache.get("customAction.rescheduleCloserAppt", params, CustomActionController.RescheduleResponse.class);
+    Optional<CustomActionController.RescheduleResponse> result = sqlCache.getBySql(CustomActionQuery.rescheduleCloserAppt, params, CustomActionController.RescheduleResponse.class);
     if(result.isPresent()) {
       return result.get();
     } else {

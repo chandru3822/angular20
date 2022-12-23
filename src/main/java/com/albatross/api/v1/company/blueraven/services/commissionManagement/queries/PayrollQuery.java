@@ -1,0 +1,318 @@
+package com.albatross.api.v1.company.blueraven.services.commissionManagement.queries;
+
+public class PayrollQuery {
+
+  //language=PostgreSQL
+  public final static String snapshotByPayrollId = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+    FROM
+         (
+           SELECT *
+           FROM brs.project_commission_snapshot
+           WHERE payroll_id = :payrollId ) AS sub_rows
+    """;
+
+  //language=PostgreSQL
+  public final static String getPositionId = """
+    SELECT position_id
+    from brs.payroll
+    where id = :payrollId
+    """;
+
+  //language=PostgreSQL
+  public final static String getCurrentPayrollId = """
+    SELECT id
+    FROM brs.payroll
+    WHERE current IS TRUE
+    AND position_id = :positionId
+    """;
+
+  //language=PostgreSQL
+  public final static String getById = """
+    SELECT row_to_json(payroll) AS payroll
+    FROM (SELECT p.id,
+                 p.period_end                                              AS "periodEnd",
+                 p.paid_date                                               AS "paidDate",
+                 p.description,
+                 p.position_id as "positionId",
+                 p.selected_project_ids                                       AS "selectedProjectIds",
+                 ps.payroll_status                                         AS "status",
+                 p.current,
+                 coalesce((SELECT ARRAY_TO_JSON(array_agg(row_to_json(history)))
+                           FROM (SELECT pat.action_type                      AS "actionType",
+                                        h.action_date                        AS "actionDate",
+                                        concat(u.first_name,' ',u.last_name) AS "actionUser"
+                                 FROM brs.payroll_action_history h
+                                          INNER JOIN brs.payroll_action_type pat ON H.payroll_action_type_id = pat.id
+                                          INNER JOIN flow."user" u ON h.user_id = u.id
+                                 WHERE h.payroll_id = p.id) history),'[]') AS history
+          FROM brs.payroll p
+                   INNER JOIN brs.payroll_status ps ON p.payroll_status_id = ps.id
+          WHERE p.id = :payrollId) payroll
+    """;
+
+  //language=PostgreSQL
+  public final static String searchClosers = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+    FROM (SELECT p.period_end as "periodEnd",
+                 p.id,
+                 p.description,
+                 (SELECT sum(dcs1.current_pay)
+                  FROM brs.project_commission_snapshot dcs1
+                  WHERE dcs1.payroll_id = p.id) AS "currentPay"
+          FROM brs.payroll p
+                   INNER JOIN brs.project_commission_snapshot dcs ON p.id = dcs.payroll_id
+                   INNER JOIN flow.project prj ON dcs.project_id = prj.id
+                   INNER JOIN brs.project_details pd on pd.project_id = prj.id
+                   LEFT JOIN brs.project_override_commission_snapshot docs ON docs.project_commission_snapshot_id = dcs.id
+          WHERE p.position_id = 1
+            AND CASE WHEN :startDate:: DATE IS NOT NULL
+                         THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+            AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                         THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                     ELSE 1 = 1 END
+            AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
+                         THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
+                     ELSE 1 = 1 END
+            AND CASE WHEN :projectId:: INTEGER IS NOT NULL
+                         THEN prj.id = :projectId:: INTEGER ELSE 1 = 1 END
+
+          GROUP BY p.id, p.period_end
+          ORDER BY p.period_end desc) AS sub_rows
+    """;
+
+  //language=PostgreSQL
+  public final static String searchSetters = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+    FROM (SELECT p.period_end as "periodEnd",
+                 p.id,
+                 p.description,
+                 (SELECT sum(dcs1.current_pay)
+                  FROM brs.setter_project_commission_snapshot dcs1
+                  WHERE dcs1.payroll_id = p.id) AS "currentPay"
+          FROM brs.payroll p
+                   INNER JOIN brs.setter_project_commission_snapshot dcs ON p.id = dcs.payroll_id
+                   INNER JOIN flow.project prj ON dcs.project_id = prj.id
+                   INNER JOIN brs.project_details pd on pd.project_id = prj.id
+                   LEFT JOIN brs.setter_project_override_commission_snapshot docs ON docs.setter_project_commission_snapshot_id = dcs.id
+          WHERE p.position_id = 4
+            AND CASE WHEN :startDate:: DATE IS NOT NULL
+                         THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+            AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                         THEN lower(dcs.project_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                     ELSE 1 = 1 END
+            AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
+                         THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
+                     ELSE 1 = 1 END
+            AND CASE WHEN :projectId:: INTEGER IS NOT NULL
+                         THEN prj.id = :projectId:: INTEGER ELSE 1 = 1 END
+
+          GROUP BY p.id, p.period_end
+          ORDER BY p.period_end desc) AS sub_rows
+    """;
+
+  //language=PostgreSQL
+  public final static String getApprovedPayrolls = """
+    SELECT DISTINCT p.id, p.period_end
+    FROM brs.payroll p
+    WHERE  p.payroll_status_id = 3 -- 3 means APPROVED
+    and p.position_id = :positionId
+    ORDER BY p.period_end DESC, p.id DESC;
+    """;
+
+  //language=PostgreSQL
+  public final static String addCommissionAdjustment = """
+    INSERT INTO brs.payroll_adjustment (payroll_id,
+                                        project_id,
+                                        user_id,
+                                        amount,
+                                        note,
+                                        payroll_adjustment_type_id,
+                                        created_by,
+                                        created)
+    VALUES (:payrollId, :projectId, :userId, :amount, :note, :adjustmentTypeId, :createdById, now());
+    """;
+
+  //language=PostgreSQL
+  public final static String getCommissionAdjustments = """
+    SELECT array_to_json(array_agg(row_to_json(history)))
+    FROM (SELECT
+           pa.user_id as "userId",
+           pa.amount,
+           pa.note,
+           pat.adjustment_type as "adjustmentType",
+           pa.created,
+           concat(u.first_name, ' ', u.last_name) AS "createdBy"
+    FROM brs.payroll_adjustment pa
+           INNER JOIN brs.payroll_adjustment_type pat ON pa.payroll_adjustment_type_id = pat.id
+           INNER JOIN flow."user" u ON pa.created_by = u.id
+    WHERE payroll_id = :payrollId
+      AND project_id = :projectId) history
+    """;
+
+  //language=PostgreSQL
+  public final static String setStatus = """
+    UPDATE brs.payroll SET payroll_status_id = :payrollStatusId, updated = now() WHERE id = :payrollId
+    """;
+
+  //language=PostgreSQL
+  public final static String status = """
+    SELECT p.payroll_status_id
+    FROM brs.payroll p
+    WHERE p.id = :payrollId
+    """;
+
+  //language=PostgreSQL
+  public final static String overridesOpen = """
+    SELECT * FROM brs.get_all_users_overrides_earned_in_open_payroll(:payrollId::bigint, :currentUserId)
+    """;
+
+  //language=PostgreSQL
+  public final static String overridesSnapshot = """
+    SELECT * FROM brs.get_all_users_overrides_earned_in_payroll_snapshot(:payrollId::bigint, :currentUserId)
+    """;
+
+  //language=PostgreSQL
+  public final static String addActionHistory = """
+    INSERT INTO brs.payroll_action_history (payroll_id, payroll_action_type_id, action_date, note, user_id)
+    VALUES (:payrollId, :actionTypeId, now(), :note, :currentUserId)
+    """;
+
+  //language=PostgreSQL
+  public final static String updatePayroll = """
+    UPDATE brs.payroll
+    SET period_end        = :periodEndDate::date,
+      description       = :description,
+      updated_by        = :currentUserId,
+      selected_project_ids = :projectIds::BIGINT[],
+      updated           = now()
+    WHERE id = :payrollId
+    """;
+
+  //language=PostgreSQL
+  public final static String checkSummaryPreparationStatus = """
+    SELECT state FROM pg_stat_activity
+    WHERE query = 'select * from brs.refresh_summary_view() as result'
+      AND state = 'active'
+    """;
+
+  //language=PostgreSQL
+  public final static String getCurrentSummary = """
+    SELECT brs.get_commission_summary(:positionId::bigint, :currentUserId)
+    """;
+
+  //language=PostgreSQL
+  public final static String getSummary = """
+    SELECT CASE WHEN p.payroll_status_id = 3 and p.position_id = 1
+          THEN brs.get_commission_summary_from_snapshot(p.id, :currentUserId)
+        WHEN p.payroll_status_id = 3 and p.position_id = 4
+          THEN brs.get_commission_summary_from_snapshot_for_setters(p.id, :currentUserId)
+        ELSE brs.get_commission_summary(p.position_id, :currentUserId) END
+    FROM brs.payroll p
+    WHERE id = :payrollId
+    """;
+
+  //language=PostgreSQL
+  public final static String getAccountReviewForClosers = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+      FROM (SELECT *
+            FROM brs.get_commission_account_details(:payrollId::bigint, :selectedProjectIds::bigint[],
+            :customerId::bigint, :salesRepId::bigint, :cancelStartDate::date, :cancelEndDate::date,
+            :overridePlanId::bigint, :commissionPlanId::bigint)
+            ) sub_rows
+    """;
+
+  //language=PostgreSQL
+  public final static String getAccountReviewForSetters = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+      FROM (SELECT *
+            FROM brs.get_commission_account_details_for_setters(:payrollId::bigint, :selectedProjectIds::bigint[],
+            :customerId::bigint, :salesRepId::bigint, :cancelStartDate::date, :cancelEndDate::date,
+            :overridePlanId::bigint, :commissionPlanId::bigint)
+            ) sub_rows
+    """;
+
+  //language=PostgreSQL
+  public final static String getPayrollSearchDetailForClosers = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+    FROM (
+           SELECT s.cancelled,
+                  s.commission_adjustment as "commissionAdjustment",
+                  s.commission_paid_to_date as "commissionPaidToDate",
+                  s.commission_plan as "commissionPlan",
+                  s.commission_plan_id as "commissionPlanId",
+                  s.commissions_earned as "commissionsEarned",
+                  s.current_pay as "currentPay",
+                  s.current_pay_commissions as "currentPayCommissions",
+                  s.current_pay_overrides as "currentPayOverrides",
+                  s.customer_name as "customerName",
+                  s.project_id as "projectId",
+                  s.project_total_value as "projectTotalValue",
+                  s.deposit,
+                  s.final_design_signed as "finalDesignSigned",
+                  s.financial_agreement_sent as "financialAgreementSent",
+                  s.hoi,
+                  s.id,
+                  s.install_agreement_signed as "installAgreementSigned",
+                  s.override_adjustment as "overrideAdjustment",
+                  s.override_earned as "overrideEarned",
+                  s.override_plan as "overridePlan",
+                  s.override_plan_id as "overridePlanId",
+                  s.overrides_paid_to_date as "overridesPaidToDate",
+                  s.payroll_id as "payrollId",
+                  s.percent_of_cash_deposit as "percentOfCashDeposit",
+                  s.remaining_value as "remainingValue",
+                  s.remaining_value_commissions as "remainingValueCommissions",
+                  s.remaining_value_overrides as "remainingValueOverrides",
+                  s.sales_rep as "salesRep",
+                  s.sales_rep_id as "salesRepId",
+                  s.sc,
+                  s.source,
+                  s.stage,
+                  s.system_size as "systemSize",
+                  s.total_commissions as "totalCommissions",
+                  s.updated
+           FROM brs.project_commission_snapshot s
+                    INNER JOIN flow.project p ON s.project_id = p.id
+           WHERE payroll_id = :payrollId
+       ) AS sub_rows
+    """;
+
+  //language=PostgreSQL
+  public final static String getPayrollSearchDetailForSetters = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+    FROM (
+             SELECT s.project_id,
+                 p.contact_id,
+                 s.project_name,
+                 s.sales_rep_id,
+                 s.sales_rep,
+                 s.source as source_name,
+                 s.cancelled as cancelled_date,
+                 s.closer_appointment_start,
+                 s.closer_appointment_outcome,
+                 s.override_plan,
+                 s.override_plan_id,
+                 s.commission_plan,
+                 s.commission_plan_id,
+                 s.total_commissions,
+                 s.total_overrides,
+                 s.commissions_earned,
+                 s.override_earned,
+                 s.commission_adjustment,
+                 s.override_adjustment,
+                 s.commission_paid_to_date,
+                 s.overrides_paid_to_date,
+                 s.current_pay,
+                 s.current_pay_commissions,
+                 s.current_pay_overrides,
+                 s.remaining_value,
+                 s.remaining_value_commissions,
+                 s.remaining_value_overrides,
+                 s.project_total_value
+          FROM brs.setter_project_commission_snapshot s
+                 INNER JOIN flow.project p ON s.project_id = p.id
+            WHERE payroll_id = :payrollId
+         ) AS sub_rows
+    """;
+}

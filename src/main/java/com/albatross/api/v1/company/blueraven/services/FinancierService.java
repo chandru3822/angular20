@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.Financier;
+import com.albatross.api.v1.company.blueraven.services.queries.FinancierQuery;
 import com.albatross.api.v1.flow.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class FinancierService {
   private SecurityService securityService;
 
   public List<Financier> getAllActiveFinanciers() {
-    return sqlCache.query("financier.getActive", Collections.emptyMap(), Financier.class);
+    return sqlCache.queryBySql(FinancierQuery.getActive, Collections.emptyMap(), Financier.class);
   }
 
   public Integer addFinancier(Financier financier) {
@@ -35,7 +36,7 @@ public class FinancierService {
     params.put("archived", financier.getArchived());
     params.put("currentUser", currentUser.trueUserId());
 
-    return sqlCache.update("financier.add", params);
+    return sqlCache.updateBySql(FinancierQuery.add, params);
   }
 
   public void updateFinancier(Financier financier) {
@@ -48,6 +49,6 @@ public class FinancierService {
     params.put("archived", financier.getArchived());
     params.put("currentUser", currentUser.trueUserId());
 
-    sqlCache.update("financier.update", params);
+    sqlCache.updateBySql(FinancierQuery.update, params);
   }
 }
