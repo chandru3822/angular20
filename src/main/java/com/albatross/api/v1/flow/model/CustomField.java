@@ -63,6 +63,7 @@ public class CustomField {
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
   private Date dateCreated, dateModified;
   private Double minValue, maxValue;
+  private Boolean showId = false; //for front-end use only: can't update dom value of key not already stored on object
 
   public boolean shouldHaveListOfValues() {
     if (this.listOfValues != null && !this.listOfValues.isEmpty()) {
