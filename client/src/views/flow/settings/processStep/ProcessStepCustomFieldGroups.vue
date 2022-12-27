@@ -130,6 +130,8 @@
                         <v-icon v-else>expand_more</v-icon>
                       </v-btn>
                       <v-btn v-if="userCanEdit" small text color="primary" @click="customFieldGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
+                      <v-btn icon small color="primary" @click="item.showGroupId = !item.showGroupId"><v-icon>mdi-information</v-icon></v-btn>
+                      <span v-if="item.showGroupId" class="flex-align-items-center">id: {{ item.id }}</span>
                     </div>
                   </td>
                   <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete" @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
@@ -214,6 +216,15 @@
                               <a :href="`/settings/customField/${cf.customFieldId}`">{{cf.fieldName}}</a>
                               <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                               <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
+                              <v-tooltip top>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-btn icon color="primary" @click="[cf.showId = !cf.showId, copyToClipBoard(cf.customFieldId, cf.showId)]" v-bind="attrs"
+                                         v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                                </template>
+                                <span v-if="!cf.showId">Show (and Copy) Custom Field Id</span>
+                                <span v-if="cf.showId">Hide Custom Field Id</span>
+                              </v-tooltip>
+                              <span v-if="cf.showId">id: {{ cf.customFieldId }}</span>
                               <div class="text-left mt-3" v-if="cf.edit">
                                 <v-row>
                                   <v-col cols="6">
@@ -865,6 +876,13 @@
           }
         })
       },
+      copyToClipBoard(textValue, copy){
+        if(copy) {
+          navigator.clipboard.writeText(textValue);
+          this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
     }
 
   }
