@@ -8,6 +8,7 @@ import com.albatross.api.v1.company.blueraven.enums.AhjType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.Optional;
  * Created by Joseph Canto on 2019-07-12.
  */
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('AHJ')")
 @RequiredArgsConstructor
 public class AhjService {
   private final SqlCache sqlCache;

@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('PROCESS_STEPS')")
 @RequiredArgsConstructor
 public class ProcessStepAttachmentTypeService {
 

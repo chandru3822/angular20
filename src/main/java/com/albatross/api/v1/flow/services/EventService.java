@@ -20,6 +20,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,6 +28,7 @@ import java.util.*;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('EVENTS')")
 @RequiredArgsConstructor
 public class EventService {
 

@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@PreAuthorize("(hasCompanyAccess(2) || hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('ELECTRONIC_DOCUMENTS')")
 @RequiredArgsConstructor
 public class ElectronicDocumentService {
   private final SqlCache sqlCache;

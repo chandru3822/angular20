@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('WORK_QUEUE')")
 @RequiredArgsConstructor
 public class WorkQueueTypeService {
 

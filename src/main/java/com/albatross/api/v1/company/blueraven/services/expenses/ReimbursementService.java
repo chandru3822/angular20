@@ -16,6 +16,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -27,6 +28,7 @@ import java.util.Optional;
  * Created by Randa Nunn
  */
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('REIMBURSEMENT')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ReimbursementService {
 

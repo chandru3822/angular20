@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -35,6 +36,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('INSTALLATION_AGREEMENT')")
 @RequiredArgsConstructor
 public class InstallAgreementService {
   private final SqlCache sqlCache;

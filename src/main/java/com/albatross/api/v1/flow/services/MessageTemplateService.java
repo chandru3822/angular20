@@ -11,12 +11,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Slf4j
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('SMS_INBOX')")
 @RequiredArgsConstructor
 public class MessageTemplateService {
 

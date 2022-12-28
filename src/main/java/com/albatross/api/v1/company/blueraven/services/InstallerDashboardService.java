@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('INSTALLER_DASHBOARD')")
 @RequiredArgsConstructor
 public class InstallerDashboardService {
 

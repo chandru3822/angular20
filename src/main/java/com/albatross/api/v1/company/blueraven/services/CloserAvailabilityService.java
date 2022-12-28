@@ -4,11 +4,10 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.CloserAvailabilityController;
 import com.albatross.api.v1.company.blueraven.services.queries.CloserAvailabilityQuery;
-import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
-import com.albatross.api.v1.flow.queries.WorkQueueQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -20,6 +19,7 @@ import java.util.HashMap;
  */
 @Slf4j
 @Service
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('CLOSER_AVAILABILITY')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CloserAvailabilityService {
 
