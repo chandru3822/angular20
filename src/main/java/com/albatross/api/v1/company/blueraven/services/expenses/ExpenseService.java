@@ -11,6 +11,7 @@ import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.*;
  */
 @Service
 @Slf4j
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('EXPENSES')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ExpenseService {
 

@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -23,6 +23,7 @@ import java.util.Locale;
 
 @Service
 @Slf4j
+@PreAuthorize("hasFeatureAccess('COMPANY_DASHBOARD')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CompanyDashboardService {
 

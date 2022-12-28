@@ -44,6 +44,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -58,6 +59,7 @@ import java.util.*;
 
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('PROJECTS')")
 @RequiredArgsConstructor
 public class ProjectService {
 

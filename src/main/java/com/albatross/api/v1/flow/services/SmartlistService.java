@@ -26,6 +26,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('SMARTLIST')")
 @RequiredArgsConstructor
 public class SmartlistService {
 

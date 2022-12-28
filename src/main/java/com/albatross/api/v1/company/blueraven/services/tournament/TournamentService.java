@@ -14,6 +14,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.Optional;
  * Created by Randa Nunn on 2021-03-12.
  */
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('TOURNAMENTS')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TournamentService {
 

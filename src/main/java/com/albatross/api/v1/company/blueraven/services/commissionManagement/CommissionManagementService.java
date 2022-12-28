@@ -21,6 +21,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,6 +36,7 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('COMMISSIONS')")
 public class CommissionManagementService {
 
   private final SqlCache sqlCache;

@@ -13,6 +13,7 @@ import com.albatross.api.v1.flow.queries.ProjectQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,6 +23,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('PROCESS_STEPS')")
 @RequiredArgsConstructor
 public class ProcessStepStatusService {
 

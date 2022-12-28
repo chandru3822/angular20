@@ -9,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.services.queries.SetterDashboardQu
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ import java.util.List;
  * Created by Joseph Canto on 2020-07-06.
  */
 @Service
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('SETTER_DASHBOARD')")
 public class SetterDashboardService {
   @Autowired
   private SecurityService securityService;
