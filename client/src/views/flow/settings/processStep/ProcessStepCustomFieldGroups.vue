@@ -368,7 +368,7 @@
                           </v-list-item-content>
                           <v-tooltip left>
                             <template v-slot:activator="{ on, attrs }">
-                              <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldId)" v-bind="attrs"
+                              <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
                                      v-on="on"><v-icon>mdi-information</v-icon></v-btn>
                             </template>
                             <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
