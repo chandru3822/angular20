@@ -883,12 +883,10 @@
           }
         })
       },
-      copyToClipBoard(textValue, copy){
-        if(copy) {
+      copyToClipBoard(textValue){
           navigator.clipboard.writeText(textValue);
           this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
       }
     }
 

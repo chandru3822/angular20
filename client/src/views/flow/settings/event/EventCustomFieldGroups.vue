@@ -281,6 +281,14 @@
                   </td>
                   <td>
                     <div class="item-icons">
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                                 v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                        </template>
+                        <span>Custom Field Group Id: {{item.id}}</span>
+                        <div class="text-center">(click to copy)</div>
+                      </v-tooltip>
                       <v-btn v-if="userCanAdd" small text color="primary"
                              @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                         <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
@@ -420,6 +428,14 @@
                               </v-row>
                             </div>
                           </v-list-item-content>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldId)" v-bind="attrs"
+                                     v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                            </template>
+                            <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
+                            <div class="text-center">(click to copy)</div>
+                          </v-tooltip>
                           <v-btn text color="primary" small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit)]">
                             <v-icon>edit</v-icon>
                           </v-btn>
@@ -999,6 +1015,11 @@ export default {
         }
       })
     },
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    }
   }
 
 }
