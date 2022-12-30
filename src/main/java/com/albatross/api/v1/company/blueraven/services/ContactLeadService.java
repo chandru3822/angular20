@@ -5,6 +5,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.company.blueraven.models.HubspotLead;
+import com.albatross.api.v1.company.blueraven.services.queries.ContactLeadQuery;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.*;
@@ -115,11 +116,11 @@ public class ContactLeadService {
 
     if (stateValue != null) {
       params.put("state", stateValue);
-      contactId = sqlCache.updateReturningId("contactLead.insertContact", params, "id").longValue();
+      contactId = sqlCache.updateBySqlReturningId(ContactLeadQuery.insertContact, params, "id").longValue();
     } else {
       // Case for no State
       contactId =
-          sqlCache.updateReturningId("contactLead.insertContactNoState", params, "id").longValue();
+          sqlCache.updateBySqlReturningId(ContactLeadQuery.insertContactNoState, params, "id").longValue();
     }
     hubspotLead.setContactId(contactId);
 
@@ -380,7 +381,7 @@ public class ContactLeadService {
     params.put("numericValue", cfv.getNumericValue());
     params.put("leadOwnerUserId", leadOwnerUserId);
 
-    sqlCache.update("contactLead.upsertCustomFieldValue", params);
+    sqlCache.updateBySql(ContactLeadQuery.upsertCustomFieldValue, params);
   }
 
   private String checkIfCustomFieldDropdownValueExists(
@@ -390,8 +391,8 @@ public class ContactLeadService {
     params.put("customFieldDropdownValue", customFieldDropdownValue);
 
     Optional<String> customFieldDropdownValueId =
-        sqlCache.queryForObjectOptional(
-            "contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
+        sqlCache.queryForObjectOptionalBySql(
+          ContactLeadQuery.checkIfCustomFieldDropdownValueExists, params, String.class);
     return customFieldDropdownValueId.orElse("null");
   }
 
@@ -428,7 +429,7 @@ public class ContactLeadService {
         params.put("customFieldDropdownValue", lead.getLead_source());
         leadSourceId =
             sqlCache
-                .updateReturningId("contactLead.insertCustomFieldDropdownValue", params, "id")
+                .updateBySqlReturningId(ContactLeadQuery.insertCustomFieldDropdownValue, params, "id")
                 .toString();
       }
 
@@ -451,7 +452,7 @@ public class ContactLeadService {
         params.put("customFieldDropdownValue", lead.getLead_source_detail());
         leadSourceDetailId =
             sqlCache
-                .updateReturningId("contactLead.insertCustomFieldDropdownValue", params, "id")
+                .updateBySqlReturningId(ContactLeadQuery.insertCustomFieldDropdownValue, params, "id")
                 .toString();
       }
 

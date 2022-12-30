@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.RebateBatchDetail;
 import com.albatross.api.v1.company.blueraven.models.RebatePayment;
 import com.albatross.api.v1.company.blueraven.models.RebatePaymentState;
+import com.albatross.api.v1.company.blueraven.services.queries.RebateQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -26,6 +28,7 @@ import java.util.Optional;
  * Created by John Berns on 2020-04-21.
  */
 @Service
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('REBATES')")
 public class RebateService {
   @Autowired
   private SqlCache sqlCache;
@@ -46,33 +49,33 @@ public class RebateService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("createdBy", user.trueUserId());
-    return sqlCache.query("rebate.getPaymentsPending", params, RebatePayment.class);
+    return sqlCache.queryBySql(RebateQuery.getPaymentsPending, params, RebatePayment.class);
   }
 
   public List<RebatePayment> getUnbalancedPayments() {
-    return sqlCache.query("rebate.getPaymentsUnbalanced", new HashMap<>(), RebatePayment.class);
+    return sqlCache.queryBySql(RebateQuery.getPaymentsUnbalanced, new HashMap<>(), RebatePayment.class);
   }
 
   public List<RebatePayment> getNeedsApproval() {
-    return sqlCache.query("rebate.getPaymentsNeedApproval", new HashMap<>(), RebatePayment.class);
+    return sqlCache.queryBySql(RebateQuery.getPaymentsNeedApproval, new HashMap<>(), RebatePayment.class);
   }
 
   public String getRebateDetails(Long projectId) {
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("projectId", projectId.intValue());
 
-    return jdbc.queryForObject(sqlCache.getByKey("rebate.getRebateDetails"), parameters, String.class);
+    return jdbc.queryForObject(RebateQuery.getRebateDetails, parameters, String.class);
   }
 
   public Optional<RebateBatchDetail> getBatchDetails(Long batchId){
     HashMap<String, Object> params = new HashMap<>();
     params.put("batchId", batchId);
 
-    return sqlCache.get("rebate.getBatchDetails", params, new RebateMapper<>(RebateBatchDetail.class, om));
+    return sqlCache.getBySql(RebateQuery.getBatchDetails, params, new RebateMapper<>(RebateBatchDetail.class, om));
   }
 
   public List<RebateBatchDetail> getAllBatches(){
-    return sqlCache.query("rebate.getAllBatches", Collections.emptyMap(), RebateBatchDetail.class);
+    return sqlCache.queryBySql(RebateQuery.getAllBatches, Collections.emptyMap(), RebateBatchDetail.class);
   }
 
   public Optional<RebateBatchDetail> voidBatch(Long batchId){
@@ -83,10 +86,10 @@ public class RebateService {
     params.put("userId", currentUser.trueUserId());
 
     //set the batch as void
-    sqlCache.update("rebate.voidBatch", params);
+    sqlCache.updateBySql(RebateQuery.voidBatch, params);
 
     //clear the batch id from related payments and reset status to needs approval
-    sqlCache.update("rebate.voidBatchPayments", params);
+    sqlCache.updateBySql(RebateQuery.voidBatchPayments, params);
 
     return getBatchDetails(batchId);
   }
@@ -100,7 +103,7 @@ public class RebateService {
     params.put("note", rebatePayment.getVoidNote());
 
     //set the payment as void
-    sqlCache.update("rebate.voidSinglePayment", params);
+    sqlCache.updateBySql(RebateQuery.voidSinglePayment, params);
   }
 
   public void unvoidSinglePayment(RebatePayment rebatePayment) {
@@ -111,7 +114,7 @@ public class RebateService {
     params.put("userId", currentUser.trueUserId());
 
     //set the payment as void
-    sqlCache.update("rebate.unvoidSinglePayment", params);
+    sqlCache.updateBySql(RebateQuery.unvoidSinglePayment, params);
   }
 
   public void updatePaymentNote(RebatePayment rebatePayment){
@@ -122,11 +125,11 @@ public class RebateService {
     params.put("userId", currentUser.trueUserId());
     params.put("note", rebatePayment.getVoidNote());
 
-    sqlCache.update("rebate.updatePaymentNote", params);
+    sqlCache.updateBySql(RebateQuery.updatePaymentNote, params);
   }
 
   public List<RebatePaymentState> getPaymentStates(){
-    List<RebatePaymentState> results = sqlCache.query("rebate.getPaymentStates", Collections.emptyMap(), RebatePaymentState.class);
+    List<RebatePaymentState> results = sqlCache.queryBySql(RebateQuery.getPaymentStates, Collections.emptyMap(), RebatePaymentState.class);
     return results;
   }
 
@@ -163,7 +166,7 @@ public class RebateService {
     params.put("paymentIds", rebatePayment.getPaymentIds());
     params.put("userId", rebatePayment.getApprovedByUserId());
 
-    sqlCache.update("rebate.approvePayments", params);
+    sqlCache.updateBySql(RebateQuery.approvePayments, params);
   }
 
   public void assignPaymentsToBatch(RebatePayment rebatePayment){
@@ -172,14 +175,14 @@ public class RebateService {
     HashMap<String, Object> batchParams = new HashMap<>();
     batchParams.put("paymentIds", rebatePayment.getPaymentIds());
     batchParams.put("userId", user.trueUserId());
-    Long batchId = sqlCache.updateReturningId("rebate.createBatch", batchParams, "id").longValue();
+    Long batchId = sqlCache.updateBySqlReturningId(RebateQuery.createBatch, batchParams, "id").longValue();
 
     //assign payments to batch id and set status to processed
     HashMap<String, Object> params = new HashMap<>();
     params.put("paymentIds", rebatePayment.getPaymentIds());
     params.put("userId", rebatePayment.getApprovedByUserId());
     params.put("batchId", batchId);
-    sqlCache.update("rebate.assignPaymentsToBatch", params);
+    sqlCache.updateBySql(RebateQuery.assignPaymentsToBatch, params);
   }
 
   public void updateTotalPromotionAmount(RebatePayment rebatePayment){
@@ -187,7 +190,7 @@ public class RebateService {
     params.put("newTotal", rebatePayment.getTotalPromotionAmount());
     params.put("projectId", rebatePayment.getProjectId());
 
-    sqlCache.update("rebate.updateTotalPromotionAmount", params);
+    sqlCache.updateBySql(RebateQuery.updateTotalPromotionAmount, params);
   }
 
   public void updatePayment(RebatePayment rebatePayment){

@@ -18,6 +18,8 @@ public class CustomFieldQuery {
          cf.allow_now,
          cf.company_data_type_id,
          cf.custom_field_sql_key,
+         cf.custom_field_sql,
+                    cf.custom_field_sql_smartlist,
          cf.custom_field_sql_reference_table,
          cf.company_system_list_id,
          array_to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -62,6 +64,8 @@ public class CustomFieldQuery {
            cdt.data_type_id,
            cf.allow_now,
            cf.custom_field_sql_key,
+           cf.custom_field_sql,
+                      cf.custom_field_sql_smartlist,
            cf.custom_field_sql_reference_table,
            cf.company_system_list_id,
            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -116,6 +120,8 @@ public class CustomFieldQuery {
            cdt.data_type_id,
            cf.allow_now,
            cf.custom_field_sql_key,
+           cf.custom_field_sql,
+                      cf.custom_field_sql_smartlist,
            cf.custom_field_sql_reference_table,
            cf.company_system_list_id,
            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -185,6 +191,9 @@ public class CustomFieldQuery {
              system_readonly = :systemReadonly,
              sort_list_values_alphabetically = :sortListValuesAlphabetically,
              system_list_option_ids = :systemListOptionIds::bigint[],
+             custom_field_sql = :customFieldSql,
+             custom_field_sql_key = :customFieldSqlKey,
+             custom_field_sql_reference_table = :customFieldSqlReferenceTable,
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
@@ -192,11 +201,11 @@ public class CustomFieldQuery {
 
   //language=PostgreSQL
   public final static String insertField = """
-    insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key,
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key, custom_field_sql,
                                   custom_field_sql_reference_table, company_system_list_id, system_list_option_ids,
                                   readonly, sort_list_values_alphabetically,
                                   date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now)
-    values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey,
+    values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey, :customFieldSql,
             :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::bigint[], :readonly,
             :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow)
     returning id
@@ -235,6 +244,8 @@ public class CustomFieldQuery {
                cf.system_readonly,
                case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
                cf.custom_field_sql_key,
+               cf.custom_field_sql,
+                          cf.custom_field_sql_smartlist,
                cf.company_id,
                cf.field_name,
                cf.company_data_type_id,
@@ -288,6 +299,8 @@ public class CustomFieldQuery {
                cf.system_readonly,
                case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
                cf.custom_field_sql_key,
+               cf.custom_field_sql,
+                          cf.custom_field_sql_smartlist,
                cf.company_id,
                cf.field_name,
                cf.company_data_type_id,
@@ -349,6 +362,8 @@ public class CustomFieldQuery {
            cf.system_readonly,
            case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
            cf.custom_field_sql_key,
+           cf.custom_field_sql,
+                      cf.custom_field_sql_smartlist,
            cf.company_id,
            cf.field_name,
            cf.company_data_type_id,
@@ -402,6 +417,8 @@ public class CustomFieldQuery {
                 cf.list_of_value_id,
                 case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
                 cf.custom_field_sql_key,
+                cf.custom_field_sql,
+                           cf.custom_field_sql_smartlist,
                 cf.company_id,
                 cf.field_name,
                 cf.company_data_type_id,
@@ -449,5 +466,15 @@ public class CustomFieldQuery {
           and cf.archived is not true
         order by cf.field_name
         """;
+
+
+  //todo: unhardcode this from company_id = 3
+  //language=PostgreSQL
+  public final static String getCustomFieldSql = """
+    select custom_field_sql
+    from flow.custom_field cf
+    where custom_field_sql_key = 'customFieldSql.brs.ahjList'
+    and company_id = 3
+    """;
 
 }

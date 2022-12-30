@@ -1,0 +1,72 @@
+package com.albatross.api.v1.company.blueraven.services.queries;
+
+public class ExcelImportQuery {
+
+  //language=PostgreSQL
+  public final static String sqlId = """
+    select nextval('brs.proposal_excel_id_seq') as prop_id
+    """;
+
+  //language=PostgreSQL
+  public final static String validateProjectId = """
+    select p.project_name as customer_name,
+           concat_ws(' ', c.street1, c.street2) street,
+           c.city, s.state, c.postal_code,
+           c.phone, c.email,
+           (select lov.name
+           from flow.list_of_value lov
+           where lov.id = (select int_value from flow.contact_custom_field_value where contact_id = (select contact_id from flow.project where id = :projectId) and
+           custom_field_group_assignment_id = 395)::bigint) as source,
+           trim(concat(users.first_name, ' ', users.last_name)) as deal_owner,
+           (select numeric_value from flow.project_process_step_custom_field_value where project_process_step_id =
+               (select id from flow.project_process_step where project_id = :projectId and process_step_id=3 and main is true)
+                and custom_field_group_assignment_id= 709) as epc_proposal_pricing,
+           (select user_id from flow.user_position
+           where id = (select user_position_id from flow.project_process_step
+           where project_id = :projectId and process_step_id = 2 and main is true)
+           ) as deal_owner_id
+           from flow.project p
+           inner join flow.contact c on c.id = p.contact_id
+           left join flow.company_state cs on cs.id = c.company_state_id
+           left join flow.state s on s.id = cs.state_id
+           left join flow.user users on users.id = p.created_by_id
+           where p.id = :projectId
+    """;
+
+  //language=PostgreSQL
+  public final static String insert = """
+    insert into brs.proposal_log (proposal_date, source, proposal, proposal_nbr, project_id)
+        values (current_date, :source, :proposal, :proposalId, :projectId)
+    returning *
+    """;
+
+  //language=PostgreSQL
+  public final static String designSqlId = """
+    select
+    case
+    when seq.last_value >= 9999 then setval('brs.design_nbr_seq', 1000)
+    else nextval('brs.design_nbr_seq')
+    end as design_id
+    from brs.design_nbr_seq seq
+    """;
+
+  //language=PostgreSQL
+  public final static String designInsert = """
+    WITH t1 AS (
+      INSERT INTO brs.design_log (design_date, source, design, design_nbr, project_id, bom, bom_with_part_number)
+      VALUES (:designDate, :source, :design, nextval('brs.design_nbr_seq'), :projectId, :originalBom, :bomWithPartNumber::jsonb)
+      RETURNING *
+    )
+    SELECT t.*, t.design_nbr AS design_id
+    FROM t1 t
+    """;
+
+  //language=PostgreSQL
+  public final static String loadProposal = """
+    select proposal
+    from brs.proposal_log
+    where project_id = :projectId
+    and proposal_nbr = :proposalId
+    order by proposal_date desc;
+    """;
+}

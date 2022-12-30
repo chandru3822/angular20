@@ -19,6 +19,9 @@ BEGIN
                             from flow.company_configuration_value
                             where code = 'SETTER_POSITION_IDS');
 
+    insert into flow.company_function_log(function_name, parameters)
+    values ('Get Setters by Setter Manager Office', 'p_office_id: ' || p_office_id);
+
     RETURN v_setter_ids;
 
 END

@@ -32,6 +32,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('ORGS')")
 @RequiredArgsConstructor
 public class OrgService {
 

@@ -103,11 +103,15 @@
             </div>
 
             <div v-else>
-              <v-text-field
+              <v-text-field outlined
                 v-model="customField.customFieldSqlKey"
                 label="SQL Key"
               />
-              <v-text-field
+              <v-textarea auto-grow outlined
+                v-model="customField.customFieldSql"
+                label="SQL"
+              />
+              <v-text-field outlined
                 v-model="customField.customFieldSqlReferenceTable"
                 label="SQL Reference Table"
               />
@@ -450,7 +454,7 @@ export default {
           });
         }
       } else if (customField.companyDataType?.customBehavior && !this.isSystemReference(customField.companyDataType.companyDataType)) {
-        if (!customField.customFieldSqlKey || !customField.customFieldSqlReferenceTable) {
+        if (!customField.customFieldSqlKey || !customField.customFieldSql || !customField.customFieldSqlReferenceTable) {
           invalidCustomSql = true;
         }
       }

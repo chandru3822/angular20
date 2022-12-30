@@ -1,0 +1,405 @@
+package com.albatross.api.v1.company.blueraven.services.queries;
+
+public class InstallerDashboardQuery {
+
+  //language=PostgreSQL
+  public final static String getRegionalManagers = """
+    select up.org_id as positionId, concat(u.first_name, ' ', u.last_name) AS full_name,
+        (case when u.id = :userId then u.id end) as userId
+    from flow.user u
+         inner join flow.user_position up on u.id = up.user_id
+         inner join flow.org o on o.id = up.org_id
+         inner join flow.company_user_status cus on cus.user_id = u.id
+         inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
+    where up.position_id in (69, 508) and up.primary_flag = true and up.archived = false and o.active_flag is true
+    and ust.user_status_type not in ('Expired', 'Terminated')
+    and case when (:isParent)
+            then o.company_id = :parentCompanyId
+            else o.company_id = :companyId
+        end
+    order by full_name
+    """;
+
+  //language=PostgreSQL
+  public final static String getInstallationCrew = """
+    select o.id as positionId, o.org_name AS full_name
+    from flow.org o
+        inner join flow.org_type ot on o.org_type_id = ot.id
+    where o.parent_org_id in (:orgIds) and o.archived = false and o.active_flag = true
+    and ot.id = 6
+    and case when (:isParent)
+          then o.company_id = :parentCompanyId
+          else o.company_id = :companyId
+    end
+    """;
+
+  //language=PostgreSQL
+  public final static String getPerformanceMetrics = """
+    select * from brs.get_installer_dashboard_rankings(:startDate::date,:endDate::date, :companyId::bigint, :parentCompanyId::bigint, :isParent, :currentUserId::bigint)
+    """;
+
+  //language=PostgreSQL
+  public final static String getRoundRobinLeadAllocationRank = """
+    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::bigint, :timeInterval::bigint, :currentUserId::bigint)
+    """;
+
+  //language=PostgreSQL
+  public final static String getDashboardValues = """
+    select json_build_object(
+           'substantialCompletions', (select (select count(*)
+          from brs.project_details pd
+          where substantial_completion_date between :startDate::date and :endDate::date
+                    AND pd.installation_resource in (:crewIds)
+         ) as substantialCompletions) ::numeric(10,2),
+
+        'substantialCompletionsDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(sc)))
+                            FROM (select project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                                         pd.installation_end_time, pd.substantial_completion_date, false as isnumerator,
+                                         coalesce((
+                                          SELECT array_to_json(array_agg(row_to_json(notes)))
+                                          FROM (
+                                                   select n.id,
+                                                          n.note,
+                                                          n.archived,
+                                                          n.parent_id as "parentId",
+                                                          n.date_created as "dateCreated",
+                                                          n.date_modified as "dateModified",
+                                                          n.created_by_id as "createdById",
+                                                          concat(creator.first_name, ' ', creator.last_name) as "createdBy",
+                                                          n.modified_by_id as "modifiedById",
+                                                          coalesce((
+                                                                       SELECT array_to_json(array_agg(row_to_json(childNotes)))
+                                                                       FROM (
+                                                                                select n2.id,
+                                                                                       n2.note,
+                                                                                       n2.archived,
+                                                                                       n2.date_created as "dateCreated",
+                                                                                       n2.date_modified as "dateModified",
+                                                                                       n2.created_by_id as "createdById",
+                                                                                       concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
+                                                                                       n2.modified_by_id as "modifiedById"--,
+                                                                                from flow.note n2
+                                                                                         inner join flow.project_prod_stats_note pn2 on pn2.note_id = n2.id
+                                                                                         inner join flow.user creator2 on creator2.id = n2.created_by_id
+                                                                                where n2.archived is not true
+                                                                                  and n2.parent_id = n.id
+                                                                                order by n2.date_created
+                                                                            ) childNotes), '[]') AS "childNotes"
+                                                   from flow.note n
+                                                            inner join flow.project_prod_stats_note pn on pn.note_id = n.id
+                                                            inner join flow.user creator on creator.id = n.created_by_id
+                                                   where n.archived is not true
+                                                     and n.parent_id is null
+                                                     and pn.project_id = p.id
+                                                     and pn.project_production_stats_type_id = 1
+                                                   order by n.date_created desc
+                                               ) AS notes), '[]'
+                                                  ) AS notes
+                                  from brs.project_details pd
+                                    inner join flow.project p on pd.project_id = p.id
+                                  where
+                                      substantial_completion_date between :startDate::date and :endDate::date
+                                      AND
+                                       pd.installation_resource in (:crewIds)
+                                order by pd.installation_end_time asc) sc), '[]'),
+
+        'sameWeekCloseout', (select coalesce((select count(*) from brs.project_details pd
+            where
+        (installation_end_time::date between :startDate::date and :endDate::date
+            AND
+            (substantial_completion_date is not null
+                 AND substantial_completion_date::date between installation_end_time::date - 7 and installation_end_time::date + 7)
+        AND
+        pd.installation_resource in (:crewIds))) ::numeric(10,2)
+                    /
+        NULLIF(((select count(*) from brs.project_details pd
+            where installation_end_time::date between :startDate::date and :endDate::date
+                  AND pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
+
+        'sameWeekCloseoutDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(swc)))
+                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                                         pd.installation_end_time, pd.substantial_completion_date,
+                                         (case when
+                                          (
+                                            substantial_completion_date is not null
+                                                AND
+                                            substantial_completion_date::date between (date_trunc('week', ((pd.installation_end_time::date)+1)::date))
+                                                                                and (date_trunc('week', ((pd.installation_end_time::date)+1)::date)::date)+6
+                                           ) then true else false end) as isNumerator, pps.id as processStepId,
+                                         coalesce((
+                                          SELECT array_to_json(array_agg(row_to_json(notes)))
+                                          FROM (
+                                                   select n.id,
+                                                          n.note,
+                                                          n.archived,
+                                                          n.parent_id as "parentId",
+                                                          n.date_created as "dateCreated",
+                                                          n.date_modified as "dateModified",
+                                                          n.created_by_id as "createdById",
+                                                          concat(creator.first_name, ' ', creator.last_name) as "createdBy",
+                                                          n.modified_by_id as "modifiedById",
+                                                          coalesce((
+                                                                       SELECT array_to_json(array_agg(row_to_json(childNotes)))
+                                                                       FROM (
+                                                                                select n2.id,
+                                                                                       n2.note,
+                                                                                       n2.archived,
+                                                                                       n2.date_created as "dateCreated",
+                                                                                       n2.date_modified as "dateModified",
+                                                                                       n2.created_by_id as "createdById",
+                                                                                       concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
+                                                                                       n2.modified_by_id as "modifiedById"
+                                                                                from flow.note n2
+                                                                                         inner join flow.project_prod_stats_note pn2 on pn2.note_id = n2.id
+                                                                                         inner join flow.user creator2 on creator2.id = n2.created_by_id
+                                                                                where n2.archived is not true
+                                                                                  and n2.parent_id = n.id
+                                                                                order by n2.date_created
+                                                                            ) childNotes), '[]') AS "childNotes"
+                                                   from flow.note n
+                                                            inner join flow.project_prod_stats_note pn on pn.note_id = n.id
+                                                            inner join flow.user creator on creator.id = n.created_by_id
+                                                   where n.archived is not true
+                                                     and n.parent_id is null
+                                                     and pn.project_id = p.id
+                                                     and pn.project_production_stats_type_id = 2
+                                                   order by n.date_created desc
+                                               ) AS notes), '[]'
+                                                  ) AS notes
+
+
+                                  from brs.project_details pd
+                                    inner join flow.project p on pd.project_id = p.id
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id and pps.main = true
+                                  where
+                                      (installation_end_time::date between :startDate::date and :endDate::date
+                                          AND
+                                       pd.installation_resource in (:crewIds))
+                                order by pd.installation_end_time asc) swc), '[]'),
+
+        'onTimeCloseout', (select coalesce((select count(*) from brs.project_details pd
+            where
+            (installation_end_time::date between :startDate::date and :endDate::date
+            AND
+            (
+              (substantial_completion_date is not null AND installation_end_time::date = substantial_completion_date::date)
+              OR
+              (substantial_completion_date is not null AND installation_closeout_end_time::date between :startDate::date and :endDate::date
+                  AND installation_closeout_end_time::date = substantial_completion_date::date))
+            )
+        AND
+        pd.installation_resource in (:crewIds)) ::numeric(10,2)
+                    /
+        NULLIF(((select count(*) from brs.project_details pd
+            where installation_end_time::date between :startDate::date and :endDate::date
+            AND
+            pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
+
+        'onTimeCloseoutDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(otc)))
+                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                                         pd.installation_end_time, pd.installation_closeout_start_time, pd.substantial_completion_date,
+                                         (case when
+                                            ((substantial_completion_date is not null AND installation_end_time::date = substantial_completion_date::date)
+                                                OR
+                                            (substantial_completion_date is not null AND installation_closeout_end_time::date between :startDate::date and :endDate::date
+                                                AND installation_closeout_end_time::date = substantial_completion_date::date))
+                                               then true else false end) as isNumerator, pps.id as processStepId,
+                                         coalesce((
+                                          SELECT array_to_json(array_agg(row_to_json(notes)))
+                                          FROM (
+                                                   select n.id,
+                                                          n.note,
+                                                          n.archived,
+                                                          n.parent_id as "parentId",
+                                                          n.date_created as "dateCreated",
+                                                          n.date_modified as "dateModified",
+                                                          n.created_by_id as "createdById",
+                                                          concat(creator.first_name, ' ', creator.last_name) as "createdBy",
+                                                          n.modified_by_id as "modifiedById",
+                                                          coalesce((
+                                                                       SELECT array_to_json(array_agg(row_to_json(childNotes)))
+                                                                       FROM (
+                                                                                select n2.id,
+                                                                                       n2.note,
+                                                                                       n2.archived,
+                                                                                       n2.date_created as "dateCreated",
+                                                                                       n2.date_modified as "dateModified",
+                                                                                       n2.created_by_id as "createdById",
+                                                                                       concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
+                                                                                       n2.modified_by_id as "modifiedById"
+                                                                                from flow.note n2
+                                                                                         inner join flow.project_prod_stats_note pn2 on pn2.note_id = n2.id
+                                                                                         inner join flow.user creator2 on creator2.id = n2.created_by_id
+                                                                                where n2.archived is not true
+                                                                                  and n2.parent_id = n.id
+                                                                                order by n2.date_created
+                                                                            ) childNotes), '[]') AS "childNotes"
+                                                   from flow.note n
+                                                            inner join flow.project_prod_stats_note pn on pn.note_id = n.id
+                                                            inner join flow.user creator on creator.id = n.created_by_id
+                                                   where n.archived is not true
+                                                     and n.parent_id is null
+                                                     and pn.project_id = p.id
+                                                     and pn.project_production_stats_type_id = 3
+                                                   order by n.date_created desc
+                                               ) AS notes), '[]'
+                                                  ) AS notes
+
+
+                                  from brs.project_details pd
+                                    inner join flow.project p on pd.project_id = p.id
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id and pps.main = true
+                                  where
+                                      installation_end_time::date between :startDate::date and :endDate::date
+                                        AND
+                                      pd.installation_resource in (:crewIds)
+                                order by pd.installation_end_time asc) otc), '[]'),
+
+        'inspectionApproval', (select coalesce((select count(*) from brs.project_details pd
+        where
+            (
+              pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
+              AND
+              (pd.ahj_inspection_outcome_name = 'Pass' OR
+               pd.ahj_inspection_outcome_name = 'Fail' AND (
+
+                   (select string_agg(lov.name, ', ')
+                    from flow.list_of_value lov
+                    where lov.id = any ((
+                        select int_array_value as inspection_fail_feedback  from flow.project_process_step_custom_field_value
+                        where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                                                                                                                                                   where field_name = 'AHJ Inspection Fail Reason' and company_id = pd.company_id and archived is false)
+                                                                                                                      and custom_field_group_id = (select cfg.id
+                                                                                                                                                   from flow.custom_field_group cfg
+                                                                                                                                                            inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                                                                                                                                   where  cfg.archived is not true
+                                                                                                                                                     and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                                                                                                              and process_step_id =
+                                                                                                                                                                                                                  (select id from flow.process_step
+                                                                                                                                                                                                                   where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                      and process_step_id =
+                                                                                                          (select id from flow.process_step
+                                                                                                           where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::bigint[]))
+
+
+                   ) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))
+            )
+        AND
+        pd.installation_resource in (:crewIds)) ::numeric(10,2)
+                    /
+        NULLIF(((select count(*) from brs.project_details pd
+            where pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
+            AND
+            pd.ahj_inspection_outcome is not null
+            AND
+            pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
+
+        'inspectionApprovalDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(ia)))
+                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                                         pd.installation_end_time, pd.substantial_completion_date, pd.ahj_inspection_start_time, pd.ahj_inspection_outcome_name,
+
+                                         (select string_agg(lov.name, ', ')
+                                          from flow.list_of_value lov
+                                          where lov.id = any ((
+                                          select int_array_value as inspection_fail_feedback  from flow.project_process_step_custom_field_value
+                                          where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                              where field_name = 'AHJ Inspection Fail Reason' and company_id = pd.company_id and archived is false)
+                                            and custom_field_group_id = (select cfg.id
+                                              from flow.custom_field_group cfg
+                                              inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                              where  cfg.archived is not true
+                                            and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                           and process_step_id =
+                                                               (select id from flow.process_step
+                                                                where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                              project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                            and process_step_id =
+                                              (select id from flow.process_step
+                                              where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::bigint[])) as ahj_inspection_fail_reason,
+
+                                         (select text_value from flow.project_process_step_custom_field_value
+                                          where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                              where field_name = 'Inspection Fail Feedback' and company_id = pd.company_id and archived is false)
+                                            and custom_field_group_id = (select cfg.id
+                                              from flow.custom_field_group cfg
+                                              inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                              where  cfg.archived is not true
+                                            and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                           and process_step_id =
+                                                               (select id from flow.process_step
+                                                                where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                              project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                            and process_step_id =
+                                              (select id from flow.process_step
+                                              where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true)) as inspection_fail_feedback,
+
+                                         (pd.ahj_inspection_outcome_name = 'Pass' OR
+                                          pd.ahj_inspection_outcome_name = 'Fail' AND ((select string_agg(lov.name, ', ')
+                                                      from flow.list_of_value lov
+                                                      where lov.id = any ((
+                                                          select int_array_value as inspection_fail_feedback  from flow.project_process_step_custom_field_value
+                                                          where custom_field_group_assignment_id = (select id from flow.custom_field_group_assignment where archived is false and custom_field_id = (select id from flow.custom_field
+                                                                                                                                                                                                     where field_name = 'AHJ Inspection Fail Reason' and company_id = pd.company_id and archived is false)
+                                                                                                                                                        and custom_field_group_id = (select cfg.id
+                                                                                                                                                                                     from flow.custom_field_group cfg
+                                                                                                                                                                                              inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+                                                                                                                                                                                     where  cfg.archived is not true
+                                                                                                                                                                                       and pps.id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                                                                                                                                                and process_step_id =
+                                                                                                                                                                                                                                                    (select id from flow.process_step
+                                                                                                                                                                                                                                                     where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))) and
+                                                                  project_process_step_id = (select id from flow.project_process_step where project_id = pd.project_id
+                                                                                                                                        and process_step_id =
+                                                                                                                                            (select id from flow.process_step
+                                                                                                                                             where process_step_name = 'Disposition Inspection Failure' and company_id = pd.company_id and archived is false) and main is true))::bigint[])) not ILIKE ALL(ARRAY['%crew%','%Crew%','%electrician%','%Electrician%','%rim%']))) as isNumerator,
+                                         coalesce((
+                                          SELECT array_to_json(array_agg(row_to_json(notes)))
+                                          FROM (
+                                                   select n.id,
+                                                          n.note,
+                                                          n.archived,
+                                                          n.parent_id as "parentId",
+                                                          n.date_created as "dateCreated",
+                                                          n.date_modified as "dateModified",
+                                                          n.created_by_id as "createdById",
+                                                          concat(creator.first_name, ' ', creator.last_name) as "createdBy",
+                                                          n.modified_by_id as "modifiedById",
+                                                          coalesce((
+                                                                       SELECT array_to_json(array_agg(row_to_json(childNotes)))
+                                                                       FROM (
+                                                                                select n2.id,
+                                                                                       n2.note,
+                                                                                       n2.archived,
+                                                                                       n2.date_created as "dateCreated",
+                                                                                       n2.date_modified as "dateModified",
+                                                                                       n2.created_by_id as "createdById",
+                                                                                       concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
+                                                                                       n2.modified_by_id as "modifiedById"
+                                                                                from flow.note n2
+                                                                                         inner join flow.project_prod_stats_note pn2 on pn2.note_id = n2.id
+                                                                                         inner join flow.user creator2 on creator2.id = n2.created_by_id
+                                                                                where n2.archived is not true
+                                                                                  and n2.parent_id = n.id
+                                                                                order by n2.date_created
+                                                                            ) childNotes), '[]') AS "childNotes"
+                                                   from flow.note n
+                                                            inner join flow.project_prod_stats_note pn on pn.note_id = n.id
+                                                            inner join flow.user creator on creator.id = n.created_by_id
+                                                   where n.archived is not true
+                                                     and n.parent_id is null
+                                                     and pn.project_id = p.id
+                                                     and pn.project_production_stats_type_id = 4
+                                                   order by n.date_created desc
+                                               ) AS notes), '[]'
+                                                  ) AS notes
+                                  from brs.project_details pd
+                                    inner join flow.project p on pd.project_id = p.id
+                                  where
+                                      pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
+                                      AND
+                                      pd.installation_resource in (:crewIds)
+                                order by pd.ahj_inspection_start_time asc) ia), '[]')
+        )
+    """;
+}

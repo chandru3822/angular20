@@ -40,6 +40,11 @@ BEGIN
     insert into brs.project_rebate_payment_audit (project_id, audit, changed_date, changed_by_user_id)
     values (v_project_id, 'Deleted payment_id: '||p_payment_id||' payment_amount: '||v_payment_amount, (now() at time zone 'US/Mountain')::date, p_deleted_by_user_id);
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Delete Rebate Payments', 'p_payment_id: ' || p_payment_id ||
+                                      ' p_deleted_by_user_id: ' || p_deleted_by_user_id,
+            p_deleted_by_user_id);
+
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE

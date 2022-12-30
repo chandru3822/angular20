@@ -35,6 +35,10 @@ BEGIN
     --percent of total  total_system_cost*rebate_amount
   end if;
 
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Get Equipment Amount by Type', 'p_system_size: ' || p_system_size ||
+                                          ' p_object_code: ' || p_object_code);
+
   return coalesce(v_amount, 0);
 END
 $BODY$

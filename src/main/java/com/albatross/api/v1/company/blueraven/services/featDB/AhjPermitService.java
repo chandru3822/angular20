@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('AHJ')")
 @RequiredArgsConstructor
 public class AhjPermitService {
   private final SqlCache sqlCache;

@@ -1,8 +1,8 @@
 -- DROP FUNCTION brs.get_setter_mgr_performance_report(bigint, date, date);
 
 -- SELECT * FROM brs.get_setter_mgr_performance_report(717, '2020-07-01', '2020-07-09');
-drop function if exists brs.get_setter_mgr_performance_report(p_office_id bigint, p_start_date date, p_end_date date);
-  CREATE OR REPLACE FUNCTION brs.get_setter_mgr_performance_report(p_office_id bigint, p_start_date date, p_end_date date)
+drop function if exists brs.get_setter_mgr_performance_report(p_office_id bigint, p_start_date date, p_end_date date, p_run_by_id bigint);
+  CREATE OR REPLACE FUNCTION brs.get_setter_mgr_performance_report(p_office_id bigint, p_start_date date, p_end_date date, p_run_by_id bigint)
     RETURNS JSON AS
 $BODY$
 DECLARE
@@ -10,6 +10,13 @@ DECLARE
     v_setter_performance_report json;
 
 BEGIN
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Setter Manager Performance Report', 'p_office_id: ' || p_office_id ||
+                                                     ' p_start_date: ' || p_start_date ||
+                                                     ' p_end_date: ' || p_end_date ||
+                                                     ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
+
     SELECT * FROM brs.get_setters_by_setter_mgr_office(p_office_id) INTO v_setter_ids;
 
     SELECT row_to_json(sub_rows)

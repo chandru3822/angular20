@@ -1,8 +1,8 @@
 -- DROP FUNCTION brs.get_setter_office_ranking(bigint, bigint);
 
 -- SELECT * FROM brs.get_setter_office_ranking(13, 30);
-drop function if exists brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint);
-  CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint DEFAULT 30)
+drop function if exists brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint, p_run_by_id bigint);
+  CREATE OR REPLACE FUNCTION brs.get_setter_office_ranking(p_limit bigint,  p_time_interval character varying, p_days bigint DEFAULT 30, p_run_by_id bigint default 99999999)
     RETURNS SETOF JSON AS
 $BODY$
 BEGIN
@@ -86,6 +86,13 @@ BEGIN
         ) as t
         order by total_pitches desc, org_id
     ) as sub_rows;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Setter Office Rankings', 'p_limit: ' || p_limit ||
+                                          ' p_time_interval: ' || p_time_interval ||
+                                          ' p_days: ' || p_days ||
+                                          ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
 
 END
 $BODY$

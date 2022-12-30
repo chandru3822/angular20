@@ -6,6 +6,8 @@ import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
+import com.albatross.api.v1.company.blueraven.services.queries.ElectronicDocumentQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.PandaDocQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.TemplatingEngineService;
 import com.google.gson.Gson;
@@ -61,7 +63,7 @@ public class PandaDocService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
 
-    return sqlCache.get("pandaDoc.getProjectDetails", params, PandaDocProjectDetails.class);
+    return sqlCache.getBySql(PandaDocQuery.getProjectDetails, params, PandaDocProjectDetails.class);
   }
 
   /**
@@ -570,8 +572,9 @@ public class PandaDocService {
       MapSqlParameterSource parameters = new MapSqlParameterSource();
       parameters.addValue("projectId", deets.getProjectId().intValue());
       parameters.addValue("proposalNumber", deets.getProposalNbr().intValue());
+      parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
       String sql =
-          "SELECT to_json(get_data_from_proposal) FROM brs.get_data_from_proposal(:projectId, :proposalNumber)";
+          "SELECT to_json(get_data_from_proposal) FROM brs.get_data_from_proposal(:projectId, :proposalNumber, :currentUserId)";
       Map<String, Object> result = jdbc.queryForObject(sql, parameters, new ColumnMapRowMapper());
       if (result == null) {
         throw new RuntimeException("Invalid object returned");
@@ -770,7 +773,7 @@ public class PandaDocService {
       parameters.addValue("projectId", projectId);
       Map<String, Object> result =
           jdbc.queryForObject(
-              sqlCache.getByKey("electronicDocument.getProjectsDetails"),
+              ElectronicDocumentQuery.getProjectsDetails,
               parameters,
               new ColumnMapRowMapper());
 

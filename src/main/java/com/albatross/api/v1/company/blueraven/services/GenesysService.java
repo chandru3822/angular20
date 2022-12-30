@@ -3,6 +3,9 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
+import com.albatross.api.v1.company.blueraven.services.queries.CallGroupQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.ContactLeadQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.GenesysQuery;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
@@ -79,8 +82,8 @@ public class GenesysService {
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
     return sqlCache
-        .get(
-            "genesys.getContactIdByPhone",
+        .getBySql(
+            GenesysQuery.getContactIdByPhone,
             params,
             new ContactService.ContactMapper<>(Contact.class, om))
         .orElse(null);
@@ -106,8 +109,8 @@ public class GenesysService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("contactId", contact.getId());
       Optional<String> agentId =
-          sqlCache.get(
-              "genesys.getAgentIdByContactId", params, new SingleColumnRowMapper<>(String.class));
+          sqlCache.getBySql(
+              GenesysQuery.getAgentIdByContactId, params, new SingleColumnRowMapper<>(String.class));
       contactJson.put("existingCustomer", true);
       contactJson.put("contactUrl", homeUrl + "/contact/" + contact.getId());
       if (agentId.isPresent()) {
@@ -120,8 +123,8 @@ public class GenesysService {
       params.put("isParent", isParent);
       params.put("companyId", user.getCompanyId());
       List<String> appointments =
-          sqlCache.query(
-              "genesys.getContactAppointments", params, new SingleColumnRowMapper<>(String.class));
+          sqlCache.queryBySql(
+              GenesysQuery.getContactAppointments, params, new SingleColumnRowMapper<>(String.class));
       try {
         JSONArray appointmentsJson = new JSONArray(appointments.get(0));
         JSONObject appointmentJson = appointmentsJson.getJSONObject(0);
@@ -327,8 +330,8 @@ public class GenesysService {
     params.put("customFieldDropdownValue", customFieldDropdownValue);
 
     Optional<String> customFieldDropdownValueId =
-        sqlCache.queryForObjectOptional(
-            "contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
+        sqlCache.queryForObjectOptionalBySql(
+           ContactLeadQuery.checkIfCustomFieldDropdownValueExists, params, String.class);
     return customFieldDropdownValueId.orElse("null");
   }
 
@@ -336,8 +339,8 @@ public class GenesysService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     Optional<String> appointmentDate =
-      sqlCache.get(
-        "genesys.getContactAppointmentDate",
+      sqlCache.getBySql(
+        GenesysQuery.getContactAppointmentDate,
         params,
         new SingleColumnRowMapper<>(String.class));
 
@@ -349,8 +352,8 @@ public class GenesysService {
     }
 
     Optional<String> appointmentOutcome =
-      sqlCache.get(
-        "genesys.getContactCloserAppointmentOutcome",
+      sqlCache.getBySql(
+        GenesysQuery.getContactCloserAppointmentOutcome,
         params,
         new SingleColumnRowMapper<>(String.class));
 
@@ -366,8 +369,8 @@ public class GenesysService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     Optional<Boolean> pitchedNotBooked =
-      sqlCache.get(
-        "genesys.getContactPitchedNotBooked",
+      sqlCache.getBySql(
+        GenesysQuery.getContactPitchedNotBooked,
         params,
         new SingleColumnRowMapper<>(Boolean.class));
 
@@ -484,8 +487,8 @@ public class GenesysService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("contactId", contact.getId());
         Optional<String> genesysContactId =
-            sqlCache.get(
-                "genesys.getGenesysContactIdByContactId",
+            sqlCache.getBySql(
+                GenesysQuery.getGenesysContactIdByContactId,
                 params,
                 new SingleColumnRowMapper<>(String.class));
         if (genesysContactId.isPresent()) {
@@ -554,21 +557,20 @@ public class GenesysService {
     params.put("postalCode", contact.getPostalCode());
 
     List<CallGroupPhoneNumber> callGroupPhoneNumbers =
-        sqlCache.query("callGroup.getCallerGroupNumbers", params, CallGroupPhoneNumber.class);
+        sqlCache.queryBySql(CallGroupQuery.getCallerGroupNumbers, params, CallGroupPhoneNumber.class);
 
     // Update the Contacts Assigned/Call Count for this Call Group for each phone number
     for (CallGroupPhoneNumber cgpn : callGroupPhoneNumbers) {
       HashMap<String, Object> currParams = new HashMap<>();
       currParams.put("callGroupId", cgpn.getCallGroupId());
       currParams.put("phoneNumber", cgpn.getPhoneNumber());
-      sqlCache.update("callGroup.updatePhoneCallCount", currParams);
+      sqlCache.updateBySql(CallGroupQuery.updatePhoneCallCount, currParams);
     }
 
     // Get the Call groups again after the Call Counts have been updated
     callGroupPhoneNumbers =
-        sqlCache.query("callGroup.getCallerGroupNumbers", params, CallGroupPhoneNumber.class);
+        sqlCache.queryBySql(CallGroupQuery.getCallerGroupNumbers, params, CallGroupPhoneNumber.class);
 
-    Long previousUsedGroupPhoneId = null;
     Long currentlyUsedGroupPhoneId = null;
     Long currentlyUsedGroupId = null;
     String phoneNumber = "";
@@ -585,7 +587,7 @@ public class GenesysService {
 
     // Increment call count of the number used
     params.put("currentlyUsedId", currentlyUsedGroupPhoneId);
-    sqlCache.update("callGroup.updatePhoneNumberCallCount", params);
+    sqlCache.updateBySql(CallGroupQuery.updatePhoneNumberCallCount, params);
 
     // Add a row to the phone log table
     params.put("callGroupId", currentlyUsedGroupId);
@@ -594,7 +596,7 @@ public class GenesysService {
     // if user is null then it is coming from the cron, use the cron user id
     params.put("createdById", null != user ? user.trueUserId() : SystemSettings.CRON_USER.getId());
 
-    sqlCache.update("callGroup.addPhoneLog", params);
+    sqlCache.updateBySql(CallGroupQuery.addPhoneLog, params);
 
     if (!phoneNumber.isEmpty()) {
       try {
@@ -752,67 +754,67 @@ public class GenesysService {
      Lead Level 1
     */
     List<Contact> contacts =
-        sqlCache.query("genesys.getContactIdsWeek1Level1", null, Contact.class);
+        sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level1, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_week1");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek2Level1", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level1, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_week2");
 
-    contacts = sqlCache.query("genesys.getContactIdsAgedLevel1", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel1, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_aged");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek1Level1Textel", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level1Textel, null, Contact.class);
     addContactsToGenesys(contacts, "Level1SMS");
 
     /*
      Lead Level 2
     */
-    contacts = sqlCache.query("genesys.getContactIdsWeek1Level2", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level2, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel2_week1");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek2Level2", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level2, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel2_week2");
 
-    contacts = sqlCache.query("genesys.getContactIdsAgedLevel2", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel2, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel2_aged");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek1Level2Textel", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level2Textel, null, Contact.class);
     addContactsToGenesys(contacts, "Level2SMS");
 
     /*
      Lead Level 3
     */
-    contacts = sqlCache.query("genesys.getContactIdsWeek1Level3", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level3, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel3_week1");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek2Level3", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level3, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel3_week2");
 
-    contacts = sqlCache.query("genesys.getContactIdsAgedLevel3", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel3, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel3_aged");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek1Level3Textel", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level3Textel, null, Contact.class);
     addContactsToGenesys(contacts, "Level3SMS");
 
     /*
      Lead Level 10
     */
-    contacts = sqlCache.query("genesys.getContactIdsWeek1Level10", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level10, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel10_week1");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek2Level10", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level10, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel10_week2");
 
-    contacts = sqlCache.query("genesys.getContactIdsAgedLevel10", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel10, null, Contact.class);
     addContactsToGenesys(contacts, "leadlevel10_aged");
 
-    contacts = sqlCache.query("genesys.getContactIdsWeek1Level10Textel", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level10Textel, null, Contact.class);
     addContactsToGenesys(contacts, "Level10SMS");
 
-    contacts = sqlCache.query("genesys.getContactIdsSalDevRetargets", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsSalDevRetargets, null, Contact.class);
     addContactsToGenesys(contacts, "Sales Dev Retargeted Leads");
 
-    contacts = sqlCache.query("genesys.getContactIdsInsideSalesPitchedNotBooked", null, Contact.class);
+    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsInsideSalesPitchedNotBooked, null, Contact.class);
     addContactsToGenesys(contacts, "Inside Sales Pitched Not Booked");
   }
 
@@ -850,7 +852,7 @@ public class GenesysService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("contactId", contactId);
       params.put("genesysContactId", genesysContactId);
-      sqlCache.update("genesys.updateGenesysContactIdByContactId", params);
+      sqlCache.updateBySql(GenesysQuery.updateGenesysContactIdByContactId, params);
       try {
         updateContact(contactId);
       } catch (Exception e) {

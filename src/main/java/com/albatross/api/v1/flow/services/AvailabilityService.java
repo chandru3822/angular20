@@ -38,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -51,6 +52,7 @@ import java.util.*;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('AVAILABILITY')")
 @RequiredArgsConstructor
 public class AvailabilityService {
 
@@ -686,6 +688,7 @@ public class AvailabilityService {
       params.put("endTime", endTime);
       params.put("availableDate", availableDate);
       params.put("remote", null != remote ? remote : false);
+      params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
       List<TimeSlot> results =
           sqlCache.queryBySql(
@@ -864,7 +867,7 @@ public class AvailabilityService {
   }
 
   public void cacheAvailability() {
-    sqlCache.queryBySql(AvailabilityQuery.cacheAvailability, Collections.emptyMap(), String.class);
+    sqlCache.queryBySql(AvailabilityQuery.cacheAvailability,  Map.of("currentUserId", securityService.getCurrentUser().trueUserId()), String.class);
   }
 
   public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {

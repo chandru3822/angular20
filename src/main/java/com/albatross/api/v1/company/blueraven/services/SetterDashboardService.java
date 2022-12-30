@@ -5,9 +5,11 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
+import com.albatross.api.v1.company.blueraven.services.queries.SetterDashboardQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,6 +20,7 @@ import java.util.List;
  * Created by Joseph Canto on 2020-07-06.
  */
 @Service
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('SETTER_DASHBOARD')")
 public class SetterDashboardService {
   @Autowired
   private SecurityService securityService;
@@ -34,7 +37,7 @@ public class SetterDashboardService {
     params.put("isSetterMgr", isSetterMgr);
     params.put("setterMgrOfficeId", setterMgrOfficeId);
 
-    IncentiveCounts incentiveCounts = sqlCache.query("setterDashboard.getIncentivePitchCounts", params, IncentiveCounts.class).get(0);
+    IncentiveCounts incentiveCounts = sqlCache.queryBySql(SetterDashboardQuery.getIncentivePitchCounts, params, IncentiveCounts.class).get(0);
     return incentiveCounts;
   }
 
@@ -70,6 +73,7 @@ public class SetterDashboardService {
     parameters.addValue("officeId", officeId);
     parameters.addValue("startDate", startDate);
     parameters.addValue("endDate", endDate);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return result;
@@ -88,48 +92,52 @@ public class SetterDashboardService {
   }
 
   public String officeToBeat(int officeId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_office_to_beat(:officeId::bigint, :startDate::date, :endDate::date)";
+    String sqlQuery = "SELECT * FROM brs.get_setter_office_to_beat(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("officeId", officeId);
     parameters.addValue("startDate", startDate);
     parameters.addValue("endDate", endDate);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return result;
   }
 
   public String topReps(int limit, int days, String interval) {
-    String sqlQuery = "SELECT * FROM brs.get_top_setter_reps(:limit, :interval, :days)";
+    String sqlQuery = "SELECT * FROM brs.get_top_setter_reps(:limit, :interval, :days, :currentUserId)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("limit", limit);
     parameters.addValue("days", days);
     parameters.addValue("interval", interval);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return result;
   }
 
   public String topOffices(int limit, int days, String interval) {
-    String sqlQuery = "SELECT * FROM brs.get_top_setter_offices(:limit, :interval, :days)";
+    String sqlQuery = "SELECT * FROM brs.get_top_setter_offices(:limit, :interval, :days, :currentUserId)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("limit", limit);
     parameters.addValue("days", days);
     parameters.addValue("interval", interval);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return result;
   }
 
   public String officeRanking(int limit, int days, String interval) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_office_ranking(:limit, :interval, :days)";
+    String sqlQuery = "SELECT * FROM brs.get_setter_office_ranking(:limit, :interval, :days, :currentUserId)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("limit", limit);
     parameters.addValue("days", days);
     parameters.addValue("interval", interval);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
     return result;

@@ -7,6 +7,8 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
+import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.PandaDocQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
 import lombok.NonNull;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -33,6 +36,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('INSTALLATION_AGREEMENT')")
 @RequiredArgsConstructor
 public class InstallAgreementService {
   private final SqlCache sqlCache;
@@ -72,9 +76,9 @@ public class InstallAgreementService {
     params.put("showCancelled", showCancelled);
 
     List<InstallAgreementProject> results =
-      sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
+      sqlCache.queryBySql(InstallAgreementQuery.getProjects, params, InstallAgreementProject.class);
     Integer count =
-      sqlCache.queryForObject("installAgreement.getProjectsCount", params, Integer.class);
+      sqlCache.queryForObjectBySql(InstallAgreementQuery.getProjectsCount, params, Integer.class);
 
     return new PageImpl<>(
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
@@ -82,7 +86,7 @@ public class InstallAgreementService {
 
   private Optional<PropLogDetail> getProjectDetailsFromLog(@NonNull Long projectId, @NonNull Long proposalNbr) {
     final Map<String, Object> params = Map.of("projectId", projectId, "proposalNbr", proposalNbr);
-    return sqlCache.get("installAgreement.getProjectDetailsFromLog", params, InstallAgreementService.PropLogDetail.class);
+    return sqlCache.getBySql(InstallAgreementQuery.getProjectDetailsFromLog, params, InstallAgreementService.PropLogDetail.class);
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
@@ -219,8 +223,8 @@ public class InstallAgreementService {
     params.put("proposalNbr", proposalNbr);
 
     Optional<InstallAgreementRequest> req =
-      sqlCache.get(
-        "installAgreement.getFinancierFromProposalLog", params, InstallAgreementRequest.class);
+      sqlCache.getBySql(
+        InstallAgreementQuery.getFinancierFromProposalLog, params, InstallAgreementRequest.class);
 
     if (req.isPresent()) {
       financier = req.get().getFinancier();
@@ -242,8 +246,8 @@ public class InstallAgreementService {
     params.put("proposalNbr", proposalNbr);
 
     Optional<InstallAgreementRequest> req =
-      sqlCache.get(
-        "installAgreement.getUtilityFromProposalLog", params, InstallAgreementRequest.class);
+      sqlCache.getBySql(
+        InstallAgreementQuery.getUtilityFromProposalLog, params, InstallAgreementRequest.class);
 
     if (req.isPresent()) {
       utility = req.get().getUtility_company();
@@ -273,7 +277,7 @@ public class InstallAgreementService {
       userId,
       request.getRequest_successful(),
       request.getIsSpanish());
-    sqlCache.update("installAgreement.setRequestStatus", params);
+    sqlCache.updateBySql(InstallAgreementQuery.setRequestStatus, params);
   }
 
   public String generateLoanApplication(Long projectId, Long proposalNbr, String sendVia)
@@ -283,7 +287,7 @@ public class InstallAgreementService {
     params.put("proposalNbr", proposalNbr);
 
     Optional<PandaDocProjectDetails> deets =
-      sqlCache.get("pandaDoc.getProjectDetails", params, PandaDocProjectDetails.class);
+      sqlCache.getBySql(PandaDocQuery.getProjectDetails, params, PandaDocProjectDetails.class);
 
     if (deets.isPresent()) {
       PandaDocProjectDetails pd = deets.get();
@@ -447,7 +451,7 @@ public class InstallAgreementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("emailAddress", emailAddress);
-    sqlCache.update("installAgreement.updateEmailAddress", params);
+    sqlCache.updateBySql(InstallAgreementQuery.updateEmailAddress, params);
   }
 
   /**
@@ -465,14 +469,14 @@ public class InstallAgreementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
-    return sqlCache.query("installAgreement.getProposalNumbers", params, ProposalInfo.class);
+    return sqlCache.queryBySql(InstallAgreementQuery.getProposalNumbers, params, ProposalInfo.class);
   }
 
   public String getLoanStatus(@NonNull Long projectId, @NonNull Long proposalNbr) {
 
     Optional<String> loanType =
-      sqlCache.get(
-        "installAgreement.getLoanType", Map.of("projectId", projectId, "proposalNbr", proposalNbr), new SingleColumnRowMapper<>(String.class));
+      sqlCache.getBySql(
+        InstallAgreementQuery.getLoanType, Map.of("projectId", projectId, "proposalNbr", proposalNbr), new SingleColumnRowMapper<>(String.class));
 
     if (loanType.isPresent()) {
       try {

@@ -35,6 +35,10 @@ BEGIN
                                  where ps2.company_id = ps.company_id
                                    and ps2.parent_process_step_id = 3165
                                    and ps2.archived is not true);
+
+    insert into flow.company_function_log(function_name, db_function_id, parameters)
+    values ('No Redesign in-progress', 5, 'p_project_id: ' || p_project_id);
+
     return v_final_design_signed > v_final_design_created;
 END
 $BODY$

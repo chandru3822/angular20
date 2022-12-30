@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -36,6 +37,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('SCHEDULE')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ScheduleService {
 

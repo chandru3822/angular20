@@ -220,7 +220,7 @@
           <template v-else-if="requirement.dataTypeRequirementId">
             {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
           </template>
-          <template v-else-if="requirement.listOfValueId || requirement.customFieldSqlKey || requirement.companySystemListId">{{getListValueName(requirement)}}</template>
+          <template v-else-if="requirement.listOfValueId || requirement.customFieldSql || requirement.companySystemListId">{{getListValueName(requirement)}}</template>
           <template v-else-if="requirement.listOfValues">{{computeMutliSelectValue(requirement)}}</template>
         </td>
         <td v-if="canEdit" class="action-cell">
@@ -427,7 +427,7 @@ const newRequirementStructure = {
   secondaryRequirementValue: null,
   isCustomValue: null,
   allowMultiple: null,
-  customFieldSqlKey: null,
+  customFieldSql: null,
   companySystemListId: null,
   availableListOfValues: [],
   listOfValueId: null,
@@ -495,7 +495,7 @@ export default {
         secondaryRequirementValue: null,
         isCustomValue: null,
         allowMultiple: null,
-        customFieldSqlKey: null,
+        customFieldSql: null,
         companySystemListId: null,
         availableListOfValues: []
       },
@@ -523,10 +523,10 @@ export default {
       return this.expandedRequirement.dataTypeRequirement?.secondaryRequirement
     },
     isListField () {
-      return this.newRequirement.selectedField.hasListValues || this.newRequirement.selectedField.customFieldSqlKey !== null || this.newRequirement.selectedField.companySystemListId !== null
+      return this.newRequirement.selectedField.hasListValues || this.newRequirement.selectedField.customFieldSql !== null || this.newRequirement.selectedField.companySystemListId !== null
     },
     isExpandedListField () {
-      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null || (this.expandedRequirement.availableListOfValues != null && this.expandedRequirement.availableListOfValues.length > 0)
+      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSql !== null || this.expandedRequirement.companySystemListId !== null || (this.expandedRequirement.availableListOfValues != null && this.expandedRequirement.availableListOfValues.length > 0)
     },
     expandedRequirementArray: {
       get: function () {

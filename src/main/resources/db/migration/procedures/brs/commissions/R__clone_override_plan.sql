@@ -97,6 +97,16 @@ IF p_user_to_add IS NOT NULL THEN
 
 END IF;
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Clone Override Plan',
+            'p_override_plan: ' || p_override_plan ||
+            ' p_start_date: '|| p_start_date ||
+            ' p_assigned_users: ' || p_assigned_users ||
+            ' p_receiving_users: ' || p_receiving_users ||
+            ' p_created_by: ' || p_created_by ||
+            ' p_user_to_add: ' || p_user_to_add,
+            p_created_by);
+
   RETURN _cloneId;
 
   EXCEPTION WHEN OTHERS

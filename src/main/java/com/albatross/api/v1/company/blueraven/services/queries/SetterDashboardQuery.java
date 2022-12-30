@@ -1,0 +1,118 @@
+package com.albatross.api.v1.company.blueraven.services.queries;
+
+public class SetterDashboardQuery {
+
+  //language=PostgreSQL
+  public final static String getIncentivePitchCounts = """
+    WITH "quarters" AS (
+        select (extract('year' from now()) || '-01-01')::date as "q1_start",
+               (extract('year' from now()) || '-03-31')::date as "q1_end",
+               (extract('year' from now()) || '-04-01')::date as "q2_start",
+               (extract('year' from now()) || '-06-30')::date as "q2_end",
+               (extract('year' from now()) || '-07-01')::date as "q3_start",
+               (extract('year' from now()) || '-09-30')::date as "q3_end",
+               (extract('year' from now()) || '-10-01')::date as "q4_start",
+               (extract('year' from now()) || '-12-31')::date as "q4_end"
+      )
+      SELECT (select count(1)
+              from flow.project p
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS'))
+              where (((case when pd.first_appointment_pitched is not null
+                           then pd.first_appointment_pitched
+                       when pd.first_appointment_pitched is null
+                           and pd.first_appointment_missed is not null
+                           then pd.first_appointment_missed
+                       else pd.closer_appointment_start
+                       end) at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q1_start from quarters) and (select q1_end from quarters)
+                and pd.source in (525, 526) --(Setter Gen, Retargeted)
+                and (case when pd.first_appointment_pitched is not null
+                         then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                     when pd.first_appointment_pitched is null
+                         and pd.first_appointment_missed is not null
+                         then pd.first_appointment_missed_id in (2,3,1139,1140)
+                     else pd.closer_appointment_outcome in (2,3,1139,1140)
+                     end)
+                and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId
+                    else pd.setter_user_id = :currentUserId
+                    end
+             ) as "q1",
+             (select count(1)
+              from flow.project p
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS'))
+              where (((case when pd.first_appointment_pitched is not null
+                           then pd.first_appointment_pitched
+                       when pd.first_appointment_pitched is null
+                           and pd.first_appointment_missed is not null
+                           then pd.first_appointment_missed
+                       else pd.closer_appointment_start
+                       end) at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q2_start from quarters) and (select q2_end from quarters)
+                and pd.source in (525, 526) --(Setter Gen, Retargeted)
+                and (case when pd.first_appointment_pitched is not null
+                         then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                     when pd.first_appointment_pitched is null
+                         and pd.first_appointment_missed is not null
+                         then pd.first_appointment_missed_id in (2,3,1139,1140)
+                     else pd.closer_appointment_outcome in (2,3,1139,1140)
+                     end)
+                and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId
+                    else pd.setter_user_id = :currentUserId
+                    end
+             ) as "q2",
+             (select count(1)
+              from flow.project p
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS'))
+              where (((case when pd.first_appointment_pitched is not null
+                           then pd.first_appointment_pitched
+                       when pd.first_appointment_pitched is null
+                           and pd.first_appointment_missed is not null
+                           then pd.first_appointment_missed
+                       else pd.closer_appointment_start
+                       end) at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q3_start from quarters) and (select q3_end from quarters)
+                and pd.source in (525, 526) --(Setter Gen, Retargeted)
+                and (case when pd.first_appointment_pitched is not null
+                         then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                     when pd.first_appointment_pitched is null
+                         and pd.first_appointment_missed is not null
+                         then pd.first_appointment_missed_id in (2,3,1139,1140)
+                     else pd.closer_appointment_outcome in (2,3,1139,1140)
+                     end)
+                and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId
+                    else pd.setter_user_id = :currentUserId
+                    end
+             ) as "q3",
+             (select count(1)
+              from flow.project p
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                                                                                                        from flow.company_configuration_value
+                                                                                                        where code = 'SETTER_POSITION_IDS'))
+              where (((case when pd.first_appointment_pitched is not null
+                           then pd.first_appointment_pitched
+                       when pd.first_appointment_pitched is null
+                           and pd.first_appointment_missed is not null
+                           then pd.first_appointment_missed
+                       else pd.closer_appointment_start
+                       end) at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q4_start from quarters) and (select q4_end from quarters)
+                and pd.source in (525, 526) --(Setter Gen, Retargeted)
+                and (case when pd.first_appointment_pitched is not null
+                         then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                     when pd.first_appointment_pitched is null
+                         and pd.first_appointment_missed is not null
+                         then pd.first_appointment_missed_id in (2,3,1139,1140)
+                     else pd.closer_appointment_outcome in (2,3,1139,1140)
+                     end)
+                and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId
+                    else pd.setter_user_id = :currentUserId
+                    end
+             ) as "q4"
+    """;
+}

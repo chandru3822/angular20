@@ -2,6 +2,8 @@ package com.albatross.api.chase_bank;
 
 import com.albatross.api.chase_bank.Ap6DelimitedSingleLineRecord.*;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.ChaseBankQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.RebateQuery;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -14,6 +16,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.io.StringWriter;
@@ -29,6 +32,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Service
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('REBATES')")
 @RequiredArgsConstructor
 public class ChaseBankService {
   private static final String COURIER_CODE = "USPS",
@@ -59,7 +63,7 @@ public class ChaseBankService {
               // it
               Map<String, Object> params =
                   ImmutableMap.of("checkNumber", checkNumber, "paymentId", payment.getId());
-              sqlCache.update("chasebank.saveCheckNumberToPayment", params);
+              sqlCache.updateBySql(ChaseBankQuery.saveCheckNumberToPayment, params);
             }
           }
           records.add(paymentToAp6DelimitedSingleLine(payment, checkNumber));
@@ -136,18 +140,18 @@ public class ChaseBankService {
 
   public List<RebatePayment> getPayments(Long batchId) {
     ImmutableMap<String, Object> params = ImmutableMap.of("batchId", batchId);
-    return sqlCache.query("chasebank.getPaymentsInBatch", params, RebatePayment.class);
+    return sqlCache.queryBySql(ChaseBankQuery.getPaymentsInBatch, params, RebatePayment.class);
   }
 
   public Optional<Integer> getInvoiceNumber() {
-    return sqlCache.get(
-        "chasebank.getInvoiceNumber", new HashMap<>(), new SingleColumnRowMapper<>(Integer.class));
+    return sqlCache.getBySql(
+      ChaseBankQuery.getInvoiceNumber, new HashMap<>(), new SingleColumnRowMapper<>(Integer.class));
   }
 
   public Optional<Integer> getNextCheckNumber(Integer paymentId) {
     ImmutableMap<String, Object> params = ImmutableMap.of("paymentId", paymentId);
-    return sqlCache.get(
-        "rebate.getCheckNumber", params, new SingleColumnRowMapper<>(Integer.class));
+    return sqlCache.getBySql(
+        RebateQuery.getCheckNumber, params, new SingleColumnRowMapper<>(Integer.class));
   }
 
   @Setter

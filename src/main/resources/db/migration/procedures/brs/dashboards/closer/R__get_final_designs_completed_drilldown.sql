@@ -58,6 +58,11 @@ BEGIN
       order by customer_name
     ) as sub_rows;
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Final Designs Completed Drilldown', 'p_user_id: ' || p_user_id ||
+                                                     ' p_quarter: ' || p_quarter,
+            p_user_id);
+
 END
 $BODY$
 LANGUAGE plpgsql VOLATILE

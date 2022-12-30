@@ -311,7 +311,8 @@ public class ProjectProcessStepService {
         throw new RuntimeException("Can not delete a primary process step. Must designate another primary step first");
       }
 
-      sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId), String.class);
+      sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId,
+        "currentUserId", securityService.getCurrentUser().trueUserId()), String.class);
     }
   }
 
@@ -779,7 +780,7 @@ public class ProjectProcessStepService {
   public boolean calculateCustomRequirement(ProjectProcessStepRequirement r) throws Exception {
     boolean passed = false;
 
-    if (r.getCustomFieldSqlKey() != null) {
+    if (r.getCustomFieldSql() != null) {
       // We can compare the IDs without actually having to get the values behind them. Sorta like C++ pointers
       // This also assumes data type ID of 8 (custom behavior fields) are lists. If we start supporting other types with custom behavior, this needs to update with it
       if (r.getDataTypeRequirementId() == null) {

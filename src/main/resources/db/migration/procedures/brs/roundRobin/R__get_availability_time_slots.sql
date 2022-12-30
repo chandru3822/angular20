@@ -1,9 +1,10 @@
-drop function if exists flow.get_availability_time_slots(bigint, timestamp, timestamp, date, boolean);
+drop function if exists flow.get_availability_time_slots(bigint, timestamp, timestamp, date, boolean, bigint);
 CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id bigint,
                                                             p_start_time timestamp,
                                                             p_end_time timestamp,
                                                             p_available_date date,
-                                                            p_remote boolean default false)
+                                                            p_remote boolean default false,
+                                                            p_run_by_id bigint default 99999999)
   RETURNS TABLE
           (
             success              boolean,
@@ -332,6 +333,15 @@ BEGIN
   end if;
   set TimeZone = 'UTC';
   drop table if exists excluded_appointments;
+
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Get Availability Time Slots', 'p_project_id: ' || p_project_id ||
+                                         ' p_start_time: '|| p_start_time ||
+                                         ' p_end_time: '|| p_end_time ||
+                                         ' p_available_date: '|| p_available_date ||
+                                         ' p_remote: '|| p_remote ||
+                                         ' p_run_by_id: '|| p_run_by_id,
+        p_run_by_id);
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE

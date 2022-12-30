@@ -72,6 +72,13 @@ BEGIN
               and pd.company_id = 3
         ) as sub_rows;
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get Pitches Drilldown', 'p_user_id: ' || p_user_id ||
+                                     ' p_quarter: ' || p_quarter ||
+                                     ' p_is_setter_mgr: ' || p_is_setter_mgr ||
+                                     ' p_setter_mgr_office_id: ' || p_setter_mgr_office_id,
+            p_user_id);
+
 END
 $BODY$
 LANGUAGE plpgsql VOLATILE

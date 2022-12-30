@@ -5,6 +5,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
+import com.albatross.api.v1.company.blueraven.services.queries.MarketoQuery;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
@@ -429,7 +430,7 @@ public class BrsProcessStepActionFunctionService {
     public void pushDataToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
         if (marketoEnabled) {
             final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
-            MarketoProject project = sqlCache.get("marketo.getProject", Map.of("projectId", projectId), MarketoProject.class)
+            MarketoProject project = sqlCache.getBySql(MarketoQuery.getProject, Map.of("projectId", projectId), MarketoProject.class)
                                              .orElse(null);
 
             if (project == null) {

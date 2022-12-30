@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -23,6 +24,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('PROCESS_STEPS')")
 @RequiredArgsConstructor
 public class ProcessStepRequirementService {
 
@@ -44,8 +46,8 @@ public class ProcessStepRequirementService {
     // todo: this is duplicated from custom field value service but didn't quite match up, probably
     // could re-write to combine the two
     for (ProcessStepRequirement psr : results) {
-      if (null != psr.getCustomFieldSqlKey()) {
-        String sql = sqlCache.getByKey(psr.getCustomFieldSqlKey());
+      if (null != psr.getCustomFieldSql()) {
+        String sql = psr.getCustomFieldSql();
         if (null != sql) {
           HashMap<String, Object> params2 = new HashMap<>();
           params2.put("projectId", null);

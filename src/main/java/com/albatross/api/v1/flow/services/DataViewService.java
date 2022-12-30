@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ import java.util.*;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('DATA_VIEW')")
 @RequiredArgsConstructor
 public class DataViewService {
 

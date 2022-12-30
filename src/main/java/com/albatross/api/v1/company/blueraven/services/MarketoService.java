@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
+import com.albatross.api.v1.company.blueraven.services.queries.MarketoQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
@@ -235,15 +236,15 @@ public class MarketoService {
     }
 
     public MarketoProject getProject(Long projectId) {
-        return sqlCache.get("marketo.getProject", Map.of("projectId", projectId), MarketoProject.class)
+        return sqlCache.getBySql(MarketoQuery.getProject, Map.of("projectId", projectId), MarketoProject.class)
                        .orElse(null);
     }
 
     public void pushDailyUpdatedProjects() {
 
         // upsert projects
-        List<Long> projectIds = sqlCache.query("marketo.projectIdsPreviousDayStatusChange", null, new SingleColumnRowMapper<>(Long.class));
-        List<MarketoProject> projects = sqlCache.query("marketo.getProjects", Map.of("projectIds", projectIds), MarketoProject.class);
+        List<Long> projectIds = sqlCache.queryBySql(MarketoQuery.projectIdsPreviousDayStatusChange, null, new SingleColumnRowMapper<>(Long.class));
+        List<MarketoProject> projects = sqlCache.queryBySql(MarketoQuery.getProjects, Map.of("projectIds", projectIds), MarketoProject.class);
         List<Map<String, Object>> leads = new ArrayList<>();
 
         projects.forEach(p -> {
@@ -273,7 +274,7 @@ public class MarketoService {
         });
 
         // remove projects
-        List<Long> deleteProjectIds = sqlCache.query("marketo.projectsToRemove", null, new SingleColumnRowMapper<>(Long.class));
+        List<Long> deleteProjectIds = sqlCache.queryBySql(MarketoQuery.projectsToRemove, null, new SingleColumnRowMapper<>(Long.class));
         List<List<Long>> sizedDeleteProjectIds = Lists.partition(deleteProjectIds, 300);
         List<Long> marketoIds = new ArrayList<>();
         sizedDeleteProjectIds.forEach(l -> {
@@ -290,8 +291,8 @@ public class MarketoService {
         });
 
         // push reactivated projects
-        List<Long> reactivatedProjectIds = sqlCache.query("marketo.projectsToReactivate", null, new SingleColumnRowMapper<>(Long.class));
-        List<MarketoProject> reactivatedProjects = sqlCache.query("marketo.getProjects", Map.of("projectIds", reactivatedProjectIds), MarketoProject.class);
+        List<Long> reactivatedProjectIds = sqlCache.queryBySql(MarketoQuery.projectsToReactivate, null, new SingleColumnRowMapper<>(Long.class));
+        List<MarketoProject> reactivatedProjects = sqlCache.queryBySql(MarketoQuery.getProjects, Map.of("projectIds", reactivatedProjectIds), MarketoProject.class);
         List<Map<String, Object>> reactivatedLeads = new ArrayList<>();
 
         reactivatedProjects.forEach(p -> {

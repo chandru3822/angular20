@@ -32,6 +32,8 @@ public class ProcessStepRequirementQuery {
                  psr.fail_if_no_reference_step_found,
                  cf.field_name,
                  cf.custom_field_sql_key,
+                 cf.custom_field_sql,
+                            cf.custom_field_sql_smartlist,
                  cf.company_system_list_id,
                  psr.system_list_option_id,
                  psr.custom_sql_option_id,
@@ -39,7 +41,7 @@ public class ProcessStepRequirementQuery {
                  (select json_build_object(
                              'id', cf.id,
                              'listOfValueId', cf.list_of_value_id,
-                             'customFieldSqlKey', cf.custom_field_sql_key,
+                             'customFieldSql', cf.custom_field_sql,
                              'companySystemListId', cf.company_system_list_id,
                              'allowMultiple', cdt.allow_multiple
                            ))                                     as custom_field,
@@ -239,6 +241,8 @@ public class ProcessStepRequirementQuery {
                  rps.process_step_name as reference_process_step_name,
                  psr.fail_if_no_reference_step_found,
                  cf.custom_field_sql_key,
+                 cf.custom_field_sql,
+                            cf.custom_field_sql_smartlist,
                  cf.company_system_list_id,
                  array_to_json(cf.system_list_option_ids) as system_list_option_ids,
                  psr.system_list_option_id,

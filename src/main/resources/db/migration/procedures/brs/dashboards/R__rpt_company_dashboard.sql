@@ -1,9 +1,11 @@
 ﻿drop function if exists brs.rpt_company_dashboard(p_custom_start_date date, p_custom_end_date date,
                                                   p_company_id bigint,
-                                                  p_target_type_id bigint);
+                                                  p_target_type_id bigint,
+                                                  p_run_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.rpt_company_dashboard(p_custom_start_date date, p_custom_end_date date,
                                                      p_company_id bigint,
-                                                     p_target_type_id bigint default -1::bigint) -- if p_target_type_id = 1 then it's a single day
+                                                     p_target_type_id bigint default -1::bigint,
+                                                     p_run_by_id bigint default 99999999) -- if p_target_type_id = 1 then it's a single day
 -- if p_target_type_id > 1 then use dates for target
   RETURNS SETOF json
   LANGUAGE plpgsql
@@ -892,6 +894,14 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                   ) as funnel_rows;
 
 drop table company_dash_results;
+
+insert into flow.company_function_log(function_name, parameters, run_by_id)
+values ('Company Dashboard Report', 'p_custom_start_date: ' || p_custom_start_date ||
+                                    ' p_custom_end_date: ' || p_custom_end_date ||
+                                    ' p_company_id: ' || p_company_id ||
+                                    ' p_target_type_id: ' || p_target_type_id ||
+                                    ' p_run_by_id: ' || p_run_by_id,
+        p_run_by_id);
 
 END
 $function$

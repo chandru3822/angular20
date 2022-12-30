@@ -25,7 +25,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": null,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -96,7 +96,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": null,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -167,7 +167,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": null,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -266,7 +266,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": 1,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -341,7 +341,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": 1,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -416,7 +416,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": null,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -490,7 +490,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": null,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -564,7 +564,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": null,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],
@@ -638,7 +638,7 @@
       "functionName": null,
       "processStepName": null,
       "secondaryRequirementValue": null,
-      "customFieldSqlKey": null,
+      "customFieldSql": null,
       "listOfValueIds": [
         null
       ],

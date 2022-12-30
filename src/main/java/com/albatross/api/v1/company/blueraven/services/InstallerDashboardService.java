@@ -2,19 +2,20 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.InstallerDashboardQuery;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueue;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
 import com.albatross.api.v1.flow.queries.WorkQueueQuery;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -22,12 +23,12 @@ import java.util.List;
 
 @Slf4j
 @Service
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('INSTALLER_DASHBOARD')")
 @RequiredArgsConstructor
 public class InstallerDashboardService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private final ObjectMapper om;
   private final NamedParameterJdbcTemplate jdbc;
 
   public List<WorkQueueOwner> getOwners(
@@ -52,7 +53,7 @@ public class InstallerDashboardService {
     params.put("companyId", user.getCompanyId());
     params.put("userId", user.getId());
 
-    return sqlCache.query("installerDashboard.getRegionalManagers", params, Owner.class);
+    return sqlCache.queryBySql(InstallerDashboardQuery.getRegionalManagers, params, Owner.class);
   }
 
   public List<Owner> getInstallationCrew(List<Long> regionalManagerIds) {
@@ -63,7 +64,7 @@ public class InstallerDashboardService {
     params.put("companyId", user.getCompanyId());
     params.put("orgIds", regionalManagerIds);
 
-    return sqlCache.query("installerDashboard.getInstallationCrew", params, Owner.class);
+    return sqlCache.queryBySql(InstallerDashboardQuery.getInstallationCrew, params, Owner.class);
   }
 
   public String getDashboardValues(
@@ -77,7 +78,7 @@ public class InstallerDashboardService {
     params.put("crewIds", installationCrewIds);
 
     String results =
-        sqlCache.queryForObject("installerDashboard.getDashboardValues", params, String.class);
+        sqlCache.queryForObjectBySql(InstallerDashboardQuery.getDashboardValues, params, String.class);
     JSONObject jsonResults = new JSONObject(results);
     JSONArray tiles = new JSONArray();
 
@@ -123,8 +124,9 @@ public class InstallerDashboardService {
     parameters.addValue("companyId", user.getCompanyId());
     parameters.addValue("startDate", startDate);
     parameters.addValue("endDate", endDate);
+    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
     return jdbc.queryForObject(
-        sqlCache.getByKey("installerDashboard.getPerformanceMetrics"), parameters, String.class);
+        InstallerDashboardQuery.getPerformanceMetrics, parameters, String.class);
   }
 
   public List<WorkQueue> getWorkQueues() {

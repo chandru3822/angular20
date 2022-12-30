@@ -46,8 +46,8 @@ public class ProjectProcessStepRequirementService {
 
     // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
     for (ProjectProcessStepRequirement req : requirements) {
-      if(null != req.getCustomFieldSqlKey()) {
-        String sql = sqlCache.getByKey(req.getCustomFieldSqlKey());
+      if(null != req.getCustomFieldSql()) {
+        String sql = req.getCustomFieldSql();
         if(null != sql) {
           req.setHasListValues(true);
           User user = securityService.getCurrentUser();

@@ -1,6 +1,7 @@
 package com.albatross.api.aurora;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.AuroraQuery;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -189,7 +190,7 @@ public class AuroraProxy {
   }
 
   public String getDesignId(Long ppsId, Long cfgaId) {
-    return sqlCache.queryForObjectOptional("aurora.getIdByProjectProcessStepId", Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class)
+    return sqlCache.queryForObjectOptionalBySql(AuroraQuery.getIdByProjectProcessStepId, Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class)
       .orElse(null);
   }
 

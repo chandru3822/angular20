@@ -39,6 +39,8 @@ public class CustomField {
     objectType,
     groupName,
     customFieldSqlKey,
+    customFieldSql,
+    customFieldSqlSmartlist,
     customFieldSqlReferenceTable,
     processStepName,
     eventName,
@@ -69,7 +71,7 @@ public class CustomField {
       return true;
     }
 
-    if (this.customFieldSqlKey != null) {
+    if (this.customFieldSql != null) {
       return true;
     }
 

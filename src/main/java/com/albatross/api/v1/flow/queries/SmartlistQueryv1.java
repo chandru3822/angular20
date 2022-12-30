@@ -195,7 +195,7 @@ public class SmartlistQueryv1 {
       null as "smartlistFieldId",
       cfga.id as "customFieldGroupAssignmentId",
       cf.field_name as "name",
-      cf.custom_field_sql_key as "customFieldSqlKey",
+      cf.custom_field_sql as "customFieldSql",
       cf.company_system_list_id as "companySystemListId",
       to_jsonb(cf.system_list_option_ids) as "systemListOptionIds",
       ps.id as "processStepId",
@@ -261,6 +261,8 @@ public class SmartlistQueryv1 {
       null as "customFieldGroupAssignmentId",
     sf.name as "name",
       null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
       null as "CompanySystemListId",
       '[]' as "systemListOptionIds",
       null as "processStepId",
@@ -289,6 +291,8 @@ public class SmartlistQueryv1 {
     cfga.id as "customFieldGroupAssignmentId",
     cf.field_name as "name",
     cf.custom_field_sql_key as "customFieldSqlKey",
+    cf.custom_field_sql as "customFieldSql",
+    cf.custom_field_sql_smartlist as "customFieldSqlSmartlist",
     cf.company_system_list_id as "companySystemListId",
     to_jsonb(cf.system_list_option_ids) as "systemListOptionIds",
     ps.id as "processStepId",
@@ -339,6 +343,8 @@ public class SmartlistQueryv1 {
       null as "customFieldGroupAssignmentId",
       null as "name",
       null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
       null as "companySystemListId",
       null as "systemListOptionIds",
     ps.id as "processStepId",
@@ -381,6 +387,8 @@ public class SmartlistQueryv1 {
       null as "customFieldGroupAssignmentId",
       null as "name",
       null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
       null as "companySystemListId",
       null as "systemListOptionIds",
     ps.id as "processStepId",
@@ -406,6 +414,8 @@ public class SmartlistQueryv1 {
       null as "customFieldGroupAssignmentId",
       null as "name",
       null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
       null as "companySystemListId",
       null as "systemListOptionIds",
       null as "processStepId",
@@ -443,13 +453,15 @@ public class SmartlistQueryv1 {
       end                                                                         as data_type_id,
         case when pdc.field_to_update = 'ahj' then true end                         as has_list_values,
         case when pdc.field_to_update = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+        case when pdc.field_to_update = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+        case when pdc.field_to_update = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
         case
       when pdc.field_to_update = 'ahj' then (
         select to_jsonb(array_agg(row_to_json(listOfValues)))
       from (
         select a.id,
         a.name
-          from brs.ahj a
+          from brs.feat_db_ahj a
           where archived is not true
           order by a.name
       ) listOfValues
@@ -474,6 +486,8 @@ public class SmartlistQueryv1 {
     when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then true
     end                                                         as has_list_values,
       null                                                        as custom_field_sql_key,
+      null                                                        as custom_field_sql,
+      null                                                        as custom_field_sql_smartlist,
                   case
     when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then
       (
@@ -536,6 +550,8 @@ public class SmartlistQueryv1 {
     sl.id as system_list_id,
     csl_e.system_list_id as "eventResourceSystemListId",
       case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
+      case when sfa.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) else cf.custom_field_sql end as custom_field_sql,
+      case when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) else cf.custom_field_sql_smartlist end as custom_field_sql_smartlist,
     (select row_to_json(f) from(
     select
     cfga1.custom_field_group_id as "customFieldGroupId",
@@ -549,6 +565,8 @@ public class SmartlistQueryv1 {
       case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
     cf.system_readonly as "systemReadonly",
     cf.custom_field_sql_key as "customFieldSqlKey",
+    cf.custom_field_sql as "customFieldSql",
+    cf.custom_field_sql_smartlist as "customFieldSqlSmartlist",
     cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
     cf.company_system_list_id as "companySystemListId",
     cf.system_list_option_ids as "systemListOptionIds",
@@ -653,6 +671,8 @@ public class SmartlistQueryv1 {
     end                                                                                as data_type_id,
       null                                                                               as has_list_values,
          case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+         case when sfa.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+         case when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
       null                                                                               as list_of_values
     from flow.smartlist_field_assignment sfa
     inner join (
@@ -738,7 +758,9 @@ public class SmartlistQueryv1 {
     cf.company_system_list_id,
     sl.system_list_type_id,
     sl.id as system_list_id,
-      case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key
+      case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
+      case when sfa.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+      case when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist
     from flow.smartlist_field_assignment sfa
     left join (
       select distinct pdc.field_to_update,
@@ -794,6 +816,8 @@ public class SmartlistQueryv1 {
     end                                                                                as data_type_id,
       null                                                                               as has_list_values,
          case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+         case when sfa.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+      case when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
       null                                                                               as list_of_values
     from flow.smartlist_field_assignment sfa
     inner join (
@@ -903,6 +927,8 @@ public class SmartlistQueryv1 {
       sf.smartlist_system_list_id,
         case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
            case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
+           case when sr.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+      case when sr.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
       cf.company_system_list_id,
       csl.system_list_id,
       to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -1063,6 +1089,8 @@ public class SmartlistQueryv1 {
     end                                                                               as data_type_id,
       null                                                                              as has_list_values,
          case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+              case when sr.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+      case when sr.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
       null                                                                              as available_list_of_values
     from flow.smartlist_requirement sr
     inner join (
@@ -1165,6 +1193,8 @@ public class SmartlistQueryv1 {
     sf.smartlist_system_list_id,
       case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
          case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
+              case when sr.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+      case when sr.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
     cf.company_system_list_id,
     csl.system_list_id,
     to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -1280,6 +1310,8 @@ public class SmartlistQueryv1 {
     cf.system_readonly as "systemReadonly",
     cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
     cf.custom_field_sql_key as "customFieldSqlKey",
+    cf.custom_field_sql as "customFieldSql",
+    cf.custom_field_sql_smartlist as "customFieldSqlSmartlist",
     cf.company_system_list_id as "companySystemListId",
     cf.system_list_option_ids as "systemListOptionIds",
     cf.company_data_type_id as "companyDataTypeId",
@@ -1389,6 +1421,8 @@ public class SmartlistQueryv1 {
     end                                                                               as data_type_id,
       null                                                                              as has_list_values,
          case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+              case when sr.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
+      case when sr.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
       null                                                                              as available_list_of_values
     from flow.smartlist_requirement sr
     inner join (
@@ -1539,7 +1573,7 @@ public class SmartlistQueryv1 {
     modified_by_id = :userId
     where smartlist_id = :smartlistId and
     archived is not true;
-  
+
     update flow.smartlist_requirement
     set archived = true,
       date_modified = now(),

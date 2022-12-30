@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 import com.albatross.api.config.AppProperties;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
@@ -65,6 +66,7 @@ public class BlueravenProposalService {
   private final AttachmentService attachmentService;
   private final RqueueMessageEnqueuer rqueueMessageEnqueuer;
   private final AppProperties appProperties;
+  private final SecurityService securityService;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
     Map<String, Object> params = new HashMap<>();
@@ -233,7 +235,8 @@ public class BlueravenProposalService {
     try {
       context = sqlCache.queryForMapBySql(
         ProposalQuery.getCalculatedProposalValues,
-        Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory));
+        Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory,
+          "currentUserId", securityService.getCurrentUser().trueUserId()));
     } catch (Exception e) {
       log.error("[Proposals] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
     }

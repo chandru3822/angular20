@@ -54,9 +54,9 @@ public class CustomFieldValueService {
   }
 
   private void handleCustomListValueForCfv(CustomFieldValue cv, Long projectId, Long userId, Long companyId, Long ppsId) {
-    if(null != cv.getCustomFieldSqlKey()) {
+    if(null != cv.getCustomFieldSql()) {
       cv.setHasListValues(true);
-      String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
+      String sql = cv.getCustomFieldSql();
       if(null != sql) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
@@ -170,15 +170,15 @@ public class CustomFieldValueService {
       }
 
       // this allows us to pass project_id and user_id to custom sql queries
-      if(objectType.equals("project")) {
+      if(objectType.textValue().equals("project")) {
         handleCustomListOfValue(fieldGroups, id, user.getId(), companyId, null);
-      } else if (objectType.equals("process_step")) {
+      } else if (objectType.textValue().equals("process_step")) {
         Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
         handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId, id);
-      } else if (objectType.equals("event")) {
+      } else if (objectType.textValue().equals("event")) {
         Long projectId = projectService.getProjectIdByProjectProcessStepEventId(id);
         handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId, null);
-      } else if(!objectType.equals("attachment_type")) {
+      } else if(!objectType.textValue().equals("attachment_type")) {
         //dont do this for attachment types. it has already been handled and this code all sucks ass.
         handleCustomListOfValue(fieldGroups, companyId);
       }

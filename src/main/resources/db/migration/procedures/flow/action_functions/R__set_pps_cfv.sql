@@ -15,6 +15,14 @@ BEGIN
 --     now() AT TIME ZONE 'US/MOUNTAIN'
 --     now() AT TIME ZONE 'US/EASTERN'
 --     2020-11-23
+    insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
+    values ('Set Project Process Step Custom Field Value', 11, 'p_project_id: ' || p_project_id ||
+                                                               ' p_user_id: '|| p_user_id ||
+                                                               ' p_cfga: ' || p_cfga ||
+                                                               ' p_value_to_save: ' || p_value_to_save ||
+                                                               ' p_override_existing: ' || p_override_existing,
+            p_user_id);
+
     if lower(trim(p_value_to_save)) like '%now()%' then
         EXECUTE 'select ' || p_value_to_save into v_date_value_to_save;
 --         raise notice 'hello world %', v_date_value_to_save;

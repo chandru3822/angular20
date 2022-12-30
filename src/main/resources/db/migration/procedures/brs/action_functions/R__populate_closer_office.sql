@@ -34,6 +34,11 @@ BEGIN
     perform flow.set_project_cfv(p_project_id, p_user_id, 23202, v_value_to_save, true);
   end if;
 
+  insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
+  values ('Populate Closer Office', 68, 'p_project_id: ' || p_project_id ||
+                                        ' p_user_id: '|| p_user_id,
+          p_user_id);
+
 END
 $function$
 

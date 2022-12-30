@@ -136,5 +136,15 @@ BEGIN
           and pps.archived is not true;
     END IF;
 
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Update Project Process Step Status', 'p_project_id: ' || p_project_id ||
+                                                  ' p_process_step_id: ' || p_process_step_id ||
+                                                  ' p_project_process_step_id: ' || p_project_process_step_id ||
+                                                  ' p_company_process_step_status_typeId: ' || p_company_process_step_status_typeId ||
+                                                  ' p_process_step_status_type_id: ' || p_process_step_status_type_id ||
+                                                  ' p_user_id: ' || p_user_id ||
+                                                  ' p_cancelled_company_status_id: '|| p_cancelled_company_status_id,
+            p_user_id);
+
 END;
 $$

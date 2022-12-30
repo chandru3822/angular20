@@ -18,6 +18,13 @@ $BODY$
 declare
   v_amount       numeric;
 BEGIN
+  insert into flow.company_function_log(function_name, parameters)
+  values ('Get Year Average Remaining Monthly Electric Bill', 'p_khw_rate: ' || p_khw_rate ||
+                                                              ' p_utility_cost_escalator: ' || p_utility_cost_escalator ||
+                                                              ' p_adjusted_annual_consumption: ' || p_adjusted_annual_consumption ||
+                                                              ' p_first_year_annual_production: ' || p_first_year_annual_production ||
+                                                              ' p_panel_degradation_factor: ' || p_panel_degradation_factor ||
+                                                              ' p_years: ' || p_years);
   v_amount = 0;
 --   raise notice 'p_khw_rate ******** %',p_khw_rate;
 --   raise notice 'p_utility_cost_escalator ******** %',p_utility_cost_escalator;

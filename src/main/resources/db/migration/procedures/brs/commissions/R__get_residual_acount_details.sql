@@ -130,5 +130,10 @@ BEGIN
                                                                                            4)as installation_agreement_signed_date) as installation_agreement_signed_date on true
                  WHERE p.id = 184253) as foo
     where foo.allocation_id is not null or cancelled_date is not null;
+
+    insert into flow.company_function_log(function_name, parameters)
+    values ('Get Residual Account Details', 'p_date: ' || p_date);
+
+
 END
 $$;

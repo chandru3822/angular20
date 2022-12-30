@@ -1,7 +1,7 @@
 drop function if exists brs.get_installer_dashboard_rankings(p_start_date DATE, p_end_date DATE, p_company_id bigint,
-                                                             p_parent_company_id bigint, p_is_parent boolean);
+                                                             p_parent_company_id bigint, p_is_parent boolean, p_run_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.get_installer_dashboard_rankings(p_start_date DATE, p_end_date DATE, p_company_id bigint,
-                                                                    p_parent_company_id bigint, p_is_parent boolean)
+                                                                    p_parent_company_id bigint, p_is_parent boolean, p_run_by_id bigint)
     RETURNS SETOF JSON AS
 $BODY$
 BEGIN
@@ -76,6 +76,16 @@ RETURN QUERY SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                   ) b
          ) c
     ) as sub_rows;
+
+insert into flow.company_function_log(function_name, parameters, run_by_id)
+values ('Get Installer Dashboard Rankings', 'p_start_date: ' || p_start_date ||
+                                            ' p_end_date: ' || p_end_date ||
+                                            ' p_company_id: ' || p_company_id ||
+                                            ' p_parent_company_id: ' || p_parent_company_id ||
+                                            ' p_is_parent: ' || p_is_parent ||
+                                            ' p_run_by_id: ' || p_run_by_id ,
+        p_run_by_id);
+
 
 END
 $BODY$

@@ -1,5 +1,5 @@
-drop function if exists brs.get_all_users_overrides_earned_in_payroll_snapshot(p_payroll_id bigint);
-CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_payroll_snapshot(p_payroll_id bigint)
+drop function if exists brs.get_all_users_overrides_earned_in_payroll_snapshot(p_payroll_id bigint, p_run_by_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_payroll_snapshot(p_payroll_id bigint, p_run_by_id bigint)
     RETURNS TABLE
             (
                 closer                TEXT,
@@ -134,6 +134,12 @@ BEGIN
                          where results.overrides_earned - results.prior_pay != 0;
 
         end case;
+
+    insert into flow.company_function_log(function_name, parameters, run_by_id)
+    values ('Get All Users Overrides Earned in Payroll Snapshot', 'p_payroll_id: ' || p_payroll_id ||
+                                                                  ' p_run_by_id: ' || p_run_by_id,
+            p_run_by_id);
+
 END;
 $BODY$
     LANGUAGE plpgsql VOLATILE

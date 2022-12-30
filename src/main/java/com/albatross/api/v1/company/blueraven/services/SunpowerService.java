@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.services.ContactService;
@@ -238,15 +239,15 @@ public class SunpowerService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
-    return sqlCache.get(
-        "installAgreement.getSunpowerUrl", params, new SingleColumnRowMapper<>(Object.class));
+    return sqlCache.getBySql(
+        InstallAgreementQuery.getSunpowerUrl, params, new SingleColumnRowMapper<>(Object.class));
   }
 
   private Optional<Object> getSunpowerUrl(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    return sqlCache.get(
-        "installAgreement.getSunpowerUrlPerProject",
+    return sqlCache.getBySql(
+        InstallAgreementQuery.getSunpowerUrlPerProject,
         params,
         new SingleColumnRowMapper<>(Object.class));
   }
@@ -256,14 +257,14 @@ public class SunpowerService {
     params.put("projectId", projectId);
     params.put("proposalNbr", proposalNbr);
     params.put("url", url);
-    sqlCache.update("installAgreement.setSunpowerUrl", params);
+    sqlCache.updateBySql(InstallAgreementQuery.setSunpowerUrl, params);
   }
 
   public void setCreditLastCheckedBy(Long projectId, String financier) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("creditLastCheckedBy", financier);
-    sqlCache.update("installAgreement.setCreditLastCheckedBy", params);
+    sqlCache.updateBySql(InstallAgreementQuery.setCreditLastCheckedBy, params);
   }
 
   private HttpResponse request(String method, String uri, InputStream content) throws Exception {

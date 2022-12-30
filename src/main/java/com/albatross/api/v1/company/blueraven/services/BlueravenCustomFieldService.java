@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.BlueravenCustomFieldQuery;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
@@ -36,8 +37,8 @@ public class BlueravenCustomFieldService {
 
   public List<CustomField> getAllCustomFields() {
     User user = securityService.getCurrentUser();
-    return sqlCache.query(
-        "blueravenCustomField.getAll",
+    return sqlCache.queryBySql(
+        BlueravenCustomFieldQuery.getAll,
         Map.of("companyId", user.getCompanyId()),
         new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
@@ -52,7 +53,7 @@ public class BlueravenCustomFieldService {
     final var customFieldBeanPropertyRowMapper =
         new CustomField.CustomFieldMapper<>(CustomField.class, om);
     return sqlCache
-        .query("blueravenCustomField.getByObjectCode", params, customFieldBeanPropertyRowMapper)
+        .queryBySql(BlueravenCustomFieldQuery.getByObjectCode, params, customFieldBeanPropertyRowMapper)
         .stream()
         .peek(
             cf -> {
@@ -86,8 +87,8 @@ public class BlueravenCustomFieldService {
       return cf.getListOfValues();
     }
 
-    if (cf.getCustomFieldSqlKey() != null) {
-      final var sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
+    if (cf.getCustomFieldSql() != null) {
+      final var sql = cf.getCustomFieldSql();
       if (sql != null) {
         Map<String, Object> params =
             new HashMap<>(Map.of("userId", user.trueUserId(), "companyId", user.getCompanyId()));
@@ -114,8 +115,8 @@ public class BlueravenCustomFieldService {
     Assert.notNull(id, "Field ID must be provided");
 
     Optional<CustomField> result =
-        sqlCache.get(
-            "blueravenCustomField.getOne",
+        sqlCache.getBySql(
+            BlueravenCustomFieldQuery.getOne,
             Map.of("id", id),
             new CustomField.CustomFieldMapper<>(CustomField.class, om));
     return result.orElse(null);
@@ -130,7 +131,7 @@ public class BlueravenCustomFieldService {
     params.put("fieldName", customField.getFieldName());
     params.put("sortListValuesAlphabetically", customField.getSortListValuesAlphabetically());
     params.put("systemListId", customField.getCompanySystemListId());
-    params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+    params.put("customFieldSql", customField.getCustomFieldSql());
     params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
     params.put("flowCustomFieldId", customField.getFlowCustomFieldId());
     params.put(
@@ -148,7 +149,7 @@ public class BlueravenCustomFieldService {
       id = customField.getId();
       params.put("id", id);
       params.put("modifiedById", user.trueUserId());
-      sqlCache.update("blueravenCustomField.saveField", params);
+      sqlCache.updateBySql(BlueravenCustomFieldQuery.saveField, params);
     } else {
       // have to insert the list of values first if needed to get the listOfValueId
       doInsertAfterHandlingOtherScenarios = true;
@@ -172,7 +173,7 @@ public class BlueravenCustomFieldService {
         lovParent.put("createdById", user.trueUserId());
         parentId =
             sqlCache
-                .updateReturningId("blueravenCustomField.insertListOfValue", lovParent, "id")
+                .updateBySqlReturningId(BlueravenCustomFieldQuery.insertListOfValue, lovParent, "id")
                 .longValue();
       } else {
         parentId = customField.getListOfValueId();
@@ -191,21 +192,21 @@ public class BlueravenCustomFieldService {
         if (null != lov.getId() && !lov.getArchived()) {
           // do update of row
           lovParams.put("id", lov.getId());
-          sqlCache.update("blueravenCustomField.updateListOfValue", lovParams);
+          sqlCache.updateBySql(BlueravenCustomFieldQuery.updateListOfValue, lovParams);
         } else if (lov.getArchived()) {
           // do archive of row
           lovParams.put("id", lov.getId());
-          sqlCache.update("blueravenCustomField.archiveListOfValue", lovParams);
+          sqlCache.updateBySql(BlueravenCustomFieldQuery.archiveListOfValue, lovParams);
         } else {
           // do row insert
-          sqlCache.update("blueravenCustomField.insertListOfValue", lovParams);
+          sqlCache.updateBySql(BlueravenCustomFieldQuery.insertListOfValue, lovParams);
         }
       }
     }
 
     if (doInsertAfterHandlingOtherScenarios) {
       params.put("listOfValueId", parentId);
-      params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+      params.put("customFieldSql", customField.getCustomFieldSql());
       params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
       params.put("companyId", customField.getCompanyId());
       params.put("systemListId", customField.getCompanySystemListId());
@@ -220,7 +221,7 @@ public class BlueravenCustomFieldService {
       params.put("flowCustomFieldId", customField.getFlowCustomFieldId());
 
       // insert new custom field with listOfValueId if needed
-      id = sqlCache.updateReturningId("blueravenCustomField.insertField", params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(BlueravenCustomFieldQuery.insertField, params, "id").longValue();
     }
 
     return findCustomFieldById(id);
@@ -235,14 +236,14 @@ public class BlueravenCustomFieldService {
     // todo: add in the validations after this is all working
     //       check if field is in use by a custom field group
     List<CustomField> fields =
-        sqlCache.query("blueravenCustomField.getGroupsUsingField", params, CustomField.class);
+        sqlCache.queryBySql(BlueravenCustomFieldQuery.getGroupsUsingField, params, CustomField.class);
 
     // if the field is assigned somewhere, return those values to frontend
     if (!fields.isEmpty()) {
       return fields;
     } else {
       // archive single custom field
-      sqlCache.update("blueravenCustomField.deleteField", params);
+      sqlCache.updateBySql(BlueravenCustomFieldQuery.deleteField, params);
       return null;
     }
   }
@@ -252,9 +253,8 @@ public class BlueravenCustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("name", companyName);
     params.put("createdById", user.trueUserId());
-    if(sqlCache.update("blueravenCustomField.insertManagementCompany", params) == 1){
-      HashMap<String, Object> nameParam = new HashMap<>();
-      return sqlCache.queryForObject("blueravenCustomField.getListOfValueIdByName", params, Long.class);
+    if(sqlCache.updateBySql(BlueravenCustomFieldQuery.insertManagementCompany, params) == 1){
+      return sqlCache.queryForObjectBySql(BlueravenCustomFieldQuery.getListOfValueIdByName, params, Long.class);
     }
     else {
       return null;

@@ -189,6 +189,10 @@ BEGIN
     return;
   end if;
 
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Reschedule Closer Appointment', 'p_pps_event_id: ' || p_pps_event_id ||
+                                           ' p_current_user_id: '|| p_current_user_id,
+          p_current_user_id);
 
 END
 $BODY$
