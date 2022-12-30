@@ -162,6 +162,14 @@
                 </td>
                 <td>
                   <div class="item-icons">
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                               v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                      </template>
+                      <span>Custom Field Id: {{item.id}}</span>
+                      <div class="text-center">(click to copy)</div>
+                    </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
                       <v-btn small text color="primary"
                              @click="item.edit = !item.edit">
@@ -185,7 +193,6 @@
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
                     <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
-                    <v-btn small icon color="primary" @click="item.showGroupId = !item.showGroupId"><v-icon>mdi-information</v-icon></v-btn>
                     <span v-if="item.showGroupId" class="text-left flex-align-items-center">id: {{ item.id }}</span>
                   </div>
                 </td>
@@ -257,15 +264,6 @@
                             <a :href="`/settings/customField/${cf.customFieldId}`">{{cf.fieldName}}</a>
                             <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                             <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
-                            <v-tooltip top>
-                              <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" @click="[cf.showId = !cf.showId, copyToClipBoard(cf.customFieldId, cf.showId)]" v-bind="attrs"
-                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
-                              </template>
-                              <span v-if="!cf.showId">Show (and Copy) Custom Field Id</span>
-                              <span v-if="cf.showId">Hide Custom Field Id</span>
-                            </v-tooltip>
-                            <span v-if="cf.showId">id: {{ cf.customFieldId }}</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
                                 <v-col cols="6">
@@ -418,6 +416,14 @@
                             </div>
                           </div>
                         </v-list-item-content>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldId)" v-bind="attrs"
+                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          </template>
+                          <span>Custom Field Id: {{cf.customFieldId}}</span>
+                          <div>(click to copy)</div>
+                        </v-tooltip>
                         <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small color="primary" v-on="on">
@@ -992,12 +998,10 @@ export default {
         }
       })
     },
-    copyToClipBoard(textValue, copy){
-      if(copy) {
+    copyToClipBoard(textValue){
         navigator.clipboard.writeText(textValue);
         this.snackbar = getSnackbar('SUCCESS', 'Copied id to clipboard')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
     }
   }
 }
