@@ -10,6 +10,7 @@ import com.albatross.api.v1.flow.model.smartlist.*;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
+import com.albatross.api.v1.flow.queries.CustomFieldQuery;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,6 +26,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -45,6 +47,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@PreAuthorize("hasFeatureAccess('SMARTLIST')")
 @RequiredArgsConstructor
 @Deprecated
 public class SmartlistServicev1 {
@@ -175,8 +178,8 @@ public class SmartlistServicev1 {
     SmartlistFieldAssignment field = sqlCache.getBySql(SmartlistQueryv1.getAvailableFieldByCfgaId, Map.of("cfgaId", cfgaId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om)).orElse(null);
 
     if (field != null) {
-      if (field.getCustomFieldSqlKey() != null) {
-        final String sql = sqlCache.getByKey(field.getCustomFieldSqlKey());
+      if (field.getCustomFieldSql() != null) {
+        final String sql = field.getCustomFieldSql();
         if (sql != null) {
           field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class));
         }
@@ -214,8 +217,8 @@ public class SmartlistServicev1 {
     Map<String, Object> params = Map.of("requirementId", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
     SmartlistRequirement requirement = sqlCache.getBySql(SmartlistQueryv1.getRequirementById, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
 
-    if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
-      final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
+    if (requirement != null && requirement.getCustomFieldSql() != null) {
+      final String sql = requirement.getCustomFieldSql();
       if (sql != null) {
         requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
       }
@@ -344,8 +347,8 @@ public class SmartlistServicev1 {
 
       if (includeListValues) {
         for (SmartlistRequirement r : requirements) {
-          if (r.getCustomFieldSqlKey() != null) {
-            final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
+          if (r.getCustomFieldSql() != null) {
+            final String sql = r.getCustomFieldSql();
             if (sql != null) {
               r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
             }
@@ -453,7 +456,7 @@ public class SmartlistServicev1 {
   }
 
   public String getCsv(Long smartlistId, String timezone) throws JsonProcessingException {
-    Smartlistv1 smartlist = this.getSmartlist(smartlistId);
+   Smartlistv1 smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
@@ -515,7 +518,8 @@ public class SmartlistServicev1 {
     ahjCount += requirements.stream().filter(r -> Objects.equals(r.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
 
     if (ahjCount > 0) {
-      query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
+      String sqlQuery = sqlCache.queryForObjectBySql(CustomFieldQuery.getCustomFieldSql, Collections.emptyMap(), String.class);
+      query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s)", sqlQuery));
     }
 
     query.append(" select");
@@ -525,7 +529,7 @@ public class SmartlistServicev1 {
         query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if (f.getDataTypeId() == 2) {
         query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
-      } else if (f.getCustomFieldSqlKey() != null) {
+      } else if (f.getCustomFieldSql() != null) {
         query.append(String.format(" \"%s\".name as \"%s\", ", f.getCustomFieldSqlKey(), f.getName()));
       } else {
         query.append(String.format(" brs.project_details.%s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
@@ -904,7 +908,7 @@ public class SmartlistServicev1 {
       }
       // If field is custom, else it's system
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
-        final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
+        final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSql() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
         // if data type id == 2 and timezone is not null, then String.format("(\"%s\".%s at time zone \'%s\')", referenceTable, column, timezone)
 //        ppscfv.timestamp_value
         if (null != timezone && f.getDataTypeId() == 2) {
@@ -963,8 +967,8 @@ public class SmartlistServicev1 {
         query.append(String.format("  %s as \"%s\", ", location, f.getName()));
       }
 
-      if (f.getCustomFieldSqlKey() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        withClause.append(String.format("  \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
+      if (f.getCustomFieldSql() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
+        withClause.append(String.format("  \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
       }
     }
 
@@ -975,8 +979,8 @@ public class SmartlistServicev1 {
       }
 
       // If this custom sql is not already in the "with" clause, add it
-      if (r.getCustomFieldSqlKey() != null && withClause.indexOf(r.getCustomFieldSqlKey()) == -1) {
-        withClause.append(String.format("  \"%s\" as  (%s), ", r.getCustomFieldSqlKey(), sqlCache.getByKey(r.getCustomFieldSqlKey() + ".smartlist")));
+      if (r.getCustomFieldSql() != null && withClause.indexOf(r.getCustomFieldSqlKey()) == -1) {
+        withClause.append(String.format("  \"%s\" as  (%s), ", r.getCustomFieldSqlKey(), r.getCustomFieldSqlSmartlist()));
       }
     }
 
@@ -1149,7 +1153,7 @@ public class SmartlistServicev1 {
             joinedTable = "org";
           }
 
-          if ((f.getHasListValues() != null && f.getHasListValues()) || f.getCustomFieldSqlKey() != null) {
+          if ((f.getHasListValues() != null && f.getHasListValues()) || f.getCustomFieldSql() != null) {
 
             if (f.getValueReferenceTable() == null) {
               f.setValueReferenceTable(UUID.randomUUID().toString());
@@ -1158,7 +1162,7 @@ public class SmartlistServicev1 {
 
             query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.%s.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), valueTable, valueTable, joinField, joinedTable, valueTable, f.getCustomFieldGroupAssignmentId()));
 
-            if (f.getCustomFieldSqlKey() != null) {
+            if (f.getCustomFieldSql() != null) {
               //custom value sql
               query.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, valueTable));
             } else if (!f.getAllowMultiple()) {
@@ -1219,7 +1223,7 @@ public class SmartlistServicev1 {
                 query.append(String.format(" left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, ppscfvUUID));
               }
             } else {
-              if (f.getCustomFieldSqlKey() != null) {
+              if (f.getCustomFieldSql() != null) {
                 final String ppscfvUUID = UUID.randomUUID().toString();
                 f.setValueReferenceTable(ppscfvUUID);
                 query.append(String.format(" left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), ppscfvUUID, ppscfvUUID, f.getPpsTable(), ppscfvUUID, f.getCustomFieldGroupAssignmentId()));
@@ -1326,7 +1330,7 @@ public class SmartlistServicev1 {
         String referenceColumn;
         if (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) {
           referenceColumn = "int_value";
-        } else if (r.getCustomFieldSqlKey() != null) {
+        } else if (r.getCustomFieldSql() != null) {
           referenceColumn = "id";
         } else {
           referenceColumn = getReferenceColumn(r.getDataTypeId());
@@ -1359,7 +1363,7 @@ public class SmartlistServicev1 {
               additionalJoins.append(String.format("and \"%s\".main is true ", ppsUUID));
             }
 
-            if (r.getCustomFieldSqlKey() != null) {
+            if (r.getCustomFieldSql() != null) {
               final String customSqlUuid = UUID.randomUUID().toString();
 
               additionalJoins.append(String.format(" left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), customSqlUuid, customSqlUuid, ppsUUID, customSqlUuid, r.getCustomFieldGroupAssignmentId()));
@@ -1372,7 +1376,7 @@ public class SmartlistServicev1 {
           } else {
             final String valueUuid = UUID.randomUUID().toString();
 
-            if (r.getCustomFieldSqlKey() != null) {
+            if (r.getCustomFieldSql() != null) {
 
               final String customSqlUuid = UUID.randomUUID().toString();
 
@@ -1656,7 +1660,7 @@ public class SmartlistServicev1 {
       String referenceLocation = null;
 
       //join value tables for custom fields
-      if (r.getCustomFieldSqlKey() == null && r.getCustomFieldGroupAssignmentId() != null) {
+      if (r.getCustomFieldSql() == null && r.getCustomFieldGroupAssignmentId() != null) {
         r.setValueReferenceTable(UUID.randomUUID().toString());
         r.setValueEventReferenceTable(UUID.randomUUID().toString());
 
@@ -1828,7 +1832,7 @@ public class SmartlistServicev1 {
           referenceLocation = String.format("\"%s\".%s", joinTable, joinColumn);
         }
       } else {
-        if (r.getCustomFieldSqlKey() != null) {
+        if (r.getCustomFieldSql() != null) {
           //custom fields w/sql queries
           r.setValueReferenceTable(UUID.randomUUID().toString());
           final String referenceTable = UUID.randomUUID().toString();
@@ -1936,8 +1940,8 @@ public class SmartlistServicev1 {
       }
 
       //prepend custom field sql queries
-      if (f.getCustomFieldSqlKey() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
+      if (f.getCustomFieldSql() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
+        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
       }
     }
 
@@ -2058,7 +2062,7 @@ public class SmartlistServicev1 {
 
           selectFields.append(String.format("(select name from \"systemList_%s\" where \"systemList_%s\".id = \"%s\".int_value) as \"%s\", ", systemListNumber, systemListNumber, f.getValueReferenceTable(), f.getId()));
         } else {
-          if (f.getCustomFieldSqlKey() != null) {
+          if (f.getCustomFieldSql() != null) {
             //custom sql fields
             selectFields.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
           } else {
@@ -2107,7 +2111,7 @@ public class SmartlistServicev1 {
             f.setUserPositionTable(joinUserPosition);
           }
         } else {
-          if (f.getCustomFieldSqlKey() != null) {
+          if (f.getCustomFieldSql() != null) {
             //custom sql fields
             final String referenceTable = UUID.randomUUID().toString();
 
@@ -2147,12 +2151,12 @@ public class SmartlistServicev1 {
                     String referenceLocation = null;
 
                     SmartlistFieldAssignment alreadyJoinedValueTable = psFields.stream()
-                                                                               .filter(f -> r.getCustomFieldSqlKey() == null && r.getCustomFieldGroupAssignmentId() != null && r.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
+                                                                               .filter(f -> r.getCustomFieldSql() == null && r.getCustomFieldGroupAssignmentId() != null && r.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
                                                                                .findFirst()
                                                                                .orElse(null);
 
                     //join any value tables the requirements need which aren't already joined
-                    if (r.getCustomFieldSqlKey() == null) {
+                    if (r.getCustomFieldSql() == null) {
                       if (alreadyJoinedValueTable == null) {
                         if (r.getCustomFieldGroupAssignmentId() != null) {
                           //join the value table for the respective field object type
@@ -2233,7 +2237,7 @@ public class SmartlistServicev1 {
                       }
                     } else {
                       //custom fields
-                      if (r.getCustomFieldSqlKey() != null) {
+                      if (r.getCustomFieldSql() != null) {
                         //custom sql fields
                         if (valueJoins.indexOf(r.getCustomFieldSqlKey()) == -1) {
                           r.setValueReferenceTable(UUID.randomUUID().toString());
@@ -2445,7 +2449,7 @@ public class SmartlistServicev1 {
       String referenceLocation = null;
 
       //join value tables for custom fields
-      if (r.getCustomFieldSqlKey() == null && r.getCustomFieldGroupAssignmentId() != null) {
+      if (r.getCustomFieldSql() == null && r.getCustomFieldGroupAssignmentId() != null) {
         r.setValueReferenceTable(UUID.randomUUID().toString());
         r.setValueEventReferenceTable(UUID.randomUUID().toString());
 
@@ -2612,7 +2616,7 @@ public class SmartlistServicev1 {
           referenceLocation = String.format("\"%s\".%s", joinTable, joinColumn);
         }
       } else {
-        if (r.getCustomFieldSqlKey() != null) {
+        if (r.getCustomFieldSql() != null) {
           //custom fields w/sql queries
           r.setValueReferenceTable(UUID.randomUUID().toString());
           final String referenceTable = UUID.randomUUID().toString();
@@ -2738,8 +2742,8 @@ public class SmartlistServicev1 {
       }
 
       //prepend custom field sql queries
-      if (f.getCustomFieldSqlKey() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
+      if (f.getCustomFieldSql() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
+        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
       }
     }
     // get PS fields which don't belong an event field
@@ -2840,7 +2844,7 @@ public class SmartlistServicev1 {
             }
           }
         } else {
-          if (f.getCustomFieldSqlKey() != null) {
+          if (f.getCustomFieldSql() != null) {
             //custom sql fields
             final String referenceTable = UUID.randomUUID().toString();
 
@@ -3014,7 +3018,7 @@ public class SmartlistServicev1 {
 
           selectFields.append(String.format("(select name from \"systemList_%s\" where \"systemList_%s\".id = \"%s\".int_value) as \"%s\", ", systemListNumber, systemListNumber, f.getValueReferenceTable(), f.getId()));
         } else {
-          if (f.getCustomFieldSqlKey() != null) {
+          if (f.getCustomFieldSql() != null) {
             //custom sql fields
             selectFields.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getId()));
           } else {
@@ -3063,12 +3067,12 @@ public class SmartlistServicev1 {
                     String referenceLocation = null;
 
                     SmartlistFieldAssignment alreadyJoinedValueTable = eventFields.stream()
-                                                                                  .filter(f -> r.getCustomFieldSqlKey() == null && r.getCustomFieldGroupAssignmentId() != null && r.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
+                                                                                  .filter(f -> r.getCustomFieldSql() == null && r.getCustomFieldGroupAssignmentId() != null && r.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
                                                                                   .findFirst()
                                                                                   .orElse(null);
 
                     //join any value tables the requirements need which aren't already joined
-                    if (r.getCustomFieldSqlKey() == null) {
+                    if (r.getCustomFieldSql() == null) {
                       if (alreadyJoinedValueTable == null) {
                         if (r.getCustomFieldGroupAssignmentId() != null) {
                           //join the value table for the respective field object type
@@ -3149,7 +3153,7 @@ public class SmartlistServicev1 {
                       }
                     } else {
                       //custom fields
-                      if (r.getCustomFieldSqlKey() != null) {
+                      if (r.getCustomFieldSql() != null) {
                         //custom sql fields
                         if (valueJoins.indexOf(r.getCustomFieldSqlKey()) == -1) {
                           r.setValueReferenceTable(UUID.randomUUID().toString());
@@ -3525,7 +3529,7 @@ public class SmartlistServicev1 {
         final String newValueTable = UUID.randomUUID().toString();
 
         //if field is a custom field w/sql query
-        if (f.getCustomFieldSqlKey() != null) {
+        if (f.getCustomFieldSql() != null) {
 
           query.append(String.format(" left join \"%s\" \"%s\" on \"%s\" .id = \"%s\".int_value", f.getCustomFieldSqlKey(), newValueTable, newValueTable, currentValueTable));
           f.setValueReferenceTable(newValueTable);
@@ -3630,11 +3634,11 @@ public class SmartlistServicev1 {
         if (f.getSystemListId() != null || Objects.equals(f.getReferenceTable(), "flow.user") || Objects.equals(f.getReferenceTable(), "flow.org")) {
           selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
         } else if (Objects.equals(f.getReferenceTable(), "flow.project_process_step") ||
-                     Objects.equals(f.getReferenceTable(), "flow.process_step") ||
-                     Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
-                     Objects.equals(f.getReferenceTable(), "flow.event") ||
-                     Objects.equals(f.getReferenceTable(), "flow.company_event_status_type") ||
-                     Objects.equals(f.getReferenceTable(), "flow.event_status_type")) {//else if field is process step or event system field
+          Objects.equals(f.getReferenceTable(), "flow.process_step") ||
+          Objects.equals(f.getReferenceTable(), "flow.project_process_step_event") ||
+          Objects.equals(f.getReferenceTable(), "flow.event") ||
+          Objects.equals(f.getReferenceTable(), "flow.company_event_status_type") ||
+          Objects.equals(f.getReferenceTable(), "flow.event_status_type")) {//else if field is process step or event system field
           if (f.getDataTypeId() == 1) {
             selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
           } else if (f.getDataTypeId() == 2) {
@@ -3657,7 +3661,7 @@ public class SmartlistServicev1 {
         selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
       } else {
         //if field is custom sql
-        if (f.getCustomFieldSqlKey() != null) {
+        if (f.getCustomFieldSql() != null) {
           selectQuery.append(String.format("\"%s\".name as \"%s\", ", f.getValueReferenceTable(), f.getName()));
         } else { //else field is project or contact
 
@@ -3712,8 +3716,8 @@ public class SmartlistServicev1 {
 
     //add custom sql value tables
     for (SmartlistFieldAssignment f : fields) {
-      if (f.getCustomFieldSqlKey() != null && selectQuery.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        defaultFields.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey() + ".smartlist")));
+      if (f.getCustomFieldSql() != null && selectQuery.indexOf(f.getCustomFieldSqlKey()) == -1) {
+        defaultFields.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSql()));
       }
     }
 
@@ -4142,9 +4146,10 @@ public class SmartlistServicev1 {
     }
   }
 
-  public List<ListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
-    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), ListOfValue.class);
-  }
+  //  @humes - i commented this out because it had no usages and was still using sqlCache.query and it was bugging me
+  //  public List<ListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
+  //    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), ListOfValue.class);
+  //  }
 
   /**
    * Creates a select sql snippet based on an object type ID
@@ -4676,7 +4681,7 @@ public class SmartlistServicev1 {
         final String newValueTable = UUID.randomUUID().toString();
 
         //if field is a custom field w/sql query
-        if (i.getCustomFieldSqlKey() != null) {
+        if (i.getCustomFieldSql() != null) {
 
           valueJoins.append(String.format(" left join \"%s\" \"%s\" on \"%s\" .id = \"%s\".int_value", i.getCustomFieldSqlKey(), newValueTable, newValueTable, currentValueTable));
           i.setValueReferenceTable(newValueTable);
@@ -4822,7 +4827,7 @@ public class SmartlistServicev1 {
           referenceLocation = String.format("\"%s\".%s", joinTable, joinColumn);
         }
       } else {
-        if (i.getCustomFieldSqlKey() != null) {
+        if (i.getCustomFieldSql() != null) {
           //custom fields w/sql queries
           i.setValueReferenceTable(UUID.randomUUID().toString());
           final String referenceTable = UUID.randomUUID().toString();
@@ -5079,28 +5084,28 @@ public class SmartlistServicev1 {
     log.error(String.format("SMARTLIST: Error while running smartlist ID: %s, message: %s", smartlist.getId(), e.getMessage()));
   }
 
-//  public String getPpsTableAlias(StringBuilder query, List<SmartlistFieldAssignment> fields) {
-//
-//  }
+  //  public String getPpsTableAlias(StringBuilder query, List<SmartlistFieldAssignment> fields) {
+  //
+  //  }
 
-//  private String getCfgaValueTable(List<SmartlistFieldAssignment> fields, Long cfgaId) {
-//    String table = "";
-//
-//    try {
-//      table = fields.stream()
-//        .filter(f -> Objects.equals(f.getCustomFieldGroupAssignmentId(), cfgaId))
-//        .map(SmartlistFieldAssignment::getValueReferenceTable)
-//        .findFirst()
-//        .orElse(null);
-//
-//      if (table == null) {
-//        table = UUID.randomUUID().toString();
-//      }
-//    } catch (NullPointerException e) {
-//      table = UUID.randomUUID().toString();
-//    }
-//    return table;
-//  }
+  //  private String getCfgaValueTable(List<SmartlistFieldAssignment> fields, Long cfgaId) {
+  //    String table = "";
+  //
+  //    try {
+  //      table = fields.stream()
+  //        .filter(f -> Objects.equals(f.getCustomFieldGroupAssignmentId(), cfgaId))
+  //        .map(SmartlistFieldAssignment::getValueReferenceTable)
+  //        .findFirst()
+  //        .orElse(null);
+  //
+  //      if (table == null) {
+  //        table = UUID.randomUUID().toString();
+  //      }
+  //    } catch (NullPointerException e) {
+  //      table = UUID.randomUUID().toString();
+  //    }
+  //    return table;
+  //  }
 
   public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper om;
