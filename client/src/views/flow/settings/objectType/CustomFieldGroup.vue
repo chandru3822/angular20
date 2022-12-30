@@ -167,7 +167,7 @@
                         <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
                                v-on="on"><v-icon>mdi-information</v-icon></v-btn>
                       </template>
-                      <span>Custom Field Id: {{item.id}}</span>
+                      <span>Custom Field Group Id: {{item.id}}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
@@ -421,8 +421,8 @@
                             <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldId)" v-bind="attrs"
                                    v-on="on"><v-icon>mdi-information</v-icon></v-btn>
                           </template>
-                          <span>Custom Field Id: {{cf.customFieldId}}</span>
-                          <div>(click to copy)</div>
+                          <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
+                          <div class="text-center">(click to copy)</div>
                         </v-tooltip>
                         <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
