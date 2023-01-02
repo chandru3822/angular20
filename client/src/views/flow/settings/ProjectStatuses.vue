@@ -218,10 +218,10 @@
               <td class="text-right">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="primary" @click="copyToClipBoard(item.projectStatusTypeId)" v-bind="attrs"
+                    <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
                            v-on="on"><v-icon>mdi-information</v-icon></v-btn>
                   </template>
-                  <span>Project Status Type ID: {{item.projectStatusTypeId}}</span>
+                  <span>Project Status ID: {{item.id}}</span>
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
                 <v-btn small text color="primary" v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="[initItemColor(item), expanded = [item]]">
