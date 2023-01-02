@@ -140,6 +140,14 @@
                   {{ item.rootEventStatusType }}
                 </td>
                 <td class="text-right">
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                             v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                    </template>
+                    <span>Event Status Id: {{item.id}}</span>
+                    <div class="text-center">(click to copy)</div>
+                  </v-tooltip>
                   <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                     <v-icon>edit</v-icon>
                   </v-btn>
@@ -393,6 +401,11 @@ export default {
       return this.statusTypes.filter(s => {
         return !s.archived
       })
+    },
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
     },
     closeDeleteDialog() {
       this.showDeleteDialog = false
