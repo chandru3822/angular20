@@ -83,6 +83,7 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
+                    <v-btn small text color="primary" @click="getUsesForField(item.id)"><v-icon>mdi-information</v-icon></v-btn>
                     <v-btn class="clickable" small text color="primary"
                            @click="goToCustomField(item.id)">
                       <v-icon>edit</v-icon>
@@ -101,6 +102,26 @@
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>
 
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="showInfoDialog"
+                        hideConfirm
+                        @close-dialog="showInfoDialog=false"
+    >
+      <template v-slot:title>Actions using this requirement:</template>
+      <span v-if="!usesForField || usesForField.length === 0">Nothing using this custom field.</span>
+      <v-list dense>
+        <v-list-item v-for="(item, index) in usesForField" :key="index">
+          <v-list-item-icon>
+            <v-icon>
+              mdi-circle-small
+            </v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            {{ item.groupName }} - {{item.objectType}} - {{item.processStepName | item.eventName}}
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -155,7 +176,9 @@ export default {
       userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
       showDeleteDialog: false,
-      itemToDelete: null
+      itemToDelete: null,
+      showInfoDialog: false,
+      usesForField: [],
     };
   },
   computed : {
@@ -189,6 +212,20 @@ export default {
         console.error("*** ERROR ***", e);
         this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+      }
+    },
+    async getUsesForField(customFieldId){
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/customField/getUses/${customFieldId}`, this.apiPath, null, []);
+        this.usesForField = data;
+        this.showInfoDialog = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async deleteField() {

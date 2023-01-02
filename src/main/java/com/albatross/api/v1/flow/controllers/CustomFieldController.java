@@ -40,6 +40,11 @@ public class CustomFieldController {
     return customFieldService.deleteField(id);
   }
 
+  @GetMapping(value="/getUses/{id}")
+  public List<CustomField> getUses(@PathVariable Long id) {
+      return customFieldService.getGroupsUsingField(id);
+  }
+
   @GetMapping(value = "/getByProcessStepEvent/{id}")
   public List<CustomField> getByProcessStepEvent(@PathVariable Long id) {
     return customFieldService.getByProcessStepEvent(id);
