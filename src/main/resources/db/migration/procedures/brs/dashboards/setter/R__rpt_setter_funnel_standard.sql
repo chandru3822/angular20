@@ -293,8 +293,8 @@ insert into flow.company_function_log(function_name, parameters)
 values ('Setter Funnel Standard Report', 'p_custom_start_date: ' || p_custom_start_date ||
                                          ' p_custom_end_date: ' || p_custom_end_date ||
                                          ' p_base_expectation: ' || p_base_expectation ||
-                                         ' p_user_position_ids: ' || p_user_position_ids ||
-                                         ' p_org_ids: ' || p_org_ids ||
+                                         ' p_user_position_ids: ' || p_user_position_ids::text ||
+                                         ' p_org_ids: ' || p_org_ids::text ||
                                          ' p_is_cohort: ' || p_is_cohort);
 
 END

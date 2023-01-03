@@ -74,7 +74,7 @@ BEGIN
     insert into flow.company_function_log(function_name, parameters, run_by_id)
     values ('Get Closer Availability', 'p_start_time: ' || p_start_time ||
                                        ' p_end_time: '|| p_end_time ||
-                                       ' p_postal_code_zone_user_ids: '|| p_postal_code_zone_user_ids ||
+                                       ' p_postal_code_zone_user_ids: '|| p_postal_code_zone_user_ids::text ||
                                        ' p_run_by_id: '|| p_run_by_id,
             p_run_by_id);
 

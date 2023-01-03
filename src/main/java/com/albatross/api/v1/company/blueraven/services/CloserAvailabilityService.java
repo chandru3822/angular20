@@ -19,7 +19,7 @@ import java.util.HashMap;
  */
 @Slf4j
 @Service
-@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('CLOSER_AVAILABILITY')")
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('CLOSER_AVAILABILITY')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CloserAvailabilityService {
 

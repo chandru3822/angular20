@@ -28,7 +28,7 @@ import java.util.Optional;
  * Created by Randa Nunn
  */
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('REIMBURSEMENT')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('REIMBURSEMENT')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ReimbursementService {
 

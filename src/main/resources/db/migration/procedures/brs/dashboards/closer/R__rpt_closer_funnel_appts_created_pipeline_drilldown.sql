@@ -53,7 +53,7 @@ BEGIN
                 'p_start_date: ' || p_start_date ||
                 ' p_end_date: ' || p_end_date ||
                 ' p_funnel_id: ' || p_funnel_id ||
-                ' p_source_ids: ' || p_source_ids ||
+                ' p_source_ids: ' || p_source_ids::text ||
                 ' p_run_by_id: ' || p_run_by_id,
             p_run_by_id);
 
