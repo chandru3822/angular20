@@ -20,7 +20,8 @@
               <v-text-field text label="Address 1" autocomplete="new-password"
                             @click="selectAddress1 = false"
                             hide-details
-                            v-model="address1" @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
+                            v-model="address1"
+                            @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
                   <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}">
@@ -34,7 +35,8 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary" @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = !selectAddress1, selectAddress2 = false]"
+            <v-btn class="mt-2" small color="primary"
+                   @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = !selectAddress1, selectAddress2 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
                    :loading="selectAddress1">Select Pin
             </v-btn>
@@ -45,7 +47,8 @@
               <v-text-field text label="Address 2" autocomplete="new-password"
                             @click="selectAddress2 = false"
                             hide-details
-                            v-model="address2" @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
+                            v-model="address2"
+                            @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
                   <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}">
@@ -60,7 +63,8 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary" @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = !selectAddress2, selectAddress1 = false]"
+            <v-btn class="mt-2" small color="primary"
+                   @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = !selectAddress2, selectAddress1 = false]"
                    :disabled="mapResources.length === 0 && markers.length === 0"
                    :loading="selectAddress2">Select Pin
             </v-btn>
@@ -72,7 +76,8 @@
             <v-btn text small class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>
             <v-btn color="primary" small :disabled="!address1 || !address2"
                    :loading="loadingDriveTime"
-                   @click="loadDriveTime">Calculate</v-btn>
+                   @click="loadDriveTime">Calculate
+            </v-btn>
           </div>
 
           <div class="mt-2" v-if="drivingDistance || drivingDuration">
@@ -97,7 +102,7 @@
             <br/>
             {{ m.street1 }}<br/>
             {{ m.city }}, {{ m.stateAbbreviation }} {{ m.postalCode }}<br/>
-            {{ m.color }} - {{m.projectProcessStepEventId + markerCount.toString() }}
+            {{ m.color }} - {{ m.projectProcessStepEventId + markerCount.toString() }}
           </span>
         </VCard>
       </MglPopup>
@@ -128,7 +133,7 @@
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import Mapbox from 'mapbox-gl'
-import {MglMap, MglPopup, MglMarker, MglNavigationControl} from '@7oaksgroup/v-mapbox'
+import {MglMap, MglMarker, MglNavigationControl, MglPopup} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
 import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
@@ -206,7 +211,6 @@ export default {
       //   fuzzyMatch: true,
       //   language: 'en'
       // }
-console.log({Mapbox})
       this.mapbox = Mapbox
     },
     selectAddress(suggestion, isFirst) {
@@ -305,14 +309,14 @@ console.log({Mapbox})
     },
     clearColors() {
       this.markers.forEach(m => {
-        if(m.oldColor !== undefined) {
+        if (m.oldColor !== undefined) {
           m.color = m.oldColor
           m.selectedFirst = false
           m.selectedSecond = false
         }
       })
       this.mapResources.forEach(m => {
-        if(m.oldColor !== undefined) {
+        if (m.oldColor !== undefined) {
           m.color = m.oldColor
           m.selectedFirst = false
           m.selectedSecond = false
@@ -380,6 +384,7 @@ console.log({Mapbox})
       }
     },
     async loadDriveTime() {
+      this.$gtag.event('brs_drive_time', {event_category: "engagement", event_label: "Drive Time"})
       this.loadingDriveTime = true
       const {data: first} = await this.getLatLong(this.address1)
       const {data: second} = await this.getLatLong(this.address2)
@@ -414,7 +419,7 @@ console.log({Mapbox})
       }
     },
     async changeMapLocation() {
-      // Here we catching 'load' map event
+      // Here we're catching 'load' map event
       await this.asyncActions.flyTo({
         center: [this.longitude, this.latitude],
         zoom: this.zoom,
@@ -423,7 +428,7 @@ console.log({Mapbox})
 
     },
     async onMapLoad(event) {
-      // Here we catching 'load' map event
+      // Here we're catching 'load' map event
       this.asyncActions = event.component.actions
       this.center = this.latitude && this.longitude ? [this.longitude, this.latitude] : this.defaultCenter
       let zoom = this.zoom ?? this.defaultZoom
