@@ -197,13 +197,9 @@ public class CloserDashboardService {
     params.put("officeFdcRank", officeFdcRank);
     params.put("selectedOrgId", selectedOrgId);
 
-    String sql =
-        officeFdcRank
-            ? "closerDashboard.getCloserTableScoresOffice"
-            : "closerDashboard.getCloserTableScoresRep";
-
-    List<CloserTableScores> closerTableScores =
-        sqlCache.query(sql, params, CloserTableScores.class);
+    List<CloserTableScores> closerTableScores = officeFdcRank
+      ? sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresOffice, params, CloserTableScores.class)
+      : sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresRep, params, CloserTableScores.class);
 
     JSONArray closerTableScoresArray = new JSONArray();
     for (CloserTableScores row : closerTableScores) {
