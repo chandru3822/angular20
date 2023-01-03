@@ -106,20 +106,27 @@
     <ConfirmationDialog :open-dialog="showInfoDialog"
                         hideConfirm
                         @close-dialog="showInfoDialog=false"
+                        width="700"
     >
-      <template v-slot:title>Actions using this requirement:</template>
+      <template v-slot:title>Custom Field Usages: {{usesForField[0].fieldName}}</template>
       <span v-if="!usesForField || usesForField.length === 0">Nothing using this custom field.</span>
       <v-list dense>
-        <v-list-item v-for="(item, index) in usesForField" :key="index">
-          <v-list-item-icon>
-            <v-icon>
-              mdi-circle-small
-            </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            {{ item.groupName }} - {{item.objectType}} - {{item.processStepName | item.eventName}}
-          </v-list-item-content>
-        </v-list-item>
+        <v-simple-table>
+          <thead>
+          <tr>
+            <th>Object Name</th>
+            <th>Object Type</th>
+            <th>Custom Field Group</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="(item, index) in usesForField" :key="index" :class="{'shaded-row': !(index % 2)}">
+            <td>{{item.processStepName || item.eventName}}</td>
+            <td>{{item.objectType}}</td>
+            <td>{{item.groupName}}</td>
+          </tr>
+          </tbody>
+        </v-simple-table>
       </v-list>
       <template v-slot:no>Close</template>
     </ConfirmationDialog>
