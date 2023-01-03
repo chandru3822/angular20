@@ -39,6 +39,7 @@ public class BaseSqlCache {
     jdbc = in;
   }
 
+  @Deprecated
   public String getByKey(String key) {
     return sqlXmlParser.getSqlByKey(key);
   }
@@ -48,6 +49,7 @@ public class BaseSqlCache {
     return update(key, paramSource, queryArgs);
   }
 
+  @Deprecated
   public int update(String key, SqlParameterSource params, String... queryArgs) {
     String sql = getByKey(key);
     if (queryArgs.length > 0) {
@@ -62,6 +64,7 @@ public class BaseSqlCache {
     return jdbc.update(sql, paramSource);
   }
 
+  @Deprecated
   public Number updateReturningId(String key, Map<String, Object> params, String keyColumn) {
     MapSqlParameterSource paramSource = new MapSqlParameterSource(params);
     String sql = getByKey(key);
@@ -81,6 +84,7 @@ public class BaseSqlCache {
     return generatedKeyHolder.getKey();
   }
 
+  @Deprecated
   public <T> T queryForObject(String key, Map<String, Object> params, Class<T> elementType) {
     MapSqlParameterSource paramSource = scrubParams(params);
     String sql = getByKey(key);
@@ -88,12 +92,14 @@ public class BaseSqlCache {
     return (T) jdbc.queryForObject(sql, paramSource, elementType);
   }
 
+  @Deprecated
   public <T> List<T> queryForList(String key, Map<String, Object> params, Class<T> elementType) {
     MapSqlParameterSource paramSource = scrubParams(params);
     String sql = getByKey(key);
     return jdbc.queryForList(sql, paramSource, elementType);
   }
 
+  @Deprecated
   public <T> T queryForMap(String key, Map<String, Object> params) {
     MapSqlParameterSource paramSource = scrubParams(params);
     String sql = getByKey(key);
@@ -106,6 +112,7 @@ public class BaseSqlCache {
     return (T) jdbc.queryForMap(sql, paramSource);
   }
 
+  @Deprecated
   public <T> Optional<T> queryForObjectOptional(
     String key, Map<String, Object> params, Class<T> elementType) {
     try {
@@ -118,27 +125,32 @@ public class BaseSqlCache {
     }
   }
 
+  @Deprecated
   public void query(String key, Map<String, Object> params, RowCallbackHandler rse) {
     MapSqlParameterSource paramSource = scrubParams(params);
     String sql = getByKey(key);
     jdbc.query(sql, paramSource, rse);
   }
 
+  @Deprecated
   public <T> List<T> query(String key, Map<String, Object> params, Class<T> elementType) {
     return queryBySql(getByKey(key), params, elementType);
   }
 
+  @Deprecated
   public <T> List<T> query(
     String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
     return queryBySql(sql, params, elementType);
   }
 
+  @Deprecated
   public <T> List<T> query(String key, Map<String, Object> params, RowMapper<T> rowMapper) {
     String sql = getByKey(key);
     return queryBySql(sql, params, rowMapper);
   }
 
+  @Deprecated
   public <T> List<T> query(
     String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
@@ -176,16 +188,19 @@ public class BaseSqlCache {
     }
   }
 
+  @Deprecated
   public <T> Optional<T> get(String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
     return getBySql(sql, params, elementType);
   }
 
+  @Deprecated
   public <T> Optional<T> get(String key, Map<String, Object> params, RowMapper<T> rowMapper) {
     String sql = getByKey(key);
     return getBySql(sql, params, rowMapper);
   }
 
+  @Deprecated
   public <T> Optional<T> get(
     String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
     String sql = String.format(getByKey(key), queryArgs);
@@ -216,6 +231,7 @@ public class BaseSqlCache {
     return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
   }
 
+  @Deprecated
   public void updateBatch(final String key, final List<?> objects) {
     String sql = getByKey(key);
     SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(objects.toArray());
