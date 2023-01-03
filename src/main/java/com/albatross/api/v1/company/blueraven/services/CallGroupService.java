@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('CALL_GROUPS')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('CALL_GROUPS')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
 public class CallGroupService {

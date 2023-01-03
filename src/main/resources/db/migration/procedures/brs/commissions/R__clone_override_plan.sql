@@ -101,8 +101,8 @@ END IF;
     values ('Clone Override Plan',
             'p_override_plan: ' || p_override_plan ||
             ' p_start_date: '|| p_start_date ||
-            ' p_assigned_users: ' || p_assigned_users ||
-            ' p_receiving_users: ' || p_receiving_users ||
+            ' p_assigned_users: ' || p_assigned_users::text ||
+            ' p_receiving_users: ' || p_receiving_users::text ||
             ' p_created_by: ' || p_created_by ||
             ' p_user_to_add: ' || p_user_to_add,
             p_created_by);

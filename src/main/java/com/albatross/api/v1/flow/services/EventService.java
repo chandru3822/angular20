@@ -28,7 +28,7 @@ import java.util.*;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('EVENTS')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('EVENTS')")
 @RequiredArgsConstructor
 public class EventService {
 

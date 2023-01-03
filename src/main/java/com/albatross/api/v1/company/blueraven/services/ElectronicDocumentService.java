@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@PreAuthorize("(hasCompanyAccess(2) || hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('ELECTRONIC_DOCUMENTS')")
+@PreAuthorize("(hasCompanyAccess(2) || hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('ELECTRONIC_DOCUMENTS')")
 @RequiredArgsConstructor
 public class ElectronicDocumentService {
   private final SqlCache sqlCache;

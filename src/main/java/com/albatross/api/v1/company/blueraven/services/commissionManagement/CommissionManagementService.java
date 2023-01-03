@@ -36,7 +36,7 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('COMMISSIONS')")
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('COMMISSIONS')")
 public class CommissionManagementService {
 
   private final SqlCache sqlCache;

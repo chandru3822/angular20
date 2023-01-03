@@ -100,7 +100,7 @@ BEGIN
     insert into flow.company_function_log(function_name, parameters, run_by_id)
     values ('Clone Commission Plan','p_commission_plan: ' || p_commission_plan ||
                                     ' p_start_date: '|| p_start_date ||
-                                    ' p_users: ' || p_users ||
+                                    ' p_users: ' || p_users::text ||
                                     ' p_created_by: ' || p_created_by,
             p_created_by);
 

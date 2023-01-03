@@ -20,7 +20,7 @@ import java.util.Optional;
  * Created by Joseph Canto on 2019-07-12.
  */
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('AHJ')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('AHJ')")
 @RequiredArgsConstructor
 public class AhjService {
   private final SqlCache sqlCache;

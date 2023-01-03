@@ -26,7 +26,7 @@ import java.util.Optional;
  * Created by Randa Nunn on 2021-03-12.
  */
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('TOURNAMENTS')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('TOURNAMENTS')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TournamentService {
 

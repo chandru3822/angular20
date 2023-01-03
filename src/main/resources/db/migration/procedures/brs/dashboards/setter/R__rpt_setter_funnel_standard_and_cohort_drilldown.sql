@@ -94,8 +94,8 @@ insert into flow.company_function_log(function_name, parameters)
 values ('Setter Funnel Standard and Cohort Drilldown Report', 'p_start_date: ' || p_start_date ||
                                                               ' p_end_date: ' || p_end_date ||
                                                               ' p_funnel_id: ' || p_funnel_id ||
-                                                              ' p_user_position_ids: ' || p_user_position_ids ||
-                                                              ' p_org_ids: ' || p_org_ids);
+                                                              ' p_user_position_ids: ' || p_user_position_ids::text ||
+                                                              ' p_org_ids: ' || p_org_ids::text);
 
 END
 $function$

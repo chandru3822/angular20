@@ -216,7 +216,7 @@ BEGIN
                                     ' p_project_process_step_id: '|| p_project_process_step_id ||
                                     ' p_project_process_step_event_id: '|| p_project_process_step_event_id ||
                                     ' p_appointment_start_time: '|| p_appointment_start_time ||
-                                    ' p_users: '|| p_users ||
+                                    ' p_users: '|| p_users::text ||
                                     ' p_remote: '|| p_remote);
 
 END

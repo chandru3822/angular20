@@ -27,7 +27,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('AHJ')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('AHJ')")
 @RequiredArgsConstructor
 public class AhjPermitService {
   private final SqlCache sqlCache;

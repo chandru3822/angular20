@@ -25,7 +25,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('CLOSER_DASHBOARD')")
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('CLOSER_DASHBOARD')")
 @RequiredArgsConstructor
 public class CloserDashboardService {
 
@@ -344,7 +344,7 @@ public class CloserDashboardService {
   public String funnelStandard(FunnelRequest funnelRequest) {
     String sqlQuery;
     sqlQuery =
-        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
+        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
 
     return runFunnelQuery(
         sqlQuery,
@@ -380,7 +380,7 @@ public class CloserDashboardService {
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, false)";
+        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, false, :currentUserId::bigint)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,
@@ -394,7 +394,7 @@ public class CloserDashboardService {
 
   public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true)";
+        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true, :currentUserId::bigint)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,

@@ -22,7 +22,7 @@ import java.util.*;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('DATA_VIEW')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('DATA_VIEW')")
 @RequiredArgsConstructor
 public class DataViewService {
 

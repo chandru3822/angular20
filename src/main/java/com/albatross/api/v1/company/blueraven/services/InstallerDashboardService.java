@@ -23,7 +23,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('INSTALLER_DASHBOARD')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('INSTALLER_DASHBOARD')")
 @RequiredArgsConstructor
 public class InstallerDashboardService {
 
