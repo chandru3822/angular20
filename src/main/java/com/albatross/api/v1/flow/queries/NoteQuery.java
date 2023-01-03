@@ -87,7 +87,7 @@ select n.id,
 
   //language=PostgreSQL
   public final static String insertNoteRelation = """
-select * from flow.insert_note_relation(:primaryId::bigint, :noteId::bigint, :typeId::bigint)
+select * from flow.insert_note_relation(:primaryId::bigint, :noteId::bigint, :typeId::bigint, :currentUserId::bigint)
     """;
 
   //language=PostgreSQL
