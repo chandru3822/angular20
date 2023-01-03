@@ -106,12 +106,11 @@
     <ConfirmationDialog :open-dialog="showInfoDialog"
                         hideConfirm
                         @close-dialog="showInfoDialog=false"
-                        width="700"
+                        :width="700"
     >
-      <template v-slot:title>Custom Field Usages: {{usesForField[0].fieldName}}</template>
+      <template v-slot:title>Custom Field Usages: {{usesForField.length !==0 ? usesForField[0].fieldName : ''}}</template>
       <span v-if="!usesForField || usesForField.length === 0">Nothing using this custom field.</span>
-      <v-list dense>
-        <v-simple-table>
+        <v-simple-table v-else>
           <thead>
           <tr>
             <th>Object Name</th>
@@ -127,7 +126,6 @@
           </tr>
           </tbody>
         </v-simple-table>
-      </v-list>
       <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
