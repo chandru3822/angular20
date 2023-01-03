@@ -116,8 +116,8 @@ where feature_code = 'AHJ_DATABASE';
 DROP FUNCTION IF EXISTS brs.get_brs_ahj_cfv(p_project_id bigint, p_brs_ahj_table character varying, p_brs_ahj_cf_id bigint, p_expected_value character varying);
 
 --rename audit stuff
-drop function if exists brs.ahj_utility_audit();
 drop trigger if exists ahj_utility_custom_field_value_audit_trg ON brs.feat_db_utility_custom_field_value;
+drop function if exists brs.ahj_utility_audit();
 
-drop function if exists brs.ahj_hoa_audit();
 drop trigger if exists ahj_hoa_custom_field_value_audit_trg ON brs.feat_db_hoa_custom_field_value;
+drop function if exists brs.ahj_hoa_audit();
