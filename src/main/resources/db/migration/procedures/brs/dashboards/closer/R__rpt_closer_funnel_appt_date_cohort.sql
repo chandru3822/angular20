@@ -26,7 +26,7 @@ BEGIN
                              rpt.custom_date_range_count,
                              rpt.checked_in_custom_date_range_count
                       from brs.rpt_closer_funnel_standard_event_based(p_custom_start_date, p_custom_end_date,
-                                                                            p_user_position_ids, p_org_ids) rpt
+                                                                            p_user_position_ids, p_org_ids, p_run_by_id) rpt
                       union all
                       (
                         --this subset has to have everything in it that you might need later (prevents from having to query project_details table more than once)
@@ -161,8 +161,8 @@ BEGIN
     insert into flow.company_function_log(function_name, parameters, run_by_id)
     values ('Closer Funnel Appointment Date Cohort', 'p_custom_start_date: ' || p_custom_start_date ||
                                                      ' p_custom_end_date: ' || p_custom_end_date ||
-                                                     ' p_user_position_ids: ' || p_user_position_ids ||
-                                                     ' p_org_ids: ' || p_org_ids ||
+                                                     ' p_user_position_ids: ' || p_user_position_ids::text ||
+                                                     ' p_org_ids: ' || p_org_ids::text ||
                                                      ' p_run_by_id: ' || p_run_by_id,
             p_run_by_id);
 

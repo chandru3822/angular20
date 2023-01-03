@@ -41,7 +41,7 @@ BEGIN
 
     insert into flow.company_function_log(function_name, parameters, run_by_id)
     values ('Get Total Overrides', 'p_payroll_id: ' || p_payroll_id ||
-                                   ' p_project_ids: ' || p_project_ids ||
+                                   ' p_project_ids: ' || p_project_ids::text ||
                                    ' p_position_id: ' || p_position_id ||
                                    ' p_user_id: ' || p_user_id,
             p_user_id);

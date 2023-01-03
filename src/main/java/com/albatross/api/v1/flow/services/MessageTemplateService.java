@@ -18,7 +18,7 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('SMS_INBOX')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('SMS_INBOX')")
 @RequiredArgsConstructor
 public class MessageTemplateService {
 

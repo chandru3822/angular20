@@ -129,7 +129,7 @@ BEGIN
     values ('Assign Users to Matches', 'p_tournament_id: ' || p_tournament_id ||
                                        ' p_tournament_pool_id: '|| p_tournament_pool_id ||
                                        ' p_user_id: '|| p_user_id ||
-                                       ' p_seeded_matches: '|| p_seeded_matches,
+                                       ' p_seeded_matches: '|| p_seeded_matches::text,
             p_user_id);
 
 END

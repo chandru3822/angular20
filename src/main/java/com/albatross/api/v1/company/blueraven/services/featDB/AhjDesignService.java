@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('AHJ')")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('AHJ')")
 @RequiredArgsConstructor
 public class AhjDesignService {
   private final SqlCache sqlCache;

@@ -244,7 +244,7 @@ BEGIN
 
     insert into flow.company_function_log(function_name, parameters)
     values ('Get Commission Account Details for Setters', 'p_payroll_id: ' || p_payroll_id ||
-                                                          ' p_project_ids: ' || p_project_ids ||
+                                                          ' p_project_ids: ' || p_project_ids::text ||
                                                           ' p_contact_id: ' || p_contact_id ||
                                                           ' p_sales_rep: ' || p_sales_rep ||
                                                           ' p_cancel_start_date: ' || p_cancel_start_date ||

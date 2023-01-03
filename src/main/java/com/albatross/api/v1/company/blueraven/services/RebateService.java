@@ -28,7 +28,7 @@ import java.util.Optional;
  * Created by John Berns on 2020-04-21.
  */
 @Service
-@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('REBATES')")
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('REBATES')")
 public class RebateService {
   @Autowired
   private SqlCache sqlCache;

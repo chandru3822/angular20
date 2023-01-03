@@ -25,7 +25,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('CLOSER_DASHBOARD')")
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('CLOSER_DASHBOARD')")
 @RequiredArgsConstructor
 public class CloserDashboardService {
 
@@ -197,13 +197,9 @@ public class CloserDashboardService {
     params.put("officeFdcRank", officeFdcRank);
     params.put("selectedOrgId", selectedOrgId);
 
-    String sql =
-        officeFdcRank
-            ? "closerDashboard.getCloserTableScoresOffice"
-            : "closerDashboard.getCloserTableScoresRep";
-
-    List<CloserTableScores> closerTableScores =
-        sqlCache.query(sql, params, CloserTableScores.class);
+    List<CloserTableScores> closerTableScores = officeFdcRank
+      ? sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresOffice, params, CloserTableScores.class)
+      : sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresRep, params, CloserTableScores.class);
 
     JSONArray closerTableScoresArray = new JSONArray();
     for (CloserTableScores row : closerTableScores) {
@@ -344,7 +340,7 @@ public class CloserDashboardService {
   public String funnelStandard(FunnelRequest funnelRequest) {
     String sqlQuery;
     sqlQuery =
-        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
+        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
 
     return runFunnelQuery(
         sqlQuery,
@@ -380,7 +376,7 @@ public class CloserDashboardService {
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, false)";
+        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, false, :currentUserId::bigint)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,
@@ -394,7 +390,7 @@ public class CloserDashboardService {
 
   public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true)";
+        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true, :currentUserId::bigint)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,

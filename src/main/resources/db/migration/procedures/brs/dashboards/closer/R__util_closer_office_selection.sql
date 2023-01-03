@@ -110,9 +110,9 @@ BEGIN
 
     insert into flow.company_function_log(function_name, parameters, run_by_id)
     values ('Closer Office Selection', 'p_platform_user_id: ' || p_platform_user_id ||
-                                       ' p_area_ids: ' || p_area_ids ||
-                                       ' p_region_ids: ' || p_region_ids ||
-                                       ' p_district_ids: ' || p_district_ids,
+                                       ' p_area_ids: ' || p_area_ids::text ||
+                                       ' p_region_ids: ' || p_region_ids::text ||
+                                       ' p_district_ids: ' || p_district_ids::text,
             p_platform_user_id);
 
 END

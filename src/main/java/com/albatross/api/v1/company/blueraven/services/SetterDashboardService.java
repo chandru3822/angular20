@@ -20,7 +20,7 @@ import java.util.List;
  * Created by Joseph Canto on 2020-07-06.
  */
 @Service
-@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('SETTER_DASHBOARD')")
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('SETTER_DASHBOARD')")
 public class SetterDashboardService {
   @Autowired
   private SecurityService securityService;

@@ -22,7 +22,7 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("(hasCompanyAccess(2) || hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccessLevel('DATABASE')")
+@PreAuthorize("(hasCompanyAccess(2) || hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('DATABASE')")
 @RequiredArgsConstructor
 public class DbFunctionService {
 
