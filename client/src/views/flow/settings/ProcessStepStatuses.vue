@@ -346,7 +346,7 @@
       },
       copyToClipBoard(textValue){
         navigator.clipboard.writeText(textValue);
-        this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+        this.snackbar = getSnackbar('SUCCESS', 'Copied id to clipboard')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       },
       closeDeleteDialog() {

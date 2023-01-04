@@ -164,7 +164,8 @@
                     <v-icon color="primary">drag_handle</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-text-field
+                    <div class="flex-align-items-center">
+                      <v-text-field
                       class="one-hunned"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
@@ -172,6 +173,15 @@
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
                     </v-text-field>
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
+                                 v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                        </template>
+                        <span>List of Value ID: {{ddo.id}}</span>
+                        <div class="text-center">(click to copy)</div>
+                      </v-tooltip>
+                    </div>
                   </v-list-item-content>
                   <v-list-item-action class="clickable" @click="ddo.archived = true">
                     <v-icon color="primary">delete</v-icon>
@@ -191,6 +201,7 @@
                     <v-icon color="primary">drag_handle</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
+                    <div flex-align-items-center>
                     <v-text-field
                       class="one-hunned"
                       :readonly="!userCanEdit"
@@ -199,6 +210,15 @@
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
                     </v-text-field>
+                      <v-tooltip left>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
+                                 v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                        </template>
+                        <span>List of Value ID: {{ddo.id}} </span>
+                        <div class="text-center">(click to copy)</div>
+                      </v-tooltip>
+                    </div>
                   </v-list-item-content>
                   <v-list-item-action v-if="userCanDelete" class="clickable" @click="ddo.archived = true">
                     <v-icon color="primary">delete</v-icon>
@@ -456,7 +476,12 @@ export default {
       }
       return (!customField.fieldName && !customField.newFieldName) || !customField.companyDataType || invalidOptions || invalidCustomSql;
 
-    }
+    },
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied id to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
   }
 };
 </script>
