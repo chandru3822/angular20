@@ -2,7 +2,6 @@
   <v-container id="ahj-list-container">
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
-
         <v-data-table
           :headers="headers"
           :items="filteredAhjs"
@@ -15,7 +14,7 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ', 'ADD')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -64,10 +63,10 @@
                   <router-link :to="`ahj/${item.id}/inspection`" class="mr-3 ahj-link primary--text">Inspection</router-link>
                   <router-link :to="`ahj/${item.id}/design`" class="mr-3 ahj-link primary--text">Design</router-link>
                 </span>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
                 </v-icon>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
                   delete
                 </v-icon>
               </td>

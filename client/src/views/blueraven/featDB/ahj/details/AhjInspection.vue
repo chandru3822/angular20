@@ -253,7 +253,7 @@ export default {
       return this.customFieldGroups.filter(cfg => cfg.id !== 45)
     },
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
+      return this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')
     },
     expandedAll(){
       if(this.expandedGroups === this.totalGroups){

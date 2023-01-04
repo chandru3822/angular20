@@ -375,7 +375,7 @@ const router = new Router({
           name: 'featDbContainer',
           meta: {title: 'Database'},
           component: () => {
-            if (store.getters.userHasFeature('AHJ_DATABASE')) {
+            if (store.getters.userHasFeature('DATABASE')) {
               return import (/* webpackChunkName: "featDb" */ './views/blueraven/featDB/FeatDbContainer.vue')
             } else {
               return accessDenied()
@@ -387,7 +387,7 @@ const router = new Router({
               name: 'ahjs',
               meta: {title: 'Database - AHJ'},
               component: () => {
-                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                if (store.getters.userHasFeature('AHJ')) {
                   return import (/* webpackChunkName: "featDbAhj" */ './views/blueraven/featDB/ahj/Ahjs.vue')
                 } else {
                   return accessDenied()
@@ -399,7 +399,7 @@ const router = new Router({
               meta: {title: 'Database - AHJ'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                if (store.getters.userHasFeature('AHJ')) {
                   return import (/* webpackChunkName: "featDbAhjDetails" */ './views/blueraven/featDB/ahj/details/AhjDetails.vue')
                 } else {
                   return accessDenied()
@@ -427,7 +427,7 @@ const router = new Router({
               name: 'utilities',
               meta: {title: 'Database - Utility'},
               component: () => {
-                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                if (store.getters.userHasFeature('UTILITY')) {
                   return import (/* webpackChunkName: "featDbUtility" */ './views/blueraven/featDB/utility/Utilities.vue')
                 } else {
                   return accessDenied()
@@ -439,7 +439,7 @@ const router = new Router({
               meta: {title: 'Database - Utility'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                if (store.getters.userHasFeature('UTILITY')) {
                   return import (/* webpackChunkName: "featDbUtilityDetauks" */ './views/blueraven/featDB/utility/UtilityDetails.vue')
                 } else {
                   return accessDenied()
@@ -450,7 +450,7 @@ const router = new Router({
               name: 'hoa',
               meta: {title: 'Albatross - HOA'},
               component: () => {
-                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                if (store.getters.userHasFeature('HOA')) {
                   return import (/* webpackChunkName: "featDbHoa" */ './views/blueraven/featDB/hoa/Hoas.vue')
                 } else {
                   return accessDenied()
@@ -462,7 +462,7 @@ const router = new Router({
               meta: {title: 'Database - HOA'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('AHJ_DATABASE')) {
+                if (store.getters.userHasFeature('HOA')) {
                   return import (/* webpackChunkName: "featDbHoaDetails" */ './views/blueraven/featDB/hoa/HoaDetails.vue')
                 } else {
                   return accessDenied()

@@ -17,13 +17,14 @@
     </template>
     <div>
       <v-list>
-        <v-list-item v-for="(item, index) in companyTools"
-                     :class="{'pa-0': item.featureCode === 'TOURNAMENTS'}"
-                     :key="index" @click="closeMenu(item)" :to="item.featurePath">
-          <v-list-item-title v-if="item.featureCode !== 'TOURNAMENTS'">{{item.featureName}}</v-list-item-title>
+        <v-list-item v-for="(item, index) in mutableCompanyTools"
+                     :class="{'pa-0': item.featureCode === 'TOURNAMENTS' || item.featureCode ==='DATABASE'}"
+                     :key="index" @click="closeMenu(item)"
+                     :to="item.featurePath">
+          <v-list-item-title v-if="item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASE'">{{item.featureName}}</v-list-item-title>
 
           <v-list-group
-            v-else
+            v-else-if="item.featureCode == 'TOURNAMENTS'"
             class="pa-0"
             :value="false"
             @click="loadBrsTournaments"
@@ -56,6 +57,29 @@
               <v-list-item-title>{{t.tournamentName}}</v-list-item-title>
             </v-list-item>
           </v-list-group>
+          <v-list-group
+            v-else
+            class="pa-0"
+            :value="false"
+            @click="loadDatabaseOptions(index)"
+            style="width: 100%"
+          >
+            <template v-slot:activator>
+              <v-list-item-title >{{item.featureName}}</v-list-item-title>
+            </template>
+
+
+            <v-list-item
+              v-for="(t, i) in databaseOptions"
+              :key="i"
+              class="px-7"
+              @click="closeMenu(t)"
+              :to="`${databasePaths[i]}`"
+              link
+            >
+              <v-list-item-title>{{t}}</v-list-item-title>
+            </v-list-item>
+          </v-list-group>
       </v-list-item>
       </v-list>
     </div>
@@ -68,6 +92,7 @@
   import SpinnerInline from '@/components/SpinnerInline'
   import { getRequest, getSnackbar } from '@/helpers/helpers'
   const { VITE_ENV } =  import.meta.env
+  import { AppMutations } from '@/stores/AppStore'
 
   export default {
     name: 'CompanyTools',
@@ -85,6 +110,7 @@
         tournaments: [],
         tourneysLoading: false,
         loadComplete: false,
+        mutableCompanyTools: this.companyTools,
         userId: this.$store.state.user.details.id,
         headerColor: VITE_ENV === 'local' ? constants.LOCAL_COLOR :
                      VITE_ENV === 'dev' || VITE_ENV === 'stage' ?  constants.STAGE_COLOR :
@@ -92,13 +118,18 @@
                      VITE_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
         menuOpen: false,
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
+        databaseLoaded: false,
+        databaseOptions: [],
+        databasePaths: []
       }
     },
     computed: {},
-    created () {},
+    created () {
+      this.filterForParents();
+    },
     methods: {
       closeMenu(item) {
-        if(item.featureCode !== 'TOURNAMENTS') {
+        if(item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASE') {
           this.menuOpen = false
         }
       },
@@ -113,6 +144,27 @@
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournaments')
           this.tourneysLoading = false
         }
+      },
+
+      async loadDatabaseOptions(index) {
+        this.databaseOptions = this.mutableCompanyTools[index].childNames;
+        this.databasePaths = this.mutableCompanyTools[index].childPaths;
+      },
+
+      async filterForParents() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        var filteredTools = this.companyTools.slice().reverse();
+        var lastName = " ";
+        this.companyTools.slice().reverse().forEach(
+          x => {
+            if (x.featureName == lastName) {
+              filteredTools.splice(filteredTools.indexOf(x), 1);
+            }
+            lastName = x.featureName;
+          }
+      );
+        this.mutableCompanyTools = filteredTools.reverse();
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   }
