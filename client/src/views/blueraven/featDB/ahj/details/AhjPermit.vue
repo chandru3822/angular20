@@ -188,7 +188,7 @@ export default {
   },
   computed: {
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
+      return this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')
     },
     hardCodedDocsMap() {
       const docsMap = new Map()
@@ -242,7 +242,7 @@ export default {
     editBrsTechnicianPermitSubmissionInstructions: false,
     totalGroups: 4,
     expandedGroups: 4,
-    // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
+    // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT'),
     ahjPermit: {
       submissionChecklist: [],
       revisionChecklist: [],

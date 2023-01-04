@@ -17,18 +17,21 @@ public class FeatureQuery {
   //language=PostgreSQL
   public final static String getCompanyTools = """
     select cf.id,
-              cf.feature_name,
-              f.feature_code,
+       coalesce((select f.feature_name from flow.feature f where f.id = cf.parent_company_feature_id), f.feature_name) as feature_name,
+       coalesce((select f.feature_code from flow.feature f where f.id = cf.parent_company_feature_id), f.feature_code) as feature_code,
+       f.feature_code as child_code,
+       f.feature_name as child_name,
               f.feature_path,
               f.is_system,
-              cf.archived
+              cf.archived,
+              cf.parent_company_feature_id
        from flow.company_feature cf
            inner join flow.feature f on f.id = cf.feature_id
        where company_id = :companyId
        and cf.archived is not true
        and f.archived is not true
-       and f.is_system is not true
-       order by cf.feature_name
+       and cf.show_in_tools is true
+       order by feature_name
        """;
 
   //language=PostgreSQL
@@ -93,32 +96,37 @@ public class FeatureQuery {
   //language=PostgreSQL
   public final static String getForUser = """
     select cf.id,
-           cf.feature_name as "featureName",
-           cf.company_id as "companyId",
-           cf.feature_id as "featureId",
-           cf.archived,
-           cf.hidden,
-           coalesce((
-                        SELECT array_to_json(array_agg(row_to_json(accessControl)))
-                        FROM (
-                                 select ufac.id,
-                                        ufac.user_id as "userId",
-                                        ufac.company_feature_id as "companyFeatureId",
-                                        ac.id as "accessControlId",
-                                        ac.access_level as "accessLevel",
-                                        ac.access_code as "accessCode",
-                                        ufac.enabled,
-                                        coalesce(( select true from flow.feature_access_control fac where fac.access_control_id = ac.id and fac.feature_id = cf.feature_id), false) as "usedByFeature"
-                                 from flow.access_control ac
-                                          left join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
-                                   and ufac.company_feature_id = cf.id
-                                    and ufac.user_id = :userId
-                                 order by ac.display_order
-                             ) accessControl), '[]') AS "accessControl"
-          from flow.company_feature cf
-          where cf.company_id = :companyId
-            and cf.archived is not true
-          order by cf.feature_name
+    coalesce(concat_ws(' - ', (select f.feature_name from flow.feature f where f.id = cf.parent_company_feature_id), f.feature_name), f.feature_name) as feature_name,
+    cf.company_id as "companyId",
+    cf.feature_id as "featureId",
+    cf.archived,
+    cf.hidden,
+    cf.has_permissions,
+    cf.parent_company_feature_id,
+    coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(accessControl)))
+                  FROM (
+                           select ufac.id,
+                                  ufac.user_id as "userId",
+                                  ufac.company_feature_id as "companyFeatureId",
+                                  ac.id as "accessControlId",
+                                  ac.access_level as "accessLevel",
+                                  ac.access_code as "accessCode",
+                                  ufac.enabled,
+                                  coalesce(( select true from flow.feature_access_control fac where fac.access_control_id = ac.id and fac.feature_id = cf.feature_id), false) as "usedByFeature"
+                           from flow.access_control ac
+                                    left join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
+                               and ufac.company_feature_id = cf.id
+                               and cf.has_permissions is true
+                               and ufac.user_id = :userId
+                           order by ac.display_order
+                       ) accessControl), '[]') AS "accessControl"
+  from flow.company_feature cf
+       inner join flow.feature f on f.id = cf.feature_id
+  where cf.company_id = :companyId
+  and cf.archived is not true
+  and cf.has_permissions is true
+  order by feature_name;
         """;
 
   //language=PostgreSQL
@@ -147,38 +155,86 @@ public class FeatureQuery {
   //language=PostgreSQL
   public final static String getAccessForUser = """
     WITH t as (
-        select feature_id, cf.feature_name, f.feature_code, ac.access_code, uac.enabled
-            from flow.user_feature_access_control uac
-                     inner join flow.company_feature cf on cf.id = uac.company_feature_id
-                     inner join flow.company c on c.id = :companyId
-                     inner join flow.feature f on f.id = cf.feature_id
-                     inner join flow.access_control ac on ac.id = uac.access_control_id
-            where user_id = :userId
-              and cf.archived is not true
-              and enabled is true
-              and cf.company_id = :companyId
-        )
-       SELECT *
-       FROM T
+     select feature_id,
+            f.feature_name,
+            f.feature_code,
+            ac.access_code, uac.enabled
+     from flow.user_feature_access_control uac
+              inner join flow.company_feature cf on cf.id = uac.company_feature_id
+              inner join flow.company c on c.id = :companyId
+              inner join flow.feature f on f.id = cf.feature_id
+              inner join flow.access_control ac on ac.id = uac.access_control_id
+     where user_id = :userId
+       and cf.archived is not true
+       and enabled is true
+       and cf.company_id = :companyId
        UNION
-       select distinct feature_id,
-              cf.feature_name,
-              f.feature_code,
-              ac.access_code,
-              pac.enabled
-       from flow.position_feature_access_control pac
-            inner join flow.position p on p.id = pac.position_id and p.company_id = :companyId
-            inner join flow.company_feature cf on cf.id = pac.company_feature_id
-            inner join flow.company c on c.id = cf.company_id and c.id = :companyId
-            inner join flow.user_position up on up.position_id = pac.position_id and up.user_id = :userId
-            inner join flow.feature f on f.id = cf.feature_id
-            inner join flow.access_control ac on ac.id = pac.access_control_id
-       WHERE pac.enabled is true
-       and up.archived is not true
-         and up.start_date <= now()
-         and cf.archived is not true
-         and (up.end_date is null or up.end_date >= now())
-         and cf.company_id = :companyId
+       (
+           select cf.parent_company_feature_id as feature_id,
+                  (select f.feature_name from flow.feature f where f.id = cf.parent_company_feature_id) as feature_name,
+                  (select f.feature_code from flow.feature f where f.id = cf.parent_company_feature_id) as feature_code,
+                  ac.access_code, uac.enabled
+           from flow.user_feature_access_control uac
+                    inner join flow.company_feature cf on cf.id = uac.company_feature_id
+                    inner join flow.company c on c.id = :companyId
+                    inner join flow.feature f on f.id = cf.feature_id
+                    inner join flow.access_control ac on ac.id = uac.access_control_id
+           where user_id = :userId
+             and cf.parent_company_feature_id is not null
+             and cf.archived is not true
+             and enabled is true
+             and cf.company_id = :companyId
+       )
+  )
+  SELECT *
+  FROM T
+  UNION
+      (select distinct feature_id,
+                 f.feature_name,
+                 f.feature_code,
+                 ac.access_code,
+                 pac.enabled
+      from flow.position_feature_access_control pac
+          inner join flow.position p on p.id = pac.position_id and p.company_id = :companyId
+          inner join flow.company_feature cf on cf.id = pac.company_feature_id
+          inner join flow.company c on c.id = cf.company_id and c.id = :companyId
+          inner join flow.user_position up on up.position_id = pac.position_id and up.user_id = :userId
+          inner join flow.feature f on f.id = cf.feature_id
+          inner join flow.access_control ac on ac.id = pac.access_control_id
+  WHERE pac.enabled is true
+   and up.archived is not true
+   and up.start_date <= now()
+   and
+    cf.archived is not true
+   and
+    cf.has_permissions is true
+   and (up.end_date is
+    null or up.end_date >= now())
+      and cf.company_id = :companyId
+      UNION
+      select distinct cf.parent_company_feature_id as feature_id,
+ (select f.feature_name from flow.feature f where f.id = cf.parent_company_feature_id) as feature_name,
+                  (select f.feature_code from flow.feature f where f.id = cf.parent_company_feature_id) as feature_code,
+                 ac.access_code,
+                 pac.enabled
+      from flow.position_feature_access_control pac
+          inner join flow.position p on p.id = pac.position_id and p.company_id = :companyId
+          inner join flow.company_feature cf on cf.id = pac.company_feature_id
+          inner join flow.company c on c.id = cf.company_id and c.id = :companyId
+          inner join flow.user_position up on up.position_id = pac.position_id and up.user_id = :userId
+          inner join flow.feature f on f.id = cf.feature_id
+          inner join flow.access_control ac on ac.id = pac.access_control_id
+  WHERE pac.enabled is true
+  and cf.parent_company_feature_id is not null
+   and up.archived is not true
+   and up.start_date <= now()
+   and
+    cf.archived is not true
+   and
+    cf.has_permissions is true
+   and (up.end_date is
+    null or up.end_date >= now())
+      and cf.company_id = :companyId);
        """;
 
   //language=PostgreSQL

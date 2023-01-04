@@ -9,7 +9,6 @@
       hide-default-footer
       disable-sort
       show-select
-
       class="elevation-1 mt-1"
     >
       <template #no-data>
