@@ -15,7 +15,7 @@
           <template #header.icons="{}">
             <div class="text-right mr-2">
               <v-btn text @click="addItem" color="primary"
-                     v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+                     v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'ADD')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -65,7 +65,7 @@
                 {{ item.managementCompany || '' }}
               </td>
               <td class="text-right">
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small color="primary"
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'EDIT')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="editHoa(item)">
                   edit
                 </v-icon>

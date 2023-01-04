@@ -114,7 +114,7 @@ export default {
   },
   computed: {
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel("AHJ_DATABASE", "EDIT")
+      return this.$store.getters.userHasFeatureAccessLevel("HOA", "EDIT")
     },
     expandedAll(){
       if(this.expandedGroups === this.totalGroups){

@@ -14,7 +14,7 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('UTILITY', 'edit')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -59,7 +59,7 @@
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left">{{ item.state ? item.state : '' }}</td>
               <td class="text-right">
-                <v-icon color="primary" small class="mr-3 feat-db-link-icon" @click.stop="editUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')">
+                <v-icon color="primary" small class="mr-3 feat-db-link-icon" @click.stop="editUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('UTILITY', 'EDIT')">
                   edit
                 </v-icon>
               </td>

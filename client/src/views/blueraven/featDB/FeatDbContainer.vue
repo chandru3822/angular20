@@ -5,7 +5,7 @@
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">
             <v-btn v-for="tab in tabs" text :to="tab.path" color="primary"
-            :class="{'v-btn--active': isActiveBtn(tab)}">
+            :class="{'v-btn--active': isActiveBtn(tab)}" v-if="hasAccess(tab)">
               {{tab.label}}
             </v-btn>
           </v-toolbar-title>
@@ -32,6 +32,10 @@
         return btn.pathMatches.some(pm => {
           return this.$route.path.includes(pm)
         })
+      },
+
+      hasAccess(tab){
+        return this.$store.getters.userHasFeatureAccessLevel(tab.label.toUpperCase(), 'VIEW')
       }
     }
   }

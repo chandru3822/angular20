@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 public class Feature {
 
-  private Long id;
-  private String featureName, featureCode, featurePath;
+  private Long id, parentCompanyFeatureId;
+  private String featureName, featureCode, featurePath, childName, childCode;
   private Boolean archived, isSystem;
 
 }
