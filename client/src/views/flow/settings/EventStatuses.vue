@@ -180,7 +180,7 @@
     >
       <template v-slot:title>Event Status Usages: {{!!objectsUsingStatus ? objectsUsingStatus.fieldName : ''}}</template>
       <span v-if="!objectsUsingStatus || (objectsUsingStatus.events.length === 0 && objectsUsingStatus.processStepEventActions.length === 0 && objectsUsingStatus.processStepEventRequirements.length === 0)">
-        Nothing using this custom field.
+        Nothing using this event status.
       </span>
       <span v-else>
         <div v-if="objectsUsingStatus.events.length > 0" class="label-large mt-6">Events</div>
@@ -402,9 +402,7 @@ export default {
         const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`, this.apiPath, null, []);
         this.objectsUsingStatus = data
         this.objectsUsingStatus.fieldName = eventStatusName
-        debugger
         this.showInfoDialog = true
-        debugger
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

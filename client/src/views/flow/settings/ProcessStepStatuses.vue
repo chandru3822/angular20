@@ -9,9 +9,9 @@
         </v-card-title>
 
         <v-card-text class="pt-5">
-          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
+          <div v-if="fieldsInUse && fieldsInUse.length > 0" class="mb-5">
             <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events.  You must remove those before deleting this work queue type.</div>
-            <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
+            <div v-for="a in fieldsInUse" :key="a.id" class="ml-5">
               <strong>{{ a.processStepName }}</strong>
             </div>
           </div>
@@ -113,6 +113,7 @@
                     {{item.rootProcessStepStatusType}}
                   </td>
                   <td class="text-right">
+                    <v-btn small text color="primary" @click="getUsesForStatus(item.id, item.processStepStatusType)"><v-icon>mdi-clipboard-list-outline</v-icon></v-btn>
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
                         <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
@@ -145,6 +146,27 @@
       Are you sure you want to delete this status type: <strong>{{toDeleteProcessStepStatusType}}</strong>?
 
     </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="showInfoDialog"
+                        hideConfirm
+                        @close-dialog="showInfoDialog=false"
+    >
+      <template v-slot:title>Process Step Status Usages: {{!!objectsUsingStatus ? objectsUsingStatus.fieldName : ''}}</template>
+      <span v-if="!objectsUsingStatus || objectsUsingStatus.steps.length === 0">
+        Nothing using this process step status.
+      </span>
+      <span v-else id="process-step-table">
+        <div v-if="objectsUsingStatus.steps.length > 0" class="label-large mt-6">Process Steps</div>
+      <v-simple-table v-if="objectsUsingStatus.steps.length > 0">
+        <tbody>
+        <tr v-for="(item, index) in objectsUsingStatus.steps" :key="index" :class="{'shaded-row': objectsUsingStatus.steps.length>1 && !(index % 2)}">
+          <td>{{item.processStepName}}</td>
+        </tr>
+        </tbody>
+      </v-simple-table>
+      </span>
+      <template v-slot:no>Close</template>
+    </ConfirmationDialog>
+
   </v-container>
 </template>
 
@@ -158,6 +180,7 @@
   import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "../../../ConfirmationDialog";
+  import {getRequest} from "../../../helpers/helpers";
 
   export default {
     name: 'Statuses',
@@ -193,7 +216,12 @@
         fieldsInUse: [],
         deleteError: false,
         showDeleteDialog: false,
-        itemToDelete: null
+        itemToDelete: null,
+        showInfoDialog: false,
+        objectsUsingStatus: {
+          fieldName: null,
+          steps: []
+        }
       }
     },
     computed: {
@@ -224,6 +252,21 @@
           const {data, status} = await getStatusTypes()
           this.rootStatusTypes = data
           handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getUsesForStatus(processStepStatusId, processStepStatusName) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/processStep/status/getObjectsUsingStatus/${processStepStatusId}`, this.apiPath, null, []);
+          this.objectsUsingStatus.steps = data
+          this.objectsUsingStatus.fieldName = processStepStatusName
+          this.showInfoDialog = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -332,4 +375,10 @@
     padding-right: 0;
     padding-top: 0;
   }
+</style>
+<style lang="scss">
+#process-step-table > div.v-data-table.theme--light > div.v-data-table__wrapper {
+  max-height: calc(100vh - 450px);
+  overflow-y: scroll;
+}
 </style>
