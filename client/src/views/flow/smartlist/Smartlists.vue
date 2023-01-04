@@ -30,5 +30,22 @@
 </script>
 
 <style scoped lang="scss">
+@import "@/styles/main.scss";
 
+:deep(.v-data-table__wrapper) {
+  height: calc(100vh - 350px);
+  min-height: 300px;
+}
+
+:deep(tr:nth-of-type(even)) {
+  @extend .shaded-row;
+}
+
+:deep(.td-action) {
+  width: 8%;
+}
+
+:deep(.td-name) {
+  width: 37%;
+}
 </style>

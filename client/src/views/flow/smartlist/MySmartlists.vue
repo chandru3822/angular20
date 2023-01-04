@@ -32,21 +32,21 @@
 
           <template #item="{item: smartlist}">
             <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
-              <td>{{ smartlist.name }}</td>
+              <td class="td-name">{{ smartlist.name }}</td>
               <td>{{ smartlist.owner }}</td>
-              <td class="sized-td">
+              <td class="td-action">
                 <smartlist-copy
                   :smartlist="smartlist"
                   @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
                 />
               </td>
-              <td class="sized-td">
+              <td class="td-action">
                 <smartlist-share :smartlist="smartlist" />
               </td>
-              <td class="sized-td">
+              <td class="td-action">
                 <smartlist-export :smartlist="smartlist" />
               </td>
-              <td class="sized-td">
+              <td class="td-action">
                 <smartlist-delete
                   :smartlist-id="smartlist.id"
                   @deleted="smartlists = smartlists.filter(s => s.id !== smartlist.id)"
@@ -105,20 +105,5 @@ let getSmartlists = async () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/main.scss";
 
-::v-deep {
-  .v-data-table__wrapper {
-    height: calc(100vh - 350px);
-    min-height: 300px;
-  }
-}
-
-tr:nth-of-type(even) {
-  @extend .shaded-row;
-}
-
-.sized-td {
-  width: 8%;
-}
 </style>
