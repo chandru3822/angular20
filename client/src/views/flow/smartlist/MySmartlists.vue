@@ -5,7 +5,7 @@
         <v-card flat class="square-card pb-3 px-3" color="white">
           <v-text-field
             v-model="search"
-            append-icon="mdi-magnify"
+            prepend-inner-icon="mdi-magnify"
             label="Search"
             single-line
             hide-details
@@ -13,7 +13,6 @@
         </v-card>
         <v-divider></v-divider>
         <v-data-table
-          class="elevation-1"
           :headers="headers"
           :items="smartlists"
           fixed-header
@@ -33,21 +32,21 @@
 
           <template #item="{item: smartlist}">
             <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
-              <td class="text-left">{{ smartlist.name }}</td>
-              <td class="text-left">{{ smartlist.owner }}</td>
-              <td>
+              <td>{{ smartlist.name }}</td>
+              <td>{{ smartlist.owner }}</td>
+              <td class="sized-td">
                 <smartlist-copy
                   :smartlist="smartlist"
                   @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
                 />
               </td>
-              <td>
+              <td class="sized-td">
                 <smartlist-share :smartlist="smartlist" />
               </td>
-              <td>
+              <td class="sized-td">
                 <smartlist-export :smartlist="smartlist" />
               </td>
-              <td>
+              <td class="sized-td">
                 <smartlist-delete
                   :smartlist-id="smartlist.id"
                   @deleted="smartlists = smartlists.filter(s => s.id !== smartlist.id)"
@@ -117,5 +116,9 @@ let getSmartlists = async () => {
 
 tr:nth-of-type(even) {
   @extend .shaded-row;
+}
+
+.sized-td {
+  width: 8%;
 }
 </style>

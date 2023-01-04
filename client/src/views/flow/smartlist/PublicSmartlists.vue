@@ -5,7 +5,7 @@
         <v-card flat class="square-card pb-3 px-3" color="white">
           <v-text-field
             v-model="search"
-            append-icon="mdi-magnify"
+            prepend-inner-icon="mdi-magnify"
             label="Search"
             single-line
             hide-details

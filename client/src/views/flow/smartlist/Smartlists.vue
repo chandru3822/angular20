@@ -2,7 +2,7 @@
   <v-container id="smartlists-container">
     <v-row>
       <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
+        <v-toolbar color="white" class="elevation-0">
           <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
