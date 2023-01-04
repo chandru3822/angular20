@@ -29,6 +29,7 @@ public class FeatureQuery {
            inner join flow.feature f on f.id = cf.feature_id
        where company_id = :companyId
        and cf.archived is not true
+       and f.is_system is not true
        and f.archived is not true
        and cf.show_in_tools is true
        order by feature_name
