@@ -55,32 +55,32 @@ select 'HOA', 3, (select id from flow.feature where feature_name = 'HOA'), true,
     );
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select (select id from flow.company_feature where feature_name = 'HOA'), 1, 2453836, 2453836 where not exists(
-        select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'HOA') and access_control_id = 1);
+        select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'HOA') and access_control_id = 1);
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select (select id from flow.company_feature where feature_name = 'HOA'), 2, 2453836, 2453836 where not exists(
-        select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'HOA') and access_control_id = 2);
+        select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'HOA') and access_control_id = 2);
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select (select id from flow.company_feature where feature_name = 'HOA'), 3, 2453836, 2453836 where not exists(
-        select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'HOA') and access_control_id = 3);
+        select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'HOA') and access_control_id = 3);
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select(select id from flow.company_feature where feature_name = 'HOA'), 4, 2453836, 2453836 where not exists(
-        select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'HOA') and access_control_id = 4);
+        select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'HOA') and access_control_id = 4);
 
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select (select id from flow.company_feature where feature_name = 'Utility'), 1, 2453836, 2453836 where not exists(
-    select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'Utility') and access_control_id = 1
+    select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'Utility') and access_control_id = 1
     );
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select (select id from flow.company_feature where feature_name = 'Utility'), 2, 2453836, 2453836 where not exists(
-    select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'Utility') and access_control_id = 2
+    select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'Utility') and access_control_id = 2
     );
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select (select id from flow.company_feature where feature_name = 'Utility'), 3, 2453836, 2453836 where not exists(
-        select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'Utility') and access_control_id = 3
+        select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'Utility') and access_control_id = 3
     );
 insert into flow.feature_access_control(feature_id, access_control_id, created_by_id, modified_by_id)
 select (select id from flow.company_feature where feature_name = 'Utility'), 4, 2453836, 2453836 where not exists(
-        select id from flow.feature_access_control where feature_id = (select id from flow.company_feature where feature_name = 'Utility') and access_control_id = 4
+        select id from flow.feature_access_control where feature_id = (select feature_id from flow.company_feature where feature_name = 'Utility') and access_control_id = 4
     );
 
 insert into flow.user_feature_access_control(user_id, company_feature_id, access_control_id, enabled) select user_id, (select id from flow.company_feature where feature_name = 'Utility'),
