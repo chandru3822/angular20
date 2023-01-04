@@ -32,7 +32,7 @@ select 'HOA', 3, (select id from flow.feature where feature_name = 'HOA'), true,
         select id from flow.company_feature where feature_name = 'HOA'
     );
 update flow.company_feature set show_in_tools = false, has_permissions = false, feature_id =
-  (select id from flow.feature where feature_name = 'Database'), has_permissions = false where feature_name = 'Database';
+  (select id from flow.feature where feature_name = 'Database') where feature_name = 'Database';
 insert into flow.feature(feature_name, feature_code, feature_path)
 select 'Utility', 'UTILITY', '/database/utility' where not exists(
         select id from flow.feature where feature_name = 'Utility'
