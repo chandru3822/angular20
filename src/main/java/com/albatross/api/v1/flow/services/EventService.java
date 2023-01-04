@@ -197,27 +197,33 @@ public class EventService {
     sqlCache.updateBySql(EventQuery.deleteStatusFromEvent, params);
   }
 
-  public ResponseEntity<EventController.CannotDeleteEventStatus> deleteCompanyEventStatus(Long id) {
+  public ResponseEntity<EventController.ObjectsUsingEventStatus> deleteCompanyEventStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
 
-    EventController.CannotDeleteEventStatus cannotDelete = new EventController.CannotDeleteEventStatus();
-    List<EventCompanyEventStatusType> events = sqlCache.queryBySql(EventQuery.getEventsWithStatusInUse, Map.of("id", id), EventCompanyEventStatusType.class);
-    List<EventController.ProcessStepEventData> processStepEventActions = sqlCache.queryBySql(EventQuery.getPseaWithStatusInUse, Map.of("id", id), EventController.ProcessStepEventData.class);
-    List<EventController.ProcessStepEventData> processStepRequirement = sqlCache.queryBySql(EventQuery.getPsrWithStatusInUse, Map.of("id", id), EventController.ProcessStepEventData.class);
-    if (events.isEmpty() && processStepEventActions.isEmpty() && processStepRequirement.isEmpty()) {
+      EventController.ObjectsUsingEventStatus cannotDelete = getObjectsUsingEventStatus(id);
+
+    if (cannotDelete.getEvents().isEmpty() && cannotDelete.getProcessStepEventActions().isEmpty() && cannotDelete.getProcessStepEventRequirements().isEmpty()) {
       sqlCache.updateBySql(EventQuery.deleteCompanyStatus, params);
       return ResponseEntity.ok().build();
     }
     else {
-      cannotDelete.setEvents(events);
-      cannotDelete.setProcessStepEventActions(processStepEventActions);
-      cannotDelete.setProcessStepEventRequirements(processStepRequirement);
       return ResponseEntity.badRequest().body(cannotDelete);
     }
 
+  }
+
+  public EventController.ObjectsUsingEventStatus getObjectsUsingEventStatus(Long id){
+      EventController.ObjectsUsingEventStatus objectsUsingEventStatus = new EventController.ObjectsUsingEventStatus();
+      List<EventCompanyEventStatusType> events = sqlCache.queryBySql(EventQuery.getEventsWithStatusInUse, Map.of("id", id), EventCompanyEventStatusType.class);
+      List<EventController.ProcessStepEventData> processStepEventActions = sqlCache.queryBySql(EventQuery.getPseaWithStatusInUse, Map.of("id", id), EventController.ProcessStepEventData.class);
+      List<EventController.ProcessStepEventData> processStepRequirement = sqlCache.queryBySql(EventQuery.getPsrWithStatusInUse, Map.of("id", id), EventController.ProcessStepEventData.class);
+      objectsUsingEventStatus.setEvents(events);
+      objectsUsingEventStatus.setProcessStepEventActions(processStepEventActions);
+      objectsUsingEventStatus.setProcessStepEventRequirements(processStepRequirement);
+      return objectsUsingEventStatus;
   }
 
   public Optional<EventCompanyEventStatusType> assignStatusToEvent(
