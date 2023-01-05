@@ -1,5 +1,3 @@
-import '@tiptap/extension-text-style'
-
 import {Extension, generateHTML, mergeAttributes} from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import TextStyle from '@tiptap/extension-text-style'
@@ -13,8 +11,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import {VueRenderer} from '@tiptap/vue-2'
 import tippy from 'tippy.js'
 import Fuse from 'fuse.js'
-import ReplacementList from './ReplacementList'
-
+import ReplacementList from './ReplacementList.vue'
 
 const FontConfig = Extension.create({
   name: 'fontConfig',
@@ -131,10 +128,7 @@ const suggestion = ({tags = []}) => ({
     let popup
     return {
       onStart: (props) => {
-        component = new VueRenderer(ReplacementList, {
-          parent: this,
-          propsData: props
-        })
+        component = new VueRenderer(ReplacementList, {propsData: props})
         popup = tippy('body', {
           getReferenceClientRect: props.clientRect,
           appendTo: () => document.body,
@@ -163,13 +157,13 @@ const suggestion = ({tags = []}) => ({
           return true
         }
 
-        return component.ref?.onKeyDown(props)
+        return component?.ref?.onKeyDown(props)
       },
 
       onExit() {
         setTimeout(() => {
-          popup[0].destroy()
-          component.destroy()
+          popup[0]?.destroy()
+          component?.destroy()
         }, 100)
 
       }
@@ -204,7 +198,10 @@ const getExtensions = ({tags = []} = {}) => {
   Mention.config.renderHTML = function ({node, HTMLAttributes}) {
     return [
       'span',
-      mergeAttributes({'data-type': this.name, title: node.attrs.label ?? node.attrs.id}, this.options.HTMLAttributes, HTMLAttributes),
+      mergeAttributes({
+        'data-type': this.name,
+        title: node.attrs.label ?? node.attrs.id
+      }, this.options.HTMLAttributes, HTMLAttributes),
       this.options.renderLabel({
         options: this.options,
         node
@@ -225,4 +222,4 @@ const getExtensions = ({tags = []} = {}) => {
   return [...extensions, mention]
 }
 
-export {getExtensions, extensions, generateHTMLFromJSON}
+export {getExtensions, generateHTMLFromJSON}
