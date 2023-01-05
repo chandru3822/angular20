@@ -76,7 +76,6 @@ import {getAvailableForEvent} from '@/services/eventStatusTypeService'
 import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters"
 import orderBy from "lodash.orderby"
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
@@ -84,7 +83,6 @@ export default {
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     draggable
   },
   data () {

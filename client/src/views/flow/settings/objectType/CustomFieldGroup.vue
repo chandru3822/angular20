@@ -481,7 +481,6 @@ import Sortable from 'sortablejs'
 
 import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
@@ -489,7 +488,6 @@ export default {
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     draggable,
   },
   props: {
