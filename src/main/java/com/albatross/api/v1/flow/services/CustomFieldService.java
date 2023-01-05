@@ -157,25 +157,31 @@ public class CustomFieldService {
     return findCustomFieldById(id);
   }
 
-  public List<CustomField> deleteField(Long id) {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("fieldId", id);
-    params.put("modifiedById", currentUser.trueUserId());
-
-    // check if field is in use by a custom field group
-    List<CustomField> fields =
-      sqlCache.queryBySql(CustomFieldQuery.getGroupsUsingField, params, CustomField.class);
-
-    // if the field is assigned somewhere, return those values to frontend
-    if (!fields.isEmpty()) {
-      return fields;
-    } else {
-      // archive single custom field
-      sqlCache.updateBySql(CustomFieldQuery.deleteField, params);
-      return null;
-    }
+  public List<CustomField> getGroupsUsingField(Long id){
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("fieldId", id);
+      return sqlCache.queryBySql(CustomFieldQuery.getGroupsUsingField, params, CustomField.class);
   }
+
+
+    public List<CustomField> deleteField(Long id) {
+        // check if field is in use by a custom field group
+        List<CustomField> fields = getGroupsUsingField(id);
+
+        // if the field is assigned somewhere, return those values to frontend
+        if (!fields.isEmpty()) {
+            return fields;
+        } else {
+            // archive single custom field
+            User currentUser = securityService.getCurrentUser();
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("fieldId", id);
+            params.put("modifiedById", currentUser.trueUserId());
+
+            sqlCache.updateBySql(CustomFieldQuery.deleteField, params);
+            return null;
+        }
+    }
 
   public List<CustomField> getByProcessStepEvent(Long id) {
     User user = securityService.getCurrentUser();

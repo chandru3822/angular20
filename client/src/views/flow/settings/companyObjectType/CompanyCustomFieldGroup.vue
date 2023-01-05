@@ -42,6 +42,14 @@
                 </td>
                 <td>
                   <div class="item-icons">
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                               v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                      </template>
+                      <span>Custom Field Group Id: {{item.id}}</span>
+                      <div class="text-center">(click to copy)</div>
+                    </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
                       <v-btn small text color="primary"
                              @click="item.edit = !item.edit">
@@ -343,6 +351,14 @@
                             </v-btn>
                           </div>
                         </v-list-item-content>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
+                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          </template>
+                          <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
+                          <div class="text-center">(click to copy)</div>
+                        </v-tooltip>
                         <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text
                                color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
                           <v-icon>delete</v-icon>
@@ -888,6 +904,11 @@ export default {
       this.$set(field, 'positionsChanged', true) //todo change to use the 'attr'
 
     },
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    }
   }
 }
 </script>
