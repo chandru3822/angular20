@@ -69,12 +69,17 @@ public class ProposalRqueueListeners {
     user.setHighestCompanyId(brSystemUser.getCompanyId());
     user.setHighestParentCompanyId(brSystemUser.getCompanyId());
 
-    final FeatureAccessControl featureAccessControl = new FeatureAccessControl();
-    featureAccessControl.setEnabled(true);
-    featureAccessControl.setFeatureCode("PROPOSALS");
-    featureAccessControl.setAccessCode("ADMIN");
+    final FeatureAccessControl proposalAdminFac = new FeatureAccessControl();
+    proposalAdminFac.setEnabled(true);
+    proposalAdminFac.setFeatureCode("PROPOSALS");
+    proposalAdminFac.setAccessCode("ADMIN");
 
-    final UserAccountDetails uad = new UserAccountDetails(user, List.of(featureAccessControl));
+    final FeatureAccessControl projectAdminFac = new FeatureAccessControl();
+    projectAdminFac.setEnabled(true);
+    projectAdminFac.setFeatureCode("PROJECTS");
+    projectAdminFac.setAccessCode("ADMIN");
+
+    final UserAccountDetails uad = new UserAccountDetails(user, List.of(proposalAdminFac, projectAdminFac));
 
     securityService.setCurrentUserDetails(uad);
   }
