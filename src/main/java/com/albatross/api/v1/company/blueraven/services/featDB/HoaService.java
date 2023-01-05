@@ -89,6 +89,15 @@ public class HoaService {
     return getHoaById(id);
   }
 
+  public void deleteHoa(Long id) {
+      User currentUser = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("id", id);
+      params.put("currentUser", currentUser.trueUserId());
+
+      sqlCache.updateBySql(HoaQuery.delete, params);
+  }
+
   public List<HoaCompany> getHoaCompanies() {
     return sqlCache.queryBySql(HoaQuery.getActiveManagementCompanies, Collections.emptyMap(), HoaCompany.class);
   }
