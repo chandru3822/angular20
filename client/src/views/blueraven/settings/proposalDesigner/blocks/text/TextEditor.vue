@@ -77,6 +77,10 @@ export default {
   background: rgb(255 255 255 / 70%);
   color: black;
   backdrop-filter: blur(10px);
+
+  &:hover {
+    outline: 1px solid rgb(128 128 128 / 70%);
+  }
 }
 
 /* Table-specific styling */

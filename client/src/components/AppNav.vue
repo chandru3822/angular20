@@ -246,6 +246,7 @@ export default {
         var childNames;
         var childPaths;
         const { data } = await getRequest(`/feature/companyTools`, null, [])
+
         this.companyTools = data.filter(d => {
           if(d.parentCompanyFeatureId != null && this.$store.getters.userHasFeature(d.childCode)){
             if(parentId == -1 || (parentId != d.parentCompanyFeatureId)){
@@ -258,16 +259,9 @@ export default {
             d.featurePath = null;
             d.childNames = childNames.slice();
             d.childPaths = childPaths.slice();
+          }
+          return this.$store.getters.userHasFeature(d.childCode);
 
-          }
-          else{
-            if(parentId != -1 ){
-              childNames = []
-              childPaths = []
-              parentId = -1;
-            }
-          }
-          return this.$store.getters.userHasFeature(d.featureCode)
         })
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
