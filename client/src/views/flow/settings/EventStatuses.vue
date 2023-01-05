@@ -182,7 +182,7 @@
       <span v-if="!objectsUsingStatus || (objectsUsingStatus.events.length === 0 && objectsUsingStatus.processStepEventActions.length === 0 && objectsUsingStatus.processStepEventRequirements.length === 0)">
         Nothing using this event status.
       </span>
-      <span v-else>
+      <div v-else id="event-status-uses-table">
         <div v-if="objectsUsingStatus.events.length > 0" class="label-large mt-6">Events</div>
       <v-simple-table v-if="objectsUsingStatus.events.length > 0">
         <tbody>
@@ -223,7 +223,7 @@
         </tr>
         </tbody>
       </v-simple-table>
-      </span>
+      </div>
       <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
@@ -489,6 +489,14 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+#event-status-uses-table > div.v-data-table.theme--light > div.v-data-table__wrapper {
+  max-height: 175px;
+  overflow-y: scroll;
+}
+</style>
+
 
 <style scoped lang="scss">
 
