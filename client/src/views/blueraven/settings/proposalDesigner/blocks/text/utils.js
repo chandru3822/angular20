@@ -1,6 +1,6 @@
 import '@tiptap/extension-text-style'
 
-import {Extension, generateHTML} from '@tiptap/core'
+import {Extension, generateHTML, mergeAttributes} from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import TextStyle from '@tiptap/extension-text-style'
 import Superscript from '@tiptap/extension-superscript'
@@ -201,11 +201,21 @@ const generateHTMLFromJSON = (json) => {
 
 const getExtensions = ({tags = []} = {}) => {
 
+  Mention.config.renderHTML = function ({node, HTMLAttributes}) {
+    return [
+      'span',
+      mergeAttributes({'data-type': this.name, title: node.attrs.label ?? node.attrs.id}, this.options.HTMLAttributes, HTMLAttributes),
+      this.options.renderLabel({
+        options: this.options,
+        node
+      })
+    ]
+  }
+
   const mention = Mention.configure({
     suggestion: suggestion({tags}),
     renderLabel({options, node}) {
       return `${options.suggestion.char}VARIABLE${options.suggestion.endChar}`
-      // return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}${options.suggestion.endChar}`
     },
     HTMLAttributes: {
       class: 'replacement'
