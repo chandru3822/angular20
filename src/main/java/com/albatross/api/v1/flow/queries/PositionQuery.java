@@ -85,11 +85,12 @@ public class PositionQuery {
                    SELECT array_to_json(array_agg(row_to_json(companyFeatures)))
                    FROM (
                             select cf.id,
-                                   cf.feature_name as "featureName",
+                                   coalesce(concat_ws(' - ', (select f.feature_name from flow.feature f where f.id = cf.parent_company_feature_id), f.feature_name), f.feature_name) as "featureName",
                                    cf.company_id as "companyId",
                                    cf.feature_id as "featureId",
                                    cf.hidden,
                                    cf.archived,
+                                   cf.has_permissions,
                                    coalesce((
                                         SELECT array_to_json(array_agg(row_to_json(accessControl)))
                                         FROM (
@@ -107,10 +108,12 @@ public class PositionQuery {
                                                                                                                  and pfac.position_id = p.id
                                                  order by ac.display_order
                                              ) accessControl), '[]') AS "accessControl"
-                            from flow.company_feature cf
+                              from flow.company_feature cf
+                            inner join flow.feature f on f.id = cf.feature_id
                             where cf.company_id = :companyId
                               and cf.archived is not true
-                            order by cf.feature_name
+                              and cf.has_permissions is true
+                            order by "featureName"
                     ) companyFeatures), '[]') AS "companyFeatures"
         from flow.position p
             inner join flow.org_type ot on ot.id = p.org_type_id

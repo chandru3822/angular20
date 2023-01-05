@@ -1,0 +1,6 @@
+update flow.position_feature_access_control set company_feature_id = (select id from flow.company_feature where feature_name = 'AHJ') where company_feature_id = 6;
+insert into flow.position_feature_access_control(position_id, company_feature_id, access_control_id, enabled) select user_id, (select id from flow.company_feature where feature_name = 'Utility'),
+                                                                                                                     access_control_id, enabled from flow.user_feature_access_control where company_feature_id = (select id from flow.company_feature where feature_name = 'AHJ');
+
+insert into flow.position_feature_access_control(position_id, company_feature_id, access_control_id, enabled) select user_id, (select id from flow.company_feature where feature_name = 'HOA'),
+                                                                                                                     access_control_id, enabled from flow.user_feature_access_control where company_feature_id = (select id from flow.company_feature where feature_name = 'AHJ');
