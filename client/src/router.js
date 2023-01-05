@@ -375,7 +375,7 @@ const router = new Router({
           name: 'featDbContainer',
           meta: {title: 'Database'},
           component: () => {
-            if (store.getters.userHasFeature('DATABASE')) {
+            if (store.getters.userHasFeature('DATABASES')) {
               return import (/* webpackChunkName: "featDb" */ './views/blueraven/featDB/FeatDbContainer.vue')
             } else {
               return accessDenied()
