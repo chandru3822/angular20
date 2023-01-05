@@ -492,6 +492,7 @@ public class EventQuery {
       from flow.event_company_event_status_type ecest
         inner join flow.event e on ecest.event_id = e.id
       where e.archived is false and company_event_status_type_id = :id
+      order by e.event_name
     """;
 
   //language=PostgreSQL
@@ -503,6 +504,7 @@ public class EventQuery {
       inner join flow.process_step ps on pse.process_step_id = ps.id
       where psea.archived is false and ps.archived is false and e.archived is false
         and psea.company_event_status_type_id = :id
+        order by e.event_name
     """;
 
   //language=PostgreSQL
@@ -513,6 +515,7 @@ public class EventQuery {
             inner join flow.process_step ps on pse.process_step_id = ps.id
             inner join flow.event e on pse.event_id = e.id
           where psr.archived is false and pse.archived is false and psr.process_step_requirement_type_id = 11 and :id = any (psr.list_of_value_ids)
+          order by e.event_name
         """;
 
   //language=PostgreSQL

@@ -156,20 +156,22 @@ public class CustomFieldQuery {
   //language=PostgreSQL
   public final static String getGroupsUsingField = """
     select cf.id,
-               cf.field_name,
-               cfg.group_name,
-               ot.object_type,
-               ps.process_step_name
-        from flow.custom_field_group cfg
-                inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
-                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-                inner join flow.object_type ot on ot.id = cot.object_type_id
-                left join flow.process_step ps on ps.id = cfg.process_step_id
-        where cf.id = :fieldId
-          and cfg.archived is not true
-          and cfga.archived is not true
-        order by ot.object_type, ps.process_step_name, cfg.group_name, cf.field_name
+           cf.field_name,
+           cfg.group_name,
+           ot.object_type,
+           ps.process_step_name,
+           e.event_name
+    from flow.custom_field_group cfg
+           inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+           inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+           inner join flow.object_type ot on ot.id = cot.object_type_id
+           left join flow.process_step ps on ps.id = cfg.process_step_id and ps.archived is not true
+           left join flow.event e on e.id = cfg.event_id and e.archived is not true
+    where cf.id = :fieldId
+      and cfg.archived is not true
+      and cfga.archived is not true
+    order by ot.object_type, ps.process_step_name, cfg.group_name, cf.field_name
         """;
 
   //language=PostgreSQL

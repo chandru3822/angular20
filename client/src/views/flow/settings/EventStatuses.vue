@@ -140,6 +140,15 @@
                   {{ item.rootEventStatusType }}
                 </td>
                 <td class="text-right">
+                  <v-btn small text color="primary" @click="getUsesForStatus(item.id, item.eventStatusType)"><v-icon>mdi-clipboard-list-outline</v-icon></v-btn>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                             v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                    </template>
+                    <span>Event Status Id: {{item.id}}</span>
+                    <div class="text-center">(click to copy)</div>
+                  </v-tooltip>
                   <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                     <v-icon>edit</v-icon>
                   </v-btn>
@@ -163,6 +172,59 @@
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this status type: <strong>{{itemToDeleteEventStatusType}}</strong>?
 
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="showInfoDialog"
+                        hideConfirm
+                        @close-dialog="showInfoDialog=false"
+                        :width="700"
+    >
+      <template v-slot:title>Event Status Usages: {{!!objectsUsingStatus ? objectsUsingStatus.fieldName : ''}}</template>
+      <span v-if="!objectsUsingStatus || (objectsUsingStatus.events.length === 0 && objectsUsingStatus.processStepEventActions.length === 0 && objectsUsingStatus.processStepEventRequirements.length === 0)">
+        Nothing using this event status.
+      </span>
+      <div v-else id="event-status-uses-table">
+        <div v-if="objectsUsingStatus.events.length > 0" class="label-large mt-6">Events</div>
+      <v-simple-table v-if="objectsUsingStatus.events.length > 0">
+        <tbody>
+        <tr v-for="(item, index) in objectsUsingStatus.events" :key="index" :class="{'shaded-row': !(index % 2)}">
+          <td>{{item.eventName}}</td>
+        </tr>
+        </tbody>
+      </v-simple-table>
+      <div v-if="objectsUsingStatus.processStepEventRequirements.length > 0" class="label-large mt-6">Process Step Event Requirements</div>
+      <v-simple-table v-if="objectsUsingStatus.processStepEventRequirements.length > 0">
+        <thead>
+        <tr>
+          <th>Event</th>
+          <th>Process Step</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(item, index) in objectsUsingStatus.processStepEventRequirements" :key="index" :class="{'shaded-row': !(index % 2)}">
+          <td>{{item.eventName}}</td>
+          <td>{{item.processStepName}}</td>
+        </tr>
+        </tbody>
+      </v-simple-table>
+        <div v-if="objectsUsingStatus.processStepEventActions.length > 0" class="label-large mt-6">Process Step Event Actions</div>
+      <v-simple-table v-if="objectsUsingStatus.processStepEventActions.length > 0">
+        <thead>
+        <tr>
+          <th>Event</th>
+          <th>Process Step</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(item, index) in objectsUsingStatus.processStepEventActions" :key="index" :class="{'shaded-row': !(index % 2)}">
+          <td>{{item.eventName}}</td>
+          <td>{{item.processStepName}}</td>
+          <td>{{item.actionName}}</td>
+        </tr>
+        </tbody>
+      </v-simple-table>
+      </div>
+      <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -216,7 +278,9 @@ export default {
       fieldsInUse: [],
       deleteError: false,
       showDeleteDialog: false,
-      itemToDelete: null
+      itemToDelete: null,
+      showInfoDialog: false,
+      objectsUsingStatus: null
     }
   },
   mounted() {
@@ -332,6 +396,21 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async getUsesForStatus(eventStatusId, eventStatusName) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`, this.apiPath, null, []);
+        this.objectsUsingStatus = data
+        this.objectsUsingStatus.fieldName = eventStatusName
+        this.showInfoDialog = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async deleteType() {
       const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -394,6 +473,11 @@ export default {
         return !s.archived
       })
     },
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
     closeDeleteDialog() {
       this.showDeleteDialog = false
       this.itemToDelete = null
@@ -405,6 +489,14 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+#event-status-uses-table > div.v-data-table.theme--light > div.v-data-table__wrapper {
+  max-height: 175px;
+  overflow-y: scroll;
+}
+</style>
+
 
 <style scoped lang="scss">
 

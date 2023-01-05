@@ -115,8 +115,13 @@ public class EventController {
     eventService.saveCompanyEventStatuses(statuses);
   }
 
+  @GetMapping(value="/companyStatusUses/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ObjectsUsingEventStatus> getObjectsUsingEventStatus(@PathVariable Long id) {
+      return new ResponseEntity<>(eventService.getObjectsUsingEventStatus(id), HttpStatus.OK);
+  }
+
   @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<EventController.CannotDeleteEventStatus> deleteCompanyEventStatus(@PathVariable Long id) {
+  public ResponseEntity<ObjectsUsingEventStatus> deleteCompanyEventStatus(@PathVariable Long id) {
     return eventService.deleteCompanyEventStatus(id);
   }
 
@@ -150,7 +155,7 @@ public class EventController {
   }
 
   @Data
-  public static class CannotDeleteEventStatus {
+  public static class ObjectsUsingEventStatus {
     private List<EventCompanyEventStatusType> events;
     private List<ProcessStepEventData> processStepEventActions;
     private List<ProcessStepEventData> processStepEventRequirements;

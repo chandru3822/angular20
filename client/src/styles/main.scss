@@ -229,6 +229,11 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .vertical-middle {
   vertical-align: middle;
 }
+.flex-align-items-center {
+  display: flex;
+  align-items: center;
+}
+
 .flex-display {
   display: flex !important;
 }

@@ -119,6 +119,11 @@ public class ProcessStepStatusService {
     return sqlCache.getBySql(ProcessStepStatusQuery.getType, params, CompanyProcessStepStatusType.class);
   }
 
+  public List<ProcessStep> getObjectsUsingProcessStepStatus(Long typeId) {
+      List<ProcessStep> ps = sqlCache.queryBySql(ProcessStepStatusQuery.typeInUse, Map.of("companyProcessStepStatusTypeId", typeId), ProcessStep.class);
+      return ps;
+  }
+
   public ResponseEntity<ProcessStepStatusController.CannotDeleteProcessStepStatus> deleteType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
@@ -133,7 +138,6 @@ public class ProcessStepStatusService {
     }
     else {
       ProcessStepStatusController.CannotDeleteProcessStepStatus cannotDelete = new ProcessStepStatusController.CannotDeleteProcessStepStatus();
-      cannotDelete.setProjectSteps(pps);
       cannotDelete.setSteps(ps);
       return ResponseEntity.badRequest().body(cannotDelete);
     }

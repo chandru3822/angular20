@@ -162,6 +162,14 @@
                 </td>
                 <td>
                   <div class="item-icons">
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                               v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                      </template>
+                      <span>Custom Field Group Id: {{item.id}}</span>
+                      <div class="text-center">(click to copy)</div>
+                    </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
                       <v-btn small text color="primary"
                              @click="item.edit = !item.edit">
@@ -185,6 +193,7 @@
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
                     <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <span v-if="item.showGroupId" class="text-left flex-align-items-center">id: {{ item.id }}</span>
                   </div>
                 </td>
               </tr>
@@ -407,6 +416,14 @@
                             </div>
                           </div>
                         </v-list-item-content>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
+                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          </template>
+                          <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
+                          <div class="text-center">(click to copy)</div>
+                        </v-tooltip>
                         <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small color="primary" v-on="on">
@@ -981,6 +998,11 @@ export default {
         }
       })
     },
+    copyToClipBoard(textValue){
+        navigator.clipboard.writeText(textValue);
+        this.snackbar = getSnackbar('SUCCESS', 'Copied id to clipboard')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    }
   }
 }
 </script>
@@ -993,5 +1015,9 @@ export default {
   }
   .handle {
     cursor: move !important;
+  }
+
+  .hideId {
+    visibility: hidden;
   }
 </style>
