@@ -10,7 +10,7 @@
         Confirm
       </template>
       <span>Are you sure you want to remove <b>{{itemToDelete.name || itemToDelete.teamName}}</b>?</span> <br/>
-      Please ensure this team has resolved associated conversations.
+      <span v-if="deleteType == DeleteTypeEnum.TEAM">Please ensure this team has resolved associated conversations.</span>
     </ConfirmationDialog>
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
@@ -289,12 +289,11 @@ import {
   deleteRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'smsTeam',
-  components: {ConfirmationDialog, ConfirmDeleteDialog},
+  components: {ConfirmationDialog},
   data () {
     return {
       DeleteTypeEnum: Object.freeze({

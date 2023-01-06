@@ -242,7 +242,6 @@ import orderBy from 'lodash.orderby'
 import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 import ConfirmationDialog from "../../../ConfirmationDialog";
 
 export default {
@@ -250,7 +249,6 @@ export default {
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     draggable,
   },
   data() {

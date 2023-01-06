@@ -268,7 +268,6 @@ import {
   getSnackbar,
   getRequestWithParams
 } from '@/helpers/helpers'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
@@ -276,7 +275,6 @@ export default {
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     ProcessStepWorkQueueTypes,
     ProcessStepCustomFieldGroups,
     draggable,

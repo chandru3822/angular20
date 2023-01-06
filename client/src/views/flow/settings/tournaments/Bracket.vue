@@ -38,50 +38,12 @@
                 Bracket #{{index + 1}}: {{ b.numberOfUsers }} Users
               </v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-dialog
-                v-model="b.generateMatches"
-                width="500">
-                <template v-slot:activator="{ on }">
-                  <v-btn color="primary"
-                         class="white--text"
-                         v-on="on"
-                         :disabled="b.matchesGenerated || b.rounds.length === 0">
-                    <span v-if="!b.matchesGenerated">Generate Matches</span>
-                    <span v-else>Matches Created</span>
-                  </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title
-                  >
-                    Confirm
-                  </v-card-title>
-
-                  <v-card-text class="mt-5">
-                    <strong>WARNING: This can only be done once. </strong><br/>
-                    Please ensure that your rounds are created correctly in this bracket before generating matches.
-                    Would you like to continue creating matches?
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      @click="b.generateMatches = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                      color="primary"
-                      text
-                      @click="[b.generateMatches = false, generateMatches(b)]">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
+              <v-btn color="primary"
+                     @click="bracketForMatches = b"
+                     :disabled="b.matchesGenerated || b.rounds.length === 0">
+                <span v-if="!b.matchesGenerated">Generate Matches</span>
+                <span v-else>Matches Created</span>
+              </v-btn>
               <v-btn v-if="b.maxRounds" text disabled color="primary" class="white--text">
                 <span>Max Rounds Reached</span>
               </v-btn>
@@ -90,49 +52,11 @@
                 <span v-if="!b.addRound">Add Round</span>
                 <span v-else>Cancel</span>
               </v-btn>
-              <v-dialog
-                v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')"
-                v-model="b.replicateConfirm"
-                width="500">
-                <template v-slot:activator="{ on }">
-                  <v-btn small text color="primary" v-on="on">
-                    <v-icon>mdi-content-copy</v-icon>
-                  </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title
-                  >
-                    Confirm
-                  </v-card-title>
-
-                  <v-card-text>
-                    Are you sure you want to replicate this bracket?
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      @click="b.replicateConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                      color="primary"
-                      text
-                      @click="[b.replicateConfirm = false, replicateBracket(b)]">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-              <confirm-delete-dialog
-                  v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
-                  label="this bracket"
-                  @confirm="[b.archived = true, deleteBracket(b.id)]"
-              ></confirm-delete-dialog>
+              <v-btn small text color="primary" @click="bracketToCopy=b"
+                     v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')">
+                <v-icon>mdi-content-copy</v-icon>
+              </v-btn>
+              <v-btn small color="primary" text v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')" @click="bracketToDelete=b"><v-icon>delete</v-icon></v-btn>
             </v-toolbar>
             <v-card flat v-if="b.addRound">
               <DatetimePickerInput
@@ -219,44 +143,10 @@
                            :disabled="!item.startDate || !item.endDate || item.startDate > item.endDate"
                            @click="saveRound(b, item)">Save
                     </v-btn>
-                    <v-dialog
-                      v-if="!b.matchesGenerated && $store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete this round?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="item.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primary"
-                            text
-                            @click="[item.archived = true, deleteRound(b, item.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn text color="primary" @click="[roundToDelete = item, bracketToDeleteRoundFrom = b]"
+                           v-if="!b.matchesGenerated && $store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </td>
                 </tr>
               </template>
@@ -266,6 +156,24 @@
       </v-col>
 
     </v-row>
+    <ConfirmationDialog :open-dialog="!!roundToDelete" @confirm="deleteRound" @close-dialog="roundToDelete = null">
+      Are you sure you want to delete this round?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!bracketToDelete" @confirm="deleteBracket" @close-dialog="bracketToDelete = null">
+      Are you sure you want to delete this bracket?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!bracketToCopy" @confirm="replicateBracket" @close-dialog="bracketToCopy = null">
+      <template v-slot:title>Replicate Bracket</template>
+      Are you sure you want to replicate this bracket?
+      <template v-slot:yes>Replicate</template>
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!bracketForMatches" @confirm="generateMatches" @close-dialog="bracketForMatches = null">
+      <template v-slot:title>Create Matches</template>
+      <span class="error--text"><strong>WARNING: This can only be done once. </strong></span><br/>
+      Please ensure that your rounds are created correctly in this bracket before generating matches.
+      Would you like to continue creating matches?
+      <template v-slot:yes>Create Matches</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -281,13 +189,13 @@
     postRequest,
     getSnackbar
   } from '@/helpers/helpers'
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+  import ConfirmationDialog from "../../../../ConfirmationDialog";
 
   export default {
     name: 'BracketAdmin',
     mixins: [Vue2Filters.mixin],
     components: {
-      ConfirmDeleteDialog,
+      ConfirmationDialog,
       DatetimePickerInput
     },
     data() {
@@ -316,7 +224,12 @@
           {text: 'End Date', value: 'endDate', show: true},
           {text: null, value: 'notes', show: true},
           {text: null, value: 'icons', show: true}
-        ]
+        ],
+        bracketToDelete: null,
+        bracketToCopy: null,
+        bracketForMatches: null,
+        roundToDelete: null,
+        bracketToDeleteRoundFrom: null
       }
     },
     computed: {},
@@ -342,7 +255,8 @@
         }
         return numUsers > 1 ? numUsers / 2 : 'None'
       },
-      async replicateBracket(b) {
+      async replicateBracket() {
+        let b = this.bracketToCopy
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await postRequest(`/tournament/bracket/replicate`, b, 'blueraven')
@@ -430,12 +344,14 @@
           this.bracketErrorMsg = 'Number of Users must be 2, 4, 8, 16, 32, or 64'
         }
       },
-      async deleteBracket(id) {
+      async deleteBracket() {
+        let id = this.bracketToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/tournament/bracket/${id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Bracket Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.tournament.brackets.splice(this.tournament.brackets.indexOf(this.bracketToDelete))
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -469,7 +385,9 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteRound(bracket, roundId) {
+      async deleteRound() {
+        let bracket = this.bracketToDeleteRoundFrom
+        let roundId = this.roundToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let param = {
@@ -490,7 +408,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async generateMatches(bracket) {
+      async generateMatches() {
+        let bracket = this.bracketForMatches
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await putRequest(`/tournament/bracket/${bracket.id}/generateMatches`, {}, 'blueraven')

@@ -164,12 +164,11 @@ import cloneDeep from 'lodash.clonedeep'
 
 import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
 import ConfirmationDialog from "@/ConfirmationDialog";
 
 export default {
   name: 'Process',
-  components: {ConfirmationDialog, ConfirmDeleteDialog},
+  components: {ConfirmationDialog},
   mixins: [Vue2Filters.mixin],
 
   data () {
