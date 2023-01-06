@@ -59,7 +59,6 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('PROJECTS')")
 @RequiredArgsConstructor
 public class ProjectService {
 

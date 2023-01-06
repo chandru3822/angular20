@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('SMS_QUEUE')")
 @RequiredArgsConstructor
 public class SMSService {
 

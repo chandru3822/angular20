@@ -38,8 +38,8 @@ public class UserQuery {
            and upv.last_name ILIKE '%' || :lastName || '%'
            and coalesce(upv.email, '') ILIKE '%' || :email || '%'
            and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-           and upv.user_status_type_id in (:statuses)
            and case when :primaryFlag is true then upv.primary_flag = true else 1=1 end
+           and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then upv.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
            and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id  = any( array[ :positions ]::bigint[] ) else 1=1 end
            and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id = any( array [ :orgs ]::bigint[] ) else 1=1 end
          union
@@ -66,8 +66,8 @@ public class UserQuery {
            and coalesce(u.email, '') ILIKE '%' || :email || '%'
            and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
            and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
+           and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then cus.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
            and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-             and cus.user_status_type_id in (:statuses)
          order by last_name, first_name, start_date desc
          limit :limit
          offset :offset
@@ -89,8 +89,8 @@ public class UserQuery {
               and upv.last_name ILIKE '%' || :lastName || '%'
               and coalesce(upv.email, '') ILIKE '%' || :email || '%'
               and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-              and upv.user_status_type_id in (:statuses)
               and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
+              and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then upv.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
               and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id = any(array [ :positions ]::bigint[]) else 1=1 end
               and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id  = any(array [ :orgs ]::bigint[]) else 1=1 end
            union
@@ -112,7 +112,7 @@ public class UserQuery {
                 and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
                 and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
                 and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-                  and ust.id in (:statuses)
+                and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then ust.id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
           )
          select count(*)
           from t1
