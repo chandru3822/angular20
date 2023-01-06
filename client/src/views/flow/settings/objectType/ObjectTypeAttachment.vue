@@ -193,7 +193,7 @@ import constants from "@/helpers/constants";
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
-import ConfirmationDialog from "../../../../components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ObjectTypeAttachment',

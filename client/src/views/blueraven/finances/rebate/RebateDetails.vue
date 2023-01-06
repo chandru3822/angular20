@@ -278,7 +278,7 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
   import {getCompanyStates} from '@/services/stateService'
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'RebateDetails',

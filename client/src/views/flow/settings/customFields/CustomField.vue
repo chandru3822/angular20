@@ -261,7 +261,7 @@ import {
   putRequest
 } from "@/helpers/helpers";
 import constants from "@/helpers/constants";
-import ConfirmationDialog from "@/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: "CustomField",

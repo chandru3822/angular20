@@ -328,7 +328,7 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, getRequestWithParam
 import constants from "@/helpers/constants";
 import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ReimbursementRequests',

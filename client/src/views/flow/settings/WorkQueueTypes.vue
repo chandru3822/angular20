@@ -149,7 +149,7 @@
   import { handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'WorkQueueTypes',

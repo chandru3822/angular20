@@ -481,7 +481,7 @@ import Sortable from 'sortablejs'
 
 import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'CustomFieldGroup',

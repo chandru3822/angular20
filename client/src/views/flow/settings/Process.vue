@@ -164,7 +164,7 @@ import cloneDeep from 'lodash.clonedeep'
 
 import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'Process',

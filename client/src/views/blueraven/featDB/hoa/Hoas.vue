@@ -150,7 +150,7 @@ import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import {deleteRequest} from "../../../../helpers/helpers";
-import ConfirmationDialog from "../../../../components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: "hoas",

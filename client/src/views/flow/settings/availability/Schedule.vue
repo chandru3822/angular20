@@ -343,7 +343,7 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'Schedule',

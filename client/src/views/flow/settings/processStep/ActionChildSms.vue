@@ -132,7 +132,7 @@ import {
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ActionChildSms',

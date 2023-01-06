@@ -93,7 +93,7 @@ import {
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import {deleteAttachment} from "@/services/attachmentService";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import Vue2Filters from 'vue2-filters'
 import {ProjectMutations} from "@/stores/ProjectStore"

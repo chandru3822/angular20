@@ -168,7 +168,7 @@ import {getBudgetTypes} from './expenseService'
 import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'MonthlyBudgets',
