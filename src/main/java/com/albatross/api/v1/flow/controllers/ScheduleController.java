@@ -5,6 +5,7 @@ import com.albatross.api.v1.flow.model.project.ProjectWithEvents;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.services.ScheduleService;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,50 +25,50 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/schedule")
+@RequestMapping(value = "/api/v1/flow/schedule", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
 public class ScheduleController {
 
-  @Autowired
-  private ScheduleService scheduleService;
+  private final ScheduleService scheduleService;
 
-  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "")
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(@RequestBody EventSearchParams params) {
     return scheduleService.getEventsForCompanyByOrgAndUser(params);
   }
 
-  @GetMapping(value = "/project/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/project/{id}")
   public Optional<ProjectWithEvents> getEventsByProject(@PathVariable Long id) {
     return scheduleService.getEventsByProject(id);
   }
 
-  @PostMapping(value = "/availability", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/availability")
   public String getAvailabilityForCompanyByOrgAndUser(@RequestBody EventSearchParams params) {
     return scheduleService.getAvailabilityForCompanyByOrgAndUser(params);
   }
 
-  @PostMapping(value = "/projects", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/projects")
   public ResponseEntity<Page<ScheduleEvent>> getScheduleProjects(@RequestBody EventSearchParams params,
                                                                 Pageable pageable) {
     return new ResponseEntity<>(scheduleService.getScheduleProjects(params, pageable), HttpStatus.OK);
   }
 
-  @PostMapping(value = "/projectResources", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/projectResources")
   public List<ListOfValue> getAvailableProjectResources(@RequestBody ResourceRequest request) {
     return scheduleService.getAvailableProjectResource(request);
   }
 
-  @PostMapping(value = "/getProject", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/getProject", consumes = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleEvent> getProject(@RequestBody EventSearchParams params) {
     //this returns a list because if they search for canceled or complete they could get more than one
     return scheduleService.getProject(params);
   }
 
-  @PostMapping(value = "/projects/search", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/projects/search")
   public List<ScheduleEvent> searchProjectsByName(@RequestBody EventSearchParams params) {
     return scheduleService.searchProjectsByName(params);
   }
 
-  @PostMapping(value = "/saveEvent", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/saveEvent")
   public void saveEvent(@RequestBody ScheduleEvent ev) {
     scheduleService.saveEvent(ev);
   }

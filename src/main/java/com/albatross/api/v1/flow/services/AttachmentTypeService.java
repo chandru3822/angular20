@@ -37,9 +37,7 @@ public class AttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    List<AttachmentType> attachmentTypes =
-        sqlCache.queryBySql(AttachmentTypeQuery.getTypesForCompany, params, AttachmentType.class);
-    return attachmentTypes;
+    return sqlCache.queryBySql(AttachmentTypeQuery.getTypesForCompany, params, AttachmentType.class);
   }
 
   public List<AttachmentType> getSystemAttachmentTypes() {

@@ -1,11 +1,14 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserOrgAccess;
+import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.org.OrgFilter;
 import com.albatross.api.v1.flow.services.OrgService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,34 +25,34 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/org")
+@RequestMapping(value = "/api/v1/flow/org", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
 public class OrgController {
 
-  @Autowired
-  private OrgService orgService;
+  private final OrgService orgService;
 
-  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "")
   public List<Org> getOrgsForCompany() {
     return orgService.getOrgsForCompany();
   }
 
-  @GetMapping(value = "/getSchedulingOrgs", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getSchedulingOrgs")
   public List<Org> getSchedulingOrgs(@RequestParam(required = false) Long stateId,
                                      @RequestParam Boolean isSchedulingTool) {
     return orgService.getSchedulingOrgs(stateId, isSchedulingTool);
   }
 
-  @GetMapping(value = "/{id}/users", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}/users")
   public List<User> getUsersInOrg(@PathVariable Long id) {
     return orgService.getUsersInOrg(id);
   }
 
-  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}")
   public Org getOrg(@PathVariable Long id) {
     return orgService.getOrg(id);
   }
 
-  @GetMapping(value = "/getOrgsByType/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getOrgsByType/{typeId}")
   public List<Org> getOrgsByType(@PathVariable Long typeId) {
     return orgService.getOrgsByType(typeId);
   }
@@ -59,47 +62,47 @@ public class OrgController {
     return orgService.exportOrgs(query);
   }
 
-  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "")
   public Org saveOrg(@RequestBody Org org) {
     return orgService.saveOrg(org);
   }
 
-  @GetMapping(value = "/filters", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/filters")
   public List<OrgFilter> getOrgFiltersForCompany() {
     return orgService.getOrgFiltersForCompany();
   }
 
-  @PutMapping(value = "/filters", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/filters")
   public OrgFilter saveOrgFilter(@RequestBody OrgFilter filter) {
     return orgService.saveOrgFilter(filter);
   }
 
-  @DeleteMapping(value = "/filters/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/filters/{id}")
   public void deleteOrgFilter(@PathVariable Long id) {
     orgService.deleteOrgFilter(id);
   }
 
-  @PostMapping(value = "/orgHierarchyFilter", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/orgHierarchyFilter")
   public List<OrgFilter> getHierarchyFilteredOrgsForCompany(@RequestBody UserSearch search) {
     return orgService.getHierarchyFilteredOrgsForCompany(search.getOrgs());
   }
 
-  @GetMapping(value = "/user/{userId}/calendars", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/user/{userId}/calendars")
   public List<Org> getOrgCalendarsForUser(@PathVariable Long userId) {
     return orgService.getOrgCalendarsForUser(userId);
   }
 
-  @PostMapping(value = "/user/calendar", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/user/calendar")
   public UserOrgAccess saveOrgCalendarToUser(@RequestBody UserOrgAccess userOrgAccess) {
     return orgService.saveOrgCalendarToUser(userOrgAccess);
   }
 
-  @DeleteMapping(value = "/user/calendar/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/user/calendar/{id}")
   public void deleteOrgCalendarFromUser(@PathVariable Long id) {
     orgService.deleteOrgCalendarFromUser(id);
   }
 
-  @GetMapping(value = "/{orgId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{orgId}/attachments")
   public ResponseEntity<List<Attachment>> getOrgAttachments(@PathVariable Long orgId,
                                                             @RequestParam(required = false) Boolean isMobile,
                                                             @RequestParam(required = false) Boolean linked) {
@@ -113,7 +116,7 @@ public class OrgController {
     orgService.linkAttachment(orgId, attachmentId, doLink);
   }
 
-  @PostMapping(value = "/{orgId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{orgId}/attachment")
   public ResponseEntity<Attachment> uploadOrgAttachment(@PathVariable Long orgId,
                                                         @RequestParam Long attachmentTypeId,
                                                         @RequestParam String displayName,
