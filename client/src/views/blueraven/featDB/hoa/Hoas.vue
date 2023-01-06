@@ -149,8 +149,8 @@ import {FILTER_DEFAULTS, FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbCons
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
-import ConfirmationDialog from "../../../../ConfirmationDialog";
 import {deleteRequest} from "../../../../helpers/helpers";
+import ConfirmationDialog from "../../../../components/ConfirmationDialog";
 
 export default {
   name: "hoas",
