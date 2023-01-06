@@ -194,7 +194,7 @@ public class ResidualService {
     params.put("id", id);
 
     return sqlCache
-        .get(
+        .getBySql(
             ResidualQuery.getResidualPlanAllocation, params, new SingleColumnRowMapper<>(String.class))
         .orElse("{}");
   }

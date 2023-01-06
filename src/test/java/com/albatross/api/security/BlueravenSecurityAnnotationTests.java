@@ -63,7 +63,7 @@ class BlueravenSecurityAnnotationTests {
   @WithUserDetails("blueraven")
   public void should_return_with_correct_user_company() {
 
-    when(sqlCache.query(any(String.class), anyMap(), any(RowMapper.class)))
+    when(sqlCache.queryBySql(any(String.class), anyMap(), any(RowMapper.class)))
         .thenReturn(List.of(new CustomField()));
 
     final List<CustomField> customFields = blueravenCustomFieldService.getAllCustomFields();
