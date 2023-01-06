@@ -18,10 +18,10 @@
     <div>
       <v-list>
         <v-list-item v-for="(item, index) in mutableCompanyTools"
-                     :class="{'pa-0': item.featureCode === 'TOURNAMENTS' || item.featureCode ==='DATABASE'}"
+                     :class="{'pa-0': item.featureCode === 'TOURNAMENTS' || item.featureCode ==='DATABASES'}"
                      :key="index" @click="closeMenu(item)"
                      :to="item.featurePath">
-          <v-list-item-title v-if="item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASE'">{{item.featureName}}</v-list-item-title>
+          <v-list-item-title v-if="item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASES'">{{item.featureName}}</v-list-item-title>
 
           <v-list-group
             v-else-if="item.featureCode == 'TOURNAMENTS'"
@@ -129,7 +129,7 @@
     },
     methods: {
       closeMenu(item) {
-        if(item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASE') {
+        if(item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASES') {
           this.menuOpen = false
         }
       },
@@ -147,8 +147,8 @@
       },
 
       async loadDatabaseOptions(index) {
-        this.databaseOptions = this.mutableCompanyTools[index].childNames;
-        this.databasePaths = this.mutableCompanyTools[index].childPaths;
+        this.databaseOptions = this.mutableCompanyTools[index].childNames.slice().reverse();
+        this.databasePaths = this.mutableCompanyTools[index].childPaths.slice().reverse();
       },
 
       async filterForParents() {

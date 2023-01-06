@@ -148,6 +148,7 @@ public class ProcessStepStatusQuery {
            inner join flow.process_step ps on ps.id = pscpsst.process_step_id
         where pscpsst.archived is not true and ps.archived is not true
           and pscpsst.company_process_step_status_type_id = :companyProcessStepStatusTypeId
+          order by ps.process_step_name
       """;
 
   //language=PostgreSQL

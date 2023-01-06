@@ -559,6 +559,7 @@
                              v-if="expanded.includes(item)">cancel
                       </v-btn>
                       <v-btn small text color="primary" v-if="userCanEdit" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                      <v-btn small text color="primary" @click="showActionsUsingLogic(item.id)"><v-icon>mdi-information</v-icon></v-btn>
                     </div>
                   </td>
                 </tr>
@@ -573,6 +574,26 @@
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this requirement?
 
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="showInfoDialog"
+                        hideConfirm
+                        @close-dialog="showInfoDialog=false"
+    >
+      <template v-slot:title>Actions using this requirement:</template>
+      <span v-if="!actionsUsingLogic || actionsUsingLogic.length === 0">No actions using this requirement.</span>
+      <v-list dense>
+        <v-list-item v-for="(item, index) in actionsUsingLogic" :key="index">
+          <v-list-item-icon>
+            <v-icon>
+              mdi-circle-small
+            </v-icon>
+          </v-list-item-icon>
+        <v-list-item-content>
+          {{ item.actionName }}
+        </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -658,7 +679,8 @@ export default {
       availableFunctions: [],
       apiUrl: '',
       showDeleteDialog: false,
-      itemToDelete: null
+      itemToDelete: null,
+      showInfoDialog: false
     }
   },
   computed: {},
@@ -1108,16 +1130,35 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+
+    async getActionsUsingLogic(requirementId){
+        let url = this.apiUrl + `/${requirementId}`
+        const {data} = await putRequest(url)
+        this.actionsUsingLogic = data
+    },
+
+    async showActionsUsingLogic(requirementId){
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await this.getActionsUsingLogic(requirementId)
+        this.showInfoDialog=true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e){
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Fetching Requirement Info')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+
     async deleteRequirement() {
       const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        let url = this.apiUrl + `/${item.id}`
-        const {data} = await putRequest(url)
-        if (data?.length > 0) {
-          this.deleteError = true
+        await this.getActionsUsingLogic(item.id)
+        if (this.actionsUsingLogic?.length > 0) {
+          this.deleteError = true //opens the delete error dialog
           item.deleteConfirm = false
-          this.actionsUsingLogic = data
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {

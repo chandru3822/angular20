@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +54,11 @@ public class ProcessStepStatusController {
   public List<CompanyProcessStepStatusType> getCancelledCompanyStatusTypesForCompany(@RequestParam(required = false) Long projectId,
                                                                                      @RequestParam(required = false) Long projectProcessStepId) {
     return processStepStatusService.getCancelledCompanyStatusTypesForCompany(projectId, projectProcessStepId);
+  }
+
+  @GetMapping(value="/getObjectsUsingStatus/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStep> getObjectsUsingStatus(@PathVariable Long typeId) {
+      return processStepStatusService.getObjectsUsingProcessStepStatus(typeId);
   }
 
   @DeleteMapping(value = "/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
