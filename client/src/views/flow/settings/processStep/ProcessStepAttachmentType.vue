@@ -212,7 +212,7 @@ import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import draggable from 'vuedraggable'
 import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmationDialog from "../../../../ConfirmationDialog";
+import ConfirmationDialog from "../../../../components/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepAttachmentType',
