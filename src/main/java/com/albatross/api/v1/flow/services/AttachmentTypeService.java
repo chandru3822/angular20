@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
@@ -13,7 +14,6 @@ import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -21,7 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,15 +37,12 @@ public class AttachmentTypeService {
 
   public List<AttachmentType> getAttachmentTypesForCompany() {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-
-    return sqlCache.queryBySql(AttachmentTypeQuery.getTypesForCompany, params, AttachmentType.class);
+    return sqlCache.queryBySql(AttachmentTypeQuery.getTypesForCompany, Map.of("companyId", user.getCompanyId()), AttachmentType.class);
   }
 
   public List<AttachmentType> getSystemAttachmentTypes() {
     return sqlCache.queryBySql(
-      AttachmentTypeQuery.getSystemTypes, Collections.emptyMap(), AttachmentType.class);
+      AttachmentTypeQuery.getSystemTypes, Map.of(), AttachmentType.class);
   }
 
   public Optional<AttachmentType> getType(Long typeId) {
@@ -50,7 +50,7 @@ public class AttachmentTypeService {
 
     return sqlCache.getBySql(
       AttachmentTypeQuery.getType,
-        ImmutableMap.of("companyId", currentUser.getCompanyId(), "typeId", typeId),
+      Map.of("companyId", currentUser.getCompanyId(), "typeId", typeId),
       new AttachmentTypeMapper<>(AttachmentType.class, om));
   }
 
@@ -78,16 +78,13 @@ public class AttachmentTypeService {
     } else {
       sqlCache.updateBySql(
         AttachmentTypeQuery.deleteAttachmentType,
-        ImmutableMap.of("id", typeId, "modifiedById", currentUser.trueUserId()));
+        Map.of("id", typeId, "modifiedById", currentUser.trueUserId()));
       return ResponseEntity.ok().build();
     }
   }
 
   public List<FieldInUse> getAllUsingAttachmentType(Long typeId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("typeId", typeId);
-    List<FieldInUse> fieldsInUse = sqlCache.queryBySql(AttachmentTypeQuery.getAllUsingType, params, FieldInUse.class);
-    return fieldsInUse;
+    return sqlCache.queryBySql(AttachmentTypeQuery.getAllUsingType, Map.of("typeId", typeId), FieldInUse.class);
   }
 
   public void updateType(AttachmentType type) {
@@ -95,37 +92,36 @@ public class AttachmentTypeService {
 
     sqlCache.updateBySql(
       AttachmentTypeQuery.updateType,
-        ImmutableMap.of(
-            "companyId",
-            type.getCompanyId(),
-            "id",
-            type.getId(),
-            "attachmentType",
-            type.getAttachmentType(),
-            "modifiedById",
-            currentUser.trueUserId()));
+      Map.of(
+        "companyId",
+        type.getCompanyId(),
+        "id",
+        type.getId(),
+        "attachmentType",
+        type.getAttachmentType(),
+        "modifiedById",
+        currentUser.trueUserId()));
   }
 
   public Optional<AttachmentType> insertType(AttachmentType type) {
     User currentUser = securityService.getCurrentUser();
 
     // all user added attachment types use the uploads key pattern (id = 9)
-
     Long id =
-        sqlCache
-            .updateBySqlReturningId(
-              AttachmentTypeQuery.insertType,
-                ImmutableMap.of(
-                    "attachmentType",
-                    type.getAttachmentType(),
-                    "companyId",
-                    type.getCompanyId(),
-                    "keyPatternId",
-                    KeyPattern.UPLOADS.id,
-                    "createdById",
-                    currentUser.trueUserId()),
-                "id")
-            .longValue();
+      sqlCache
+        .updateBySqlReturningId(
+          AttachmentTypeQuery.insertType,
+          Map.of(
+            "attachmentType",
+            type.getAttachmentType(),
+            "companyId",
+            type.getCompanyId(),
+            "keyPatternId",
+            KeyPattern.UPLOADS.id,
+            "createdById",
+            currentUser.trueUserId()),
+          "id")
+        .longValue();
 
     return getType(id);
   }
@@ -147,19 +143,24 @@ public class AttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
     params.put("eventId", eventId);
-    String sql = AttachmentTypeQuery.getTypes(objectType.tablePrefix);
+
+    String sql = "";
+    switch (objectType) {
+      case PROJECT -> sql = AttachmentTypeQuery.projectGetTypes;
+      case CONTACT -> sql = AttachmentTypeQuery.contactGetTypes;
+      case USER -> sql = AttachmentTypeQuery.userGetTypes;
+      case ORGANIZATION -> sql = AttachmentTypeQuery.orgGetTypes;
+      case EVENT -> sql = AttachmentTypeQuery.eventGetTypes;
+      default -> throw new ApiException("Unsupported attachment type");
+    }
+
     return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
   public Optional<ObjectTypeAttachmentType> getAttachmentType(Long id, ObjectType objectType) {
     User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    params.put("companyId", currentUser.getCompanyId());
     String sql = objectType.getAttachmentTypeQuery;
-    Optional<ObjectTypeAttachmentType> result = sqlCache.getBySql(sql, params, new ObjectTypeAttachmentTypeMapper<>(ObjectTypeAttachmentType.class, om));
-    return result;
+    return sqlCache.getBySql(sql, Map.of("id", id, "companyId", currentUser.getCompanyId()), new ObjectTypeAttachmentTypeMapper<>(ObjectTypeAttachmentType.class, om));
   }
 
   public List<ObjectTypeAttachmentType> getAvailableTypes(ObjectType objectType, Long eventId) {
@@ -168,7 +169,16 @@ public class AttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
     params.put("eventId", eventId);
-    String sql = AttachmentTypeQuery.getAvailableTypes(objectType.tablePrefix);
+
+    String sql = "";
+    switch (objectType) {
+      case PROJECT -> sql = AttachmentTypeQuery.projectGetAvailableTypes;
+      case CONTACT -> sql = AttachmentTypeQuery.contactGetAvailableTypes;
+      case USER -> sql = AttachmentTypeQuery.userGetAvailableTypes;
+      case ORGANIZATION -> sql = AttachmentTypeQuery.orgGetAvailableTypes;
+      case EVENT -> sql = AttachmentTypeQuery.eventGetAvailableTypes;
+      default -> throw new ApiException("Unsupported attachment type");
+    }
     return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
@@ -180,7 +190,15 @@ public class AttachmentTypeService {
     params.put("createdById", currentUser.trueUserId());
     params.put("attachmentTypeId", objectTypeAttachmentType.getAttachmentTypeId());
     params.put("eventId", objectTypeAttachmentType.getPrimaryId());
-    String sql = AttachmentTypeQuery.addType(objectType.tablePrefix);
+    String sql = "";
+    switch (objectType) {
+      case PROJECT -> sql = AttachmentTypeQuery.projectAddType;
+      case CONTACT -> sql = AttachmentTypeQuery.contactAddType;
+      case USER -> sql = AttachmentTypeQuery.userAddType;
+      case ORGANIZATION -> sql = AttachmentTypeQuery.orgAddType;
+      case EVENT -> sql = AttachmentTypeQuery.eventAddType;
+      default -> throw new ApiException("Unsupported attachment type");
+    }
     Long id = sqlCache.updateBySqlReturningId(sql, params, "id").longValue();
     return getAttachmentType(id, objectType);
   }
@@ -237,8 +255,11 @@ public class AttachmentTypeService {
     params.put("linkable", false);
 
     //because we don't have to pass in any of the 3 variables, this AttachmentTypeQuery.projectGetAssignedTypes should return them all
-    String sql = null != ppsEventId ? ProjectProcessStepEventQuery.getEventAttachmentTypes :
-                   null != ppsId ? ProjectProcessStepQuery.getStepAttachmentTypes : AttachmentTypeQuery.getAssignedTypes("project");
+    String sql = null != ppsEventId
+      ? ProjectProcessStepEventQuery.getEventAttachmentTypes
+      : null != ppsId
+      ? ProjectProcessStepQuery.getStepAttachmentTypes
+      : AttachmentTypeQuery.projectGetAssignedTypes;
 
     return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
@@ -252,9 +273,12 @@ public class AttachmentTypeService {
     params.put("ppsId", ppsId);
     params.put("ppsEventId", ppsEventId);
     String sql = AttachmentTypeQuery.getCombinedTypesForProject;
-    if(focused) {
-      sql = null != ppsEventId ? AttachmentTypeQuery.getFocusedTypesForPpsEvent :
-               null != ppsId ? AttachmentTypeQuery.getFocusedTypesForPps : AttachmentTypeQuery.getFocusedTypesForProject;
+    if (focused) {
+      sql = null != ppsEventId
+        ? AttachmentTypeQuery.getFocusedTypesForPpsEvent
+        : null != ppsId
+        ? AttachmentTypeQuery.getFocusedTypesForPps
+        : AttachmentTypeQuery.getFocusedTypesForProject;
     }
     return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
@@ -268,7 +292,15 @@ public class AttachmentTypeService {
     params.put("allowUpload", null != allowUpload ? allowUpload : false);
     params.put("focused", null != focused ? focused : false);
     params.put("linkable", null != linkable ? linkable : false);
-    String sql = AttachmentTypeQuery.getAssignedTypes(objectType.tablePrefix);
+
+    String sql = "";
+    switch (objectType) {
+      case PROJECT -> sql = AttachmentTypeQuery.projectGetAssignedTypes;
+      case CONTACT -> sql = AttachmentTypeQuery.contactGetAssignedTypes;
+      case USER -> sql = AttachmentTypeQuery.userGetAssignedTypes;
+      case ORGANIZATION -> sql = AttachmentTypeQuery.orgGetAssignedTypes;
+      default -> throw new ApiException("Unsupported attachment type");
+    }
     return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
   }
 
@@ -282,7 +314,8 @@ public class AttachmentTypeService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<>() {};
+      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class,
         "customFieldGroups",
@@ -300,7 +333,8 @@ public class AttachmentTypeService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<>() {};
+      TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class,
         "customFieldGroups",

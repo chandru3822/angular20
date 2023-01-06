@@ -319,29 +319,65 @@ public class AttachmentTypeQuery {
       """;
 
   //attachment type queries that work for different object types
-  public static String getTypes(String tablePrefix) {
-    //language=PostgreSQL
-    return """
-      select oat.id,
+//  public static String getTypes(String tablePrefix) {
+//    //language=PostgreSQL
+//    return """
+//      select oat.id,
+//               oat.company_id,
+//               oat.attachment_type_id,
+//               oat.archived,
+//               oat.focused,
+//               oat.linkable,
+//               oat.allow_upload,
+//               at.attachment_type,
+//               oat.display_order
+//        from flow.%s_attachment_type oat
+//               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+//        where oat.company_id = :companyId
+//          and oat.archived is not true
+//        order by at.attachment_type
+//      """.formatted(tablePrefix);
+//  }
+//language=PostgreSQL
+  public final static String userGetAvailableTypes = """
+    select at.id,
+                 at.attachment_type,
+                 at.archived
+          from flow.attachment_type at
+          where at.archived is not true
+            and at.company_id = :companyId
+            and at.is_system is false
+            and not exists (
+              select oat.attachment_type_id
+              from flow.user_attachment_type oat
+              where oat.company_id = :companyId
+                and oat.attachment_type_id = at.id
+                and oat.archived is not true
+            )
+          order by at.attachment_type
+      """;
+
+  //  USER - should prob move to own file
+  //language=PostgreSQL
+  public final static String userGetTypes = """
+    select oat.id,
                oat.company_id,
                oat.attachment_type_id,
                oat.archived,
+               at.attachment_type,
                oat.focused,
                oat.linkable,
                oat.allow_upload,
-               at.attachment_type,
                oat.display_order
-        from flow.%s_attachment_type oat
+        from flow.user_attachment_type oat
                inner join flow.attachment_type at on oat.attachment_type_id = at.id
         where oat.company_id = :companyId
           and oat.archived is not true
         order by at.attachment_type
-      """.formatted(tablePrefix);
-  }
+      """;
 
-  public static String getAvailableTypes(String tablePrefix) {
-    //language=PostgreSQL
-    return """
+  //language=PostgreSQL
+  public final static String projectGetAvailableTypes = """
       select at.id,
                    at.attachment_type,
                    at.archived
@@ -351,26 +387,220 @@ public class AttachmentTypeQuery {
               and at.is_system is false
               and not exists (
                 select oat.attachment_type_id
-                from flow.%s_attachment_type oat
+                from flow.project_attachment_type oat
                 where oat.company_id = :companyId
                   and oat.attachment_type_id = at.id
                   and oat.archived is not true
               )
             order by at.attachment_type
-      """.formatted(tablePrefix);
-  }
+    """;
 
-  public static String addType(String tablePrefix) {
-    //language=PostgreSQL
-    return """
-      insert into flow.%s_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+
+  //  PROJECT - should prob move to own file
+  //language=PostgreSQL
+  public final static String projectGetTypes = """
+       select oat.id,
+                 oat.company_id,
+                 oat.attachment_type_id,
+                 oat.archived,
+                 at.attachment_type,
+                 oat.focused,
+                 oat.linkable,
+                 oat.allow_upload,
+                 oat.display_order
+          from flow.project_attachment_type oat
+                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
+          where oat.company_id = :companyId
+            and oat.archived is not true
+          order by at.attachment_type
+    """;
+
+
+  //language=PostgreSQL
+  public final static String eventGetAvailableTypes = """
+      select at.id,
+                   at.attachment_type,
+                   at.archived
+            from flow.attachment_type at
+            where at.archived is not true
+              and at.company_id = :companyId
+              and at.is_system is false
+              and not exists (
+                select oat.attachment_type_id
+                from flow.event_attachment_type oat
+                where oat.event_id = :eventId
+                  and oat.attachment_type_id = at.id
+                  and oat.archived is not true
+              )
+            order by at.attachment_type
+    """;
+
+  //  EVENT - should prob move to own file
+  //language=PostgreSQL
+  public final static String eventGetTypes = """
+      select oat.id,
+                 oat.event_id,
+                 oat.attachment_type_id,
+                 oat.archived,
+                 at.attachment_type,
+                 oat.focused,
+                 oat.linkable,
+                 oat.allow_upload,
+                 oat.display_order
+          from flow.event_attachment_type oat
+                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
+          where oat.event_id = :eventId
+            and oat.archived is not true
+          order by at.attachment_type
+    """;
+
+  //language=PostgreSQL
+  public final static String contactGetAvailableTypes = """
+    select at.id,
+                 at.attachment_type,
+                 at.archived
+          from flow.attachment_type at
+          where at.archived is not true
+            and at.company_id = :companyId
+            and at.is_system is false
+            and not exists (
+              select oat.attachment_type_id
+              from flow.contact_attachment_type oat
+              where oat.company_id = :companyId
+                and oat.attachment_type_id = at.id
+                and oat.archived is not true
+            )
+          order by at.attachment_type
+      """;
+
+  //  CONTACT - should prob move to own file
+  //language=PostgreSQL
+  public final static String contactGetTypes = """
+    select oat.id,
+               oat.company_id,
+               oat.attachment_type_id,
+               oat.archived,
+               oat.focused,
+               oat.linkable,
+               oat.allow_upload,
+               at.attachment_type,
+               oat.display_order
+        from flow.contact_attachment_type oat
+               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+        where oat.company_id = :companyId
+          and oat.archived is not true
+        order by at.attachment_type
+      """;
+
+  //language=PostgreSQL
+  public final static String orgGetAvailableTypes = """
+    select at.id,
+                 at.attachment_type,
+                 at.archived
+          from flow.attachment_type at
+          where at.archived is not true
+            and at.company_id = :companyId
+            and at.is_system is false
+            and not exists (
+              select oat.attachment_type_id
+              from flow.org_attachment_type oat
+              where oat.company_id = :companyId
+                and oat.attachment_type_id = at.id
+                and oat.archived is not true
+            )
+          order by at.attachment_type
+      """;
+
+  //  ORG - should prob move to own file
+  //language=PostgreSQL
+  public final static String orgGetTypes = """
+      select oat.id,
+             oat.company_id,
+             oat.attachment_type_id,
+             oat.archived,
+             at.attachment_type,
+             oat.focused,
+             oat.linkable,
+             oat.allow_upload,
+             oat.display_order
+      from flow.org_attachment_type oat
+             inner join flow.attachment_type at on oat.attachment_type_id = at.id
+      where oat.company_id = :companyId
+        and oat.archived is not true
+      order by at.attachment_type
+    """;
+
+//  public static String getAvailableTypes(String tablePrefix) {
+//    //language=PostgreSQL
+//    return """
+//      select at.id,
+//                   at.attachment_type,
+//                   at.archived
+//            from flow.attachment_type at
+//            where at.archived is not true
+//              and at.company_id = :companyId
+//              and at.is_system is false
+//              and not exists (
+//                select oat.attachment_type_id
+//                from flow.%s_attachment_type oat
+//                where oat.company_id = :companyId
+//                  and oat.attachment_type_id = at.id
+//                  and oat.archived is not true
+//              )
+//            order by at.attachment_type
+//      """.formatted(tablePrefix);
+//  }
+
+  public final static String contactAddType = """
+      insert into flow.contact_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
       values (:companyId, :attachmentTypeId, :createdById,
-              (select coalesce(max(display_order) + 1, 0) from flow.%s_attachment_type
+              (select coalesce(max(display_order) + 1, 0) from flow.contact_attachment_type
                where company_id = :companyId and archived is false))
-      """.formatted(tablePrefix, tablePrefix);
-  }
+    """;
 
-  public static String updateDisplayOrder(String tablePrefix) {
+  public final static String orgAddType = """
+      insert into flow.org_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+      values (:companyId, :attachmentTypeId, :createdById,
+              (select coalesce(max(display_order) + 1, 0) from flow.org_attachment_type
+               where company_id = :companyId and archived is false))
+    """;
+
+  //language=PostgreSQL
+  public final static String userAddType = """
+      insert into flow.user_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+      values (:companyId, :attachmentTypeId, :createdById,
+              (select coalesce(max(display_order) + 1, 0) from flow.user_attachment_type
+               where company_id = :companyId and archived is false))
+    """;
+
+  //language=PostgreSQL
+  public final static String projectAddType = """
+          insert into flow.project_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+          values (:companyId, :attachmentTypeId, :createdById,
+                  (select coalesce(max(display_order) + 1, 0) from flow.project_attachment_type
+                   where company_id = :companyId and archived is false))
+    """;
+
+  //language=PostgreSQL
+  public final static String eventAddType = """
+          insert into flow.event_attachment_type(event_id, attachment_type_id, created_by_id, display_order)
+          values (:eventId, :attachmentTypeId, :createdById,
+                  (select coalesce(max(display_order) + 1, 0) from flow.event_attachment_type
+                   where event_id = :eventId and archived is false))
+    """;
+
+
+//  public static String addType(String tablePrefix) {
+//    //language=PostgreSQL
+//    return """
+//      insert into flow.%s_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
+//      values (:companyId, :attachmentTypeId, :createdById,
+//              (select coalesce(max(display_order) + 1, 0) from flow.%s_attachment_type
+//               where company_id = :companyId and archived is false))
+//      """.formatted(tablePrefix, tablePrefix);
+//  }
+
+  public final static String updateDisplayOrder(String tablePrefix) {
     //language=PostgreSQL
     return """
       update flow.%s_attachment_type
@@ -381,7 +611,7 @@ public class AttachmentTypeQuery {
       """.formatted(tablePrefix);
   }
 
-  public static String update(String tablePrefix) {
+  public final static String update(String tablePrefix) {
     //language=PostgreSQL
     return """
       update flow.%s_attachment_type
@@ -395,7 +625,7 @@ public class AttachmentTypeQuery {
   }
 
 
-  public static String deleteType(String tablePrefix) {
+  public final static String deleteType(String tablePrefix) {
     //language=PostgreSQL
     return """
       update flow.%s_attachment_type
@@ -406,10 +636,40 @@ public class AttachmentTypeQuery {
       """.formatted(tablePrefix);
   }
 
-  public static String getAssignedTypes(String tablePrefix) {
-    //language=PostgreSQL
-    return """
-      select oat.id,
+
+  //language=PostgreSQL
+  public final static String projectGetAssignedTypes = """
+          select oat.id,
+                     oat.company_id,
+                     oat.attachment_type_id,
+                     oat.archived,
+                     at.attachment_type,
+                     oat.focused,
+                     oat.linkable,
+                     oat.allow_upload,
+                     oat.display_order,
+                     case when :allowUpload::boolean is true then (
+                       select cfga.id
+                       from flow.custom_field_group_assignment cfga
+                              left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                              left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
+                       where cfga.archived is false
+                         and (cfg2.id is not null or cfg.id is not null)
+                       limit 1
+                     ) is not null else false end as has_fields_assigned
+              from flow.project_attachment_type oat
+                     inner join flow.attachment_type at on oat.attachment_type_id = at.id
+              where oat.company_id = :companyId
+                and oat.archived is not true
+                and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
+                and case when :focused::boolean is true then oat.focused is true else 1=1 end
+                and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+              order by at.attachment_type
+    """;
+
+  //language=PostgreSQL
+  public final static String contactGetAssignedTypes = """
+    select oat.id,
                oat.company_id,
                oat.attachment_type_id,
                oat.archived,
@@ -427,7 +687,7 @@ public class AttachmentTypeQuery {
                    and (cfg2.id is not null or cfg.id is not null)
                  limit 1
                ) is not null as has_fields_assigned
-        from flow.%s_attachment_type oat
+        from flow.contact_attachment_type oat
                inner join flow.attachment_type at on oat.attachment_type_id = at.id
         where oat.company_id = :companyId
           and oat.archived is not true
@@ -435,7 +695,101 @@ public class AttachmentTypeQuery {
           and case when :focused::boolean is true then oat.focused is true else 1=1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
         order by at.attachment_type
-      """.formatted(tablePrefix);
-  }
+      """;
+
+
+  //language=PostgreSQL
+  public final static String orgGetAssignedTypes = """
+    select oat.id,
+               oat.company_id,
+               oat.attachment_type_id,
+               oat.archived,
+               at.attachment_type,
+               oat.focused,
+               oat.linkable,
+               oat.allow_upload,
+               oat.display_order,
+               (
+                 select cfga.id
+                 from flow.custom_field_group_assignment cfga
+                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
+                 where cfga.archived is false
+                   and (cfg2.id is not null or cfg.id is not null)
+                 limit 1
+               ) is not null as has_fields_assigned
+        from flow.org_attachment_type oat
+               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+        where oat.company_id = :companyId
+          and oat.archived is not true
+          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
+          and case when :focused::boolean is true then oat.focused is true else 1=1 end
+          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+        order by at.attachment_type
+      """;
+
+
+  //language=PostgreSQL
+  public final static String userGetAssignedTypes = """
+    select oat.id,
+               oat.company_id,
+               oat.attachment_type_id,
+               oat.archived,
+               at.attachment_type,
+               oat.focused,
+               oat.linkable,
+               oat.allow_upload,
+               oat.display_order,
+              (
+                 select cfga.id
+                 from flow.custom_field_group_assignment cfga
+                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
+                 where cfga.archived is false
+                   and (cfg2.id is not null or cfg.id is not null)
+                 limit 1
+               ) is not null as has_fields_assigned
+        from flow.user_attachment_type oat
+               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+        where oat.company_id = :companyId
+          and oat.archived is not true
+          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
+          and case when :focused::boolean is true then oat.focused is true else 1=1 end
+          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+        order by at.attachment_type
+      """;
+
+
+//  public static String getAssignedTypes(String tablePrefix) {
+//    //language=PostgreSQL
+//    return """
+//      select oat.id,
+//               oat.company_id,
+//               oat.attachment_type_id,
+//               oat.archived,
+//               at.attachment_type,
+//               oat.focused,
+//               oat.linkable,
+//               oat.allow_upload,
+//               oat.display_order,
+//               (
+//                 select cfga.id
+//                 from flow.custom_field_group_assignment cfga
+//                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
+//                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
+//                 where cfga.archived is false
+//                   and (cfg2.id is not null or cfg.id is not null)
+//                 limit 1
+//               ) is not null as has_fields_assigned
+//        from flow.%s_attachment_type oat
+//               inner join flow.attachment_type at on oat.attachment_type_id = at.id
+//        where oat.company_id = :companyId
+//          and oat.archived is not true
+//          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
+//          and case when :focused::boolean is true then oat.focused is true else 1=1 end
+//          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+//        order by at.attachment_type
+//      """.formatted(tablePrefix);
+//  }
 
 }
