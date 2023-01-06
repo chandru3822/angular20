@@ -67,7 +67,7 @@ public class SetterDashboardService {
   }
 
   public String getMgrPerformanceReport(Integer officeId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_mgr_performance_report(:officeId::bigint, :startDate::date, :endDate::date)";
+    String sqlQuery = "SELECT * FROM brs.get_setter_mgr_performance_report(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("officeId", officeId);
