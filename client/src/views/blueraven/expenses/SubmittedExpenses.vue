@@ -298,7 +298,7 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import moment from 'moment'
 import {saveAs} from 'file-saver'
 import cloneDeep from 'lodash.clonedeep'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'SubmittedExpenses',

@@ -188,7 +188,7 @@ import {v4 as uuid} from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 const NEW_STATUS_TO_USE = {id: null}
 

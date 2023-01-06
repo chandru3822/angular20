@@ -113,7 +113,7 @@ import {
   postRequest,
   getSnackbar, handleHidingGlobalLoader
 } from '@/helpers/helpers'
-import ConfirmationDialog from "../../../../components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepAttachmentTypes',

@@ -117,7 +117,7 @@
 
   import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'ProcessSteps',

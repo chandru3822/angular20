@@ -43,7 +43,7 @@
 import {getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import {getSnackbar, logError} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ProjectProcessStepStatus',

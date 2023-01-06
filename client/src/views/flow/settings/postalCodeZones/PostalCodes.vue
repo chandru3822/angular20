@@ -103,7 +103,7 @@
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import {  handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'PostalCodes',

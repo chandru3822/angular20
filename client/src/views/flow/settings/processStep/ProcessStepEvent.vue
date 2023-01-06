@@ -777,7 +777,7 @@ import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepEvent',

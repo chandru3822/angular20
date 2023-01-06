@@ -118,7 +118,7 @@
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'SlotSchedules',

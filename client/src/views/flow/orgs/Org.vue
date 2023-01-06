@@ -300,7 +300,7 @@ import {
 import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import constants from "@/helpers/constants";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import SpinnerInline from '@/components/SpinnerInline'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'

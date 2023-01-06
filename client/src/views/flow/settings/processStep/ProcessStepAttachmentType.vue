@@ -211,15 +211,13 @@ import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import draggable from 'vuedraggable'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmationDialog from "../../../../components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepAttachmentType',
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     draggable,
   },
   data() {

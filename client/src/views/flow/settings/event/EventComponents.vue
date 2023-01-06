@@ -76,7 +76,7 @@ import {getAvailableForEvent} from '@/services/eventStatusTypeService'
 import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters"
 import orderBy from "lodash.orderby"
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'EventComponents',

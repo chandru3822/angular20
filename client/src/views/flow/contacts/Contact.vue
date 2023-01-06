@@ -325,7 +325,7 @@ import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
 import {getStatusClass} from "@/services/processStepStatusTypeService";
 import SpinnerInline from '@/components/SpinnerInline'
-import ConfirmationDialog from "../../../components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 
 export default {

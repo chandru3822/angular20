@@ -242,7 +242,7 @@ import orderBy from 'lodash.orderby'
 import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "../../../components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'EventStatuses',

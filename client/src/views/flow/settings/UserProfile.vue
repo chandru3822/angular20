@@ -193,7 +193,7 @@
 <script>
 import { Actions } from '@/store'
 import SpinnerInline from '@/components/SpinnerInline'
-import ConfirmationDialog from '@/ConfirmationDialog'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'

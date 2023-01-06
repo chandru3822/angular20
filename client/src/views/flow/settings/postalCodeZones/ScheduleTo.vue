@@ -184,7 +184,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import sumBy from "lodash.sumby"
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ScheduleTo',

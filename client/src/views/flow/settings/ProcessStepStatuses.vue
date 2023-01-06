@@ -179,7 +179,7 @@
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmationDialog from "../../../components/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
   import {getRequest} from "../../../helpers/helpers";
 
   export default {

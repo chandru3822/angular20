@@ -115,7 +115,7 @@ import {
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: "EmailSettings",
