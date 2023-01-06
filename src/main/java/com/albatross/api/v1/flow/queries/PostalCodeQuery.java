@@ -115,7 +115,7 @@ public class PostalCodeQuery {
 
   //language=PostgreSQL
   public final static String getScheduleToUsers = """
-    select * from brs.get_allocation_by_zone(:zoneId::bigint)
+    select * from brs.get_allocation_by_zone(:zoneId::bigint, :currentUserId::bigint)
         """;
 
   //language=PostgreSQL
