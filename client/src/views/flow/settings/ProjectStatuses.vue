@@ -263,7 +263,7 @@
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
   import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmationDialog from "../../../ConfirmationDialog";
+  import ConfirmationDialog from "../../../components/ConfirmationDialog";
 
   export default {
     name: 'ProjectStatuses',
