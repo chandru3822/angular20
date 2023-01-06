@@ -68,6 +68,9 @@
                 <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'EDIT')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="editHoa(item)">
                   edit
+                </v-icon><v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'DELETE')" small color="primary"
+                        class="mr-3 feat-db-link-icon" @click="deleteHoa(item)">
+                  delete
                 </v-icon>
               </td>
             </tr>
@@ -133,7 +136,9 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
+    <ConfirmationDialog :open-dialog="!!hoaToDelete" @confirm="confirmDeleteHoa" @close-dialog="hoaToDelete=null">
+    Are you sure you want to delete {{ hoaToDeleteName }}?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -144,9 +149,12 @@ import {FILTER_DEFAULTS, FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbCons
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
+import ConfirmationDialog from "../../../../ConfirmationDialog";
+import {deleteRequest} from "../../../../helpers/helpers";
 
 export default {
   name: "hoas",
+  components: {ConfirmationDialog},
   data: () => ({
     constants,
     dataLoading: true,
@@ -179,7 +187,8 @@ export default {
     addMode: false,
     managementCompanies: [],
     addingManagementCompany: false,
-    newManagementCompany: ""
+    newManagementCompany: "",
+    hoaToDelete: null,
   }),
   computed: {
     filteredHoas() {
@@ -214,6 +223,9 @@ export default {
     addNewManagementCompanyButton() {
       return this.addingManagementCompany ? 'Select An Existing Management Company': 'Add New Management Company'
     },
+    hoaToDeleteName(){
+      return this.hoaToDelete ? this.hoaToDelete.name : ''
+    }
   },
   async created() {
     this.$store.commit(AppMutations.SET_LOADING, true)
@@ -239,7 +251,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest('/featDb/hoa/list/all', 'blueraven')
-        this.hoas = cloneDeep(data)
+        this.hoas = cloneDeep(data).filter(hoa => hoa.archived === false)
         this.dataLoading = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -278,6 +290,28 @@ export default {
     close() {
       this.hoaDialog = false
       this.editedItem = {}
+    },
+    deleteHoa(item) {
+      this.hoaToDelete = {
+        id: item.id,
+        name: item.name
+      }
+    },
+    async confirmDeleteHoa() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await deleteRequest(`/featDb/hoa/${this.hoaToDelete.id}`, 'blueraven')
+        this.snackbar = getSnackbar('SUCCESS', 'HOA deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        await this.fetchHoas().then(() => this.fetchStates())
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error deleting HOA')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+      this.hoaToDelete = null
     },
     async saveHoa() {
       this.$store.commit(AppMutations.SET_LOADING, true)

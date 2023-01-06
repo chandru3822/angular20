@@ -112,11 +112,6 @@
                 <v-btn small text v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')" @click="expanded = [item]; expandedItem = item">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <confirm-delete-dialog
-                    v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')"
-                    label="this template?"
-                    @confirm="deleteTemplate(item)"
-                ></confirm-delete-dialog>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
               </td>
             </tr>
@@ -133,11 +128,11 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, putRequest, getSnackbar, getRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
+
 
 export default {
   name: 'MessageTemplates',
-  components: {ConfirmDeleteDialog},
+  components: {},
   data () {
     return {
       snackbar: {},

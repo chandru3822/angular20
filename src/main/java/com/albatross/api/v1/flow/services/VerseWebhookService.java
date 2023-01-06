@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.queries.ContactLeadQuery;
 import com.albatross.api.v1.flow.model.VersusLeadEvent;
 import com.albatross.api.v1.flow.queries.customFieldValues.ContactCfvQuery;
 import lombok.RequiredArgsConstructor;
@@ -62,16 +63,16 @@ public class VerseWebhookService {
         params.put("userId", 2371412L);
         sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
         msg =
-            "VERSE: Contact Id "
-                + versusLeadEvent.getExternalLeadId()
-                + " lead status successfully updated";
+          "VERSE: Contact Id "
+            + versusLeadEvent.getExternalLeadId()
+            + " lead status successfully updated";
         log.debug(msg);
 
       } else {
         msg =
-            "VERSE: Unable to update Contact Id "
-                + versusLeadEvent.getExternalLeadId()
-                + " lead status due to unknown lead status";
+          "VERSE: Unable to update Contact Id "
+            + versusLeadEvent.getExternalLeadId()
+            + " lead status due to unknown lead status";
         //log.error(msg);
       }
 
@@ -108,24 +109,24 @@ public class VerseWebhookService {
     headers.put("Accept", "application/json");
     try {
       HttpUtils.call(
-          "POST",
-          "https://api.verse.io/v1/zapier",
-          headers,
-          new ByteArrayInputStream(params.toString().getBytes()));
+        "POST",
+        "https://api.verse.io/v1/zapier",
+        headers,
+        new ByteArrayInputStream(params.toString().getBytes()));
     } catch (Exception e) {
       log.error("VERSE: Failed to post Contact to Verse.", e);
     }
   }
 
   private String checkIfCustomFieldDropdownValueExists(
-      Integer listOfValueId, String customFieldDropdownValue) {
+    Integer listOfValueId, String customFieldDropdownValue) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("listOfValueId", listOfValueId);
     params.put("customFieldDropdownValue", customFieldDropdownValue);
 
     Optional<String> customFieldDropdownValueId =
-        sqlCache.queryForObjectOptional(
-            "contactLead.checkIfCustomFieldDropdownValueExists", params, String.class);
+      sqlCache.queryForObjectOptionalBySql(
+        ContactLeadQuery.checkIfCustomFieldDropdownValueExists, params, String.class);
     return customFieldDropdownValueId.orElse("null");
   }
 }

@@ -251,7 +251,7 @@ import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import constants from "@/helpers/constants";
 import SpinnerInline from '@/components/SpinnerInline'
-import ConfirmationDialog from "../../../ConfirmationDialog";
+import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 
 export default {

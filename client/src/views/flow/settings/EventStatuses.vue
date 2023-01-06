@@ -242,15 +242,13 @@ import orderBy from 'lodash.orderby'
 import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmationDialog from "../../../ConfirmationDialog";
+import ConfirmationDialog from "../../../components/ConfirmationDialog";
 
 export default {
   name: 'EventStatuses',
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     draggable,
   },
   data() {

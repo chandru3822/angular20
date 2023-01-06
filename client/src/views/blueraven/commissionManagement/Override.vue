@@ -488,7 +488,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-  import ConfirmationDialog from "../../../ConfirmationDialog";
+  import ConfirmationDialog from "../../../components/ConfirmationDialog";
   import MultiOptionDialog from "@/components/MultiOptionDialog";
 
   const deleteTypes={

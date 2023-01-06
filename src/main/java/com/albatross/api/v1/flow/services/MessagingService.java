@@ -54,7 +54,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('SMS_INBOX')")
 @RequiredArgsConstructor
 public class MessagingService {
 

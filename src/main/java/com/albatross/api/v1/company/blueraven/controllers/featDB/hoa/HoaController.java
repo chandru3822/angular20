@@ -42,6 +42,11 @@ public class HoaController {
     return hoaService.updateHoa(hoa);
   }
 
+  @DeleteMapping(value="/{id}")
+  public void deleteHoa(@PathVariable Long id) {
+      hoaService.deleteHoa(id);
+  }
+
   @GetMapping(value = "/list/companies")
   public List<HoaCompany> getHoaCompanies() {
     return hoaService.getHoaCompanies();
