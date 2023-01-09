@@ -1,7 +1,7 @@
 <template>
   <v-container id="all-smartlists">
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" class="pa-0">
         <v-card flat class="square-card pb-3 px-3" color="white">
           <v-text-field
             v-model="search"
@@ -68,9 +68,11 @@ import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
+import constants from '@/helpers/constants'
 
 const footerProps = ref({
-  'items-per-page-options': [25, 50, 100, 500]
+  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 
 const headers = ref([
