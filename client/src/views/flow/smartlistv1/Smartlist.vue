@@ -316,7 +316,7 @@ import SmartlistRequirement from './SmartlistRequirement'
 import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'Smartlist',

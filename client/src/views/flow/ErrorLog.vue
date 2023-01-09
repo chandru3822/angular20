@@ -47,7 +47,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'ErrorLog',

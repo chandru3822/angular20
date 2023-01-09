@@ -154,7 +154,7 @@ import {
 } from '@/helpers/helpers'
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'AppDownloads',

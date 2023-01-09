@@ -191,7 +191,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {saveAs} from 'file-saver'
 import moment from "moment";
 import debounce from "lodash.debounce";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'Payments',

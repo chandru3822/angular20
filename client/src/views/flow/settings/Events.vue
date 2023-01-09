@@ -118,7 +118,7 @@ import Vue2Filters from 'vue2-filters'
 
 import {getRequest, putRequest, postRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
 import debounce from "lodash.debounce";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'Events',

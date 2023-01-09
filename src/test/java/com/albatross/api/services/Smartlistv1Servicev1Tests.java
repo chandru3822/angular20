@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.services.SmartlistServicev1;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -139,7 +140,7 @@ public class Smartlistv1Servicev1Tests {
       try {
         log.info("Running smartlist ID: " + id);
         final String sql = smartlistServicev1.getSmartlistSqlString(id);
-        final Boolean isValid = sqlCacheRO.queryForObject("smartlist.isSyntaxValid", Map.of("query", sql), Boolean.class);
+        final Boolean isValid = sqlCacheRO.queryForObjectBySql(SmartlistQueryv1.isSyntaxValid, Map.of("query", sql), Boolean.class);
         if (!isValid) {
             throw new RuntimeException(String.format("Invalid Syntax, Smartlist ID: %s, Query: %s", id, sql));
         }

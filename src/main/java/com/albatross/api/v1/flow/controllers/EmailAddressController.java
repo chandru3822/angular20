@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/v1/flow/emailAddress")
+@RequestMapping(value = "/api/v1/flow/emailAddress", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class EmailAddressController {
 
   private final MailService mailService;
 
-  @GetMapping(value = "/{companyId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{companyId}")
   public List<EmailSender> getEmailSenders(@PathVariable Long companyId) throws Exception {
     return mailService.getEmailSenders(companyId);
   }

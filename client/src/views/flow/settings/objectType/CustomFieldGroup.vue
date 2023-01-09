@@ -481,15 +481,13 @@ import Sortable from 'sortablejs'
 
 import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'CustomFieldGroup',
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     draggable,
   },
   props: {

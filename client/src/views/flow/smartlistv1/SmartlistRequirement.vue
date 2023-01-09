@@ -412,7 +412,7 @@
 import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 
 const newRequirementStructure = {

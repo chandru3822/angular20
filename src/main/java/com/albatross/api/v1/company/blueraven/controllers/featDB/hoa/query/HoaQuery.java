@@ -47,6 +47,15 @@ public class HoaQuery {
     """;
 
   //language=PostgreSQL
+    public final static String delete = """
+        UPDATE brs.feat_db_hoa
+            SET archived = TRUE,
+                date_modified = now(),
+                modified_by_id = :currentUser
+            WHERE id = :id
+    """;
+
+  //language=PostgreSQL
   public final static String insert = """
           INSERT INTO brs.feat_db_hoa(name, archived, company_state_id, management_company_id, date_created, created_by_id,date_modified, modified_by_id)
           VALUES (:hoaName, false, :companyStateId, :managementCompanyId, now(), :currentUser, now(), :currentUser)

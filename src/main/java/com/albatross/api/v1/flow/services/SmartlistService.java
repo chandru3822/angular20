@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@PreAuthorize("hasFeatureAccess('SMARTLIST') || hasFeatureAccess('WORK_QUEUE')")
 @RequiredArgsConstructor
 @Slf4j
 public class SmartlistService {

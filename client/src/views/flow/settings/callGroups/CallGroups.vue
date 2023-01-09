@@ -105,7 +105,7 @@
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
   import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'CallGroups',

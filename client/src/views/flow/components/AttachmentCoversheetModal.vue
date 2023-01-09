@@ -208,7 +208,7 @@ import {getCustomFieldReadOnly} from "@/services/customFieldService"
 import cloneDeep from 'lodash.clonedeep'
 import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
 import SpinnerInline from '@/components/SpinnerInline'
-import ConfirmationDialog from "@/ConfirmationDialog"
+import ConfirmationDialog from "@/components/ConfirmationDialog"
 
 export default {
   name: "AttachmentCoversheetModal",

@@ -164,7 +164,6 @@ import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHistoryDrilldown'
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
-import ConfirmDeleteDialog from '@/ConfirmDeleteDialog'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
 
@@ -172,7 +171,6 @@ export default {
   name: 'ProjectActivity',
   components: {
     ConfirmAssignmentDialog,
-    ConfirmDeleteDialog,
     AddTeamDropdown,
     OwnershipHistoryDrilldown,
     TeamAssignmentChips,

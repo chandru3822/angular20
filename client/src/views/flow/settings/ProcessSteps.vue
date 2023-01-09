@@ -117,12 +117,11 @@
 
   import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'ProcessSteps',
-    components: {ConfirmationDialog, ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
     data () {

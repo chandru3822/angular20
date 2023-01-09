@@ -184,7 +184,7 @@ import {
   putRequest,
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'SmartlistColumn',

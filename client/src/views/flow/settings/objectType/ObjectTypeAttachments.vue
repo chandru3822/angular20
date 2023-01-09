@@ -101,7 +101,7 @@ import Vue2Filters from "vue2-filters"
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ObjectTypeAttachments',

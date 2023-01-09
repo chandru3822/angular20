@@ -315,7 +315,7 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from "vue2-filters"
 import {Mentionable} from 'vue-mention'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'NotesAndActivityContent',

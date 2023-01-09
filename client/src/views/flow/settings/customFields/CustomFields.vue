@@ -148,8 +148,7 @@ import {
   putRequest
 } from "@/helpers/helpers";
 import constants from "@/helpers/constants";
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog.vue";
-import ConfirmationDialog from "@/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: "CustomFields",
@@ -159,7 +158,6 @@ export default {
   },
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     draggable
   },
   data() {
