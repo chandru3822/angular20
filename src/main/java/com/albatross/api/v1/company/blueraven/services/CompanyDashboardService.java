@@ -21,10 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-@Service
 @Slf4j
-@PreAuthorize("hasFeatureAccess('COMPANY_DASHBOARD')")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Service
+@RequiredArgsConstructor
 public class CompanyDashboardService {
 
   private final SqlCache sqlCache;

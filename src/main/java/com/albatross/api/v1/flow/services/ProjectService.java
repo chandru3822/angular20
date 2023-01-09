@@ -199,7 +199,7 @@ public class ProjectService {
     List<Project> projects =
         sqlCache.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
 
-    Integer total = 10000;
+    int total = 10000;
     return new PageImpl<>(
         projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
