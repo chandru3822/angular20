@@ -3,7 +3,9 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
+import com.albatross.api.v1.flow.model.MessageTeam;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
@@ -14,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('PROCESS_STEPS')")
+//@PreAuthorize("hasFeatureAccess('PROCESS_STEPS')")
 @RequiredArgsConstructor
 public class ProcessStepActionService {
 
@@ -41,8 +42,8 @@ public class ProcessStepActionService {
     // this requires both calls to pass in a null param, not sure i like this
     return sqlCache.queryBySql(
       ProcessStepActionQuery.getActionsForStep,
-        params,
-        new ProcessStepActionMapper<>(ProcessStepAction.class, om));
+      params,
+      new ProcessStepActionMapper<>(ProcessStepAction.class, om));
   }
 
   public String getActionLogicString(Long actionId) {
@@ -70,11 +71,11 @@ public class ProcessStepActionService {
     // basically doing the same thing. but this requires both calls to pass in a null param, not
     // sure i like this
     return sqlCache
-        .getBySql(
-          ProcessStepActionQuery.getActionsForStep,
-            params,
-            new ProcessStepActionMapper<>(ProcessStepAction.class, om))
-        .orElse(null);
+      .getBySql(
+        ProcessStepActionQuery.getActionsForStep,
+        params,
+        new ProcessStepActionMapper<>(ProcessStepAction.class, om))
+      .orElse(null);
   }
 
   public void updateActionOrder(List<ProcessStepAction> actions) {
@@ -117,19 +118,19 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("id", action.getId());
     params.put(
-        "removeProcessStepOwner",
-        action.getRemoveProcessStepOwner() != null && action.getRemoveProcessStepOwner());
+      "removeProcessStepOwner",
+      action.getRemoveProcessStepOwner() != null && action.getRemoveProcessStepOwner());
     params.put("multipleUses", action.getMultipleUses() != null && action.getMultipleUses());
     params.put(
-        "triggerAutomatically",
-        action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
+      "triggerAutomatically",
+      action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put(
-        "timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
+      "timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
     params.put("hideFromMobile", action.getHideFromMobile() != null && action.getHideFromMobile());
     params.put("hideFromWeb", action.getHideFromWeb() != null && action.getHideFromWeb());
 
     Long id =
-        sqlCache.updateBySqlReturningId(ProcessStepActionQuery.updateAction, params, "id").longValue();
+      sqlCache.updateBySqlReturningId(ProcessStepActionQuery.updateAction, params, "id").longValue();
 
     // delete childProcessSteps if it is a link (if they changed the type)
     if (action.getActionTypeId() == 1L && !action.getProcessStepActionChildProcesses().isEmpty()) {
@@ -153,8 +154,8 @@ public class ProcessStepActionService {
         int count = 0;
         for (ProcessStepLogic logic : action.getProcessStepLogicList()) {
           if (null != logic.getProcessStepRequirementId()
-              && (null == logic.getProcessStepRequirementImmutable()
-                  || !logic.getProcessStepRequirementImmutable())) {
+            && (null == logic.getProcessStepRequirementImmutable()
+            || !logic.getProcessStepRequirementImmutable())) {
             // update psr.immutable, if it is not already true. (don't have to do this for updates
             // because it should already be true by now)
             HashMap<String, Object> psrParams = new HashMap<>();
@@ -189,19 +190,19 @@ public class ProcessStepActionService {
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put(
-        "removeProcessStepOwner",
-        action.getRemoveProcessStepOwner() != null && action.getRemoveProcessStepOwner());
+      "removeProcessStepOwner",
+      action.getRemoveProcessStepOwner() != null && action.getRemoveProcessStepOwner());
     params.put("multipleUses", action.getMultipleUses() != null && action.getMultipleUses());
     params.put(
-        "triggerAutomatically",
-        action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
+      "triggerAutomatically",
+      action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put(
-        "timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
+      "timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
     params.put("hideFromMobile", action.getHideFromMobile() != null && action.getHideFromMobile());
     params.put("hideFromWeb", action.getHideFromWeb() != null && action.getHideFromWeb());
 
     Long id =
-        sqlCache.updateBySqlReturningId(ProcessStepActionQuery.insertAction, params, "id").longValue();
+      sqlCache.updateBySqlReturningId(ProcessStepActionQuery.insertAction, params, "id").longValue();
     return getActionById(id);
   }
 
@@ -220,7 +221,7 @@ public class ProcessStepActionService {
   }
 
   public ProcessStepActionChildProcess addChildStepToAction(
-      Long actionId, ProcessStepActionChildProcess child) {
+    Long actionId, ProcessStepActionChildProcess child) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", child.getProcessStepId());
@@ -229,35 +230,35 @@ public class ProcessStepActionService {
     params.put("createdById", currentUser.trueUserId());
     params.put("companyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
-        "existingCompanyProcessStepStatusTypeId",
-        child.getExistingCompanyProcessStepStatusTypeId());
+      "existingCompanyProcessStepStatusTypeId",
+      child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
-        "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
+      "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
 
     Long id =
-        sqlCache
-            .updateBySqlReturningId(ProcessStepActionQuery.addChildStepToAction, params, "id")
-            .longValue();
+      sqlCache
+        .updateBySqlReturningId(ProcessStepActionQuery.addChildStepToAction, params, "id")
+        .longValue();
     return getActionChildStep(id);
   }
 
   public ProcessStepActionChildProcess saveChildProcessCancelledStatus(
-      Long actionId, Long childProcessStepId, ProcessStepActionChildProcess child) {
+    Long actionId, Long childProcessStepId, ProcessStepActionChildProcess child) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("childProcessStepId", childProcessStepId);
     params.put("processStepActionId", actionId);
     params.put(
-        "existingCompanyProcessStepStatusTypeId",
-        child.getExistingCompanyProcessStepStatusTypeId());
+      "existingCompanyProcessStepStatusTypeId",
+      child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
-        "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
+      "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
     params.put("modifiedById", currentUser.trueUserId());
 
     Long id =
-        sqlCache
-            .updateBySqlReturningId(ProcessStepActionQuery.saveChildProcessStatuses, params, "id")
-            .longValue();
+      sqlCache
+        .updateBySqlReturningId(ProcessStepActionQuery.saveChildProcessStatuses, params, "id")
+        .longValue();
     return getActionChildStep(id);
   }
 
@@ -266,8 +267,8 @@ public class ProcessStepActionService {
     params.put("id", id);
 
     Optional<ProcessStepActionChildProcess> result =
-        sqlCache.getBySql(
-          ProcessStepActionQuery.getActionChildStep, params, ProcessStepActionChildProcess.class);
+      sqlCache.getBySql(
+        ProcessStepActionQuery.getActionChildStep, params, ProcessStepActionChildProcess.class);
     return result.orElse(null);
   }
 
@@ -289,10 +290,10 @@ public class ProcessStepActionService {
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
     params.put(
-        "existingCompanyProcessStepStatusTypeId",
-        child.getExistingCompanyProcessStepStatusTypeId());
+      "existingCompanyProcessStepStatusTypeId",
+      child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
-        "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
+      "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
     sqlCache.updateBySql(ProcessStepActionQuery.updateActionChildStep, params);
   }
 
@@ -305,7 +306,7 @@ public class ProcessStepActionService {
     params.put("createdById", currentUser.trueUserId());
 
     Long id =
-        sqlCache.updateBySqlReturningId(ProcessStepActionQuery.addLinkToAction, params, "id").longValue();
+      sqlCache.updateBySqlReturningId(ProcessStepActionQuery.addLinkToAction, params, "id").longValue();
     return getActionChildLink(id);
   }
 
@@ -314,8 +315,8 @@ public class ProcessStepActionService {
     params.put("id", id);
 
     return sqlCache
-        .getBySql(ProcessStepActionQuery.getActionChildLink, params, ProcessStepActionLink.class)
-        .orElse(null);
+      .getBySql(ProcessStepActionQuery.getActionChildLink, params, ProcessStepActionLink.class)
+      .orElse(null);
   }
 
   public void deleteLinkFromAction(Long childLinkId) {
@@ -329,7 +330,7 @@ public class ProcessStepActionService {
 
   // CHILD FUNCTIONS
   public ProcessStepActionChildFunction addChildFunctionToAction(
-      Long actionId, ProcessStepActionChildFunction child) {
+    Long actionId, ProcessStepActionChildFunction child) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyFunctionId", child.getCompanyFunctionId());
@@ -338,9 +339,9 @@ public class ProcessStepActionService {
     params.put("createdById", currentUser.trueUserId());
 
     Long id =
-        sqlCache
-            .updateBySqlReturningId(ProcessStepActionQuery.addChildFunctionToAction, params, "id")
-            .longValue();
+      sqlCache
+        .updateBySqlReturningId(ProcessStepActionQuery.addChildFunctionToAction, params, "id")
+        .longValue();
 
     handleDynamicValueParams(child.getActionParamDynamicValues(), id, null);
 
@@ -352,10 +353,10 @@ public class ProcessStepActionService {
     params.put("id", id);
 
     return sqlCache
-        .getBySql(ProcessStepActionQuery.getActionChildFunction,
-            params,
-            new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om))
-        .orElse(null);
+      .getBySql(ProcessStepActionQuery.getActionChildFunction,
+        params,
+        new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om))
+      .orElse(null);
   }
 
   public void deleteChildFunctionFromAction(Long childProcessId) {
@@ -408,6 +409,7 @@ public class ProcessStepActionService {
         new ProcessStepActionChildSmsTemplateMapper<>(ProcessStepActionChildSmsTemplate.class, om))
       .orElse(null);
   }
+
   public void deleteSmsFromAction(Long childSmsId) {
     User currentUser = securityService.getCurrentUser();
 
@@ -428,7 +430,7 @@ public class ProcessStepActionService {
 
 
   public void handleDynamicValueParams(List<ActionParamDynamicValue> params, Long processStepActionCompanyFunctionId, Long processStepEventActionCompanyFunctionId) {
-    if(!params.isEmpty()) {
+    if (!params.isEmpty()) {
       User currentUser = securityService.getCurrentUser();
 
       for (ActionParamDynamicValue p : params) {
@@ -451,13 +453,13 @@ public class ProcessStepActionService {
   }
 
   public List<ProcessStepActionChildFunction> getChildFunctionsWithParamValues(
-      Long actionId, Long projectProcessStepId) {
+    Long actionId, Long projectProcessStepId) {
     Map<String, Object> params =
-        Map.of("id", actionId, "projectProcessStepId", projectProcessStepId);
+      Map.of("id", actionId, "projectProcessStepId", projectProcessStepId);
     return sqlCache.queryBySql(
       ProcessStepActionQuery.getChildFunctionsByProjectProcessStepId,
-        params,
-        new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om));
+      params,
+      new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om));
   }
 
   // MAPPER
@@ -471,39 +473,44 @@ public class ProcessStepActionService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepLogic>> processStepLogicTypeRef = new TypeReference<>() {};
+      TypeReference<List<ProcessStepLogic>> processStepLogicTypeRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "processStepLogicList",
-          new JsonCollectionDeserializer(processStepLogicTypeRef, objectMapper));
+        List.class,
+        "processStepLogicList",
+        new JsonCollectionDeserializer(processStepLogicTypeRef, objectMapper));
 
       TypeReference<List<ProcessStepActionChildProcess>> processStepActionChildProcessesRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "processStepActionChildProcesses",
-          new JsonCollectionDeserializer(processStepActionChildProcessesRef, objectMapper));
+        List.class,
+        "processStepActionChildProcesses",
+        new JsonCollectionDeserializer(processStepActionChildProcessesRef, objectMapper));
 
       TypeReference<List<ProcessStepActionChildFunction>> processStepActionChildFunctionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "processStepActionChildFunctions",
-          new JsonCollectionDeserializer(processStepActionChildFunctionsRef, objectMapper));
+        List.class,
+        "processStepActionChildFunctions",
+        new JsonCollectionDeserializer(processStepActionChildFunctionsRef, objectMapper));
 
       TypeReference<List<ProcessStepActionChildSmsTemplate>> processStepActionChildSmsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "processStepActionChildSmsTemplates",
-          new JsonCollectionDeserializer(processStepActionChildSmsRef, objectMapper));
+        List.class,
+        "processStepActionChildSmsTemplates",
+        new JsonCollectionDeserializer(processStepActionChildSmsRef, objectMapper));
 
       TypeReference<List<ProcessStepActionLink>> processStepActionLinksRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "processStepActionLinks",
-          new JsonCollectionDeserializer(processStepActionLinksRef, objectMapper));
+        List.class,
+        "processStepActionLinks",
+        new JsonCollectionDeserializer(processStepActionLinksRef, objectMapper));
     }
   }
 
@@ -518,17 +525,19 @@ public class ProcessStepActionService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<ActionParamDynamicValue>> actionParamDynamicValuesRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "actionParamDynamicValues",
-          new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
+        List.class,
+        "actionParamDynamicValues",
+        new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
 
-      TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {};
+      TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "companyFunctionParams",
-          new JsonCollectionDeserializer<>(companyFunctionParamsRef, objectMapper));
+        List.class,
+        "companyFunctionParams",
+        new JsonCollectionDeserializer<>(companyFunctionParamsRef, objectMapper));
     }
   }
 
@@ -542,11 +551,13 @@ public class ProcessStepActionService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Long>> teamIdsTypeRef = new TypeReference<>() {};
+      TypeReference<List<Long>> teamIdsTypeRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "teamIds",
         new JsonCollectionDeserializer(teamIdsTypeRef, objectMapper));
 
-      TypeReference<List<MessageTeam>> teamsTypeRef = new TypeReference<>() {};
+      TypeReference<List<MessageTeam>> teamsTypeRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "teams",
         new JsonCollectionDeserializer(teamsTypeRef, objectMapper));
     }
