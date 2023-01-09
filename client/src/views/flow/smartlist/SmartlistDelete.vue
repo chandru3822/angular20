@@ -17,7 +17,7 @@
 import { AppMutations } from '@/stores/AppStore'
 import { deleteRequest, getSnackbar, logError } from '@/helpers/helpers'
 import { getCurrentInstance, ref } from 'vue'
-import ConfirmationDialog from '@/ConfirmationDialog.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 import { Fragment } from 'vue-frag'
 
 const props = defineProps({
