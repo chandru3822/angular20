@@ -11,7 +11,6 @@ import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payrol
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.PayrollQuery;
 import com.albatross.api.v1.flow.model.OverrideResult;
 import com.albatross.api.v1.flow.services.SqlArrayService;
-import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,10 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -41,12 +43,12 @@ public class PayrollService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("positionId", positionId);
     List<Long> payrollIds =
-        sqlCache.queryBySql(
-            PayrollQuery.getCurrentPayrollId, params, new SingleColumnRowMapper<>(Long.class));
+      sqlCache.queryBySql(
+        PayrollQuery.getCurrentPayrollId, params, new SingleColumnRowMapper<>(Long.class));
 
     if (payrollIds.size() > 1) {
       log.error(
-          "COMMISSION: There are multiple payrolls marked as current and the first one will be returned.");
+        "COMMISSION: There are multiple payrolls marked as current and the first one will be returned.");
     } else if (payrollIds.isEmpty()) {
       log.error("COMMISSION: No Current Payroll Available");
     }
@@ -66,8 +68,7 @@ public class PayrollService {
     if (searchQuery.getPositionId() == 1) {
       results =
         sqlCache.getBySql(PayrollQuery.searchClosers, params, new SingleColumnRowMapper<>(String.class));
-    }
-    else {
+    } else {
       results =
         sqlCache.getBySql(PayrollQuery.searchSetters, params, new SingleColumnRowMapper<>(String.class));
     }
@@ -124,10 +125,10 @@ public class PayrollService {
     params.put("payrollId", payrollId);
 
     Optional<Boolean> created =
-        sqlCache.getBySql(
-            "select brs.copy_snapshot_to_ledger(:payrollId::bigint, :currentUserId::bigint)",
-            params,
-            new SingleColumnRowMapper<>(Boolean.class));
+      sqlCache.getBySql(
+        "select brs.copy_snapshot_to_ledger(:payrollId::bigint, :currentUserId::bigint)",
+        params,
+        new SingleColumnRowMapper<>(Boolean.class));
     return created.orElse(false);
   }
 
@@ -153,7 +154,7 @@ public class PayrollService {
     params.put("payDate", payDate);
 
     sqlCache.updateBySql(
-        "UPDATE brs.payroll SET paid_date = :payDate::DATE WHERE id = :payrollId", params);
+      "UPDATE brs.payroll SET paid_date = :payDate::DATE WHERE id = :payrollId", params);
   }
 
   private void setPayrollStatus(Long payrollId, PayrollStatus payrollStatus) {
@@ -170,10 +171,10 @@ public class PayrollService {
     params.put("payrollId", payrollId);
 
     Optional<Boolean> created =
-        sqlCache.getBySql(
-            "select brs.create_payroll_snapshot(:payrollId::bigint, :currentUserId::bigint)",
-            params,
-            new SingleColumnRowMapper<>(Boolean.class));
+      sqlCache.getBySql(
+        "select brs.create_payroll_snapshot(:payrollId::bigint, :currentUserId::bigint)",
+        params,
+        new SingleColumnRowMapper<>(Boolean.class));
     return created.orElse(false);
   }
 
@@ -190,23 +191,22 @@ public class PayrollService {
     params.put("overridePlanId", request.getOverridePlanId());
     params.put("commissionPlanId", request.getCommissionPlanId());
     params.put(
-        "selectedProjectIds",
-        null != request.getSelectedProjectIds()
-            ? sqlArrayService.createSqlArrayOfType("int", request.getSelectedProjectIds())
-            : null);
+      "selectedProjectIds",
+      null != request.getSelectedProjectIds()
+        ? sqlArrayService.createSqlArrayOfType("int", request.getSelectedProjectIds())
+        : null);
 
     if (request.getProjectId() != null) {
       params.put(
-          "selectedProjectIds",
-          sqlArrayService.createSqlArrayOfType("int", List.of(request.getProjectId())));
+        "selectedProjectIds",
+        sqlArrayService.createSqlArrayOfType("int", List.of(request.getProjectId())));
     }
 
     Optional<String> bySql;
     if (request.getPositionId() == 1) {
       bySql =
         sqlCache.getBySql(PayrollQuery.getAccountReviewForClosers, params, new SingleColumnRowMapper<>(String.class));
-    }
-    else {
+    } else {
       bySql =
         sqlCache.getBySql(PayrollQuery.getAccountReviewForSetters, params, new SingleColumnRowMapper<>(String.class));
     }
@@ -223,8 +223,7 @@ public class PayrollService {
     if (positionId == 1) {
       bySql =
         sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForClosers, params, new SingleColumnRowMapper<>(String.class));
-    }
-    else {
+    } else {
       bySql =
         sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForSetters, params, new SingleColumnRowMapper<>(String.class));
     }
@@ -235,20 +234,20 @@ public class PayrollService {
 
   public void preparePayrollSummary() {
     new SimpleJdbcCall(dataSource)
-        .withCatalogName("brs")
-        .withProcedureName("refresh_summary_view")
-        .withoutProcedureColumnMetaDataAccess()
-        .execute();
+      .withCatalogName("brs")
+      .withProcedureName("refresh_summary_view")
+      .withoutProcedureColumnMetaDataAccess()
+      .execute();
   }
 
   public String checkSummaryPreparationStatus() {
     String status =
-        sqlCache
-            .getBySql(
-                PayrollQuery.checkSummaryPreparationStatus,
-                null,
-                new SingleColumnRowMapper<>(String.class))
-            .orElse("finished");
+      sqlCache
+        .getBySql(
+          PayrollQuery.checkSummaryPreparationStatus,
+          null,
+          new SingleColumnRowMapper<>(String.class))
+        .orElse("finished");
 
     if (status.equals("active")) {
       return "Summary is still being created. Please wait.";
@@ -263,8 +262,8 @@ public class PayrollService {
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return sqlCache
-        .getBySql(PayrollQuery.getCurrentSummary, params, new SingleColumnRowMapper<>(String.class))
-        .orElse("[]");
+      .getBySql(PayrollQuery.getCurrentSummary, params, new SingleColumnRowMapper<>(String.class))
+      .orElse("[]");
   }
 
   public String getAccountSummaryByPayrollId(Long payrollId) {
@@ -273,34 +272,34 @@ public class PayrollService {
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return sqlCache
-        .getBySql(PayrollQuery.getSummary, params, new SingleColumnRowMapper<>(String.class))
-        .orElse("[]");
+      .getBySql(PayrollQuery.getSummary, params, new SingleColumnRowMapper<>(String.class))
+      .orElse("[]");
   }
 
   public List<OverrideResult> getAllOverrideDetails(Long payrollId) {
-    Map<String, Object> params = ImmutableMap.of("payrollId", payrollId);
-    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
+    Map<String, Object> params = Map.of(
+      "payrollId", payrollId,
+      "currentUserId", securityService.getCurrentUser().trueUserId());
     Optional<Integer> payrollStatusId =
-        sqlCache.getBySql(PayrollQuery.status, params, SingleColumnRowMapper.newInstance(Integer.class));
+      sqlCache.getBySql(PayrollQuery.status, params, SingleColumnRowMapper.newInstance(Integer.class));
 
     if (payrollStatusId.isPresent()) {
       if (payrollStatusId.get() == 3) {
         return sqlCache.queryBySql(PayrollQuery.overridesSnapshot, params, OverrideResult.class);
-      }
-      else {
+      } else {
         return sqlCache.queryBySql(PayrollQuery.overridesOpen, params, OverrideResult.class);
       }
 
     } else {
       log.error("Payroll {} requested but no status found.", payrollId);
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Payroll Not Found", new Exception());
+        HttpStatus.BAD_REQUEST, "Payroll Not Found", new Exception());
     }
   }
 
   @Transactional
   public boolean updatePayroll(Long payrollId, PayrollUpdateRequest updateRequest)
-      throws SQLException {
+    throws SQLException {
     Long currentUserId = securityService.getCurrentUser().trueUserId();
     Map<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUserId);
@@ -308,8 +307,8 @@ public class PayrollService {
     params.put("description", updateRequest.getDescription());
     params.put("periodEndDate", updateRequest.getPeriodEnd());
     params.put(
-        "projectIds",
-        sqlArrayService.createSqlArrayOfType("bigint", updateRequest.getProjectIds()));
+      "projectIds",
+      sqlArrayService.createSqlArrayOfType("bigint", updateRequest.getProjectIds()));
 
     int update = sqlCache.updateBySql(PayrollQuery.updatePayroll, params);
 
@@ -336,8 +335,8 @@ public class PayrollService {
     params.put("projectId", projectId);
 
     Optional<String> adjustmentsOpt =
-        sqlCache.getBySql(
-          PayrollQuery.getCommissionAdjustments, params, new SingleColumnRowMapper<>(String.class));
+      sqlCache.getBySql(
+        PayrollQuery.getCommissionAdjustments, params, new SingleColumnRowMapper<>(String.class));
     return adjustmentsOpt.orElse("[]");
   }
 
@@ -349,10 +348,10 @@ public class PayrollService {
     params.put("positionId", positionId);
 
     Optional<Boolean> created =
-        sqlCache.getBySql(
-            "SELECT brs.create_payroll(:currentUserId::bigint, :positionId::bigint)",
-            params,
-            new SingleColumnRowMapper<>(Boolean.class));
+      sqlCache.getBySql(
+        "SELECT brs.create_payroll(:currentUserId::bigint, :positionId::bigint)",
+        params,
+        new SingleColumnRowMapper<>(Boolean.class));
     return created.orElse(false);
   }
 
@@ -374,7 +373,8 @@ public class PayrollService {
     private Double amount;
     private String note;
 
-    @NotNull private PayrollAdjustmentType adjustmentType;
+    @NotNull
+    private PayrollAdjustmentType adjustmentType;
   }
 
   @Data
