@@ -180,7 +180,7 @@
             if (this.itemType === 'utility') {
               res = await postRequest(`/featDb/utility/${this.itemId}/contacts`, this.contact, 'blueraven')
             } else if (this.itemType === 'hoa') {
-              res = await postRequest(`/featDb/Hoa/${this.itemId}/contacts`, this.contact, 'blueraven')
+              res = await postRequest(`/featDb/hoa/${this.itemId}/contacts`, this.contact, 'blueraven')
             } else {
               res = await postRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
             }
