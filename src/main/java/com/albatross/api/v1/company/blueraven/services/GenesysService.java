@@ -287,6 +287,21 @@ public class GenesysService {
             contactListId, List.of(wdc), true, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
+
+    // Add contact to LeadLevel_NBS
+    contactListId = getContactListId(leadLevel, apiInstance, "LeadLevel_NBS");
+    // If no Contact  List is found
+    if (contactListId == null) {
+      return;
+    }
+
+    contactMap.remove("contactcallable");
+    contactMap.remove("zipcodeautomatictimezone");
+    contactMap.put("Custom_LastAttemptTime", "");
+    wdc.setData(contactMap);
+
+    apiInstance.postOutboundContactlistContacts(
+      contactListId, List.of(wdc), true, false, false);
   }
 
   private void updateGenesysCfv(Long contactId, String textValue, Long cfgaId) {
