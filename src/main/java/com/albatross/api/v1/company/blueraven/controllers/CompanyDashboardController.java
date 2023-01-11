@@ -2,16 +2,16 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.services.CompanyDashboardService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/companyDashboard")
+@RequiredArgsConstructor
 public class CompanyDashboardController {
-  @Autowired
-  private CompanyDashboardService companyDashboardService;
+  private final CompanyDashboardService companyDashboardService;
 
   @GetMapping(value = "/targets")
   public List<CompanyDashboardTargets> getTargets() {
@@ -32,9 +32,9 @@ public class CompanyDashboardController {
 
   @GetMapping(value = "/drilldownData")
   public String getDrilldownValues(@RequestParam String startDate,
-                                                            @RequestParam String endDate,
-                                                            @RequestParam Long milestoneTypeId,
-                                                            @RequestParam Boolean loadPartners) {
+                                   @RequestParam String endDate,
+                                   @RequestParam Long milestoneTypeId,
+                                   @RequestParam Boolean loadPartners) {
     return companyDashboardService.getDrilldownValues(startDate, endDate, milestoneTypeId, loadPartners);
   }
 }

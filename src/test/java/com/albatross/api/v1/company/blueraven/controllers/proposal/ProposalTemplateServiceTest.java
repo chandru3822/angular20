@@ -47,7 +47,7 @@ class ProposalTemplateServiceTest {
             .setBlocks(
                 List.of(new ProposalTemplateBlock().setBlockValue(new HashMap<>(blockValue))));
 
-    when(sqlCache.get(any(String.class), anyMap(), any(BeanPropertyRowMapper.class)))
+    when(sqlCache.getBySql(any(String.class), anyMap(), any(BeanPropertyRowMapper.class)))
         .thenReturn(Optional.of(expectedSqlTemplate));
 
     final Map<String, Object> context = Map.of("first_name", "Darth", "last_name", "Vader");

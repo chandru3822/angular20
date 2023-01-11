@@ -37,8 +37,8 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('SCHEDULE')")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+//@PreAuthorize("hasFeatureAccess('SCHEDULE')")
+@RequiredArgsConstructor
 public class ScheduleService {
 
   private final SqlCache sqlCache;

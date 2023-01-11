@@ -19,10 +19,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -43,9 +40,8 @@ public class HoaService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<HoaDetail> result = sqlCache.getBySql(
+    return sqlCache.getBySql(
       HoaQuery.detailById, params, new HoaDetailMapper<>(HoaDetail.class, om));
-    return result;
   }
 
   public Optional<HoaDetail> simpleUpdate(Hoa hoa) {
@@ -90,12 +86,12 @@ public class HoaService {
   }
 
   public void deleteHoa(Long id) {
-      User currentUser = securityService.getCurrentUser();
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("id", id);
-      params.put("currentUser", currentUser.trueUserId());
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("currentUser", currentUser.trueUserId());
 
-      sqlCache.updateBySql(HoaQuery.delete, params);
+    sqlCache.updateBySql(HoaQuery.delete, params);
   }
 
   public List<HoaCompany> getHoaCompanies() {
@@ -104,10 +100,7 @@ public class HoaService {
 
   // CONTACTS
   public Optional<FeatDbContact> getHoaContactById(Long contactId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", contactId);
-
-    return sqlCache.get(FeatDbContactQuery.findById, params, FeatDbContact.class);
+    return sqlCache.getBySql(FeatDbContactQuery.findById, Map.of("id", contactId), FeatDbContact.class);
   }
 
   public Optional<FeatDbContact> saveHoaContact(
