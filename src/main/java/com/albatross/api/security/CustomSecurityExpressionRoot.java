@@ -69,7 +69,9 @@ public class CustomSecurityExpressionRoot extends SecurityExpressionRoot
   public boolean hasCompanyAccess(Long companyId) {
     final var principal = this.getPrincipal();
     if (principal instanceof final UserAccountDetails details) {
-      return Objects.equals(details.getCompanyId(), companyId);
+      //return true if the user is a 7oak employee or if the company id matches
+      return Objects.equals(details.getHighestCompanyId(), SYS_ADMIN_ID) ||
+               Objects.equals(details.getCompanyId(), companyId);
     }
 
     return false;
