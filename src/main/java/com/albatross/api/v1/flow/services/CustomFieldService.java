@@ -74,6 +74,7 @@ public class CustomFieldService {
     params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
     params.put("systemReadonly", customField.getSystemReadonly() != null && customField.getSystemReadonly());
     params.put("allowNow", customField.getAllowNow() != null && customField.getAllowNow());
+    params.put("allowSelectSelf", customField.getAllowSelectSelf() != null && customField.getAllowSelectSelf());
     params.put("systemListId", customField.getCompanySystemListId());
     params.put(
       "systemListOptionIds",

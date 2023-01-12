@@ -63,6 +63,15 @@
                      :disabled="!userCanEdit"
                      class="ml-2"
                      v-model="customField.allowNow">
+            </div><div
+              v-if="customField.companyDataType && customField.companyDataType.systemList &&
+              customField.companySystemListId && selectedSystemListTypeIsUsers">
+              <label>Allow Selecting Self: </label>
+              <input type="checkbox"
+                     :readonly="!userCanEdit"
+                     :disabled="!userCanEdit"
+                     class="ml-2"
+                     v-model="customField.allowSelectSelf">
             </div>
           </div>
           <v-autocomplete
@@ -290,7 +299,12 @@ export default {
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
     };
   },
-  computed: {},
+  computed: {
+    selectedSystemListTypeIsUsers(){
+      let selectedSystemList = this.systemLists.find(sl => sl.id === this.customField.companySystemListId)
+      return selectedSystemList.systemListTypeId === 2; //user type id
+    }
+  },
   async created() {
     this.fieldLoading = true
     Promise.all([
@@ -416,6 +430,7 @@ export default {
       }
     },
     async saveChanges(object) {
+      debugger
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
         // set the display order to save to DB

@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class SystemList {
 
-  private Long id, companyId, companySystemListId;
+  private Long id, companyId, companySystemListId, systemListTypeId;
   private String systemList;
   private Boolean archived, hasSubOptions;
 }
